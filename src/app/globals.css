@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fbf8f3;
+  --foreground: #0f1b2a;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  ::selection {
+    background: #1a2e48;
+    color: #f5efe2;
+  }
+}
+
+@layer components {
+  .container-tight {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+  .container-wide {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .heading-display {
+    /* font + tracking only — let `text-white` or `text-navy-900` from utilities decide colour */
+    @apply font-display tracking-tight;
+    color: theme('colors.navy.900');
+  }
+  /* When `text-white` is also applied, win via stronger selector */
+  .heading-display.text-white { color: #fff; }
+  .input-base {
+    @apply w-full rounded-lg border border-navy-100 bg-white px-3.5 py-2.5 text-sm text-navy-900 shadow-sm transition placeholder:text-navy-300 focus:border-marine-400 focus:outline-none focus:ring-2 focus:ring-marine-200;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #c4cdd8 transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #c4cdd8; border-radius: 8px; }
+}
+
+/* Subtle animated gradient used on hero panels */
+.hero-gradient {
+  background:
+    radial-gradient(60% 80% at 20% 20%, rgba(31, 147, 184, 0.25), transparent 60%),
+    radial-gradient(50% 60% at 90% 30%, rgba(189, 133, 40, 0.18), transparent 70%),
+    linear-gradient(160deg, #0f1b2a 0%, #142336 60%, #1a2e48 100%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Lightweight animation helpers (avoid extra deps) */
+@keyframes krek-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes krek-zoom-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes krek-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.anim-fade { animation: krek-fade-in 180ms ease-out both; }
+.anim-zoom { animation: krek-zoom-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-slide-up { animation: krek-slide-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Auth form inputs (slightly larger and cleaner than the global input-base) */
+.auth-input {
+  width: 100%;
+  padding: 0.7rem 0.95rem 0.7rem 2.4rem;
+  font-size: 0.875rem;
+  color: theme('colors.navy.900');
+  background-color: #fff;
+  border: 1px solid theme('colors.navy.200');
+  border-radius: 0.625rem;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.auth-input::placeholder { color: theme('colors.navy.400'); }
+.auth-input:focus {
+  border-color: theme('colors.navy.700');
+  box-shadow: 0 0 0 3px rgba(15, 30, 46, 0.08);
+}
+.auth-input:focus-visible { outline: none; }
+.auth-input[type="password"] { padding-right: 2.6rem; }
