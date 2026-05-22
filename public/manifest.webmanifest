@@ -1,0 +1,20 @@
+{
+  "name": "Krekelberg Nautic",
+  "short_name": "Krekelberg",
+  "description": "Jachtwerf, stalling en jachtmakelaar in Roermond.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbf8f3",
+  "theme_color": "#0f1b2a",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    { "name": "Kraanafspraak maken", "url": "/nl/kraanafspraak" },
+    { "name": "Mijn tijdlijn", "url": "/nl/feed" },
+    { "name": "Kassa", "url": "/nl/admin/kassa" }
+  ]
+}
