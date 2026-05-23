@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Globe2, Save, ShieldCheck, Sliders, TestTube2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { Card } from '@/components/ui/Card';
+import { AdminContent, AdminPanel, AdminTabBar } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
@@ -118,8 +118,38 @@ export default function SettingsPage() {
       <AdminPageHeader
         title={t('adminNew.settings.title')}
         subtitle={t('adminNew.settings.subtitle')}
+        stats={[
+          {
+            label: t('adminNew.settings.tabs.company'),
+            value: settings.data?.company.name || '—',
+            icon: ShieldCheck,
+            tone: 'marine',
+            loading: settings.loading,
+          },
+          {
+            label: t('adminNew.settings.tabs.invoicing'),
+            value: settings.data?.invoicing.currency || 'EUR',
+            icon: Sliders,
+            tone: 'gold',
+            loading: settings.loading,
+          },
+          {
+            label: t('adminNew.settings.tabs.payments'),
+            value: paymentsForm.test_mode ? 'Test' : 'Live',
+            icon: TestTube2,
+            tone: paymentsForm.test_mode ? 'warning' : 'success',
+            loading: settings.loading,
+          },
+          {
+            label: t('adminNew.settings.tabs.locales'),
+            value: localeForm.supported_locales.split(',').filter(Boolean).length,
+            icon: Globe2,
+            tone: 'navy',
+            loading: settings.loading,
+          },
+        ]}
       />
-      <div className="space-y-4 px-4 py-6 sm:px-6">
+      <AdminContent>
         {settings.loading ? (
           <LoadingState label={t('adminNew.settings.loading')} variant="detail" />
         ) : null}
@@ -129,40 +159,19 @@ export default function SettingsPage() {
 
         {!settings.loading && settings.data ? (
           <>
-            <Card className="p-2">
-              <div className="grid gap-2 sm:grid-cols-4">
-                <TabButton
-                  active={activeTab === 'company'}
-                  onClick={() => setActiveTab('company')}
-                  icon={<ShieldCheck className="h-4 w-4" />}
-                  label={t('adminNew.settings.tabs.company')}
-                />
-                <TabButton
-                  active={activeTab === 'invoicing'}
-                  onClick={() => setActiveTab('invoicing')}
-                  icon={<Sliders className="h-4 w-4" />}
-                  label={t('adminNew.settings.tabs.invoicing')}
-                />
-                <TabButton
-                  active={activeTab === 'payments'}
-                  onClick={() => setActiveTab('payments')}
-                  icon={<TestTube2 className="h-4 w-4" />}
-                  label={t('adminNew.settings.tabs.payments')}
-                />
-                <TabButton
-                  active={activeTab === 'locales'}
-                  onClick={() => setActiveTab('locales')}
-                  icon={<Globe2 className="h-4 w-4" />}
-                  label={t('adminNew.settings.tabs.locales')}
-                />
-              </div>
-            </Card>
+            <AdminTabBar
+              active={activeTab}
+              onChange={setActiveTab}
+              tabs={[
+                { id: 'company' as const, label: t('adminNew.settings.tabs.company'), icon: ShieldCheck },
+                { id: 'invoicing' as const, label: t('adminNew.settings.tabs.invoicing'), icon: Sliders },
+                { id: 'payments' as const, label: t('adminNew.settings.tabs.payments'), icon: TestTube2 },
+                { id: 'locales' as const, label: t('adminNew.settings.tabs.locales'), icon: Globe2 },
+              ]}
+            />
 
             {activeTab === 'company' ? (
-              <Card className="p-5">
-                <h2 className="text-base font-semibold text-navy-900">
-                  {t('adminNew.settings.company.title')}
-                </h2>
+              <AdminPanel title={t('adminNew.settings.company.title')}>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <Input
                     label={t('adminNew.common.name')}
@@ -247,14 +256,11 @@ export default function SettingsPage() {
                     {t('adminNew.common.save')}
                   </Button>
                 </div>
-              </Card>
+              </AdminPanel>
             ) : null}
 
             {activeTab === 'invoicing' ? (
-              <Card className="p-5">
-                <h2 className="text-base font-semibold text-navy-900">
-                  {t('adminNew.settings.invoicing.title')}
-                </h2>
+              <AdminPanel title={t('adminNew.settings.invoicing.title')}>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <Input
                     label={t('adminNew.settings.invoicing.invoicePrefix')}
@@ -334,14 +340,11 @@ export default function SettingsPage() {
                     {t('adminNew.common.save')}
                   </Button>
                 </div>
-              </Card>
+              </AdminPanel>
             ) : null}
 
             {activeTab === 'payments' ? (
-              <Card className="p-5">
-                <h2 className="text-base font-semibold text-navy-900">
-                  {t('adminNew.settings.payments.title')}
-                </h2>
+              <AdminPanel title={t('adminNew.settings.payments.title')}>
                 <div className="mt-2 flex items-center gap-2">
                   <Badge tone={settings.data.payments.connected ? 'success' : 'danger'} dot>
                     {settings.data.payments.connected
@@ -420,14 +423,11 @@ export default function SettingsPage() {
                     {t('adminNew.common.save')}
                   </Button>
                 </div>
-              </Card>
+              </AdminPanel>
             ) : null}
 
             {activeTab === 'locales' ? (
-              <Card className="p-5">
-                <h2 className="text-base font-semibold text-navy-900">
-                  {t('adminNew.settings.locales.title')}
-                </h2>
+              <AdminPanel title={t('adminNew.settings.locales.title')}>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <Input
                     label={t('adminNew.settings.locales.defaultLocale')}
@@ -475,37 +475,11 @@ export default function SettingsPage() {
                     {t('adminNew.common.save')}
                   </Button>
                 </div>
-              </Card>
+              </AdminPanel>
             ) : null}
           </>
         ) : null}
-      </div>
+      </AdminContent>
     </>
-  );
-}
-
-function TabButton({
-  active,
-  onClick,
-  icon,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition ${
-        active
-          ? 'border-navy-900 bg-navy-900 text-white'
-          : 'border-navy-100 bg-white text-navy-700 hover:bg-sand-50'
-      }`}
-    >
-      {icon}
-      {label}
-    </button>
   );
 }

@@ -1,4 +1,5 @@
 import { api } from '@/lib/api';
+import { getDeviceId } from '@/lib/device';
 import type {
   AppSettings,
   AuditLog,
@@ -6,12 +7,19 @@ import type {
   Customer,
   Invoice,
   InvoiceLine,
+  KassaCheckoutResponse,
   PaginatedResponse,
   Payment,
+  Appointment,
+  PortalAppointmentsResponse,
   PortalBoat,
   PortalContract,
   PortalInvoice,
   PortalMe,
+  PortalNotificationsResponse,
+  PortalTimelineItem,
+  PortalTimelineResponse,
+  PortalWallet,
   PricingRule,
   Product,
   Reminder,
@@ -21,28 +29,60 @@ import type {
   SyncDevice,
   SyncStatus,
 } from '@/lib/api-types';
-import { asArray, asPaginated, maybeResource } from './utils';
+import { asArray, asPaginated, maybeResource, toBoolean, toNumber } from './utils';
 
 export interface LoginResponse {
   user: SessionUser;
   token?: string;
+  access_token?: string;
   session?: {
     device_id: string;
     expires_at: string;
+    token?: string;
   };
 }
 
+export function extractLoginToken(res: LoginResponse): string | undefined {
+  if (res.token) return res.token;
+  if (res.access_token) return res.access_token;
+  if (res.session?.token) return res.session.token;
+  return undefined;
+}
+
+function parseSessionUser(payload: unknown): SessionUser {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Invalid session user payload');
+  }
+  const record = payload as Record<string, unknown>;
+  if (record.user && typeof record.user === 'object') {
+    return record.user as SessionUser;
+  }
+  if (record.data && typeof record.data === 'object') {
+    const data = record.data as Record<string, unknown>;
+    if (data.user && typeof data.user === 'object') {
+      return data.user as SessionUser;
+    }
+    if (typeof data.id === 'string' && typeof data.email === 'string') {
+      return data as unknown as SessionUser;
+    }
+  }
+  if (typeof record.id === 'string' && typeof record.email === 'string') {
+    return record as unknown as SessionUser;
+  }
+  throw new Error('Invalid session user payload');
+}
+
 export const authService = {
-  login(email: string, password: string) {
+  login(email: string, password: string, device_id = getDeviceId()) {
     return api<LoginResponse>('/v1/auth/login', {
       method: 'POST',
-      body: { email, password },
+      body: { email, password, device_id },
       auth: false,
     });
   },
   async me() {
-    const res = await api<{ user: SessionUser }>('/v1/auth/me');
-    return res.user;
+    const res = await api<unknown>('/v1/auth/me');
+    return parseSessionUser(res);
   },
   logout() {
     return api<{ message: string }>('/v1/auth/logout', { method: 'POST' });
@@ -279,7 +319,7 @@ export const kassaService = {
     redirect_url?: string;
     items: Array<{ product_id?: string; description?: string; quantity: number; unit_price_cents?: number; price_cents?: number; vat_rate?: number }>;
   }) {
-    return api<string | { sale_id?: string; invoice_id?: string; checkout_url?: string; message?: string }>('/v1/kassa/checkout', {
+    return api<string | KassaCheckoutResponse>('/v1/kassa/checkout', {
       method: 'POST',
       body: payload,
       queueWhenOffline: true,
@@ -642,19 +682,51 @@ export const portalService = {
     });
     return asArray<PortalBoat>(res);
   },
-  async timeline() {
+  async timeline(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/portal/timeline', {
+      query,
       portalAuth: true,
       auth: false,
     });
-    return asPaginated<Record<string, unknown>>(res);
+    const obj = res as Record<string, unknown>;
+    const items = asPaginated<PortalTimelineItem>(obj.items ?? res);
+    const pagination = obj.pagination as PortalTimelineResponse['pagination'] | undefined;
+    return {
+      items: items.data,
+      pagination: pagination ?? {
+        page: 1,
+        per_page: items.data.length,
+        total: items.data.length,
+        has_more: false,
+        unread_count: items.data.filter((i) => !i.read_at && i.status !== 'read').length,
+      },
+    } satisfies PortalTimelineResponse;
   },
-  async notifications() {
-    const res = await api<unknown>('/v1/portal/notifications', {
+  notifications() {
+    return api<PortalNotificationsResponse>('/v1/portal/notifications', {
       portalAuth: true,
       auth: false,
     });
-    return asPaginated<Record<string, unknown>>(res);
+  },
+  async appointments(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/portal/appointments', {
+      query,
+      portalAuth: true,
+      auth: false,
+    });
+    const obj = res as Record<string, unknown>;
+    const page = asPaginated<Appointment>(obj.appointments ?? res);
+    return {
+      data: page.data,
+      total: toNumber(obj.total, page.data.length),
+      has_more: toBoolean(obj.has_more),
+    } satisfies PortalAppointmentsResponse;
+  },
+  wallet() {
+    return api<PortalWallet | string>('/v1/portal/wallet', {
+      portalAuth: true,
+      auth: false,
+    });
   },
   markAllRead() {
     return api<Record<string, unknown>>('/v1/portal/timeline/read-all', {

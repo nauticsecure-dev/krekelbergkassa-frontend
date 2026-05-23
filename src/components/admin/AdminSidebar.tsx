@@ -63,33 +63,8 @@ export function AdminSidebar({ variant = 'desktop' }: Props) {
   const isActive = (href: string) =>
     pathname === href || (href !== `/${locale}/admin` && pathname?.startsWith(href + '/'));
 
-  if (variant === 'mobile') {
-    return (
-      <div className="flex h-full flex-col bg-navy-950 text-sand-100">
-        <nav className="flex-1 space-y-0.5 px-3 py-3">
-          {visibleMain.map((l) => (
-            <Item key={l.href} {...l} active={isActive(l.href)} />
-          ))}
-          <SectionDivider />
-          {visibleSecondary.map((l) => (
-            <Item key={l.href} {...l} active={isActive(l.href)} />
-          ))}
-        </nav>
-        <UserFooter
-          name={user?.name ?? 'Admin'}
-          email={user?.email ?? 'admin@krekelberg.nl'}
-          onSignOut={() => void signOut()}
-          logoutLabel={t('adminNew.common.logout')}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <aside className="hidden h-screen w-60 shrink-0 flex-col bg-navy-950 text-sand-100 lg:flex">
-      <div className="border-b border-white/5 px-5 py-4">
-        <Logo variant="light" />
-      </div>
+  const nav = (
+    <>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3 scrollbar-thin">
         {visibleMain.map((l) => (
           <Item key={l.href} {...l} active={isActive(l.href)} />
@@ -105,6 +80,21 @@ export function AdminSidebar({ variant = 'desktop' }: Props) {
         onSignOut={() => void signOut()}
         logoutLabel={t('adminNew.common.logout')}
       />
+    </>
+  );
+
+  if (variant === 'mobile') {
+    return (
+      <div className="flex h-full flex-col bg-navy-950 text-sand-100">{nav}</div>
+    );
+  }
+
+  return (
+    <aside className="hidden h-screen w-60 shrink-0 flex-col bg-navy-950 text-sand-100 lg:flex">
+      <div className="border-b border-white/5 px-5 py-4">
+        <Logo variant="light" />
+      </div>
+      {nav}
     </aside>
   );
 }

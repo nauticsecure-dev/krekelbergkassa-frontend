@@ -2,73 +2,98 @@
 
 import * as React from 'react';
 import { X } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 import { cn } from '@/lib/cn';
 
 type ToastTone = 'success' | 'error' | 'info';
 
-interface ToastItem {
-  id: string;
+interface ToastInput {
   title: string;
   message?: string;
-  tone: ToastTone;
+  tone?: ToastTone;
 }
 
 interface ToastContextValue {
-  push: (toast: Omit<ToastItem, 'id'>) => void;
+  push: (toast: ToastInput) => void;
 }
 
 const ToastContext = React.createContext<ToastContextValue | null>(null);
 
-function id() {
-  return Math.random().toString(36).slice(2, 10);
+const toneStyles: Record<ToastTone, string> = {
+  success: 'border-emerald-200/80 bg-emerald-50 text-emerald-900',
+  error: 'border-rose-200/80 bg-rose-50 text-rose-900',
+  info: 'border-navy-100/80 bg-white text-navy-900',
+};
+
+function KrekelbergToast({
+  visible,
+  title,
+  message,
+  tone,
+  onDismiss,
+}: {
+  visible: boolean;
+  title: string;
+  message?: string;
+  tone: ToastTone;
+  onDismiss: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        'pointer-events-auto w-full max-w-sm rounded-xl border px-4 py-3 shadow-elev backdrop-blur-sm transition-all duration-300',
+        toneStyles[tone],
+        visible ? 'translate-x-0 opacity-100' : 'translate-x-2 opacity-0'
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold leading-snug">{title}</div>
+          {message ? (
+            <div className="mt-0.5 text-xs leading-relaxed opacity-90">{message}</div>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="shrink-0 rounded-md p-1 transition hover:bg-black/5"
+          aria-label="Dismiss"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = React.useState<ToastItem[]>([]);
-
-  const push = React.useCallback((toast: Omit<ToastItem, 'id'>) => {
-    const t = { ...toast, id: id() };
-    setToasts((prev) => [...prev, t]);
-    window.setTimeout(() => {
-      setToasts((prev) => prev.filter((x) => x.id !== t.id));
-    }, 4500);
-  }, []);
-
-  const remove = React.useCallback((toastId: string) => {
-    setToasts((prev) => prev.filter((x) => x.id !== toastId));
+  const push = React.useCallback(({ title, message, tone = 'info' }: ToastInput) => {
+    toast.custom(
+      (t) => (
+        <KrekelbergToast
+          visible={t.visible}
+          title={title}
+          message={message}
+          tone={tone}
+          onDismiss={() => toast.dismiss(t.id)}
+        />
+      ),
+      { duration: 4500 }
+    );
   }, []);
 
   return (
     <ToastContext.Provider value={{ push }}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 top-4 z-[120] flex justify-center px-4">
-        <div className="flex w-full max-w-xl flex-col gap-2">
-          {toasts.map((toast) => (
-            <div
-              key={toast.id}
-              className={cn(
-                'pointer-events-auto rounded-xl border px-4 py-3 shadow-elev',
-                toast.tone === 'success' && 'border-emerald-200 bg-emerald-50 text-emerald-800',
-                toast.tone === 'error' && 'border-rose-200 bg-rose-50 text-rose-800',
-                toast.tone === 'info' && 'border-navy-200 bg-white text-navy-800'
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold">{toast.title}</div>
-                  {toast.message ? <div className="mt-0.5 text-xs opacity-90">{toast.message}</div> : null}
-                </div>
-                <button
-                  onClick={() => remove(toast.id)}
-                  className="rounded-md p-1 hover:bg-black/5"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Toaster
+        position="top-right"
+        gutter={10}
+        containerClassName="!top-5 !right-5 !z-[9999]"
+        toastOptions={{
+          className: '!bg-transparent !p-0 !shadow-none',
+          style: { background: 'transparent', boxShadow: 'none', padding: 0 },
+        }}
+      />
     </ToastContext.Provider>
   );
 }

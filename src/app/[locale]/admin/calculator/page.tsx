@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Calculator, FilePlus2, Receipt, UserPlus } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { Card } from '@/components/ui/Card';
+import { AdminContent, AdminPanel } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
@@ -144,10 +144,36 @@ export default function CalculatorPage() {
       <AdminPageHeader
         title={t('adminNew.calculator.title')}
         subtitle={t('adminNew.calculator.subtitle')}
+        stats={[
+          {
+            label: t('adminNew.calculator.lengthCm'),
+            value: `${lengthCm} cm`,
+            icon: Calculator,
+            tone: 'marine',
+          },
+          {
+            label: t('adminNew.calculator.services'),
+            value: selectedServices.length,
+            tone: 'gold',
+          },
+          {
+            label: t('adminNew.calculator.result.totalPrice'),
+            value: result ? formatCurrency(resolveTotal, locale === 'en' ? 'en-GB' : 'nl-NL') : '—',
+            icon: Receipt,
+            tone: result ? 'success' : 'navy',
+          },
+          {
+            label: t('adminNew.calculator.customerOptional'),
+            value: customers.data?.meta?.total ?? customers.data?.data.length ?? 0,
+            icon: UserPlus,
+            tone: 'navy',
+            loading: customers.loading,
+          },
+        ]}
       />
 
-      <div className="grid gap-5 px-4 py-6 sm:px-6 lg:grid-cols-[1fr_24rem]">
-        <Card className="p-5">
+      <AdminContent className="grid gap-5 lg:grid-cols-[1fr_24rem]">
+        <AdminPanel title={t('adminNew.calculator.title')} description={t('adminNew.calculator.subtitle')}>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label={t('adminNew.calculator.lengthCm')}
@@ -247,12 +273,9 @@ export default function CalculatorPage() {
               {t('adminNew.calculator.newCustomer')}
             </Button>
           </div>
-        </Card>
+        </AdminPanel>
 
-        <Card className="p-5">
-          <div className="text-sm font-semibold text-navy-900">
-            {t('adminNew.calculator.result.title')}
-          </div>
+        <AdminPanel title={t('adminNew.calculator.result.title')}>
           {!result ? (
             <div className="mt-3 text-sm text-navy-500">
               {t('adminNew.calculator.result.empty')}
@@ -281,8 +304,8 @@ export default function CalculatorPage() {
               </details>
             </div>
           )}
-        </Card>
-      </div>
+        </AdminPanel>
+      </AdminContent>
     </>
   );
 }

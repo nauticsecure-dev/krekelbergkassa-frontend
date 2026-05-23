@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import { auth } from './api';
-import { authService, portalService } from './services';
+import type { ApiError } from './api';
+import { authService, extractLoginToken, portalService } from './services';
 import type { SessionUser } from './api-types';
 
 export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'guest';
@@ -26,6 +27,15 @@ const AuthCtx = React.createContext<AuthState | null>(null);
 
 const DEMO_TOKEN_PREFIX = 'demo::';
 const DEMO_USER_KEY = 'krek_demo_user';
+
+function isUnauthorized(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'status' in err &&
+    (err as ApiError).status === 401
+  );
+}
 
 const demoUserFor = (role: Role): User => {
   switch (role) {
@@ -72,6 +82,25 @@ function normalizeRole(role: string): Role {
   return 'staff';
 }
 
+async function loadStaffSession(): Promise<User | null> {
+  const me = await authService.me();
+  return {
+    ...me,
+    role: normalizeRole(me.role),
+  };
+}
+
+async function loadPortalSession(): Promise<User | null> {
+  const portalMe = await portalService.me();
+  return {
+    id: portalMe.customer.id,
+    name: portalMe.customer.name,
+    email: portalMe.customer.email,
+    role: 'customer',
+    locale: portalMe.customer.preferred_locale,
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -81,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refresh = React.useCallback(async () => {
     const token = auth.getToken();
     const portalToken = auth.getPortalToken();
+    const hasStaffToken = !!token && !token.startsWith(DEMO_TOKEN_PREFIX);
 
     if (token?.startsWith(DEMO_TOKEN_PREFIX)) {
       const stored =
@@ -93,46 +123,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Staff session takes priority — portal cookie must not override admin login on refresh.
+    if (hasStaffToken) {
+      try {
+        const staffUser = await loadStaffSession();
+        setUser(staffUser);
+        setIsDemo(false);
+        setIsPortalSession(false);
+        setLoading(false);
+        return;
+      } catch (err) {
+        if (isUnauthorized(err)) {
+          auth.clearSession();
+        }
+      }
+    }
+
     if (portalToken) {
       try {
-        const portalMe = await portalService.me();
-        const portalUser: User = {
-          id: portalMe.customer.id,
-          name: portalMe.customer.name,
-          email: portalMe.customer.email,
-          role: 'customer',
-          locale: portalMe.customer.preferred_locale,
-        };
+        const portalUser = await loadPortalSession();
         setUser(portalUser);
         setIsDemo(false);
         setIsPortalSession(true);
-      } catch {
-        auth.clearPortalSession();
-        setUser(null);
-        setIsDemo(false);
-        setIsPortalSession(false);
-      } finally {
         setLoading(false);
+        return;
+      } catch (err) {
+        if (isUnauthorized(err)) {
+          auth.clearPortalSession();
+        }
       }
-      return;
     }
 
-    try {
-      const me = await authService.me();
-      setUser({
-        ...me,
-        role: normalizeRole(me.role),
-      });
-      setIsDemo(false);
-      setIsPortalSession(false);
-    } catch {
-      auth.clearSession();
-      setUser(null);
-      setIsDemo(false);
-      setIsPortalSession(false);
-    } finally {
-      setLoading(false);
-    }
+    setUser(null);
+    setIsDemo(false);
+    setIsPortalSession(false);
+    setLoading(false);
   }, []);
 
   React.useEffect(() => {
@@ -142,9 +167,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = React.useCallback(
     async (email: string, password: string, remember = true) => {
       const res = await authService.login(email, password);
-      if (res.token) {
-        auth.setSession(res.token, remember);
+      const sessionToken = extractLoginToken(res);
+      if (!sessionToken) {
+        throw new Error('Login succeeded but no session token was returned.');
       }
+      auth.clearPortalSession();
+      auth.setSession(sessionToken, remember, res.session?.expires_at);
       const next: User = {
         ...res.user,
         role: normalizeRole(res.user.role),
@@ -163,6 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const verifyCustomerMagicLink = React.useCallback(async (token: string, remember = true) => {
     const res = await authService.verifyMagicLink(token);
+    auth.clearSession();
     auth.setPortalSession(res.portal_token, remember);
     const next: User = {
       id: res.customer.id,
@@ -179,6 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInDemo = React.useCallback(async (role: Role = 'customer') => {
     const demoUser = demoUserFor(role);
+    auth.clearPortalSession();
     auth.setSession(`${DEMO_TOKEN_PREFIX}${role}::${Date.now()}`, true);
     if (typeof window !== 'undefined') {
       localStorage.setItem(DEMO_USER_KEY, JSON.stringify(demoUser));

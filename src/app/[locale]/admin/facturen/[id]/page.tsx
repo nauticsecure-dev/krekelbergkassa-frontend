@@ -3,9 +3,20 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { CreditCard, Mail, Printer, RefreshCw, Send, XCircle } from 'lucide-react';
+import { CreditCard, Mail, Printer, Receipt, RefreshCw, Send, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { Card } from '@/components/ui/Card';
+import {
+  AdminContent,
+  AdminDetailGrid,
+  AdminPanel,
+  AdminStatusStrip,
+  AdminTable,
+  AdminTableCard,
+  AdminTableCell,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableRow,
+} from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
@@ -132,9 +143,45 @@ export default function InvoiceDetailPage() {
             </Button>
           </>
         }
+        stats={[
+          {
+            label: t('adminNew.invoiceDetail.summary.total'),
+            value: formatCurrency(
+              invoice?.total_amount_euros ?? 0,
+              locale === 'en' ? 'en-GB' : 'nl-NL'
+            ),
+            icon: Receipt,
+            tone: 'navy',
+            loading: data.loading,
+          },
+          {
+            label: t('adminNew.invoiceDetail.summary.outstanding'),
+            value: formatCurrency(
+              centsToEuro(invoice?.outstanding_cents ?? 0),
+              locale === 'en' ? 'en-GB' : 'nl-NL'
+            ),
+            icon: CreditCard,
+            tone: (invoice?.outstanding_cents ?? 0) > 0 ? 'warning' : 'success',
+            loading: data.loading,
+          },
+          {
+            label: t('adminNew.invoiceDetail.paymentTimeline'),
+            value: (invoice?.payments ?? []).length,
+            icon: CreditCard,
+            tone: 'marine',
+            loading: data.loading,
+          },
+          {
+            label: t('adminNew.invoiceDetail.reminderHistory'),
+            value: (data.data?.reminders ?? []).length,
+            icon: Mail,
+            tone: 'gold',
+            loading: data.loading,
+          },
+        ]}
       />
 
-      <div className="space-y-5 px-4 py-6 sm:px-6">
+      <AdminContent>
         {data.loading ? (
           <LoadingState label={t('adminNew.invoiceDetail.loading')} variant="detail" />
         ) : null}
@@ -144,196 +191,201 @@ export default function InvoiceDetailPage() {
 
         {!data.loading && invoice ? (
           <>
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              <div className="font-semibold">
-                {t('adminNew.invoiceDetail.legal.title')}
-              </div>
-              <div className="mt-1">{t('adminNew.invoiceDetail.legal.message')}</div>
-            </div>
+            <AdminStatusStrip
+              label={t('adminNew.invoiceDetail.legal.title')}
+              value={t('adminNew.invoiceDetail.legal.message')}
+              tone="warning"
+            />
 
-            <div className="grid gap-5 lg:grid-cols-3">
-              <Card className="p-5 lg:col-span-2">
-                <div className="flex items-center justify-between">
+            <div className="bento-grid lg:grid-cols-3">
+              <AdminPanel
+                className="lg:col-span-2 !p-0"
+                title={t('adminNew.invoiceDetail.overviewTitle')}
+                description={`${t('adminNew.invoiceDetail.source')}: ${invoice.source}`}
+                action={<InvoiceStatusBadge status={invoice.status} />}
+              >
+                <div className="space-y-5 px-5 pb-5">
+                  <AdminDetailGrid
+                    items={[
+                      {
+                        label: t('adminNew.invoiceDetail.meta.invoiceDate'),
+                        value: formatDate(invoice.created_at),
+                      },
+                      {
+                        label: t('adminNew.invoiceDetail.meta.dueDate'),
+                        value: formatDate(invoice.due_date),
+                      },
+                      {
+                        label: t('adminNew.invoiceDetail.meta.paidOn'),
+                        value: formatDate(invoice.paid_at),
+                      },
+                    ]}
+                  />
+
+                  <AdminTableCard>
+                    <AdminTable minWidth={640}>
+                      <AdminTableHead>
+                        <tr>
+                          <AdminTableHeaderCell>
+                            {t('adminNew.invoiceDetail.columns.description')}
+                          </AdminTableHeaderCell>
+                          <AdminTableHeaderCell>
+                            {t('adminNew.invoiceDetail.columns.qty')}
+                          </AdminTableHeaderCell>
+                          <AdminTableHeaderCell>
+                            {t('adminNew.invoiceDetail.columns.unitExcl')}
+                          </AdminTableHeaderCell>
+                          <AdminTableHeaderCell>
+                            {t('adminNew.invoiceDetail.columns.vat')}
+                          </AdminTableHeaderCell>
+                          <AdminTableHeaderCell>
+                            {t('adminNew.invoiceDetail.columns.total')}
+                          </AdminTableHeaderCell>
+                        </tr>
+                      </AdminTableHead>
+                      <tbody>
+                        {(invoice.lines ?? []).map((line) => (
+                          <AdminTableRow key={line.id}>
+                            <AdminTableCell>{line.description}</AdminTableCell>
+                            <AdminTableCell>{line.quantity}</AdminTableCell>
+                            <AdminTableCell>
+                              {formatCurrency(
+                                centsToEuro(line.unit_price),
+                                locale === 'en' ? 'en-GB' : 'nl-NL'
+                              )}
+                            </AdminTableCell>
+                            <AdminTableCell>{line.vat_rate}%</AdminTableCell>
+                            <AdminTableCell className="font-semibold text-navy-900">
+                              {formatCurrency(
+                                centsToEuro(line.line_total),
+                                locale === 'en' ? 'en-GB' : 'nl-NL'
+                              )}
+                            </AdminTableCell>
+                          </AdminTableRow>
+                        ))}
+                      </tbody>
+                    </AdminTable>
+                  </AdminTableCard>
+                </div>
+              </AdminPanel>
+
+              <AdminPanel title={t('adminNew.invoiceDetail.customerSnapshot')}>
+                <div className="space-y-4">
                   <div>
                     <div className="text-sm font-semibold text-navy-900">
-                      {t('adminNew.invoiceDetail.overviewTitle')}
+                      {invoice.customer?.name ?? '-'}
                     </div>
-                    <div className="text-xs text-navy-500">
-                      {t('adminNew.invoiceDetail.source')}: {invoice.source}
-                    </div>
+                    <div className="text-xs text-navy-500">{invoice.customer?.email ?? '-'}</div>
                   </div>
-                  <InvoiceStatusBadge status={invoice.status} />
-                </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <Meta
-                    label={t('adminNew.invoiceDetail.meta.invoiceDate')}
-                    value={formatDate(invoice.created_at)}
-                  />
-                  <Meta
-                    label={t('adminNew.invoiceDetail.meta.dueDate')}
-                    value={formatDate(invoice.due_date)}
-                  />
-                  <Meta
-                    label={t('adminNew.invoiceDetail.meta.paidOn')}
-                    value={formatDate(invoice.paid_at)}
-                  />
-                </div>
-
-                <div className="mt-5 overflow-x-auto rounded-lg border border-navy-100">
-                  <table className="w-full min-w-[640px] text-sm">
-                    <thead className="bg-sand-50 text-left text-xs uppercase tracking-wide text-navy-500">
-                      <tr>
-                        <th className="px-4 py-3">{t('adminNew.invoiceDetail.columns.description')}</th>
-                        <th className="px-4 py-3">{t('adminNew.invoiceDetail.columns.qty')}</th>
-                        <th className="px-4 py-3">{t('adminNew.invoiceDetail.columns.unitExcl')}</th>
-                        <th className="px-4 py-3">{t('adminNew.invoiceDetail.columns.vat')}</th>
-                        <th className="px-4 py-3">{t('adminNew.invoiceDetail.columns.total')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-navy-100">
-                      {(invoice.lines ?? []).map((line) => (
-                        <tr key={line.id}>
-                          <td className="px-4 py-3">{line.description}</td>
-                          <td className="px-4 py-3">{line.quantity}</td>
-                          <td className="px-4 py-3">
-                            {formatCurrency(
-                              centsToEuro(line.unit_price),
-                              locale === 'en' ? 'en-GB' : 'nl-NL'
-                            )}
-                          </td>
-                          <td className="px-4 py-3">{line.vat_rate}%</td>
-                          <td className="px-4 py-3 font-semibold text-navy-900">
-                            {formatCurrency(
-                              centsToEuro(line.line_total),
-                              locale === 'en' ? 'en-GB' : 'nl-NL'
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-
-              <Card className="space-y-4 p-5">
-                <div>
-                  <div className="text-xs uppercase tracking-widest text-navy-500">
-                    {t('adminNew.invoiceDetail.customerSnapshot')}
+                  <div className="space-y-2 rounded-xl border border-navy-100/70 bg-sand-50/40 p-3 text-sm">
+                    <Summary
+                      label={t('adminNew.invoiceDetail.summary.subtotal')}
+                      value={formatCurrency(
+                        invoice.subtotal_euros,
+                        locale === 'en' ? 'en-GB' : 'nl-NL'
+                      )}
+                    />
+                    <Summary
+                      label={t('adminNew.invoiceDetail.summary.vat')}
+                      value={formatCurrency(
+                        invoice.vat_amount_euros,
+                        locale === 'en' ? 'en-GB' : 'nl-NL'
+                      )}
+                    />
+                    <Summary
+                      label={t('adminNew.invoiceDetail.summary.total')}
+                      value={formatCurrency(
+                        invoice.total_amount_euros,
+                        locale === 'en' ? 'en-GB' : 'nl-NL'
+                      )}
+                      strong
+                    />
+                    <Summary
+                      label={t('adminNew.invoiceDetail.summary.outstanding')}
+                      value={formatCurrency(
+                        centsToEuro(invoice.outstanding_cents),
+                        locale === 'en' ? 'en-GB' : 'nl-NL'
+                      )}
+                      strong
+                    />
                   </div>
-                  <div className="mt-1 text-sm font-semibold text-navy-900">
-                    {invoice.customer?.name ?? '-'}
-                  </div>
-                  <div className="text-xs text-navy-500">{invoice.customer?.email ?? '-'}</div>
-                </div>
 
-                <div className="space-y-2 rounded-lg border border-navy-100 p-3 text-sm">
-                  <Summary
-                    label={t('adminNew.invoiceDetail.summary.subtotal')}
-                    value={formatCurrency(
-                      invoice.subtotal_euros,
-                      locale === 'en' ? 'en-GB' : 'nl-NL'
-                    )}
-                  />
-                  <Summary
-                    label={t('adminNew.invoiceDetail.summary.vat')}
-                    value={formatCurrency(
-                      invoice.vat_amount_euros,
-                      locale === 'en' ? 'en-GB' : 'nl-NL'
-                    )}
-                  />
-                  <Summary
-                    label={t('adminNew.invoiceDetail.summary.total')}
-                    value={formatCurrency(
-                      invoice.total_amount_euros,
-                      locale === 'en' ? 'en-GB' : 'nl-NL'
-                    )}
-                    strong
-                  />
-                  <Summary
-                    label={t('adminNew.invoiceDetail.summary.outstanding')}
-                    value={formatCurrency(
-                      centsToEuro(invoice.outstanding_cents),
-                      locale === 'en' ? 'en-GB' : 'nl-NL'
-                    )}
-                    strong
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    fullWidth
-                    leftIcon={<Printer className="h-4 w-4" />}
-                    onClick={() =>
-                      void action(
-                        t('adminNew.invoiceDetail.toasts.pdfRegenerated'),
-                        () => generatePdf.mutate()
-                      )
-                    }
-                  >
-                    {t('adminNew.invoiceDetail.actions.regeneratePdf')}
-                  </Button>
-                  {invoice.pdf_url ? (
-                    <a
-                      href={invoice.pdf_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex w-full items-center justify-center rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm font-medium text-navy-800 hover:bg-sand-50"
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      fullWidth
+                      leftIcon={<Printer className="h-4 w-4" />}
+                      onClick={() =>
+                        void action(
+                          t('adminNew.invoiceDetail.toasts.pdfRegenerated'),
+                          () => generatePdf.mutate()
+                        )
+                      }
                     >
-                      {t('adminNew.invoiceDetail.actions.openPdf')}
-                    </a>
-                  ) : null}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    fullWidth
-                    leftIcon={<RefreshCw className="h-4 w-4" />}
-                    onClick={() => setShowReminder(true)}
-                  >
-                    {t('adminNew.invoiceDetail.actions.sendReminder')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    fullWidth
-                    onClick={() =>
-                      void action(
-                        t('adminNew.invoiceDetail.toasts.credited'),
-                        () => creditInvoice.mutate()
-                      )
-                    }
-                  >
-                    {t('adminNew.invoiceDetail.actions.credit')}
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    fullWidth
-                    leftIcon={<XCircle className="h-4 w-4" />}
-                    onClick={() =>
-                      void action(
-                        t('adminNew.invoiceDetail.toasts.cancelled'),
-                        () => cancelInvoice.mutate()
-                      )
-                    }
-                  >
-                    {t('adminNew.common.cancel')}
-                  </Button>
+                      {t('adminNew.invoiceDetail.actions.regeneratePdf')}
+                    </Button>
+                    {invoice.pdf_url ? (
+                      <a
+                        href={invoice.pdf_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex w-full items-center justify-center rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm font-medium text-navy-800 transition hover:bg-sand-50"
+                      >
+                        {t('adminNew.invoiceDetail.actions.openPdf')}
+                      </a>
+                    ) : null}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      fullWidth
+                      leftIcon={<RefreshCw className="h-4 w-4" />}
+                      onClick={() => setShowReminder(true)}
+                    >
+                      {t('adminNew.invoiceDetail.actions.sendReminder')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      fullWidth
+                      onClick={() =>
+                        void action(
+                          t('adminNew.invoiceDetail.toasts.credited'),
+                          () => creditInvoice.mutate()
+                        )
+                      }
+                    >
+                      {t('adminNew.invoiceDetail.actions.credit')}
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      fullWidth
+                      leftIcon={<XCircle className="h-4 w-4" />}
+                      onClick={() =>
+                        void action(
+                          t('adminNew.invoiceDetail.toasts.cancelled'),
+                          () => cancelInvoice.mutate()
+                        )
+                      }
+                    >
+                      {t('adminNew.common.cancel')}
+                    </Button>
+                  </div>
                 </div>
-              </Card>
+              </AdminPanel>
             </div>
 
-            <div className="grid gap-5 lg:grid-cols-2">
-              <Card className="overflow-hidden">
-                <div className="border-b border-navy-100 px-4 py-3 text-sm font-semibold text-navy-900">
-                  {t('adminNew.invoiceDetail.paymentTimeline')}
-                </div>
-                <div className="divide-y divide-navy-100">
+            <div className="bento-grid lg:grid-cols-2">
+              <AdminPanel title={t('adminNew.invoiceDetail.paymentTimeline')}>
+                <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {(invoice.payments ?? []).length ? (
                     (invoice.payments ?? []).map((payment) => (
-                      <div key={payment.id} className="flex items-center justify-between px-4 py-3 text-sm">
+                      <div
+                        key={payment.id}
+                        className="flex items-center justify-between px-4 py-3 text-sm"
+                      >
                         <div>
                           <div className="font-medium text-navy-900">
                             {payment.method ?? payment.provider}
@@ -359,13 +411,10 @@ export default function InvoiceDetailPage() {
                     </div>
                   )}
                 </div>
-              </Card>
+              </AdminPanel>
 
-              <Card className="overflow-hidden">
-                <div className="border-b border-navy-100 px-4 py-3 text-sm font-semibold text-navy-900">
-                  {t('adminNew.invoiceDetail.reminderHistory')}
-                </div>
-                <div className="divide-y divide-navy-100">
+              <AdminPanel title={t('adminNew.invoiceDetail.reminderHistory')}>
+                <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {(data.data?.reminders ?? []).length ? (
                     data.data?.reminders.map((reminder) => (
                       <div key={reminder.id} className="px-4 py-3 text-sm">
@@ -389,70 +438,66 @@ export default function InvoiceDetailPage() {
                     </div>
                   )}
                 </div>
-              </Card>
+              </AdminPanel>
             </div>
 
-            <div className="grid gap-5 lg:grid-cols-2">
-              <Card className="p-5">
-                <div className="text-sm font-semibold text-navy-900">
-                  {t('adminNew.invoiceDetail.customerSnapshot')}
-                </div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  <SnapshotRow
-                    label={t('adminNew.common.name')}
-                    value={resolveSnapshot(invoice.customer_snapshot, ['name'])}
-                  />
-                  <SnapshotRow
-                    label={t('adminNew.common.email')}
-                    value={resolveSnapshot(invoice.customer_snapshot, ['email'])}
-                  />
-                  <SnapshotRow
-                    label={t('adminNew.common.phone')}
-                    value={resolveSnapshot(invoice.customer_snapshot, ['phone'])}
-                  />
-                  <SnapshotRow
-                    label={t('adminNew.invoiceDetail.vatNumber')}
-                    value={resolveSnapshot(invoice.customer_snapshot, ['vat_number'])}
-                  />
-                </div>
-              </Card>
+            <div className="bento-grid lg:grid-cols-2">
+              <AdminPanel title={t('adminNew.invoiceDetail.customerSnapshot')}>
+                <AdminDetailGrid
+                  items={[
+                    {
+                      label: t('adminNew.common.name'),
+                      value: resolveSnapshot(invoice.customer_snapshot, ['name']),
+                    },
+                    {
+                      label: t('adminNew.common.email'),
+                      value: resolveSnapshot(invoice.customer_snapshot, ['email']),
+                    },
+                    {
+                      label: t('adminNew.common.phone'),
+                      value: resolveSnapshot(invoice.customer_snapshot, ['phone']),
+                    },
+                    {
+                      label: t('adminNew.invoiceDetail.vatNumber'),
+                      value: resolveSnapshot(invoice.customer_snapshot, ['vat_number']),
+                    },
+                  ]}
+                />
+              </AdminPanel>
 
-              <Card className="p-5">
-                <div className="text-sm font-semibold text-navy-900">
-                  {t('adminNew.invoiceDetail.companySnapshot')}
-                </div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  <SnapshotRow
-                    label={t('adminNew.common.name')}
-                    value={resolveSnapshot(invoice.company_snapshot, ['name'])}
-                  />
-                  <SnapshotRow
-                    label={t('adminNew.common.email')}
-                    value={resolveSnapshot(invoice.company_snapshot, ['email'])}
-                  />
-                  <SnapshotRow
-                    label={t('adminNew.common.phone')}
-                    value={resolveSnapshot(invoice.company_snapshot, ['phone'])}
-                  />
-                  <SnapshotRow
-                    label={t('adminNew.invoiceDetail.iban')}
-                    value={resolveSnapshot(invoice.company_snapshot, ['iban'])}
-                  />
-                </div>
-              </Card>
+              <AdminPanel title={t('adminNew.invoiceDetail.companySnapshot')}>
+                <AdminDetailGrid
+                  items={[
+                    {
+                      label: t('adminNew.common.name'),
+                      value: resolveSnapshot(invoice.company_snapshot, ['name']),
+                    },
+                    {
+                      label: t('adminNew.common.email'),
+                      value: resolveSnapshot(invoice.company_snapshot, ['email']),
+                    },
+                    {
+                      label: t('adminNew.common.phone'),
+                      value: resolveSnapshot(invoice.company_snapshot, ['phone']),
+                    },
+                    {
+                      label: t('adminNew.invoiceDetail.iban'),
+                      value: resolveSnapshot(invoice.company_snapshot, ['iban']),
+                    },
+                  ]}
+                />
+              </AdminPanel>
             </div>
 
-            <div className="text-sm text-navy-600">
-              <Link
-                href={`/${locale}/admin/facturen`}
-                className="font-semibold text-marine-700 hover:text-marine-800"
-              >
-                {t('adminNew.invoiceDetail.back')}
-              </Link>
-            </div>
+            <Link
+              href={`/${locale}/admin/facturen`}
+              className="inline-flex text-sm font-semibold text-marine-700 hover:text-marine-800"
+            >
+              {t('adminNew.invoiceDetail.back')}
+            </Link>
           </>
         ) : null}
-      </div>
+      </AdminContent>
 
       <Modal open={showReminder} onClose={() => setShowReminder(false)} size="lg">
         <form
@@ -543,14 +588,6 @@ export default function InvoiceDetailPage() {
   );
 }
 
-function Meta({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-navy-100 px-3 py-2">
-      <div className="text-xs text-navy-500">{label}</div>
-      <div className="text-sm font-medium text-navy-900">{value}</div>
-    </div>
-  );
-}
 
 function Summary({
   label,
@@ -569,14 +606,6 @@ function Summary({
   );
 }
 
-function SnapshotRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-navy-100 px-3 py-2">
-      <div className="text-xs text-navy-500">{label}</div>
-      <div className="text-sm font-medium text-navy-900">{value || '-'}</div>
-    </div>
-  );
-}
 
 function resolveSnapshot(
   snapshot: Record<string, unknown> | null | undefined,

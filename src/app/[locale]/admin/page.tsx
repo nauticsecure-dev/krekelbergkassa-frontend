@@ -1,28 +1,50 @@
 'use client';
 
 import Link from 'next/link';
-import { AlertTriangle, ArrowRight, CreditCard, Receipt, Warehouse } from 'lucide-react';
+import {
+  AlertTriangle,
+  Calculator,
+  CreditCard,
+  Receipt,
+  Sparkles,
+  Users,
+  Warehouse,
+} from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { Card } from '@/components/ui/Card';
+import {
+  AdminContent,
+  AdminPanel,
+  AdminQuickAction,
+  AdminStatusStrip,
+} from '@/components/admin/AdminUi';
 import { Badge } from '@/components/ui/Badge';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { adminService, customersService, invoicesService, kassaService, stallingService, syncService } from '@/lib/services';
+import {
+  adminService,
+  customersService,
+  invoicesService,
+  kassaService,
+  stallingService,
+  syncService,
+} from '@/lib/services';
 import { centsToEuro, formatCurrency } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 
 export default function AdminDashboardPage() {
   const { locale, t } = useIntl();
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
 
   const { data, loading } = useQuery([locale], async () => {
-    const [invoices, stalling, sales, syncStatus, portalSessions, reminders, customers] = await Promise.all([
-      invoicesService.list({ per_page: 100 }),
-      stallingService.list({ per_page: 100 }),
-      kassaService.recentSales().catch(() => []),
-      syncService.status().catch(() => null),
-      adminService.portalSessions({ per_page: 1 }).catch(() => null),
-      adminService.reminders({ per_page: 1 }).catch(() => null),
-      customersService.list({ per_page: 1 }).catch(() => null),
-    ]);
+    const [invoices, stalling, sales, syncStatus, portalSessions, reminders, customers] =
+      await Promise.all([
+        invoicesService.list({ per_page: 100 }),
+        stallingService.list({ per_page: 100 }),
+        kassaService.recentSales().catch(() => []),
+        syncService.status().catch(() => null),
+        adminService.portalSessions({ per_page: 1 }).catch(() => null),
+        adminService.reminders({ per_page: 1 }).catch(() => null),
+        customersService.list({ per_page: 1 }).catch(() => null),
+      ]);
 
     const overdueInvoices = invoices.data.filter((x) => x.is_overdue).length;
     const openInvoices = invoices.data.filter((x) => !x.is_fully_paid).length;
@@ -31,7 +53,10 @@ export default function AdminDashboardPage() {
     const openCustomerQuestions = reminders?.meta?.total ?? reminders?.data.length ?? 0;
     const totalCustomers = customers?.meta?.total ?? customers?.data.length ?? 0;
     const todayRevenue = sales.reduce((sum, sale) => {
-      const raw = typeof sale.total_amount_cents === 'string' ? Number(sale.total_amount_cents) : sale.total_amount_cents;
+      const raw =
+        typeof sale.total_amount_cents === 'string'
+          ? Number(sale.total_amount_cents)
+          : sale.total_amount_cents;
       return sum + (Number.isFinite(raw) ? Number(raw) : 0);
     }, 0);
 
@@ -47,142 +72,135 @@ export default function AdminDashboardPage() {
     };
   });
 
-  const cards = [
-    {
-      title: t('adminNew.dashboard.cards.openInvoices.title'),
-      value: String(data?.openInvoices ?? 0),
-      subtitle: loading ? t('adminNew.common.loading') : t('adminNew.dashboard.cards.openInvoices.subtitle', { count: data?.overdueInvoices ?? 0 }),
-      icon: CreditCard,
-      href: `/${locale}/admin/facturen`,
-      tone: 'marine' as const,
-    },
-    {
-      title: t('adminNew.dashboard.cards.stallingActions.title'),
-      value: String(data?.overdueStalling ?? 0),
-      subtitle: t('adminNew.dashboard.cards.stallingActions.subtitle'),
-      icon: Warehouse,
-      href: `/${locale}/admin/stalling`,
-      tone: 'warning' as const,
-    },
-    {
-      title: t('adminNew.dashboard.cards.cashRevenue.title'),
-      value: formatCurrency(centsToEuro(data?.todayRevenue ?? 0), locale === 'en' ? 'en-GB' : 'nl-NL'),
-      subtitle: t('adminNew.dashboard.cards.cashRevenue.subtitle'),
-      icon: Receipt,
-      href: `/${locale}/admin/kassa`,
-      tone: 'success' as const,
-    },
-    {
-      title: t('adminNew.dashboard.cards.syncStatus.title'),
-      value: data?.syncStatus?.status ?? t('adminNew.common.unknown'),
-      subtitle: loading
-        ? t('adminNew.common.loading')
-        : data?.syncStatus?.last_sync_at
-          ? t('adminNew.dashboard.cards.syncStatus.lastSync', { time: new Date(data.syncStatus.last_sync_at).toLocaleTimeString() })
-          : t('adminNew.dashboard.cards.syncStatus.noSync'),
-      icon: AlertTriangle,
-      href: `/${locale}/admin/sync`,
-      tone: 'navy' as const,
-    },
-  ];
-
   return (
     <>
       <AdminPageHeader
-        title={t('adminNew.dashboard.title')}
+        eyebrow={t('adminNew.dashboard.title')}
+        title={t('adminNew.dashboard.heroTitle')}
         subtitle={t('adminNew.dashboard.subtitle')}
         rightSlot={
           <Badge tone="success" dot>
             {t('adminNew.dashboard.live')}
           </Badge>
         }
+        stats={[
+          {
+            label: t('adminNew.dashboard.cards.openInvoices.title'),
+            value: data?.openInvoices ?? 0,
+            hint: t('adminNew.dashboard.cards.openInvoices.subtitle', {
+              count: data?.overdueInvoices ?? 0,
+            }),
+            icon: CreditCard,
+            tone: 'marine',
+            loading,
+            href: `/${locale}/admin/facturen`,
+          },
+          {
+            label: t('adminNew.dashboard.cards.stallingActions.title'),
+            value: data?.overdueStalling ?? 0,
+            hint: t('adminNew.dashboard.cards.stallingActions.subtitle'),
+            icon: Warehouse,
+            tone: 'warning',
+            loading,
+            href: `/${locale}/admin/stalling`,
+          },
+          {
+            label: t('adminNew.dashboard.cards.cashRevenue.title'),
+            value: formatCurrency(centsToEuro(data?.todayRevenue ?? 0), dateLocale),
+            hint: t('adminNew.dashboard.cards.cashRevenue.subtitle'),
+            icon: Receipt,
+            tone: 'success',
+            loading,
+            href: `/${locale}/admin/kassa`,
+          },
+          {
+            label: t('adminNew.dashboard.cards.syncStatus.title'),
+            value: data?.syncStatus?.status ?? t('adminNew.common.unknown'),
+            hint: data?.syncStatus?.last_sync_at
+              ? t('adminNew.dashboard.cards.syncStatus.lastSync', {
+                  time: new Date(data.syncStatus.last_sync_at).toLocaleTimeString(dateLocale),
+                })
+              : t('adminNew.dashboard.cards.syncStatus.noSync'),
+            icon: AlertTriangle,
+            tone: 'navy',
+            loading,
+            href: `/${locale}/admin/sync`,
+          },
+        ]}
       />
-      <div className="space-y-6 px-4 py-6 sm:px-6">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {cards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <Link key={card.title} href={card.href}>
-                <Card className="h-full p-5 transition hover:shadow-elev">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-widest text-navy-500">
-                        {card.title}
-                      </div>
-                      <div className="mt-2 text-2xl font-semibold text-navy-900">
-                        {loading ? <span className="block h-8 w-20 animate-pulse rounded-md bg-navy-100" /> : card.value}
-                      </div>
-                      <div className="mt-1 text-xs text-navy-500">
-                        {loading ? <span className="block h-3 w-32 animate-pulse rounded bg-navy-100" /> : card.subtitle}
-                      </div>
-                    </div>
-                    <span className="rounded-lg bg-sand-100 p-2 text-navy-700">
-                      <Icon className="h-4 w-4" />
-                    </span>
-                  </div>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="p-5">
-            <div className="mb-3 text-sm font-semibold text-navy-900">{t('adminNew.dashboard.quickActions')}</div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <Action href={`/${locale}/admin/klanten`} label={t('adminNew.dashboard.actions.customers')} />
-              <Action href={`/${locale}/admin/stalling`} label={t('adminNew.dashboard.actions.stalling')} />
-              <Action href={`/${locale}/admin/facturen`} label={t('adminNew.dashboard.actions.invoices')} />
-              <Action href={`/${locale}/admin/calculator`} label={t('adminNew.dashboard.actions.calculator')} />
+      <AdminContent>
+        <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+          <AdminPanel
+            title={t('adminNew.dashboard.quickActions')}
+            description={t('adminNew.dashboard.subtitle')}
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <AdminQuickAction
+                href={`/${locale}/admin/klanten`}
+                label={t('adminNew.dashboard.actions.customers')}
+                icon={Users}
+                tone="marine"
+              />
+              <AdminQuickAction
+                href={`/${locale}/admin/stalling`}
+                label={t('adminNew.dashboard.actions.stalling')}
+                icon={Warehouse}
+                tone="gold"
+              />
+              <AdminQuickAction
+                href={`/${locale}/admin/facturen`}
+                label={t('adminNew.dashboard.actions.invoices')}
+                icon={CreditCard}
+                tone="navy"
+              />
+              <AdminQuickAction
+                href={`/${locale}/admin/calculator`}
+                label={t('adminNew.dashboard.actions.calculator')}
+                icon={Calculator}
+                tone="success"
+              />
             </div>
-          </Card>
+          </AdminPanel>
 
-          <Card className="p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="text-sm font-semibold text-navy-900">{t('adminNew.dashboard.portal.title')}</div>
-              <Link href={`/${locale}/feed`} className="text-xs font-medium text-marine-700 hover:underline">
+          <AdminPanel
+            title={t('adminNew.dashboard.portal.title')}
+            description={t('adminNew.dashboard.portal.openPortal')}
+            action={
+              <Link
+                href={`/${locale}/feed`}
+                className="text-xs font-semibold text-marine-700 hover:text-marine-900"
+              >
+                {t('adminNew.dashboard.portal.openPortal')} →
+              </Link>
+            }
+          >
+            <div className="space-y-2">
+              <AdminStatusStrip
+                label={t('adminNew.dashboard.portal.activeSessions')}
+                value={loading ? '…' : data?.activePortalSessions ?? 0}
+                tone="marine"
+              />
+              <AdminStatusStrip
+                label={t('adminNew.dashboard.portal.newQuestions')}
+                value={loading ? '…' : data?.openCustomerQuestions ?? 0}
+                tone={data?.openCustomerQuestions ? 'warning' : 'success'}
+              />
+              <AdminStatusStrip
+                label={t('adminNew.dashboard.portal.totalCustomers')}
+                value={loading ? '…' : data?.totalCustomers ?? 0}
+                tone="navy"
+              />
+            </div>
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-gradient-to-tr from-navy-950 to-marine-900 px-4 py-3 text-white">
+              <Sparkles className="h-4 w-4 text-gold-300" />
+              <span className="text-xs leading-relaxed text-sand-100/85">
                 {t('adminNew.dashboard.portal.openPortal')}
-              </Link>
+              </span>
             </div>
-            <div className="space-y-2 text-sm text-navy-700">
-              <div className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2">
-                <span>{t('adminNew.dashboard.portal.activeSessions')}</span>
-                <span className="font-semibold text-navy-900">
-                  {loading ? <span className="block h-3 w-10 animate-pulse rounded bg-navy-100" /> : data?.activePortalSessions ?? 0}
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2">
-                <span>{t('adminNew.dashboard.portal.newQuestions')}</span>
-                <span className="font-semibold text-navy-900">
-                  {loading ? <span className="block h-3 w-10 animate-pulse rounded bg-navy-100" /> : data?.openCustomerQuestions ?? 0}
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2">
-                <span>{t('adminNew.dashboard.portal.totalCustomers')}</span>
-                <span className="font-semibold text-navy-900">
-                  {loading ? <span className="block h-3 w-10 animate-pulse rounded bg-navy-100" /> : data?.totalCustomers ?? 0}
-                </span>
-              </div>
-            </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <Action href={`/${locale}/admin/klanten`} label={t('adminNew.dashboard.actions.customers')} />
-              <Action href={`/${locale}/admin/facturen`} label={t('adminNew.dashboard.actions.invoices')} />
-            </div>
-          </Card>
+          </AdminPanel>
         </div>
-      </div>
+      </AdminContent>
     </>
-  );
-}
-
-function Action({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2 text-sm text-navy-700 transition hover:bg-sand-50"
-    >
-      {label}
-      <ArrowRight className="h-4 w-4" />
-    </Link>
   );
 }

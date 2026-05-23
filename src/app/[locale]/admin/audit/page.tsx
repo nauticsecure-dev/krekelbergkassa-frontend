@@ -1,18 +1,31 @@
 'use client';
 
 import * as React from 'react';
-import { Search } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { Card } from '@/components/ui/Card';
+import {
+  AdminContent,
+  AdminSearchInput,
+  AdminSelect,
+  AdminTable,
+  AdminTableCard,
+  AdminTableCell,
+  AdminTableFooter,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableRow,
+  AdminToolbar,
+} from '@/components/admin/AdminUi';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
-import { Pagination } from '@/components/admin/Pagination';
 import { auditService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { useIntl } from '@/i18n/IntlProvider';
+import { formatDateTime } from '@/lib/format';
 
 export default function AuditPage() {
-  const { t } = useIntl();
+  const { t, locale } = useIntl();
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   const [query, setQuery] = React.useState('');
   const [entityType, setEntityType] = React.useState('');
   const [page, setPage] = React.useState(1);
@@ -26,85 +39,124 @@ export default function AuditPage() {
     })
   );
 
+  const rows = logs.data?.data ?? [];
+
   return (
     <>
       <AdminPageHeader
         title={t('adminNew.audit.title')}
         subtitle={t('adminNew.audit.subtitle')}
+        stats={[
+          {
+            label: t('adminNew.audit.events', { count: logs.data?.meta?.total ?? rows.length }),
+            value: logs.data?.meta?.total ?? rows.length,
+            icon: Shield,
+            tone: 'marine',
+            loading: logs.loading,
+          },
+          {
+            label: t('adminNew.audit.allEntities'),
+            value: entityType || t('adminNew.audit.allEntities'),
+            tone: 'navy',
+          },
+          {
+            label: t('adminNew.audit.columns.action'),
+            value: new Set(rows.map((l) => l.action)).size,
+            tone: 'gold',
+            loading: logs.loading,
+          },
+          {
+            label: t('adminNew.audit.columns.actor'),
+            value: new Set(rows.map((l) => l.user?.name ?? l.actor_type)).size,
+            tone: 'success',
+            loading: logs.loading,
+          },
+        ]}
       />
-      <div className="space-y-4 px-4 py-6 sm:px-6">
-        <Card className="p-4">
-          <div className="grid gap-3 lg:grid-cols-[1fr_220px]">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
-              <input
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setPage(1);
-                }}
-                placeholder={t('adminNew.audit.searchPlaceholder')}
-                className="input-base pl-9"
+
+      <AdminContent>
+        <AdminToolbar>
+          <AdminSearchInput
+            value={query}
+            onChange={(value) => {
+              setQuery(value);
+              setPage(1);
+            }}
+            placeholder={t('adminNew.audit.searchPlaceholder')}
+          />
+          <AdminSelect
+            value={entityType}
+            onChange={(value) => {
+              setEntityType(value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.audit.allEntities')}</option>
+            <option value="invoice">{t('adminNew.audit.entity.invoice')}</option>
+            <option value="customer">{t('adminNew.audit.entity.customer')}</option>
+            <option value="stalling_contract">{t('adminNew.audit.entity.stalling')}</option>
+            <option value="payment">{t('adminNew.audit.entity.payment')}</option>
+            <option value="sync">{t('adminNew.sidebar.sync')}</option>
+          </AdminSelect>
+        </AdminToolbar>
+
+        <AdminTableCard
+          footer={
+            rows.length > 0 ? (
+              <AdminTableFooter
+                summary={t('adminNew.audit.events', {
+                  count: logs.data?.meta?.total ?? rows.length,
+                })}
+                meta={logs.data?.meta}
+                onPageChange={setPage}
               />
-            </div>
-            <select className="input-base" value={entityType} onChange={(e) => { setEntityType(e.target.value); setPage(1); }}>
-              <option value="">{t('adminNew.audit.allEntities')}</option>
-              <option value="invoice">{t('adminNew.audit.entity.invoice')}</option>
-              <option value="customer">{t('adminNew.audit.entity.customer')}</option>
-              <option value="stalling_contract">{t('adminNew.audit.entity.stalling')}</option>
-              <option value="payment">{t('adminNew.audit.entity.payment')}</option>
-              <option value="sync">Sync</option>
-            </select>
-          </div>
-        </Card>
-
-        <Card className="overflow-hidden">
+            ) : undefined
+          }
+        >
           {logs.loading ? <LoadingState label={t('adminNew.audit.loading')} variant="table" /> : null}
-          {!logs.loading && logs.error ? <ErrorState message={logs.error} onRetry={() => void logs.refetch()} /> : null}
-          {!logs.loading && !logs.error && logs.data?.data.length === 0 ? <EmptyState title={t('adminNew.audit.empty')} /> : null}
-
-          {!logs.loading && !logs.error && (logs.data?.data.length ?? 0) > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[980px] text-sm">
-                  <thead className="bg-sand-50 text-left text-xs uppercase tracking-wide text-navy-500">
-                    <tr>
-                      <th className="px-4 py-3">{t('adminNew.audit.columns.time')}</th>
-                      <th className="px-4 py-3">{t('adminNew.audit.columns.action')}</th>
-                      <th className="px-4 py-3">{t('adminNew.audit.columns.entity')}</th>
-                      <th className="px-4 py-3">{t('adminNew.audit.columns.actor')}</th>
-                      <th className="px-4 py-3">IP</th>
-                      <th className="px-4 py-3">Reason</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-navy-100">
-                    {logs.data?.data.map((log) => (
-                      <tr key={log.id} className="hover:bg-sand-50">
-                        <td className="px-4 py-3 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
-                        <td className="px-4 py-3 font-medium text-navy-900">{log.action}</td>
-                        <td className="px-4 py-3">
-                          <Badge tone="navy">{log.entity_type}</Badge>
-                          <div className="mt-1 text-xs text-navy-500">{log.entity_id ?? '-'}</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div>{log.user?.name ?? log.actor_type}</div>
-                          <div className="text-xs text-navy-500">{log.user?.email ?? '-'}</div>
-                        </td>
-                        <td className="px-4 py-3 text-xs">{log.ip_address ?? '-'}</td>
-                        <td className="px-4 py-3 text-xs text-navy-500">{log.reason ?? '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex items-center justify-between border-t border-navy-100 bg-sand-50/50 px-4 py-3 text-xs text-navy-500">
-                <span>{t('adminNew.audit.events', { count: logs.data?.meta?.total ?? logs.data?.data.length ?? 0 })}</span>
-                <Pagination meta={logs.data?.meta} onChange={setPage} />
-              </div>
-            </>
+          {!logs.loading && logs.error ? (
+            <ErrorState message={logs.error} onRetry={() => void logs.refetch()} />
           ) : null}
-        </Card>
-      </div>
+          {!logs.loading && !logs.error && rows.length === 0 ? (
+            <EmptyState title={t('adminNew.audit.empty')} />
+          ) : null}
+
+          {!logs.loading && !logs.error && rows.length > 0 ? (
+            <AdminTable minWidth={980}>
+              <AdminTableHead>
+                <tr>
+                  <AdminTableHeaderCell>{t('adminNew.audit.columns.time')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.audit.columns.action')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.audit.columns.entity')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.audit.columns.actor')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>IP</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>Reason</AdminTableHeaderCell>
+                </tr>
+              </AdminTableHead>
+              <tbody>
+                {rows.map((log) => (
+                  <AdminTableRow key={log.id}>
+                    <AdminTableCell className="whitespace-nowrap">
+                      {formatDateTime(log.created_at, dateLocale)}
+                    </AdminTableCell>
+                    <AdminTableCell className="font-medium text-navy-900">{log.action}</AdminTableCell>
+                    <AdminTableCell>
+                      <Badge tone="navy">{log.entity_type}</Badge>
+                      <div className="mt-1 text-xs text-navy-500">{log.entity_id ?? '—'}</div>
+                    </AdminTableCell>
+                    <AdminTableCell>
+                      <div>{log.user?.name ?? log.actor_type}</div>
+                      <div className="text-xs text-navy-500">{log.user?.email ?? '—'}</div>
+                    </AdminTableCell>
+                    <AdminTableCell className="text-xs">{log.ip_address ?? '—'}</AdminTableCell>
+                    <AdminTableCell className="text-xs text-navy-500">{log.reason ?? '—'}</AdminTableCell>
+                  </AdminTableRow>
+                ))}
+              </tbody>
+            </AdminTable>
+          ) : null}
+        </AdminTableCard>
+      </AdminContent>
     </>
   );
 }

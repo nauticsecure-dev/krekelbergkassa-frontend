@@ -38,7 +38,10 @@ function LoginPageContent() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const dest = `/${locale}${ROLE_REDIRECTS[role]}`;
+  const dest =
+    searchParams.get('returnTo')?.startsWith('/') && !searchParams.get('returnTo')?.includes('://')
+      ? searchParams.get('returnTo')!
+      : `/${locale}${ROLE_REDIRECTS[role]}`;
 
   React.useEffect(() => {
     const token =

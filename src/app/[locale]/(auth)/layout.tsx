@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
+import { RedirectIfAuthed } from "@/components/auth/RedirectIfAuthed";
 import { useIntl } from "@/i18n/IntlProvider";
 import { cn } from "@/lib/cn";
 import {
@@ -218,7 +219,17 @@ export default function AuthLayout({
           <React.Suspense fallback={<AuthTopTabsFallback label={t("loginRole.question")} />}>
             <AuthTopTabs />
           </React.Suspense>
-          <div className="px-6 py-7 sm:px-8 sm:py-8">{children}</div>
+          <div className="px-6 py-7 sm:px-8 sm:py-8">
+            <React.Suspense
+              fallback={
+                <div className="flex min-h-[280px] items-center justify-center">
+                  <span className="h-6 w-6 animate-spin rounded-full border-2 border-navy-200 border-t-navy-700" />
+                </div>
+              }
+            >
+              <RedirectIfAuthed>{children}</RedirectIfAuthed>
+            </React.Suspense>
+          </div>
         </section>
       </div>
     </div>

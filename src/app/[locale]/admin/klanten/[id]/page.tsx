@@ -3,9 +3,20 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { FilePlus2, Save, Ship } from 'lucide-react';
+import { FilePlus2, Save, Ship, Users, Warehouse, CreditCard } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { Card } from '@/components/ui/Card';
+import {
+  AdminContent,
+  AdminDetailGrid,
+  AdminPanel,
+  AdminStatusStrip,
+  AdminTable,
+  AdminTableCard,
+  AdminTableCell,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableRow,
+} from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -190,9 +201,39 @@ export default function CustomerDetailPage() {
             </Button>
           </>
         }
+        stats={[
+          {
+            label: t('adminNew.customerDetail.boats'),
+            value: boatsCount,
+            icon: Ship,
+            tone: 'marine',
+            loading: data.loading,
+          },
+          {
+            label: t('adminNew.customerDetail.stallingContracts'),
+            value: stallingCount,
+            icon: Warehouse,
+            tone: 'gold',
+            loading: data.loading,
+          },
+          {
+            label: t('adminNew.customerDetail.invoices'),
+            value: invoiceCount,
+            icon: CreditCard,
+            tone: 'navy',
+            loading: data.loading,
+          },
+          {
+            label: t('adminNew.customerDetail.openBalance'),
+            value: formatCurrency(openBalance, locale === 'en' ? 'en-GB' : 'nl-NL'),
+            icon: Users,
+            tone: openBalance > 0 ? 'warning' : 'success',
+            loading: data.loading,
+          },
+        ]}
       />
 
-      <div className="space-y-5 px-4 py-6 sm:px-6">
+      <AdminContent>
         {data.loading ? (
           <LoadingState label={t('adminNew.customerDetail.loading')} variant="detail" />
         ) : null}
@@ -203,71 +244,76 @@ export default function CustomerDetailPage() {
 
         {!data.loading && data.data ? (
           <>
-            <div className="grid gap-5 lg:grid-cols-3">
-              <Card className="p-5 lg:col-span-2">
-                <div className="text-sm font-semibold text-navy-900">
-                  {t('adminNew.customerDetail.infoTitle')}
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <Info label={t('adminNew.common.name')} value={data.data.customer.name} />
-                  <Info
-                    label={t('adminNew.common.email')}
-                    value={data.data.customer.email ?? '-'}
-                  />
-                  <Info
-                    label={t('adminNew.common.phone')}
-                    value={data.data.customer.phone ?? '-'}
-                  />
-                  <Info
-                    label={t('adminNew.customerDetail.preferredLocale')}
-                    value={data.data.customer.preferred_locale}
-                  />
-                  <Info
-                    label={t('adminNew.customerDetail.company')}
-                    value={data.data.customer.company_name ?? '-'}
-                  />
-                  <Info
-                    label={t('adminNew.customerDetail.vatNumber')}
-                    value={data.data.customer.vat_number ?? '-'}
-                  />
-                </div>
-                <div className="mt-4 rounded-lg border border-navy-100 bg-sand-50 p-3 text-sm text-navy-700">
+            <div className="bento-grid lg:grid-cols-3">
+              <AdminPanel
+                className="lg:col-span-2"
+                title={t('adminNew.customerDetail.infoTitle')}
+                description={data.data.customer.customer_number}
+              >
+                <AdminDetailGrid
+                  items={[
+                    { label: t('adminNew.common.name'), value: data.data.customer.name },
+                    {
+                      label: t('adminNew.common.email'),
+                      value: data.data.customer.email ?? '-',
+                    },
+                    {
+                      label: t('adminNew.common.phone'),
+                      value: data.data.customer.phone ?? '-',
+                    },
+                    {
+                      label: t('adminNew.customerDetail.preferredLocale'),
+                      value: data.data.customer.preferred_locale,
+                    },
+                    {
+                      label: t('adminNew.customerDetail.company'),
+                      value: data.data.customer.company_name ?? '-',
+                    },
+                    {
+                      label: t('adminNew.customerDetail.vatNumber'),
+                      value: data.data.customer.vat_number ?? '-',
+                    },
+                  ]}
+                />
+                <div className="mt-4 rounded-xl border border-navy-100/70 bg-sand-50/60 p-4 text-sm text-navy-700">
                   <div className="font-medium text-navy-900">{t('adminNew.customerDetail.notes')}</div>
                   <div className="mt-1 whitespace-pre-wrap text-sm">
                     {data.data.customer.notes ?? t('adminNew.customerDetail.noNotes')}
                   </div>
                 </div>
-              </Card>
+              </AdminPanel>
 
-              <Card className="p-5">
-                <div className="text-sm font-semibold text-navy-900">
-                  {t('adminNew.customerDetail.summaryTitle')}
-                </div>
-                <div className="mt-3 space-y-2 text-sm text-navy-700">
-                  <Summary label={t('adminNew.customerDetail.boats')} value={String(boatsCount)} />
-                  <Summary
+              <AdminPanel title={t('adminNew.customerDetail.summaryTitle')}>
+                <div className="space-y-2">
+                  <AdminStatusStrip label={t('adminNew.customerDetail.boats')} value={boatsCount} tone="marine" />
+                  <AdminStatusStrip
                     label={t('adminNew.customerDetail.stallingContracts')}
-                    value={String(stallingCount)}
+                    value={stallingCount}
+                    tone="gold"
                   />
-                  <Summary
+                  <AdminStatusStrip
                     label={t('adminNew.customerDetail.invoices')}
-                    value={String(invoiceCount)}
+                    value={invoiceCount}
+                    tone="navy"
                   />
-                  <Summary
+                  <AdminStatusStrip
                     label={t('adminNew.customerDetail.openBalance')}
                     value={formatCurrency(
                       openBalance,
                       locale === 'en' ? 'en-GB' : 'nl-NL'
                     )}
+                    tone={openBalance > 0 ? 'warning' : 'success'}
                   />
                 </div>
-              </Card>
+              </AdminPanel>
             </div>
 
-            <Card className="overflow-hidden">
-              <div className="flex items-center justify-between border-b border-navy-100 px-4 py-3">
-                <div className="text-sm font-semibold text-navy-900">
-                  {t('adminNew.customerDetail.boats')}
+            <AdminTableCard>
+              <div className="flex items-center justify-between border-b border-navy-100 bg-white px-5 py-4">
+                <div>
+                  <div className="text-sm font-semibold text-navy-900">
+                    {t('adminNew.customerDetail.boats')}
+                  </div>
                 </div>
                 <Button
                   variant="outline"
@@ -278,52 +324,49 @@ export default function CustomerDetailPage() {
                   {t('adminNew.customerDetail.actions.addBoat')}
                 </Button>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[760px] text-sm">
-                  <thead className="bg-sand-50 text-left text-xs uppercase tracking-wide text-navy-500">
+              <AdminTable minWidth={760}>
+                <AdminTableHead>
+                  <tr>
+                    <AdminTableHeaderCell>{t('adminNew.customerDetail.table.boats.name')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.customerDetail.table.boats.type')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.customerDetail.table.boats.length')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.customerDetail.table.boats.location')}</AdminTableHeaderCell>
+                  </tr>
+                </AdminTableHead>
+                <tbody>
+                  {data.data.boats.length ? (
+                    data.data.boats.map((boat) => (
+                      <AdminTableRow key={boat.id}>
+                        <AdminTableCell className="font-semibold text-navy-900">
+                          {boat.name}
+                        </AdminTableCell>
+                        <AdminTableCell className="capitalize">{boat.type}</AdminTableCell>
+                        <AdminTableCell>
+                          {boat.length_cm ? `${boat.length_cm} cm` : '-'}
+                        </AdminTableCell>
+                        <AdminTableCell>{boat.location_code ?? '-'}</AdminTableCell>
+                      </AdminTableRow>
+                    ))
+                  ) : (
                     <tr>
-                      <th className="px-4 py-3">{t('adminNew.customerDetail.table.boats.name')}</th>
-                      <th className="px-4 py-3">{t('adminNew.customerDetail.table.boats.type')}</th>
-                      <th className="px-4 py-3">{t('adminNew.customerDetail.table.boats.length')}</th>
-                      <th className="px-4 py-3">{t('adminNew.customerDetail.table.boats.location')}</th>
+                      <td colSpan={4} className="border-t border-navy-100 px-4 py-8 text-center text-sm text-navy-500">
+                        {t('adminNew.customerDetail.noBoats')}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-navy-100">
-                    {data.data.boats.length ? (
-                      data.data.boats.map((boat) => (
-                        <tr key={boat.id} className="hover:bg-sand-50">
-                          <td className="px-4 py-3 font-medium text-navy-900">{boat.name}</td>
-                          <td className="px-4 py-3 capitalize">{boat.type}</td>
-                          <td className="px-4 py-3">
-                            {boat.length_cm ? `${boat.length_cm} cm` : '-'}
-                          </td>
-                          <td className="px-4 py-3">{boat.location_code ?? '-'}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td className="px-4 py-6 text-center text-sm text-navy-500" colSpan={4}>
-                          {t('adminNew.customerDetail.noBoats')}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
+                  )}
+                </tbody>
+              </AdminTable>
+            </AdminTableCard>
 
-            <div className="grid gap-5 lg:grid-cols-2">
-              <Card className="overflow-hidden">
-                <div className="border-b border-navy-100 px-4 py-3 text-sm font-semibold text-navy-900">
-                  {t('adminNew.customerDetail.invoices')}
-                </div>
-                <div className="divide-y divide-navy-100">
+            <div className="bento-grid lg:grid-cols-2">
+              <AdminPanel title={t('adminNew.customerDetail.invoices')}>
+                <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {data.data.invoices.length ? (
                     data.data.invoices.slice(0, 10).map((invoice) => (
                       <Link
                         key={invoice.id}
                         href={`/${locale}/admin/facturen/${invoice.id}`}
-                        className="flex items-center justify-between px-4 py-3 hover:bg-sand-50"
+                        className="flex items-center justify-between px-4 py-3 transition hover:bg-sand-50/80"
                       >
                         <div>
                           <div className="font-medium text-navy-900">{invoice.invoice_number}</div>
@@ -349,16 +392,16 @@ export default function CustomerDetailPage() {
                     </div>
                   )}
                 </div>
-              </Card>
+              </AdminPanel>
 
-              <Card className="overflow-hidden">
-                <div className="border-b border-navy-100 px-4 py-3 text-sm font-semibold text-navy-900">
-                  {t('adminNew.customerDetail.stallingContracts')}
-                </div>
-                <div className="divide-y divide-navy-100">
+              <AdminPanel title={t('adminNew.customerDetail.stallingContracts')}>
+                <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {data.data.stalling.length ? (
                     data.data.stalling.slice(0, 10).map((contract) => (
-                      <div key={contract.id} className="flex items-center justify-between px-4 py-3">
+                      <div
+                        key={contract.id}
+                        className="flex items-center justify-between px-4 py-3"
+                      >
                         <div>
                           <div className="font-medium text-navy-900">{contract.contract_number}</div>
                           <div className="text-xs text-navy-500">
@@ -380,19 +423,16 @@ export default function CustomerDetailPage() {
                     </div>
                   )}
                 </div>
-              </Card>
+              </AdminPanel>
             </div>
 
-            <Card className="p-5">
-              <div className="text-sm font-semibold text-navy-900">
-                {t('adminNew.customerDetail.files')}
-              </div>
+            <AdminPanel title={t('adminNew.customerDetail.files')}>
               {data.data.files.length ? (
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-2 sm:grid-cols-2">
                   {data.data.files.map((file, idx) => (
                     <div
                       key={String(file.id ?? idx)}
-                      className="rounded-lg border border-navy-100 px-3 py-2 text-sm"
+                      className="rounded-xl border border-navy-100/70 bg-sand-50/40 px-3 py-2.5 text-sm"
                     >
                       <div className="font-medium text-navy-900">
                         {String(
@@ -404,14 +444,12 @@ export default function CustomerDetailPage() {
                   ))}
                 </div>
               ) : (
-                <div className="mt-2 text-sm text-navy-500">
-                  {t('adminNew.customerDetail.noFiles')}
-                </div>
+                <div className="text-sm text-navy-500">{t('adminNew.customerDetail.noFiles')}</div>
               )}
-            </Card>
+            </AdminPanel>
           </>
         ) : null}
-      </div>
+      </AdminContent>
 
       <Modal open={showEdit} onClose={() => setShowEdit(false)} size="md">
         <form onSubmit={handleSaveCustomer} className="p-6">
@@ -520,23 +558,5 @@ export default function CustomerDetailPage() {
         </form>
       </Modal>
     </>
-  );
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-navy-100 px-3 py-2">
-      <div className="text-xs text-navy-500">{label}</div>
-      <div className="text-sm font-medium text-navy-900">{value}</div>
-    </div>
-  );
-}
-
-function Summary({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2">
-      <span>{label}</span>
-      <span className="font-semibold text-navy-900">{value}</span>
-    </div>
   );
 }

@@ -8,6 +8,8 @@ export interface SessionUser {
   locale?: string;
   avatarUrl?: string | null;
   permissions?: string[];
+  two_factor_enabled?: boolean;
+  last_login_at?: string;
 }
 
 export interface PaginationMeta {
@@ -233,6 +235,46 @@ export interface Sale {
   payments?: Payment[];
 }
 
+export interface KassaCheckoutPayment {
+  id: string;
+  provider: string;
+  method: string | null;
+  status: string;
+  checkout_url: string | null;
+  expires_at?: string | null;
+}
+
+export interface KassaCheckoutLine {
+  description: string;
+  quantity: string | number;
+  unit_price: number;
+  vat_rate: string | number;
+  line_total: number;
+  line_total_euros?: number;
+}
+
+export interface KassaCheckoutResponse {
+  sale_id?: string;
+  invoice_id?: string;
+  invoice_number?: string;
+  idempotency_key?: string | null;
+  status?: string;
+  payment_status?: string;
+  subtotal_cents?: number;
+  vat_amount_cents?: number;
+  total_amount_cents?: number;
+  total_euros?: number;
+  currency?: string;
+  device_id?: string;
+  created_at?: string;
+  payment?: KassaCheckoutPayment | null;
+  checkout_url?: string | null;
+  payment_url?: string | null;
+  url?: string | null;
+  message?: string;
+  lines?: KassaCheckoutLine[];
+}
+
 export interface AuditLog {
   id: string;
   entity_type: string;
@@ -364,6 +406,88 @@ export interface PortalBoat {
   length_metres: number | string;
   location_code: string;
   photo_url: string;
+}
+
+export interface Appointment {
+  id: string;
+  customer_id: string;
+  boat_id: string;
+  location_id: string | null;
+  service_codes: string[];
+  price_snapshot: unknown[] | null;
+  appointment_date: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  service_minutes: number;
+  location_extra_minutes: number;
+  status: string;
+  approval_type: string;
+  cancellation_reason: string | null;
+  invoice_id: string | null;
+  customer_notes: string | null;
+  staff_notes: string | null;
+  photo_ids: unknown[] | null;
+  confirmed_at: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  boat?: PortalBoat | Boat;
+}
+
+export interface PortalTimelineItem {
+  id: string;
+  type?: string;
+  title?: string;
+  body?: string;
+  message?: string;
+  priority?: string;
+  status?: string;
+  related_type?: string | null;
+  related_id?: string | null;
+  read_at?: string | null;
+  created_at?: string;
+}
+
+export interface PortalTimelinePagination {
+  page: number;
+  per_page: number;
+  total: number;
+  has_more: boolean;
+  unread_count: number;
+}
+
+export interface PortalTimelineResponse {
+  items: PortalTimelineItem[];
+  pagination: PortalTimelinePagination;
+}
+
+export interface PortalNotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  priority: string;
+  created_at: string;
+}
+
+export interface PortalNotificationsResponse {
+  unread_count: number;
+  latest: PortalNotificationItem[];
+}
+
+export interface PortalAppointmentsResponse {
+  data: Appointment[];
+  total: number;
+  has_more: boolean;
+}
+
+export interface PortalWallet {
+  balance_cents?: number | string;
+  balance_euros?: number | string;
+  currency?: string;
+  active?: boolean;
 }
 
 export interface SyncStatus {

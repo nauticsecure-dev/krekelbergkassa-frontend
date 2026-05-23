@@ -1,4 +1,11 @@
-import Cookies from 'js-cookie';
+import {
+  clearAuthToken,
+  clearPortalToken,
+  getAuthToken,
+  getPortalToken,
+  setAuthToken,
+  setPortalToken,
+} from './auth-storage';
 import { queueOfflineChange } from './offline-sync';
 
 export const API_BASE =
@@ -53,12 +60,12 @@ export async function api<T = unknown>(
   headers.set('Accept', 'application/json');
 
   if (opts.auth !== false) {
-    const token = Cookies.get(AUTH_COOKIE);
+    const token = getAuthToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
   }
 
   if (opts.portalAuth) {
-    const portal = Cookies.get(PORTAL_COOKIE);
+    const portal = getPortalToken();
     if (portal) headers.set('Authorization', `Bearer ${portal}`);
   }
 
@@ -123,32 +130,11 @@ export async function api<T = unknown>(
 }
 
 export const auth = {
-  setSession(token: string, remember = true) {
-    Cookies.set(AUTH_COOKIE, token, {
-      expires: remember ? 30 : undefined,
-      sameSite: 'lax',
-      secure: typeof window !== 'undefined' && window.location.protocol === 'https:',
-      path: '/',
-    });
-  },
-  clearSession() {
-    Cookies.remove(AUTH_COOKIE, { path: '/' });
-  },
-  getToken(): string | undefined {
-    return Cookies.get(AUTH_COOKIE);
-  },
-  setPortalSession(token: string, remember = true) {
-    Cookies.set(PORTAL_COOKIE, token, {
-      expires: remember ? 14 : undefined,
-      sameSite: 'lax',
-      secure: typeof window !== 'undefined' && window.location.protocol === 'https:',
-      path: '/',
-    });
-  },
-  clearPortalSession() {
-    Cookies.remove(PORTAL_COOKIE, { path: '/' });
-  },
-  getPortalToken(): string | undefined {
-    return Cookies.get(PORTAL_COOKIE);
-  },
+  setSession: (token: string, remember?: boolean, expiresAt?: string) =>
+    setAuthToken(token, remember ?? true, expiresAt),
+  clearSession: clearAuthToken,
+  getToken: getAuthToken,
+  setPortalSession: setPortalToken,
+  clearPortalSession: clearPortalToken,
+  getPortalToken: getPortalToken,
 };

@@ -1,15 +1,27 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Users } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { Card } from '@/components/ui/Card';
+import {
+  AdminContent,
+  AdminLinkButton,
+  AdminModalBody,
+  AdminModalFooter,
+  AdminModalHeader,
+  AdminSearchInput,
+  AdminTable,
+  AdminTableCard,
+  AdminTableCell,
+  AdminTableFooter,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableRow,
+} from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
-import { Pagination } from '@/components/admin/Pagination';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { customersService } from '@/lib/services';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -52,9 +64,16 @@ export default function CustomersPage() {
     }
   };
 
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+
+  const rows = customers.data?.data ?? [];
+  const total = customers.data?.meta?.total ?? rows.length;
+  const withEmail = rows.filter((c) => c.email).length;
+
   return (
     <>
       <AdminPageHeader
+        eyebrow={t('admin.sidebar.customers')}
         title={t('adminNew.customers.title')}
         subtitle={t('adminNew.customers.subtitle')}
         rightSlot={
@@ -62,24 +81,59 @@ export default function CustomersPage() {
             {t('adminNew.customers.new')}
           </Button>
         }
+        stats={[
+          {
+            label: t('adminNew.customers.total', { count: total }),
+            value: total,
+            icon: Users,
+            tone: 'marine',
+            loading: customers.loading,
+          },
+          {
+            label: t('adminNew.customers.results', { count: rows.length }),
+            value: rows.length,
+            tone: 'navy',
+            loading: customers.loading,
+          },
+          {
+            label: t('adminNew.common.email'),
+            value: withEmail,
+            tone: 'gold',
+            loading: customers.loading,
+          },
+          {
+            label: t('admin.common.search'),
+            value: query || '—',
+            tone: 'success',
+          },
+        ]}
       />
-      <div className="space-y-4 px-4 py-6 sm:px-6">
-        <Card className="p-4">
-          <div className="relative max-w-xl">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
-              <input
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setPage(1);
-              }}
-                placeholder={t('adminNew.customers.searchPlaceholder')}
-                className="input-base pl-9"
-              />
-          </div>
-        </Card>
 
-        <Card className="overflow-hidden">
+      <AdminContent>
+        <AdminSearchInput
+          value={query}
+          onChange={(value) => {
+            setQuery(value);
+            setPage(1);
+          }}
+          placeholder={t('adminNew.customers.searchPlaceholder')}
+        />
+
+        <AdminTableCard
+          footer={
+            (customers.data?.data.length ?? 0) > 0 ? (
+              <AdminTableFooter
+                summary={
+                  customers.data?.meta?.total
+                    ? t('adminNew.customers.total', { count: customers.data.meta.total })
+                    : t('adminNew.customers.results', { count: customers.data?.data.length ?? 0 })
+                }
+                meta={customers.data?.meta}
+                onPageChange={setPage}
+              />
+            ) : undefined
+          }
+        >
           {customers.loading ? <LoadingState label={t('adminNew.customers.loading')} variant="table" /> : null}
           {!customers.loading && customers.error ? (
             <ErrorState message={customers.error} onRetry={() => void customers.refetch()} />
@@ -97,64 +151,53 @@ export default function CustomersPage() {
           ) : null}
 
           {!customers.loading && !customers.error && (customers.data?.data.length ?? 0) > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[840px] text-sm">
-                  <thead className="bg-sand-50 text-left text-xs uppercase tracking-wide text-navy-500">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">{t('adminNew.customers.columns.customer')}</th>
-                      <th className="px-4 py-3 font-semibold">{t('adminNew.customers.columns.contact')}</th>
-                      <th className="px-4 py-3 font-semibold">{t('adminNew.customers.columns.locale')}</th>
-                      <th className="px-4 py-3 font-semibold">{t('adminNew.customers.columns.boats')}</th>
-                      <th className="px-4 py-3 font-semibold">{t('adminNew.customers.columns.created')}</th>
-                      <th className="px-4 py-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-navy-100">
-                    {customers.data?.data.map((customer) => (
-                      <tr key={customer.id} className="hover:bg-sand-50">
-                        <td className="px-4 py-3">
-                          <div className="font-semibold text-navy-900">{customer.name}</div>
-                          <div className="text-xs text-navy-500">{customer.customer_number}</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div>{customer.email ?? '-'}</div>
-                          <div className="text-xs text-navy-500">{customer.phone ?? '-'}</div>
-                        </td>
-                        <td className="px-4 py-3 uppercase">{customer.preferred_locale || '-'}</td>
-                        <td className="px-4 py-3">{customer.boats_count ?? 0}</td>
-                        <td className="px-4 py-3">{new Date(customer.created_at).toLocaleDateString()}</td>
-                        <td className="px-4 py-3 text-right">
-                          <Link
-                            href={`/${locale}/admin/klanten/${customer.id}`}
-                            className="text-sm font-semibold text-marine-700 hover:text-marine-800"
-                          >
-                            {t('adminNew.customers.details')}
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex items-center justify-between border-t border-navy-100 bg-sand-50/50 px-4 py-3 text-xs text-navy-500">
-                <span>
-                  {customers.data?.meta?.total
-                    ? t('adminNew.customers.total', { count: customers.data.meta.total })
-                    : t('adminNew.customers.results', { count: customers.data?.data.length ?? 0 })}
-                </span>
-                <Pagination meta={customers.data?.meta} onChange={setPage} />
-              </div>
-            </>
+            <AdminTable minWidth={880}>
+              <AdminTableHead>
+                <tr>
+                  <AdminTableHeaderCell>{t('adminNew.customers.columns.customer')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.customers.columns.contact')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.customers.columns.locale')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.customers.columns.boats')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.customers.columns.created')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
+                </tr>
+              </AdminTableHead>
+              <tbody>
+                {customers.data?.data.map((customer) => (
+                  <AdminTableRow key={customer.id}>
+                    <AdminTableCell>
+                      <div className="font-semibold text-navy-900">{customer.name}</div>
+                      <div className="text-xs text-navy-500">{customer.customer_number}</div>
+                    </AdminTableCell>
+                    <AdminTableCell>
+                      <div>{customer.email ?? '—'}</div>
+                      <div className="text-xs text-navy-500">{customer.phone ?? '—'}</div>
+                    </AdminTableCell>
+                    <AdminTableCell className="uppercase">{customer.preferred_locale || '—'}</AdminTableCell>
+                    <AdminTableCell>{customer.boats_count ?? 0}</AdminTableCell>
+                    <AdminTableCell>
+                      {new Date(customer.created_at).toLocaleDateString(dateLocale)}
+                    </AdminTableCell>
+                    <AdminTableCell className="text-right">
+                      <AdminLinkButton href={`/${locale}/admin/klanten/${customer.id}`}>
+                        {t('adminNew.customers.details')}
+                      </AdminLinkButton>
+                    </AdminTableCell>
+                  </AdminTableRow>
+                ))}
+              </tbody>
+            </AdminTable>
           ) : null}
-        </Card>
-      </div>
+        </AdminTableCard>
+      </AdminContent>
 
       <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
-        <form onSubmit={submitCreate} className="p-6">
-          <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.customers.modal.title')}</h2>
-          <p className="mt-1 text-sm text-navy-500">{t('adminNew.customers.modal.subtitle')}</p>
-          <div className="mt-4 space-y-3">
+        <form onSubmit={submitCreate}>
+          <AdminModalHeader
+            title={t('adminNew.customers.modal.title')}
+            subtitle={t('adminNew.customers.modal.subtitle')}
+          />
+          <AdminModalBody>
             <Input
               label={t('adminNew.common.name')}
               value={form.name}
@@ -172,15 +215,15 @@ export default function CustomersPage() {
               value={form.phone}
               onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
             />
-          </div>
-          <div className="mt-5 flex justify-end gap-2">
+          </AdminModalBody>
+          <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
               {t('adminNew.common.cancel')}
             </Button>
             <Button type="submit" variant="gold" disabled={createCustomer.loading}>
               {createCustomer.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
             </Button>
-          </div>
+          </AdminModalFooter>
         </form>
       </Modal>
     </>
