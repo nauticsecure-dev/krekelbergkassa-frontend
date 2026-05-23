@@ -438,19 +438,6 @@ function Trust({
   );
 }
 
-function StatCard({ big, label }: { big: string; label: string }) {
-  return (
-    <Card className="p-5 text-center sm:text-left">
-      <div className="text-3xl font-semibold text-navy-900 sm:text-4xl">
-        {big}
-      </div>
-      <div className="mt-1 text-xs font-semibold uppercase tracking-widest text-navy-400">
-        {label}
-      </div>
-    </Card>
-  );
-}
-
 function Mini({ big, label }: { big: string; label: string }) {
   return (
     <div className="rounded-lg border border-navy-100 bg-sand-50/40 p-3">

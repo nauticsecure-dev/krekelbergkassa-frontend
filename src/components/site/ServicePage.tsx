@@ -6,7 +6,6 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useIntl } from '@/i18n/IntlProvider';
-import { cn } from '@/lib/cn';
 
 export interface ServicePageProps {
   badge: string;

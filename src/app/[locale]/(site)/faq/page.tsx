@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import Link from 'next/link';
+import * as React from "react";
+import Link from "next/link";
 import {
   Anchor,
   ArrowRight,
@@ -9,7 +9,6 @@ import {
   ChevronDown,
   Clock,
   CreditCard,
-  Droplets,
   HelpCircle,
   Hotel,
   Mail,
@@ -22,79 +21,79 @@ import {
   Sparkles,
   Users,
   Warehouse,
-} from 'lucide-react';
-import { useIntl } from '@/i18n/IntlProvider';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Badge } from '@/components/ui/Badge';
-import { cn } from '@/lib/cn';
+} from "lucide-react";
+import { useIntl } from "@/i18n/IntlProvider";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
+import { cn } from "@/lib/cn";
 
 const CATEGORIES = [
-  { id: 'all', label: 'Alle vragen', icon: HelpCircle, count: 24 },
-  { id: 'kraan', label: 'Kranen & afspuiten', icon: Ship, count: 7 },
-  { id: 'stalling', label: 'Winterstalling', icon: Warehouse, count: 6 },
-  { id: 'planning', label: 'Planning & afspraken', icon: Calendar, count: 5 },
-  { id: 'betalen', label: 'Tarieven & betalen', icon: CreditCard, count: 3 },
-  { id: 'verkoop', label: 'Verkoop / brokerage', icon: Anchor, count: 2 },
-  { id: 'verblijf', label: 'Appartementen', icon: Hotel, count: 1 },
+  { id: "all", label: "Alle vragen", icon: HelpCircle, count: 24 },
+  { id: "kraan", label: "Kranen & afspuiten", icon: Ship, count: 7 },
+  { id: "stalling", label: "Winterstalling", icon: Warehouse, count: 6 },
+  { id: "planning", label: "Planning & afspraken", icon: Calendar, count: 5 },
+  { id: "betalen", label: "Tarieven & betalen", icon: CreditCard, count: 3 },
+  { id: "verkoop", label: "Verkoop / brokerage", icon: Anchor, count: 2 },
+  { id: "verblijf", label: "Appartementen", icon: Hotel, count: 1 },
 ];
 
 const QUESTIONS: { cat: string; q: string; a: string }[] = [
   {
-    cat: 'kraan',
-    q: 'Hoe lang duurt het kranen van mijn boot?',
-    a: 'Het kranen duurt gemiddeld 20–30 minuten, afhankelijk van de grootte en het gewicht van uw boot. Voor zeer grote schepen reserveren wij standaard een uur.',
+    cat: "kraan",
+    q: "Hoe lang duurt het kranen van mijn boot?",
+    a: "Het kranen duurt gemiddeld 20–30 minuten, afhankelijk van de grootte en het gewicht van uw boot. Voor zeer grote schepen reserveren wij standaard een uur.",
   },
   {
-    cat: 'kraan',
-    q: 'Wat is het verschil tussen kranen en hellingen?',
-    a: 'Kranen gebeurt met onze 30-tons mobiele kraan. Hellingen is langzamer en geschikt voor lichte schepen.',
+    cat: "kraan",
+    q: "Wat is het verschil tussen kranen en hellingen?",
+    a: "Kranen gebeurt met onze 30-tons mobiele kraan. Hellingen is langzamer en geschikt voor lichte schepen.",
   },
   {
-    cat: 'kraan',
-    q: 'Wanneer moet ik mijn boot reserveren voor kraanwerk?',
-    a: 'Wij raden aan minimaal 2 weken van tevoren te boeken in het hoogseizoen (maart-mei en oktober-november).',
+    cat: "kraan",
+    q: "Wanneer moet ik mijn boot reserveren voor kraanwerk?",
+    a: "Wij raden aan minimaal 2 weken van tevoren te boeken in het hoogseizoen (maart-mei en oktober-november).",
   },
   {
-    cat: 'stalling',
-    q: 'Wat zijn de tarieven voor winterstalling?',
-    a: 'Tarieven worden per meter berekend. Een gemiddelde boot van 8–10 meter zit tussen €450 en €650 per seizoen.',
+    cat: "stalling",
+    q: "Wat zijn de tarieven voor winterstalling?",
+    a: "Tarieven worden per meter berekend. Een gemiddelde boot van 8–10 meter zit tussen €450 en €650 per seizoen.",
   },
   {
-    cat: 'stalling',
-    q: 'Kan ik tijdens de stalling bij mijn boot komen?',
-    a: 'Ja, tijdens openingstijden kunt u uw boot bezoeken. Werkzaamheden uitvoeren is mogelijk in onze daarvoor bestemde werkruimtes.',
+    cat: "stalling",
+    q: "Kan ik tijdens de stalling bij mijn boot komen?",
+    a: "Ja, tijdens openingstijden kunt u uw boot bezoeken. Werkzaamheden uitvoeren is mogelijk in onze daarvoor bestemde werkruimtes.",
   },
   {
-    cat: 'planning',
-    q: 'Hoe kan ik een afspraak annuleren of verzetten?',
-    a: 'Log in op uw account en wijzig of annuleer uw afspraak tot 24 uur van tevoren kosteloos.',
+    cat: "planning",
+    q: "Hoe kan ik een afspraak annuleren of verzetten?",
+    a: "Log in op uw account en wijzig of annuleer uw afspraak tot 24 uur van tevoren kosteloos.",
   },
   {
-    cat: 'betalen',
-    q: 'Welke betaalmethoden accepteren jullie?',
-    a: 'Wij accepteren iDEAL, Bancontact, creditcard, contant en PIN. Voor stalling kan ook in termijnen worden betaald.',
+    cat: "betalen",
+    q: "Welke betaalmethoden accepteren jullie?",
+    a: "Wij accepteren iDEAL, Bancontact, creditcard, contant en PIN. Voor stalling kan ook in termijnen worden betaald.",
   },
   {
-    cat: 'verkoop',
-    q: 'Hoe lang duurt het verkopen van mijn boot via jullie?',
-    a: 'De gemiddelde verkooptijd ligt tussen 3 en 6 maanden, afhankelijk van prijs, type boot en seizoen.',
+    cat: "verkoop",
+    q: "Hoe lang duurt het verkopen van mijn boot via jullie?",
+    a: "De gemiddelde verkooptijd ligt tussen 3 en 6 maanden, afhankelijk van prijs, type boot en seizoen.",
   },
 ];
 
 export default function FaqPage() {
   const { t } = useIntl();
-  const [cat, setCat] = React.useState('all');
-  const [q, setQ] = React.useState('');
+  const [cat, setCat] = React.useState("all");
+  const [q, setQ] = React.useState("");
   const [open, setOpen] = React.useState<number | null>(0);
 
   const visible = QUESTIONS.filter(
     (item) =>
-      (cat === 'all' || item.cat === cat) &&
+      (cat === "all" || item.cat === cat) &&
       (q.length === 0 ||
         item.q.toLowerCase().includes(q.toLowerCase()) ||
-        item.a.toLowerCase().includes(q.toLowerCase()))
+        item.a.toLowerCase().includes(q.toLowerCase())),
   );
 
   return (
@@ -107,10 +106,10 @@ export default function FaqPage() {
               Klantenservice
             </Badge>
             <h1 className="heading-display text-4xl text-white sm:text-5xl">
-              {t('faq.title')}
+              {t("faq.title")}
             </h1>
             <p className="mt-4 max-w-xl text-sand-100/85">
-              {t('faq.subtitle')}
+              {t("faq.subtitle")}
             </p>
             <div className="mt-6 max-w-md">
               <Input
@@ -136,12 +135,12 @@ export default function FaqPage() {
       </section>
 
       {/* Body */}
-      <section className="container-wide -mt-10 grid gap-6 lg:grid-cols-[18rem_1fr]">
+      <section className="container-wide mt-10 grid gap-6 lg:grid-cols-[18rem_1fr]">
         {/* Sidebar */}
         <aside className="space-y-4">
           <Card className="p-5">
             <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-navy-400">
-              {t('faq.categories')}
+              {t("faq.categories")}
             </div>
             <ul className="space-y-1">
               {CATEGORIES.map((c) => {
@@ -152,10 +151,10 @@ export default function FaqPage() {
                     <button
                       onClick={() => setCat(c.id)}
                       className={cn(
-                        'flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition',
+                        "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition",
                         active
-                          ? 'bg-navy-900 text-white'
-                          : 'text-navy-700 hover:bg-sand-100'
+                          ? "bg-navy-900 text-white"
+                          : "text-navy-700 hover:bg-sand-100",
                       )}
                     >
                       <span className="flex items-center gap-2.5">
@@ -164,10 +163,10 @@ export default function FaqPage() {
                       </span>
                       <span
                         className={cn(
-                          'rounded-full px-2 py-0.5 text-[11px] font-medium',
+                          "rounded-full px-2 py-0.5 text-[11px] font-medium",
                           active
-                            ? 'bg-white/15 text-white'
-                            : 'bg-navy-50 text-navy-500'
+                            ? "bg-white/15 text-white"
+                            : "bg-navy-50 text-navy-500",
                         )}
                       >
                         {c.count}
@@ -182,11 +181,9 @@ export default function FaqPage() {
           <Card className="overflow-hidden bg-marine-500 text-white">
             <div className="p-5">
               <div className="text-xs font-semibold uppercase tracking-widest text-marine-100">
-                {t('faq.helpTitle')}
+                {t("faq.helpTitle")}
               </div>
-              <p className="mt-2 text-sm text-marine-50">
-                {t('faq.helpDesc')}
-              </p>
+              <p className="mt-2 text-sm text-marine-50">{t("faq.helpDesc")}</p>
               <div className="mt-4 space-y-2 text-sm">
                 <a
                   href="tel:+31475322275"
@@ -202,8 +199,13 @@ export default function FaqPage() {
                 </a>
               </div>
               <Link href="#" className="mt-5 block">
-                <Button variant="gold" size="md" fullWidth rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  {t('faq.contactBtn')}
+                <Button
+                  variant="gold"
+                  size="md"
+                  fullWidth
+                  rightIcon={<ArrowRight className="h-4 w-4" />}
+                >
+                  {t("faq.contactBtn")}
                 </Button>
               </Link>
             </div>
@@ -233,8 +235,8 @@ export default function FaqPage() {
                   </span>
                   <ChevronDown
                     className={cn(
-                      'h-4 w-4 flex-shrink-0 text-navy-500 transition',
-                      isOpen && 'rotate-180'
+                      "h-4 w-4 flex-shrink-0 text-navy-500 transition",
+                      isOpen && "rotate-180",
                     )}
                   />
                 </button>
@@ -249,9 +251,21 @@ export default function FaqPage() {
 
           {/* Trust strip */}
           <div className="grid gap-4 pt-6 sm:grid-cols-3">
-            <TrustItem icon={Clock} title={t('faq.openYard')} desc={t('faq.openYardDesc')} />
-            <TrustItem icon={Users} title={t('faq.professional')} desc={t('faq.professionalDesc')} />
-            <TrustItem icon={Shield} title={t('faq.trust')} desc={t('faq.trustDesc')} />
+            <TrustItem
+              icon={Clock}
+              title={t("faq.openYard")}
+              desc={t("faq.openYardDesc")}
+            />
+            <TrustItem
+              icon={Users}
+              title={t("faq.professional")}
+              desc={t("faq.professionalDesc")}
+            />
+            <TrustItem
+              icon={Shield}
+              title={t("faq.trust")}
+              desc={t("faq.trustDesc")}
+            />
           </div>
         </div>
       </section>
@@ -261,12 +275,18 @@ export default function FaqPage() {
         <div className="grid items-center gap-6 rounded-2xl bg-navy-900 px-8 py-10 text-white sm:px-12 lg:grid-cols-[1.5fr_1fr]">
           <div>
             <h3 className="heading-display text-2xl text-white sm:text-3xl">
-              {t('faq.readyTitle')}
+              {t("faq.readyTitle")}
             </h3>
-            <p className="mt-2 max-w-xl text-sand-100/80">{t('faq.readyDesc')}</p>
+            <p className="mt-2 max-w-xl text-sand-100/80">
+              {t("faq.readyDesc")}
+            </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                {t('faq.contactBtn')}
+              <Button
+                variant="gold"
+                size="lg"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              >
+                {t("faq.contactBtn")}
               </Button>
               <Button
                 variant="outline"

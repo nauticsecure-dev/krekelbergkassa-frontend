@@ -87,7 +87,12 @@
     "heroBadge": "About Krekelberg Nautic",
     "heroTitle": "Craftsmanship on the Maasplassen, since 1972",
     "heroSubtitle": "Family business, yacht broker and DIY yard in one — the trusted address in Roermond for over fifty years.",
-    "stats": { "years": "Years experience", "storage": "Storage spaces", "yard": "Yard area", "sale": "Boats for sale" },
+    "stats": {
+      "years": "Years experience",
+      "storage": "Storage spaces",
+      "yard": "Yard area",
+      "sale": "Boats for sale"
+    },
     "storyBadge": "Our story",
     "storyTitle": "A yard with character",
     "story1": "What started in 1972 as a small yard has grown into the largest yacht broker and self-service yard in Limburg. We kept the yard deliberately compact and human — craftspeople who know you, on a site that feels familiar.",
@@ -103,19 +108,46 @@
     "valuesBadge": "Values",
     "valuesTitle": "What we stand for",
     "values": {
-      "craft":       { "title": "Craftsmanship",  "desc": "Decades of yard and sales experience, in every appointment." },
-      "safe":        { "title": "Safe & insured", "desc": "Fully insured location with 24/7 camera surveillance and solid stands." },
-      "personal":    { "title": "Personal contact","desc": "Everyone gets the same dedicated contact person." },
-      "sustainable": { "title": "Sustainable",    "desc": "Eco-friendly washing with filtered runoff and controlled waste disposal." }
+      "craft": {
+        "title": "Craftsmanship",
+        "desc": "Decades of yard and sales experience, in every appointment."
+      },
+      "safe": {
+        "title": "Safe & insured",
+        "desc": "Fully insured location with 24/7 camera surveillance and solid stands."
+      },
+      "personal": {
+        "title": "Personal contact",
+        "desc": "Everyone gets the same dedicated contact person."
+      },
+      "sustainable": {
+        "title": "Sustainable",
+        "desc": "Eco-friendly washing with filtered runoff and controlled waste disposal."
+      }
     },
     "timelineBadge": "Timeline",
     "timelineTitle": "Fifty years in five milestones",
     "timeline": {
-      "start":      { "title": "Founded",          "desc": "The yard is founded on the Maasplassen." },
-      "crane":      { "title": "30-ton crane",     "desc": "First mobile 30-ton crane in use." },
-      "brokerage":  { "title": "Schepenkring",     "desc": "Partnership for brokerage starts." },
-      "apartments": { "title": "Apartments",       "desc": "Stays right at the marina open." },
-      "digital":    { "title": "Digital platform", "desc": "Launch of the Krekelberg platform." }
+      "start": {
+        "title": "Founded",
+        "desc": "The yard is founded on the Maasplassen."
+      },
+      "crane": {
+        "title": "30-ton crane",
+        "desc": "First mobile 30-ton crane in use."
+      },
+      "brokerage": {
+        "title": "Schepenkring",
+        "desc": "Partnership for brokerage starts."
+      },
+      "apartments": {
+        "title": "Apartments",
+        "desc": "Stays right at the marina open."
+      },
+      "digital": {
+        "title": "Digital platform",
+        "desc": "Launch of the Krekelberg platform."
+      }
     },
     "teamBadge": "Our team",
     "teamTitle": "The faces behind the yard",
@@ -201,11 +233,26 @@
     "faqSubtitle": "The questions we get most often about storage, craning and works.",
     "allFaq": "All frequently asked questions",
     "faq": {
-      "faq1": { "q": "Why is wintering on shore recommended?", "a": "Wintering on shore reduces the chance of damage. For polyester boats it significantly reduces the risk of osmosis. For steel boats it helps prevent corrosion. Winter is also ideal for maintenance and repairs." },
-      "faq2": { "q": "What are the risks if my boat stays in the water in winter?", "a": "In extreme cold Rijkswaterstaat may pull the weirs, which can cause the water level in the Maas and surrounding harbours to drop suddenly by several meters. This can lead to severe damage and high repair costs." },
-      "faq3": { "q": "How safe is my boat during storage?", "a": "The site is fully fenced, closed at night with an electric gate and guarded day and night. During opening hours there's always someone on site (except during the Christmas holidays)." },
-      "faq4": { "q": "What facilities are on the site?", "a": "The site has multiple power connections and water taps. The layout ensures you're always close to a connection point." },
-      "faq5": { "q": "What does boat storage cost?", "a": "Costs depend on type and size of your boat. For current pricing and to book, please contact us — no obligation." }
+      "faq1": {
+        "q": "Why is wintering on shore recommended?",
+        "a": "Wintering on shore reduces the chance of damage. For polyester boats it significantly reduces the risk of osmosis. For steel boats it helps prevent corrosion. Winter is also ideal for maintenance and repairs."
+      },
+      "faq2": {
+        "q": "What are the risks if my boat stays in the water in winter?",
+        "a": "In extreme cold Rijkswaterstaat may pull the weirs, which can cause the water level in the Maas and surrounding harbours to drop suddenly by several meters. This can lead to severe damage and high repair costs."
+      },
+      "faq3": {
+        "q": "How safe is my boat during storage?",
+        "a": "The site is fully fenced, closed at night with an electric gate and guarded day and night. During opening hours there's always someone on site (except during the Christmas holidays)."
+      },
+      "faq4": {
+        "q": "What facilities are on the site?",
+        "a": "The site has multiple power connections and water taps. The layout ensures you're always close to a connection point."
+      },
+      "faq5": {
+        "q": "What does boat storage cost?",
+        "a": "Costs depend on type and size of your boat. For current pricing and to book, please contact us — no obligation."
+      }
     },
     "ctaBadge": "Book appointment",
     "ctaTitle": "Ready for the next step?",
@@ -276,10 +323,22 @@
       "cta": "View yard services",
       "book": "Book appointment",
       "bullet": {
-        "lift": { "title": "Crane & wash", "desc": "30-ton crane and high-pressure wash" },
-        "wash": { "title": "Maintenance", "desc": "Antifouling, polishing, engine service" },
-        "storage": { "title": "Indoor & outdoor storage", "desc": "For boats up to 14m+" },
-        "diy": { "title": "DIY yard", "desc": "Workspaces with power and water" }
+        "lift": {
+          "title": "Crane & wash",
+          "desc": "30-ton crane and high-pressure wash"
+        },
+        "wash": {
+          "title": "Maintenance",
+          "desc": "Antifouling, polishing, engine service"
+        },
+        "storage": {
+          "title": "Indoor & outdoor storage",
+          "desc": "For boats up to 14m+"
+        },
+        "diy": {
+          "title": "DIY yard",
+          "desc": "Workspaces with power and water"
+        }
       }
     },
     "sale": {
@@ -313,15 +372,40 @@
       "secondary": "Get in touch"
     },
     "processTitle": "How it works",
-    "processSubtitle": "In four simple steps your vessel is in good hands"
+    "processSubtitle": "In four simple steps your vessel is in good hands",
+    "classicTagline": "Yacht broker | Storage | Do-it-yourself Yard"
   },
   "services": {
-    "crane": { "title": "Crane", "desc": "Lift in or out of the water with our 30-ton professional crane.", "cta": "Plan crane slot" },
-    "wash": { "title": "Pressure wash", "desc": "Professional hull cleaning right after lifting.", "cta": "View pricing" },
-    "storage": { "title": "Winter storage", "desc": "Indoor and outdoor storage, spacious and insured.", "cta": "Request storage" },
-    "diy": { "title": "DIY workshop", "desc": "Work on your own boat with full yard facilities.", "cta": "See options" },
-    "sale": { "title": "Sell your boat", "desc": "Sell through Schepenkring Roermond with physical visibility.", "cta": "List your boat" },
-    "apartments": { "title": "Apartments", "desc": "Stay overnight directly at the marina on the Maasplassen.", "cta": "View apartments" }
+    "crane": {
+      "title": "Crane",
+      "desc": "Lift in or out of the water with our 30-ton professional crane.",
+      "cta": "Plan crane slot"
+    },
+    "wash": {
+      "title": "Pressure wash",
+      "desc": "Professional hull cleaning right after lifting.",
+      "cta": "View pricing"
+    },
+    "storage": {
+      "title": "Winter storage",
+      "desc": "Indoor and outdoor storage, spacious and insured.",
+      "cta": "Request storage"
+    },
+    "diy": {
+      "title": "DIY workshop",
+      "desc": "Work on your own boat with full yard facilities.",
+      "cta": "See options"
+    },
+    "sale": {
+      "title": "Sell your boat",
+      "desc": "Sell through Schepenkring Roermond with physical visibility.",
+      "cta": "List your boat"
+    },
+    "apartments": {
+      "title": "Apartments",
+      "desc": "Stay overnight directly at the marina on the Maasplassen.",
+      "cta": "View apartments"
+    }
   },
   "process": {
     "step1Title": "Choose your service",
@@ -958,5 +1042,604 @@
     "more": "More",
     "loginFailed": "Sign in failed",
     "loggingIn": "Signing in…"
+  },
+  "adminNew": {
+    "common": {
+      "loading": "Loading…",
+      "unknown": "Unknown",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "new": "New",
+      "delete": "Delete",
+      "logout": "Sign out",
+      "noEmail": "no email",
+      "operationFailed": "Action failed"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Daily operational marina status",
+      "live": "Live",
+      "quickActions": "Quick actions",
+      "cards": {
+        "openInvoices": {
+          "title": "Open invoices",
+          "subtitle": "{count} overdue"
+        },
+        "stallingActions": {
+          "title": "Storage actions",
+          "subtitle": "Contracts with arrears"
+        },
+        "cashRevenue": {
+          "title": "Cash desk revenue",
+          "subtitle": "Recent transactions"
+        },
+        "syncStatus": {
+          "title": "Sync status",
+          "lastSync": "Last sync: {time}",
+          "noSync": "No sync yet"
+        }
+      },
+      "actions": {
+        "customers": "Manage customers",
+        "stalling": "Follow up storage",
+        "invoices": "Follow up invoices",
+        "calculator": "Calculate price"
+      },
+      "portal": {
+        "title": "Portal & customers",
+        "openPortal": "Open customer portal",
+        "activeSessions": "Active portal sessions",
+        "newQuestions": "New customer questions",
+        "totalCustomers": "Total customers"
+      }
+    },
+    "customers": {
+      "title": "Customers",
+      "subtitle": "Central customer overview for POS, storage and invoicing",
+      "new": "New customer",
+      "searchPlaceholder": "Search by name, email, phone, boat",
+      "loading": "Loading customers",
+      "emptyTitle": "No customers found",
+      "emptyMessage": "Adjust filters or create a new customer.",
+      "columns": {
+        "customer": "Customer",
+        "contact": "Contact",
+        "locale": "Locale",
+        "boats": "Boats",
+        "created": "Created"
+      },
+      "details": "Details",
+      "total": "{count} customers total",
+      "results": "{count} results",
+      "modal": {
+        "title": "New customer",
+        "subtitle": "Name and email are enough for quick registration."
+      },
+      "toasts": {
+        "created": "Customer created",
+        "createFailed": "Create failed"
+      }
+    },
+    "auth": {
+      "portalSessionActive": "Portal session active",
+      "portalSessionActiveMsg": "You signed in successfully via magic link.",
+      "magicSentTitle": "Magic link sent",
+      "emailPlaceholder": "name@example.com",
+      "magicInfo": "Portal login uses an email magic link. No password needed.",
+      "magicSentMessage": "If this email exists, a sign-in link has been sent.",
+      "togglePassword": "Toggle password visibility",
+      "passwordPlaceholder": "••••••••",
+      "sendMagicLink": "Send magic link",
+      "accountCreatedByAdmin": "Accounts are created by an administrator."
+    },
+    "sidebar": {
+      "calculator": "Calculator",
+      "sync": "Offline / Sync"
+    },
+    "states": {
+      "errorTitle": "Something went wrong",
+      "emptyTitle": "No data yet",
+      "retry": "Try again"
+    },
+    "status": {
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "credited": "Credited",
+      "cancelled": "Cancelled",
+      "draft": "Draft",
+      "open": "Open",
+      "failed": "Failed",
+      "expiring": "Expiring"
+    },
+    "audit": {
+      "title": "Audit",
+      "subtitle": "Control log for security, payments, invoices, customers and sync",
+      "searchPlaceholder": "Search by action, actor, entity",
+      "allEntities": "All entity types",
+      "entity": {
+        "invoice": "Invoice",
+        "customer": "Customer",
+        "stalling": "Storage",
+        "payment": "Payment"
+      },
+      "loading": "Loading audit logs",
+      "empty": "No audit events",
+      "columns": {
+        "time": "Time",
+        "action": "Action",
+        "entity": "Entity",
+        "actor": "Actor"
+      },
+      "events": "{count} events"
+    },
+    "boats": {
+      "title": "Boats",
+      "subtitle": "Manage boats, lengths and locations for storage and invoicing",
+      "new": "New boat",
+      "searchPlaceholder": "Search by boat name, owner or location",
+      "loading": "Loading boats",
+      "emptyTitle": "No boats",
+      "emptyMessage": "No boats found yet.",
+      "columns": {
+        "boat": "Boat",
+        "owner": "Owner",
+        "type": "Type",
+        "length": "Length",
+        "location": "Location"
+      },
+      "fields": {
+        "lengthCm": "Length (cm)",
+        "widthCm": "Width (cm)",
+        "locationCode": "Location code"
+      },
+      "type": {
+        "motor": "Motor",
+        "sail": "Sail",
+        "other": "Other"
+      },
+      "selectCustomer": "Select customer",
+      "confirmDelete": "Delete boat?",
+      "total": "{count} boats",
+      "toasts": {
+        "created": "Boat created",
+        "createFailed": "Creation failed",
+        "deleted": "Boat deleted",
+        "deleteFailed": "Delete failed"
+      }
+    },
+    "kassa": {
+      "title": "Cash Desk",
+      "subtitle": "Fast checkout with smart search and realtime calculation",
+      "searchPlaceholder": "Search product or type e.g. wash 880",
+      "selectCustomer": "Select customer",
+      "payment": {
+        "cash": "Cash",
+        "pin": "Card terminal",
+        "invoice": "Invoice",
+        "creditcard": "Credit card"
+      },
+      "smartMatch": "Smart match",
+      "products": "Products",
+      "loadingProducts": "Loading products",
+      "emptyProductsTitle": "No products",
+      "emptyProductsMessage": "Adjust search or add pricing rules.",
+      "match": "Match",
+      "recentSales": "Recent sales",
+      "noRecentSales": "No recent sales yet.",
+      "cart": "Cart",
+      "lines": "{count} lines",
+      "emptyCartMessage": "Add products to continue checkout.",
+      "vat": "VAT",
+      "subtotal": "Subtotal",
+      "vatIncluded": "VAT (incl.)",
+      "total": "Total",
+      "processing": "Processing…",
+      "checkout": "Checkout",
+      "calculating": "Calculating…",
+      "createQuote": "Create quote",
+      "modalTitle": "New customer (POS)",
+      "modalSubtitle": "Name and email are enough for quick checkout.",
+      "creating": "Creating…",
+      "create": "Create",
+      "toasts": {
+        "customerCreated": "Customer created",
+        "customerCreateFailed": "Customer creation failed",
+        "emptyCart": "Cart is empty",
+        "checkoutDone": "Checkout completed",
+        "checkoutFailed": "Checkout failed",
+        "quoteDone": "Quote calculated",
+        "quoteFailed": "Quote failed"
+      }
+    },
+    "stalling": {
+      "title": "Storage",
+      "subtitle": "Manage around 200 boats with status, paid-until and open balance",
+      "searchPlaceholder": "Search by boat, customer or location",
+      "allStatuses": "All statuses",
+      "allTypes": "All types",
+      "type": {
+        "winter": "Winter",
+        "summer": "Summer",
+        "year": "Year",
+        "week": "Week"
+      },
+      "loading": "Loading storage contracts",
+      "emptyTitle": "No contracts",
+      "emptyMessage": "No results for current filters.",
+      "columns": {
+        "boat": "Boat",
+        "customer": "Customer",
+        "period": "Period",
+        "type": "Type",
+        "paidUntil": "Paid until",
+        "openBalance": "Open balance",
+        "status": "Status"
+      },
+      "invoice": "Invoice",
+      "cancel": "Cancel",
+      "invoiceCreated": "Invoice created",
+      "cancelled": "Contract cancelled",
+      "contracts": "{count} contracts",
+      "openCustomer": "Open customer"
+    },
+    "sync": {
+      "title": "Offline / Sync status",
+      "subtitle": "View pending changes, failures and last synchronization per device",
+      "refresh": "Refresh",
+      "syncAll": "Sync all",
+      "syncing": "Syncing…",
+      "connection": "Connection",
+      "online": "Online",
+      "offline": "Offline",
+      "pending": "Pending",
+      "failed": "Failed",
+      "lastSync": "Last sync",
+      "pendingChanges": "Pending changes",
+      "clear": "Clear",
+      "retry": "Retry",
+      "noPending": "No pending offline changes.",
+      "devices": "Registered sync devices",
+      "noDevices": "No sync devices available yet.",
+      "itemSynced": "Change synced",
+      "syncFailed": "Sync failed",
+      "error": "Sync error"
+    },
+    "portal": {
+      "updates": {
+        "title": "My updates",
+        "subtitle": "Appointments and timeline items from Krekelberg",
+        "loading": "Loading updates",
+        "empty": "No updates",
+        "item": "Update"
+      },
+      "invoices": {
+        "title": "My invoices",
+        "subtitle": "View open invoices, download PDF and pay securely via Mollie",
+        "allStatuses": "All statuses",
+        "loading": "Loading invoices",
+        "empty": "No invoices",
+        "pay": "Pay",
+        "openBalance": "Open balance"
+      },
+      "stalling": {
+        "title": "My storage",
+        "subtitle": "Overview of active storage contracts and payment status",
+        "loading": "Loading contracts",
+        "empty": "No contracts"
+      },
+      "boats": {
+        "title": "My boats",
+        "subtitle": "View boats linked to your account",
+        "loading": "Loading boats",
+        "empty": "No boats",
+        "length": "Length",
+        "location": "Location"
+      },
+      "documents": {
+        "title": "Documents",
+        "subtitle": "PDFs and relevant documents",
+        "empty": "No documents yet",
+        "emptyMessage": "Documents will appear here automatically when available."
+      },
+      "messages": {
+        "title": "Messages",
+        "subtitle": "Notifications and messages from Krekelberg",
+        "loading": "Loading messages",
+        "empty": "No messages",
+        "item": "Message"
+      },
+      "settings": {
+        "title": "Portal settings",
+        "subtitle": "Account overview and security status",
+        "loading": "Loading account",
+        "myDetails": "My details",
+        "summary": "Summary",
+        "openBalance": "Open balance",
+        "openInvoices": "Open invoices",
+        "boats": "Boats",
+        "activeContracts": "Active contracts",
+        "magicActive": "Magic-link security active",
+        "refreshSession": "Refresh session status"
+      }
+    },
+    "shell": {
+      "notifications": "Notifications",
+      "viewAllUpdates": "View all updates",
+      "notifs": {
+        "webhookFailedTitle": "Mollie webhook failed",
+        "webhookFailedMessage": "tr_abc123 — retry manually",
+        "webhookFailedTime": "2 min ago",
+        "newAppointmentTitle": "New crane appointment",
+        "newAppointmentMessage": "Jan Jansen · Aquila 8.90m",
+        "newAppointmentTime": "12 min ago",
+        "storageExpiringTitle": "Storage expiring",
+        "storageExpiringMessage": "Atalanta · in 9 days",
+        "storageExpiringTime": "1 hour ago"
+      }
+    },
+    "invoices": {
+      "title": "Invoices",
+      "subtitle": "Financial overview across POS, storage, calculator and manual invoices",
+      "new": "New invoice",
+      "defaultLineDescription": "New invoice line",
+      "searchPlaceholder": "Search by invoice number, customer or email",
+      "allStatuses": "All statuses",
+      "allSources": "All sources",
+      "loading": "Loading invoices",
+      "emptyTitle": "No invoices",
+      "emptyMessage": "No invoices match the current filters.",
+      "details": "Details",
+      "openAmount": "Open",
+      "total": "{count} invoices",
+      "source": {
+        "kassa": "POS",
+        "stalling": "Storage",
+        "manual": "Manual",
+        "calculator": "Calculator"
+      },
+      "metrics": {
+        "open": "Open invoices",
+        "overdue": "Overdue",
+        "paid": "Paid",
+        "openBalance": "Open balance"
+      },
+      "columns": {
+        "invoice": "Invoice",
+        "customer": "Customer",
+        "source": "Source",
+        "amount": "Amount",
+        "dueDate": "Due date",
+        "paymentMethod": "Payment method",
+        "paidDate": "Paid date",
+        "status": "Status"
+      },
+      "toasts": {
+        "createFailed": "Creating invoice failed"
+      }
+    },
+    "invoiceDetail": {
+      "fallbackTitle": "Invoice",
+      "subtitle": "Invoice details",
+      "loading": "Loading invoice",
+      "source": "Source",
+      "overviewTitle": "Invoice overview",
+      "customerSnapshot": "Customer snapshot",
+      "companySnapshot": "Company snapshot",
+      "paymentTimeline": "Payment timeline",
+      "reminderHistory": "Reminder history",
+      "channel": "Channel",
+      "status": "Status",
+      "noPayments": "No payments registered yet.",
+      "noReminders": "No reminders sent yet.",
+      "vatNumber": "VAT number",
+      "iban": "IBAN",
+      "back": "← Back to invoices",
+      "legal": {
+        "title": "Financial note",
+        "message": "Sent invoices should not be edited. Use credit invoices for corrections."
+      },
+      "defaults": {
+        "reminderSubject": "Payment reminder",
+        "reminderBody": "Your invoice is still open. Contact us if you have questions."
+      },
+      "meta": {
+        "invoiceDate": "Invoice date",
+        "dueDate": "Due date",
+        "paidOn": "Paid on"
+      },
+      "columns": {
+        "description": "Description",
+        "qty": "Qty",
+        "unitExcl": "Unit excl. VAT",
+        "vat": "VAT",
+        "total": "Total"
+      },
+      "summary": {
+        "subtotal": "Subtotal",
+        "vat": "VAT",
+        "total": "Total",
+        "outstanding": "Outstanding"
+      },
+      "actions": {
+        "send": "Send",
+        "markPaid": "Mark paid",
+        "mollieLink": "Mollie link",
+        "regeneratePdf": "Regenerate PDF",
+        "openPdf": "Open PDF",
+        "sendReminder": "Send reminder",
+        "credit": "Credit"
+      },
+      "paymentMethods": {
+        "cash": "Cash",
+        "pin": "Card terminal",
+        "banktransfer": "Bank transfer",
+        "manual": "Manual"
+      },
+      "reminderModal": {
+        "title": "Send reminder",
+        "subject": "Subject",
+        "message": "Message"
+      },
+      "markPaidModal": {
+        "title": "Mark as paid",
+        "method": "Method"
+      },
+      "toasts": {
+        "invoiceSent": "Invoice sent",
+        "paymentLinkCreated": "Payment link created",
+        "pdfRegenerated": "PDF regenerated",
+        "credited": "Credit invoice created",
+        "cancelled": "Invoice cancelled",
+        "reminderSent": "Reminder sent",
+        "markedPaid": "Invoice marked as paid"
+      }
+    },
+    "customerDetail": {
+      "fallbackTitle": "Customer",
+      "loading": "Loading customer details",
+      "infoTitle": "Customer information",
+      "summaryTitle": "Summary",
+      "preferredLocale": "Preferred language",
+      "company": "Company",
+      "vatNumber": "VAT number",
+      "notes": "Notes",
+      "noNotes": "No notes",
+      "boats": "Boats",
+      "stallingContracts": "Storage contracts",
+      "invoices": "Invoices",
+      "openBalance": "Open balance",
+      "dueDate": "Due date",
+      "noBoats": "No boats linked yet.",
+      "noInvoices": "No invoices yet.",
+      "noContracts": "No contracts yet.",
+      "files": "Files",
+      "file": "File",
+      "noFiles": "No files linked to this customer.",
+      "boatType": "Boat type",
+      "lengthCm": "Length (cm)",
+      "locationCode": "Location code",
+      "defaultInvoiceLine": "Manual invoice line",
+      "table": {
+        "boats": {
+          "name": "Name",
+          "type": "Type",
+          "length": "Length",
+          "location": "Location"
+        }
+      },
+      "actions": {
+        "editCustomer": "Edit customer",
+        "newInvoice": "New invoice",
+        "addBoat": "Add boat"
+      },
+      "modals": {
+        "editTitle": "Edit customer",
+        "addBoatTitle": "Add boat"
+      },
+      "toasts": {
+        "customerUpdated": "Customer updated",
+        "saveFailed": "Saving failed",
+        "boatAdded": "Boat added",
+        "createFailed": "Create failed",
+        "invoiceCreated": "Invoice created",
+        "invoiceCreateFailed": "Invoice creation failed"
+      }
+    },
+    "calculator": {
+      "title": "Calculator",
+      "subtitle": "Consistent pricing for POS, storage and sales",
+      "lengthCm": "Boat length (cm)",
+      "contractType": "Contract type",
+      "services": "Services",
+      "customerOptional": "Customer (optional for calculation)",
+      "selectCustomer": "Select customer",
+      "calculating": "Calculating…",
+      "calculate": "Calculate price",
+      "createQuote": "Create quote",
+      "createInvoice": "Create invoice",
+      "newCustomer": "New customer",
+      "linePrefix": "Calculator",
+      "servicesMap": {
+        "afspuiten": "Washdown",
+        "kranen": "Crane",
+        "stalling": "Storage",
+        "hal": "Hall rental"
+      },
+      "result": {
+        "title": "Result",
+        "empty": "No calculation run yet.",
+        "rangeMatch": "Matched range",
+        "contractType": "Contract type",
+        "services": "Services",
+        "vatRate": "VAT rate",
+        "totalPrice": "Total price",
+        "rawApi": "Raw API output"
+      },
+      "toasts": {
+        "lengthAndServiceRequired": "Length and service are required",
+        "failed": "Calculation failed",
+        "selectCustomer": "Select a customer first",
+        "runCalculationFirst": "Run a calculation first",
+        "createFailed": "Create failed"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Company, invoicing, payment and locale configuration",
+      "loading": "Loading settings",
+      "tabs": {
+        "company": "Company",
+        "invoicing": "Invoicing",
+        "payments": "Payments",
+        "locales": "Languages"
+      },
+      "company": {
+        "title": "Company details",
+        "kvk": "KVK",
+        "vatNumber": "VAT number",
+        "iban": "IBAN",
+        "street": "Street",
+        "postalCode": "Postal code",
+        "city": "City",
+        "country": "Country"
+      },
+      "invoicing": {
+        "title": "Invoicing settings",
+        "invoicePrefix": "Invoice prefix",
+        "defaultDueDays": "Default payment term (days)",
+        "currency": "Currency",
+        "defaultVatRate": "Default VAT %",
+        "reminderFirstDays": "1st reminder (days)",
+        "reminderSecondDays": "2nd reminder (days)",
+        "reminderFinalDays": "Final reminder (days)"
+      },
+      "payments": {
+        "title": "Payment settings",
+        "connected": "Mollie connected",
+        "notConnected": "Mollie not connected",
+        "secretsBackendOnly": "Secrets stay backend-only",
+        "provider": "Provider",
+        "enabledMethods": "Enabled methods (comma separated)",
+        "testMode": "Test mode",
+        "testConnection": "Test Mollie connection"
+      },
+      "locales": {
+        "title": "Locale settings",
+        "defaultLocale": "Default locale",
+        "fallbackLocale": "Fallback locale",
+        "supportedLocales": "Supported locales (comma separated)"
+      },
+      "toasts": {
+        "companySaved": "Company settings saved",
+        "invoicingSaved": "Invoicing saved",
+        "mollieTestSuccess": "Mollie test successful",
+        "paymentsSaved": "Payment settings saved",
+        "localesSaved": "Locale settings saved"
+      }
+    }
   }
 }

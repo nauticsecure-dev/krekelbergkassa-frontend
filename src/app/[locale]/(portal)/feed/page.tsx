@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
   Anchor,
   ArrowRight,
-  Bell,
   Calendar,
   CheckCircle2,
   CreditCard,
@@ -16,11 +15,9 @@ import {
   MessageCircle,
   Pause,
   Phone,
-  Plus,
   Ship,
   Sparkles,
   Sun,
-  TrendingUp,
   Warehouse,
 } from 'lucide-react';
 import { useIntl } from '@/i18n/IntlProvider';

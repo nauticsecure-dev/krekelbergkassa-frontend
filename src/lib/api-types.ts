@@ -1,0 +1,377 @@
+export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'guest';
+
+export interface SessionUser {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  locale?: string;
+  avatarUrl?: string | null;
+  permissions?: string[];
+}
+
+export interface PaginationMeta {
+  current_page: number;
+  from: number | null;
+  last_page: number;
+  per_page: number;
+  to: number | null;
+  total: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  links?: {
+    first?: string | null;
+    last?: string | null;
+    prev?: string | null;
+    next?: string | null;
+  };
+  meta?: PaginationMeta;
+}
+
+export interface Customer {
+  id: string;
+  customer_number: string;
+  name: string;
+  company_name: string | null;
+  is_business: boolean;
+  email: string | null;
+  billing_email: string | null;
+  phone: string | null;
+  preferred_locale: string;
+  vat_number: string | null;
+  notes: string | null;
+  boats_count?: number;
+  boats?: Boat[];
+  created_at: string;
+  updated_at: string;
+}
+
+export type BoatType = 'motor' | 'sail' | 'rib' | 'trailer' | 'other';
+
+export interface Boat {
+  id: string;
+  customer_id: string;
+  name: string;
+  type: BoatType | string;
+  registration_number: string | null;
+  length_cm: number | null;
+  width_cm: number | null;
+  length_metres: number | null;
+  surface_area_cm2: number | null;
+  location_code: string | null;
+  photo_url: string | null;
+  notes: string | null;
+  customer?: Customer;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StallingContract {
+  id: string;
+  contract_number: string;
+  type: 'winter' | 'summer' | 'week' | 'year' | string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  period_label: string;
+  is_expired: boolean;
+  is_overdue: boolean;
+  billing_type: 'one_time' | 'monthly' | string;
+  billing_interval: 'monthly' | 'yearly' | string | null;
+  price_total: number;
+  price_per_month: number;
+  price_total_euros: number;
+  paid_until: string | null;
+  next_invoice_date: string | null;
+  auto_invoice: boolean;
+  payment_status: 'open' | 'expiring' | 'overdue' | 'paid' | 'cancelled' | string;
+  open_balance_cents: number;
+  notes: string | null;
+  customer?: Customer;
+  boat?: Boat;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvoiceLine {
+  id: string;
+  invoice_id: string;
+  product_id: string | null;
+  description: string;
+  quantity: string;
+  unit_price: number;
+  vat_rate: string;
+  vat_amount: number;
+  line_total: number;
+  metadata?: Record<string, unknown> | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface Payment {
+  id: string;
+  invoice_id: string;
+  provider: string;
+  provider_payment_id: string | null;
+  method: string | null;
+  status: string;
+  amount: number;
+  amount_euros: number;
+  currency: string;
+  checkout_url: string | null;
+  paid_at: string | null;
+  reconciled_at: string | null;
+  created_at: string;
+  customer?: Customer;
+}
+
+export interface Reminder {
+  id: string;
+  invoice_id: string;
+  customer_id: string;
+  type: string;
+  channel: string;
+  locale: string;
+  subject: string | null;
+  body: string | null;
+  status: string;
+  sent_at: string | null;
+  created_at: string;
+}
+
+export interface Invoice {
+  id: string;
+  invoice_number: string;
+  source: 'kassa' | 'stalling' | 'manual' | 'calculator' | string;
+  status: string;
+  locale: string;
+  currency: string;
+  subtotal_cents: number;
+  vat_amount_cents: number;
+  total_amount_cents: number;
+  subtotal_euros: number;
+  vat_amount_euros: number;
+  total_amount_euros: number;
+  outstanding_cents: number;
+  is_fully_paid: boolean;
+  is_overdue: boolean;
+  is_sent: boolean;
+  reminder_count: number;
+  last_reminder_sent_at: string | null;
+  due_date: string | null;
+  sent_at: string | null;
+  paid_at: string | null;
+  pdf_url: string | null;
+  customer_snapshot?: Record<string, unknown> | null;
+  company_snapshot?: Record<string, unknown> | null;
+  customer?: Customer;
+  lines?: InvoiceLine[];
+  payments?: Payment[];
+  stalling_contract?: StallingContract | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Product {
+  id: string;
+  code: string;
+  service_code: string | null;
+  name: string;
+  category: string | null;
+  description: string | null;
+  vat_rate: string;
+  price_excl_vat: number;
+  price_incl_vat: number;
+  price_excl_vat_euros: number;
+  price_incl_vat_euros: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PricingRule {
+  id: string;
+  product_id: string;
+  service_code: string | null;
+  range_from_cm: number;
+  range_to_cm: number;
+  range_label: string;
+  price_excl_vat: number;
+  price_incl_vat: number;
+  price_excl_vat_euros: number;
+  price_incl_vat_euros: number;
+  currency: string;
+  valid_from: string | null;
+  valid_to: string | null;
+  is_valid_now: boolean;
+  priority: number;
+  channel: string;
+  active: boolean;
+  product?: Product;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Sale {
+  id: string;
+  invoice_number: string;
+  idempotency_key: string;
+  device_id: string;
+  status: string;
+  payment_status: 'paid' | 'open' | string;
+  subtotal_cents: number | string;
+  vat_amount_cents: number | string;
+  total_amount_cents: number | string;
+  total_euros: number | string;
+  currency: string;
+  paid_at: string | null;
+  created_at: string;
+  customer?: Customer | null;
+  lines?: InvoiceLine[];
+  payments?: Payment[];
+}
+
+export interface AuditLog {
+  id: string;
+  entity_type: string;
+  entity_id: string | null;
+  action: string;
+  before_data: Record<string, unknown> | null;
+  after_data: Record<string, unknown> | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  actor_type: string;
+  reason: string | null;
+  user?: SessionUser;
+  created_at: string;
+}
+
+export interface SyncDevice {
+  id: string;
+  device_id: string;
+  device_name: string | null;
+  device_type: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  active: boolean;
+  last_seen_at: string | null;
+  last_sync_at: string | null;
+  revoked_at: string | null;
+  revoke_reason: string | null;
+  created_at: string;
+}
+
+export interface AppSettings {
+  company: {
+    name: string;
+    kvk: string | null;
+    vat_number: string | null;
+    email: string;
+    phone: string | null;
+    iban: string | null;
+    address: {
+      street: string;
+      postal_code: string;
+      city: string;
+      country: string;
+    };
+  };
+  invoicing: {
+    invoice_prefix: string;
+    default_due_days: number;
+    currency: string;
+    default_vat_rate: number;
+    reminder_first_days: number;
+    reminder_second_days: number;
+    reminder_final_days: number;
+  };
+  payments: {
+    provider: string;
+    connected: boolean;
+    test_mode: boolean;
+    enabled_methods: string[];
+  };
+  locales: {
+    default_locale: string;
+    fallback_locale: string;
+    supported_locales: string[];
+  };
+}
+
+export interface PortalCustomer {
+  id: string;
+  customer_number: string;
+  name: string;
+  email: string;
+  phone: string;
+  preferred_locale: string;
+}
+
+export interface PortalInvoice {
+  id: string;
+  invoice_number: string;
+  source: string;
+  status: string;
+  locale: string;
+  currency: string;
+  subtotal_cents: number | string;
+  vat_amount_cents: number | string;
+  total_amount_cents: number | string;
+  total_amount_euros: number | string;
+  outstanding_cents: number | string;
+  is_fully_paid: boolean | string;
+  is_overdue: boolean | string;
+  due_date: string | null;
+  paid_at: string | null;
+  created_at: string;
+  pdf_url: string;
+  lines?: InvoiceLine[];
+  payments?: Payment[];
+}
+
+export interface PortalMe {
+  customer: PortalCustomer;
+  summary: {
+    open_balance_cents: number | string;
+    open_invoices_count: number;
+    boats_count: number | string;
+    active_contracts_count: number;
+  };
+}
+
+export interface PortalContract {
+  id: string;
+  contract_number: string;
+  type: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  period_label: string;
+  paid_until: string | null;
+  open_balance_cents: number;
+  boat?: PortalBoat;
+}
+
+export interface PortalBoat {
+  id: string;
+  name: string;
+  type: string;
+  registration_number: string;
+  length_cm: number | string;
+  width_cm: number | string;
+  length_metres: number | string;
+  location_code: string;
+  photo_url: string;
+}
+
+export interface SyncStatus {
+  status: string;
+  online: boolean;
+  last_sync_at: string | null;
+  pending_count: number;
+  failed_count: number;
+  device_id?: string;
+  device_name?: string;
+}

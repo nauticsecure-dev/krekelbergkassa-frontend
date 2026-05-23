@@ -87,7 +87,12 @@
     "heroBadge": "Über Krekelberg Nautic",
     "heroTitle": "Handwerkskunst an den Maasplassen, seit 1972",
     "heroSubtitle": "Familienbetrieb, Yachtmakler und DIY-Werft in einem — seit über fünfzig Jahren die vertrauensvolle Adresse in Roermond.",
-    "stats": { "years": "Jahre Erfahrung", "storage": "Stellplätze", "yard": "Werftgelände", "sale": "Verkaufsschiffe" },
+    "stats": {
+      "years": "Jahre Erfahrung",
+      "storage": "Stellplätze",
+      "yard": "Werftgelände",
+      "sale": "Verkaufsschiffe"
+    },
     "storyBadge": "Unsere Geschichte",
     "storyTitle": "Eine Werft mit Charakter",
     "story1": "Was 1972 als kleine Werft begann, ist zum größten Yachtmakler und Self-Service-Hafen in Limburg geworden. Wir halten die Werft bewusst kompakt und menschlich.",
@@ -103,19 +108,46 @@
     "valuesBadge": "Werte",
     "valuesTitle": "Wofür wir stehen",
     "values": {
-      "craft":       { "title": "Handwerkskunst",     "desc": "Jahrzehntelange Werft- und Verkaufserfahrung in jedem Termin." },
-      "safe":        { "title": "Sicher & versichert", "desc": "Voll versichertes Gelände mit 24/7 Kameraüberwachung und soliden Stützen." },
-      "personal":    { "title": "Persönlicher Kontakt", "desc": "Jeder bekommt denselben festen Ansprechpartner." },
-      "sustainable": { "title": "Nachhaltig",         "desc": "Umweltfreundliche Reinigung mit gefiltertem Abwasser und kontrollierter Entsorgung." }
+      "craft": {
+        "title": "Handwerkskunst",
+        "desc": "Jahrzehntelange Werft- und Verkaufserfahrung in jedem Termin."
+      },
+      "safe": {
+        "title": "Sicher & versichert",
+        "desc": "Voll versichertes Gelände mit 24/7 Kameraüberwachung und soliden Stützen."
+      },
+      "personal": {
+        "title": "Persönlicher Kontakt",
+        "desc": "Jeder bekommt denselben festen Ansprechpartner."
+      },
+      "sustainable": {
+        "title": "Nachhaltig",
+        "desc": "Umweltfreundliche Reinigung mit gefiltertem Abwasser und kontrollierter Entsorgung."
+      }
     },
     "timelineBadge": "Timeline",
     "timelineTitle": "Fünfzig Jahre in fünf Meilensteinen",
     "timeline": {
-      "start":      { "title": "Gründung",          "desc": "Die Werft wird an den Maasplassen gegründet." },
-      "crane":      { "title": "30-Tonnen Kran",    "desc": "Erster mobiler 30-Tonnen-Kran im Einsatz." },
-      "brokerage":  { "title": "Schepenkring",      "desc": "Partnerschaft für Yachtvermittlung beginnt." },
-      "apartments": { "title": "Apartments",        "desc": "Aufenthalte direkt am Yachthafen eröffnen." },
-      "digital":    { "title": "Digitale Plattform","desc": "Start der Krekelberg-Plattform." }
+      "start": {
+        "title": "Gründung",
+        "desc": "Die Werft wird an den Maasplassen gegründet."
+      },
+      "crane": {
+        "title": "30-Tonnen Kran",
+        "desc": "Erster mobiler 30-Tonnen-Kran im Einsatz."
+      },
+      "brokerage": {
+        "title": "Schepenkring",
+        "desc": "Partnerschaft für Yachtvermittlung beginnt."
+      },
+      "apartments": {
+        "title": "Apartments",
+        "desc": "Aufenthalte direkt am Yachthafen eröffnen."
+      },
+      "digital": {
+        "title": "Digitale Plattform",
+        "desc": "Start der Krekelberg-Plattform."
+      }
     },
     "teamBadge": "Unser Team",
     "teamTitle": "Die Gesichter hinter der Werft",
@@ -201,11 +233,26 @@
     "faqSubtitle": "Die Fragen, die wir am häufigsten zu Lagerung, Kran und Arbeiten bekommen.",
     "allFaq": "Alle FAQs",
     "faq": {
-      "faq1": { "q": "Warum ist Überwintern an Land empfehlenswert?", "a": "Überwintern an Land reduziert das Schadenrisiko. Bei Polyester-Booten verringert es das Osmose-Risiko erheblich. Bei Stahl-Booten hilft es Korrosion zu vermeiden. Der Winter ist außerdem ideal für Wartung und Reparaturen." },
-      "faq2": { "q": "Welche Risiken bestehen, wenn mein Boot im Winter im Wasser bleibt?", "a": "Bei extremer Kälte kann Rijkswaterstaat die Wehre öffnen, wodurch der Wasserstand plötzlich um mehrere Meter fallen kann. Das kann zu schweren Schäden und hohen Reparaturkosten führen." },
-      "faq3": { "q": "Wie sicher steht mein Boot während der Lagerung?", "a": "Das Gelände ist vollständig eingezäunt, nachts mit elektrischem Tor verschlossen und Tag und Nacht bewacht. Während der Öffnungszeiten ist immer jemand vor Ort (außer in den Weihnachtsferien)." },
-      "faq4": { "q": "Welche Einrichtungen gibt es auf dem Gelände?", "a": "Das Gelände verfügt über mehrere Stromanschlüsse und Wasserzapfstellen. Die Aufteilung sorgt dafür, dass Sie immer nah an einem Anschluss stehen." },
-      "faq5": { "q": "Was kostet die Bootslagerung?", "a": "Die Kosten hängen von Typ und Größe Ihres Bootes ab. Für aktuelle Preise und einen Termin kontaktieren Sie uns unverbindlich." }
+      "faq1": {
+        "q": "Warum ist Überwintern an Land empfehlenswert?",
+        "a": "Überwintern an Land reduziert das Schadenrisiko. Bei Polyester-Booten verringert es das Osmose-Risiko erheblich. Bei Stahl-Booten hilft es Korrosion zu vermeiden. Der Winter ist außerdem ideal für Wartung und Reparaturen."
+      },
+      "faq2": {
+        "q": "Welche Risiken bestehen, wenn mein Boot im Winter im Wasser bleibt?",
+        "a": "Bei extremer Kälte kann Rijkswaterstaat die Wehre öffnen, wodurch der Wasserstand plötzlich um mehrere Meter fallen kann. Das kann zu schweren Schäden und hohen Reparaturkosten führen."
+      },
+      "faq3": {
+        "q": "Wie sicher steht mein Boot während der Lagerung?",
+        "a": "Das Gelände ist vollständig eingezäunt, nachts mit elektrischem Tor verschlossen und Tag und Nacht bewacht. Während der Öffnungszeiten ist immer jemand vor Ort (außer in den Weihnachtsferien)."
+      },
+      "faq4": {
+        "q": "Welche Einrichtungen gibt es auf dem Gelände?",
+        "a": "Das Gelände verfügt über mehrere Stromanschlüsse und Wasserzapfstellen. Die Aufteilung sorgt dafür, dass Sie immer nah an einem Anschluss stehen."
+      },
+      "faq5": {
+        "q": "Was kostet die Bootslagerung?",
+        "a": "Die Kosten hängen von Typ und Größe Ihres Bootes ab. Für aktuelle Preise und einen Termin kontaktieren Sie uns unverbindlich."
+      }
     },
     "ctaBadge": "Termin buchen",
     "ctaTitle": "Bereit für den nächsten Schritt?",
@@ -236,12 +283,36 @@
     "servicesSubtitle": "Von Kran bis Verkauf, alles aus einer Hand an den Maasplassen.",
     "servicesAll": "Alle Leistungen ansehen",
     "svc": {
-      "crane": { "title": "Kran bis 30 Tonnen", "tagline": "Boot ins oder aus dem Wasser", "desc": "Professioneller Kran-Service mit unserem 30-Tonnen-Mobilkran und erfahrenem Team." },
-      "wash": { "title": "Rumpfreinigung", "tagline": "Direkt nach dem Kran", "desc": "Umweltfreundliche Reinigung mit gefiltertem Abwasser, bereit für Lagerung oder Antifouling." },
-      "storage": { "title": "Winterlagerung", "tagline": "Innen & außen", "desc": "Sicher und versichert auf 10.000 m² Werftgelände mit Kameraüberwachung." },
-      "diy": { "title": "Selbst arbeiten", "tagline": "DIY-freundliche Werft", "desc": "Werkplätze mit Strom, Wasser und unseren Mechanikern auf Anfrage." },
-      "sale": { "title": "Boot verkaufen", "tagline": "Über Schepenkring Roermond", "desc": "Verkauf an unserem physischen Standort mit professioneller Vermittlung und durchgehender Sichtbarkeit." },
-      "apartments": { "title": "Apartments", "tagline": "Direkt am Yachthafen", "desc": "Komfortabler Aufenthalt direkt neben der Werft — ideal während Arbeiten oder einer Kurzreise." }
+      "crane": {
+        "title": "Kran bis 30 Tonnen",
+        "tagline": "Boot ins oder aus dem Wasser",
+        "desc": "Professioneller Kran-Service mit unserem 30-Tonnen-Mobilkran und erfahrenem Team."
+      },
+      "wash": {
+        "title": "Rumpfreinigung",
+        "tagline": "Direkt nach dem Kran",
+        "desc": "Umweltfreundliche Reinigung mit gefiltertem Abwasser, bereit für Lagerung oder Antifouling."
+      },
+      "storage": {
+        "title": "Winterlagerung",
+        "tagline": "Innen & außen",
+        "desc": "Sicher und versichert auf 10.000 m² Werftgelände mit Kameraüberwachung."
+      },
+      "diy": {
+        "title": "Selbst arbeiten",
+        "tagline": "DIY-freundliche Werft",
+        "desc": "Werkplätze mit Strom, Wasser und unseren Mechanikern auf Anfrage."
+      },
+      "sale": {
+        "title": "Boot verkaufen",
+        "tagline": "Über Schepenkring Roermond",
+        "desc": "Verkauf an unserem physischen Standort mit professioneller Vermittlung und durchgehender Sichtbarkeit."
+      },
+      "apartments": {
+        "title": "Apartments",
+        "tagline": "Direkt am Yachthafen",
+        "desc": "Komfortabler Aufenthalt direkt neben der Werft — ideal während Arbeiten oder einer Kurzreise."
+      }
     },
     "werf": {
       "badge": "Werftleistungen",
@@ -252,10 +323,22 @@
       "cta": "Werftleistungen ansehen",
       "book": "Termin buchen",
       "bullet": {
-        "lift": { "title": "Kran & Reinigung", "desc": "30-Tonnen Kran und Hochdruckreinigung" },
-        "wash": { "title": "Wartung", "desc": "Antifouling, Polieren, Motorenservice" },
-        "storage": { "title": "Innen- & Außenlagerung", "desc": "Für Boote bis 14m+" },
-        "diy": { "title": "DIY-Werft", "desc": "Werkplätze mit Strom und Wasser" }
+        "lift": {
+          "title": "Kran & Reinigung",
+          "desc": "30-Tonnen Kran und Hochdruckreinigung"
+        },
+        "wash": {
+          "title": "Wartung",
+          "desc": "Antifouling, Polieren, Motorenservice"
+        },
+        "storage": {
+          "title": "Innen- & Außenlagerung",
+          "desc": "Für Boote bis 14m+"
+        },
+        "diy": {
+          "title": "DIY-Werft",
+          "desc": "Werkplätze mit Strom und Wasser"
+        }
       }
     },
     "sale": {
@@ -289,15 +372,40 @@
       "secondary": "Kontakt aufnehmen"
     },
     "processTitle": "So funktioniert es",
-    "processSubtitle": "In vier einfachen Schritten ist Ihr Schiff in guten Händen"
+    "processSubtitle": "In vier einfachen Schritten ist Ihr Schiff in guten Händen",
+    "classicTagline": "Yachtmakler | Lagerung | Do-it-yourself-Werft"
   },
   "services": {
-    "crane": { "title": "Kran", "desc": "Boot ins oder aus dem Wasser mit unserem 30-Tonnen-Profi-Kran.", "cta": "Krantermin planen" },
-    "wash": { "title": "Abspritzen", "desc": "Professionelle Rumpfreinigung direkt nach dem Kran.", "cta": "Tarife ansehen" },
-    "storage": { "title": "Winterlager", "desc": "Innen- und Außenlagerung, geräumig und versichert.", "cta": "Lagerung anfragen" },
-    "diy": { "title": "Selbst arbeiten", "desc": "Arbeiten Sie auf der Werft mit allen Einrichtungen selbstständig an Ihrem Boot.", "cta": "Möglichkeiten ansehen" },
-    "sale": { "title": "Boot verkaufen", "desc": "Verkauf über Schepenkring Roermond mit physischer Sichtbarkeit.", "cta": "Boot anmelden" },
-    "apartments": { "title": "Apartments", "desc": "Übernachten direkt am Yachthafen an der Maasplassen.", "cta": "Apartments ansehen" }
+    "crane": {
+      "title": "Kran",
+      "desc": "Boot ins oder aus dem Wasser mit unserem 30-Tonnen-Profi-Kran.",
+      "cta": "Krantermin planen"
+    },
+    "wash": {
+      "title": "Abspritzen",
+      "desc": "Professionelle Rumpfreinigung direkt nach dem Kran.",
+      "cta": "Tarife ansehen"
+    },
+    "storage": {
+      "title": "Winterlager",
+      "desc": "Innen- und Außenlagerung, geräumig und versichert.",
+      "cta": "Lagerung anfragen"
+    },
+    "diy": {
+      "title": "Selbst arbeiten",
+      "desc": "Arbeiten Sie auf der Werft mit allen Einrichtungen selbstständig an Ihrem Boot.",
+      "cta": "Möglichkeiten ansehen"
+    },
+    "sale": {
+      "title": "Boot verkaufen",
+      "desc": "Verkauf über Schepenkring Roermond mit physischer Sichtbarkeit.",
+      "cta": "Boot anmelden"
+    },
+    "apartments": {
+      "title": "Apartments",
+      "desc": "Übernachten direkt am Yachthafen an der Maasplassen.",
+      "cta": "Apartments ansehen"
+    }
   },
   "process": {
     "step1Title": "Wählen Sie Ihren Service",
@@ -934,5 +1042,604 @@
     "more": "Mehr",
     "loginFailed": "Anmeldung fehlgeschlagen",
     "loggingIn": "Anmelden…"
+  },
+  "adminNew": {
+    "common": {
+      "loading": "Laden…",
+      "unknown": "Unbekannt",
+      "name": "Name",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "new": "Neu",
+      "delete": "Löschen",
+      "logout": "Abmelden",
+      "noEmail": "keine E-Mail",
+      "operationFailed": "Aktion fehlgeschlagen"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Täglicher Betriebsstatus der Marina",
+      "live": "Live",
+      "quickActions": "Schnellaktionen",
+      "cards": {
+        "openInvoices": {
+          "title": "Offene Rechnungen",
+          "subtitle": "{count} überfällig"
+        },
+        "stallingActions": {
+          "title": "Lagerungsaktionen",
+          "subtitle": "Verträge mit Rückstand"
+        },
+        "cashRevenue": {
+          "title": "Kassenumsatz",
+          "subtitle": "Neueste Transaktionen"
+        },
+        "syncStatus": {
+          "title": "Sync-Status",
+          "lastSync": "Letzte Sync: {time}",
+          "noSync": "Noch keine Sync"
+        }
+      },
+      "actions": {
+        "customers": "Kunden verwalten",
+        "stalling": "Lagerung prüfen",
+        "invoices": "Rechnungen prüfen",
+        "calculator": "Preis berechnen"
+      },
+      "portal": {
+        "title": "Portal & Kunden",
+        "openPortal": "Kundenportal öffnen",
+        "activeSessions": "Aktive Portalsitzungen",
+        "newQuestions": "Neue Kundenfragen",
+        "totalCustomers": "Kunden gesamt"
+      }
+    },
+    "customers": {
+      "title": "Kunden",
+      "subtitle": "Zentrales Kundenverzeichnis für Kasse, Lagerung und Rechnungen",
+      "new": "Neuer Kunde",
+      "searchPlaceholder": "Suche nach Name, E-Mail, Telefon, Boot",
+      "loading": "Kunden laden",
+      "emptyTitle": "Keine Kunden gefunden",
+      "emptyMessage": "Filter anpassen oder neuen Kunden anlegen.",
+      "columns": {
+        "customer": "Kunde",
+        "contact": "Kontakt",
+        "locale": "Sprache",
+        "boats": "Boote",
+        "created": "Erstellt"
+      },
+      "details": "Details",
+      "total": "{count} Kunden gesamt",
+      "results": "{count} Ergebnisse",
+      "modal": {
+        "title": "Neuer Kunde",
+        "subtitle": "Name und E-Mail reichen für die schnelle Erfassung."
+      },
+      "toasts": {
+        "created": "Kunde erstellt",
+        "createFailed": "Erstellung fehlgeschlagen"
+      }
+    },
+    "auth": {
+      "portalSessionActive": "Portal-Sitzung aktiv",
+      "portalSessionActiveMsg": "Sie haben sich erfolgreich per Magic-Link angemeldet.",
+      "magicSentTitle": "Magic-Link gesendet",
+      "emailPlaceholder": "name@beispiel.de",
+      "magicInfo": "Portal-Login verwendet einen Magic-Link per E-Mail. Kein Passwort nötig.",
+      "magicSentMessage": "Wenn diese E-Mail existiert, wurde ein Anmeldelink gesendet.",
+      "togglePassword": "Passwortsichtbarkeit umschalten",
+      "passwordPlaceholder": "••••••••",
+      "sendMagicLink": "Magic-Link senden",
+      "accountCreatedByAdmin": "Konten werden durch einen Administrator erstellt."
+    },
+    "sidebar": {
+      "calculator": "Rechner",
+      "sync": "Offline / Sync"
+    },
+    "states": {
+      "errorTitle": "Etwas ist schiefgelaufen",
+      "emptyTitle": "Noch keine Daten",
+      "retry": "Erneut versuchen"
+    },
+    "status": {
+      "paid": "Bezahlt",
+      "overdue": "Überfällig",
+      "credited": "Gutgeschrieben",
+      "cancelled": "Storniert",
+      "draft": "Entwurf",
+      "open": "Offen",
+      "failed": "Fehlgeschlagen",
+      "expiring": "Läuft ab"
+    },
+    "audit": {
+      "title": "Audit",
+      "subtitle": "Kontrollprotokoll für Sicherheit, Zahlungen, Rechnungen, Kunden und Sync",
+      "searchPlaceholder": "Nach Aktion, Akteur, Entität suchen",
+      "allEntities": "Alle Entitätstypen",
+      "entity": {
+        "invoice": "Rechnung",
+        "customer": "Kunde",
+        "stalling": "Lagerung",
+        "payment": "Zahlung"
+      },
+      "loading": "Audit-Logs laden",
+      "empty": "Keine Audit-Ereignisse",
+      "columns": {
+        "time": "Zeit",
+        "action": "Aktion",
+        "entity": "Entität",
+        "actor": "Akteur"
+      },
+      "events": "{count} Ereignisse"
+    },
+    "boats": {
+      "title": "Boote",
+      "subtitle": "Boote, Längen und Standorte für Lagerung und Rechnungen verwalten",
+      "new": "Neues Boot",
+      "searchPlaceholder": "Nach Bootsname, Eigentümer oder Standort suchen",
+      "loading": "Boote laden",
+      "emptyTitle": "Keine Boote",
+      "emptyMessage": "Noch keine Boote gefunden.",
+      "columns": {
+        "boat": "Boot",
+        "owner": "Eigentümer",
+        "type": "Typ",
+        "length": "Länge",
+        "location": "Standort"
+      },
+      "fields": {
+        "lengthCm": "Länge (cm)",
+        "widthCm": "Breite (cm)",
+        "locationCode": "Standortcode"
+      },
+      "type": {
+        "motor": "Motor",
+        "sail": "Segel",
+        "other": "Sonstiges"
+      },
+      "selectCustomer": "Kunde wählen",
+      "confirmDelete": "Boot löschen?",
+      "total": "{count} Boote",
+      "toasts": {
+        "created": "Boot erstellt",
+        "createFailed": "Erstellen fehlgeschlagen",
+        "deleted": "Boot gelöscht",
+        "deleteFailed": "Löschen fehlgeschlagen"
+      }
+    },
+    "kassa": {
+      "title": "Kasse",
+      "subtitle": "Schneller Checkout mit intelligenter Suche und Echtzeitberechnung",
+      "searchPlaceholder": "Produkt suchen oder z.B. afspuiten 880 eingeben",
+      "selectCustomer": "Kunde auswählen",
+      "payment": {
+        "cash": "Bar",
+        "pin": "EC-Karte",
+        "invoice": "Rechnung",
+        "creditcard": "Kreditkarte"
+      },
+      "smartMatch": "Intelligente Übereinstimmung",
+      "products": "Produkte",
+      "loadingProducts": "Produkte laden",
+      "emptyProductsTitle": "Keine Produkte",
+      "emptyProductsMessage": "Suchbegriff anpassen oder Preisregeln hinzufügen.",
+      "match": "Treffer",
+      "recentSales": "Letzte Verkäufe",
+      "noRecentSales": "Noch keine aktuellen Verkäufe.",
+      "cart": "Warenkorb",
+      "lines": "{count} Zeilen",
+      "emptyCartMessage": "Fügen Sie Produkte hinzu, um den Checkout fortzusetzen.",
+      "vat": "MwSt",
+      "subtotal": "Zwischensumme",
+      "vatIncluded": "MwSt. (inkl.)",
+      "total": "Gesamt",
+      "processing": "Verarbeitung…",
+      "checkout": "Checkout",
+      "calculating": "Berechnen…",
+      "createQuote": "Angebot erstellen",
+      "modalTitle": "Neuer Kunde (Kasse)",
+      "modalSubtitle": "Name und E-Mail reichen für den schnellen Checkout aus.",
+      "creating": "Erstellen…",
+      "create": "Erstellen",
+      "toasts": {
+        "customerCreated": "Kunde erstellt",
+        "customerCreateFailed": "Kundenerstellung fehlgeschlagen",
+        "emptyCart": "Warenkorb ist leer",
+        "checkoutDone": "Checkout abgeschlossen",
+        "checkoutFailed": "Checkout fehlgeschlagen",
+        "quoteDone": "Angebot berechnet",
+        "quoteFailed": "Angebot fehlgeschlagen"
+      }
+    },
+    "stalling": {
+      "title": "Lagerung",
+      "subtitle": "Verwalten Sie etwa 200 Boote mit Status, bezahlt-bis und offenem Saldo",
+      "searchPlaceholder": "Nach Boot, Kunde oder Standort suchen",
+      "allStatuses": "Alle Status",
+      "allTypes": "Alle Typen",
+      "type": {
+        "winter": "Winter",
+        "summer": "Sommer",
+        "year": "Jahr",
+        "week": "Woche"
+      },
+      "loading": "Lagerverträge laden",
+      "emptyTitle": "Keine Verträge",
+      "emptyMessage": "Keine Ergebnisse für aktuelle Filter.",
+      "columns": {
+        "boat": "Boot",
+        "customer": "Kunde",
+        "period": "Zeitraum",
+        "type": "Typ",
+        "paidUntil": "Bezahlt bis",
+        "openBalance": "Offener Saldo",
+        "status": "Status"
+      },
+      "invoice": "Rechnung",
+      "cancel": "Stornieren",
+      "invoiceCreated": "Rechnung erstellt",
+      "cancelled": "Vertrag storniert",
+      "contracts": "{count} Verträge",
+      "openCustomer": "Kunde öffnen"
+    },
+    "sync": {
+      "title": "Offline-/Sync-Status",
+      "subtitle": "Ausstehende Änderungen, Fehler und letzte Synchronisierung pro Gerät anzeigen",
+      "refresh": "Aktualisieren",
+      "syncAll": "Alles synchronisieren",
+      "syncing": "Synchronisiert…",
+      "connection": "Verbindung",
+      "online": "Online",
+      "offline": "Offline",
+      "pending": "Ausstehend",
+      "failed": "Fehlgeschlagen",
+      "lastSync": "Letzte Sync",
+      "pendingChanges": "Ausstehende Änderungen",
+      "clear": "Leeren",
+      "retry": "Erneut",
+      "noPending": "Keine ausstehenden Offline-Änderungen.",
+      "devices": "Registrierte Sync-Geräte",
+      "noDevices": "Noch keine Sync-Geräte verfügbar.",
+      "itemSynced": "Änderung synchronisiert",
+      "syncFailed": "Sync fehlgeschlagen",
+      "error": "Sync-Fehler"
+    },
+    "portal": {
+      "updates": {
+        "title": "Meine Updates",
+        "subtitle": "Termine und Timeline-Einträge von Krekelberg",
+        "loading": "Updates laden",
+        "empty": "Keine Updates",
+        "item": "Update"
+      },
+      "invoices": {
+        "title": "Meine Rechnungen",
+        "subtitle": "Offene Rechnungen anzeigen, PDF herunterladen und sicher über Mollie bezahlen",
+        "allStatuses": "Alle Status",
+        "loading": "Rechnungen laden",
+        "empty": "Keine Rechnungen",
+        "pay": "Bezahlen",
+        "openBalance": "Offener Saldo"
+      },
+      "stalling": {
+        "title": "Meine Lagerung",
+        "subtitle": "Übersicht aktiver Lagerverträge und Zahlungsstatus",
+        "loading": "Verträge laden",
+        "empty": "Keine Verträge"
+      },
+      "boats": {
+        "title": "Meine Boote",
+        "subtitle": "Boote anzeigen, die mit Ihrem Konto verknüpft sind",
+        "loading": "Boote laden",
+        "empty": "Keine Boote",
+        "length": "Länge",
+        "location": "Standort"
+      },
+      "documents": {
+        "title": "Dokumente",
+        "subtitle": "PDFs und relevante Dokumente",
+        "empty": "Noch keine Dokumente",
+        "emptyMessage": "Dokumente werden hier automatisch angezeigt, sobald sie verfügbar sind."
+      },
+      "messages": {
+        "title": "Nachrichten",
+        "subtitle": "Benachrichtigungen und Nachrichten von Krekelberg",
+        "loading": "Nachrichten laden",
+        "empty": "Keine Nachrichten",
+        "item": "Nachricht"
+      },
+      "settings": {
+        "title": "Portal-Einstellungen",
+        "subtitle": "Kontenübersicht und Sicherheitsstatus",
+        "loading": "Konto laden",
+        "myDetails": "Meine Daten",
+        "summary": "Zusammenfassung",
+        "openBalance": "Offener Saldo",
+        "openInvoices": "Offene Rechnungen",
+        "boats": "Boote",
+        "activeContracts": "Aktive Verträge",
+        "magicActive": "Magic-Link-Sicherheit aktiv",
+        "refreshSession": "Sitzungsstatus aktualisieren"
+      }
+    },
+    "shell": {
+      "notifications": "Benachrichtigungen",
+      "viewAllUpdates": "Alle Updates anzeigen",
+      "notifs": {
+        "webhookFailedTitle": "Mollie-Webhook fehlgeschlagen",
+        "webhookFailedMessage": "tr_abc123 — manuell erneut versuchen",
+        "webhookFailedTime": "vor 2 Min",
+        "newAppointmentTitle": "Neuer Krantermin",
+        "newAppointmentMessage": "Jan Jansen · Aquila 8.90m",
+        "newAppointmentTime": "vor 12 Min",
+        "storageExpiringTitle": "Lagerung läuft ab",
+        "storageExpiringMessage": "Atalanta · in 9 Tagen",
+        "storageExpiringTime": "vor 1 Stunde"
+      }
+    },
+    "invoices": {
+      "title": "Rechnungen",
+      "subtitle": "Finanzübersicht über Kasse, Lagerung, Rechner und manuelle Rechnungen",
+      "new": "Neue Rechnung",
+      "defaultLineDescription": "Neue Rechnungszeile",
+      "searchPlaceholder": "Nach Rechnungsnummer, Kunde oder E-Mail suchen",
+      "allStatuses": "Alle Status",
+      "allSources": "Alle Quellen",
+      "loading": "Rechnungen laden",
+      "emptyTitle": "Keine Rechnungen",
+      "emptyMessage": "Keine Rechnungen für die aktuellen Filter.",
+      "details": "Details",
+      "openAmount": "Offen",
+      "total": "{count} Rechnungen",
+      "source": {
+        "kassa": "Kasse",
+        "stalling": "Lagerung",
+        "manual": "Manuell",
+        "calculator": "Rechner"
+      },
+      "metrics": {
+        "open": "Offene Rechnungen",
+        "overdue": "Überfällig",
+        "paid": "Bezahlt",
+        "openBalance": "Offener Saldo"
+      },
+      "columns": {
+        "invoice": "Rechnung",
+        "customer": "Kunde",
+        "source": "Quelle",
+        "amount": "Betrag",
+        "dueDate": "Fälligkeitsdatum",
+        "paymentMethod": "Zahlungsmethode",
+        "paidDate": "Bezahlt am",
+        "status": "Status"
+      },
+      "toasts": {
+        "createFailed": "Rechnungserstellung fehlgeschlagen"
+      }
+    },
+    "invoiceDetail": {
+      "fallbackTitle": "Rechnung",
+      "subtitle": "Rechnungsdetails",
+      "loading": "Rechnung laden",
+      "source": "Quelle",
+      "overviewTitle": "Rechnungsübersicht",
+      "customerSnapshot": "Kunden-Snapshot",
+      "companySnapshot": "Firmen-Snapshot",
+      "paymentTimeline": "Zahlungsverlauf",
+      "reminderHistory": "Mahnhistorie",
+      "channel": "Kanal",
+      "status": "Status",
+      "noPayments": "Noch keine Zahlungen erfasst.",
+      "noReminders": "Noch keine Erinnerungen versendet.",
+      "vatNumber": "USt-Nummer",
+      "iban": "IBAN",
+      "back": "← Zurück zu Rechnungen",
+      "legal": {
+        "title": "Finanzhinweis",
+        "message": "Versendete Rechnungen sollten nicht bearbeitet werden. Für Korrekturen Gutschriften verwenden."
+      },
+      "defaults": {
+        "reminderSubject": "Zahlungserinnerung",
+        "reminderBody": "Ihre Rechnung ist noch offen. Kontaktieren Sie uns bei Fragen."
+      },
+      "meta": {
+        "invoiceDate": "Rechnungsdatum",
+        "dueDate": "Fälligkeitsdatum",
+        "paidOn": "Bezahlt am"
+      },
+      "columns": {
+        "description": "Beschreibung",
+        "qty": "Menge",
+        "unitExcl": "Preis exkl. MwSt",
+        "vat": "MwSt",
+        "total": "Gesamt"
+      },
+      "summary": {
+        "subtotal": "Zwischensumme",
+        "vat": "MwSt",
+        "total": "Gesamt",
+        "outstanding": "Offen"
+      },
+      "actions": {
+        "send": "Senden",
+        "markPaid": "Als bezahlt markieren",
+        "mollieLink": "Mollie-Link",
+        "regeneratePdf": "PDF neu erzeugen",
+        "openPdf": "PDF öffnen",
+        "sendReminder": "Erinnerung senden",
+        "credit": "Gutschrift"
+      },
+      "paymentMethods": {
+        "cash": "Bar",
+        "pin": "EC-Karte",
+        "banktransfer": "Überweisung",
+        "manual": "Manuell"
+      },
+      "reminderModal": {
+        "title": "Erinnerung senden",
+        "subject": "Betreff",
+        "message": "Nachricht"
+      },
+      "markPaidModal": {
+        "title": "Als bezahlt markieren",
+        "method": "Methode"
+      },
+      "toasts": {
+        "invoiceSent": "Rechnung gesendet",
+        "paymentLinkCreated": "Zahlungslink erstellt",
+        "pdfRegenerated": "PDF neu erzeugt",
+        "credited": "Gutschrift erstellt",
+        "cancelled": "Rechnung storniert",
+        "reminderSent": "Erinnerung gesendet",
+        "markedPaid": "Rechnung als bezahlt markiert"
+      }
+    },
+    "customerDetail": {
+      "fallbackTitle": "Kunde",
+      "loading": "Kundendaten laden",
+      "infoTitle": "Kundeninformationen",
+      "summaryTitle": "Zusammenfassung",
+      "preferredLocale": "Bevorzugte Sprache",
+      "company": "Firma",
+      "vatNumber": "USt-Nummer",
+      "notes": "Notizen",
+      "noNotes": "Keine Notizen",
+      "boats": "Boote",
+      "stallingContracts": "Lagerverträge",
+      "invoices": "Rechnungen",
+      "openBalance": "Offener Saldo",
+      "dueDate": "Fälligkeitsdatum",
+      "noBoats": "Noch keine Boote verknüpft.",
+      "noInvoices": "Noch keine Rechnungen.",
+      "noContracts": "Noch keine Verträge.",
+      "files": "Dateien",
+      "file": "Datei",
+      "noFiles": "Keine Dateien mit diesem Kunden verknüpft.",
+      "boatType": "Typ",
+      "lengthCm": "Länge (cm)",
+      "locationCode": "Standortcode",
+      "defaultInvoiceLine": "Manuelle Rechnungszeile",
+      "table": {
+        "boats": {
+          "name": "Name",
+          "type": "Typ",
+          "length": "Länge",
+          "location": "Standort"
+        }
+      },
+      "actions": {
+        "editCustomer": "Kunde bearbeiten",
+        "newInvoice": "Neue Rechnung",
+        "addBoat": "Boot hinzufügen"
+      },
+      "modals": {
+        "editTitle": "Kunde bearbeiten",
+        "addBoatTitle": "Boot hinzufügen"
+      },
+      "toasts": {
+        "customerUpdated": "Kunde aktualisiert",
+        "saveFailed": "Speichern fehlgeschlagen",
+        "boatAdded": "Boot hinzugefügt",
+        "createFailed": "Erstellung fehlgeschlagen",
+        "invoiceCreated": "Rechnung erstellt",
+        "invoiceCreateFailed": "Rechnungserstellung fehlgeschlagen"
+      }
+    },
+    "calculator": {
+      "title": "Rechner",
+      "subtitle": "Konsistente Preisberechnung für Kasse, Lagerung und Verkauf",
+      "lengthCm": "Bootslänge (cm)",
+      "contractType": "Vertragstyp",
+      "services": "Leistungen",
+      "customerOptional": "Kunde (optional für Berechnung)",
+      "selectCustomer": "Kunde auswählen",
+      "calculating": "Berechnung…",
+      "calculate": "Preis berechnen",
+      "createQuote": "Angebot erstellen",
+      "createInvoice": "Rechnung erstellen",
+      "newCustomer": "Neuer Kunde",
+      "linePrefix": "Rechner",
+      "servicesMap": {
+        "afspuiten": "Abspritzen",
+        "kranen": "Kranen",
+        "stalling": "Lagerung",
+        "hal": "Hallenmiete"
+      },
+      "result": {
+        "title": "Ergebnis",
+        "empty": "Noch keine Berechnung durchgeführt.",
+        "rangeMatch": "Passender Bereich",
+        "contractType": "Vertragstyp",
+        "services": "Leistungen",
+        "vatRate": "MwSt-Satz",
+        "totalPrice": "Gesamtpreis",
+        "rawApi": "Roh-API-Ausgabe"
+      },
+      "toasts": {
+        "lengthAndServiceRequired": "Länge und Leistung sind erforderlich",
+        "failed": "Berechnung fehlgeschlagen",
+        "selectCustomer": "Bitte zuerst einen Kunden auswählen",
+        "runCalculationFirst": "Bitte zuerst eine Berechnung durchführen",
+        "createFailed": "Erstellung fehlgeschlagen"
+      }
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "subtitle": "Unternehmen, Rechnungsstellung, Zahlungen und Sprachen",
+      "loading": "Einstellungen laden",
+      "tabs": {
+        "company": "Unternehmen",
+        "invoicing": "Rechnungsstellung",
+        "payments": "Zahlungen",
+        "locales": "Sprachen"
+      },
+      "company": {
+        "title": "Unternehmensdaten",
+        "kvk": "KVK",
+        "vatNumber": "USt-Nummer",
+        "iban": "IBAN",
+        "street": "Straße",
+        "postalCode": "PLZ",
+        "city": "Stadt",
+        "country": "Land"
+      },
+      "invoicing": {
+        "title": "Rechnungseinstellungen",
+        "invoicePrefix": "Rechnungspräfix",
+        "defaultDueDays": "Standardzahlungsziel (Tage)",
+        "currency": "Währung",
+        "defaultVatRate": "Standard-MwSt %",
+        "reminderFirstDays": "1. Erinnerung (Tage)",
+        "reminderSecondDays": "2. Erinnerung (Tage)",
+        "reminderFinalDays": "Finale Erinnerung (Tage)"
+      },
+      "payments": {
+        "title": "Zahlungseinstellungen",
+        "connected": "Mollie verbunden",
+        "notConnected": "Mollie nicht verbunden",
+        "secretsBackendOnly": "Secrets bleiben nur im Backend",
+        "provider": "Anbieter",
+        "enabledMethods": "Aktive Methoden (kommagetrennt)",
+        "testMode": "Testmodus",
+        "testConnection": "Mollie-Verbindung testen"
+      },
+      "locales": {
+        "title": "Spracheinstellungen",
+        "defaultLocale": "Standard-Locale",
+        "fallbackLocale": "Fallback-Locale",
+        "supportedLocales": "Unterstützte Locales (kommagetrennt)"
+      },
+      "toasts": {
+        "companySaved": "Unternehmenseinstellungen gespeichert",
+        "invoicingSaved": "Rechnungsstellung gespeichert",
+        "mollieTestSuccess": "Mollie-Test erfolgreich",
+        "paymentsSaved": "Zahlungseinstellungen gespeichert",
+        "localesSaved": "Spracheinstellungen gespeichert"
+      }
+    }
   }
 }

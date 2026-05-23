@@ -5,7 +5,6 @@ import {
   AlignLeft,
   Bold,
   CheckSquare,
-  ChevronDown,
   Eye,
   FileText,
   Italic,
@@ -18,7 +17,6 @@ import {
   Sparkles,
   Tag,
   Undo2,
-  X,
 } from 'lucide-react';
 import { useIntl } from '@/i18n/IntlProvider';
 import { AdminPageHeader } from '@/components/admin/AdminShell';

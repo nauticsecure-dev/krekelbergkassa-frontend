@@ -128,11 +128,26 @@
     "timelineBadge": "Tijdlijn",
     "timelineTitle": "Vijftig jaar in vijf mijlpalen",
     "timeline": {
-      "start":      { "title": "Oprichting",        "desc": "De werf wordt opgericht aan de Maasplassen." },
-      "crane":      { "title": "30-tons kraan",     "desc": "Eerste mobiele 30-tons kraan in gebruik." },
-      "brokerage":  { "title": "Schepenkring",      "desc": "Partnership voor jachtbemiddeling start." },
-      "apartments": { "title": "Appartementen",     "desc": "Verblijf direct aan de jachthaven geopend." },
-      "digital":    { "title": "Digitaal platform", "desc": "Lancering van het Krekelberg-platform." }
+      "start": {
+        "title": "Oprichting",
+        "desc": "De werf wordt opgericht aan de Maasplassen."
+      },
+      "crane": {
+        "title": "30-tons kraan",
+        "desc": "Eerste mobiele 30-tons kraan in gebruik."
+      },
+      "brokerage": {
+        "title": "Schepenkring",
+        "desc": "Partnership voor jachtbemiddeling start."
+      },
+      "apartments": {
+        "title": "Appartementen",
+        "desc": "Verblijf direct aan de jachthaven geopend."
+      },
+      "digital": {
+        "title": "Digitaal platform",
+        "desc": "Lancering van het Krekelberg-platform."
+      }
     },
     "teamBadge": "Ons team",
     "teamTitle": "De gezichten achter de werf",
@@ -357,7 +372,8 @@
       "secondary": "Neem contact op"
     },
     "processTitle": "Zo werkt het",
-    "processSubtitle": "In vier eenvoudige stappen is uw schip in goede handen"
+    "processSubtitle": "In vier eenvoudige stappen is uw schip in goede handen",
+    "classicTagline": "Jachtmakelaar | Stalling | Doe-het-zelf-Werf"
   },
   "services": {
     "crane": {
@@ -1026,5 +1042,604 @@
     "more": "Meer",
     "loginFailed": "Inloggen mislukt",
     "loggingIn": "Bezig met inloggen…"
+  },
+  "adminNew": {
+    "common": {
+      "loading": "Laden…",
+      "unknown": "Onbekend",
+      "name": "Naam",
+      "email": "E-mail",
+      "phone": "Telefoon",
+      "cancel": "Annuleren",
+      "save": "Opslaan",
+      "saving": "Opslaan…",
+      "new": "Nieuw",
+      "delete": "Verwijderen",
+      "logout": "Uitloggen",
+      "noEmail": "geen e-mail",
+      "operationFailed": "Actie mislukt"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Dagelijkse operationele status van de jachthaven",
+      "live": "Live",
+      "quickActions": "Snelle acties",
+      "cards": {
+        "openInvoices": {
+          "title": "Open facturen",
+          "subtitle": "{count} achterstallig"
+        },
+        "stallingActions": {
+          "title": "Stalling acties",
+          "subtitle": "Contracten met achterstand"
+        },
+        "cashRevenue": {
+          "title": "Kassa omzet",
+          "subtitle": "Recente transacties"
+        },
+        "syncStatus": {
+          "title": "Sync status",
+          "lastSync": "Laatste sync: {time}",
+          "noSync": "Nog geen sync"
+        }
+      },
+      "actions": {
+        "customers": "Klanten beheren",
+        "stalling": "Stalling opvolgen",
+        "invoices": "Facturen opvolgen",
+        "calculator": "Prijs berekenen"
+      },
+      "portal": {
+        "title": "Portal & klanten",
+        "openPortal": "Klantportaal bekijken",
+        "activeSessions": "Actieve portal sessies",
+        "newQuestions": "Nieuwe klantvragen",
+        "totalCustomers": "Totaal klanten"
+      }
+    },
+    "customers": {
+      "title": "Klanten",
+      "subtitle": "Centraal klantoverzicht voor kassa, stalling en facturatie",
+      "new": "Nieuwe klant",
+      "searchPlaceholder": "Zoek op naam, e-mail, telefoon, boot",
+      "loading": "Klanten laden",
+      "emptyTitle": "Geen klanten gevonden",
+      "emptyMessage": "Pas je filters aan of maak een nieuwe klant aan.",
+      "columns": {
+        "customer": "Klant",
+        "contact": "Contact",
+        "locale": "Taal",
+        "boats": "Boten",
+        "created": "Aangemaakt"
+      },
+      "details": "Details",
+      "total": "{count} klanten totaal",
+      "results": "{count} resultaten",
+      "modal": {
+        "title": "Nieuwe klant",
+        "subtitle": "Minimaal naam en e-mail voor snelle registratie."
+      },
+      "toasts": {
+        "created": "Klant aangemaakt",
+        "createFailed": "Aanmaken mislukt"
+      }
+    },
+    "auth": {
+      "portalSessionActive": "Portal sessie actief",
+      "portalSessionActiveMsg": "U bent succesvol ingelogd via magic link.",
+      "magicSentTitle": "Magic link verzonden",
+      "emailPlaceholder": "naam@voorbeeld.nl",
+      "magicInfo": "Portaal login gebruikt een magic link per e-mail. Geen wachtwoord nodig.",
+      "magicSentMessage": "Als dit e-mailadres bestaat, is er een login link verzonden.",
+      "togglePassword": "Wachtwoord zichtbaarheid wisselen",
+      "passwordPlaceholder": "••••••••",
+      "sendMagicLink": "Stuur magic link",
+      "accountCreatedByAdmin": "Accounts worden door een beheerder aangemaakt."
+    },
+    "sidebar": {
+      "calculator": "Calculator",
+      "sync": "Offline / Sync"
+    },
+    "states": {
+      "errorTitle": "Er ging iets mis",
+      "emptyTitle": "Nog geen gegevens",
+      "retry": "Opnieuw proberen"
+    },
+    "status": {
+      "paid": "Betaald",
+      "overdue": "Achterstallig",
+      "credited": "Gecrediteerd",
+      "cancelled": "Geannuleerd",
+      "draft": "Concept",
+      "open": "Open",
+      "failed": "Mislukt",
+      "expiring": "Verloopt"
+    },
+    "audit": {
+      "title": "Audit",
+      "subtitle": "Controlelog voor beveiliging, betalingen, facturen, klanten en sync",
+      "searchPlaceholder": "Zoek op actie, actor, entity",
+      "allEntities": "Alle entity types",
+      "entity": {
+        "invoice": "Factuur",
+        "customer": "Klant",
+        "stalling": "Stalling",
+        "payment": "Betaling"
+      },
+      "loading": "Audit logs laden",
+      "empty": "Geen audit events",
+      "columns": {
+        "time": "Tijd",
+        "action": "Actie",
+        "entity": "Entity",
+        "actor": "Actor"
+      },
+      "events": "{count} events"
+    },
+    "boats": {
+      "title": "Boten",
+      "subtitle": "Beheer boten, lengtes en locaties voor stalling en facturatie",
+      "new": "Nieuwe boot",
+      "searchPlaceholder": "Zoek op bootnaam, eigenaar of locatie",
+      "loading": "Boten laden",
+      "emptyTitle": "Geen boten",
+      "emptyMessage": "Nog geen boten gevonden.",
+      "columns": {
+        "boat": "Boot",
+        "owner": "Eigenaar",
+        "type": "Type",
+        "length": "Lengte",
+        "location": "Locatie"
+      },
+      "fields": {
+        "lengthCm": "Lengte (cm)",
+        "widthCm": "Breedte (cm)",
+        "locationCode": "Locatiecode"
+      },
+      "type": {
+        "motor": "Motor",
+        "sail": "Zeil",
+        "other": "Overig"
+      },
+      "selectCustomer": "Selecteer klant",
+      "confirmDelete": "Boot verwijderen?",
+      "total": "{count} boten",
+      "toasts": {
+        "created": "Boot aangemaakt",
+        "createFailed": "Aanmaken mislukt",
+        "deleted": "Boot verwijderd",
+        "deleteFailed": "Verwijderen mislukt"
+      }
+    },
+    "kassa": {
+      "title": "Kassa",
+      "subtitle": "Snelle checkout met slim zoeken en realtime berekening",
+      "searchPlaceholder": "Zoek product of type bv: afspuiten 880",
+      "selectCustomer": "Klant selecteren",
+      "payment": {
+        "cash": "Contant",
+        "pin": "PIN",
+        "invoice": "Op factuur",
+        "creditcard": "Creditcard"
+      },
+      "smartMatch": "Slimme match",
+      "products": "Producten",
+      "loadingProducts": "Producten laden",
+      "emptyProductsTitle": "Geen producten",
+      "emptyProductsMessage": "Pas je zoekterm aan of voeg pricing rules toe.",
+      "match": "Match",
+      "recentSales": "Recente verkopen",
+      "noRecentSales": "Nog geen recente verkopen.",
+      "cart": "Winkelmand",
+      "lines": "{count} regels",
+      "emptyCartMessage": "Voeg producten toe voor checkout.",
+      "vat": "BTW",
+      "subtotal": "Subtotaal",
+      "vatIncluded": "BTW (incl.)",
+      "total": "Totaal",
+      "processing": "Verwerken…",
+      "checkout": "Checkout",
+      "calculating": "Berekenen…",
+      "createQuote": "Maak offerte",
+      "modalTitle": "Nieuwe klant (kassa)",
+      "modalSubtitle": "Naam en e-mail zijn voldoende voor snelle checkout.",
+      "creating": "Aanmaken…",
+      "create": "Aanmaken",
+      "toasts": {
+        "customerCreated": "Klant aangemaakt",
+        "customerCreateFailed": "Klant aanmaken mislukt",
+        "emptyCart": "Winkelmand is leeg",
+        "checkoutDone": "Checkout verwerkt",
+        "checkoutFailed": "Checkout mislukt",
+        "quoteDone": "Offerte berekend",
+        "quoteFailed": "Offerte mislukt"
+      }
+    },
+    "stalling": {
+      "title": "Stalling",
+      "subtitle": "Beheer circa 200 boten met status, paid-until en open saldo",
+      "searchPlaceholder": "Zoek op boot, klant of locatie",
+      "allStatuses": "Alle statussen",
+      "allTypes": "Alle types",
+      "type": {
+        "winter": "Winter",
+        "summer": "Zomer",
+        "year": "Jaar",
+        "week": "Week"
+      },
+      "loading": "Stalling contracten laden",
+      "emptyTitle": "Geen contracten",
+      "emptyMessage": "Geen resultaten voor de huidige filters.",
+      "columns": {
+        "boat": "Boot",
+        "customer": "Klant",
+        "period": "Periode",
+        "type": "Type",
+        "paidUntil": "Paid until",
+        "openBalance": "Open saldo",
+        "status": "Status"
+      },
+      "invoice": "Factuur",
+      "cancel": "Annuleer",
+      "invoiceCreated": "Factuur aangemaakt",
+      "cancelled": "Contract geannuleerd",
+      "contracts": "{count} contracten",
+      "openCustomer": "Open klant"
+    },
+    "sync": {
+      "title": "Offline / Sync status",
+      "subtitle": "Zie pending wijzigingen, fouten en laatste synchronisatie per apparaat",
+      "refresh": "Vernieuwen",
+      "syncAll": "Sync alles",
+      "syncing": "Syncen…",
+      "connection": "Verbinding",
+      "online": "Online",
+      "offline": "Offline",
+      "pending": "Pending",
+      "failed": "Mislukt",
+      "lastSync": "Laatste sync",
+      "pendingChanges": "Pending wijzigingen",
+      "clear": "Leegmaken",
+      "retry": "Retry",
+      "noPending": "Geen pending offline wijzigingen.",
+      "devices": "Geregistreerde sync devices",
+      "noDevices": "Nog geen sync devices beschikbaar.",
+      "itemSynced": "Wijziging gesynchroniseerd",
+      "syncFailed": "Sync mislukt",
+      "error": "Sync fout"
+    },
+    "portal": {
+      "updates": {
+        "title": "Mijn updates",
+        "subtitle": "Afspraken en timeline items van Krekelberg",
+        "loading": "Updates laden",
+        "empty": "Geen updates",
+        "item": "Update"
+      },
+      "invoices": {
+        "title": "Mijn facturen",
+        "subtitle": "Bekijk openstaande facturen, download PDF en betaal veilig via Mollie",
+        "allStatuses": "Alle statussen",
+        "loading": "Facturen laden",
+        "empty": "Geen facturen",
+        "pay": "Betaal",
+        "openBalance": "Open saldo"
+      },
+      "stalling": {
+        "title": "Mijn stalling",
+        "subtitle": "Overzicht van actieve stalling contracten en betaalstatus",
+        "loading": "Contracten laden",
+        "empty": "Geen contracten"
+      },
+      "boats": {
+        "title": "Mijn boten",
+        "subtitle": "Bekijk boten die gekoppeld zijn aan uw account",
+        "loading": "Boten laden",
+        "empty": "Geen boten",
+        "length": "Lengte",
+        "location": "Locatie"
+      },
+      "documents": {
+        "title": "Documenten",
+        "subtitle": "PDF's en relevante documenten",
+        "empty": "Nog geen documenten",
+        "emptyMessage": "Documenten worden hier automatisch zichtbaar zodra beschikbaar."
+      },
+      "messages": {
+        "title": "Berichten",
+        "subtitle": "Meldingen en berichten van Krekelberg",
+        "loading": "Berichten laden",
+        "empty": "Geen berichten",
+        "item": "Bericht"
+      },
+      "settings": {
+        "title": "Portal instellingen",
+        "subtitle": "Accountoverzicht en beveiligingsstatus",
+        "loading": "Account laden",
+        "myDetails": "Mijn gegevens",
+        "summary": "Samenvatting",
+        "openBalance": "Open saldo",
+        "openInvoices": "Open facturen",
+        "boats": "Boten",
+        "activeContracts": "Actieve contracten",
+        "magicActive": "Magic-link beveiliging actief",
+        "refreshSession": "Sessiestatus vernieuwen"
+      }
+    },
+    "shell": {
+      "notifications": "Meldingen",
+      "viewAllUpdates": "Bekijk alle updates",
+      "notifs": {
+        "webhookFailedTitle": "Mollie webhook gefaald",
+        "webhookFailedMessage": "tr_abc123 — handmatig opnieuw proberen",
+        "webhookFailedTime": "2 min geleden",
+        "newAppointmentTitle": "Nieuwe kraanafspraak",
+        "newAppointmentMessage": "Jan Jansen · Aquila 8.90m",
+        "newAppointmentTime": "12 min geleden",
+        "storageExpiringTitle": "Stalling verloopt",
+        "storageExpiringMessage": "Atalanta · over 9 dagen",
+        "storageExpiringTime": "1 uur geleden"
+      }
+    },
+    "invoices": {
+      "title": "Facturen",
+      "subtitle": "Financieel overzicht over kassa, stalling, calculator en handmatige facturen",
+      "new": "Nieuwe factuur",
+      "defaultLineDescription": "Nieuwe factuurregel",
+      "searchPlaceholder": "Zoek op factuurnummer, klant of e-mail",
+      "allStatuses": "Alle statussen",
+      "allSources": "Alle bronnen",
+      "loading": "Facturen laden",
+      "emptyTitle": "Geen facturen",
+      "emptyMessage": "Geen facturen voor de huidige filters.",
+      "details": "Details",
+      "openAmount": "Open",
+      "total": "{count} facturen",
+      "source": {
+        "kassa": "Kassa",
+        "stalling": "Stalling",
+        "manual": "Handmatig",
+        "calculator": "Calculator"
+      },
+      "metrics": {
+        "open": "Open facturen",
+        "overdue": "Achterstallig",
+        "paid": "Betaald",
+        "openBalance": "Open saldo"
+      },
+      "columns": {
+        "invoice": "Factuur",
+        "customer": "Klant",
+        "source": "Bron",
+        "amount": "Bedrag",
+        "dueDate": "Vervaldatum",
+        "paymentMethod": "Betaalmethode",
+        "paidDate": "Betaaldatum",
+        "status": "Status"
+      },
+      "toasts": {
+        "createFailed": "Factuur aanmaken mislukt"
+      }
+    },
+    "invoiceDetail": {
+      "fallbackTitle": "Factuur",
+      "subtitle": "Factuurdetails",
+      "loading": "Factuur laden",
+      "source": "Bron",
+      "overviewTitle": "Factuur overzicht",
+      "customerSnapshot": "Klant snapshot",
+      "companySnapshot": "Bedrijf snapshot",
+      "paymentTimeline": "Betaling timeline",
+      "reminderHistory": "Herinnering historie",
+      "channel": "Kanaal",
+      "status": "Status",
+      "noPayments": "Nog geen betalingen geregistreerd.",
+      "noReminders": "Nog geen herinneringen verstuurd.",
+      "vatNumber": "BTW nummer",
+      "iban": "IBAN",
+      "back": "← Terug naar facturen",
+      "legal": {
+        "title": "Financiële notitie",
+        "message": "Verzonden facturen mogen niet worden aangepast. Gebruik creditfacturen voor correcties."
+      },
+      "defaults": {
+        "reminderSubject": "Betalingsherinnering",
+        "reminderBody": "Uw factuur staat nog open. Neem contact op bij vragen."
+      },
+      "meta": {
+        "invoiceDate": "Factuurdatum",
+        "dueDate": "Vervaldatum",
+        "paidOn": "Betaald op"
+      },
+      "columns": {
+        "description": "Omschrijving",
+        "qty": "Aantal",
+        "unitExcl": "Prijs excl. BTW",
+        "vat": "BTW",
+        "total": "Totaal"
+      },
+      "summary": {
+        "subtotal": "Subtotaal",
+        "vat": "BTW",
+        "total": "Totaal",
+        "outstanding": "Openstaand"
+      },
+      "actions": {
+        "send": "Versturen",
+        "markPaid": "Markeer betaald",
+        "mollieLink": "Mollie link",
+        "regeneratePdf": "PDF opnieuw genereren",
+        "openPdf": "Open PDF",
+        "sendReminder": "Herinnering versturen",
+        "credit": "Crediteren"
+      },
+      "paymentMethods": {
+        "cash": "Contant",
+        "pin": "PIN",
+        "banktransfer": "Bankoverschrijving",
+        "manual": "Handmatig"
+      },
+      "reminderModal": {
+        "title": "Herinnering versturen",
+        "subject": "Onderwerp",
+        "message": "Bericht"
+      },
+      "markPaidModal": {
+        "title": "Markeer als betaald",
+        "method": "Methode"
+      },
+      "toasts": {
+        "invoiceSent": "Factuur verzonden",
+        "paymentLinkCreated": "Betaallink aangemaakt",
+        "pdfRegenerated": "PDF opnieuw opgebouwd",
+        "credited": "Creditfactuur aangemaakt",
+        "cancelled": "Factuur geannuleerd",
+        "reminderSent": "Herinnering verstuurd",
+        "markedPaid": "Factuur als betaald gemarkeerd"
+      }
+    },
+    "customerDetail": {
+      "fallbackTitle": "Klant",
+      "loading": "Klantgegevens laden",
+      "infoTitle": "Klantinformatie",
+      "summaryTitle": "Samenvatting",
+      "preferredLocale": "Voorkeurstaal",
+      "company": "Bedrijf",
+      "vatNumber": "BTW nummer",
+      "notes": "Notities",
+      "noNotes": "Geen notities",
+      "boats": "Boten",
+      "stallingContracts": "Stalling contracten",
+      "invoices": "Facturen",
+      "openBalance": "Open saldo",
+      "dueDate": "Vervaldatum",
+      "noBoats": "Nog geen boten gekoppeld.",
+      "noInvoices": "Nog geen facturen.",
+      "noContracts": "Nog geen contracten.",
+      "files": "Bestanden",
+      "file": "Bestand",
+      "noFiles": "Geen bestanden gekoppeld aan deze klant.",
+      "boatType": "Type",
+      "lengthCm": "Lengte (cm)",
+      "locationCode": "Locatiecode",
+      "defaultInvoiceLine": "Handmatige factuurregel",
+      "table": {
+        "boats": {
+          "name": "Naam",
+          "type": "Type",
+          "length": "Lengte",
+          "location": "Locatie"
+        }
+      },
+      "actions": {
+        "editCustomer": "Klant bewerken",
+        "newInvoice": "Nieuwe factuur",
+        "addBoat": "Boot toevoegen"
+      },
+      "modals": {
+        "editTitle": "Klant bewerken",
+        "addBoatTitle": "Boot toevoegen"
+      },
+      "toasts": {
+        "customerUpdated": "Klant bijgewerkt",
+        "saveFailed": "Opslaan mislukt",
+        "boatAdded": "Boot toegevoegd",
+        "createFailed": "Aanmaken mislukt",
+        "invoiceCreated": "Factuur aangemaakt",
+        "invoiceCreateFailed": "Factuur aanmaken mislukt"
+      }
+    },
+    "calculator": {
+      "title": "Calculator",
+      "subtitle": "Consistente prijsberekening voor kassa, stalling en verkoop",
+      "lengthCm": "Bootlengte (cm)",
+      "contractType": "Contract type",
+      "services": "Services",
+      "customerOptional": "Klant (optioneel voor berekening)",
+      "selectCustomer": "Selecteer klant",
+      "calculating": "Berekenen…",
+      "calculate": "Bereken prijs",
+      "createQuote": "Maak offerte",
+      "createInvoice": "Maak factuur",
+      "newCustomer": "Nieuwe klant",
+      "linePrefix": "Calculator",
+      "servicesMap": {
+        "afspuiten": "Afspuiten",
+        "kranen": "Kranen",
+        "stalling": "Stalling",
+        "hal": "Hal verhuur"
+      },
+      "result": {
+        "title": "Resultaat",
+        "empty": "Nog geen berekening uitgevoerd.",
+        "rangeMatch": "Gematchte range",
+        "contractType": "Contract type",
+        "services": "Services",
+        "vatRate": "BTW-tarief",
+        "totalPrice": "Totale prijs",
+        "rawApi": "Ruwe API output"
+      },
+      "toasts": {
+        "lengthAndServiceRequired": "Lengte en service zijn verplicht",
+        "failed": "Berekening mislukt",
+        "selectCustomer": "Selecteer eerst een klant",
+        "runCalculationFirst": "Voer eerst een berekening uit",
+        "createFailed": "Aanmaken mislukt"
+      }
+    },
+    "settings": {
+      "title": "Instellingen",
+      "subtitle": "Bedrijfsgegevens, facturatie, betalingen en talen",
+      "loading": "Instellingen laden",
+      "tabs": {
+        "company": "Bedrijf",
+        "invoicing": "Facturatie",
+        "payments": "Betalingen",
+        "locales": "Talen"
+      },
+      "company": {
+        "title": "Bedrijfsgegevens",
+        "kvk": "KVK",
+        "vatNumber": "BTW nummer",
+        "iban": "IBAN",
+        "street": "Straat",
+        "postalCode": "Postcode",
+        "city": "Stad",
+        "country": "Land"
+      },
+      "invoicing": {
+        "title": "Facturatie instellingen",
+        "invoicePrefix": "Factuur prefix",
+        "defaultDueDays": "Standaard betaaltermijn (dagen)",
+        "currency": "Valuta",
+        "defaultVatRate": "Standaard BTW %",
+        "reminderFirstDays": "1e herinnering (dagen)",
+        "reminderSecondDays": "2e herinnering (dagen)",
+        "reminderFinalDays": "Finale herinnering (dagen)"
+      },
+      "payments": {
+        "title": "Betalingsinstellingen",
+        "connected": "Mollie verbonden",
+        "notConnected": "Mollie niet verbonden",
+        "secretsBackendOnly": "Secrets blijven backend-only",
+        "provider": "Provider",
+        "enabledMethods": "Enabled methods (comma separated)",
+        "testMode": "Test mode",
+        "testConnection": "Test Mollie connectie"
+      },
+      "locales": {
+        "title": "Taalinstellingen",
+        "defaultLocale": "Default locale",
+        "fallbackLocale": "Fallback locale",
+        "supportedLocales": "Supported locales (comma separated)"
+      },
+      "toasts": {
+        "companySaved": "Bedrijfsinstellingen opgeslagen",
+        "invoicingSaved": "Facturatie opgeslagen",
+        "mollieTestSuccess": "Mollie test succesvol uitgevoerd",
+        "paymentsSaved": "Betalingsinstellingen opgeslagen",
+        "localesSaved": "Taalinstellingen opgeslagen"
+      }
+    }
   }
 }
