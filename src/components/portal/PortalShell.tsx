@@ -22,6 +22,11 @@ import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/lib/auth-context';
 import { useIntl } from '@/i18n/IntlProvider';
 import { cn } from '@/lib/cn';
+import { useShellDropdowns } from '@/components/shell/useShellDropdowns';
+import { PageHeaderStatsGrid, type PageHeaderStat } from '@/components/shell/PageHeaderStats';
+import { useQuery } from '@/lib/hooks/useAsync';
+import { portalService } from '@/lib/services';
+import { formatDateTime } from '@/lib/format';
 
 export function PortalShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
@@ -77,9 +82,9 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <PortalGlobalTopbar onMenuClick={() => setOpen(true)} />
-        <main className="flex-1 overflow-y-auto scrollbar-thin">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">{children}</main>
       </div>
     </div>
   );
@@ -88,178 +93,228 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
 function PortalGlobalTopbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { t, locale } = useIntl();
   const { user, signOut, isDemo } = useAuth();
-  const [bell, setBell] = React.useState(false);
-  const [menu, setMenu] = React.useState(false);
-
-  React.useEffect(() => {
-    const close = () => {
-      setBell(false);
-      setMenu(false);
-    };
-    document.addEventListener('click', close);
-    return () => document.removeEventListener('click', close);
-  }, []);
+  const { bellOpen, menuOpen, toggleBell, toggleMenu, closeAll } = useShellDropdowns();
+  const notifications = useQuery([locale], () =>
+    portalService.notifications().catch(() => ({ unread_count: 0, latest: [] }))
+  );
+  const notificationItems = notifications.data?.latest ?? [];
+  const unreadCount = notifications.data?.unread_count ?? 0;
 
   return (
-    <div className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-navy-100 bg-white/90 px-3 backdrop-blur supports-[backdrop-filter]:bg-white/80 sm:px-5">
-      <button
-        onClick={onMenuClick}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 text-navy-700 hover:bg-sand-50 lg:hidden"
-        aria-label={t('header.mainMenu')}
-      >
-        <Menu className="h-5 w-5" />
-      </button>
+    <div className="sticky top-0 z-40 shrink-0 border-b border-navy-100 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="flex h-16 items-center gap-3 px-3 sm:px-5">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 text-navy-700 hover:bg-sand-50 lg:hidden"
+          aria-label={t('header.mainMenu')}
+        >
+          <Menu className="h-5 w-5" />
+        </button>
 
-      <Link href={`/${locale}/feed`} className="lg:hidden" aria-label="Krekelberg">
-        <Logo />
-      </Link>
-
-      <div className="relative hidden flex-1 lg:block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
-        <input
-          type="search"
-          placeholder={t('admin.common.search')}
-          className="input-base w-full max-w-md pl-9"
-        />
-      </div>
-
-      <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-        {isDemo ? (
-          <Badge tone="gold" className="hidden sm:inline-flex" dot>
-            Demo
-          </Badge>
-        ) : null}
-
-        <Link href={`/${locale}/kraanafspraak`} className="hidden md:inline-flex">
-          <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gold-500 px-3 text-xs font-semibold text-white hover:bg-gold-600">
-            {t('nav.bookCrane')}
-            <ArrowRight className="h-3.5 w-3.5" />
-          </span>
+        <Link href={`/${locale}/feed`} className="lg:hidden" aria-label="Krekelberg">
+          <Logo />
         </Link>
 
-        <LanguageSwitcher />
-
-        <div className="relative" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => setBell((v) => !v)}
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 bg-white text-navy-700 hover:bg-sand-50"
-            aria-label="Notifications"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-gold-500 px-1 text-[10px] font-bold text-white">
-              3
-            </span>
-          </button>
-          {bell ? (
-            <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-elev">
-              <div className="flex items-center justify-between border-b border-navy-100 px-4 py-3">
-                <span className="font-semibold text-navy-900">Meldingen</span>
-                <Badge tone="gold">3</Badge>
-              </div>
-              <ul className="max-h-80 overflow-y-auto scrollbar-thin">
-                {[
-                  { id: 1, title: 'Uw kraanafspraak is morgen', message: 'Aquila · 14 okt om 10:00', time: '2 u geleden', dot: 'bg-marine-500' },
-                  { id: 2, title: 'Factuur #2026-104 staat open', message: 'Betalingstermijn verlopen', time: '1 dag geleden', dot: 'bg-rose-500' },
-                  { id: 3, title: 'Winterstalling loopt af', message: 'Aquila · 31 maart', time: '2 dagen geleden', dot: 'bg-amber-500' },
-                ].map((n) => (
-                  <li
-                    key={n.id}
-                    className="flex items-start gap-3 border-b border-navy-50 px-4 py-3 hover:bg-sand-50"
-                  >
-                    <span className={cn('mt-1.5 h-2 w-2 shrink-0 rounded-full', n.dot)} />
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-navy-900">{n.title}</div>
-                      <div className="truncate text-xs text-navy-500">{n.message}</div>
-                      <div className="mt-1 text-[11px] text-navy-400">{n.time}</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={`/${locale}/feed`}
-                className="block bg-sand-50 px-4 py-3 text-center text-sm font-semibold text-navy-900 hover:bg-sand-100"
-              >
-                {t('feed.viewAll')}
-              </Link>
-            </div>
-          ) : null}
+        <div className="relative hidden flex-1 lg:block">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
+          <input
+            type="search"
+            placeholder={t('admin.common.search')}
+            className="input-base w-full max-w-md pl-9"
+          />
         </div>
 
-        <div className="relative" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => setMenu((v) => !v)}
-            className="flex items-center gap-2 rounded-lg border border-navy-100 bg-white px-1.5 py-1.5 text-sm font-medium text-navy-700 hover:bg-sand-50"
-          >
-            <Avatar name={user?.name ?? 'Jan Jansen'} size="sm" />
-            <ChevronDown className="hidden h-3.5 w-3.5 sm:inline" />
-          </button>
-          {menu ? (
-            <div className="absolute right-0 z-40 mt-2 w-60 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-elev">
-              <div className="border-b border-navy-100 px-4 py-3">
-                <div className="text-sm font-semibold text-navy-900">
-                  {user?.name ?? 'Jan Jansen'}
-                </div>
-                <div className="truncate text-xs text-navy-400">
-                  {user?.email ?? 'jan@example.com'}
-                </div>
-              </div>
-              <Link
-                href={`/${locale}/dashboard/settings`}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-navy-700 hover:bg-sand-50"
-              >
-                <Settings className="h-4 w-4" />
-                {t('admin.sidebar.settings')}
-              </Link>
-              <Link
-                href={`/${locale}/faq`}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-navy-700 hover:bg-sand-50"
-              >
-                <HelpCircle className="h-4 w-4" />
-                {t('admin.sidebar.help')}
-              </Link>
-              <button
-                onClick={() => void signOut()}
-                className="flex w-full items-center gap-2 border-t border-navy-100 px-4 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
-              >
-                <LogOut className="h-4 w-4" />
-                Uitloggen
-              </button>
-            </div>
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          {isDemo ? (
+            <Badge tone="gold" className="hidden sm:inline-flex" dot>
+              {t('loginRole.demo')}
+            </Badge>
           ) : null}
+
+          <Link href={`/${locale}/kraanafspraak`} className="hidden md:inline-flex">
+            <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gold-500 px-3 text-xs font-semibold text-white hover:bg-gold-600">
+              {t('nav.bookCrane')}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </span>
+          </Link>
+
+          <LanguageSwitcher />
+
+          <div className="relative" data-shell-dropdown>
+            <button
+              type="button"
+              onClick={toggleBell}
+              aria-expanded={bellOpen}
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 bg-white text-navy-700 hover:bg-sand-50"
+              aria-label={t('adminNew.shell.notifications')}
+            >
+              <Bell className="h-4 w-4" />
+              {unreadCount > 0 ? (
+                <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-gold-500 px-1 text-[10px] font-bold text-white">
+                  {unreadCount}
+                </span>
+              ) : null}
+            </button>
+            {bellOpen ? (
+              <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-elev anim-zoom">
+                <div className="flex items-center justify-between border-b border-navy-100 px-4 py-3">
+                  <span className="font-semibold text-navy-900">
+                    {t('adminNew.shell.notifications')}
+                  </span>
+                  <Badge tone="gold">{unreadCount}</Badge>
+                </div>
+                {notifications.loading ? (
+                  <div className="space-y-2 p-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="rounded-lg border border-navy-100 px-3 py-2">
+                        <span className="block h-3 w-32 animate-pulse rounded bg-navy-100" />
+                        <span className="mt-2 block h-3 w-44 animate-pulse rounded bg-navy-100" />
+                      </div>
+                    ))}
+                  </div>
+                ) : notificationItems.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-sm text-navy-500">
+                    {t('adminNew.portal.messages.empty')}
+                  </div>
+                ) : (
+                  <ul className="max-h-80 overflow-y-auto scrollbar-thin">
+                    {notificationItems.map((n, idx) => (
+                      <li key={String(n.id ?? idx)}>
+                        <Link
+                          href={`/${locale}/dashboard/berichten`}
+                          onClick={closeAll}
+                          className="flex items-start gap-3 border-b border-navy-50 px-4 py-3 hover:bg-sand-50"
+                        >
+                          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-marine-500" />
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold text-navy-900">
+                              {String(n.title ?? t('adminNew.portal.messages.item'))}
+                            </div>
+                            <div className="truncate text-xs text-navy-500">
+                              {String(n.message ?? '')}
+                            </div>
+                            <div className="mt-1 text-[11px] text-navy-400">
+                              {formatDateTime(
+                                String(n.created_at ?? ''),
+                                locale === 'en' ? 'en-GB' : 'nl-NL'
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Link
+                  href={`/${locale}/dashboard/berichten`}
+                  onClick={closeAll}
+                  className="block bg-sand-50 px-4 py-3 text-center text-sm font-semibold text-navy-900 hover:bg-sand-100"
+                >
+                  {t('adminNew.shell.viewAllUpdates')}
+                </Link>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="relative" data-shell-dropdown>
+            <button
+              type="button"
+              onClick={toggleMenu}
+              aria-expanded={menuOpen}
+              className="flex items-center gap-2 rounded-lg border border-navy-100 bg-white px-1.5 py-1.5 text-sm font-medium text-navy-700 hover:bg-sand-50"
+            >
+              <Avatar name={user?.name ?? 'Jan Jansen'} size="sm" />
+              <ChevronDown className="hidden h-3.5 w-3.5 sm:inline" />
+            </button>
+            {menuOpen ? (
+              <div className="absolute right-0 top-full z-50 mt-2 w-60 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-elev anim-zoom">
+                <div className="border-b border-navy-100 px-4 py-3">
+                  <div className="text-sm font-semibold text-navy-900">
+                    {user?.name ?? 'Jan Jansen'}
+                  </div>
+                  <div className="truncate text-xs text-navy-400">
+                    {user?.email ?? 'jan@example.com'}
+                  </div>
+                </div>
+                <Link
+                  href={`/${locale}/dashboard/settings`}
+                  onClick={closeAll}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-navy-700 hover:bg-sand-50"
+                >
+                  <Settings className="h-4 w-4" />
+                  {t('admin.sidebar.settings')}
+                </Link>
+                <Link
+                  href={`/${locale}/faq`}
+                  onClick={closeAll}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-navy-700 hover:bg-sand-50"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  {t('admin.sidebar.help')}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => void signOut()}
+                  className="flex w-full items-center gap-2 border-t border-navy-100 px-4 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {t('adminNew.common.logout')}
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-/** Same look & feel as AdminPageHeader — sticky below the global topbar. */
+/** Same hero treatment as AdminPageHeader — used on portal dashboard pages. */
+export type PortalHeaderStat = PageHeaderStat;
+
 export function PortalPageHeader({
   title,
   subtitle,
   rightSlot,
   children,
+  eyebrow,
+  stats,
 }: {
   title: string;
   subtitle?: string;
   rightSlot?: React.ReactNode;
   children?: React.ReactNode;
+  eyebrow?: string;
+  stats?: PortalHeaderStat[];
 }) {
   return (
-    <div className="border-b border-navy-100 bg-white px-4 py-4 sm:px-6 sm:py-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="heading-display text-2xl text-navy-900 sm:text-3xl">
-            {title}
-          </h1>
-          {subtitle ? (
-            <p className="mt-0.5 text-sm text-navy-500">{subtitle}</p>
-          ) : null}
+    <div className="bg-sand-50 px-4 pb-1 pt-3 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="admin-hero-card px-5 py-4 sm:px-7 sm:py-5">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-marine-200/25 blur-3xl"
+          />
+
+          <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0 flex-1">
+              {eyebrow ? <p className="admin-hero-eyebrow">{eyebrow}</p> : null}
+              <h1 className={cn('admin-hero-title', eyebrow ? 'mt-1' : '')}>{title}</h1>
+              {subtitle ? (
+                <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-navy-500">{subtitle}</p>
+              ) : null}
+            </div>
+            {rightSlot ? (
+              <div className="flex shrink-0 flex-wrap items-center gap-2 lg:pt-1">{rightSlot}</div>
+            ) : null}
+          </div>
+
+          {stats?.length ? <PageHeaderStatsGrid stats={stats} /> : null}
+
+          {children}
         </div>
-        {rightSlot ? (
-          <div className="flex flex-wrap items-center gap-2">{rightSlot}</div>
-        ) : null}
       </div>
-      {children}
     </div>
   );
 }

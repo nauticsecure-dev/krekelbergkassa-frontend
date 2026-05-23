@@ -1,49 +1,37 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import {
-  Anchor,
-  ArrowRight,
-  Briefcase,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  User2,
-  Users,
-} from 'lucide-react';
-import { useIntl } from '@/i18n/IntlProvider';
-import { Button } from '@/components/ui/Button';
-import { api, auth } from '@/lib/api';
-import { cn } from '@/lib/cn';
+import * as React from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, Eye, EyeOff, Lock, Mail, User2 } from "lucide-react";
+import { useIntl } from "@/i18n/IntlProvider";
+import { Button } from "@/components/ui/Button";
+import { api, auth } from "@/lib/api";
+import { coerceLoginRole } from "@/components/auth/RoleTabs";
 
-type RegistrationKind = 'private' | 'business' | 'partner';
-
-interface KindMeta {
-  id: RegistrationKind;
-  labelKey: string;
-  descKey: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-const KINDS: KindMeta[] = [
-  { id: 'private',  labelKey: 'signupExt.kindPrivate',  descKey: 'signupExt.kindPrivateDesc',  icon: Anchor },
-  { id: 'business', labelKey: 'signupExt.kindBusiness', descKey: 'signupExt.kindBusinessDesc', icon: Briefcase },
-  { id: 'partner',  labelKey: 'signupExt.kindPartner',  descKey: 'signupExt.kindPartnerDesc',  icon: Users },
-];
+type RegistrationKind = "private" | "business" | "partner";
 
 export default function SignupPage() {
+  return (
+    <React.Suspense fallback={<AuthFormFallback />}>
+      <SignupPageContent />
+    </React.Suspense>
+  );
+}
+
+function SignupPageContent() {
   const { t, locale } = useIntl();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const role = coerceLoginRole(searchParams.get("role"));
+  const kind: RegistrationKind =
+    role === "customer" ? "private" : role === "staff" ? "business" : "partner";
 
-  const [kind, setKind] = React.useState<RegistrationKind>('private');
-  const [firstName, setFirstName] = React.useState('');
-  const [lastName, setLastName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [confirm, setConfirm] = React.useState('');
+  const [firstName, setFirstName] = React.useState("");
+  const [lastName, setLastName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [confirm, setConfirm] = React.useState("");
   const [showPass, setShowPass] = React.useState(false);
   const [terms, setTerms] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
@@ -52,25 +40,25 @@ export default function SignupPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!terms) {
-      setError(t('signup.errorTerms'));
+      setError(t("signup.errorTerms"));
       return;
     }
     if (password !== confirm) {
-      setError(t('signupExt.passwordMismatch'));
+      setError(t("signupExt.passwordMismatch"));
       return;
     }
     setError(null);
     setLoading(true);
     try {
-      const res = await api<{ token: string }>('/auth/register', {
-        method: 'POST',
+      const res = await api<{ token: string }>("/auth/register", {
+        method: "POST",
         body: { firstName, lastName, email, password, kind },
         auth: false,
       });
       auth.setSession(res.token);
       router.push(`/${locale}/feed`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('signup.errorGeneric'));
+      setError(err instanceof Error ? err.message : t("signup.errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -79,58 +67,19 @@ export default function SignupPage() {
   return (
     <div>
       <h2 className="heading-display text-3xl text-navy-900 sm:text-[34px]">
-        {t('signupExt.title')}
+        {t("signupExt.title")}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-navy-500">
-        {t('signupExt.subtitle')}
+        {t("signupExt.subtitle")}
       </p>
-
-      {/* Choose your registration */}
-      <div className="mt-6 space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-500">
-          {t('signupExt.chooseRegistration')}
-        </div>
-        <div role="tablist" className="grid grid-cols-3 gap-2">
-          {KINDS.map((k) => {
-            const Icon = k.icon;
-            const active = kind === k.id;
-            return (
-              <button
-                key={k.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setKind(k.id)}
-                className={cn(
-                  'flex flex-col items-start gap-2 rounded-xl border px-3 py-3 text-left transition focus:outline-none',
-                  active
-                    ? 'border-navy-900 bg-white shadow-sm'
-                    : 'border-navy-100 bg-white/60 hover:border-navy-200'
-                )}
-              >
-                <span
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-lg',
-                    active ? 'bg-navy-900 text-white' : 'bg-sand-100 text-navy-700'
-                  )}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                </span>
-                <span className="text-[13px] font-semibold leading-tight text-navy-900">
-                  {t(k.labelKey)}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        <p className="px-1 text-[11px] leading-relaxed text-navy-500">
-          {t(KINDS.find((k) => k.id === kind)!.descKey)}
-        </p>
-      </div>
 
       <form onSubmit={submit} className="mt-5 space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <Field id="firstName" label={t('signup.firstName')} icon={<User2 className="h-4 w-4" />}>
+          <Field
+            id="firstName"
+            label={t("signup.firstName")}
+            icon={<User2 className="h-4 w-4" />}
+          >
             <input
               id="firstName"
               value={firstName}
@@ -140,7 +89,7 @@ export default function SignupPage() {
               autoComplete="given-name"
             />
           </Field>
-          <Field id="lastName" label={t('signup.lastName')}>
+          <Field id="lastName" label={t("signup.lastName")}>
             <input
               id="lastName"
               value={lastName}
@@ -152,7 +101,11 @@ export default function SignupPage() {
           </Field>
         </div>
 
-        <Field id="email" label={t('login.email')} icon={<Mail className="h-4 w-4" />}>
+        <Field
+          id="email"
+          label={t("login.email")}
+          icon={<Mail className="h-4 w-4" />}
+        >
           <input
             id="email"
             type="email"
@@ -167,7 +120,7 @@ export default function SignupPage() {
 
         <Field
           id="password"
-          label={t('login.password')}
+          label={t("login.password")}
           icon={<Lock className="h-4 w-4" />}
           trailing={
             <button
@@ -176,14 +129,18 @@ export default function SignupPage() {
               className="text-navy-400 hover:text-navy-700"
               aria-label="toggle"
             >
-              {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPass ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           }
-          hint={t('signup.passwordHint')}
+          hint={t("signup.passwordHint")}
         >
           <input
             id="password"
-            type={showPass ? 'text' : 'password'}
+            type={showPass ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="auth-input"
@@ -192,10 +149,14 @@ export default function SignupPage() {
           />
         </Field>
 
-        <Field id="confirm" label={t('signupExt.confirmPassword')} icon={<Lock className="h-4 w-4" />}>
+        <Field
+          id="confirm"
+          label={t("signupExt.confirmPassword")}
+          icon={<Lock className="h-4 w-4" />}
+        >
           <input
             id="confirm"
-            type={showPass ? 'text' : 'password'}
+            type={showPass ? "text" : "password"}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             className="auth-input"
@@ -212,21 +173,21 @@ export default function SignupPage() {
             className="mt-0.5 h-4 w-4 rounded border-navy-200 text-marine-600"
           />
           <span>
-            {t('signupExt.termsBefore')}
+            {t("signupExt.termsBefore")}
             <Link
               href={`/${locale}/voorwaarden`}
               className="font-semibold text-marine-700 underline-offset-2 hover:underline"
             >
-              {t('signupExt.terms')}
+              {t("signupExt.terms")}
             </Link>
-            {t('signupExt.termsMiddle')}
+            {t("signupExt.termsMiddle")}
             <Link
               href={`/${locale}/privacy`}
               className="font-semibold text-marine-700 underline-offset-2 hover:underline"
             >
-              {t('signupExt.privacy')}
+              {t("signupExt.privacy")}
             </Link>
-            {t('signupExt.termsAfter')}
+            {t("signupExt.termsAfter")}
           </span>
         </label>
 
@@ -244,19 +205,33 @@ export default function SignupPage() {
           rightIcon={<ArrowRight className="h-4 w-4" />}
           className="bg-navy-900 text-white hover:bg-navy-800"
         >
-          {loading ? t('signup.submitting') : t('signup.submit')}
+          {loading ? t("signup.submitting") : t("signup.submit")}
         </Button>
 
         <p className="pt-2 text-center text-sm text-navy-500">
-          {t('signup.haveAccount')}{' '}
+          {t("signup.haveAccount")}{" "}
           <Link
-            href={`/${locale}/login`}
+            href={`/${locale}/login?role=${role}`}
             className="font-semibold text-navy-900 hover:text-marine-700"
           >
-            {t('signup.loginInstead')}
+            {t("signup.loginInstead")}
           </Link>
         </p>
       </form>
+    </div>
+  );
+}
+
+function AuthFormFallback() {
+  return (
+    <div className="space-y-4">
+      <span className="block h-8 w-56 animate-pulse rounded bg-navy-100" />
+      <span className="block h-4 w-full animate-pulse rounded bg-navy-100" />
+      <div className="mt-6 space-y-3">
+        <span className="block h-10 w-full animate-pulse rounded-xl bg-navy-100" />
+        <span className="block h-10 w-full animate-pulse rounded-xl bg-navy-100" />
+        <span className="block h-10 w-full animate-pulse rounded-xl bg-navy-100" />
+      </div>
     </div>
   );
 }

@@ -5,7 +5,6 @@ import {
   AlignLeft,
   Bold,
   CheckSquare,
-  ChevronDown,
   Eye,
   FileText,
   Italic,
@@ -18,10 +17,10 @@ import {
   Sparkles,
   Tag,
   Undo2,
-  X,
 } from 'lucide-react';
 import { useIntl } from '@/i18n/IntlProvider';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { AdminContent } from '@/components/admin/AdminUi';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -66,7 +65,7 @@ export default function ContractsEditorPage() {
   return (
     <>
       <AdminPageHeader
-        title="Stallingscontract — Winter 2026"
+        title={t('admin.contracts.templateTitle')}
         subtitle={t('admin.contracts.subtitle')}
         rightSlot={
           <>
@@ -97,16 +96,42 @@ export default function ContractsEditorPage() {
             </Button>
           </>
         }
+        stats={[
+          {
+            label: t('admin.contracts.draft'),
+            value: 'v4',
+            icon: FileText,
+            tone: 'gold',
+          },
+          {
+            label: t('admin.contracts.templateTitle'),
+            value: LOCALES.length,
+            icon: Languages,
+            tone: 'marine',
+          },
+          {
+            label: t('admin.contracts.validation'),
+            value: `${VALIDATION.filter((v) => v.ok).length}/${VALIDATION.length}`,
+            icon: CheckSquare,
+            tone: VALIDATION.every((v) => v.ok) ? 'success' : 'warning',
+          },
+          {
+            label: 'Tags',
+            value: TAG_SUGGESTIONS.length,
+            icon: Tag,
+            tone: 'navy',
+          },
+        ]}
       >
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           <Badge tone="gold" dot>
             {t('admin.contracts.draft')} · v4
           </Badge>
-          <Badge tone="navy">Wijzigingen sinds gepubliceerd</Badge>
+          <Badge tone="navy">{t('admin.contracts.changedSincePublish')}</Badge>
         </div>
       </AdminPageHeader>
 
-      <div className="px-4 py-5 sm:px-6">
+      <AdminContent>
         <div className="grid gap-5 xl:grid-cols-[1fr_22rem]">
           {/* Editor + Preview side-by-side on lg+ */}
           <div className="grid gap-5 lg:grid-cols-2">
@@ -119,7 +144,7 @@ export default function ContractsEditorPage() {
               </div>
               <div className="border-b border-navy-100 px-4 py-2">
                 <textarea
-                  placeholder="Beschrijf kort wat er aangepast werd in deze versie..."
+                  placeholder={t('admin.contracts.changeSummaryPlaceholder')}
                   rows={2}
                   className="w-full resize-none border-0 bg-transparent p-0 text-sm text-navy-800 placeholder:text-navy-400 focus:outline-none focus:ring-0"
                   defaultValue="Toevoeging: aanvullende betaalvoorwaarden voor termijnbetalingen."
@@ -137,7 +162,7 @@ export default function ContractsEditorPage() {
                   onClick={() => setShowTags((v) => !v)}
                   className="inline-flex items-center gap-1 rounded-md border border-navy-100 px-2 py-1 text-xs font-medium text-navy-700 hover:bg-sand-100"
                 >
-                  <Tag className="h-3 w-3" /> Invoegen tag
+                  <Tag className="h-3 w-3" /> {t('admin.contracts.insertTag')}
                 </button>
                 <div className="ml-auto flex items-center gap-2 text-xs text-navy-400">
                   <Languages className="h-3.5 w-3.5" /> {activeLocale.toUpperCase()}
@@ -166,13 +191,13 @@ export default function ContractsEditorPage() {
                   <div className="mt-5 rounded-xl border border-marine-200 bg-marine-50 p-4">
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-semibold uppercase tracking-widest text-marine-700">
-                        Beschikbare tags
+                        {t('admin.contracts.availableTags')}
                       </div>
                       <button
                         onClick={() => setShowTags(false)}
                         className="text-xs text-marine-700 hover:text-marine-900"
                       >
-                        Sluiten
+                        {t('admin.contracts.close')}
                       </button>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1.5">
@@ -190,9 +215,9 @@ export default function ContractsEditorPage() {
               </div>
 
               <div className="flex items-center justify-between border-t border-navy-100 bg-sand-50/40 px-4 py-2.5 text-xs">
-                <span className="text-navy-500">Sectie 2 van 8</span>
+                <span className="text-navy-500">{t('admin.contracts.sectionProgress')}</span>
                 <button className="inline-flex items-center gap-1 font-medium text-marine-700 hover:text-marine-800">
-                  <Undo2 className="h-3.5 w-3.5" /> Herstel
+                  <Undo2 className="h-3.5 w-3.5" /> {t('admin.contracts.restore')}
                 </button>
               </div>
             </Card>
@@ -268,7 +293,7 @@ export default function ContractsEditorPage() {
                     <div className="flex-1">
                       <div className="text-sm font-medium text-navy-900">{c.label}</div>
                       <div className="text-[11px] text-navy-400">
-                        {c.required ? 'Verplicht' : 'Optioneel'}
+                        {c.required ? t('admin.contracts.required') : t('admin.contracts.optional')}
                       </div>
                     </div>
                     <input
@@ -311,18 +336,18 @@ export default function ContractsEditorPage() {
             <Card className="overflow-hidden bg-gradient-to-tr from-navy-900 to-marine-700 text-white">
               <div className="p-5">
                 <Sparkles className="h-5 w-5 text-gold-300" />
-                <div className="mt-2 text-sm font-semibold">AI tag-controle</div>
+                <div className="mt-2 text-sm font-semibold">{t('admin.contracts.aiTagCheck')}</div>
                 <p className="mt-1 text-xs text-sand-100/80">
-                  Laat AI controleren of alle tags correct gemapt zijn.
+                  {t('admin.contracts.aiTagCheckDesc')}
                 </p>
                 <Button variant="gold" size="sm" className="mt-3" fullWidth>
-                  Start controle
+                  {t('admin.contracts.aiTagCheckStart')}
                 </Button>
               </div>
             </Card>
           </aside>
         </div>
-      </div>
+      </AdminContent>
     </>
   );
 }

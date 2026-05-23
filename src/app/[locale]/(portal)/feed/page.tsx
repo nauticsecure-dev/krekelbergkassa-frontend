@@ -2,25 +2,18 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import type { LucideIcon } from 'lucide-react';
 import {
   Anchor,
   ArrowRight,
-  Bell,
-  Calendar,
   CheckCircle2,
-  CreditCard,
   Droplets,
-  FileText,
-  Gift,
   MapPin,
   MessageCircle,
-  Pause,
   Phone,
-  Plus,
   Ship,
   Sparkles,
   Sun,
-  TrendingUp,
   Warehouse,
 } from 'lucide-react';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -28,25 +21,123 @@ import { useAuth } from '@/lib/auth-context';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { EmptyState, LoadingState } from '@/components/admin/DataState';
+import { PortalSectionLabel } from '@/components/portal/PortalUi';
 import { cn } from '@/lib/cn';
+import { useQuery } from '@/lib/hooks/useAsync';
+import { portalService } from '@/lib/services';
+import type { PortalBoat, PortalTimelineItem } from '@/lib/api-types';
+import {
+  centsToEuro,
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+} from '@/lib/format';
+import {
+  filterTimelineItems,
+  groupFeedTimeline,
+  isTimelineUnread,
+  nearestContractEnd,
+  nextUpcomingAppointment,
+  parseWalletBalance,
+  profileCompletion,
+  salutationForHour,
+  timelinePresentation,
+} from '@/lib/portal-feed';
 
-export default function TijdlijnPage() {
+type TypeFilter = '' | 'appointments' | 'invoices' | 'storage';
+
+export default function FeedPage() {
   const { t, locale } = useIntl();
   const { user } = useAuth();
+  const [typeFilter, setTypeFilter] = React.useState<TypeFilter>('');
 
-  const firstName = (user?.name ?? 'Jan Jansen').split(' ')[0];
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const firstName = (user?.name ?? 'Jan').split(' ')[0];
   const today = new Date();
-  const greeting = greetingFor(today);
+  const greetingDate = new Intl.DateTimeFormat(dateLocale, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(today);
+  const salutation = salutationForHour(today.getHours(), t);
+
+  const feed = useQuery([locale], async () => {
+    const [
+      me,
+      timeline,
+      notifications,
+      appointments,
+      invoices,
+      boats,
+      contracts,
+      walletRaw,
+    ] = await Promise.all([
+      portalService.me().catch(() => null),
+      portalService.timeline({ per_page: 30 }).catch(() => ({
+        items: [],
+        pagination: { page: 1, per_page: 30, total: 0, has_more: false, unread_count: 0 },
+      })),
+      portalService.notifications().catch(() => ({ unread_count: 0, latest: [] })),
+      portalService.appointments({ per_page: 20 }).catch(() => ({
+        data: [],
+        total: 0,
+        has_more: false,
+      })),
+      portalService.invoices({ per_page: 50 }).catch(() => ({ data: [], meta: undefined })),
+      portalService.boats().catch(() => [] as PortalBoat[]),
+      portalService.contracts().catch(() => []),
+      portalService.wallet().catch(() => null),
+    ]);
+
+    return { me, timeline, notifications, appointments, invoices, boats, contracts, walletRaw };
+  });
+
+  const wallet = parseWalletBalance(feed.data?.walletRaw);
+  const me = feed.data?.me;
+  const invoiceRows = feed.data?.invoices?.data ?? [];
+  const openBalance =
+    me?.summary?.open_balance_cents != null
+      ? centsToEuro(me.summary.open_balance_cents)
+      : invoiceRows.reduce((sum, inv) => sum + centsToEuro(inv.outstanding_cents), 0);
+  const upcomingCount =
+    feed.data?.appointments.data.filter((a) => {
+      const d = new Date(`${a.appointment_date}T${a.start_time ?? '00:00'}`);
+      return !Number.isNaN(d.getTime()) && d >= new Date();
+    }).length ?? 0;
+  const profilePct = profileCompletion([
+    me?.customer?.name,
+    me?.customer?.email,
+    me?.customer?.phone,
+    me?.customer?.preferred_locale,
+  ]);
+  const filteredTimeline = filterTimelineItems(feed.data?.timeline.items ?? [], typeFilter);
+  const groupedTimeline = groupFeedTimeline(filteredTimeline);
+  const nextAppt = nextUpcomingAppointment(feed.data?.appointments.data ?? []);
+  const nextContract = nearestContractEnd(feed.data?.contracts ?? []);
+  const primaryBoat = feed.data?.boats?.[0];
+  const unreadTimeline = feed.data?.timeline.pagination.unread_count ?? 0;
+  const unreadNotifications = feed.data?.notifications.unread_count ?? 0;
+
+  const groupTitle = (key: 'today' | 'week' | 'earlier') => {
+    if (key === 'today') return t('feed.groupToday');
+    if (key === 'week') return t('feed.groupThisWeek');
+    return t('feed.groupEarlier');
+  };
 
   return (
-    <div className="bg-sand-50 pb-14">
+    <div className="pb-14">
       <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        {/* Top — greeting hero + side wallet/invite */}
+        {feed.loading ? (
+          <div className="mb-6">
+            <LoadingState label={t('feed.loading')} />
+          </div>
+        ) : null}
+
         <div className="grid gap-5 lg:grid-cols-[1.65fr_1fr]">
-          {/* Greeting hero */}
           <Card className="relative overflow-hidden p-0">
             <div className="relative isolate min-h-[300px] overflow-hidden rounded-[inherit] bg-navy-950 p-7 text-white sm:min-h-[320px] sm:p-9">
-              {/* Backdrop image */}
               <div
                 aria-hidden
                 className="absolute inset-0 bg-cover bg-center opacity-30"
@@ -60,11 +151,10 @@ export default function TijdlijnPage() {
               <div className="relative">
                 <div className="flex items-center gap-2 text-xs font-medium text-sand-100/70">
                   <Sun className="h-3.5 w-3.5 text-gold-300" />
-                  {greeting.date}
+                  {greetingDate}
                 </div>
                 <h1 className="heading-display mt-3 text-4xl text-white sm:text-5xl">
-                  {greeting.salutation}, {firstName}{' '}
-                  <span aria-hidden>👋</span>
+                  {salutation}, {firstName} <span aria-hidden>👋</span>
                 </h1>
                 <p className="mt-3 max-w-md text-sm leading-relaxed text-sand-100/85">
                   {t('feed.heroSubtitle')}
@@ -94,14 +184,18 @@ export default function TijdlijnPage() {
                   </Link>
                 </div>
 
-                <div className="mt-8 grid grid-cols-2 max-w-md gap-6 border-t border-white/10 pt-5">
+                <div className="mt-8 grid max-w-md grid-cols-2 gap-6 border-t border-white/10 pt-5">
                   <Stat
-                    big="3"
+                    big={feed.loading ? '—' : String(upcomingCount)}
                     label={t('feed.statsAppointmentsLabel')}
                     accent="gold"
                   />
                   <Stat
-                    big="€ 230,00"
+                    big={
+                      feed.loading
+                        ? '—'
+                        : formatCurrency(openBalance, dateLocale)
+                    }
                     label={t('feed.statsOpenLabel')}
                     accent="white"
                   />
@@ -110,60 +204,56 @@ export default function TijdlijnPage() {
             </div>
           </Card>
 
-          {/* Side: Wallet + Invite */}
           <div className="space-y-5">
-            {/* Wallet */}
-            <Card className="p-6">
+            <Card className="surface-float-hover p-6">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
                     {t('feed.wallet.title')}
                   </div>
                   <div className="mt-1.5 text-3xl font-semibold text-emerald-600">
-                    € 50,00
+                    {formatCurrency(wallet.balance, dateLocale)}
                   </div>
                 </div>
-                <Badge tone="success" dot>
-                  {t('feed.wallet.activeShort')}
+                <Badge tone={wallet.active ? 'success' : 'sand'} dot={wallet.active}>
+                  {wallet.active ? t('feed.wallet.activeShort') : '—'}
                 </Badge>
               </div>
-              <p className="mt-1 text-xs text-navy-500">
-                {t('feed.wallet.subtitle')}
-              </p>
+              <p className="mt-1 text-xs text-navy-500">{t('feed.wallet.subtitle')}</p>
               <div className="mt-4">
                 <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-navy-500">
                   <span>{t('feed.wallet.profileLabel')}</span>
-                  <span>40%</span>
+                  <span>{profilePct}%</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-sand-100">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-gold-400 to-gold-600"
-                    style={{ width: '40%' }}
+                    className="h-full rounded-full bg-gradient-to-r from-gold-400 to-gold-600 transition-all duration-500"
+                    style={{ width: `${profilePct}%` }}
                   />
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link
                   href={`/${locale}/dashboard/facturen`}
-                  className="inline-flex items-center gap-1 rounded-md border border-navy-100 px-3 py-1.5 text-xs font-semibold text-navy-700 hover:bg-sand-100"
+                  className="inline-flex items-center gap-1 rounded-lg border border-navy-100/70 px-3 py-1.5 text-xs font-semibold text-navy-700 transition hover:border-navy-200 hover:bg-white"
                 >
                   {t('feed.wallet.viewInvoices')}
                 </Link>
-                <button className="inline-flex items-center gap-1 rounded-md bg-navy-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-800">
+                <Link
+                  href={`/${locale}/dashboard/settings`}
+                  className="inline-flex items-center gap-1 rounded-lg bg-navy-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-navy-800"
+                >
                   {t('feed.wallet.completeProfile')}
-                </button>
+                </Link>
               </div>
             </Card>
 
-            {/* Invite a friend */}
             <Card className="relative overflow-hidden p-0">
               <div className="relative isolate p-6 text-white">
                 <div
                   aria-hidden
                   className="absolute inset-0 bg-cover bg-center opacity-30"
-                  style={{
-                    backgroundImage: 'url(/img/krek/verkoop-schip.webp)',
-                  }}
+                  style={{ backgroundImage: 'url(/img/krek/verkoop-schip.webp)' }}
                 />
                 <div
                   aria-hidden
@@ -173,33 +263,45 @@ export default function TijdlijnPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-widest text-sand-100/70">
-                        {t('feed.invite.title')}
+                        {t('feed.messages')}
                       </div>
                       <div className="mt-1 text-xl font-semibold">
-                        {t('feed.invite.headline')}
+                        {unreadNotifications + unreadTimeline > 0
+                          ? t('feed.notificationsUnread', {
+                              count: unreadNotifications + unreadTimeline,
+                            })
+                          : t('adminNew.portal.messages.empty')}
                       </div>
                     </div>
-                    <span className="rounded-full bg-gold-500 px-2.5 py-1 text-xs font-bold text-navy-900">
-                      € 25,00
-                    </span>
+                    <Badge tone="gold">{unreadNotifications}</Badge>
                   </div>
-                  <p className="mt-3 text-xs text-sand-100/80">
-                    {t('feed.invite.subtitle')}
-                  </p>
-                  <button className="mt-4 inline-flex items-center gap-2 rounded-md bg-navy-950 px-3 py-2 text-xs font-semibold text-white hover:bg-black">
-                    {t('feed.invite.cta')}
+                  <ul className="mt-4 space-y-2">
+                    {(feed.data?.notifications.latest ?? []).slice(0, 3).map((n, idx) => (
+                      <li
+                        key={String(n.id ?? idx)}
+                        className="rounded-lg bg-white/10 px-3 py-2 text-xs text-sand-100/90 ring-1 ring-white/10"
+                      >
+                        <div className="font-semibold text-white">{n.title}</div>
+                        <div className="mt-0.5 truncate text-sand-100/70">{n.message}</div>
+                      </li>
+                    ))}
+                    {!feed.data?.notifications.latest?.length ? (
+                      <li className="text-xs text-sand-100/70">{t('feed.emptyTimeline')}</li>
+                    ) : null}
+                  </ul>
+                  <Link
+                    href={`/${locale}/dashboard/berichten`}
+                    className="mt-4 inline-flex items-center gap-2 rounded-lg bg-navy-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-black"
+                  >
+                    {t('feed.viewAll')}
                     <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
-                  <div className="mt-3 inline-flex items-center gap-2 rounded-md bg-white/10 px-2.5 py-1.5 text-xs font-mono text-sand-100 ring-1 ring-white/15">
-                    KREK-{firstName.toUpperCase().slice(0, 4)}26
-                  </div>
+                  </Link>
                 </div>
               </div>
             </Card>
           </div>
         </div>
 
-        {/* Quick actions */}
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <QuickAction
             icon={Ship}
@@ -219,7 +321,7 @@ export default function TijdlijnPage() {
             icon={Warehouse}
             label={t('feed.quick.storage')}
             sub={t('feed.quick.storageSub')}
-            href={`/${locale}/diensten/winterstalling`}
+            href={`/${locale}/dashboard/stalling`}
             tone="navy"
           />
           <QuickAction
@@ -231,113 +333,55 @@ export default function TijdlijnPage() {
           />
         </div>
 
-        {/* Main grid: timeline + insights */}
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.65fr_1fr]">
-          {/* Timeline */}
           <div className="space-y-5">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <Badge tone="gold" className="mb-2" dot>
                   {t('feed.timelineBadge')}
                 </Badge>
-                <h2 className="heading-display text-2xl">
-                  {t('feed.timelineTitle')}
-                </h2>
-                <p className="mt-1 text-sm text-navy-500">
-                  {t('feed.timelineSubtitle')}
-                </p>
+                <h2 className="heading-display text-2xl">{t('feed.timelineTitle')}</h2>
+                <p className="mt-1 text-sm text-navy-500">{t('feed.timelineSubtitle')}</p>
               </div>
-              <select className="input-base h-9 w-auto pr-9 text-sm">
-                <option>{t('feed.filterAll')}</option>
-                <option>{t('feed.filterAppointments')}</option>
-                <option>{t('feed.filterInvoices')}</option>
-                <option>{t('feed.filterStorage')}</option>
+              <select
+                className="input-base h-9 w-auto pr-9 text-sm"
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
+              >
+                <option value="">{t('feed.filterAll')}</option>
+                <option value="appointments">{t('feed.filterAppointments')}</option>
+                <option value="invoices">{t('feed.filterInvoices')}</option>
+                <option value="storage">{t('feed.filterStorage')}</option>
               </select>
             </div>
 
-            <Section title={t('feed.groupToday')}>
-              <TimelineItem
-                icon={Calendar}
-                tone="marine"
-                title={t('feed.items.craneTomorrowTitle')}
-                meta={t('feed.items.craneTomorrowMeta')}
-                cta={t('feed.items.craneTomorrowCta')}
-                href={`/${locale}/dashboard/afspraken`}
-                unread
-                priority="high"
-              />
-              <TimelineItem
-                icon={CreditCard}
-                tone="danger"
-                title={t('feed.items.invoiceOpenTitle')}
-                meta={t('feed.items.invoiceOpenMeta')}
-                cta={t('feed.items.invoiceOpenCta')}
-                href={`/${locale}/dashboard/facturen`}
-                priority="urgent"
-                unread
-              />
-            </Section>
-
-            <Section title={t('feed.groupThisWeek')}>
-              <TimelineItem
-                icon={Warehouse}
-                tone="warning"
-                title={t('feed.items.storageExpiringTitle')}
-                meta={t('feed.items.storageExpiringMeta')}
-                cta={t('feed.items.storageExpiringCta')}
-                href={`/${locale}/dashboard/stalling`}
-                unread
-                priority="high"
-              />
-              <TimelineItem
-                icon={FileText}
-                tone="navy"
-                title={t('feed.items.quoteReadyTitle')}
-                meta={t('feed.items.quoteReadyMeta')}
-                cta={t('feed.items.quoteReadyCta')}
-                href={`/${locale}/dashboard/documenten`}
-              />
-              <TimelineItem
-                icon={Pause}
-                tone="sand"
-                title={t('feed.items.appointmentChangedTitle')}
-                meta={t('feed.items.appointmentChangedMeta')}
-                cta={t('feed.items.appointmentChangedCta')}
-                href={`/${locale}/dashboard/afspraken`}
-              />
-            </Section>
-
-            <Section title={t('feed.groupEarlier')}>
-              <TimelineItem
-                icon={CheckCircle2}
-                tone="success"
-                title={t('feed.items.paymentReceivedTitle')}
-                meta={t('feed.items.paymentReceivedMeta')}
-                cta={t('feed.items.paymentReceivedCta')}
-                href={`/${locale}/dashboard/facturen`}
-              />
-              <TimelineItem
-                icon={Ship}
-                tone="marine"
-                title={t('feed.items.workCompletedTitle')}
-                meta={t('feed.items.workCompletedMeta')}
-                cta={t('feed.items.workCompletedCta')}
-                href={`/${locale}/dashboard/documenten`}
-              />
-              <TimelineItem
-                icon={Gift}
-                tone="gold"
-                title={t('feed.items.welcomeTitle')}
-                meta={t('feed.items.welcomeMeta')}
-                cta={t('feed.items.welcomeCta')}
-                href={`/${locale}/dashboard`}
-              />
-            </Section>
+            {feed.loading ? (
+              <LoadingState label={t('feed.loading')} />
+            ) : groupedTimeline.length === 0 ? (
+              <EmptyState title={t('feed.emptyTimeline')} />
+            ) : (
+              groupedTimeline.map((group) => (
+                <div key={group.key}>
+                  <PortalSectionLabel>{groupTitle(group.key)}</PortalSectionLabel>
+                  <div className="space-y-2.5">
+                    {group.items.map((item) => (
+                      <FeedTimelineItem
+                        key={item.id}
+                        item={item}
+                        locale={locale}
+                        dateLocale={dateLocale}
+                        t={t}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
 
             <div className="text-center">
               <Link
-                href="#"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-navy-700 hover:text-marine-700"
+                href={`/${locale}/dashboard/berichten`}
+                className="inline-flex items-center gap-1 text-sm font-semibold text-navy-700 transition hover:text-marine-700"
               >
                 {t('feed.viewAll')}
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -345,9 +389,7 @@ export default function TijdlijnPage() {
             </div>
           </div>
 
-          {/* Right rail */}
           <aside className="space-y-5">
-            {/* AI insights */}
             <Card className="overflow-hidden p-0">
               <div className="relative isolate bg-navy-950 p-6 text-white">
                 <div
@@ -358,69 +400,95 @@ export default function TijdlijnPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-gold-300" />
-                      <span className="text-sm font-semibold">
-                        {t('feed.ai.title')}
-                      </span>
+                      <span className="text-sm font-semibold">{t('feed.ai.title')}</span>
                     </div>
-                    <Badge tone="gold">AI</Badge>
+                    <Badge tone="gold">Live</Badge>
                   </div>
                   <ul className="mt-4 space-y-3 text-sm">
                     <InsightRow
                       label={t('feed.ai.openInvoices')}
-                      value="€ 230,00"
+                      value={formatCurrency(openBalance, dateLocale)}
                     />
                     <InsightRow
                       label={t('feed.ai.nextAppointment')}
-                      value={t('feed.ai.tomorrow1000')}
+                      value={
+                        nextAppt
+                          ? `${formatDate(nextAppt.appointment_date, dateLocale)} · ${nextAppt.start_time?.slice(0, 5) ?? ''}`
+                          : '—'
+                      }
                     />
                     <InsightRow
                       label={t('feed.ai.storageEnds')}
-                      value="31 mrt 2026"
+                      value={
+                        nextContract
+                          ? formatDate(nextContract.end_date, dateLocale)
+                          : '—'
+                      }
                     />
                     <InsightRow
-                      label={t('feed.ai.savedThisYear')}
-                      value="€ 92,50"
-                      good
+                      label={t('feed.wallet.title')}
+                      value={formatCurrency(wallet.balance, dateLocale)}
+                      good={wallet.balance > 0}
                     />
                   </ul>
                 </div>
               </div>
             </Card>
 
-            {/* Boat card */}
-            <Card className="overflow-hidden p-0">
-              <div
-                className="aspect-[4/2] bg-cover bg-center"
-                style={{ backgroundImage: 'url(/img/krek/verkoop-schip.webp)' }}
-              />
+            <Card className="surface-float-hover overflow-hidden p-0">
+              {primaryBoat?.photo_url ? (
+                <div
+                  className="aspect-[4/2] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${primaryBoat.photo_url})` }}
+                />
+              ) : (
+                <div
+                  className="aspect-[4/2] bg-cover bg-center"
+                  style={{ backgroundImage: 'url(/img/krek/verkoop-schip.webp)' }}
+                />
+              )}
               <div className="p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-                      {t('feed.boat.label')}
+                {primaryBoat ? (
+                  <>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
+                          {t('feed.boat.label')}
+                        </div>
+                        <div className="mt-1 text-base font-semibold text-navy-900">
+                          {primaryBoat.name}
+                          {primaryBoat.length_metres
+                            ? ` · ${primaryBoat.length_metres} m`
+                            : primaryBoat.length_cm
+                              ? ` · ${Number(primaryBoat.length_cm) / 100} m`
+                              : ''}
+                        </div>
+                      </div>
+                      <Badge tone="success" dot>
+                        {t('feed.boat.statusActive')}
+                      </Badge>
                     </div>
-                    <div className="mt-1 text-base font-semibold text-navy-900">
-                      Aquila · 8.90 m
+                    <div className="mt-3 flex items-center gap-2 text-xs text-navy-500">
+                      <MapPin className="h-3 w-3" />
+                      {primaryBoat.location_code || t('feed.boat.location')}
                     </div>
-                  </div>
-                  <Badge tone="success" dot>
-                    {t('feed.boat.statusActive')}
-                  </Badge>
-                </div>
-                <div className="mt-3 flex items-center gap-2 text-xs text-navy-500">
-                  <MapPin className="h-3 w-3" />
-                  {t('feed.boat.location')}
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-semibold text-navy-900">{t('feed.noBoat')}</div>
+                    <p className="mt-1 text-xs text-navy-500">{t('feed.noBoatDesc')}</p>
+                  </>
+                )}
                 <div className="mt-4 flex gap-2">
                   <Link
                     href={`/${locale}/dashboard/boten`}
-                    className="inline-flex flex-1 items-center justify-center rounded-md border border-navy-100 px-3 py-1.5 text-xs font-semibold text-navy-700 hover:bg-sand-100"
+                    className="inline-flex flex-1 items-center justify-center rounded-lg border border-navy-100/70 px-3 py-1.5 text-xs font-semibold text-navy-700 transition hover:bg-sand-50"
                   >
                     {t('feed.boat.view')}
                   </Link>
                   <Link
                     href={`/${locale}/kraanafspraak`}
-                    className="inline-flex flex-1 items-center justify-center rounded-md bg-navy-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-800"
+                    className="inline-flex flex-1 items-center justify-center rounded-lg bg-navy-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-navy-800"
                   >
                     {t('feed.boat.plan')}
                   </Link>
@@ -428,16 +496,13 @@ export default function TijdlijnPage() {
               </div>
             </Card>
 
-            {/* Help */}
             <Card className="bg-gradient-to-tr from-sand-100 to-sand-50 p-5">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-900 text-white">
                   <Phone className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-navy-900">
-                    {t('feed.help.title')}
-                  </div>
+                  <div className="text-sm font-semibold text-navy-900">{t('feed.help.title')}</div>
                   <a
                     href="tel:+31475322275"
                     className="text-xs font-medium text-marine-700 hover:underline"
@@ -446,9 +511,7 @@ export default function TijdlijnPage() {
                   </a>
                 </div>
               </div>
-              <p className="mt-3 text-xs leading-relaxed text-navy-500">
-                {t('feed.help.subtitle')}
-              </p>
+              <p className="mt-3 text-xs leading-relaxed text-navy-500">{t('feed.help.subtitle')}</p>
             </Card>
           </aside>
         </div>
@@ -457,27 +520,45 @@ export default function TijdlijnPage() {
   );
 }
 
-function greetingFor(d: Date) {
-  const h = d.getHours();
-  const days = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
-  const months = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'];
-  const date = `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-  const salutation =
-    h < 6
-      ? 'Goedenacht'
-      : h < 12
-        ? 'Goedemorgen'
-        : h < 18
-          ? 'Goedemiddag'
-          : 'Goedenavond';
-  return { salutation, date };
+function FeedTimelineItem({
+  item,
+  locale,
+  dateLocale,
+  t,
+}: {
+  item: PortalTimelineItem;
+  locale: string;
+  dateLocale: string;
+  t: (key: string) => string;
+}) {
+  const presentation = timelinePresentation(item, locale);
+  const Icon = presentation.icon;
+  const title = item.title ?? t('adminNew.portal.messages.item');
+  const meta =
+    item.body ??
+    item.message ??
+    formatDateTime(item.created_at, dateLocale);
+  const unread = isTimelineUnread(item);
+
+  return (
+    <TimelineItem
+      icon={Icon}
+      tone={presentation.tone}
+      title={title}
+      meta={meta}
+      cta={t('feed.openItem')}
+      href={presentation.href}
+      priority={presentation.priority}
+      unread={unread}
+    />
+  );
 }
 
 function Pill({
   icon: Icon,
   children,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   children: React.ReactNode;
 }) {
   return (
@@ -519,7 +600,7 @@ function QuickAction({
   href,
   tone,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   label: string;
   sub: string;
   href: string;
@@ -534,44 +615,22 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-xl border border-navy-100 bg-white p-4 transition hover:-translate-y-0.5 hover:border-navy-200 hover:shadow-sm"
+      className="surface-float surface-float-hover group flex items-center gap-3 p-4"
     >
       <span
         className={cn(
-          'flex h-10 w-10 items-center justify-center rounded-lg transition',
+          'flex h-10 w-10 items-center justify-center rounded-xl transition',
           tones[tone]
         )}
       >
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-semibold text-navy-900">
-          {label}
-        </div>
+        <div className="truncate text-sm font-semibold text-navy-900">{label}</div>
         <div className="truncate text-[11px] text-navy-500">{sub}</div>
       </div>
       <ArrowRight className="h-4 w-4 text-navy-300 transition group-hover:translate-x-0.5 group-hover:text-navy-700" />
     </Link>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div className="mb-2 flex items-center gap-2 px-1">
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
-          {title}
-        </span>
-        <span className="h-px flex-1 bg-navy-100" />
-      </div>
-      <div className="space-y-2.5">{children}</div>
-    </div>
   );
 }
 
@@ -585,7 +644,7 @@ function TimelineItem({
   priority,
   unread,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   tone: 'marine' | 'gold' | 'navy' | 'sand' | 'success' | 'warning' | 'danger';
   title: string;
   meta: string;
@@ -609,8 +668,7 @@ function TimelineItem({
     urgent: 'bg-rose-500',
   };
   return (
-    <article className="group relative flex items-start gap-4 rounded-2xl border border-navy-100 bg-white p-4 transition hover:border-navy-200 hover:shadow-sm">
-      {/* Priority side accent */}
+    <article className="surface-float surface-float-hover group relative flex items-start gap-4 p-4">
       <span
         aria-hidden
         className={cn(
@@ -628,9 +686,7 @@ function TimelineItem({
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="truncate text-sm font-semibold text-navy-900">
-            {title}
-          </h3>
+          <h3 className="truncate text-sm font-semibold text-navy-900">{title}</h3>
           {unread ? (
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-marine-500" aria-hidden />
           ) : null}
@@ -659,12 +715,7 @@ function InsightRow({
   return (
     <li className="flex items-center justify-between border-b border-white/5 pb-2 last:border-b-0 last:pb-0">
       <span className="text-sand-100/75">{label}</span>
-      <span
-        className={cn(
-          'font-semibold',
-          good ? 'text-emerald-300' : 'text-white'
-        )}
-      >
+      <span className={cn('font-semibold', good ? 'text-emerald-300' : 'text-white')}>
         {value}
       </span>
     </li>

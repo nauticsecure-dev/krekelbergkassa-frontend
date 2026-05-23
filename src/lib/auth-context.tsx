@@ -1,25 +1,24 @@
 'use client';
 
 import * as React from 'react';
-import { api, auth } from './api';
+import { auth } from './api';
+import type { ApiError } from './api';
+import { authService, extractLoginToken, portalService } from './services';
+import type { SessionUser } from './api-types';
 
 export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'guest';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  locale?: string;
-  avatarUrl?: string | null;
-}
+export type User = SessionUser;
 
 interface AuthState {
   user: User | null;
   loading: boolean;
   isDemo: boolean;
+  isPortalSession: boolean;
   signIn: (email: string, password: string, remember?: boolean) => Promise<User>;
   signInDemo: (role?: Role) => Promise<User>;
+  requestCustomerMagicLink: (email: string, locale?: string) => Promise<{ success: boolean; message: string }>;
+  verifyCustomerMagicLink: (token: string, remember?: boolean) => Promise<User>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -28,6 +27,15 @@ const AuthCtx = React.createContext<AuthState | null>(null);
 
 const DEMO_TOKEN_PREFIX = 'demo::';
 const DEMO_USER_KEY = 'krek_demo_user';
+
+function isUnauthorized(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'status' in err &&
+    (err as ApiError).status === 401
+  );
+}
 
 const demoUserFor = (role: Role): User => {
   switch (role) {
@@ -67,41 +75,89 @@ const demoUserFor = (role: Role): User => {
   }
 };
 
+function normalizeRole(role: string): Role {
+  if (role === 'admin' || role === 'manager' || role === 'staff' || role === 'customer') {
+    return role;
+  }
+  return 'staff';
+}
+
+async function loadStaffSession(): Promise<User | null> {
+  const me = await authService.me();
+  return {
+    ...me,
+    role: normalizeRole(me.role),
+  };
+}
+
+async function loadPortalSession(): Promise<User | null> {
+  const portalMe = await portalService.me();
+  return {
+    id: portalMe.customer.id,
+    name: portalMe.customer.name,
+    email: portalMe.customer.email,
+    role: 'customer',
+    locale: portalMe.customer.preferred_locale,
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [isDemo, setIsDemo] = React.useState(false);
+  const [isPortalSession, setIsPortalSession] = React.useState(false);
 
   const refresh = React.useCallback(async () => {
     const token = auth.getToken();
-    if (!token) {
-      setUser(null);
-      setIsDemo(false);
-      setLoading(false);
-      return;
-    }
-    // Demo session — hydrate from localStorage, no backend call
-    if (token.startsWith(DEMO_TOKEN_PREFIX)) {
+    const portalToken = auth.getPortalToken();
+    const hasStaffToken = !!token && !token.startsWith(DEMO_TOKEN_PREFIX);
+
+    if (token?.startsWith(DEMO_TOKEN_PREFIX)) {
       const stored =
         typeof window !== 'undefined' ? localStorage.getItem(DEMO_USER_KEY) : null;
       const parsed: User | null = stored ? JSON.parse(stored) : null;
       setUser(parsed ?? demoUserFor('customer'));
       setIsDemo(true);
+      setIsPortalSession(false);
       setLoading(false);
       return;
     }
-    // Real session
-    try {
-      const me = await api<User>('/auth/me');
-      setUser(me);
-      setIsDemo(false);
-    } catch {
-      auth.clearSession();
-      setUser(null);
-      setIsDemo(false);
-    } finally {
-      setLoading(false);
+
+    // Staff session takes priority — portal cookie must not override admin login on refresh.
+    if (hasStaffToken) {
+      try {
+        const staffUser = await loadStaffSession();
+        setUser(staffUser);
+        setIsDemo(false);
+        setIsPortalSession(false);
+        setLoading(false);
+        return;
+      } catch (err) {
+        if (isUnauthorized(err)) {
+          auth.clearSession();
+        }
+      }
     }
+
+    if (portalToken) {
+      try {
+        const portalUser = await loadPortalSession();
+        setUser(portalUser);
+        setIsDemo(false);
+        setIsPortalSession(true);
+        setLoading(false);
+        return;
+      } catch (err) {
+        if (isUnauthorized(err)) {
+          auth.clearPortalSession();
+        }
+      }
+    }
+
+    setUser(null);
+    setIsDemo(false);
+    setIsPortalSession(false);
+    setLoading(false);
   }, []);
 
   React.useEffect(() => {
@@ -110,50 +166,99 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = React.useCallback(
     async (email: string, password: string, remember = true) => {
-      const res = await api<{ token: string; user: User }>('/auth/login', {
-        method: 'POST',
-        body: { email, password },
-        auth: false,
-      });
-      auth.setSession(res.token, remember);
-      setUser(res.user);
+      const res = await authService.login(email, password);
+      const sessionToken = extractLoginToken(res);
+      if (!sessionToken) {
+        throw new Error('Login succeeded but no session token was returned.');
+      }
+      auth.clearPortalSession();
+      auth.setSession(sessionToken, remember, res.session?.expires_at);
+      const next: User = {
+        ...res.user,
+        role: normalizeRole(res.user.role),
+      };
+      setUser(next);
       setIsDemo(false);
-      return res.user;
+      setIsPortalSession(false);
+      return next;
     },
     []
   );
 
+  const requestCustomerMagicLink = React.useCallback(async (email: string, locale?: string) => {
+    return authService.requestMagicLink(email, locale);
+  }, []);
+
+  const verifyCustomerMagicLink = React.useCallback(async (token: string, remember = true) => {
+    const res = await authService.verifyMagicLink(token);
+    auth.clearSession();
+    auth.setPortalSession(res.portal_token, remember);
+    const next: User = {
+      id: res.customer.id,
+      name: res.customer.name,
+      email: res.customer.email,
+      role: 'customer',
+      locale: res.customer.preferred_locale,
+    };
+    setUser(next);
+    setIsDemo(false);
+    setIsPortalSession(true);
+    return next;
+  }, []);
+
   const signInDemo = React.useCallback(async (role: Role = 'customer') => {
     const demoUser = demoUserFor(role);
+    auth.clearPortalSession();
     auth.setSession(`${DEMO_TOKEN_PREFIX}${role}::${Date.now()}`, true);
     if (typeof window !== 'undefined') {
       localStorage.setItem(DEMO_USER_KEY, JSON.stringify(demoUser));
     }
     setUser(demoUser);
     setIsDemo(true);
+    setIsPortalSession(role === 'customer');
     return demoUser;
   }, []);
 
   const signOut = React.useCallback(async () => {
     const token = auth.getToken();
+    const portalToken = auth.getPortalToken();
+
     if (token && !token.startsWith(DEMO_TOKEN_PREFIX)) {
       try {
-        await api('/auth/logout', { method: 'POST' });
+        await authService.logout();
       } catch {
-        /* ignore */
+        // ignore
       }
     }
+
+    if (portalToken) {
+      auth.clearPortalSession();
+    }
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem(DEMO_USER_KEY);
     }
+
     auth.clearSession();
     setUser(null);
     setIsDemo(false);
+    setIsPortalSession(false);
   }, []);
 
   return (
     <AuthCtx.Provider
-      value={{ user, loading, isDemo, signIn, signInDemo, signOut, refresh }}
+      value={{
+        user,
+        loading,
+        isDemo,
+        isPortalSession,
+        signIn,
+        signInDemo,
+        requestCustomerMagicLink,
+        verifyCustomerMagicLink,
+        signOut,
+        refresh,
+      }}
     >
       {children}
     </AuthCtx.Provider>

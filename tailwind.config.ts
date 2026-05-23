@@ -67,9 +67,15 @@ const config: Config = {
       boxShadow: {
         card: '0 1px 2px 0 rgba(15, 27, 42, 0.04), 0 4px 16px -4px rgba(15, 27, 42, 0.08)',
         elev: '0 8px 30px -8px rgba(15, 27, 42, 0.18)',
+        float: '0 1px 2px rgba(15, 27, 42, 0.04), 0 8px 24px -6px rgba(15, 27, 42, 0.10)',
+        'float-lg': '0 2px 4px rgba(15, 27, 42, 0.04), 0 16px 40px -8px rgba(15, 27, 42, 0.14)',
       },
       borderRadius: {
         xl2: '1.25rem',
+        xl3: '1.5rem',
+      },
+      transitionTimingFunction: {
+        premium: 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },

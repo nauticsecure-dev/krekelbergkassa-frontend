@@ -21,7 +21,7 @@ interface RoleConfig {
   tone: 'marine' | 'gold' | 'navy';
 }
 
-const ROLES: RoleConfig[] = [
+export const LOGIN_ROLES: RoleConfig[] = [
   {
     id: 'customer',
     icon: UserCircle2,
@@ -56,7 +56,7 @@ interface Props {
 
 export function RoleTabs({ value, onChange, className }: Props) {
   const { t } = useIntl();
-  const active = ROLES.find((r) => r.id === value)!;
+  const active = LOGIN_ROLES.find((r) => r.id === value)!;
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -69,7 +69,7 @@ export function RoleTabs({ value, onChange, className }: Props) {
         aria-label={t('loginRole.question')}
         className="inline-flex w-full rounded-lg border border-navy-100 bg-sand-50 p-1"
       >
-        {ROLES.map((r) => {
+        {LOGIN_ROLES.map((r) => {
           const Icon = r.icon;
           const isActive = value === r.id;
           return (
@@ -103,3 +103,10 @@ export const ROLE_REDIRECTS: Record<LoginRole, string> = {
   staff: '/admin/kassa',
   manager: '/admin',
 };
+
+export function coerceLoginRole(value: string | null | undefined): LoginRole {
+  if (value === 'staff' || value === 'manager' || value === 'customer') {
+    return value;
+  }
+  return 'customer';
+}

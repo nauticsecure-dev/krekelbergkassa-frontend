@@ -31,46 +31,61 @@ export function AdminSidebar({ variant = 'desktop' }: Props) {
   const { t, locale } = useIntl();
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+  const role = user?.role ?? 'staff';
 
   const main = [
     { href: `/${locale}/admin`, icon: Home, label: t('admin.sidebar.dashboard') },
     { href: `/${locale}/admin/kassa`, icon: ShoppingCart, label: t('admin.sidebar.kassa'), badge: 'POS' },
-    { href: `/${locale}/admin/planning`, icon: Calendar, label: t('admin.sidebar.calendar') },
+    { href: `/${locale}/admin/calculator`, icon: Calendar, label: t('adminNew.sidebar.calculator') },
     { href: `/${locale}/admin/stalling`, icon: Warehouse, label: t('admin.sidebar.stalling') },
     { href: `/${locale}/admin/klanten`, icon: Users, label: t('admin.sidebar.customers') },
     { href: `/${locale}/admin/boten`, icon: Ship, label: t('admin.sidebar.boats') },
     { href: `/${locale}/admin/facturen`, icon: CreditCard, label: t('admin.sidebar.invoices') },
-    { href: `/${locale}/admin/contracten`, icon: FileText, label: t('admin.sidebar.contracts') },
+    { href: `/${locale}/admin/contracten`, icon: FileText, label: t('admin.sidebar.contracts'), roles: ['admin', 'manager'] },
   ];
 
   const secondary = [
-    { href: `/${locale}/admin/audit`, icon: ShieldCheck, label: t('admin.sidebar.audit') },
-    { href: `/${locale}/admin/rapporten`, icon: BarChart3, label: t('admin.sidebar.reports') },
+    { href: `/${locale}/admin/audit`, icon: ShieldCheck, label: t('admin.sidebar.audit'), roles: ['admin', 'manager'] },
+    { href: `/${locale}/admin/sync`, icon: BarChart3, label: t('adminNew.sidebar.sync') },
     { href: `/${locale}/admin/instellingen`, icon: Settings, label: t('admin.sidebar.settings') },
-    { href: `/${locale}/admin/help`, icon: HelpCircle, label: t('admin.sidebar.help') },
+    { href: `/${locale}/faq`, icon: HelpCircle, label: t('admin.sidebar.help') },
   ];
+
+  const visibleMain = main.filter((item) => {
+    if (!('roles' in item) || !item.roles) return true;
+    return item.roles.includes(role);
+  });
+  const visibleSecondary = secondary.filter((item) => {
+    if (!('roles' in item) || !item.roles) return true;
+    return item.roles.includes(role);
+  });
 
   const isActive = (href: string) =>
     pathname === href || (href !== `/${locale}/admin` && pathname?.startsWith(href + '/'));
 
+  const nav = (
+    <>
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3 scrollbar-thin">
+        {visibleMain.map((l) => (
+          <Item key={l.href} {...l} active={isActive(l.href)} />
+        ))}
+        <SectionDivider />
+        {visibleSecondary.map((l) => (
+          <Item key={l.href} {...l} active={isActive(l.href)} />
+        ))}
+      </nav>
+      <UserFooter
+        name={user?.name ?? 'Admin'}
+        email={user?.email ?? 'admin@krekelberg.nl'}
+        onSignOut={() => void signOut()}
+        logoutLabel={t('adminNew.common.logout')}
+      />
+    </>
+  );
+
   if (variant === 'mobile') {
     return (
-      <div className="flex h-full flex-col bg-navy-950 text-sand-100">
-        <nav className="flex-1 space-y-0.5 px-3 py-3">
-          {main.map((l) => (
-            <Item key={l.href} {...l} active={isActive(l.href)} />
-          ))}
-          <SectionDivider />
-          {secondary.map((l) => (
-            <Item key={l.href} {...l} active={isActive(l.href)} />
-          ))}
-        </nav>
-        <UserFooter
-          name={user?.name ?? 'Admin'}
-          email={user?.email ?? 'admin@krekelberg.nl'}
-          onSignOut={() => void signOut()}
-        />
-      </div>
+      <div className="flex h-full flex-col bg-navy-950 text-sand-100">{nav}</div>
     );
   }
 
@@ -79,20 +94,7 @@ export function AdminSidebar({ variant = 'desktop' }: Props) {
       <div className="border-b border-white/5 px-5 py-4">
         <Logo variant="light" />
       </div>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3 scrollbar-thin">
-        {main.map((l) => (
-          <Item key={l.href} {...l} active={isActive(l.href)} />
-        ))}
-        <SectionDivider />
-        {secondary.map((l) => (
-          <Item key={l.href} {...l} active={isActive(l.href)} />
-        ))}
-      </nav>
-      <UserFooter
-        name={user?.name ?? 'Admin'}
-        email={user?.email ?? 'admin@krekelberg.nl'}
-        onSignOut={() => void signOut()}
-      />
+      {nav}
     </aside>
   );
 }
@@ -105,10 +107,12 @@ function UserFooter({
   name,
   email,
   onSignOut,
+  logoutLabel,
 }: {
   name: string;
   email: string;
   onSignOut: () => void;
+  logoutLabel: string;
 }) {
   return (
     <div className="border-t border-white/5 p-3">
@@ -121,7 +125,7 @@ function UserFooter({
         <button
           onClick={onSignOut}
           className="text-sand-100/40 hover:text-white"
-          aria-label="Uitloggen"
+          aria-label={logoutLabel}
         >
           <LogOut className="h-4 w-4" />
         </button>

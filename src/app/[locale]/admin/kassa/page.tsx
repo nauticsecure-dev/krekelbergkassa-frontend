@@ -1,616 +1,684 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 import {
-  Banknote,
-  Barcode,
-  Bolt,
-  ChevronDown,
   CreditCard,
-  Droplets,
-  FileText,
-  Filter,
-  Hammer,
-  MapPin,
-  Minus,
-  MoreHorizontal,
   Plus,
-  Receipt,
   Search,
-  Ship,
-  Sparkles,
-  Star,
+  ShoppingCart,
   Trash2,
-  Users,
-  Warehouse,
-  X,
-} from 'lucide-react';
-import { useIntl } from '@/i18n/IntlProvider';
-import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { cn } from '@/lib/cn';
+  UserPlus,
+} from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
+import {
+  AdminContent,
+  AdminModalBody,
+  AdminModalFooter,
+  AdminModalHeader,
+  AdminPanel,
+  AdminToolbar,
+} from "@/components/admin/AdminUi";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
+import { EmptyState, LoadingState } from "@/components/admin/DataState";
+import {
+  customersService,
+  kassaService,
+  pricingService,
+  productsService,
+} from "@/lib/services";
+import { useMutation, useQuery } from "@/lib/hooks/useAsync";
+import type { Product, PricingRule } from "@/lib/api-types";
+import { formatCurrency } from "@/lib/format";
+import { useIntl } from "@/i18n/IntlProvider";
+import { useToast } from "@/components/ui/ToastProvider";
+import { getDeviceId } from "@/lib/device";
 
-interface Product {
+interface CartItem {
   id: string;
-  fromCm: number;
-  toCm: number;
-  price: number;
+  product_id?: string;
+  description: string;
+  quantity: number;
+  unit_price_cents: number;
+  vat_rate: number;
 }
 
-const PRODUCTS: Product[] = Array.from({ length: 24 }, (_, i) => {
-  const from = i * 50;
-  const to = from + 49;
-  const price = 14 + i * 2 + (i % 3) * 0.7;
-  return { id: `p${i}`, fromCm: from, toCm: to, price: Math.round(price * 10) / 10 };
-});
-
-const POPULAR_IDS = ['p17', 'p19', 'p15', 'p20'];
-
-const RECENT_LAST = { id: 'p17', price: 29.9 };
-
 export default function KassaPage() {
-  const { t } = useIntl();
-  const TABS = [
-    { id: 'afspuiten', label: t('admin.kassa.afspuiten'), icon: Droplets },
-    { id: 'kranen', label: t('admin.kassa.kranen'), icon: Ship },
-    { id: 'stalling', label: t('admin.kassa.stalling'), icon: Warehouse },
-    { id: 'extra', label: t('adminKassa.tabOther'), icon: MoreHorizontal },
-  ];
-  const [tab, setTab] = React.useState('afspuiten');
-  const [query, setQuery] = React.useState('afspuiten 880');
-  const [cart, setCart] = React.useState<{ id: string; qty: number }[]>([
-    { id: 'p17', qty: 1 },
-  ]);
-  const [payment, setPayment] = React.useState<'cash' | 'pin' | 'card' | 'invoice' | 'deposit'>('pin');
+  const { locale, t } = useIntl();
+  const { push } = useToast();
 
-  const queryNum = Number(query.replace(/[^0-9]/g, '')) || 0;
-  const matchedId = queryNum
-    ? PRODUCTS.find((p) => queryNum >= p.fromCm && queryNum <= p.toCm)?.id
-    : null;
+  const [query, setQuery] = React.useState("");
+  const [customerId, setCustomerId] = React.useState("");
+  const [paymentMethod, setPaymentMethod] = React.useState("pin");
+  const [cart, setCart] = React.useState<CartItem[]>([]);
+  const [showCustomerModal, setShowCustomerModal] = React.useState(false);
+  const [newCustomer, setNewCustomer] = React.useState({ name: "", email: "" });
 
-  const addToCart = (id: string) => {
-    setCart((c) => {
-      const found = c.find((it) => it.id === id);
-      if (found) return c.map((it) => (it.id === id ? { ...it, qty: it.qty + 1 } : it));
-      return [...c, { id, qty: 1 }];
+  const productsQuery = useQuery(["products"], () =>
+    productsService.list({ per_page: 200, active: true }),
+  );
+  const pricingQuery = useQuery(["pricing-rules"], () =>
+    pricingService.rules({ per_page: 200, active: true, valid_now: true }),
+  );
+  const customersQuery = useQuery(["customers-kassa"], () =>
+    customersService.list({ per_page: 100 }),
+  );
+  const recentSales = useQuery(["kassa-recent"], () =>
+    kassaService.recentSales({}),
+  );
+
+  const createCustomer = useMutation(customersService.create);
+  const checkout = useMutation(kassaService.checkout);
+  const quote = useMutation(kassaService.quote);
+
+  const numericInput = Number(query.replace(/[^0-9]/g, ""));
+
+  const matchingRule = React.useMemo(() => {
+    if (!numericInput) return null;
+    return (pricingQuery.data?.data ?? []).find(
+      (rule) =>
+        numericInput >= rule.range_from_cm && numericInput <= rule.range_to_cm,
+    );
+  }, [numericInput, pricingQuery.data?.data]);
+
+  const visibleProducts = React.useMemo(() => {
+    const list = productsQuery.data?.data ?? [];
+    if (!query.trim()) return list;
+
+    const q = query.toLowerCase();
+    return list.filter((product) => {
+      const fields = [
+        product.name,
+        product.code,
+        product.category,
+        product.service_code,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return fields.includes(q);
+    });
+  }, [productsQuery.data?.data, query]);
+
+  const addProduct = (product: Product, rule?: PricingRule | null) => {
+    const unit = rule ? rule.price_incl_vat : product.price_incl_vat;
+    const description = rule
+      ? `${product.name} (${rule.range_from_cm}-${rule.range_to_cm} cm)`
+      : product.name;
+
+    setCart((prev) => {
+      const existing = prev.find(
+        (item) =>
+          item.product_id === product.id && item.description === description,
+      );
+      if (existing) {
+        return prev.map((item) =>
+          item === existing ? { ...item, quantity: item.quantity + 1 } : item,
+        );
+      }
+      return [
+        ...prev,
+        {
+          id: `${product.id}-${rule?.id ?? "base"}`,
+          product_id: product.id,
+          description,
+          quantity: 1,
+          unit_price_cents: unit,
+          vat_rate: Number(product.vat_rate ?? 21),
+        },
+      ];
     });
   };
 
-  const subtotal = cart.reduce((s, c) => {
-    const p = PRODUCTS.find((x) => x.id === c.id);
-    return s + (p?.price ?? 0) * c.qty;
-  }, 0);
-  const vat = subtotal * 0.21;
-  const total = subtotal + vat;
+  const removeItem = (id: string) =>
+    setCart((prev) => prev.filter((item) => item.id !== id));
+
+  const subtotalCents = cart.reduce(
+    (sum, item) => sum + item.unit_price_cents * item.quantity,
+    0,
+  );
+  const vatCents = cart.reduce(
+    (sum, item) =>
+      sum +
+      Math.round(
+        (item.unit_price_cents * item.quantity * item.vat_rate) /
+          (100 + item.vat_rate),
+      ),
+    0,
+  );
+  const totalCents = subtotalCents;
+  const localeTag = locale === "en" ? "en-GB" : "nl-NL";
+
+  const handleCreateCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const created = await createCustomer.mutate({
+        name: newCustomer.name,
+        email: newCustomer.email || null,
+      });
+      setCustomerId(created.id);
+      setShowCustomerModal(false);
+      setNewCustomer({ name: "", email: "" });
+      await customersQuery.refetch();
+      push({
+        tone: "success",
+        title: t("adminNew.kassa.toasts.customerCreated"),
+      });
+    } catch (err) {
+      push({
+        tone: "error",
+        title: t("adminNew.kassa.toasts.customerCreateFailed"),
+        message: err instanceof Error ? err.message : undefined,
+      });
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!cart.length) {
+      push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
+      return;
+    }
+    try {
+      const res = await checkout.mutate({
+        device_id: getDeviceId(),
+        customer_id: customerId || undefined,
+        payment_method: paymentMethod,
+        locale: localeTag,
+        redirect_url:
+          typeof window !== "undefined" ? window.location.href : undefined,
+        items: cart.map((item) => ({
+          product_id: item.product_id,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price_cents: item.unit_price_cents,
+          vat_rate: item.vat_rate,
+        })),
+      });
+      const checkoutUrl =
+        typeof res === "string"
+          ? res
+          : (res.checkout_url ??
+            res.payment?.checkout_url ??
+            res.payment_url ??
+            res.url);
+      const invoiceNumber =
+        typeof res === "string" ? undefined : res.invoice_number;
+
+      setCart([]);
+      void recentSales.refetch();
+
+      if (checkoutUrl) {
+        const popup = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+        if (!popup) {
+          window.location.assign(checkoutUrl);
+        }
+      }
+
+      push({
+        tone: "success",
+        title: invoiceNumber
+          ? `${t("adminNew.kassa.toasts.checkoutDone")} · ${invoiceNumber}`
+          : t("adminNew.kassa.toasts.checkoutDone"),
+      });
+    } catch (err) {
+      push({
+        tone: "error",
+        title: t("adminNew.kassa.toasts.checkoutFailed"),
+        message: err instanceof Error ? err.message : undefined,
+      });
+    }
+  };
+
+  const handleQuote = async () => {
+    if (!cart.length) {
+      push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
+      return;
+    }
+    try {
+      await quote.mutate({
+        customer_id: customerId || undefined,
+        locale: localeTag,
+        items: cart.map((item) => ({
+          product_id: item.product_id,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price_cents: item.unit_price_cents,
+          vat_rate: item.vat_rate,
+        })),
+      });
+      push({ tone: "success", title: t("adminNew.kassa.toasts.quoteDone") });
+    } catch (err) {
+      push({
+        tone: "error",
+        title: t("adminNew.kassa.toasts.quoteFailed"),
+        message: err instanceof Error ? err.message : undefined,
+      });
+    }
+  };
 
   return (
     <>
       <AdminPageHeader
-        title={t('admin.kassa.title')}
-        subtitle={t('admin.kassa.subtitle')}
-        rightSlot={
-          <>
-            <Button variant="outline" size="sm" leftIcon={<Bolt className="h-4 w-4" />}>
-              {t('adminKassa.quickAdd')}
-            </Button>
-            <Button variant="outline" size="sm" leftIcon={<Barcode className="h-4 w-4" />}>
-              {t('admin.kassa.scanBarcode')}
-            </Button>
-          </>
-        }
-      >
-        {/* Service tabs */}
-        <div className="mt-4 flex flex-nowrap gap-2 overflow-x-auto pb-1 scrollbar-thin">
-          {TABS.map((tb) => {
-            const Icon = tb.icon;
-            const active = tab === tb.id;
-            return (
-              <button
-                key={tb.id}
-                onClick={() => setTab(tb.id)}
-                className={cn(
-                  'inline-flex shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition',
-                  active
-                    ? 'border-marine-600 bg-marine-600 text-white shadow-sm'
-                    : 'border-navy-100 bg-white text-navy-700 hover:bg-sand-100'
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {tb.label}
-              </button>
-            );
-          })}
-        </div>
-      </AdminPageHeader>
+        title={t("adminNew.kassa.title")}
+        subtitle={t("adminNew.kassa.subtitle")}
+        stats={[
+          {
+            label: t("adminNew.kassa.cart"),
+            value: cart.length,
+            icon: ShoppingCart,
+            tone: cart.length > 0 ? "marine" : "navy",
+          },
+          {
+            label: t("adminNew.kassa.total"),
+            value: formatCurrency(totalCents / 100, localeTag),
+            icon: CreditCard,
+            tone: totalCents > 0 ? "gold" : "success",
+          },
+          {
+            label: t("adminNew.kassa.products"),
+            value: visibleProducts.length,
+            tone: "navy",
+            loading: productsQuery.loading,
+          },
+          {
+            label: t("adminNew.kassa.recentSales"),
+            value: recentSales.data?.length ?? 0,
+            tone: "success",
+            loading: recentSales.loading,
+          },
+        ]}
+      />
 
-      <div className="px-4 py-5 sm:px-6">
-        <div className="grid gap-6 xl:grid-cols-[1fr_22rem] 2xl:grid-cols-[1fr_25rem]">
-          {/* LEFT: products */}
-          <div className="min-w-0">
-            {/* Search row */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
+      <AdminContent className="grid gap-5 xl:grid-cols-[1fr_24rem]">
+        <div className="space-y-4">
+          <AdminToolbar>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="input-base pl-9 pr-9"
-                  placeholder={t('admin.kassa.searchBoat')}
+                  placeholder={t("adminNew.kassa.searchPlaceholder")}
+                  className="input-base pl-9"
                 />
-                {query ? (
-                  <button
-                    type="button"
-                    onClick={() => setQuery('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-navy-400 hover:bg-sand-100 hover:text-navy-700"
-                    aria-label="clear"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                ) : null}
               </div>
-              <Button variant="outline" size="md" leftIcon={<Filter className="h-4 w-4" />}>
-                {t('admin.common.filter')}
-              </Button>
-            </div>
-
-            {/* Results heading */}
-            <div className="mt-5 flex items-end justify-between">
-              <h2 className="text-lg font-semibold text-navy-900">
-                {t('adminKassa.resultsTitleN', {
-                  category: t('admin.kassa.afspuiten'),
-                  n: matchedId ? '1' : '0',
-                })}
-              </h2>
-              <button className="inline-flex items-center gap-1 rounded-md border border-navy-100 px-2.5 py-1.5 text-xs font-medium text-navy-700 hover:bg-sand-100">
-                {t('adminKassa.sortBy')}
-                <ChevronDown className="h-3.5 w-3.5" />
-              </button>
-            </div>
-
-            {/* Grid of products */}
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {PRODUCTS.slice(0, 20).map((p) => {
-                const isMatch = p.id === matchedId;
-                const inCart = cart.find((c) => c.id === p.id);
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => addToCart(p.id)}
-                    className={cn(
-                      'group relative flex flex-col items-start rounded-2xl border bg-white p-3.5 text-left transition hover:border-navy-300',
-                      isMatch
-                        ? 'border-marine-600 bg-marine-50/60 ring-2 ring-marine-200'
-                        : 'border-navy-100'
-                    )}
-                  >
-                    <div className="flex w-full items-center justify-between">
-                      <div className="text-sm font-semibold text-navy-900">
-                        {p.fromCm} – {p.toCm} cm
-                      </div>
-                      <Ship className="h-4 w-4 text-navy-300 group-hover:text-navy-500" />
-                    </div>
-                    <div className="mt-3 flex items-baseline gap-1">
-                      <span className="text-lg font-semibold text-navy-900">
-                        € {p.price.toFixed(2).replace('.', ',')}
-                      </span>
-                    </div>
-                    {/* Subtle bottom border for selection feel */}
-                    <span
-                      aria-hidden
-                      className={cn(
-                        'absolute inset-x-3 bottom-0 h-[3px] rounded-full',
-                        isMatch ? 'bg-marine-600' : 'bg-marine-200/40 group-hover:bg-marine-300'
-                      )}
-                    />
-                    {inCart ? (
-                      <span className="absolute right-2.5 top-2.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-navy-900 px-1.5 text-[10px] font-bold text-white">
-                        {inCart.qty}
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Meest gekozen */}
-            <div className="mt-7">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-navy-900">
-                  {t('adminKassa.mostChosen')}
-                </h3>
-                <Link className="text-xs font-medium text-marine-700 hover:underline" href="#">
-                  {t('adminKassa.showMore')}
-                </Link>
+              <div className="flex gap-2">
+                <select
+                  className="input-base"
+                  value={customerId}
+                  onChange={(e) => setCustomerId(e.target.value)}
+                  disabled={customersQuery.loading}
+                >
+                  <option value="">
+                    {customersQuery.loading
+                      ? t("adminNew.common.loading")
+                      : t("adminNew.kassa.selectCustomer")}
+                  </option>
+                  {(customersQuery.data?.data ?? []).map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name} ·{" "}
+                      {customer.email ?? t("adminNew.common.noEmail")}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  variant="outline"
+                  size="md"
+                  leftIcon={<UserPlus className="h-4 w-4" />}
+                  onClick={() => setShowCustomerModal(true)}
+                >
+                  {t("adminNew.common.new")}
+                </Button>
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {POPULAR_IDS.map((id) => {
-                  const p = PRODUCTS.find((x) => x.id === id)!;
+              <select
+                className="input-base"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              >
+                <option value="cash">{t("adminNew.kassa.payment.cash")}</option>
+                <option value="pin">{t("adminNew.kassa.payment.pin")}</option>
+                <option value="invoice">
+                  {t("adminNew.kassa.payment.invoice")}
+                </option>
+                <option value="ideal">iDEAL</option>
+                <option value="creditcard">
+                  {t("adminNew.kassa.payment.creditcard")}
+                </option>
+                <option value="bancontact">Bancontact</option>
+              </select>
+          </AdminToolbar>
+
+          {matchingRule ? (
+              <div className="mt-3 rounded-lg border border-marine-200 bg-marine-50 px-3 py-2 text-sm text-marine-800">
+                {t("adminNew.kassa.smartMatch")}: {matchingRule.range_from_cm}–
+                {matchingRule.range_to_cm} cm ·{" "}
+                {formatCurrency(
+                  matchingRule.price_incl_vat_euros,
+                  locale === "en" ? "en-GB" : "nl-NL",
+                )}
+              </div>
+            ) : null}
+
+          <AdminPanel title={t("adminNew.kassa.products")}>
+            {productsQuery.loading ? (
+              <LoadingState
+                label={t("adminNew.kassa.loadingProducts")}
+                variant="cards"
+              />
+            ) : null}
+            {!productsQuery.loading && visibleProducts.length === 0 ? (
+              <EmptyState
+                title={t("adminNew.kassa.emptyProductsTitle")}
+                message={t("adminNew.kassa.emptyProductsMessage")}
+              />
+            ) : null}
+            {!productsQuery.loading && visibleProducts.length > 0 ? (
+              <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                {visibleProducts.slice(0, 18).map((product) => {
+                  const ruleMatch =
+                    matchingRule && matchingRule.product_id === product.id
+                      ? matchingRule
+                      : null;
                   return (
                     <button
-                      key={id}
-                      onClick={() => addToCart(id)}
-                      className="flex items-center gap-3 rounded-xl border border-navy-100 bg-white px-3 py-2.5 text-left transition hover:border-navy-300"
+                      key={product.id}
+                      className="rounded-xl border border-navy-100 bg-white p-3 text-left transition hover:border-navy-300"
+                      onClick={() => addProduct(product, ruleMatch)}
                     >
-                      <span className="flex h-8 w-8 items-center justify-center rounded-md bg-gold-50 text-gold-600">
-                        <Star className="h-4 w-4 fill-current" />
-                      </span>
-                      <div className="min-w-0">
-                        <div className="truncate text-xs font-semibold text-navy-900">
-                          {p.fromCm} – {p.toCm} cm
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="font-semibold text-navy-900">
+                            {product.name}
+                          </div>
+                          <div className="text-xs text-navy-500">
+                            {product.code}
+                          </div>
                         </div>
-                        <div className="truncate text-[11px] text-navy-500">
-                          € {p.price.toFixed(2).replace('.', ',')}
-                        </div>
+                        {ruleMatch ? (
+                          <Badge tone="marine">
+                            {t("adminNew.kassa.match")}
+                          </Badge>
+                        ) : null}
+                      </div>
+                      <div className="mt-2 text-sm font-semibold text-navy-900">
+                        {formatCurrency(
+                          ruleMatch
+                            ? ruleMatch.price_incl_vat_euros
+                            : product.price_incl_vat_euros,
+                          locale === "en" ? "en-GB" : "nl-NL",
+                        )}
                       </div>
                     </button>
                   );
                 })}
               </div>
-            </div>
+            ) : null}
+          </AdminPanel>
 
-            {/* Stats strip */}
-            <div className="mt-7 grid gap-3 rounded-2xl border border-navy-100 bg-white p-3 sm:grid-cols-4">
-              <BottomStat
-                icon={Star}
-                label={t('adminKassa.lastSale')}
-                primary={`Afspuiten ${PRODUCTS.find((p) => p.id === RECENT_LAST.id)?.fromCm}-${PRODUCTS.find((p) => p.id === RECENT_LAST.id)?.toCm} cm`}
-                secondary={`€ ${RECENT_LAST.price.toFixed(2).replace('.', ',')}`}
-                tone="gold"
-              />
-              <BottomStat
-                icon={Banknote}
-                label={t('adminKassa.totalToday')}
-                primary="€ 1.245,60"
-                secondary="+12% vs gisteren"
-                tone="success"
-              />
-              <BottomStat
-                icon={Receipt}
-                label={t('adminKassa.totalTx')}
-                primary="23"
-                secondary={t('adminKassa.completed')}
-                tone="navy"
-              />
-              <BottomStat
-                icon={Users}
-                label={t('adminKassa.knownCustomer')}
-                primary={t('adminKassa.chooseExisting')}
-                secondary={t('adminKassa.searchCustomer')}
-                tone="marine"
-                arrow
-              />
+          <AdminPanel title={t("adminNew.kassa.recentSales")}>
+            {recentSales.loading ? (
+              <LoadingState label={t("adminNew.common.loading")} variant="list" />
+            ) : null}
+            {!recentSales.loading && recentSales.error ? (
+              <div className="px-4 py-4 text-sm text-rose-600">
+                {recentSales.error}
+              </div>
+            ) : null}
+            <div className="divide-y divide-navy-100">
+              {!recentSales.loading &&
+                !recentSales.error &&
+                (recentSales.data ?? []).slice(0, 8).map((sale) => (
+                <div
+                  key={sale.id}
+                  className="flex items-center justify-between px-4 py-3 text-sm"
+                >
+                  <div>
+                    <div className="font-medium text-navy-900">
+                      {sale.invoice_number}
+                    </div>
+                    <div className="text-xs text-navy-500">
+                      {new Date(sale.created_at).toLocaleString(locale === "en" ? "en-GB" : "nl-NL")}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold text-navy-900">
+                      {formatCurrency(
+                        Number(sale.total_euros),
+                        locale === "en" ? "en-GB" : "nl-NL",
+                      )}
+                    </div>
+                    <div className="text-xs text-navy-500">
+                      {sale.payment_status}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {!recentSales.loading &&
+              !recentSales.error &&
+              recentSales.data &&
+              recentSales.data.length === 0 ? (
+                <div className="px-4 py-5 text-sm text-navy-500">
+                  {t("adminNew.kassa.noRecentSales")}
+                </div>
+              ) : null}
+            </div>
+          </AdminPanel>
+        </div>
+
+        <Card className="sticky top-24 self-start overflow-hidden shadow-elev">
+          <div className="border-b border-navy-100 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold text-navy-900">
+                {t("adminNew.kassa.cart")}
+              </div>
+              <Badge tone="navy">
+                {t("adminNew.kassa.lines", { count: cart.length })}
+              </Badge>
             </div>
           </div>
 
-          {/* RIGHT: Cart panel */}
-          <aside className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-hidden">
-            <Card className="flex max-h-full flex-col overflow-hidden p-0">
-              <div className="flex items-center justify-between border-b border-navy-100 px-5 py-3">
-                <div className="flex items-center gap-2 text-sm font-semibold text-navy-900">
-                  {t('admin.kassa.cart')}
-                  <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-marine-600 px-1.5 text-[11px] font-bold text-white">
-                    {cart.length}
-                  </span>
-                </div>
+          <div className="max-h-[420px] space-y-2 overflow-y-auto p-4">
+            {cart.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-navy-200 px-3 py-8 text-center text-sm text-navy-500">
+                {t("adminNew.kassa.emptyCartMessage")}
               </div>
-
-              <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
-                {/* Cart items */}
-                <div className="space-y-2 p-4">
-                  {cart.length === 0 ? (
-                    <div className="rounded-lg bg-sand-50 p-6 text-center text-sm text-navy-400">
-                      {t('admin.kassa.cartEmpty')}
+            ) : (
+              cart.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-lg border border-navy-100 p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-medium text-navy-900">
+                        {item.description}
+                      </div>
+                      <div className="text-xs text-navy-500">
+                        {t("adminNew.kassa.vat")} {item.vat_rate}%
+                      </div>
                     </div>
-                  ) : (
-                    cart.map((c) => {
-                      const p = PRODUCTS.find((x) => x.id === c.id)!;
-                      return (
-                        <div
-                          key={c.id}
-                          className="flex items-center gap-3 rounded-xl border border-navy-100 p-3"
-                        >
-                          <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-cover bg-center" style={{ backgroundImage: 'url(/img/krek/verkoop-schip.webp)' }} />
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-semibold text-navy-900">
-                              {t('admin.kassa.afspuiten')} {p.fromCm} – {p.toCm} cm
-                            </div>
-                            <div className="text-[11px] text-navy-400">
-                              {t('adminKassa.boatN', { value: String(queryNum || 880) })}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() =>
-                                setCart((cur) =>
-                                  cur
-                                    .map((it) =>
-                                      it.id === c.id ? { ...it, qty: Math.max(0, it.qty - 1) } : it
-                                    )
-                                    .filter((it) => it.qty > 0)
-                                )
-                              }
-                              className="rounded-md border border-navy-100 p-1 text-navy-600 hover:bg-sand-100"
-                            >
-                              <Minus className="h-3.5 w-3.5" />
-                            </button>
-                            <span className="min-w-[20px] text-center text-sm font-semibold">
-                              {c.qty}
-                            </span>
-                            <button
-                              onClick={() => addToCart(c.id)}
-                              className="rounded-md border border-navy-100 p-1 text-navy-600 hover:bg-sand-100"
-                            >
-                              <Plus className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                          <div className="w-16 text-right text-sm font-semibold text-navy-900">
-                            € {(p.price * c.qty).toFixed(2).replace('.', ',')}
-                          </div>
-                          <button
-                            onClick={() => setCart((cur) => cur.filter((it) => it.id !== c.id))}
-                            className="text-navy-400 hover:text-rose-600"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-
-                {/* Totals */}
-                <div className="border-t border-navy-100 px-5 py-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-navy-500">{t('adminKassa.totalExcl')}</span>
-                    <span className="font-medium text-navy-900">
-                      € {subtotal.toFixed(2).replace('.', ',')}
-                    </span>
-                  </div>
-                  <div className="mt-1.5 flex items-center justify-between text-sm">
-                    <span className="text-navy-500">{t('admin.kassa.vat', { rate: '21' })}</span>
-                    <span className="font-medium text-navy-900">
-                      € {vat.toFixed(2).replace('.', ',')}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between border-t border-navy-100 pt-3">
-                    <span className="text-base font-semibold text-navy-900">
-                      {t('admin.kassa.total')}
-                    </span>
-                    <span className="text-xl font-semibold text-navy-900">
-                      € {total.toFixed(2).replace('.', ',')}
-                    </span>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <button className="flex items-center justify-center gap-1.5 rounded-md border border-navy-100 px-2.5 py-1.5 text-xs font-medium text-navy-700 hover:bg-sand-100">
-                      <FileText className="h-3.5 w-3.5" />
-                      {t('adminKassa.addNote')}
-                    </button>
                     <button
-                      onClick={() => setCart([])}
-                      className="flex items-center justify-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100"
+                      onClick={() => removeItem(item.id)}
+                      className="rounded-md p-1 text-navy-400 hover:bg-sand-100 hover:text-rose-600"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      {t('admin.kassa.clear')}
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
-                </div>
-
-                {/* Customer */}
-                <div className="border-t border-navy-100 px-5 py-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-widest text-navy-500">
-                      {t('admin.kassa.customer')}
-                    </span>
-                    <span className="text-[10px] text-navy-400">
-                      {t('adminKassa.searchByNameEmailPhone')}
-                    </span>
-                  </div>
-                  <button className="mt-2 flex w-full items-center justify-between rounded-lg border border-dashed border-navy-200 bg-sand-50/60 px-3 py-2.5 text-sm text-navy-700 hover:bg-sand-100">
-                    <span className="inline-flex items-center gap-2">
-                      <Users className="h-3.5 w-3.5" />
-                      {t('adminKassa.addNewCustomer')}
-                    </span>
-                    <Plus className="h-3.5 w-3.5" />
-                  </button>
-
-                  <div className="mt-3 space-y-2 text-xs">
-                    <MicroField label={t('adminKassa.nameRequired')} placeholder="Bijv. Jansen" />
-                    <MicroField label={t('adminKassa.emailRequired')} placeholder="naam@email.nl" />
-                    <MicroField label={t('adminKassa.phoneOptional')} placeholder="06 12345678" />
-                    <MicroField
-                      label={t('adminKassa.location')}
-                      placeholder={t('adminKassa.searchAddress')}
-                    />
-                  </div>
-
-                  <div className="mt-3 relative h-28 overflow-hidden rounded-lg bg-gradient-to-br from-marine-50 to-sand-100">
-                    <div className="absolute inset-0 opacity-30 mix-blend-overlay">
-                      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
-                        <defs>
-                          <pattern id="kassa-dot" width="6" height="6" patternUnits="userSpaceOnUse">
-                            <circle cx="1" cy="1" r="0.6" fill="#5a87a3" />
-                          </pattern>
-                        </defs>
-                        <rect width="100" height="100" fill="url(#kassa-dot)" />
-                      </svg>
+                  <div className="mt-2 flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="rounded border border-navy-200 px-2 py-0.5"
+                        onClick={() =>
+                          setCart((prev) =>
+                            prev.map((p) =>
+                              p.id === item.id
+                                ? {
+                                    ...p,
+                                    quantity: Math.max(1, p.quantity - 1),
+                                  }
+                                : p,
+                            ),
+                          )
+                        }
+                      >
+                        -
+                      </button>
+                      <span className="min-w-6 text-center">
+                        {item.quantity}
+                      </span>
+                      <button
+                        className="rounded border border-navy-200 px-2 py-0.5"
+                        onClick={() =>
+                          setCart((prev) =>
+                            prev.map((p) =>
+                              p.id === item.id
+                                ? { ...p, quantity: p.quantity + 1 }
+                                : p,
+                            ),
+                          )
+                        }
+                      >
+                        +
+                      </button>
                     </div>
-                    <div className="absolute left-1/2 top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-navy-900 shadow-card">
-                      <MapPin className="h-4 w-4" />
+                    <div className="font-semibold text-navy-900">
+                      {formatCurrency(
+                        (item.unit_price_cents * item.quantity) / 100,
+                        locale === "en" ? "en-GB" : "nl-NL",
+                      )}
                     </div>
-                    <button className="absolute bottom-2 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-md border border-navy-100 bg-white/95 px-2.5 py-1 text-[11px] font-medium text-navy-700 backdrop-blur hover:bg-white">
-                      <MapPin className="h-3 w-3" />
-                      {t('adminKassa.useLocation')}
-                    </button>
-                  </div>
-                  <p className="mt-2 text-[11px] text-navy-400">
-                    <span className="text-emerald-600">✓</span> {t('adminKassa.accountAutoCreated')}
-                  </p>
-                </div>
-
-                {/* Payment methods */}
-                <div className="border-t border-navy-100 px-5 py-4">
-                  <span className="text-xs font-semibold uppercase tracking-widest text-navy-500">
-                    {t('admin.kassa.paymentMethod')}
-                  </span>
-                  <div className="mt-3 space-y-2">
-                    <PayRow icon={Banknote} active={payment === 'cash'} onClick={() => setPayment('cash')} label={t('admin.kassa.cash')} tone="green" />
-                    <PayRow icon={CreditCard} active={payment === 'pin'} onClick={() => setPayment('pin')} label={t('admin.kassa.pin')} tone="blue" />
-                    <PayRow icon={CreditCard} active={payment === 'card'} onClick={() => setPayment('card')} label={t('adminKassa.creditcard')} tone="purple" />
-                    <PayRow icon={FileText} active={payment === 'invoice'} onClick={() => setPayment('invoice')} label={t('admin.kassa.invoice')} tone="orange" />
-                    <PayRow icon={Sparkles} active={payment === 'deposit'} onClick={() => setPayment('deposit')} label={t('adminKassa.deposit')} tone="violet" />
                   </div>
                 </div>
-              </div>
+              ))
+            )}
+          </div>
 
-              {/* Sticky checkout */}
-              <div className="border-t border-navy-100 bg-white p-4">
-                <button className="flex w-full items-center justify-between gap-2 rounded-xl bg-marine-600 px-5 py-3.5 text-white shadow-card hover:bg-marine-700">
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold">
-                    <Receipt className="h-4 w-4" />
-                    {t('admin.kassa.checkout')}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-base font-semibold">
-                    € {total.toFixed(2).replace('.', ',')}
-                    <span className="opacity-80">→</span>
-                  </span>
-                </button>
-              </div>
-            </Card>
-          </aside>
-        </div>
-      </div>
+          <div className="space-y-2 border-t border-navy-100 bg-sand-50/50 p-4 text-sm">
+            <Row
+              label={t("adminNew.kassa.subtotal")}
+              value={formatCurrency(
+                subtotalCents / 100,
+                locale === "en" ? "en-GB" : "nl-NL",
+              )}
+            />
+            <Row
+              label={t("adminNew.kassa.vatIncluded")}
+              value={formatCurrency(
+                vatCents / 100,
+                locale === "en" ? "en-GB" : "nl-NL",
+              )}
+            />
+            <Row
+              label={t("adminNew.kassa.total")}
+              value={formatCurrency(
+                totalCents / 100,
+                locale === "en" ? "en-GB" : "nl-NL",
+              )}
+              strong
+            />
+
+            <div className="pt-2">
+              <Button
+                variant="gold"
+                size="md"
+                fullWidth
+                leftIcon={<CreditCard className="h-4 w-4" />}
+                onClick={handleCheckout}
+                disabled={checkout.loading}
+              >
+                {checkout.loading
+                  ? t("adminNew.kassa.processing")
+                  : t("adminNew.kassa.checkout")}
+              </Button>
+            </div>
+            <Button
+              variant="outline"
+              size="md"
+              fullWidth
+              leftIcon={<ShoppingCart className="h-4 w-4" />}
+              onClick={handleQuote}
+              disabled={quote.loading}
+            >
+              {quote.loading
+                ? t("adminNew.kassa.calculating")
+                : t("adminNew.kassa.createQuote")}
+            </Button>
+          </div>
+        </Card>
+      </AdminContent>
+
+      <Modal
+        open={showCustomerModal}
+        onClose={() => setShowCustomerModal(false)}
+        size="md"
+      >
+        <form onSubmit={handleCreateCustomer}>
+          <AdminModalHeader
+            title={t("adminNew.kassa.modalTitle")}
+            subtitle={t("adminNew.kassa.modalSubtitle")}
+          />
+          <AdminModalBody>
+            <Input
+              label={t("adminNew.common.name")}
+              value={newCustomer.name}
+              onChange={(e) =>
+                setNewCustomer((prev) => ({ ...prev, name: e.target.value }))
+              }
+              required
+            />
+            <Input
+              label={t("adminNew.common.email")}
+              value={newCustomer.email}
+              onChange={(e) =>
+                setNewCustomer((prev) => ({ ...prev, email: e.target.value }))
+              }
+              type="email"
+            />
+          </AdminModalBody>
+          <AdminModalFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowCustomerModal(false)}
+            >
+              {t("adminNew.common.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              variant="gold"
+              leftIcon={<Plus className="h-4 w-4" />}
+              disabled={createCustomer.loading}
+            >
+              {createCustomer.loading
+                ? t("adminNew.kassa.creating")
+                : t("adminNew.kassa.create")}
+            </Button>
+          </AdminModalFooter>
+        </form>
+      </Modal>
     </>
   );
 }
 
-function BottomStat({
-  icon: Icon,
+function Row({
   label,
-  primary,
-  secondary,
-  tone,
-  arrow,
+  value,
+  strong,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
   label: string;
-  primary: string;
-  secondary: string;
-  tone: 'gold' | 'success' | 'navy' | 'marine';
-  arrow?: boolean;
+  value: string;
+  strong?: boolean;
 }) {
-  const map: Record<string, string> = {
-    gold: 'bg-gold-50 text-gold-600',
-    success: 'bg-emerald-50 text-emerald-600',
-    navy: 'bg-navy-50 text-navy-700',
-    marine: 'bg-marine-50 text-marine-700',
-  };
   return (
-    <div className="flex items-start gap-3 rounded-xl px-3 py-2.5">
+    <div className="flex items-center justify-between">
+      <span className="text-navy-600">{label}</span>
       <span
-        className={cn(
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-          map[tone]
-        )}
+        className={strong ? "font-semibold text-navy-900" : "text-navy-800"}
       >
-        <Icon className="h-4 w-4" />
+        {value}
       </span>
-      <div className="min-w-0 flex-1">
-        <div className="text-[11px] uppercase tracking-wide text-navy-400">
-          {label}
-        </div>
-        <div className="truncate text-sm font-semibold text-navy-900">
-          {primary}
-        </div>
-        <div className="truncate text-[11px] text-navy-500">{secondary}</div>
-      </div>
-      {arrow ? <span className="text-navy-400">›</span> : null}
     </div>
-  );
-}
-
-function MicroField({
-  label,
-  placeholder,
-}: {
-  label: string;
-  placeholder: string;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-wide text-navy-500">
-        {label}
-      </span>
-      <input className="input-base h-8 text-xs" placeholder={placeholder} />
-    </label>
-  );
-}
-
-function PayRow({
-  icon: Icon,
-  label,
-  active,
-  onClick,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  tone: 'green' | 'blue' | 'purple' | 'orange' | 'violet';
-}) {
-  const map: Record<string, string> = {
-    green: 'bg-emerald-500',
-    blue: 'bg-marine-600',
-    purple: 'bg-fuchsia-500',
-    orange: 'bg-amber-500',
-    violet: 'bg-violet-500',
-  };
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition',
-        active
-          ? 'border-navy-900 bg-white shadow-sm'
-          : 'border-navy-100 bg-white hover:border-navy-300'
-      )}
-    >
-      <span
-        className={cn(
-          'flex h-9 w-12 items-center justify-center rounded-md text-white',
-          map[tone]
-        )}
-      >
-        <Icon className="h-4 w-4" />
-      </span>
-      <span className="flex-1 text-sm font-semibold text-navy-900">{label}</span>
-      <span
-        className={cn(
-          'inline-flex h-4 w-4 items-center justify-center rounded-full border',
-          active ? 'border-navy-900 bg-navy-900 text-white' : 'border-navy-200'
-        )}
-      >
-        {active ? '✓' : ''}
-      </span>
-    </button>
-  );
-}
-
-// Tiny Link shim — using anchor to avoid extra import for one-off
-function Link({
-  href,
-  className,
-  children,
-}: {
-  href: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <a href={href} className={className}>
-      {children}
-    </a>
   );
 }

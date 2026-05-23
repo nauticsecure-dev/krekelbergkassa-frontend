@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { ComponentType } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   Anchor,
@@ -25,13 +26,20 @@ interface Props {
   variant?: 'desktop' | 'mobile';
 }
 
+type PortalNavLink = {
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  badge?: string;
+};
+
 export function PortalSidebar({ variant = 'desktop' }: Props) {
   const { locale, t } = useIntl();
   const { user, signOut } = useAuth();
   const pathname = usePathname();
 
-  const links = [
-    { href: `/${locale}/feed`, icon: Sparkles, label: t('feed.title'), badge: '3' },
+  const links: PortalNavLink[] = [
+    { href: `/${locale}/feed`, icon: Sparkles, label: t('feed.title') },
     { href: `/${locale}/dashboard/afspraken`, icon: Calendar, label: t('login.yourAppointments') },
     { href: `/${locale}/dashboard/stalling`, icon: Warehouse, label: t('services.storage.title') },
     { href: `/${locale}/dashboard/boten`, icon: Ship, label: t('login.yourBoats') },
@@ -45,7 +53,7 @@ export function PortalSidebar({ variant = 'desktop' }: Props) {
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3 scrollbar-thin">
         {links.map((l) => {
           const Icon = l.icon;
-          const active = pathname === l.href;
+          const active = pathname === l.href || pathname?.startsWith(l.href + '/');
           return (
             <Link
               key={l.href}
@@ -88,7 +96,12 @@ export function PortalSidebar({ variant = 'desktop' }: Props) {
         <div className="my-3 h-px bg-white/5" />
         <Link
           href={`/${locale}/dashboard/settings`}
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sand-100/70 transition hover:bg-white/5 hover:text-white"
+          className={cn(
+            'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition',
+            pathname === `/${locale}/dashboard/settings`
+              ? 'bg-white/10 text-white'
+              : 'text-sand-100/70 hover:bg-white/5 hover:text-white'
+          )}
         >
           <Settings className="h-4 w-4 text-sand-100/50" /> {t('admin.sidebar.settings')}
         </Link>
@@ -101,7 +114,6 @@ export function PortalSidebar({ variant = 'desktop' }: Props) {
       </nav>
 
       <div className="border-t border-white/5 p-4">
-        {/* Promo card — gold-toned so it pops on the dark sidebar */}
         <div className="relative overflow-hidden rounded-xl bg-gradient-to-tr from-gold-600 via-gold-500 to-amber-400 p-4 text-navy-900 shadow-elev">
           <Sparkles className="absolute -right-1 -top-1 h-10 w-10 text-white/30" />
           <div className="relative">
@@ -134,7 +146,7 @@ export function PortalSidebar({ variant = 'desktop' }: Props) {
           <button
             onClick={() => void signOut()}
             className="text-sand-100/40 hover:text-white"
-            aria-label="Uitloggen"
+            aria-label={t('adminNew.common.logout')}
           >
             <LogOut className="h-4 w-4" />
           </button>
