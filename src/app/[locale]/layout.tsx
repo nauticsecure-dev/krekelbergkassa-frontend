@@ -9,18 +9,19 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  if (!isLocale(params.locale)) notFound();
-  const messages = getMessages(params.locale);
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  const messages = getMessages(locale);
 
   return (
-    <IntlProvider locale={params.locale} messages={messages}>
+    <IntlProvider locale={locale} messages={messages}>
       <ToastProvider>
         <AuthProvider>{children}</AuthProvider>
       </ToastProvider>
