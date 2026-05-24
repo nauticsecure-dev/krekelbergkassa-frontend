@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation';
 
-export default function DashboardRedirect({
+export default async function DashboardRedirect({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  redirect(`/${params.locale}/feed`);
+  const { locale } = await params;
+  redirect(`/${locale}/feed`);
 }
