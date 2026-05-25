@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Globe2, Save, ShieldCheck, Sliders, TestTube2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { AdminContent, AdminPanel, AdminTabBar } from '@/components/admin/AdminUi';
+import { AdminContent, AdminSectionCard, AdminTabBar } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
@@ -171,8 +171,12 @@ export default function SettingsPage() {
             />
 
             {activeTab === 'company' ? (
-              <AdminPanel title={t('adminNew.settings.company.title')}>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <AdminSectionCard
+                title={t('adminNew.settings.company.title')}
+                description={t('adminNew.settings.tabs.company')}
+                icon={ShieldCheck}
+              >
+                <div className="grid gap-3 sm:grid-cols-2">
                   <Input
                     label={t('adminNew.common.name')}
                     value={companyForm.name}
@@ -256,12 +260,16 @@ export default function SettingsPage() {
                     {t('adminNew.common.save')}
                   </Button>
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
             ) : null}
 
             {activeTab === 'invoicing' ? (
-              <AdminPanel title={t('adminNew.settings.invoicing.title')}>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <AdminSectionCard
+                title={t('adminNew.settings.invoicing.title')}
+                description={t('adminNew.settings.tabs.invoicing')}
+                icon={Sliders}
+              >
+                <div className="grid gap-3 sm:grid-cols-2">
                   <Input
                     label={t('adminNew.settings.invoicing.invoicePrefix')}
                     value={invoicingForm.invoice_prefix}
@@ -340,12 +348,16 @@ export default function SettingsPage() {
                     {t('adminNew.common.save')}
                   </Button>
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
             ) : null}
 
             {activeTab === 'payments' ? (
-              <AdminPanel title={t('adminNew.settings.payments.title')}>
-                <div className="mt-2 flex items-center gap-2">
+              <AdminSectionCard
+                title={t('adminNew.settings.payments.title')}
+                description={t('adminNew.settings.tabs.payments')}
+                icon={TestTube2}
+              >
+                <div className="flex items-center gap-2">
                   <Badge tone={settings.data.payments.connected ? 'success' : 'danger'} dot>
                     {settings.data.payments.connected
                       ? t('adminNew.settings.payments.connected')
@@ -423,12 +435,16 @@ export default function SettingsPage() {
                     {t('adminNew.common.save')}
                   </Button>
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
             ) : null}
 
             {activeTab === 'locales' ? (
-              <AdminPanel title={t('adminNew.settings.locales.title')}>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <AdminSectionCard
+                title={t('adminNew.settings.locales.title')}
+                description={t('adminNew.settings.tabs.locales')}
+                icon={Globe2}
+              >
+                <div className="grid gap-3 sm:grid-cols-2">
                   <Input
                     label={t('adminNew.settings.locales.defaultLocale')}
                     value={localeForm.default_locale}
@@ -475,7 +491,7 @@ export default function SettingsPage() {
                     {t('adminNew.common.save')}
                   </Button>
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
             ) : null}
           </>
         ) : null}

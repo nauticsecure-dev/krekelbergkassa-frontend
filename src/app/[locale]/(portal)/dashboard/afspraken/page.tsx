@@ -22,9 +22,9 @@ import {
   PortalModalBody,
   PortalModalFooter,
   PortalModalHeader,
+  PortalSectionCard,
   PortalSectionLabel,
 } from '@/components/portal/PortalUi';
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { LoadingState, ErrorState, EmptyState } from '@/components/admin/DataState';
@@ -62,13 +62,6 @@ export default function PortalAppointmentsPage() {
       <PortalPageHeader
         title={t('adminNew.portal.appointments.title')}
         subtitle={t('adminNew.portal.appointments.subtitle')}
-        rightSlot={
-          <Link href={`/${locale}/kraanafspraak`}>
-            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-              {t('adminNew.portal.appointments.book')}
-            </Button>
-          </Link>
-        }
         stats={[
           {
             label: t('adminNew.portal.appointments.metricTotal'),
@@ -103,7 +96,19 @@ export default function PortalAppointmentsPage() {
       />
 
       <PortalContent>
-        <PortalFilterBar>
+        <PortalSectionCard
+          title={t('adminNew.portal.appointments.title')}
+          description={t('adminNew.portal.appointments.listOverview')}
+          icon={Calendar}
+          action={
+            <Link href={`/${locale}/kraanafspraak`}>
+              <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+                {t('adminNew.portal.appointments.book')}
+              </Button>
+            </Link>
+          }
+        >
+        <PortalFilterBar className="mb-4">
           {(
             [
               ['', t('adminNew.portal.appointments.filterAll')],
@@ -123,31 +128,25 @@ export default function PortalAppointmentsPage() {
         </PortalFilterBar>
 
         {appointments.loading ? (
-          <Card className="overflow-hidden">
-            <LoadingState label={t('adminNew.portal.appointments.loading')} variant="list" />
-          </Card>
+          <LoadingState label={t('adminNew.portal.appointments.loading')} variant="list" />
         ) : null}
 
         {!appointments.loading && appointments.error ? (
-          <Card>
-            <ErrorState message={appointments.error} onRetry={() => void appointments.refetch()} />
-          </Card>
+          <ErrorState message={appointments.error} onRetry={() => void appointments.refetch()} />
         ) : null}
 
         {!appointments.loading && !appointments.error && items.length === 0 ? (
-          <Card>
-            <EmptyState
-              title={t('adminNew.portal.appointments.empty')}
-              message={t('adminNew.portal.appointments.emptyMessage')}
-              action={
-                <Link href={`/${locale}/kraanafspraak`}>
-                  <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-                    {t('adminNew.portal.appointments.book')}
-                  </Button>
-                </Link>
-              }
-            />
-          </Card>
+          <EmptyState
+            title={t('adminNew.portal.appointments.empty')}
+            message={t('adminNew.portal.appointments.emptyMessage')}
+            action={
+              <Link href={`/${locale}/kraanafspraak`}>
+                <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+                  {t('adminNew.portal.appointments.book')}
+                </Button>
+              </Link>
+            }
+          />
         ) : null}
 
         {!appointments.loading && !appointments.error && items.length > 0 ? (
@@ -189,6 +188,7 @@ export default function PortalAppointmentsPage() {
             ))}
           </div>
         ) : null}
+        </PortalSectionCard>
       </PortalContent>
 
       <Modal open={!!selected} onClose={() => setSelected(null)} size="lg">

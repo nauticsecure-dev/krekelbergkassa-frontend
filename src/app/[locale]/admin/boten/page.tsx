@@ -2,14 +2,16 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Anchor, MapPin, Plus, Ship } from 'lucide-react';
+import { Anchor, MapPin, Plus, Ship, Trash2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
   AdminContent,
   AdminModalBody,
   AdminModalFooter,
   AdminModalHeader,
   AdminSearchInput,
+  AdminSectionCard,
   AdminTable,
   AdminTableCard,
   AdminTableCell,
@@ -33,6 +35,7 @@ export default function BoatsPage() {
   const [query, setQuery] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
   const [form, setForm] = React.useState({
     customer_id: '',
     name: '',
@@ -77,7 +80,6 @@ export default function BoatsPage() {
   };
 
   const onDelete = async (id: string) => {
-    if (!window.confirm(t('adminNew.boats.confirmDelete'))) return;
     try {
       await deleteBoat.mutate(id);
       await boats.refetch();
@@ -96,11 +98,6 @@ export default function BoatsPage() {
       <AdminPageHeader
         title={t('adminNew.boats.title')}
         subtitle={t('adminNew.boats.subtitle')}
-        rightSlot={
-          <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-            {t('adminNew.boats.new')}
-          </Button>
-        }
         stats={[
           {
             label: t('adminNew.boats.total', { count: boats.data?.meta?.total ?? rows.length }),
@@ -135,6 +132,16 @@ export default function BoatsPage() {
       />
 
       <AdminContent>
+        <AdminSectionCard
+          title={t('adminNew.boats.title')}
+          description={t('adminNew.boats.subtitle')}
+          icon={Ship}
+          action={
+            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+              {t('adminNew.boats.new')}
+            </Button>
+          }
+        >
         <AdminSearchInput
           value={query}
           onChange={(value) => {
@@ -142,6 +149,7 @@ export default function BoatsPage() {
             setPage(1);
           }}
           placeholder={t('adminNew.boats.searchPlaceholder')}
+          className="mb-4"
         />
 
         <AdminTableCard
@@ -200,7 +208,12 @@ export default function BoatsPage() {
                     <AdminTableCell>{boat.length_cm ? `${boat.length_cm} cm` : '—'}</AdminTableCell>
                     <AdminTableCell>{boat.location_code ?? '—'}</AdminTableCell>
                     <AdminTableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => void onDelete(boat.id)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                        onClick={() => setDeleteTarget(boat.id)}
+                      >
                         {t('adminNew.common.delete')}
                       </Button>
                     </AdminTableCell>
@@ -210,6 +223,7 @@ export default function BoatsPage() {
             </AdminTable>
           ) : null}
         </AdminTableCard>
+        </AdminSectionCard>
       </AdminContent>
 
       <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
@@ -282,6 +296,23 @@ export default function BoatsPage() {
           </AdminModalFooter>
         </form>
       </Modal>
+
+      <AdminConfirmModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await onDelete(deleteTarget);
+          setDeleteTarget(null);
+        }}
+        title={t('adminNew.common.delete')}
+        message={t('adminNew.boats.confirmDelete')}
+        confirmLabel={t('adminNew.common.delete')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={Trash2}
+        loading={deleteBoat.loading}
+      />
     </>
   );
 }

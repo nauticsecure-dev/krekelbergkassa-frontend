@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { FilePlus2, Ship, Warehouse } from 'lucide-react';
+import { FilePlus2, Ship, Warehouse, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
   AdminContent,
   AdminSearchInput,
+  AdminSectionCard,
   AdminSelect,
   AdminTable,
   AdminTableCard,
@@ -35,6 +37,7 @@ export default function StallingPage() {
   const [status, setStatus] = React.useState('');
   const [type, setType] = React.useState('');
   const [page, setPage] = React.useState(1);
+  const [cancelTarget, setCancelTarget] = React.useState<string | null>(null);
 
   const contracts = useQuery([search, status, type, page], () =>
     stallingService.list({
@@ -102,7 +105,12 @@ export default function StallingPage() {
       />
 
       <AdminContent>
-        <AdminToolbar>
+        <AdminSectionCard
+          title={t('adminNew.stalling.title')}
+          description={t('adminNew.stalling.subtitle')}
+          icon={Warehouse}
+        >
+        <AdminToolbar className="mb-4 border-0 bg-transparent p-0 shadow-none">
           <AdminSearchInput
             value={search}
             onChange={(value) => {
@@ -229,13 +237,9 @@ export default function StallingPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          leftIcon={<XCircle className="h-3.5 w-3.5" />}
                           disabled={createInvoice.loading || cancelContract.loading}
-                          onClick={() => {
-                            if (!window.confirm(t('adminNew.stalling.confirmCancel'))) return;
-                            void execute(t('adminNew.stalling.cancelled'), () =>
-                              cancelContract.mutate(contract.id)
-                            );
-                          }}
+                          onClick={() => setCancelTarget(contract.id)}
                         >
                           {t('adminNew.stalling.cancel')}
                         </Button>
@@ -247,7 +251,25 @@ export default function StallingPage() {
             </AdminTable>
           ) : null}
         </AdminTableCard>
+        </AdminSectionCard>
       </AdminContent>
+
+      <AdminConfirmModal
+        open={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={async () => {
+          if (!cancelTarget) return;
+          await execute(t('adminNew.stalling.cancelled'), () => cancelContract.mutate(cancelTarget));
+          setCancelTarget(null);
+        }}
+        title={t('adminNew.stalling.cancel')}
+        message={t('adminNew.stalling.confirmCancel')}
+        confirmLabel={t('adminNew.stalling.cancel')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={XCircle}
+        loading={cancelContract.loading}
+      />
     </>
   );
 }

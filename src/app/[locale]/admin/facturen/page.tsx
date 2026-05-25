@@ -1,12 +1,16 @@
 'use client';
 
 import * as React from 'react';
-import { AlertTriangle, Plus } from 'lucide-react';
+import { FileText, FilePlus2, Plus, User } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
   AdminLinkButton,
+  AdminModalBody,
+  AdminModalFooter,
+  AdminModalHeader,
   AdminSearchInput,
+  AdminSectionCard,
   AdminSelect,
   AdminTable,
   AdminTableCard,
@@ -18,10 +22,11 @@ import {
   AdminToolbar,
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
 import { InvoiceStatusBadge } from '@/components/admin/StatusBadge';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { invoicesService } from '@/lib/services';
+import { customersService, invoicesService } from '@/lib/services';
 import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -34,6 +39,9 @@ export default function InvoicesPage() {
   const [status, setStatus] = React.useState('');
   const [source, setSource] = React.useState('');
   const [page, setPage] = React.useState(1);
+  const [showCreate, setShowCreate] = React.useState(false);
+  const [customerId, setCustomerId] = React.useState('');
+  const [customerSearch, setCustomerSearch] = React.useState('');
 
   const invoices = useQuery([search, status, source, page], () =>
     invoicesService.list({
@@ -45,9 +53,24 @@ export default function InvoicesPage() {
     })
   );
 
-  const createInvoice = useMutation(() =>
+  const customers = useQuery(
+    [customerSearch],
+    () =>
+      customersService.list({
+        search: customerSearch || undefined,
+        per_page: 50,
+      }),
+    { immediate: false }
+  );
+
+  React.useEffect(() => {
+    if (!showCreate) return;
+    void customers.refetch();
+  }, [showCreate, customerSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const createInvoice = useMutation((selectedCustomerId: string) =>
     invoicesService.create({
-      customer_id: null,
+      customer_id: selectedCustomerId,
       source: 'manual',
       lines: [
         {
@@ -60,9 +83,22 @@ export default function InvoicesPage() {
     })
   );
 
-  const handleCreate = async () => {
+  const openCreateModal = () => {
+    setCustomerId('');
+    setCustomerSearch('');
+    setShowCreate(true);
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customerId) {
+      push({ tone: 'error', title: t('adminNew.invoices.selectCustomer') });
+      return;
+    }
     try {
-      const invoice = await createInvoice.mutate();
+      const invoice = await createInvoice.mutate(customerId);
+      setShowCreate(false);
+      push({ tone: 'success', title: t('adminNew.invoices.toasts.created') });
       window.location.href = `/${locale}/admin/facturen/${invoice.id}`;
     } catch (err) {
       push({
@@ -84,16 +120,6 @@ export default function InvoicesPage() {
       <AdminPageHeader
         title={t('adminNew.invoices.title')}
         subtitle={t('adminNew.invoices.subtitle')}
-        rightSlot={
-          <Button
-            variant="gold"
-            size="sm"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={handleCreate}
-          >
-            {t('adminNew.invoices.new')}
-          </Button>
-        }
         stats={[
           {
             label: t('adminNew.invoices.metrics.open'),
@@ -123,7 +149,22 @@ export default function InvoicesPage() {
       />
 
       <AdminContent>
-        <AdminToolbar>
+        <AdminSectionCard
+          title={t('adminNew.invoices.title')}
+          description={t('adminNew.invoices.subtitle')}
+          icon={FileText}
+          action={
+            <Button
+              variant="gold"
+              size="sm"
+              leftIcon={<Plus className="h-4 w-4" />}
+              onClick={openCreateModal}
+            >
+              {t('adminNew.invoices.new')}
+            </Button>
+          }
+        >
+        <AdminToolbar className="mb-4 border-0 bg-transparent p-0 shadow-none">
           <AdminSearchInput
             value={search}
             onChange={(value) => {
@@ -233,13 +274,7 @@ export default function InvoicesPage() {
                       <AdminTableCell>{firstMethod ?? '—'}</AdminTableCell>
                       <AdminTableCell>{formatDate(invoice.paid_at, dateLocale)}</AdminTableCell>
                       <AdminTableCell>
-                        <InvoiceStatusBadge status={invoice.status} />
-                        {invoice.is_overdue ? (
-                          <div className="mt-1 inline-flex items-center gap-1 text-xs text-rose-600">
-                            <AlertTriangle className="h-3 w-3" />
-                            {t('adminNew.status.overdue')}
-                          </div>
-                        ) : null}
+                        <InvoiceStatusBadge status={invoice.status} isOverdue={invoice.is_overdue} />
                       </AdminTableCell>
                       <AdminTableCell className="text-right">
                         <AdminLinkButton href={`/${locale}/admin/facturen/${invoice.id}`}>
@@ -253,7 +288,66 @@ export default function InvoicesPage() {
             </AdminTable>
           ) : null}
         </AdminTableCard>
+        </AdminSectionCard>
       </AdminContent>
+
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
+        <form onSubmit={handleCreate}>
+          <AdminModalHeader
+            title={t('adminNew.invoices.modal.title')}
+            subtitle={t('adminNew.invoices.modal.subtitle')}
+          />
+          <AdminModalBody>
+            <AdminSearchInput
+              placeholder={t('adminNew.customers.searchPlaceholder')}
+              value={customerSearch}
+              onChange={setCustomerSearch}
+            />
+            <div>
+              <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-navy-800">
+                <User className="h-4 w-4 text-marine-600" />
+                {t('adminNew.invoices.columns.customer')}
+              </label>
+              {customers.loading ? (
+                <LoadingState label={t('adminNew.customers.loading')} />
+              ) : customers.error ? (
+                <ErrorState message={customers.error} onRetry={() => void customers.refetch()} />
+              ) : (
+                <select
+                  className="input-base w-full"
+                  value={customerId}
+                  onChange={(e) => setCustomerId(e.target.value)}
+                  required
+                >
+                  <option value="">{t('adminNew.invoices.selectCustomer')}</option>
+                  {(customers.data?.data ?? []).map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name}
+                      {customer.email ? ` · ${customer.email}` : ''}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {!customers.loading && (customers.data?.data ?? []).length === 0 ? (
+                <p className="mt-2 text-sm text-navy-500">{t('adminNew.invoices.modal.noCustomers')}</p>
+              ) : null}
+            </div>
+          </AdminModalBody>
+          <AdminModalFooter>
+            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="gold"
+              leftIcon={<FilePlus2 className="h-4 w-4" />}
+              disabled={createInvoice.loading || !customerId}
+            >
+              {createInvoice.loading ? t('adminNew.common.saving') : t('adminNew.invoices.new')}
+            </Button>
+          </AdminModalFooter>
+        </form>
+      </Modal>
     </>
   );
 }

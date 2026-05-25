@@ -21,7 +21,8 @@ import {
   User2,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { api } from '@/lib/api';
+import { bookingService } from '@/lib/services';
+import { useToast } from '@/components/ui/ToastProvider';
 
 // Services that map to backend pricing service codes
 const SERVICES = [
@@ -33,8 +34,8 @@ const SERVICES = [
   { code: 'plaats', label: 'Plaatsing winterstalling', baseDuration: 45, basePrice: 125, icon: Hammer },
 ];
 
-// Time slots template
-const TIME_SLOTS = [
+// Time slots fallback when API unavailable
+const TIME_SLOTS_FALLBACK = [
   '08:30', '09:00', '09:30', '10:00', '10:30',
   '11:00', '11:30', '13:30', '14:00', '14:30', '15:00', '15:30',
 ];
@@ -57,7 +58,8 @@ function buildMonth(year: number, month: number) {
 }
 
 export default function KraanAfspraakPage() {
-  const { t } = useIntl();
+  const { t, locale } = useIntl();
+  const { push } = useToast();
 
   const today = React.useMemo(() => {
     const d = new Date();
@@ -80,9 +82,51 @@ export default function KraanAfspraakPage() {
   const [selectedServices, setSelectedServices] = React.useState<string[]>(['afspuiten']);
   const [submitting, setSubmitting] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
+  const [openDays, setOpenDays] = React.useState<Record<string, boolean>>({});
+  const [timeSlots, setTimeSlots] = React.useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = React.useState(false);
 
   const month = buildMonth(view.getFullYear(), view.getMonth());
   const monthLabel = `${DUTCH_MONTHS[view.getMonth()]} ${view.getFullYear()}`;
+  const lengthM = Number(form.length || 0);
+
+  React.useEffect(() => {
+    const from = new Date(view.getFullYear(), view.getMonth(), 1);
+    const to = new Date(view.getFullYear(), view.getMonth() + 1, 0);
+    void bookingService
+      .calendar(from.toISOString(), to.toISOString())
+      .then((res) => {
+        const map: Record<string, boolean> = {};
+        for (const day of res.days) map[day.date.slice(0, 10)] = day.is_open;
+        setOpenDays(map);
+      })
+      .catch(() => setOpenDays({}));
+  }, [view]);
+
+  React.useEffect(() => {
+    if (!picked || !selectedServices.length || !lengthM) {
+      setTimeSlots([]);
+      return;
+    }
+    setLoadingSlots(true);
+    const dateIso = new Date(
+      picked.getFullYear(),
+      picked.getMonth(),
+      picked.getDate(),
+      12,
+      0,
+      0
+    ).toISOString();
+    void bookingService
+      .slots({
+        date: dateIso,
+        length_cm: Math.max(100, Math.round(lengthM * 100)),
+        service_codes: selectedServices,
+      })
+      .then((res) => setTimeSlots(res.is_open ? res.slots : []))
+      .catch(() => setTimeSlots(TIME_SLOTS_FALLBACK))
+      .finally(() => setLoadingSlots(false));
+  }, [picked, selectedServices, lengthM]);
 
   const toggleService = (code: string) =>
     setSelectedServices((cur) =>
@@ -98,7 +142,6 @@ export default function KraanAfspraakPage() {
     0
   );
 
-  const lengthM = Number(form.length || 0);
   const surcharge = lengthM > 12 ? 95 : lengthM > 8 ? 35 : 0;
   const finalPrice = totalPrice + surcharge;
   const manualReview = lengthM > 14 || Number(form.weight || 0) > 15000;
@@ -109,27 +152,48 @@ export default function KraanAfspraakPage() {
   const isPicked = (d: Date) => picked?.getTime() === d.getTime();
 
   const submit = async () => {
+    if (!picked || !time || !form.name || !form.email || !form.boatName || !lengthM) return;
     setSubmitting(true);
     try {
-      await api('/crane-appointments', {
-        method: 'POST',
-        body: {
-          customer: form,
-          services: selectedServices,
-          preferred_date: picked?.toISOString().slice(0, 10),
-          preferred_time: time,
-          boat: {
-            name: form.boatName,
-            length_cm: lengthM ? Math.round(lengthM * 100) : null,
-            width_cm: Number(form.width || 0) ? Math.round(Number(form.width) * 100) : null,
-            weight_kg: Number(form.weight || 0) || null,
-          },
+      const dateIso = new Date(
+        picked.getFullYear(),
+        picked.getMonth(),
+        picked.getDate(),
+        12,
+        0,
+        0
+      ).toISOString();
+      await bookingService.book({
+        name: form.name,
+        email: form.email,
+        phone: form.phone || null,
+        locale,
+        date: dateIso,
+        start_time: time,
+        notes: manualReview ? t('crane.manualReview') : null,
+        boat: {
+          name: form.boatName,
+          length_m: lengthM,
+          width_m: Number(form.width || 0) || null,
         },
-      }).catch(() => null);
+        service_codes: selectedServices,
+      });
       setSubmitted(true);
+      push({ tone: 'success', title: t('crane.submitSuccess') });
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('crane.submitFailed'),
+        message: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const isDayClosed = (d: Date) => {
+    const key = d.toISOString().slice(0, 10);
+    return key in openDays && !openDays[key];
   };
 
   return (
@@ -300,7 +364,7 @@ export default function KraanAfspraakPage() {
             </div>
             <div className="mt-2 grid grid-cols-7 gap-1">
               {month.map((d, i) => {
-                const disabled = isPast(d) || isOtherMonth(d);
+                const disabled = isPast(d) || isOtherMonth(d) || isDayClosed(d);
                 return (
                   <button
                     key={i}
@@ -332,7 +396,7 @@ export default function KraanAfspraakPage() {
                   : t('crane.selectDate')}
               </SectionTitle>
               <div className="mt-3 grid grid-cols-4 gap-2">
-                {TIME_SLOTS.map((s) => {
+                {(timeSlots.length ? timeSlots : loadingSlots ? [] : TIME_SLOTS_FALLBACK).map((s) => {
                   const active = time === s;
                   return (
                     <button

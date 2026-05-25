@@ -449,6 +449,8 @@
     "duration": "Duur",
     "estimate": "Totaal indicatie",
     "submit": "Afspraak aanvragen",
+    "submitSuccess": "Afspraak aangevraagd",
+    "submitFailed": "Aanvraag mislukt",
     "footerNote": "Uw aanvraag wordt binnen 24 uur bevestigd. Een betaalverzoek wordt toegestuurd.",
     "selectDate": "Selecteer eerst een datum",
     "manualReview": "Manuele beoordeling vereist"
@@ -892,6 +894,12 @@
       "boats": "Boten",
       "invoices": "Facturen",
       "contracts": "Contracten",
+      "appointments": "Afspraken",
+      "payments": "Betalingen",
+      "products": "Producten",
+      "users": "Gebruikers",
+      "calendarAdmin": "Kalender",
+      "system": "Systeem",
       "audit": "Auditlogs",
       "reports": "Rapporten",
       "settings": "Instellingen",
@@ -1082,7 +1090,9 @@
       "delete": "Verwijderen",
       "logout": "Uitloggen",
       "noEmail": "geen e-mail",
-      "operationFailed": "Actie mislukt"
+      "operationFailed": "Actie mislukt",
+      "confirm": "Bevestigen",
+      "reasonTooShort": "Geef minimaal {min} tekens op"
     },
     "dashboard": {
       "title": "Operatie",
@@ -1250,13 +1260,16 @@
       },
       "smartMatch": "Slimme match",
       "products": "Producten",
+      "productsOverview": "Tik op een product om het toe te voegen aan de winkelmand",
       "loadingProducts": "Producten laden",
       "emptyProductsTitle": "Geen producten",
       "emptyProductsMessage": "Pas je zoekterm aan of voeg pricing rules toe.",
       "match": "Match",
       "recentSales": "Recente verkopen",
+      "recentOverview": "Laatste afgeronde verkopen op dit apparaat",
       "noRecentSales": "Nog geen recente verkopen.",
       "cart": "Winkelmand",
+      "cartOverview": "Controleer regels en rond af via checkout of offerte",
       "lines": "{count} regels",
       "emptyCartMessage": "Voeg producten toe voor checkout.",
       "vat": "BTW",
@@ -1333,6 +1346,7 @@
       "noPending": "Geen pending offline wijzigingen.",
       "devices": "Geregistreerde sync devices",
       "noDevices": "Nog geen sync devices beschikbaar.",
+      "devicesHint": "Apparaten die offline wijzigingen synchroniseren",
       "itemSynced": "Wijziging gesynchroniseerd",
       "syncFailed": "Sync mislukt",
       "error": "Sync fout"
@@ -1341,6 +1355,7 @@
       "appointments": {
         "title": "Mijn afspraken",
         "subtitle": "Overzicht van kraanafspraken en geplande werkzaamheden",
+        "listOverview": "Bekijk en filter al uw geplande kraanafspraken",
         "loading": "Afspraken laden",
         "empty": "Geen afspraken",
         "emptyMessage": "Plan een nieuwe afspraak via de kraanplanner.",
@@ -1380,6 +1395,7 @@
       "invoices": {
         "title": "Mijn facturen",
         "subtitle": "Bekijk openstaande facturen, download PDF en betaal veilig via Mollie",
+        "listOverview": "Openstaande facturen bekijken, PDF downloaden en online betalen",
         "allStatuses": "Alle statussen",
         "loading": "Facturen laden",
         "empty": "Geen facturen",
@@ -1405,6 +1421,7 @@
       "stalling": {
         "title": "Mijn stalling",
         "subtitle": "Overzicht van actieve stalling contracten en betaalstatus",
+        "listOverview": "Al uw stallingcontracten op één plek",
         "loading": "Contracten laden",
         "empty": "Geen contracten",
         "emptyMessage": "U heeft nog geen actieve stalling contracten.",
@@ -1423,6 +1440,7 @@
       "boats": {
         "title": "Mijn boten",
         "subtitle": "Bekijk boten die gekoppeld zijn aan uw account",
+        "listOverview": "Overzicht van boten, locaties en specificaties",
         "loading": "Boten laden",
         "empty": "Geen boten",
         "emptyMessage": "Er zijn nog geen boten gekoppeld aan uw account.",
@@ -1439,6 +1457,7 @@
       "documents": {
         "title": "Documenten",
         "subtitle": "PDF's en relevante documenten",
+        "listOverview": "Download factuur-PDF's en andere documenten",
         "empty": "Nog geen documenten",
         "emptyMessage": "Documenten worden hier automatisch zichtbaar zodra beschikbaar.",
         "loading": "Documenten laden",
@@ -1454,6 +1473,7 @@
       "messages": {
         "title": "Berichten",
         "subtitle": "Meldingen en berichten van Krekelberg",
+        "listOverview": "Inbox met meldingen, updates en herinneringen",
         "loading": "Berichten laden",
         "empty": "Geen berichten",
         "emptyMessage": "U heeft momenteel geen berichten in uw inbox.",
@@ -1476,6 +1496,7 @@
       "settings": {
         "title": "Portal instellingen",
         "subtitle": "Accountoverzicht en beveiligingsstatus",
+        "listOverview": "Persoonlijke gegevens en voorkeuren",
         "loading": "Account laden",
         "myDetails": "Mijn gegevens",
         "summary": "Samenvatting",
@@ -1547,7 +1568,14 @@
         "status": "Status"
       },
       "toasts": {
-        "createFailed": "Factuur aanmaken mislukt"
+        "createFailed": "Factuur aanmaken mislukt",
+        "created": "Factuur aangemaakt"
+      },
+      "selectCustomer": "Selecteer een klant",
+      "modal": {
+        "title": "Nieuwe factuur",
+        "subtitle": "Kies een klant om een handmatige factuur aan te maken.",
+        "noCustomers": "Geen klanten gevonden. Pas je zoekopdracht aan of maak eerst een klant aan."
       }
     },
     "invoiceDetail": {
@@ -1768,6 +1796,284 @@
         "mollieTestSuccess": "Mollie test succesvol uitgevoerd",
         "paymentsSaved": "Betalingsinstellingen opgeslagen",
         "localesSaved": "Taalinstellingen opgeslagen"
+      }
+    },
+    "appointments": {
+      "title": "Afspraken",
+      "subtitle": "Beheer kraanafspraken, bevestigingen en statusupdates",
+      "loading": "Afspraken laden",
+      "filterStatus": "Filter op status",
+      "allStatuses": "Alle statussen",
+      "statusPending": "In afwachting",
+      "statusConfirmed": "Bevestigd",
+      "statusStarted": "Gestart",
+      "statusCompleted": "Afgerond",
+      "statusCancelled": "Geannuleerd",
+      "emptyTitle": "Geen afspraken",
+      "emptyMessage": "Er zijn nog geen afspraken gevonden.",
+      "confirm": "Bevestigen",
+      "complete": "Afronden",
+      "cancel": "Annuleren",
+      "confirmCancel": "Deze afspraak annuleren?",
+      "cancelReason": "Geannuleerd via admin",
+      "total": "{count} afspraken",
+      "today": "Vandaag",
+      "listOverview": "Filter en beheer alle kraanafspraken",
+      "columns": {
+        "date": "Datum",
+        "time": "Tijd",
+        "boat": "Boot",
+        "services": "Diensten",
+        "status": "Status"
+      },
+      "toasts": {
+        "confirmed": "Afspraak bevestigd",
+        "cancelled": "Afspraak geannuleerd",
+        "completed": "Afspraak afgerond"
+      }
+    },
+    "products": {
+      "title": "Producten",
+      "subtitle": "Beheer productcatalogus voor kassa en facturatie",
+      "new": "Nieuw product",
+      "searchPlaceholder": "Zoek op code of naam",
+      "loading": "Producten laden",
+      "emptyTitle": "Geen producten",
+      "emptyMessage": "Voeg producten toe voor gebruik in de kassa.",
+      "active": "Actief",
+      "inactive": "Inactief",
+      "confirmDelete": "Product verwijderen?",
+      "total": "{count} producten",
+      "columns": {
+        "code": "Code",
+        "name": "Naam",
+        "category": "Categorie",
+        "price": "Prijs",
+        "vat": "BTW",
+        "status": "Status"
+      },
+      "fields": {
+        "priceExcl": "Prijs excl. BTW"
+      },
+      "modal": {
+        "title": "Nieuw product",
+        "subtitle": "Voeg een product toe aan de catalogus."
+      },
+      "toasts": {
+        "created": "Product aangemaakt",
+        "createFailed": "Aanmaken mislukt",
+        "deleted": "Product verwijderd",
+        "deleteFailed": "Verwijderen mislukt"
+      }
+    },
+    "payments": {
+      "title": "Betalingen",
+      "subtitle": "Overzicht van Mollie- en kassabetalingen",
+      "searchPlaceholder": "Zoek op klant of status",
+      "loading": "Betalingen laden",
+      "emptyTitle": "Geen betalingen",
+      "emptyMessage": "Er zijn nog geen betalingen gevonden.",
+      "reconcile": "Afstemmen",
+      "reconciled": "Afgestemd",
+      "confirmReconcile": "Weet je zeker dat je deze betaling wilt afstemmen?",
+      "total": "{count} betalingen",
+      "columns": {
+        "date": "Datum",
+        "customer": "Klant",
+        "method": "Methode",
+        "amount": "Bedrag",
+        "status": "Status"
+      },
+      "toasts": {
+        "reconciled": "Betaling afgestemd"
+      }
+    },
+    "users": {
+      "title": "Gebruikers",
+      "subtitle": "Beheer staff- en adminaccounts",
+      "new": "Nieuwe gebruiker",
+      "loading": "Gebruikers laden",
+      "emptyTitle": "Geen gebruikers",
+      "emptyMessage": "Registreer een nieuwe gebruiker.",
+      "active": "Actief",
+      "inactive": "Inactief",
+      "activate": "Activeren",
+      "deactivate": "Deactiveren",
+      "total": "{count} gebruikers",
+      "columns": {
+        "user": "Gebruiker",
+        "role": "Rol",
+        "status": "Status",
+        "lastLogin": "Laatste login"
+      },
+      "fields": {
+        "password": "Wachtwoord"
+      },
+      "modal": {
+        "title": "Nieuwe gebruiker",
+        "subtitle": "Maak een staff- of adminaccount aan."
+      },
+      "toasts": {
+        "created": "Gebruiker aangemaakt",
+        "createFailed": "Aanmaken mislukt",
+        "activated": "Gebruiker geactiveerd",
+        "deactivated": "Gebruiker gedeactiveerd"
+      }
+    },
+    "calendar": {
+      "title": "Kalender",
+      "subtitle": "Openingstijden, uitzonderingen en bootlocaties",
+      "loading": "Kalender laden",
+      "regularHours": "Vaste openingstijden",
+      "exceptions": "Uitzonderingen",
+      "lunch": "Lunchpauze",
+      "locations": "Bootlocaties",
+      "closed": "Gesloten",
+      "open": "Open",
+      "blocked": "Geblokkeerd",
+      "newLocation": "Nieuwe locatie",
+      "noRegular": "Geen vaste uren",
+      "noRegularMessage": "Nog geen vaste openingstijden ingesteld.",
+      "noExceptions": "Geen uitzonderingen",
+      "noExceptionsMessage": "Nog geen uitzonderingen ingesteld.",
+      "noLunch": "Geen lunchpauze ingesteld",
+      "loadingLocations": "Locaties laden",
+      "noLocations": "Geen locaties",
+      "noLocationsMessage": "Voeg bootlocaties toe voor planning.",
+      "weekOverview": "Weekoverzicht met openingstijden en lunchpauze",
+      "today": "Vandaag",
+      "exceptionsOverview": "Afwijkende dagen en feestdagen",
+      "locationsOverview": "Kraanlocaties op de werf",
+      "metrics": {
+        "openDays": "Open dagen",
+        "openDaysHint": "Dagen met vaste openingstijden",
+        "exceptionsHint": "Geplande uitzonderingen",
+        "lunchSet": "Lunchpauze actief",
+        "locationsHint": "{blocked} geblokkeerd"
+      },
+      "columns": {
+        "code": "Code",
+        "section": "Sectie",
+        "difficulty": "Moeilijkheid",
+        "status": "Status"
+      },
+      "fields": {
+        "extraMinutes": "Extra minuten",
+        "dayOfWeek": "Weekdag",
+        "openFrom": "Open van",
+        "openUntil": "Open tot",
+        "closedDay": "Gesloten op deze dag",
+        "date": "Datum",
+        "label": "Label",
+        "notes": "Notities"
+      },
+      "locationModal": {
+        "title": "Nieuwe bootlocatie",
+        "subtitle": "Voeg een locatiecode toe voor kraanplanning."
+      },
+      "editLocationModal": {
+        "title": "Locatie bewerken",
+        "subtitle": "Blokkeer locaties of pas moeilijkheid aan."
+      },
+      "regularModal": {
+        "title": "Vaste openingstijden",
+        "subtitle": "Stel openingstijden in per weekdag."
+      },
+      "exceptionModal": {
+        "title": "Uitzondering toevoegen",
+        "subtitle": "Sluit een specifieke dag of pas uren aan."
+      },
+      "lunchModal": {
+        "title": "Lunchpauze instellen",
+        "subtitle": "Tijdsblok waarin geen afspraken gepland worden."
+      },
+      "actions": {
+        "setRegular": "Uren instellen",
+        "addException": "Uitzondering",
+        "setLunch": "Lunch instellen",
+        "edit": "Bewerken",
+        "block": "Blokkeren",
+        "unblock": "Deblokkeren"
+      },
+      "days": {
+        "0": "Zondag",
+        "1": "Maandag",
+        "2": "Dinsdag",
+        "3": "Woensdag",
+        "4": "Donderdag",
+        "5": "Vrijdag",
+        "6": "Zaterdag"
+      },
+      "toasts": {
+        "locationCreated": "Locatie aangemaakt",
+        "locationUpdated": "Locatie bijgewerkt",
+        "regularSaved": "Openingstijden opgeslagen",
+        "exceptionSaved": "Uitzondering opgeslagen",
+        "lunchSaved": "Lunchpauze opgeslagen"
+      }
+    },
+    "system": {
+      "title": "Systeem",
+      "subtitle": "Health checks en repair tools voor admins",
+      "refresh": "Vernieuwen",
+      "loadingHealth": "Health status laden",
+      "checks": {
+        "overview": "Algemeen",
+        "database": "Database",
+        "queue": "Queue",
+        "mollie": "Mollie",
+        "mail": "Mail",
+        "storage": "Storage",
+        "webhooks": "Webhooks"
+      },
+      "repair": {
+        "payments": "Betalingen",
+        "webhooks": "Webhooks",
+        "sync": "Sync conflicts",
+        "invoices": "Facturen",
+        "customers": "Klanten",
+        "idempotency": "Idempotency",
+        "mismatchedCount": "{count} mismatched betalingen",
+        "failedWebhooksCount": "{count} mislukte webhooks",
+        "conflictsCount": "{count} sync conflicts",
+        "syncMollie": "Sync Mollie status",
+        "replay": "Replay",
+        "retryWebhook": "Webhook opnieuw",
+        "resendEmail": "E-mail opnieuw versturen",
+        "regeneratePdf": "PDF opnieuw genereren",
+        "mergeCustomers": "Klanten samenvoegen",
+        "resolveKeepServer": "Serverversie behouden",
+        "resolveUseClient": "Clientversie gebruiken",
+        "resolveConflictTitle": "Sync conflict oplossen",
+        "resolveConflictMessage": "Geef een reden op voor deze oplossing (min. 5 tekens).",
+        "lookupIdempotency": "Opzoeken"
+      },
+      "fields": {
+        "invoiceId": "Factuur-ID",
+        "paymentId": "Betaling-ID",
+        "mainCustomerId": "Hoofdklant-ID",
+        "duplicateCustomerId": "Duplicaat klant-ID",
+        "idempotencyKey": "Idempotency key",
+        "reason": "Reden (min. 5 tekens)"
+      },
+      "toasts": {
+        "actionDone": "Actie uitgevoerd",
+        "conflictResolved": "Conflict opgelost",
+        "customersMerged": "Klanten samengevoegd"
+      }
+    },
+    "wallet": {
+      "title": "Portemonnee",
+      "balanceHint": "Beschikbaar tegoed voor deze klant",
+      "credit": "Crediteren",
+      "defaultCreditDescription": "Handmatige credit",
+      "creditModal": {
+        "title": "Tegoed toevoegen",
+        "amount": "Bedrag (EUR)",
+        "description": "Omschrijving"
+      },
+      "toasts": {
+        "credited": "Tegoed toegevoegd"
       }
     }
   }

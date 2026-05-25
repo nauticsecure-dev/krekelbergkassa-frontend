@@ -3,8 +3,9 @@
 import * as React from "react";
 import {
   CreditCard,
+  Package,
   Plus,
-  Search,
+  Receipt,
   ShoppingCart,
   Trash2,
   UserPlus,
@@ -12,13 +13,15 @@ import {
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import {
   AdminContent,
+  AdminListItem,
   AdminModalBody,
   AdminModalFooter,
   AdminModalHeader,
-  AdminPanel,
+  AdminSearchInput,
+  AdminSectionCard,
+  AdminSelect,
   AdminToolbar,
 } from "@/components/admin/AdminUi";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
@@ -293,23 +296,23 @@ export default function KassaPage() {
       />
 
       <AdminContent className="grid gap-5 xl:grid-cols-[1fr_24rem]">
-        <div className="space-y-4">
-          <AdminToolbar>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={t("adminNew.kassa.searchPlaceholder")}
-                  className="input-base pl-9"
-                />
-              </div>
-              <div className="flex gap-2">
-                <select
-                  className="input-base"
+        <div className="space-y-5">
+          <AdminSectionCard
+            title={t("adminNew.kassa.title")}
+            description={t("adminNew.kassa.subtitle")}
+            icon={ShoppingCart}
+          >
+            <AdminToolbar className="border-0 bg-transparent p-0 shadow-none">
+              <AdminSearchInput
+                value={query}
+                onChange={setQuery}
+                placeholder={t("adminNew.kassa.searchPlaceholder")}
+              />
+              <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+                <AdminSelect
                   value={customerId}
-                  onChange={(e) => setCustomerId(e.target.value)}
-                  disabled={customersQuery.loading}
+                  onChange={setCustomerId}
+                  className="min-w-[200px] flex-1"
                 >
                   <option value="">
                     {customersQuery.loading
@@ -322,7 +325,7 @@ export default function KassaPage() {
                       {customer.email ?? t("adminNew.common.noEmail")}
                     </option>
                   ))}
-                </select>
+                </AdminSelect>
                 <Button
                   variant="outline"
                   size="md"
@@ -332,11 +335,7 @@ export default function KassaPage() {
                   {t("adminNew.common.new")}
                 </Button>
               </div>
-              <select
-                className="input-base"
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              >
+              <AdminSelect value={paymentMethod} onChange={setPaymentMethod}>
                 <option value="cash">{t("adminNew.kassa.payment.cash")}</option>
                 <option value="pin">{t("adminNew.kassa.payment.pin")}</option>
                 <option value="invoice">
@@ -347,11 +346,11 @@ export default function KassaPage() {
                   {t("adminNew.kassa.payment.creditcard")}
                 </option>
                 <option value="bancontact">Bancontact</option>
-              </select>
-          </AdminToolbar>
+              </AdminSelect>
+            </AdminToolbar>
 
-          {matchingRule ? (
-              <div className="mt-3 rounded-lg border border-marine-200 bg-marine-50 px-3 py-2 text-sm text-marine-800">
+            {matchingRule ? (
+              <div className="mt-4 rounded-xl border border-marine-200/80 bg-gradient-to-r from-marine-50 to-white px-4 py-3 text-sm text-marine-800">
                 {t("adminNew.kassa.smartMatch")}: {matchingRule.range_from_cm}–
                 {matchingRule.range_to_cm} cm ·{" "}
                 {formatCurrency(
@@ -360,8 +359,13 @@ export default function KassaPage() {
                 )}
               </div>
             ) : null}
+          </AdminSectionCard>
 
-          <AdminPanel title={t("adminNew.kassa.products")}>
+          <AdminSectionCard
+            title={t("adminNew.kassa.products")}
+            description={t("adminNew.kassa.productsOverview")}
+            icon={Package}
+          >
             {productsQuery.loading ? (
               <LoadingState
                 label={t("adminNew.kassa.loadingProducts")}
@@ -375,7 +379,7 @@ export default function KassaPage() {
               />
             ) : null}
             {!productsQuery.loading && visibleProducts.length > 0 ? (
-              <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {visibleProducts.slice(0, 18).map((product) => {
                   const ruleMatch =
                     matchingRule && matchingRule.product_id === product.id
@@ -384,7 +388,8 @@ export default function KassaPage() {
                   return (
                     <button
                       key={product.id}
-                      className="rounded-xl border border-navy-100 bg-white p-3 text-left transition hover:border-navy-300"
+                      type="button"
+                      className="surface-float-hover rounded-xl border border-navy-100/80 bg-white p-3 text-left transition hover:border-marine-200"
                       onClick={() => addProduct(product, ruleMatch)}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -415,80 +420,78 @@ export default function KassaPage() {
                 })}
               </div>
             ) : null}
-          </AdminPanel>
+          </AdminSectionCard>
 
-          <AdminPanel title={t("adminNew.kassa.recentSales")}>
+          <AdminSectionCard
+            title={t("adminNew.kassa.recentSales")}
+            description={t("adminNew.kassa.recentOverview")}
+            icon={Receipt}
+          >
             {recentSales.loading ? (
               <LoadingState label={t("adminNew.common.loading")} variant="list" />
             ) : null}
             {!recentSales.loading && recentSales.error ? (
-              <div className="px-4 py-4 text-sm text-rose-600">
-                {recentSales.error}
+              <div className="text-sm text-rose-600">{recentSales.error}</div>
+            ) : null}
+            {!recentSales.loading &&
+            !recentSales.error &&
+            recentSales.data &&
+            recentSales.data.length === 0 ? (
+              <div className="text-sm text-navy-500">
+                {t("adminNew.kassa.noRecentSales")}
               </div>
             ) : null}
-            <div className="divide-y divide-navy-100">
-              {!recentSales.loading &&
-                !recentSales.error &&
-                (recentSales.data ?? []).slice(0, 8).map((sale) => (
-                <div
-                  key={sale.id}
-                  className="flex items-center justify-between px-4 py-3 text-sm"
-                >
-                  <div>
-                    <div className="font-medium text-navy-900">
-                      {sale.invoice_number}
-                    </div>
-                    <div className="text-xs text-navy-500">
-                      {new Date(sale.created_at).toLocaleString(locale === "en" ? "en-GB" : "nl-NL")}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-navy-900">
-                      {formatCurrency(
-                        Number(sale.total_euros),
-                        locale === "en" ? "en-GB" : "nl-NL",
-                      )}
-                    </div>
-                    <div className="text-xs text-navy-500">
-                      {sale.payment_status}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {!recentSales.loading &&
-              !recentSales.error &&
-              recentSales.data &&
-              recentSales.data.length === 0 ? (
-                <div className="px-4 py-5 text-sm text-navy-500">
-                  {t("adminNew.kassa.noRecentSales")}
-                </div>
-              ) : null}
-            </div>
-          </AdminPanel>
+            {!recentSales.loading && !recentSales.error && (recentSales.data?.length ?? 0) > 0 ? (
+              <div className="space-y-2">
+                {(recentSales.data ?? []).slice(0, 8).map((sale) => (
+                  <AdminListItem
+                    key={sale.id}
+                    title={sale.invoice_number}
+                    subtitle={new Date(sale.created_at).toLocaleString(
+                      locale === "en" ? "en-GB" : "nl-NL",
+                    )}
+                    meta={
+                      <div className="text-right">
+                        <div className="font-semibold text-navy-900">
+                          {formatCurrency(
+                            Number(sale.total_euros),
+                            locale === "en" ? "en-GB" : "nl-NL",
+                          )}
+                        </div>
+                        <div className="text-xs text-navy-500">
+                          {sale.payment_status}
+                        </div>
+                      </div>
+                    }
+                  />
+                ))}
+              </div>
+            ) : null}
+          </AdminSectionCard>
         </div>
 
-        <Card className="sticky top-24 self-start overflow-hidden shadow-elev">
-          <div className="border-b border-navy-100 px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold text-navy-900">
-                {t("adminNew.kassa.cart")}
-              </div>
-              <Badge tone="navy">
-                {t("adminNew.kassa.lines", { count: cart.length })}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="max-h-[420px] space-y-2 overflow-y-auto p-4">
+        <AdminSectionCard
+          className="sticky top-24 self-start"
+          title={t("adminNew.kassa.cart")}
+          description={t("adminNew.kassa.cartOverview")}
+          icon={CreditCard}
+          action={
+            <Badge tone="navy">
+              {t("adminNew.kassa.lines", { count: cart.length })}
+            </Badge>
+          }
+        >
+          <div className="-mx-1 -mt-1 space-y-3">
+          <div className="max-h-[420px] space-y-2 overflow-y-auto px-1">
             {cart.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-navy-200 px-3 py-8 text-center text-sm text-navy-500">
+              <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-3 py-8 text-center text-sm text-navy-500">
                 {t("adminNew.kassa.emptyCartMessage")}
               </div>
             ) : (
               cart.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-lg border border-navy-100 p-3"
+                  className="rounded-xl border border-navy-100 bg-gradient-to-r from-white to-sand-50/40 p-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -555,7 +558,7 @@ export default function KassaPage() {
             )}
           </div>
 
-          <div className="space-y-2 border-t border-navy-100 bg-sand-50/50 p-4 text-sm">
+          <div className="space-y-2 rounded-xl border border-navy-100 bg-sand-50/60 p-4 text-sm">
             <Row
               label={t("adminNew.kassa.subtotal")}
               value={formatCurrency(
@@ -606,7 +609,8 @@ export default function KassaPage() {
                 : t("adminNew.kassa.createQuote")}
             </Button>
           </div>
-        </Card>
+          </div>
+        </AdminSectionCard>
       </AdminContent>
 
       <Modal

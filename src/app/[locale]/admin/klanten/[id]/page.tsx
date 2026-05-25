@@ -3,15 +3,14 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { FilePlus2, Save, Ship, Users, Warehouse, CreditCard } from 'lucide-react';
+import { FilePlus2, Save, Ship, Users, Warehouse, CreditCard, Wallet, FileText } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
   AdminDetailGrid,
-  AdminPanel,
+  AdminSectionCard,
   AdminStatusStrip,
   AdminTable,
-  AdminTableCard,
   AdminTableCell,
   AdminTableHead,
   AdminTableHeaderCell,
@@ -28,9 +27,10 @@ import {
   filesService,
   invoicesService,
   stallingService,
+  walletsService,
 } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency, formatDate, centsToEuro } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 
@@ -42,10 +42,13 @@ export default function CustomerDetailPage() {
 
   const [showEdit, setShowEdit] = React.useState(false);
   const [showBoat, setShowBoat] = React.useState(false);
+  const [showWalletCredit, setShowWalletCredit] = React.useState(false);
+  const [walletAmount, setWalletAmount] = React.useState('');
+  const [walletDescription, setWalletDescription] = React.useState('');
 
   const data = useQuery([customerId], async () => {
     if (!customerId) throw new Error('Missing customer id');
-    const [customer, boats, stalling, invoices, files] = await Promise.all([
+    const [customer, boats, stalling, invoices, files, wallet] = await Promise.all([
       customersService.get(customerId),
       boatsService.list({ customer_id: customerId, per_page: 100 }),
       stallingService.list({ customer_id: customerId, per_page: 100 }),
@@ -53,6 +56,7 @@ export default function CustomerDetailPage() {
       filesService
         .list({ entity_type: 'customer', entity_id: customerId, per_page: 100 })
         .catch(() => ({ data: [] })),
+      walletsService.get(customerId).catch(() => null),
     ]);
 
     return {
@@ -61,6 +65,7 @@ export default function CustomerDetailPage() {
       stalling: stalling.data,
       invoices: invoices.data,
       files: files.data,
+      wallet,
     };
   });
 
@@ -83,6 +88,9 @@ export default function CustomerDetailPage() {
         },
       ],
     })
+  );
+  const creditWallet = useMutation((payload: { amount_cents: number; description: string }) =>
+    walletsService.credit(customerId!, payload)
   );
 
   const [editForm, setEditForm] = React.useState({
@@ -170,6 +178,29 @@ export default function CustomerDetailPage() {
     }
   };
 
+  const onCreditWallet = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const euros = Number(walletAmount);
+    if (!euros) return;
+    try {
+      await creditWallet.mutate({
+        amount_cents: Math.round(euros * 100),
+        description: walletDescription || t('adminNew.wallet.defaultCreditDescription'),
+      });
+      push({ tone: 'success', title: t('adminNew.wallet.toasts.credited') });
+      setShowWalletCredit(false);
+      setWalletAmount('');
+      setWalletDescription('');
+      await data.refetch();
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.common.operationFailed'),
+        message: err instanceof Error ? err.message : undefined,
+      });
+    }
+  };
+
   const invoiceCount = data.data?.invoices.length ?? 0;
   const stallingCount = data.data?.stalling.length ?? 0;
   const boatsCount = data.data?.boats.length ?? 0;
@@ -245,10 +276,11 @@ export default function CustomerDetailPage() {
         {!data.loading && data.data ? (
           <>
             <div className="bento-grid lg:grid-cols-3">
-              <AdminPanel
+              <AdminSectionCard
                 className="lg:col-span-2"
                 title={t('adminNew.customerDetail.infoTitle')}
                 description={data.data.customer.customer_number}
+                icon={Users}
               >
                 <AdminDetailGrid
                   items={[
@@ -281,9 +313,14 @@ export default function CustomerDetailPage() {
                     {data.data.customer.notes ?? t('adminNew.customerDetail.noNotes')}
                   </div>
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
 
-              <AdminPanel title={t('adminNew.customerDetail.summaryTitle')}>
+              <div className="space-y-5">
+              <AdminSectionCard
+                title={t('adminNew.customerDetail.summaryTitle')}
+                description={t('adminNew.customerDetail.infoTitle')}
+                icon={CreditCard}
+              >
                 <div className="space-y-2">
                   <AdminStatusStrip label={t('adminNew.customerDetail.boats')} value={boatsCount} tone="marine" />
                   <AdminStatusStrip
@@ -305,16 +342,40 @@ export default function CustomerDetailPage() {
                     tone={openBalance > 0 ? 'warning' : 'success'}
                   />
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
+
+              <AdminSectionCard
+                title={t('adminNew.wallet.title')}
+                description={t('adminNew.wallet.balanceHint')}
+                icon={Wallet}
+                action={
+                  <Button size="sm" variant="outline" onClick={() => setShowWalletCredit(true)}>
+                    {t('adminNew.wallet.credit')}
+                  </Button>
+                }
+              >
+                <div className="text-2xl font-semibold text-navy-900">
+                  {formatCurrency(
+                    data.data.wallet?.balance_euros ?? centsToEuro(data.data.wallet?.balance_cents),
+                    locale === 'en' ? 'en-GB' : 'nl-NL'
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-navy-500">{t('adminNew.wallet.balanceHint')}</p>
+                {(data.data.wallet?.transactions ?? []).slice(0, 3).map((tx) => (
+                  <div key={tx.id} className="mt-3 flex items-center justify-between border-t border-navy-100 pt-3 text-sm">
+                    <span className="text-navy-600">{tx.description}</span>
+                    <span className="font-medium">{formatCurrency((tx.amount_euros ?? tx.amount_cents / 100), locale === 'en' ? 'en-GB' : 'nl-NL')}</span>
+                  </div>
+                ))}
+              </AdminSectionCard>
+              </div>
             </div>
 
-            <AdminTableCard>
-              <div className="flex items-center justify-between border-b border-navy-100 bg-white px-5 py-4">
-                <div>
-                  <div className="text-sm font-semibold text-navy-900">
-                    {t('adminNew.customerDetail.boats')}
-                  </div>
-                </div>
+            <AdminSectionCard
+              title={t('adminNew.customerDetail.boats')}
+              description={t('adminNew.customerDetail.noBoats')}
+              icon={Ship}
+              action={
                 <Button
                   variant="outline"
                   size="sm"
@@ -323,7 +384,8 @@ export default function CustomerDetailPage() {
                 >
                   {t('adminNew.customerDetail.actions.addBoat')}
                 </Button>
-              </div>
+              }
+            >
               <AdminTable minWidth={760}>
                 <AdminTableHead>
                   <tr>
@@ -356,10 +418,14 @@ export default function CustomerDetailPage() {
                   )}
                 </tbody>
               </AdminTable>
-            </AdminTableCard>
+            </AdminSectionCard>
 
             <div className="bento-grid lg:grid-cols-2">
-              <AdminPanel title={t('adminNew.customerDetail.invoices')}>
+              <AdminSectionCard
+                title={t('adminNew.customerDetail.invoices')}
+                description={t('adminNew.customerDetail.noInvoices')}
+                icon={CreditCard}
+              >
                 <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {data.data.invoices.length ? (
                     data.data.invoices.slice(0, 10).map((invoice) => (
@@ -382,7 +448,7 @@ export default function CustomerDetailPage() {
                               locale === 'en' ? 'en-GB' : 'nl-NL'
                             )}
                           </div>
-                          <InvoiceStatusBadge status={invoice.status} />
+                          <InvoiceStatusBadge status={invoice.status} isOverdue={invoice.is_overdue} />
                         </div>
                       </Link>
                     ))
@@ -392,9 +458,13 @@ export default function CustomerDetailPage() {
                     </div>
                   )}
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
 
-              <AdminPanel title={t('adminNew.customerDetail.stallingContracts')}>
+              <AdminSectionCard
+                title={t('adminNew.customerDetail.stallingContracts')}
+                description={t('adminNew.customerDetail.noContracts')}
+                icon={Warehouse}
+              >
                 <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {data.data.stalling.length ? (
                     data.data.stalling.slice(0, 10).map((contract) => (
@@ -423,10 +493,14 @@ export default function CustomerDetailPage() {
                     </div>
                   )}
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
             </div>
 
-            <AdminPanel title={t('adminNew.customerDetail.files')}>
+            <AdminSectionCard
+              title={t('adminNew.customerDetail.files')}
+              description={t('adminNew.customerDetail.noFiles')}
+              icon={FileText}
+            >
               {data.data.files.length ? (
                 <div className="grid gap-2 sm:grid-cols-2">
                   {data.data.files.map((file, idx) => (
@@ -446,7 +520,7 @@ export default function CustomerDetailPage() {
               ) : (
                 <div className="text-sm text-navy-500">{t('adminNew.customerDetail.noFiles')}</div>
               )}
-            </AdminPanel>
+            </AdminSectionCard>
           </>
         ) : null}
       </AdminContent>
@@ -553,6 +627,35 @@ export default function CustomerDetailPage() {
               {createBoat.loading
                 ? t('adminNew.common.saving')
                 : t('adminNew.customerDetail.actions.addBoat')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal open={showWalletCredit} onClose={() => setShowWalletCredit(false)} size="md">
+        <form onSubmit={onCreditWallet} className="p-6">
+          <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.wallet.creditModal.title')}</h2>
+          <div className="mt-4 space-y-3">
+            <Input
+              label={t('adminNew.wallet.creditModal.amount')}
+              inputMode="decimal"
+              value={walletAmount}
+              onChange={(e) => setWalletAmount(e.target.value)}
+              required
+            />
+            <Input
+              label={t('adminNew.wallet.creditModal.description')}
+              value={walletDescription}
+              onChange={(e) => setWalletDescription(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setShowWalletCredit(false)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button type="submit" variant="gold" disabled={creditWallet.loading}>
+              {creditWallet.loading ? t('adminNew.common.saving') : t('adminNew.wallet.credit')}
             </Button>
           </div>
         </form>

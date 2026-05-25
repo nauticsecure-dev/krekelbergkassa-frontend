@@ -10,6 +10,7 @@ import {
   AdminModalFooter,
   AdminModalHeader,
   AdminSearchInput,
+  AdminSectionCard,
   AdminTable,
   AdminTableCard,
   AdminTableCell,
@@ -76,11 +77,6 @@ export default function CustomersPage() {
         eyebrow={t('admin.sidebar.customers')}
         title={t('adminNew.customers.title')}
         subtitle={t('adminNew.customers.subtitle')}
-        rightSlot={
-          <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-            {t('adminNew.customers.new')}
-          </Button>
-        }
         stats={[
           {
             label: t('adminNew.customers.total', { count: total }),
@@ -110,6 +106,16 @@ export default function CustomersPage() {
       />
 
       <AdminContent>
+        <AdminSectionCard
+          title={t('adminNew.customers.title')}
+          description={t('adminNew.customers.subtitle')}
+          icon={Users}
+          action={
+            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+              {t('adminNew.customers.new')}
+            </Button>
+          }
+        >
         <AdminSearchInput
           value={query}
           onChange={(value) => {
@@ -117,6 +123,7 @@ export default function CustomersPage() {
             setPage(1);
           }}
           placeholder={t('adminNew.customers.searchPlaceholder')}
+          className="mb-4"
         />
 
         <AdminTableCard
@@ -189,6 +196,7 @@ export default function CustomersPage() {
             </AdminTable>
           ) : null}
         </AdminTableCard>
+        </AdminSectionCard>
       </AdminContent>
 
       <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">

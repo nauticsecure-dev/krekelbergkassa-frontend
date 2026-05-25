@@ -13,8 +13,8 @@ import {
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
-  AdminPanel,
   AdminQuickAction,
+  AdminSectionCard,
   AdminStatusStrip,
 } from '@/components/admin/AdminUi';
 import { Badge } from '@/components/ui/Badge';
@@ -131,9 +131,10 @@ export default function AdminDashboardPage() {
 
       <AdminContent>
         <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-          <AdminPanel
+          <AdminSectionCard
             title={t('adminNew.dashboard.quickActions')}
             description={t('adminNew.dashboard.subtitle')}
+            icon={Sparkles}
           >
             <div className="grid gap-3 sm:grid-cols-2">
               <AdminQuickAction
@@ -161,14 +162,17 @@ export default function AdminDashboardPage() {
                 tone="success"
               />
             </div>
-          </AdminPanel>
+          </AdminSectionCard>
 
-          <AdminPanel
+          <AdminSectionCard
             title={t('adminNew.dashboard.portal.title')}
             description={t('adminNew.dashboard.portal.openPortal')}
+            icon={Users}
             action={
               <Link
                 href={`/${locale}/feed`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-xs font-semibold text-marine-700 hover:text-marine-900"
               >
                 {t('adminNew.dashboard.portal.openPortal')} →
@@ -198,7 +202,7 @@ export default function AdminDashboardPage() {
                 {t('adminNew.dashboard.portal.openPortal')}
               </span>
             </div>
-          </AdminPanel>
+          </AdminSectionCard>
         </div>
       </AdminContent>
     </>

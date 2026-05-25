@@ -449,6 +449,8 @@
     "duration": "Dauer",
     "estimate": "Gesamt (Richtwert)",
     "submit": "Termin anfragen",
+    "submitSuccess": "Termin angefragt",
+    "submitFailed": "Anfrage fehlgeschlagen",
     "footerNote": "Ihre Anfrage wird innerhalb 24h bestätigt. Eine Zahlungsanfrage folgt per Mail.",
     "selectDate": "Bitte erst einen Tag wählen",
     "manualReview": "Manuelle Prüfung erforderlich"
@@ -892,6 +894,12 @@
       "boats": "Boote",
       "invoices": "Rechnungen",
       "contracts": "Verträge",
+      "appointments": "Termine",
+      "payments": "Zahlungen",
+      "products": "Produkte",
+      "users": "Benutzer",
+      "calendarAdmin": "Kalender",
+      "system": "System",
       "audit": "Audit-Logs",
       "reports": "Berichte",
       "settings": "Einstellungen",
@@ -1082,7 +1090,9 @@
       "delete": "Löschen",
       "logout": "Abmelden",
       "noEmail": "keine E-Mail",
-      "operationFailed": "Aktion fehlgeschlagen"
+      "operationFailed": "Aktion fehlgeschlagen",
+      "confirm": "Bestätigen",
+      "reasonTooShort": "Mindestens {min} Zeichen eingeben"
     },
     "dashboard": {
       "title": "Betrieb",
@@ -1250,13 +1260,16 @@
       },
       "smartMatch": "Intelligente Übereinstimmung",
       "products": "Produkte",
+      "productsOverview": "Tippen Sie auf ein Produkt, um es in den Warenkorb zu legen",
       "loadingProducts": "Produkte laden",
       "emptyProductsTitle": "Keine Produkte",
       "emptyProductsMessage": "Suchbegriff anpassen oder Preisregeln hinzufügen.",
       "match": "Treffer",
       "recentSales": "Letzte Verkäufe",
+      "recentOverview": "Zuletzt abgeschlossene Verkäufe auf diesem Gerät",
       "noRecentSales": "Noch keine aktuellen Verkäufe.",
       "cart": "Warenkorb",
+      "cartOverview": "Positionen prüfen und Checkout oder Angebot abschließen",
       "lines": "{count} Zeilen",
       "emptyCartMessage": "Fügen Sie Produkte hinzu, um den Checkout fortzusetzen.",
       "vat": "MwSt",
@@ -1333,6 +1346,7 @@
       "noPending": "Keine ausstehenden Offline-Änderungen.",
       "devices": "Registrierte Sync-Geräte",
       "noDevices": "Noch keine Sync-Geräte verfügbar.",
+      "devicesHint": "Geräte, die Offline-Änderungen synchronisieren",
       "itemSynced": "Änderung synchronisiert",
       "syncFailed": "Sync fehlgeschlagen",
       "error": "Sync-Fehler"
@@ -1341,6 +1355,7 @@
       "appointments": {
         "title": "Meine Termine",
         "subtitle": "Übersicht über Krantermine und geplante Arbeiten",
+        "listOverview": "Alle geplanten Krantermine anzeigen und filtern",
         "loading": "Termine laden",
         "empty": "Keine Termine",
         "emptyMessage": "Buchen Sie einen neuen Termin über den Kranplaner.",
@@ -1380,6 +1395,7 @@
       "invoices": {
         "title": "Meine Rechnungen",
         "subtitle": "Offene Rechnungen anzeigen, PDF herunterladen und sicher über Mollie bezahlen",
+        "listOverview": "Offene Rechnungen anzeigen, PDFs herunterladen und online bezahlen",
         "allStatuses": "Alle Status",
         "loading": "Rechnungen laden",
         "empty": "Keine Rechnungen",
@@ -1405,6 +1421,7 @@
       "stalling": {
         "title": "Meine Lagerung",
         "subtitle": "Übersicht aktiver Lagerverträge und Zahlungsstatus",
+        "listOverview": "Alle Lagerverträge an einem Ort",
         "loading": "Verträge laden",
         "empty": "Keine Verträge",
         "emptyMessage": "Sie haben noch keine aktiven Lagerverträge.",
@@ -1423,6 +1440,7 @@
       "boats": {
         "title": "Meine Boote",
         "subtitle": "Boote anzeigen, die mit Ihrem Konto verknüpft sind",
+        "listOverview": "Übersicht über Boote, Standorte und Spezifikationen",
         "loading": "Boote laden",
         "empty": "Keine Boote",
         "emptyMessage": "Ihrem Konto sind noch keine Boote zugeordnet.",
@@ -1439,6 +1457,7 @@
       "documents": {
         "title": "Dokumente",
         "subtitle": "PDFs und relevante Dokumente",
+        "listOverview": "Rechnungs-PDFs und andere Dokumente herunterladen",
         "empty": "Noch keine Dokumente",
         "emptyMessage": "Dokumente werden hier automatisch angezeigt, sobald sie verfügbar sind.",
         "loading": "Dokumente laden",
@@ -1454,6 +1473,7 @@
       "messages": {
         "title": "Nachrichten",
         "subtitle": "Benachrichtigungen und Nachrichten von Krekelberg",
+        "listOverview": "Posteingang mit Benachrichtigungen, Updates und Erinnerungen",
         "loading": "Nachrichten laden",
         "empty": "Keine Nachrichten",
         "emptyMessage": "Sie haben derzeit keine Nachrichten in Ihrem Posteingang.",
@@ -1476,6 +1496,7 @@
       "settings": {
         "title": "Portal-Einstellungen",
         "subtitle": "Kontenübersicht und Sicherheitsstatus",
+        "listOverview": "Persönliche Daten und Einstellungen",
         "loading": "Konto laden",
         "myDetails": "Meine Daten",
         "summary": "Zusammenfassung",
@@ -1547,7 +1568,14 @@
         "status": "Status"
       },
       "toasts": {
-        "createFailed": "Rechnungserstellung fehlgeschlagen"
+        "createFailed": "Rechnungserstellung fehlgeschlagen",
+        "created": "Rechnung erstellt"
+      },
+      "selectCustomer": "Kunden auswählen",
+      "modal": {
+        "title": "Neue Rechnung",
+        "subtitle": "Wählen Sie einen Kunden für eine manuelle Rechnung.",
+        "noCustomers": "Keine Kunden gefunden. Suche anpassen oder zuerst einen Kunden anlegen."
       }
     },
     "invoiceDetail": {
@@ -1768,6 +1796,284 @@
         "mollieTestSuccess": "Mollie-Test erfolgreich",
         "paymentsSaved": "Zahlungseinstellungen gespeichert",
         "localesSaved": "Spracheinstellungen gespeichert"
+      }
+    },
+    "appointments": {
+      "title": "Termine",
+      "subtitle": "Krantermine, Bestätigungen und Status verwalten",
+      "loading": "Termine laden",
+      "filterStatus": "Nach Status filtern",
+      "allStatuses": "Alle Status",
+      "statusPending": "Ausstehend",
+      "statusConfirmed": "Bestätigt",
+      "statusStarted": "Gestartet",
+      "statusCompleted": "Abgeschlossen",
+      "statusCancelled": "Storniert",
+      "emptyTitle": "Keine Termine",
+      "emptyMessage": "Noch keine Termine gefunden.",
+      "confirm": "Bestätigen",
+      "complete": "Abschließen",
+      "cancel": "Stornieren",
+      "confirmCancel": "Diesen Termin stornieren?",
+      "cancelReason": "Über Admin storniert",
+      "total": "{count} Termine",
+      "today": "Heute",
+      "listOverview": "Alle Krantermine filtern und verwalten",
+      "columns": {
+        "date": "Datum",
+        "time": "Uhrzeit",
+        "boat": "Boot",
+        "services": "Leistungen",
+        "status": "Status"
+      },
+      "toasts": {
+        "confirmed": "Termin bestätigt",
+        "cancelled": "Termin storniert",
+        "completed": "Termin abgeschlossen"
+      }
+    },
+    "products": {
+      "title": "Produkte",
+      "subtitle": "Produktkatalog für Kasse und Rechnungen verwalten",
+      "new": "Neues Produkt",
+      "searchPlaceholder": "Nach Code oder Name suchen",
+      "loading": "Produkte laden",
+      "emptyTitle": "Keine Produkte",
+      "emptyMessage": "Produkte für die Kasse hinzufügen.",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "confirmDelete": "Produkt löschen?",
+      "total": "{count} Produkte",
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "category": "Kategorie",
+        "price": "Preis",
+        "vat": "MwSt",
+        "status": "Status"
+      },
+      "fields": {
+        "priceExcl": "Preis exkl. MwSt"
+      },
+      "modal": {
+        "title": "Neues Produkt",
+        "subtitle": "Produkt zum Katalog hinzufügen."
+      },
+      "toasts": {
+        "created": "Produkt erstellt",
+        "createFailed": "Erstellen fehlgeschlagen",
+        "deleted": "Produkt gelöscht",
+        "deleteFailed": "Löschen fehlgeschlagen"
+      }
+    },
+    "payments": {
+      "title": "Zahlungen",
+      "subtitle": "Übersicht der Mollie- und Kassenzahlungen",
+      "searchPlaceholder": "Nach Kunde oder Status suchen",
+      "loading": "Zahlungen laden",
+      "emptyTitle": "Keine Zahlungen",
+      "emptyMessage": "Noch keine Zahlungen gefunden.",
+      "reconcile": "Abstimmen",
+      "reconciled": "Abgestimmt",
+      "confirmReconcile": "Möchten Sie diese Zahlung wirklich abstimmen?",
+      "total": "{count} Zahlungen",
+      "columns": {
+        "date": "Datum",
+        "customer": "Kunde",
+        "method": "Methode",
+        "amount": "Betrag",
+        "status": "Status"
+      },
+      "toasts": {
+        "reconciled": "Zahlung abgestimmt"
+      }
+    },
+    "users": {
+      "title": "Benutzer",
+      "subtitle": "Staff- und Admin-Konten verwalten",
+      "new": "Neuer Benutzer",
+      "loading": "Benutzer laden",
+      "emptyTitle": "Keine Benutzer",
+      "emptyMessage": "Neuen Benutzer registrieren.",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "total": "{count} Benutzer",
+      "columns": {
+        "user": "Benutzer",
+        "role": "Rolle",
+        "status": "Status",
+        "lastLogin": "Letzter Login"
+      },
+      "fields": {
+        "password": "Passwort"
+      },
+      "modal": {
+        "title": "Neuer Benutzer",
+        "subtitle": "Staff- oder Admin-Konto anlegen."
+      },
+      "toasts": {
+        "created": "Benutzer erstellt",
+        "createFailed": "Erstellen fehlgeschlagen",
+        "activated": "Benutzer aktiviert",
+        "deactivated": "Benutzer deaktiviert"
+      }
+    },
+    "calendar": {
+      "title": "Kalender",
+      "subtitle": "Öffnungszeiten, Ausnahmen und Bootstandorte",
+      "loading": "Kalender laden",
+      "regularHours": "Reguläre Öffnungszeiten",
+      "exceptions": "Ausnahmen",
+      "lunch": "Mittagspause",
+      "locations": "Bootstandorte",
+      "closed": "Geschlossen",
+      "open": "Offen",
+      "blocked": "Gesperrt",
+      "newLocation": "Neuer Standort",
+      "noRegular": "Keine regulären Zeiten",
+      "noRegularMessage": "Noch keine regulären Öffnungszeiten konfiguriert.",
+      "noExceptions": "Keine Ausnahmen",
+      "noExceptionsMessage": "Noch keine Kalenderausnahmen konfiguriert.",
+      "noLunch": "Keine Mittagspause konfiguriert",
+      "loadingLocations": "Standorte laden",
+      "noLocations": "Keine Standorte",
+      "noLocationsMessage": "Bootstandorte für die Planung hinzufügen.",
+      "weekOverview": "Wochenübersicht mit Öffnungszeiten und Mittagspause",
+      "today": "Heute",
+      "exceptionsOverview": "Sondertage und Feiertage",
+      "locationsOverview": "Kranstandorte auf dem Gelände",
+      "metrics": {
+        "openDays": "Offene Tage",
+        "openDaysHint": "Tage mit regulären Öffnungszeiten",
+        "exceptionsHint": "Geplante Ausnahmen",
+        "lunchSet": "Mittagspause aktiv",
+        "locationsHint": "{blocked} blockiert"
+      },
+      "columns": {
+        "code": "Code",
+        "section": "Bereich",
+        "difficulty": "Schwierigkeit",
+        "status": "Status"
+      },
+      "fields": {
+        "extraMinutes": "Extra Minuten",
+        "dayOfWeek": "Wochentag",
+        "openFrom": "Geöffnet ab",
+        "openUntil": "Geöffnet bis",
+        "closedDay": "An diesem Tag geschlossen",
+        "date": "Datum",
+        "label": "Bezeichnung",
+        "notes": "Notizen"
+      },
+      "locationModal": {
+        "title": "Neuer Bootstandort",
+        "subtitle": "Standortcode für Kranplanung hinzufügen."
+      },
+      "editLocationModal": {
+        "title": "Standort bearbeiten",
+        "subtitle": "Standorte sperren oder Schwierigkeit anpassen."
+      },
+      "regularModal": {
+        "title": "Reguläre Öffnungszeiten",
+        "subtitle": "Öffnungszeiten pro Wochentag festlegen."
+      },
+      "exceptionModal": {
+        "title": "Ausnahme hinzufügen",
+        "subtitle": "Bestimmten Tag schließen oder Zeiten anpassen."
+      },
+      "lunchModal": {
+        "title": "Mittagspause festlegen",
+        "subtitle": "Zeitblock ohne Terminplanung."
+      },
+      "actions": {
+        "setRegular": "Zeiten festlegen",
+        "addException": "Ausnahme",
+        "setLunch": "Mittagspause",
+        "edit": "Bearbeiten",
+        "block": "Sperren",
+        "unblock": "Entsperren"
+      },
+      "days": {
+        "0": "Sonntag",
+        "1": "Montag",
+        "2": "Dienstag",
+        "3": "Mittwoch",
+        "4": "Donnerstag",
+        "5": "Freitag",
+        "6": "Samstag"
+      },
+      "toasts": {
+        "locationCreated": "Standort erstellt",
+        "locationUpdated": "Standort aktualisiert",
+        "regularSaved": "Öffnungszeiten gespeichert",
+        "exceptionSaved": "Ausnahme gespeichert",
+        "lunchSaved": "Mittagspause gespeichert"
+      }
+    },
+    "system": {
+      "title": "System",
+      "subtitle": "Health Checks und Reparatur-Tools für Admins",
+      "refresh": "Aktualisieren",
+      "loadingHealth": "Health-Status laden",
+      "checks": {
+        "overview": "Übersicht",
+        "database": "Datenbank",
+        "queue": "Queue",
+        "mollie": "Mollie",
+        "mail": "Mail",
+        "storage": "Storage",
+        "webhooks": "Webhooks"
+      },
+      "repair": {
+        "payments": "Zahlungen",
+        "webhooks": "Webhooks",
+        "sync": "Sync-Konflikte",
+        "invoices": "Rechnungen",
+        "customers": "Kunden",
+        "idempotency": "Idempotency",
+        "mismatchedCount": "{count} abweichende Zahlungen",
+        "failedWebhooksCount": "{count} fehlgeschlagene Webhooks",
+        "conflictsCount": "{count} Sync-Konflikte",
+        "syncMollie": "Mollie-Status synchronisieren",
+        "replay": "Wiederholen",
+        "retryWebhook": "Webhook erneut",
+        "resendEmail": "E-Mail erneut senden",
+        "regeneratePdf": "PDF neu generieren",
+        "mergeCustomers": "Kunden zusammenführen",
+        "resolveKeepServer": "Serverversion behalten",
+        "resolveUseClient": "Clientversion verwenden",
+        "resolveConflictTitle": "Sync-Konflikt lösen",
+        "resolveConflictMessage": "Geben Sie einen Grund für diese Lösung an (mind. 5 Zeichen).",
+        "lookupIdempotency": "Nachschlagen"
+      },
+      "fields": {
+        "invoiceId": "Rechnungs-ID",
+        "paymentId": "Zahlungs-ID",
+        "mainCustomerId": "Hauptkunden-ID",
+        "duplicateCustomerId": "Duplikat-Kunden-ID",
+        "idempotencyKey": "Idempotency-Key",
+        "reason": "Grund (min. 5 Zeichen)"
+      },
+      "toasts": {
+        "actionDone": "Aktion ausgeführt",
+        "conflictResolved": "Konflikt gelöst",
+        "customersMerged": "Kunden zusammengeführt"
+      }
+    },
+    "wallet": {
+      "title": "Wallet",
+      "balanceHint": "Verfügbares Guthaben für diesen Kunden",
+      "credit": "Guthaben hinzufügen",
+      "defaultCreditDescription": "Manuelle Gutschrift",
+      "creditModal": {
+        "title": "Guthaben hinzufügen",
+        "amount": "Betrag (EUR)",
+        "description": "Beschreibung"
+      },
+      "toasts": {
+        "credited": "Guthaben hinzugefügt"
       }
     }
   }

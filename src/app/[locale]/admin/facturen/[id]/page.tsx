@@ -3,12 +3,12 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { CreditCard, Mail, Printer, Receipt, RefreshCw, Send, XCircle } from 'lucide-react';
+import { CreditCard, Mail, Printer, Receipt, RefreshCw, Send, User, Users, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
   AdminDetailGrid,
-  AdminPanel,
+  AdminSectionCard,
   AdminStatusStrip,
   AdminTable,
   AdminTableCard,
@@ -198,13 +198,14 @@ export default function InvoiceDetailPage() {
             />
 
             <div className="bento-grid lg:grid-cols-3">
-              <AdminPanel
-                className="lg:col-span-2 !p-0"
+              <AdminSectionCard
+                className="lg:col-span-2"
                 title={t('adminNew.invoiceDetail.overviewTitle')}
                 description={`${t('adminNew.invoiceDetail.source')}: ${invoice.source}`}
-                action={<InvoiceStatusBadge status={invoice.status} />}
+                icon={Receipt}
+                action={<InvoiceStatusBadge status={invoice.status} isOverdue={invoice.is_overdue} />}
               >
-                <div className="space-y-5 px-5 pb-5">
+                <div className="space-y-5">
                   <AdminDetailGrid
                     items={[
                       {
@@ -267,9 +268,13 @@ export default function InvoiceDetailPage() {
                     </AdminTable>
                   </AdminTableCard>
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
 
-              <AdminPanel title={t('adminNew.invoiceDetail.customerSnapshot')}>
+              <AdminSectionCard
+                title={t('adminNew.invoiceDetail.customerSnapshot')}
+                description={invoice.customer?.email ?? undefined}
+                icon={User}
+              >
                 <div className="space-y-4">
                   <div>
                     <div className="text-sm font-semibold text-navy-900">
@@ -374,11 +379,15 @@ export default function InvoiceDetailPage() {
                     </Button>
                   </div>
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
             </div>
 
             <div className="bento-grid lg:grid-cols-2">
-              <AdminPanel title={t('adminNew.invoiceDetail.paymentTimeline')}>
+              <AdminSectionCard
+                title={t('adminNew.invoiceDetail.paymentTimeline')}
+                description={t('adminNew.invoiceDetail.noPayments')}
+                icon={CreditCard}
+              >
                 <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {(invoice.payments ?? []).length ? (
                     (invoice.payments ?? []).map((payment) => (
@@ -411,9 +420,13 @@ export default function InvoiceDetailPage() {
                     </div>
                   )}
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
 
-              <AdminPanel title={t('adminNew.invoiceDetail.reminderHistory')}>
+              <AdminSectionCard
+                title={t('adminNew.invoiceDetail.reminderHistory')}
+                description={t('adminNew.invoiceDetail.noReminders')}
+                icon={Mail}
+              >
                 <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {(data.data?.reminders ?? []).length ? (
                     data.data?.reminders.map((reminder) => (
@@ -438,11 +451,15 @@ export default function InvoiceDetailPage() {
                     </div>
                   )}
                 </div>
-              </AdminPanel>
+              </AdminSectionCard>
             </div>
 
             <div className="bento-grid lg:grid-cols-2">
-              <AdminPanel title={t('adminNew.invoiceDetail.customerSnapshot')}>
+              <AdminSectionCard
+                title={t('adminNew.invoiceDetail.customerSnapshot')}
+                description={t('adminNew.invoiceDetail.subtitle')}
+                icon={Users}
+              >
                 <AdminDetailGrid
                   items={[
                     {
@@ -463,9 +480,13 @@ export default function InvoiceDetailPage() {
                     },
                   ]}
                 />
-              </AdminPanel>
+              </AdminSectionCard>
 
-              <AdminPanel title={t('adminNew.invoiceDetail.companySnapshot')}>
+              <AdminSectionCard
+                title={t('adminNew.invoiceDetail.companySnapshot')}
+                description={t('adminNew.invoiceDetail.legal.title')}
+                icon={Receipt}
+              >
                 <AdminDetailGrid
                   items={[
                     {
@@ -486,7 +507,7 @@ export default function InvoiceDetailPage() {
                     },
                   ]}
                 />
-              </AdminPanel>
+              </AdminSectionCard>
             </div>
 
             <Link

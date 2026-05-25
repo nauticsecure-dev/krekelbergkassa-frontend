@@ -5,23 +5,33 @@ import { usePathname } from 'next/navigation';
 import {
   BarChart3,
   Calendar,
+  CalendarClock,
   CreditCard,
-  FileText,
   HelpCircle,
   Home,
   LogOut,
+  Package,
   Settings,
   ShieldCheck,
   ShoppingCart,
   Ship,
   Users,
   Warehouse,
+  Wrench,
 } from 'lucide-react';
 import { useIntl } from '@/i18n/IntlProvider';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/cn';
+
+interface NavItem {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  badge?: string;
+  roles?: string[];
+}
 
 interface Props {
   variant?: 'desktop' | 'mobile';
@@ -33,20 +43,27 @@ export function AdminSidebar({ variant = 'desktop' }: Props) {
   const { user, signOut } = useAuth();
   const role = user?.role ?? 'staff';
 
-  const main = [
+  const main: NavItem[] = [
     { href: `/${locale}/admin`, icon: Home, label: t('admin.sidebar.dashboard') },
     { href: `/${locale}/admin/kassa`, icon: ShoppingCart, label: t('admin.sidebar.kassa'), badge: 'POS' },
+    { href: `/${locale}/admin/afspraken`, icon: CalendarClock, label: t('admin.sidebar.appointments') },
     { href: `/${locale}/admin/calculator`, icon: Calendar, label: t('adminNew.sidebar.calculator') },
     { href: `/${locale}/admin/stalling`, icon: Warehouse, label: t('admin.sidebar.stalling') },
     { href: `/${locale}/admin/klanten`, icon: Users, label: t('admin.sidebar.customers') },
     { href: `/${locale}/admin/boten`, icon: Ship, label: t('admin.sidebar.boats') },
     { href: `/${locale}/admin/facturen`, icon: CreditCard, label: t('admin.sidebar.invoices') },
-    { href: `/${locale}/admin/contracten`, icon: FileText, label: t('admin.sidebar.contracts'), roles: ['admin', 'manager'] },
+    { href: `/${locale}/admin/betalingen`, icon: CreditCard, label: t('admin.sidebar.payments') },
+    { href: `/${locale}/admin/producten`, icon: Package, label: t('admin.sidebar.products') },
+    // Template editor — no API yet; use /admin/stalling for live stalling contracts.
+    // { href: `/${locale}/admin/contracten`, icon: FileText, label: t('admin.sidebar.contracts'), roles: ['admin', 'manager'] },
   ];
 
-  const secondary = [
+  const secondary: NavItem[] = [
+    { href: `/${locale}/admin/kalender`, icon: Calendar, label: t('admin.sidebar.calendarAdmin') },
+    { href: `/${locale}/admin/gebruikers`, icon: Users, label: t('admin.sidebar.users'), roles: ['admin', 'manager'] },
     { href: `/${locale}/admin/audit`, icon: ShieldCheck, label: t('admin.sidebar.audit'), roles: ['admin', 'manager'] },
     { href: `/${locale}/admin/sync`, icon: BarChart3, label: t('adminNew.sidebar.sync') },
+    { href: `/${locale}/admin/systeem`, icon: Wrench, label: t('admin.sidebar.system'), roles: ['admin'] },
     { href: `/${locale}/admin/instellingen`, icon: Settings, label: t('admin.sidebar.settings') },
     { href: `/${locale}/faq`, icon: HelpCircle, label: t('admin.sidebar.help') },
   ];

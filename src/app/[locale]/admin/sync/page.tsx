@@ -8,11 +8,14 @@ import {
   Trash2,
   Wifi,
   WifiOff,
+  Smartphone,
+  CloudUpload,
 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
-  AdminPanel,
+  AdminListItem,
+  AdminSectionCard,
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -132,9 +135,11 @@ export default function SyncStatusPage() {
         ]}
       />
 
-      <AdminContent>
-        <AdminPanel
+      <AdminContent className="space-y-5">
+        <AdminSectionCard
           title={t('adminNew.sync.pendingChanges')}
+          description={t('adminNew.sync.subtitle')}
+          icon={CloudUpload}
           action={
             items.length ? (
               <Button
@@ -153,75 +158,73 @@ export default function SyncStatusPage() {
             ) : null
           }
         >
-          <div className="divide-y divide-navy-100 rounded-xl border border-navy-100">
-            {items.length ? (
-              items.map((item) => (
-                <div
+          {items.length ? (
+            <div className="space-y-2">
+              {items.map((item) => (
+                <AdminListItem
                   key={item.id}
-                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm"
-                >
-                  <div>
-                    <div className="font-medium text-navy-900">
-                      {item.method} {item.endpoint}
-                    </div>
-                    <div className="text-xs text-navy-500">
-                      {new Date(item.createdAt).toLocaleString(dateLocale)}
-                    </div>
-                    {item.error ? <div className="text-xs text-rose-600">{item.error}</div> : null}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge tone={item.status === 'failed' ? 'danger' : 'warning'}>{item.status}</Badge>
-                    <Button variant="outline" size="sm" onClick={() => void retryItem(item)}>
-                      {t('adminNew.sync.retry')}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        void (async () => {
-                          await removeOfflineChange(item.id);
-                          await load();
-                        })()
-                      }
-                    >
-                      {t('adminNew.common.delete')}
-                    </Button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="px-4 py-8 text-center text-sm text-navy-500">{t('adminNew.sync.noPending')}</div>
-            )}
-          </div>
-        </AdminPanel>
+                  title={`${item.method} ${item.endpoint}`}
+                  subtitle={new Date(item.createdAt).toLocaleString(dateLocale)}
+                  error={item.error}
+                  actions={
+                    <>
+                      <Badge tone={item.status === 'failed' ? 'danger' : 'warning'}>{item.status}</Badge>
+                      <Button variant="outline" size="sm" onClick={() => void retryItem(item)}>
+                        {t('adminNew.sync.retry')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          void (async () => {
+                            await removeOfflineChange(item.id);
+                            await load();
+                          })()
+                        }
+                      >
+                        {t('adminNew.common.delete')}
+                      </Button>
+                    </>
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-6 py-10 text-center text-sm text-navy-500">
+              {t('adminNew.sync.noPending')}
+            </div>
+          )}
+        </AdminSectionCard>
 
-        <AdminPanel title={t('adminNew.sync.devices')}>
-          <div className="divide-y divide-navy-100 rounded-xl border border-navy-100">
-            {syncDevices.length ? (
-              syncDevices.map((device, idx) => (
-                <div
+        <AdminSectionCard
+          title={t('adminNew.sync.devices')}
+          description={t('adminNew.sync.devicesHint')}
+          icon={Smartphone}
+        >
+          {syncDevices.length ? (
+            <div className="space-y-2">
+              {syncDevices.map((device, idx) => (
+                <AdminListItem
                   key={device.device_id ?? idx}
-                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm"
-                >
-                  <div>
-                    <div className="font-medium text-navy-900">
-                      {device.device_name ?? device.device_id ?? `Device ${idx + 1}`}
-                    </div>
-                    <div className="text-xs text-navy-500">ID: {device.device_id ?? '—'}</div>
-                  </div>
-                  <div className="text-xs text-navy-500">
-                    {t('adminNew.sync.lastSync')}:{' '}
-                    {device.last_sync_at
-                      ? new Date(device.last_sync_at).toLocaleString(dateLocale)
-                      : '—'}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="px-4 py-8 text-center text-sm text-navy-500">{t('adminNew.sync.noDevices')}</div>
-            )}
-          </div>
-        </AdminPanel>
+                  title={device.device_name ?? device.device_id ?? `Device ${idx + 1}`}
+                  subtitle={`ID: ${device.device_id ?? '—'}`}
+                  meta={
+                    <>
+                      {t('adminNew.sync.lastSync')}:{' '}
+                      {device.last_sync_at
+                        ? new Date(device.last_sync_at).toLocaleString(dateLocale)
+                        : '—'}
+                    </>
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-6 py-10 text-center text-sm text-navy-500">
+              {t('adminNew.sync.noDevices')}
+            </div>
+          )}
+        </AdminSectionCard>
       </AdminContent>
     </>
   );

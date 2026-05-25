@@ -11,8 +11,8 @@ import { PortalPageHeader } from '@/components/portal/PortalShell';
 import {
   PortalContent,
   PortalInteractiveRow,
+  PortalSectionCard,
 } from '@/components/portal/PortalUi';
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { PaymentStatusBadge } from '@/components/admin/StatusBadge';
@@ -67,25 +67,24 @@ export default function PortalDocumentsPage() {
       />
 
       <PortalContent>
+        <PortalSectionCard
+          title={t('adminNew.portal.documents.title')}
+          description={t('adminNew.portal.documents.listOverview')}
+          icon={FolderOpen}
+        >
         {invoices.loading ? (
-          <Card className="overflow-hidden">
-            <LoadingState label={t('adminNew.portal.documents.loading')} variant="list" />
-          </Card>
+          <LoadingState label={t('adminNew.portal.documents.loading')} variant="list" />
         ) : null}
 
         {!invoices.loading && invoices.error ? (
-          <Card>
-            <ErrorState message={invoices.error} onRetry={() => void invoices.refetch()} />
-          </Card>
+          <ErrorState message={invoices.error} onRetry={() => void invoices.refetch()} />
         ) : null}
 
         {!invoices.loading && !invoices.error && documents.length === 0 ? (
-          <Card>
-            <EmptyState
-              title={t('adminNew.portal.documents.empty')}
-              message={t('adminNew.portal.documents.emptyMessage')}
-            />
-          </Card>
+          <EmptyState
+            title={t('adminNew.portal.documents.empty')}
+            message={t('adminNew.portal.documents.emptyMessage')}
+          />
         ) : null}
 
         {!invoices.loading && !invoices.error && documents.length > 0 ? (
@@ -120,9 +119,10 @@ export default function PortalDocumentsPage() {
             ))}
           </div>
         ) : null}
+        </PortalSectionCard>
 
         {!invoices.loading && !invoices.error && documents.length > 0 ? (
-          <Card className="bg-gradient-to-tr from-sand-50 to-white p-5">
+          <div className="surface-float rounded-2xl border border-navy-100/60 bg-gradient-to-tr from-sand-50 to-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold text-navy-900">
@@ -136,7 +136,7 @@ export default function PortalDocumentsPage() {
                 </Button>
               </Link>
             </div>
-          </Card>
+          </div>
         ) : null}
       </PortalContent>
     </>

@@ -1,13 +1,21 @@
 import { api } from '@/lib/api';
 import { getDeviceId } from '@/lib/device';
 import type {
+  AdminUser,
+  AdminWallet,
   AppSettings,
   AuditLog,
   Boat,
+  BoatLocation,
+  BookingCalendarResponse,
+  BookingSlotsResponse,
+  CalendarConfig,
   Customer,
+  HealthCheckResult,
   Invoice,
   InvoiceLine,
   KassaCheckoutResponse,
+  OpeningHour,
   PaginatedResponse,
   Payment,
   Appointment,
@@ -580,6 +588,11 @@ export const syncService = {
     const res = await api<unknown>('/v1/admin/sync-log/conflicts');
     return asArray<Record<string, unknown>>(res);
   },
+  pull(device_id: string, last_sync_at?: string | null) {
+    return api<Record<string, unknown>>('/v1/sync/pull', {
+      query: { device_id, last_sync_at: last_sync_at ?? undefined },
+    });
+  },
 };
 
 export const auditService = {
@@ -743,6 +756,339 @@ export const portalService = {
       auth: false,
       queueWhenOffline: true,
     });
+  },
+};
+
+export const appointmentsService = {
+  async list(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/appointments', { query });
+    return asPaginated<Appointment>(res);
+  },
+  get(id: string) {
+    return api<Appointment>(`/v1/appointments/${id}`);
+  },
+  confirm(id: string) {
+    return api<Appointment>(`/v1/appointments/${id}/confirm`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  updateStatus(
+    id: string,
+    payload: { status: string; staff_note?: string | null; photo_id?: string | null }
+  ) {
+    return api<Appointment>(`/v1/appointments/${id}/status`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  cancel(id: string, reason: string) {
+    return api<Appointment>(`/v1/appointments/${id}/cancel`, {
+      method: 'POST',
+      body: { reason },
+      queueWhenOffline: true,
+    });
+  },
+};
+
+export const bookingService = {
+  slots(params: { date: string; length_cm: number; service_codes: string[] }) {
+    return api<BookingSlotsResponse>('/v1/booking/slots', {
+      auth: false,
+      query: {
+        date: params.date,
+        length_cm: params.length_cm,
+        'service_codes[]': params.service_codes,
+      },
+    });
+  },
+  calendar(from: string, to: string) {
+    return api<BookingCalendarResponse>('/v1/booking/calendar', {
+      auth: false,
+      query: { from, to },
+    });
+  },
+  book(payload: {
+    name: string;
+    email: string;
+    phone?: string | null;
+    locale?: string | null;
+    date: string;
+    start_time: string;
+    location_code?: string | null;
+    notes?: string | null;
+    address?: {
+      street?: string | null;
+      postal_code?: string | null;
+      city?: string | null;
+      country?: string | null;
+    };
+    boat: {
+      name: string;
+      type?: string | null;
+      length_m: number;
+      width_m?: number | null;
+      registration_number?: string | null;
+    };
+    service_codes: string[];
+  }) {
+    return api<unknown>('/v1/booking', {
+      method: 'POST',
+      auth: false,
+      body: payload,
+    });
+  },
+};
+
+export const calendarService = {
+  get() {
+    return api<CalendarConfig>('/v1/admin/calendar');
+  },
+  setRegular(payload: {
+    day_of_week: number;
+    open_from?: string | null;
+    open_until?: string | null;
+    is_closed?: boolean;
+  }) {
+    return api<OpeningHour>('/v1/admin/calendar/regular', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  setException(payload: {
+    date: string;
+    open_from?: string | null;
+    open_until?: string | null;
+    is_closed?: boolean;
+    label?: string | null;
+  }) {
+    return api<OpeningHour>('/v1/admin/calendar/exception', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  setLunch(payload: { from: string; until: string }) {
+    return api<OpeningHour>('/v1/admin/calendar/lunch', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  async locations() {
+    const res = await api<unknown>('/v1/admin/calendar/locations');
+    return asArray<BoatLocation>(res);
+  },
+  createLocation(payload: Record<string, unknown>) {
+    return api<BoatLocation>('/v1/admin/calendar/locations', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  updateLocation(id: string, payload: Record<string, unknown>) {
+    return api<BoatLocation>(`/v1/admin/calendar/locations/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+};
+
+export const usersService = {
+  async list(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/admin/users', { query });
+    return asPaginated<AdminUser>(res);
+  },
+  get(id: string) {
+    return api<AdminUser>(`/v1/admin/users/${id}`);
+  },
+  register(payload: {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+  }) {
+    return api<AdminUser>('/v1/admin/users/register', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<AdminUser>(`/v1/admin/users/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  remove(id: string) {
+    return api<{ message: string }>(`/v1/admin/users/${id}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
+  activate(id: string) {
+    return api<AdminUser>(`/v1/admin/users/${id}/activate`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  deactivate(id: string) {
+    return api<AdminUser>(`/v1/admin/users/${id}/deactivate`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+};
+
+export const walletsService = {
+  get(customerId: string, query?: Record<string, string | number | undefined>) {
+    return api<AdminWallet>(`/v1/admin/wallets/${customerId}`, { query });
+  },
+  credit(
+    customerId: string,
+    payload: { amount_cents: number; description: string; notes?: string | null }
+  ) {
+    return api<AdminWallet>(`/v1/admin/wallets/${customerId}/credit`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  debit(
+    customerId: string,
+    payload: { amount_cents: number; description: string; notes?: string | null }
+  ) {
+    return api<AdminWallet>(`/v1/admin/wallets/${customerId}/debit`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  applyToInvoice(customerId: string, payload: { invoice_id: string; amount_cents?: number }) {
+    return api<Record<string, unknown>>(
+      `/v1/admin/wallets/${customerId}/apply-to-invoice`,
+      {
+        method: 'POST',
+        body: payload,
+        queueWhenOffline: true,
+      }
+    );
+  },
+  adjust(
+    customerId: string,
+    payload: { amount_cents: number; description: string; notes?: string | null }
+  ) {
+    return api<AdminWallet>(`/v1/admin/wallets/${customerId}/adjust`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+};
+
+export const adminHealthService = {
+  overview() {
+    return api<HealthCheckResult>('/v1/admin/health');
+  },
+  database() {
+    return api<HealthCheckResult>('/v1/admin/health/database');
+  },
+  queue() {
+    return api<HealthCheckResult>('/v1/admin/health/queue');
+  },
+  mollie() {
+    return api<HealthCheckResult>('/v1/admin/health/mollie');
+  },
+  mail() {
+    return api<HealthCheckResult>('/v1/admin/health/mail');
+  },
+  storage() {
+    return api<HealthCheckResult>('/v1/admin/health/storage');
+  },
+  webhooks() {
+    return api<HealthCheckResult>('/v1/admin/health/webhooks');
+  },
+};
+
+export const repairService = {
+  resendInvoiceEmail(invoiceId: string) {
+    return api<Record<string, unknown>>(
+      `/v1/admin/repair/invoices/${invoiceId}/resend-email`,
+      { method: 'POST' }
+    );
+  },
+  regenerateInvoicePdf(invoiceId: string) {
+    return api<Record<string, unknown>>(
+      `/v1/admin/repair/invoices/${invoiceId}/regenerate-pdf`,
+      { method: 'POST' }
+    );
+  },
+  syncMollieStatus() {
+    return api<Record<string, unknown>>('/v1/admin/repair/payments/sync-mollie-status', {
+      method: 'POST',
+    });
+  },
+  async mismatchedPayments() {
+    const res = await api<unknown>('/v1/admin/repair/payments/mismatched');
+    return asArray<Payment>(res);
+  },
+  retryPaymentWebhook(paymentId: string) {
+    return api<Record<string, unknown>>(
+      `/v1/admin/repair/payments/${paymentId}/retry-webhook`,
+      { method: 'POST' }
+    );
+  },
+  async failedWebhooks() {
+    const res = await api<unknown>('/v1/admin/repair/webhooks/failed');
+    return asArray<Record<string, unknown>>(res);
+  },
+  replayWebhook(webhookId: string) {
+    return api<Record<string, unknown>>(
+      `/v1/admin/repair/webhooks/${webhookId}/replay`,
+      { method: 'POST' }
+    );
+  },
+  recalculatePaidUntil(contractId: string) {
+    return api<StallingContract>(
+      `/v1/admin/repair/contracts/${contractId}/recalculate-paid-until`,
+      { method: 'POST' }
+    );
+  },
+  mergeCustomers(payload: {
+    main_customer_id: string;
+    duplicate_customer_id: string;
+    reason: string;
+  }) {
+    return api<Record<string, unknown>>('/v1/admin/repair/customers/merge', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+  async syncBatches() {
+    const res = await api<unknown>('/v1/admin/repair/sync/batches');
+    return asArray<Record<string, unknown>>(res);
+  },
+  async syncConflicts() {
+    const res = await api<unknown>('/v1/admin/repair/sync/conflicts');
+    return asArray<Record<string, unknown>>(res);
+  },
+  resolveSyncConflict(
+    syncChangeId: string,
+    payload: { resolution: 'keep_server' | 'use_client'; reason: string }
+  ) {
+    return api<Record<string, unknown>>(
+      `/v1/admin/repair/sync/conflicts/${syncChangeId}/resolve`,
+      { method: 'POST', body: payload }
+    );
+  },
+  idempotencyKey(key: string) {
+    return api<Record<string, unknown>>(
+      `/v1/admin/repair/sync/idempotency/${encodeURIComponent(key)}`
+    );
   },
 };
 
