@@ -495,7 +495,7 @@ function HealthMetric({
   label: string;
   check: HealthCheckResult;
   icon: LucideIcon;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
   const meta = healthStatusMeta(check.status);
   const statusLabel = t(`adminNew.system.status.${meta.kind}`);
