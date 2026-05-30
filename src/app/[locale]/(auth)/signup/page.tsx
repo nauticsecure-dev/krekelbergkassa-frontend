@@ -2,40 +2,24 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Eye, EyeOff, Lock, Mail, User2 } from "lucide-react";
+import { ArrowRight, Mail, Phone, User2 } from "lucide-react";
 import { useIntl } from "@/i18n/IntlProvider";
 import { Button } from "@/components/ui/Button";
-import { api, auth } from "@/lib/api";
-import { coerceLoginRole } from "@/components/auth/RoleTabs";
-
-type RegistrationKind = "private" | "business" | "partner";
+import { authService } from "@/lib/services";
+import { useToast } from "@/components/ui/ToastProvider";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 export default function SignupPage() {
-  return (
-    <React.Suspense fallback={<AuthFormFallback />}>
-      <SignupPageContent />
-    </React.Suspense>
-  );
-}
-
-function SignupPageContent() {
   const { t, locale } = useIntl();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const role = coerceLoginRole(searchParams.get("role"));
-  const kind: RegistrationKind =
-    role === "customer" ? "private" : role === "staff" ? "business" : "partner";
+  const { push } = useToast();
 
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
+  const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [confirm, setConfirm] = React.useState("");
-  const [showPass, setShowPass] = React.useState(false);
+  const [phone, setPhone] = React.useState("");
   const [terms, setTerms] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,26 +27,42 @@ function SignupPageContent() {
       setError(t("signup.errorTerms"));
       return;
     }
-    if (password !== confirm) {
-      setError(t("signupExt.passwordMismatch"));
-      return;
-    }
     setError(null);
     setLoading(true);
     try {
-      const res = await api<{ token: string }>("/auth/register", {
-        method: "POST",
-        body: { firstName, lastName, email, password, kind },
-        auth: false,
+      await authService.registerCustomer({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || null,
+        preferred_locale: locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL",
       });
-      auth.setSession(res.token);
-      router.push(`/${locale}/feed`);
+      setSuccess(true);
+      push({
+        tone: "success",
+        title: t("adminNew.auth.magicSentTitle"),
+        message: t("signupExt.checkEmail"),
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("signup.errorGeneric"));
+      setError(getApiErrorMessage(err, t("signup.errorGeneric")));
     } finally {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="text-center">
+        <h2 className="heading-display text-3xl text-navy-900">{t("signupExt.title")}</h2>
+        <p className="mt-4 text-sm leading-relaxed text-navy-600">{t("signupExt.checkEmail")}</p>
+        <Link
+          href={`/${locale}/login?role=customer`}
+          className="mt-6 inline-flex font-semibold text-marine-700 hover:text-marine-900"
+        >
+          {t("signup.loginInstead")} →
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -74,32 +74,21 @@ function SignupPageContent() {
       </p>
 
       <form onSubmit={submit} className="mt-5 space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Field
-            id="firstName"
-            label={t("signup.firstName")}
-            icon={<User2 className="h-4 w-4" />}
-          >
-            <input
-              id="firstName"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="auth-input"
-              required
-              autoComplete="given-name"
-            />
-          </Field>
-          <Field id="lastName" label={t("signup.lastName")}>
-            <input
-              id="lastName"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="auth-input !pl-3"
-              required
-              autoComplete="family-name"
-            />
-          </Field>
-        </div>
+        <Field
+          id="name"
+          label={t("signup.firstName")}
+          icon={<User2 className="h-4 w-4" />}
+        >
+          <input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="auth-input"
+            required
+            autoComplete="name"
+            placeholder={t("signupExt.fullNamePlaceholder")}
+          />
+        </Field>
 
         <Field
           id="email"
@@ -111,7 +100,7 @@ function SignupPageContent() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="naam@voorbeeld.nl"
+            placeholder={t("adminNew.auth.emailPlaceholder")}
             className="auth-input"
             required
             autoComplete="email"
@@ -119,51 +108,24 @@ function SignupPageContent() {
         </Field>
 
         <Field
-          id="password"
-          label={t("login.password")}
-          icon={<Lock className="h-4 w-4" />}
-          trailing={
-            <button
-              type="button"
-              onClick={() => setShowPass((v) => !v)}
-              className="text-navy-400 hover:text-navy-700"
-              aria-label="toggle"
-            >
-              {showPass ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
-          }
-          hint={t("signup.passwordHint")}
+          id="phone"
+          label={t("contactPage.phoneLabel")}
+          icon={<Phone className="h-4 w-4" />}
         >
           <input
-            id="password"
-            type={showPass ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             className="auth-input"
-            required
-            autoComplete="new-password"
+            autoComplete="tel"
+            placeholder={t("signupExt.phonePlaceholder")}
           />
         </Field>
 
-        <Field
-          id="confirm"
-          label={t("signupExt.confirmPassword")}
-          icon={<Lock className="h-4 w-4" />}
-        >
-          <input
-            id="confirm"
-            type={showPass ? "text" : "password"}
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            className="auth-input"
-            required
-            autoComplete="new-password"
-          />
-        </Field>
+        <div className="rounded-lg border border-marine-200 bg-marine-50 px-3 py-2 text-xs text-marine-800">
+          {t("adminNew.auth.magicInfo")}
+        </div>
 
         <label className="flex items-start gap-2 text-xs leading-relaxed text-navy-700">
           <input
@@ -211,7 +173,7 @@ function SignupPageContent() {
         <p className="pt-2 text-center text-sm text-navy-500">
           {t("signup.haveAccount")}{" "}
           <Link
-            href={`/${locale}/login?role=${role}`}
+            href={`/${locale}/login?role=customer`}
             className="font-semibold text-navy-900 hover:text-marine-700"
           >
             {t("signup.loginInstead")}
@@ -222,33 +184,15 @@ function SignupPageContent() {
   );
 }
 
-function AuthFormFallback() {
-  return (
-    <div className="space-y-4">
-      <span className="block h-8 w-56 animate-pulse rounded bg-navy-100" />
-      <span className="block h-4 w-full animate-pulse rounded bg-navy-100" />
-      <div className="mt-6 space-y-3">
-        <span className="block h-10 w-full animate-pulse rounded-xl bg-navy-100" />
-        <span className="block h-10 w-full animate-pulse rounded-xl bg-navy-100" />
-        <span className="block h-10 w-full animate-pulse rounded-xl bg-navy-100" />
-      </div>
-    </div>
-  );
-}
-
 function Field({
   id,
   label,
   icon,
-  trailing,
-  hint,
   children,
 }: {
   id: string;
   label: string;
   icon?: React.ReactNode;
-  trailing?: React.ReactNode;
-  hint?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -266,13 +210,7 @@ function Field({
           </span>
         ) : null}
         {children}
-        {trailing ? (
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
-            {trailing}
-          </span>
-        ) : null}
       </div>
-      {hint ? <p className="mt-1 text-[11px] text-navy-400">{hint}</p> : null}
     </div>
   );
 }

@@ -108,33 +108,21 @@ export default function ContactPage() {
                 {t("contactPage.hoursTitle")}
               </Badge>
               <div className="text-xs text-navy-500">
-                {t("contactPage.hoursHighSeason")}
+                {t("contactPage.hoursSubtitle")}
               </div>
             </div>
           </div>
           <HoursTable
             rows={[
-              { day: t("contactPage.monFri"), value: "08:00 – 17:00" },
-              { day: t("contactPage.sat"), value: "09:00 – 13:00" },
-              { day: t("contactPage.sun"), value: t("contactPage.closed") },
+              { day: t("contactPage.monday"), value: "09:00 – 17:30" },
+              { day: t("contactPage.tuesday"), value: "09:00 – 17:30" },
+              { day: t("contactPage.wednesday"), value: t("contactPage.closed") },
+              { day: t("contactPage.thursday"), value: "09:00 – 17:30" },
+              { day: t("contactPage.friday"), value: "09:00 – 17:30" },
+              { day: t("contactPage.saturday"), value: "10:00 – 17:00" },
+              { day: t("contactPage.sunday"), value: "10:00 – 17:00" },
             ]}
           />
-          <div className="my-5 h-px bg-navy-100" />
-          <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-            {t("contactPage.hoursLowSeason")}
-          </div>
-          <div className="mt-3">
-            <HoursTable
-              rows={[
-                { day: t("contactPage.monFri"), value: "08:30 – 16:30" },
-                {
-                  day: t("contactPage.sat"),
-                  value: t("contactPage.appointmentOnly"),
-                },
-                { day: t("contactPage.sun"), value: t("contactPage.closed") },
-              ]}
-            />
-          </div>
         </Card>
 
         <Card className="overflow-hidden p-0">

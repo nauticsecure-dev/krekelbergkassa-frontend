@@ -1,11 +1,15 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   CreditCard,
+  ExternalLink,
   Package,
   Plus,
+  QrCode,
   Receipt,
+  Settings,
   ShoppingCart,
   Trash2,
   UserPlus,
@@ -27,6 +31,8 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState, LoadingState } from "@/components/admin/DataState";
+import { AdminConfirmModal } from "@/components/admin/AdminConfirmModal";
+import { KassaAnalyticsDashboard } from "@/components/admin/KassaAnalyticsDashboard";
 import {
   customersService,
   kassaService,
@@ -35,7 +41,10 @@ import {
 } from "@/lib/services";
 import { useMutation, useQuery } from "@/lib/hooks/useAsync";
 import type { Product, PricingRule } from "@/lib/api-types";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, centsToEuro } from "@/lib/format";
+import { productPriceInclEuros } from "@/lib/products";
+import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useIntl } from "@/i18n/IntlProvider";
 import { useToast } from "@/components/ui/ToastProvider";
 import { getDeviceId } from "@/lib/device";
@@ -56,9 +65,19 @@ export default function KassaPage() {
   const [query, setQuery] = React.useState("");
   const [customerId, setCustomerId] = React.useState("");
   const [paymentMethod, setPaymentMethod] = React.useState("pin");
+  const [showSplitModal, setShowSplitModal] = React.useState(false);
+  const [showQrModal, setShowQrModal] = React.useState(false);
+  const [qrUrl, setQrUrl] = React.useState<string | null>(null);
+  const [splitPayments, setSplitPayments] = React.useState([
+    { method: "pin", amount: "" },
+    { method: "cash", amount: "" },
+  ]);
   const [cart, setCart] = React.useState<CartItem[]>([]);
   const [showCustomerModal, setShowCustomerModal] = React.useState(false);
   const [newCustomer, setNewCustomer] = React.useState({ name: "", email: "" });
+  const [checkoutConfirm, setCheckoutConfirm] = React.useState<
+    "standard" | "split" | "qr" | "on_account" | null
+  >(null);
 
   const productsQuery = useQuery(["products"], () =>
     productsService.list({ per_page: 200, active: true }),
@@ -69,9 +88,37 @@ export default function KassaPage() {
   const customersQuery = useQuery(["customers-kassa"], () =>
     customersService.list({ per_page: 100 }),
   );
-  const recentSales = useQuery(["kassa-recent"], () =>
-    kassaService.recentSales({}),
+  const [analyticsPeriod, setAnalyticsPeriod] = React.useState("7d");
+  const recentSales = useQuery(["kassa-recent", analyticsPeriod], () =>
+    kassaService.recentSales({ period: analyticsPeriod }).catch(() => []),
   );
+  const analyticsQuery = useQuery(["kassa-analytics", analyticsPeriod], async () => {
+    const [analytics, sales] = await Promise.all([
+      kassaService.analytics({ period: analyticsPeriod }).catch(() => null),
+      kassaService.recentSales({ period: analyticsPeriod }).catch(() => []),
+    ]);
+    return normalizeKassaAnalytics(
+      analytics as Record<string, unknown> | null,
+      sales,
+      locale === "en" ? "en-GB" : "nl-NL",
+    );
+  });
+
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && query.length >= 8 && /^\d+$/.test(query)) {
+        const match = (productsQuery.data?.data ?? []).find(
+          (p) => p.barcode === query || p.code === query,
+        );
+        if (match) {
+          addProduct(match);
+          setQuery("");
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [query, productsQuery.data?.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const createCustomer = useMutation(customersService.create);
   const checkout = useMutation(kassaService.checkout);
@@ -98,6 +145,8 @@ export default function KassaPage() {
         product.code,
         product.category,
         product.service_code,
+        product.barcode,
+        product.search_code,
       ]
         .filter(Boolean)
         .join(" ")
@@ -107,7 +156,9 @@ export default function KassaPage() {
   }, [productsQuery.data?.data, query]);
 
   const addProduct = (product: Product, rule?: PricingRule | null) => {
-    const unit = rule ? rule.price_incl_vat : product.price_incl_vat;
+    const unitCents = rule
+      ? rule.price_incl_vat
+      : Math.round(productPriceInclEuros(product) * 100) || product.price_incl_vat;
     const description = rule
       ? `${product.name} (${rule.range_from_cm}-${rule.range_to_cm} cm)`
       : product.name;
@@ -129,7 +180,7 @@ export default function KassaPage() {
           product_id: product.id,
           description,
           quantity: 1,
-          unit_price_cents: unit,
+          unit_price_cents: unitCents,
           vat_rate: Number(product.vat_rate ?? 21),
         },
       ];
@@ -155,6 +206,26 @@ export default function KassaPage() {
   const totalCents = subtotalCents;
   const localeTag = locale === "en" ? "en-GB" : "nl-NL";
 
+  const checkoutMethodLabel = (mode: NonNullable<typeof checkoutConfirm>) => {
+    switch (mode) {
+      case "qr":
+        return t("adminNew.kassa.qrPayment");
+      case "on_account":
+        return t("adminNew.kassa.onAccount");
+      case "split":
+        return t("adminNew.kassa.splitPayment");
+      default: {
+        const labels: Record<string, string> = {
+          cash: t("adminNew.kassa.payment.cash"),
+          pin: t("adminNew.kassa.payment.pin"),
+          invoice: t("adminNew.kassa.payment.invoice"),
+          creditcard: t("adminNew.kassa.payment.creditcard"),
+        };
+        return labels[paymentMethod] ?? paymentMethod;
+      }
+    }
+  };
+
   const handleCreateCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -174,21 +245,20 @@ export default function KassaPage() {
       push({
         tone: "error",
         title: t("adminNew.kassa.toasts.customerCreateFailed"),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (mode: "standard" | "split" | "qr" | "on_account" = "standard") => {
     if (!cart.length) {
       push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
       return;
     }
     try {
-      const res = await checkout.mutate({
+      const payload: Parameters<typeof kassaService.checkout>[0] = {
         device_id: getDeviceId(),
         customer_id: customerId || undefined,
-        payment_method: paymentMethod,
         locale: localeTag,
         redirect_url:
           typeof window !== "undefined" ? window.location.href : undefined,
@@ -199,7 +269,21 @@ export default function KassaPage() {
           unit_price_cents: item.unit_price_cents,
           vat_rate: item.vat_rate,
         })),
-      });
+      };
+
+      if (mode === "split") {
+        payload.payments = splitPayments
+          .filter((p) => Number(p.amount) > 0)
+          .map((p) => ({
+            method: p.method,
+            amount_cents: Math.round(Number(p.amount) * 100),
+          }));
+      } else {
+        payload.payment_method =
+          mode === "qr" ? "ideal" : mode === "on_account" ? "invoice" : paymentMethod;
+      }
+
+      const res = await checkout.mutate(payload);
       const checkoutUrl =
         typeof res === "string"
           ? res
@@ -211,9 +295,14 @@ export default function KassaPage() {
         typeof res === "string" ? undefined : res.invoice_number;
 
       setCart([]);
+      setShowSplitModal(false);
       void recentSales.refetch();
+      void analyticsQuery.refetch();
 
-      if (checkoutUrl) {
+      if (mode === "qr" && checkoutUrl) {
+        setQrUrl(checkoutUrl);
+        setShowQrModal(true);
+      } else if (checkoutUrl) {
         const popup = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
         if (!popup) {
           window.location.assign(checkoutUrl);
@@ -230,7 +319,7 @@ export default function KassaPage() {
       push({
         tone: "error",
         title: t("adminNew.kassa.toasts.checkoutFailed"),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -257,7 +346,7 @@ export default function KassaPage() {
       push({
         tone: "error",
         title: t("adminNew.kassa.toasts.quoteFailed"),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -273,27 +362,26 @@ export default function KassaPage() {
             value: cart.length,
             icon: ShoppingCart,
             tone: cart.length > 0 ? "marine" : "navy",
+            href: `#cart`,
           },
           {
             label: t("adminNew.kassa.total"),
             value: formatCurrency(totalCents / 100, localeTag),
             icon: CreditCard,
             tone: totalCents > 0 ? "gold" : "success",
-          },
-          {
-            label: t("adminNew.kassa.products"),
-            value: visibleProducts.length,
-            tone: "navy",
-            loading: productsQuery.loading,
-          },
-          {
-            label: t("adminNew.kassa.recentSales"),
-            value: recentSales.data?.length ?? 0,
-            tone: "success",
-            loading: recentSales.loading,
+            href: `#cart`,
           },
         ]}
       />
+
+      <AdminContent>
+        <KassaAnalyticsDashboard
+          analytics={analyticsQuery.data}
+          loading={analyticsQuery.loading}
+          period={analyticsPeriod}
+          onPeriodChange={setAnalyticsPeriod}
+        />
+      </AdminContent>
 
       <AdminContent className="grid gap-5 xl:grid-cols-[1fr_24rem]">
         <div className="space-y-5">
@@ -365,6 +453,13 @@ export default function KassaPage() {
             title={t("adminNew.kassa.products")}
             description={t("adminNew.kassa.productsOverview")}
             icon={Package}
+            action={
+              <Link href={`/${locale}/admin/producten`}>
+                <Button variant="ghost" size="sm" leftIcon={<Settings className="h-4 w-4" />}>
+                  {t("adminNew.kassa.editProducts")}
+                </Button>
+              </Link>
+            }
           >
             {productsQuery.loading ? (
               <LoadingState
@@ -390,6 +485,10 @@ export default function KassaPage() {
                       key={product.id}
                       type="button"
                       className="surface-float-hover rounded-xl border border-navy-100/80 bg-white p-3 text-left transition hover:border-marine-200"
+                      style={{
+                        borderLeftWidth: product.color ? 4 : undefined,
+                        borderLeftColor: product.color ?? product.group?.color ?? undefined,
+                      }}
                       onClick={() => addProduct(product, ruleMatch)}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -411,7 +510,7 @@ export default function KassaPage() {
                         {formatCurrency(
                           ruleMatch
                             ? ruleMatch.price_incl_vat_euros
-                            : product.price_incl_vat_euros,
+                            : productPriceInclEuros(product),
                           locale === "en" ? "en-GB" : "nl-NL",
                         )}
                       </div>
@@ -422,6 +521,7 @@ export default function KassaPage() {
             ) : null}
           </AdminSectionCard>
 
+          <div id="recent-sales">
           <AdminSectionCard
             title={t("adminNew.kassa.recentSales")}
             description={t("adminNew.kassa.recentOverview")}
@@ -430,46 +530,46 @@ export default function KassaPage() {
             {recentSales.loading ? (
               <LoadingState label={t("adminNew.common.loading")} variant="list" />
             ) : null}
-            {!recentSales.loading && recentSales.error ? (
-              <div className="text-sm text-rose-600">{recentSales.error}</div>
-            ) : null}
-            {!recentSales.loading &&
-            !recentSales.error &&
-            recentSales.data &&
-            recentSales.data.length === 0 ? (
+            {!recentSales.loading && (recentSales.data?.length ?? 0) === 0 ? (
               <div className="text-sm text-navy-500">
                 {t("adminNew.kassa.noRecentSales")}
               </div>
             ) : null}
-            {!recentSales.loading && !recentSales.error && (recentSales.data?.length ?? 0) > 0 ? (
+            {!recentSales.loading && (recentSales.data?.length ?? 0) > 0 ? (
               <div className="space-y-2">
                 {(recentSales.data ?? []).slice(0, 8).map((sale) => (
-                  <AdminListItem
+                  <Link
                     key={sale.id}
-                    title={sale.invoice_number}
-                    subtitle={new Date(sale.created_at).toLocaleString(
-                      locale === "en" ? "en-GB" : "nl-NL",
-                    )}
-                    meta={
-                      <div className="text-right">
-                        <div className="font-semibold text-navy-900">
-                          {formatCurrency(
-                            Number(sale.total_euros),
-                            locale === "en" ? "en-GB" : "nl-NL",
-                          )}
+                    href={`/${locale}/admin/kassa`}
+                  >
+                    <AdminListItem
+                      title={sale.invoice_number ?? sale.id}
+                      subtitle={new Date(sale.created_at).toLocaleString(
+                        locale === "en" ? "en-GB" : "nl-NL",
+                      )}
+                      meta={
+                        <div className="text-right">
+                          <div className="font-semibold text-navy-900">
+                            {formatCurrency(
+                              Number(sale.total_euros),
+                              locale === "en" ? "en-GB" : "nl-NL",
+                            )}
+                          </div>
+                          <div className="text-xs text-navy-500">
+                            {sale.payment_status}
+                          </div>
                         </div>
-                        <div className="text-xs text-navy-500">
-                          {sale.payment_status}
-                        </div>
-                      </div>
-                    }
-                  />
+                      }
+                    />
+                  </Link>
                 ))}
               </div>
             ) : null}
           </AdminSectionCard>
+          </div>
         </div>
 
+        <div id="cart">
         <AdminSectionCard
           className="sticky top-24 self-start"
           title={t("adminNew.kassa.cart")}
@@ -582,18 +682,44 @@ export default function KassaPage() {
               strong
             />
 
-            <div className="pt-2">
+            <div className="pt-2 grid gap-2">
               <Button
                 variant="gold"
                 size="md"
                 fullWidth
                 leftIcon={<CreditCard className="h-4 w-4" />}
-                onClick={handleCheckout}
+                onClick={() => setCheckoutConfirm("standard")}
                 disabled={checkout.loading}
               >
                 {checkout.loading
                   ? t("adminNew.kassa.processing")
                   : t("adminNew.kassa.checkout")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                fullWidth
+                leftIcon={<QrCode className="h-4 w-4" />}
+                onClick={() => setCheckoutConfirm("qr")}
+                disabled={checkout.loading}
+              >
+                {t("adminNew.kassa.qrPayment")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                fullWidth
+                onClick={() => setShowSplitModal(true)}
+              >
+                {t("adminNew.kassa.splitPayment")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                fullWidth
+                onClick={() => setCheckoutConfirm("on_account")}
+              >
+                {t("adminNew.kassa.onAccount")}
               </Button>
             </div>
             <Button
@@ -611,7 +737,66 @@ export default function KassaPage() {
           </div>
           </div>
         </AdminSectionCard>
+        </div>
       </AdminContent>
+
+      <Modal open={showSplitModal} onClose={() => setShowSplitModal(false)} size="md">
+        <AdminModalHeader title={t("adminNew.kassa.splitPayment")} />
+        <AdminModalBody>
+          {splitPayments.map((row, idx) => (
+            <div key={idx} className="grid grid-cols-2 gap-2">
+              <select
+                className="input-base"
+                value={row.method}
+                onChange={(e) =>
+                  setSplitPayments((prev) =>
+                    prev.map((p, i) => (i === idx ? { ...p, method: e.target.value } : p)),
+                  )
+                }
+              >
+                <option value="pin">PIN</option>
+                <option value="cash">{t("adminNew.kassa.payment.cash")}</option>
+              </select>
+              <Input
+                type="number"
+                step="0.01"
+                value={row.amount}
+                onChange={(e) =>
+                  setSplitPayments((prev) =>
+                    prev.map((p, i) => (i === idx ? { ...p, amount: e.target.value } : p)),
+                  )
+                }
+                placeholder={t("adminNew.kassa.amountPlaceholder")}
+              />
+            </div>
+          ))}
+        </AdminModalBody>
+        <AdminModalFooter>
+          <Button variant="ghost" onClick={() => setShowSplitModal(false)}>{t("adminNew.common.cancel")}</Button>
+          <Button variant="gold" onClick={() => setCheckoutConfirm("split")}>{t("adminNew.kassa.checkout")}</Button>
+        </AdminModalFooter>
+      </Modal>
+
+      <Modal open={showQrModal} onClose={() => setShowQrModal(false)} size="md">
+        <AdminModalHeader title={t("adminNew.kassa.qrPayment")} />
+        <AdminModalBody>
+          <div className="text-center">
+          {qrUrl ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrUrl)}`}
+                alt="Mollie QR"
+                className="mx-auto rounded-lg border border-navy-100"
+              />
+              <a href={qrUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-marine-700">
+                {qrUrl} <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </>
+          ) : null}
+          </div>
+        </AdminModalBody>
+      </Modal>
 
       <Modal
         open={showCustomerModal}
@@ -662,6 +847,27 @@ export default function KassaPage() {
           </AdminModalFooter>
         </form>
       </Modal>
+
+      <AdminConfirmModal
+        open={!!checkoutConfirm}
+        onClose={() => setCheckoutConfirm(null)}
+        onConfirm={async () => {
+          if (!checkoutConfirm) return;
+          const mode = checkoutConfirm;
+          setCheckoutConfirm(null);
+          await handleCheckout(mode);
+        }}
+        title={t("adminNew.kassa.confirmCheckoutTitle")}
+        message={t("adminNew.kassa.confirmCheckout", {
+          total: formatCurrency(totalCents / 100, localeTag),
+          method: checkoutConfirm ? checkoutMethodLabel(checkoutConfirm) : "",
+        })}
+        confirmLabel={t("adminNew.kassa.checkout")}
+        cancelLabel={t("adminNew.common.cancel")}
+        variant="primary"
+        icon={CreditCard}
+        loading={checkout.loading}
+      />
     </>
   );
 }

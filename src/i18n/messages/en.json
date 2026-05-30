@@ -451,13 +451,26 @@
     "submit": "Request appointment",
     "submitSuccess": "Appointment requested",
     "submitFailed": "Request failed",
+    "confirmSubmit": "Submit this appointment request? You will receive a confirmation by email within 24 hours.",
     "footerNote": "Your request is confirmed within 24h. A payment link will follow by email.",
     "selectDate": "Please select a date first",
-    "manualReview": "Manual review required"
+    "manualReview": "Manual review required",
+    "notes": "Notes (optional)",
+    "placeholders": {
+      "name": "John Smith",
+      "phone": "06 12345678",
+      "email": "john@example.com",
+      "boatName": "Aquila",
+      "boatLength": "890",
+      "boatWidth": "2.8",
+      "boatWeight": "3500",
+      "notes": "e.g. preferred berth or special details about your boat"
+    }
   },
   "faq": {
     "title": "Frequently asked questions",
     "subtitle": "Find answers to the most common questions about our services, planning and pricing. Not finding what you need? Reach out to us.",
+    "searchPlaceholder": "Search e.g. winter storage, crane, payment...",
     "categories": "Categories",
     "helpTitle": "Didn't find an answer?",
     "helpDesc": "Our team is ready during business hours.",
@@ -518,7 +531,15 @@
     "fTopic": "Subject",
     "fMessage": "Message",
     "fSubmit": "Send message",
-    "fSent": "Thank you — your message was sent."
+    "fSent": "Thank you — your message was sent.",
+    "hoursSubtitle": "Fixed weekly schedule",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
   },
   "apartmentsPage": {
     "badge": "Stay at the Maasplassen",
@@ -586,7 +607,10 @@
     "termsMiddle": " and ",
     "termsAfter": ".",
     "terms": "terms of service",
-    "privacy": "privacy policy"
+    "privacy": "privacy policy",
+    "checkEmail": "Your account has been created. Check your email for the magic login link.",
+    "fullNamePlaceholder": "John Smith",
+    "phonePlaceholder": "+31 6 12345678"
   },
   "loginExt": {
     "subtitle": "Access your yard file, invoices and crane appointments in one protected Krekelberg Nautic workspace."
@@ -1092,7 +1116,11 @@
       "noEmail": "no email",
       "operationFailed": "Action failed",
       "confirm": "Confirm",
-      "reasonTooShort": "Enter at least {min} characters"
+      "reasonTooShort": "Enter at least {min} characters",
+      "back": "Back",
+      "edit": "Edit",
+      "view": "View",
+      "confirmLogout": "Are you sure you want to sign out?"
     },
     "dashboard": {
       "title": "Operations",
@@ -1131,6 +1159,11 @@
         "activeSessions": "Active portal sessions",
         "newQuestions": "New customer questions",
         "totalCustomers": "Total customers"
+      },
+      "calculatorCard": {
+        "title": "Calculator",
+        "subtitle": "Quick price calculation for marina services",
+        "selectService": "Select service"
       }
     },
     "customers": {
@@ -1174,7 +1207,8 @@
     },
     "sidebar": {
       "calculator": "Calculator",
-      "sync": "Offline / Sync"
+      "sync": "Offline / Sync",
+      "workOrders": "Work orders"
     },
     "states": {
       "errorTitle": "Something went wrong",
@@ -1244,8 +1278,13 @@
         "created": "Boat created",
         "createFailed": "Creation failed",
         "deleted": "Boat deleted",
-        "deleteFailed": "Delete failed"
-      }
+        "deleteFailed": "Delete failed",
+        "updated": "Boat updated",
+        "updateFailed": "Update failed"
+      },
+      "editTitle": "Edit boat",
+      "editSubtitle": "Update length, location and other details",
+      "dossierSubtitle": "Full boat dossier with storage, invoices and audit log"
     },
     "kassa": {
       "title": "Cash Desk",
@@ -1292,6 +1331,31 @@
         "checkoutFailed": "Checkout failed",
         "quoteDone": "Quote calculated",
         "quoteFailed": "Quote failed"
+      },
+      "splitPayment": "Split payment",
+      "amountPlaceholder": "€",
+      "qrPayment": "Mollie QR",
+      "onAccount": "On account",
+      "confirmCheckout": "Complete checkout for {total}? Payment method: {method}.",
+      "confirmCheckoutTitle": "Confirm checkout",
+      "editProducts": "Manage products",
+      "analytics": {
+        "title": "Cash desk analytics",
+        "subtitle": "Turnover, transactions and payment methods",
+        "turnover": "Turnover",
+        "transactions": "Transactions",
+        "avgTicket": "Avg. ticket",
+        "refunds": "Refunds",
+        "revenueChart": "Revenue by period",
+        "paymentMethods": "Payment methods",
+        "noChartData": "No revenue data for this period yet.",
+        "noPaymentData": "No payment method data yet.",
+        "periods": {
+          "today": "Today",
+          "7d": "7 days",
+          "30d": "30 days",
+          "month": "This month"
+        }
       }
     },
     "stalling": {
@@ -1321,10 +1385,24 @@
       "invoice": "Invoice",
       "cancel": "Cancel",
       "confirmCancel": "Cancel this contract?",
+      "confirmCreateInvoice": "Create an invoice for this storage contract?",
       "invoiceCreated": "Invoice created",
       "cancelled": "Contract cancelled",
       "contracts": "{count} contracts",
-      "openCustomer": "Open customer"
+      "openCustomer": "Open customer",
+      "new": "New contract",
+      "createSubtitle": "Create a storage contract",
+      "auditTitle": "Audit log",
+      "auditSubtitle": "Recent changes to storage contracts",
+      "auditEmpty": "No audit events",
+      "auditEmptyMessage": "No storage changes logged yet.",
+      "fields": {
+        "startDate": "Start date",
+        "endDate": "End date"
+      },
+      "toasts": {
+        "created": "Contract created"
+      }
     },
     "sync": {
       "eyebrow": "Integration & data sync",
@@ -1337,14 +1415,15 @@
       "online": "Online",
       "offline": "Offline",
       "pending": "Pending",
-      "devices": "Sync devices",
+      "devices": "Registered sync devices",
       "failed": "Failed",
       "lastSync": "Last sync",
       "pendingChanges": "Pending changes",
       "clear": "Clear",
+      "confirmClear": "Remove all pending offline changes? Unsynchronized data will be lost.",
+      "confirmDeleteItem": "Remove this pending change?",
       "retry": "Retry",
       "noPending": "No pending offline changes.",
-      "devices": "Registered sync devices",
       "noDevices": "No sync devices available yet.",
       "devicesHint": "Devices that sync offline changes",
       "itemSynced": "Change synced",
@@ -1416,7 +1495,8 @@
         "bankTransfer": "Bank transfer",
         "continuePay": "Continue to payment",
         "payFailed": "Failed to start payment",
-        "payOpened": "Payment page opened in a new tab"
+        "payOpened": "Payment page opened in a new tab",
+        "confirmPay": "Continue to pay {amount} via {method}?"
       },
       "stalling": {
         "title": "My storage",
@@ -1480,6 +1560,7 @@
         "item": "Message",
         "markAll": "Mark all read",
         "markAllDone": "All messages marked as read",
+        "confirmMarkAll": "Mark all {count} unread messages as read?",
         "filterAll": "All",
         "filterUnread": "Unread",
         "filterRead": "Read",
@@ -1653,7 +1734,11 @@
         "cancelled": "Invoice cancelled",
         "reminderSent": "Reminder sent",
         "markedPaid": "Invoice marked as paid"
-      }
+      },
+      "confirmCancel": "Cancel this invoice? This cannot be undone.",
+      "confirmCredit": "Create a credit invoice for this invoice?",
+      "confirmSend": "Send this invoice to the customer by email?",
+      "confirmMarkPaid": "Mark this invoice as paid manually? Verify the amount and payment method."
     },
     "customerDetail": {
       "fallbackTitle": "Customer",
@@ -1704,7 +1789,11 @@
         "createFailed": "Create failed",
         "invoiceCreated": "Invoice created",
         "invoiceCreateFailed": "Invoice creation failed"
-      }
+      },
+      "confirmNewInvoice": "Create a new invoice for this customer?",
+      "timelineTitle": "Activity timeline",
+      "timelineSubtitle": "Messages, reminders and portal activity",
+      "timelineEmpty": "No timeline items for this customer yet."
     },
     "calculator": {
       "title": "Calculator",
@@ -1742,6 +1831,32 @@
         "selectCustomer": "Select a customer first",
         "runCalculationFirst": "Run a calculation first",
         "createFailed": "Create failed"
+      },
+      "confirmCreateInvoice": "Create an invoice from this calculation?",
+      "confirmCreateQuote": "Create a quote from this calculation?",
+      "editPricing": "Edit pricing",
+      "history": {
+        "title": "History",
+        "subtitle": "All saved calculator calculations",
+        "emptyMessage": "No calculator records saved yet."
+      },
+      "records": {
+        "title": "Calculator records",
+        "empty": "No saved calculations yet.",
+        "number": "Number",
+        "date": "Date",
+        "service": "Service",
+        "total": "Total"
+      },
+      "pricing": {
+        "title": "Manage pricing",
+        "subtitle": "Pricing rules by boat length and service",
+        "saved": "Pricing rule saved",
+        "empty": "No pricing rules yet.",
+        "newRule": "New pricing rule",
+        "selectProduct": "Select product",
+        "confirmDelete": "Delete this pricing rule?",
+        "deleted": "Pricing rule deleted"
       }
     },
     "settings": {
@@ -1836,6 +1951,11 @@
       "title": "Products",
       "subtitle": "Manage the product catalog for POS and invoicing",
       "new": "New product",
+      "createSubtitle": "Full product form with pricing, category and POS settings",
+      "detailTitle": "Product",
+      "backToList": "Back to list",
+      "openInKassa": "Open in POS",
+      "metaTitle": "Metadata",
       "searchPlaceholder": "Search by code or name",
       "loading": "Loading products",
       "emptyTitle": "No products",
@@ -1853,17 +1973,49 @@
         "status": "Status"
       },
       "fields": {
-        "priceExcl": "Price excl. VAT"
+        "priceExcl": "Price excl. VAT",
+        "priceIncl": "Price incl. VAT",
+        "barcode": "Barcode",
+        "searchCode": "Search code",
+        "color": "Color",
+        "description": "Description",
+        "descriptionPlaceholder": "Short description for POS and invoices",
+        "serviceCode": "Service code",
+        "serviceCodeNone": "No service code",
+        "categoryNone": "No category",
+        "sku": "SKU",
+        "supplier": "Supplier",
+        "imageUrl": "Image URL",
+        "tags": "Tags",
+        "tagsPlaceholder": "storage, season",
+        "aliases": "Aliases",
+        "aliasesPlaceholder": "Alternative search names",
+        "created": "Created",
+        "updated": "Updated"
+      },
+      "sections": {
+        "identity": "Identity",
+        "classification": "Classification",
+        "pricing": "Pricing",
+        "pos": "POS & inventory"
+      },
+      "categories": {
+        "stalling": "Storage",
+        "repair": "Repair / service",
+        "retail": "Retail",
+        "other": "Other"
       },
       "modal": {
         "title": "New product",
-        "subtitle": "Add a product to the catalog."
+        "subtitle": "Add a product to the catalog.",
+        "editTitle": "Edit product"
       },
       "toasts": {
         "created": "Product created",
         "createFailed": "Create failed",
         "deleted": "Product deleted",
-        "deleteFailed": "Delete failed"
+        "deleteFailed": "Delete failed",
+        "updated": "Product updated"
       }
     },
     "payments": {
@@ -1918,7 +2070,8 @@
         "createFailed": "Create failed",
         "activated": "User activated",
         "deactivated": "User deactivated"
-      }
+      },
+      "confirmDeactivate": "Are you sure you want to deactivate {name}? They will no longer be able to sign in."
     },
     "calendar": {
       "title": "Calendar",
@@ -2026,6 +2179,14 @@
         "storage": "Storage",
         "webhooks": "Webhooks"
       },
+      "status": {
+        "healthy": "Operational",
+        "degraded": "Degraded",
+        "error": "Outage",
+        "unknown": "Unknown",
+        "conflict": "Conflict",
+        "latency": "Response time {ms} ms"
+      },
       "repair": {
         "payments": "Payments",
         "webhooks": "Webhooks",
@@ -2042,6 +2203,8 @@
         "resendEmail": "Resend email",
         "regeneratePdf": "Regenerate PDF",
         "mergeCustomers": "Merge customers",
+        "confirmMergeCustomers": "Merge these customers? All data from the duplicate will move to the main customer. This cannot be undone.",
+        "confirmResendEmail": "Resend the invoice email to the customer?",
         "resolveKeepServer": "Keep server version",
         "resolveUseClient": "Use client version",
         "resolveConflictTitle": "Resolve sync conflict",
@@ -2072,9 +2235,83 @@
         "amount": "Amount (EUR)",
         "description": "Description"
       },
+      "confirmCredit": "Add {amount} to this customer's wallet balance?",
       "toasts": {
         "credited": "Credit added"
       }
+    },
+    "search": {
+      "hint": "Type at least 2 characters to search customers, boats, invoices and more.",
+      "noResults": "No results found."
+    },
+    "impersonation": {
+      "banner": "You are signed in as {name}",
+      "stop": "Stop impersonation",
+      "action": "Impersonate",
+      "failed": "Impersonation failed",
+      "noEmail": "No email address for this customer",
+      "noUser": "No user found for this email address",
+      "notAllowed": "Admin users cannot be impersonated",
+      "confirmTitle": "Impersonate user",
+      "confirmMessage": "You will sign in as {name}. All actions will be performed on their behalf.",
+      "confirmStop": "Stop impersonation and return to your own account?"
+    },
+    "invoiceImports": {
+      "title": "Invoice import",
+      "subtitle": "Upload and process incoming invoices automatically",
+      "upload": "Upload PDF",
+      "queue": "Import queue",
+      "approve": "Approve",
+      "confirmApprove": "Approve this import and process it as an invoice?",
+      "emptyTitle": "No imports",
+      "emptyMessage": "Upload a PDF to get started.",
+      "columns": {
+        "file": "File",
+        "status": "Status",
+        "date": "Date"
+      },
+      "toasts": {
+        "uploaded": "Invoice uploaded for processing"
+      }
+    },
+    "workOrders": {
+      "title": "Work orders",
+      "subtitle": "Plan and track work per boat",
+      "new": "New work order",
+      "createSubtitle": "Create a work order for maintenance or repair",
+      "description": "Description",
+      "emptyTitle": "No work orders",
+      "emptyMessage": "No work orders created yet.",
+      "total": "{count} work orders",
+      "columns": {
+        "number": "Number",
+        "type": "Type",
+        "status": "Status",
+        "priority": "Priority",
+        "due": "Due date"
+      },
+      "status": {
+        "new": "New",
+        "inProgress": "In progress",
+        "done": "Done",
+        "cancelled": "Cancelled"
+      },
+      "toasts": {
+        "created": "Work order created"
+      },
+      "forbiddenTitle": "No access to work orders",
+      "forbiddenMessage": "Your account does not have permission for /v1/work-orders. The admin role needs work-orders permissions granted in the API (Spatie), same as staff/manager."
+    },
+    "reminders": {
+      "title": "Smart reminders",
+      "subtitle": "Overview of scheduled and overdue customer reminders",
+      "invoiceDue": "Invoices due",
+      "contractsExpiring": "Contracts expiring",
+      "workOrdersDue": "Work orders due",
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "overdue": "Overdue",
+      "completed": "Completed"
     }
   }
 }

@@ -8,6 +8,7 @@ import {
   isAuthPath,
   isPortalPath,
   isProtectedPath,
+  isSafeReturnTo,
   repairEncodedQueryPath,
 } from '@/lib/auth-routes';
 
@@ -85,6 +86,12 @@ export function middleware(req: NextRequest) {
 
   if (isAuthPath(pathname) && hasSession) {
     const url = req.nextUrl.clone();
+    const returnTo = url.searchParams.get('returnTo');
+    if (isSafeReturnTo(returnTo)) {
+      url.pathname = returnTo;
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
     url.pathname = defaultRedirectFromCookies(locale, hasStaffSession, hasPortalSession);
     url.search = '';
     return NextResponse.redirect(url);

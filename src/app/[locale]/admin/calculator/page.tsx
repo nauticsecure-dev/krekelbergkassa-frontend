@@ -1,9 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { Calculator, FilePlus2, Receipt, UserPlus } from 'lucide-react';
+import Link from 'next/link';
+import { Calculator, FilePlus2, Receipt, Settings, UserPlus } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { AdminContent, AdminSectionCard } from '@/components/admin/AdminUi';
+import { AdminContent, AdminSectionCard, AdminTable, AdminTableCard, AdminTableCell, AdminTableHead, AdminTableHeaderCell, AdminTableRow } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
@@ -11,6 +12,9 @@ import { customersService, invoicesService, pricingService } from '@/lib/service
 import { formatCurrency } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
+import { calculatorResultTotalEuros, pricingTotalInclCents } from '@/lib/pricing-result';
 import { cn } from '@/lib/cn';
 
 const SERVICE_IDS = ['afspuiten', 'kranen', 'stalling', 'hal'];
@@ -24,9 +28,13 @@ export default function CalculatorPage() {
   const [selectedServices, setSelectedServices] = React.useState<string[]>(['afspuiten']);
   const [customerId, setCustomerId] = React.useState('');
   const [result, setResult] = React.useState<Record<string, unknown> | null>(null);
+  const [createConfirm, setCreateConfirm] = React.useState<'invoice' | 'quote' | null>(null);
 
   const customers = useQuery(['calculator-customers'], () =>
     customersService.list({ per_page: 100 })
+  );
+  const records = useQuery(['calculator-records'], () =>
+    pricingService.calculatorRecords({ per_page: 50 })
   );
   const calculate = useMutation(pricingService.calculate);
   const preview = useMutation(pricingService.preview);
@@ -52,8 +60,8 @@ export default function CalculatorPage() {
         contract_type: contractType,
         services: selectedServices,
         customer_id: customerId || undefined,
-        locale: locale === 'en' ? 'en-GB' : 'nl-NL',
-        channel: 'calculator',
+        persist: true,
+        status: 'saved' as const,
       };
       const [calc, prev] = await Promise.all([calculate.mutate(payload), preview.mutate(payload)]);
       setResult({ ...calc, preview: prev });
@@ -61,20 +69,14 @@ export default function CalculatorPage() {
       push({
         tone: 'error',
         title: t('adminNew.calculator.toasts.failed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
 
   const resolveTotal = React.useMemo(() => {
     if (!result) return 0;
-    const direct = Number(result.total_amount_euros ?? result.total_euros ?? result.total ?? 0);
-    if (Number.isFinite(direct) && direct > 0) return direct;
-    const nested =
-      result.preview && typeof result.preview === 'object'
-        ? Number((result.preview as Record<string, unknown>).total_amount_euros ?? 0)
-        : 0;
-    return Number.isFinite(nested) ? nested : 0;
+    return calculatorResultTotalEuros(result);
   }, [result]);
 
   const breakdown = React.useMemo(() => {
@@ -86,7 +88,13 @@ export default function CalculatorPage() {
     return [
       {
         key: t('adminNew.calculator.result.rangeMatch'),
-        value: String(previewData?.matched_range ?? result.matched_range ?? '-'),
+        value: String(
+          previewData?.range_label ??
+            result.range_label ??
+            previewData?.matched_range ??
+            result.matched_range ??
+            '—',
+        ),
       },
       {
         key: t('adminNew.calculator.result.contractType'),
@@ -121,8 +129,8 @@ export default function CalculatorPage() {
           {
             description: `${t('adminNew.calculator.linePrefix')} (${selectedServices.join(', ')}) - ${lengthCm} cm`,
             quantity: 1,
-            unit_price: Math.round(resolveTotal * 100),
-            vat_rate: 21,
+            unit_price: pricingTotalInclCents(result),
+            vat_rate: Number(result.vat_rate ?? 21),
           },
         ],
         metadata: {
@@ -135,7 +143,7 @@ export default function CalculatorPage() {
       push({
         tone: 'error',
         title: t('adminNew.calculator.toasts.createFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -145,6 +153,20 @@ export default function CalculatorPage() {
       <AdminPageHeader
         title={t('adminNew.calculator.title')}
         subtitle={t('adminNew.calculator.subtitle')}
+        rightSlot={
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/${locale}/admin/calculator/pricing`}>
+              <Button variant="outline" size="sm" leftIcon={<Settings className="h-4 w-4" />}>
+                {t('adminNew.calculator.editPricing')}
+              </Button>
+            </Link>
+            <Link href={`/${locale}/admin/calculator/history`}>
+              <Button variant="outline" size="sm">
+                {t('adminNew.calculator.history.title')}
+              </Button>
+            </Link>
+          </div>
+        }
         stats={[
           {
             label: t('adminNew.calculator.lengthCm'),
@@ -261,14 +283,14 @@ export default function CalculatorPage() {
             <Button
               variant="outline"
               leftIcon={<Receipt className="h-4 w-4" />}
-              onClick={() => void createFromCalculator('quote')}
+              onClick={() => setCreateConfirm('quote')}
             >
               {t('adminNew.calculator.createQuote')}
             </Button>
             <Button
               variant="outline"
               leftIcon={<FilePlus2 className="h-4 w-4" />}
-              onClick={() => void createFromCalculator('invoice')}
+              onClick={() => setCreateConfirm('invoice')}
             >
               {t('adminNew.calculator.createInvoice')}
             </Button>
@@ -318,6 +340,64 @@ export default function CalculatorPage() {
           )}
         </AdminSectionCard>
       </AdminContent>
+
+      <AdminContent>
+        <AdminSectionCard title={t('adminNew.calculator.records.title')} icon={Calculator}>
+          {(records.data?.data ?? []).length === 0 ? (
+            <div className="text-sm text-navy-500">{t('adminNew.calculator.records.empty')}</div>
+          ) : (
+            <AdminTableCard>
+              <AdminTable minWidth={720}>
+                <AdminTableHead>
+                  <tr>
+                    <AdminTableHeaderCell>{t('adminNew.calculator.records.number')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.calculator.records.date')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.calculator.records.service')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.calculator.records.total')}</AdminTableHeaderCell>
+                  </tr>
+                </AdminTableHead>
+                <tbody>
+                  {(records.data?.data ?? []).map((rec) => (
+                    <AdminTableRow key={String(rec.id)}>
+                      <AdminTableCell className="font-semibold">{String(rec.number ?? rec.id)}</AdminTableCell>
+                      <AdminTableCell>{rec.created_at ? new Date(String(rec.created_at)).toLocaleDateString() : '—'}</AdminTableCell>
+                      <AdminTableCell>{String(rec.service_type ?? '—')}</AdminTableCell>
+                      <AdminTableCell>
+                        {formatCurrency(Number(rec.total_amount ?? 0) / 100, locale === 'en' ? 'en-GB' : 'nl-NL')}
+                      </AdminTableCell>
+                    </AdminTableRow>
+                  ))}
+                </tbody>
+              </AdminTable>
+            </AdminTableCard>
+          )}
+        </AdminSectionCard>
+      </AdminContent>
+
+      <AdminConfirmModal
+        open={!!createConfirm}
+        onClose={() => setCreateConfirm(null)}
+        onConfirm={async () => {
+          if (!createConfirm) return;
+          await createFromCalculator(createConfirm);
+          setCreateConfirm(null);
+        }}
+        title={
+          createConfirm === 'invoice'
+            ? t('adminNew.calculator.createInvoice')
+            : t('adminNew.calculator.createQuote')
+        }
+        message={
+          createConfirm === 'invoice'
+            ? t('adminNew.calculator.confirmCreateInvoice')
+            : t('adminNew.calculator.confirmCreateQuote')
+        }
+        confirmLabel={t('adminNew.common.confirm')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={FilePlus2}
+        loading={createInvoice.loading}
+      />
     </>
   );
 }

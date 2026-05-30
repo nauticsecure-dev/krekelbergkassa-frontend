@@ -451,13 +451,26 @@
     "submit": "Termin anfragen",
     "submitSuccess": "Termin angefragt",
     "submitFailed": "Anfrage fehlgeschlagen",
+    "confirmSubmit": "Diese Terminanfrage absenden? Sie erhalten innerhalb von 24 Stunden eine Bestätigung per E-Mail.",
     "footerNote": "Ihre Anfrage wird innerhalb 24h bestätigt. Eine Zahlungsanfrage folgt per Mail.",
     "selectDate": "Bitte erst einen Tag wählen",
-    "manualReview": "Manuelle Prüfung erforderlich"
+    "manualReview": "Manuelle Prüfung erforderlich",
+    "notes": "Anmerkungen (optional)",
+    "placeholders": {
+      "name": "Max Mustermann",
+      "phone": "06 12345678",
+      "email": "max@beispiel.de",
+      "boatName": "Aquila",
+      "boatLength": "890",
+      "boatWidth": "2.8",
+      "boatWeight": "3500",
+      "notes": "z. B. gewünschter Liegeplatz oder Besonderheiten zu Ihrem Boot"
+    }
   },
   "faq": {
     "title": "Häufig gestellte Fragen",
     "subtitle": "Antworten zu den häufigsten Fragen über Leistungen, Planung und Preise. Frage nicht dabei? Schreiben Sie uns.",
+    "searchPlaceholder": "Suchen z.B. Winterlagerung, Kran, Zahlung...",
     "categories": "Kategorien",
     "helpTitle": "Keine Antwort gefunden?",
     "helpDesc": "Unser Team ist während der Bürozeiten erreichbar.",
@@ -518,7 +531,15 @@
     "fTopic": "Betreff",
     "fMessage": "Nachricht",
     "fSubmit": "Nachricht senden",
-    "fSent": "Vielen Dank — Ihre Nachricht wurde gesendet."
+    "fSent": "Vielen Dank — Ihre Nachricht wurde gesendet.",
+    "hoursSubtitle": "Fester Wochenplan",
+    "monday": "Montag",
+    "tuesday": "Dienstag",
+    "wednesday": "Mittwoch",
+    "thursday": "Donnerstag",
+    "friday": "Freitag",
+    "saturday": "Samstag",
+    "sunday": "Sonntag"
   },
   "apartmentsPage": {
     "badge": "Aufenthalt an den Maasplassen",
@@ -586,7 +607,10 @@
     "termsMiddle": " und ",
     "termsAfter": ".",
     "terms": "AGB",
-    "privacy": "Datenschutzerklärung"
+    "privacy": "Datenschutzerklärung",
+    "checkEmail": "Ihr Konto wurde erstellt. Prüfen Sie Ihre E-Mail für den Magic-Login-Link.",
+    "fullNamePlaceholder": "Max Mustermann",
+    "phonePlaceholder": "+31 6 12345678"
   },
   "loginExt": {
     "subtitle": "Zugriff auf Werftdossier, Rechnungen und Krantermine in einer geschützten Krekelberg-Nautic-Umgebung."
@@ -1092,7 +1116,11 @@
       "noEmail": "keine E-Mail",
       "operationFailed": "Aktion fehlgeschlagen",
       "confirm": "Bestätigen",
-      "reasonTooShort": "Mindestens {min} Zeichen eingeben"
+      "reasonTooShort": "Mindestens {min} Zeichen eingeben",
+      "back": "Zurück",
+      "edit": "Bearbeiten",
+      "view": "Ansehen",
+      "confirmLogout": "Möchten Sie sich wirklich abmelden?"
     },
     "dashboard": {
       "title": "Betrieb",
@@ -1131,6 +1159,11 @@
         "activeSessions": "Aktive Portalsitzungen",
         "newQuestions": "Neue Kundenfragen",
         "totalCustomers": "Kunden gesamt"
+      },
+      "calculatorCard": {
+        "title": "Rechner",
+        "subtitle": "Schnelle Preisberechnung für Marina-Dienstleistungen",
+        "selectService": "Dienst auswählen"
       }
     },
     "customers": {
@@ -1174,7 +1207,8 @@
     },
     "sidebar": {
       "calculator": "Rechner",
-      "sync": "Offline / Sync"
+      "sync": "Offline / Sync",
+      "workOrders": "Arbeitsaufträge"
     },
     "states": {
       "errorTitle": "Etwas ist schiefgelaufen",
@@ -1244,8 +1278,13 @@
         "created": "Boot erstellt",
         "createFailed": "Erstellen fehlgeschlagen",
         "deleted": "Boot gelöscht",
-        "deleteFailed": "Löschen fehlgeschlagen"
-      }
+        "deleteFailed": "Löschen fehlgeschlagen",
+        "updated": "Boot aktualisiert",
+        "updateFailed": "Aktualisierung fehlgeschlagen"
+      },
+      "editTitle": "Boot bearbeiten",
+      "editSubtitle": "Länge, Standort und andere Angaben korrigieren",
+      "dossierSubtitle": "Vollständige Bootakte mit Lagerung, Rechnungen und Audit-Log"
     },
     "kassa": {
       "title": "Kasse",
@@ -1292,6 +1331,31 @@
         "checkoutFailed": "Checkout fehlgeschlagen",
         "quoteDone": "Angebot berechnet",
         "quoteFailed": "Angebot fehlgeschlagen"
+      },
+      "splitPayment": "Geteilte Zahlung",
+      "amountPlaceholder": "€",
+      "qrPayment": "Mollie QR",
+      "onAccount": "Auf Rechnung",
+      "confirmCheckout": "Checkout für {total} abschließen? Zahlungsmethode: {method}.",
+      "confirmCheckoutTitle": "Checkout bestätigen",
+      "editProducts": "Produkte verwalten",
+      "analytics": {
+        "title": "Kassen-Analyse",
+        "subtitle": "Umsatz, Transaktionen und Zahlungsmethoden",
+        "turnover": "Umsatz",
+        "transactions": "Transaktionen",
+        "avgTicket": "Ø Bon",
+        "refunds": "Rückerstattungen",
+        "revenueChart": "Umsatz nach Zeitraum",
+        "paymentMethods": "Zahlungsmethoden",
+        "noChartData": "Noch keine Umsatzdaten für diesen Zeitraum.",
+        "noPaymentData": "Noch keine Zahlungsmethodendaten.",
+        "periods": {
+          "today": "Heute",
+          "7d": "7 Tage",
+          "30d": "30 Tage",
+          "month": "Dieser Monat"
+        }
       }
     },
     "stalling": {
@@ -1321,10 +1385,24 @@
       "invoice": "Rechnung",
       "cancel": "Stornieren",
       "confirmCancel": "Diesen Vertrag stornieren?",
+      "confirmCreateInvoice": "Rechnung für diesen Stellvertrag erstellen?",
       "invoiceCreated": "Rechnung erstellt",
       "cancelled": "Vertrag storniert",
       "contracts": "{count} Verträge",
-      "openCustomer": "Kunde öffnen"
+      "openCustomer": "Kunde öffnen",
+      "new": "Neuer Vertrag",
+      "createSubtitle": "Lagerungsvertrag anlegen",
+      "auditTitle": "Audit-Log",
+      "auditSubtitle": "Letzte Änderungen an Lagerungsverträgen",
+      "auditEmpty": "Keine Audit-Ereignisse",
+      "auditEmptyMessage": "Noch keine Lagerungsänderungen protokolliert.",
+      "fields": {
+        "startDate": "Startdatum",
+        "endDate": "Enddatum"
+      },
+      "toasts": {
+        "created": "Vertrag erstellt"
+      }
     },
     "sync": {
       "eyebrow": "Integration & Datensync",
@@ -1337,14 +1415,15 @@
       "online": "Online",
       "offline": "Offline",
       "pending": "Ausstehend",
-      "devices": "Sync-Geräte",
+      "devices": "Registrierte Sync-Geräte",
       "failed": "Fehlgeschlagen",
       "lastSync": "Letzte Sync",
       "pendingChanges": "Ausstehende Änderungen",
       "clear": "Leeren",
+      "confirmClear": "Alle ausstehenden Offline-Änderungen entfernen? Nicht synchronisierte Daten gehen verloren.",
+      "confirmDeleteItem": "Diese ausstehende Änderung entfernen?",
       "retry": "Erneut",
       "noPending": "Keine ausstehenden Offline-Änderungen.",
-      "devices": "Registrierte Sync-Geräte",
       "noDevices": "Noch keine Sync-Geräte verfügbar.",
       "devicesHint": "Geräte, die Offline-Änderungen synchronisieren",
       "itemSynced": "Änderung synchronisiert",
@@ -1416,7 +1495,8 @@
         "bankTransfer": "Banküberweisung",
         "continuePay": "Weiter zur Zahlung",
         "payFailed": "Zahlung konnte nicht gestartet werden",
-        "payOpened": "Zahlungsseite in neuem Tab geöffnet"
+        "payOpened": "Zahlungsseite in neuem Tab geöffnet",
+        "confirmPay": "Weiter zur Zahlung von {amount} über {method}?"
       },
       "stalling": {
         "title": "Meine Lagerung",
@@ -1480,6 +1560,7 @@
         "item": "Nachricht",
         "markAll": "Alle gelesen",
         "markAllDone": "Alle Nachrichten als gelesen markiert",
+        "confirmMarkAll": "Alle {count} ungelesenen Nachrichten als gelesen markieren?",
         "filterAll": "Alle",
         "filterUnread": "Ungelesen",
         "filterRead": "Gelesen",
@@ -1653,7 +1734,11 @@
         "cancelled": "Rechnung storniert",
         "reminderSent": "Erinnerung gesendet",
         "markedPaid": "Rechnung als bezahlt markiert"
-      }
+      },
+      "confirmCancel": "Diese Rechnung stornieren? Dies kann nicht rückgängig gemacht werden.",
+      "confirmCredit": "Eine Gutschrift für diese Rechnung erstellen?",
+      "confirmSend": "Diese Rechnung per E-Mail an den Kunden senden?",
+      "confirmMarkPaid": "Diese Rechnung manuell als bezahlt markieren? Betrag und Zahlungsmethode prüfen."
     },
     "customerDetail": {
       "fallbackTitle": "Kunde",
@@ -1704,7 +1789,11 @@
         "createFailed": "Erstellung fehlgeschlagen",
         "invoiceCreated": "Rechnung erstellt",
         "invoiceCreateFailed": "Rechnungserstellung fehlgeschlagen"
-      }
+      },
+      "confirmNewInvoice": "Neue Rechnung für diesen Kunden erstellen?",
+      "timelineTitle": "Aktivitäts-Zeitleiste",
+      "timelineSubtitle": "Nachrichten, Erinnerungen und Portal-Aktivität",
+      "timelineEmpty": "Noch keine Zeitleisten-Einträge für diesen Kunden."
     },
     "calculator": {
       "title": "Rechner",
@@ -1742,6 +1831,32 @@
         "selectCustomer": "Bitte zuerst einen Kunden auswählen",
         "runCalculationFirst": "Bitte zuerst eine Berechnung durchführen",
         "createFailed": "Erstellung fehlgeschlagen"
+      },
+      "confirmCreateInvoice": "Rechnung aus dieser Berechnung erstellen?",
+      "confirmCreateQuote": "Angebot aus dieser Berechnung erstellen?",
+      "editPricing": "Preise bearbeiten",
+      "history": {
+        "title": "Verlauf",
+        "subtitle": "Alle gespeicherten Rechner-Berechnungen",
+        "emptyMessage": "Noch keine Rechner-Einträge gespeichert."
+      },
+      "records": {
+        "title": "Rechner-Einträge",
+        "empty": "Noch keine gespeicherten Berechnungen.",
+        "number": "Nummer",
+        "date": "Datum",
+        "service": "Dienst",
+        "total": "Gesamt"
+      },
+      "pricing": {
+        "title": "Preise verwalten",
+        "subtitle": "Preisregeln nach Bootslänge und Dienst",
+        "saved": "Preisregel gespeichert",
+        "empty": "Noch keine Preisregeln.",
+        "newRule": "Neue Preisregel",
+        "selectProduct": "Produkt auswählen",
+        "confirmDelete": "Diese Preisregel löschen?",
+        "deleted": "Preisregel gelöscht"
       }
     },
     "settings": {
@@ -1836,6 +1951,11 @@
       "title": "Produkte",
       "subtitle": "Produktkatalog für Kasse und Rechnungen verwalten",
       "new": "Neues Produkt",
+      "createSubtitle": "Vollständiges Produktformular mit Preis, Kategorie und Kassen-Einstellungen",
+      "detailTitle": "Produkt",
+      "backToList": "Zurück zur Liste",
+      "openInKassa": "In Kasse öffnen",
+      "metaTitle": "Metadaten",
       "searchPlaceholder": "Nach Code oder Name suchen",
       "loading": "Produkte laden",
       "emptyTitle": "Keine Produkte",
@@ -1853,17 +1973,49 @@
         "status": "Status"
       },
       "fields": {
-        "priceExcl": "Preis exkl. MwSt"
+        "priceExcl": "Preis exkl. MwSt",
+        "priceIncl": "Preis inkl. MwSt",
+        "barcode": "Barcode",
+        "searchCode": "Suchcode",
+        "color": "Farbe",
+        "description": "Beschreibung",
+        "descriptionPlaceholder": "Kurze Beschreibung für Kasse und Rechnungen",
+        "serviceCode": "Service-Code",
+        "serviceCodeNone": "Kein Service-Code",
+        "categoryNone": "Keine Kategorie",
+        "sku": "SKU",
+        "supplier": "Lieferant",
+        "imageUrl": "Bild-URL",
+        "tags": "Tags",
+        "tagsPlaceholder": "lagerung, saison",
+        "aliases": "Aliase",
+        "aliasesPlaceholder": "Alternative Suchnamen",
+        "created": "Erstellt",
+        "updated": "Aktualisiert"
+      },
+      "sections": {
+        "identity": "Identität",
+        "classification": "Klassifizierung",
+        "pricing": "Preise",
+        "pos": "Kasse & Bestand"
+      },
+      "categories": {
+        "stalling": "Lagerung",
+        "repair": "Reparatur / Dienst",
+        "retail": "Einzelhandel",
+        "other": "Sonstiges"
       },
       "modal": {
         "title": "Neues Produkt",
-        "subtitle": "Produkt zum Katalog hinzufügen."
+        "subtitle": "Produkt zum Katalog hinzufügen.",
+        "editTitle": "Produkt bearbeiten"
       },
       "toasts": {
         "created": "Produkt erstellt",
         "createFailed": "Erstellen fehlgeschlagen",
         "deleted": "Produkt gelöscht",
-        "deleteFailed": "Löschen fehlgeschlagen"
+        "deleteFailed": "Löschen fehlgeschlagen",
+        "updated": "Produkt aktualisiert"
       }
     },
     "payments": {
@@ -1918,7 +2070,8 @@
         "createFailed": "Erstellen fehlgeschlagen",
         "activated": "Benutzer aktiviert",
         "deactivated": "Benutzer deaktiviert"
-      }
+      },
+      "confirmDeactivate": "Möchten Sie {name} wirklich deaktivieren? Dieser Benutzer kann sich danach nicht mehr anmelden."
     },
     "calendar": {
       "title": "Kalender",
@@ -2026,6 +2179,14 @@
         "storage": "Storage",
         "webhooks": "Webhooks"
       },
+      "status": {
+        "healthy": "Betriebsbereit",
+        "degraded": "Eingeschränkt",
+        "error": "Störung",
+        "unknown": "Unbekannt",
+        "conflict": "Konflikt",
+        "latency": "Antwortzeit {ms} ms"
+      },
       "repair": {
         "payments": "Zahlungen",
         "webhooks": "Webhooks",
@@ -2042,6 +2203,8 @@
         "resendEmail": "E-Mail erneut senden",
         "regeneratePdf": "PDF neu generieren",
         "mergeCustomers": "Kunden zusammenführen",
+        "confirmMergeCustomers": "Kunden zusammenführen? Alle Daten des Duplikats werden zum Hauptkunden übertragen. Dies kann nicht rückgängig gemacht werden.",
+        "confirmResendEmail": "Rechnungs-E-Mail erneut an den Kunden senden?",
         "resolveKeepServer": "Serverversion behalten",
         "resolveUseClient": "Clientversion verwenden",
         "resolveConflictTitle": "Sync-Konflikt lösen",
@@ -2072,9 +2235,83 @@
         "amount": "Betrag (EUR)",
         "description": "Beschreibung"
       },
+      "confirmCredit": "{amount} zum Guthaben dieses Kunden hinzufügen?",
       "toasts": {
         "credited": "Guthaben hinzugefügt"
       }
+    },
+    "search": {
+      "hint": "Geben Sie mindestens 2 Zeichen ein, um Kunden, Boote, Rechnungen und mehr zu suchen.",
+      "noResults": "Keine Ergebnisse gefunden."
+    },
+    "impersonation": {
+      "banner": "Sie sind angemeldet als {name}",
+      "stop": "Impersonation beenden",
+      "action": "Impersonieren",
+      "failed": "Impersonation fehlgeschlagen",
+      "noEmail": "Keine E-Mail-Adresse für diesen Kunden",
+      "noUser": "Kein Benutzer für diese E-Mail-Adresse gefunden",
+      "notAllowed": "Admin-Benutzer können nicht impersoniert werden",
+      "confirmTitle": "Benutzer impersonieren",
+      "confirmMessage": "Sie melden sich als {name} an. Alle Aktionen werden in deren Namen ausgeführt.",
+      "confirmStop": "Impersonation beenden und zu Ihrem eigenen Konto zurückkehren?"
+    },
+    "invoiceImports": {
+      "title": "Rechnungsimport",
+      "subtitle": "Eingehende Rechnungen hochladen und automatisch verarbeiten",
+      "upload": "PDF hochladen",
+      "queue": "Import-Warteschlange",
+      "approve": "Genehmigen",
+      "confirmApprove": "Diesen Import genehmigen und als Rechnung verarbeiten?",
+      "emptyTitle": "Keine Importe",
+      "emptyMessage": "Laden Sie ein PDF hoch, um zu beginnen.",
+      "columns": {
+        "file": "Datei",
+        "status": "Status",
+        "date": "Datum"
+      },
+      "toasts": {
+        "uploaded": "Rechnung zur Verarbeitung hochgeladen"
+      }
+    },
+    "workOrders": {
+      "title": "Arbeitsaufträge",
+      "subtitle": "Arbeiten pro Boot planen und verfolgen",
+      "new": "Neuer Arbeitsauftrag",
+      "createSubtitle": "Arbeitsauftrag für Wartung oder Reparatur anlegen",
+      "description": "Beschreibung",
+      "emptyTitle": "Keine Arbeitsaufträge",
+      "emptyMessage": "Noch keine Arbeitsaufträge erstellt.",
+      "total": "{count} Arbeitsaufträge",
+      "columns": {
+        "number": "Nummer",
+        "type": "Typ",
+        "status": "Status",
+        "priority": "Priorität",
+        "due": "Fälligkeitsdatum"
+      },
+      "status": {
+        "new": "Neu",
+        "inProgress": "In Bearbeitung",
+        "done": "Abgeschlossen",
+        "cancelled": "Storniert"
+      },
+      "toasts": {
+        "created": "Arbeitsauftrag erstellt"
+      },
+      "forbiddenTitle": "Kein Zugriff auf Arbeitsaufträge",
+      "forbiddenMessage": "Ihr Konto hat keine Berechtigung für /v1/work-orders. Der Admin-Rolle müssen in der API die work-orders-Rechte zugewiesen werden (Spatie), wie bei Staff/Manager."
+    },
+    "reminders": {
+      "title": "Intelligente Erinnerungen",
+      "subtitle": "Übersicht geplanter und überfälliger Kundenerinnerungen",
+      "invoiceDue": "Offene Rechnungen",
+      "contractsExpiring": "Verträge laufen ab",
+      "workOrdersDue": "Fällige Arbeitsaufträge",
+      "today": "Heute",
+      "upcoming": "Geplant",
+      "overdue": "Überfällig",
+      "completed": "Erledigt"
     }
   }
 }

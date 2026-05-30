@@ -13,7 +13,6 @@ import {
   Hotel,
   Mail,
   MapPin,
-  MessageCircle,
   Phone,
   Search,
   Shield,
@@ -83,7 +82,7 @@ const QUESTIONS: { cat: string; q: string; a: string }[] = [
 ];
 
 export default function FaqPage() {
-  const { t } = useIntl();
+  const { t, locale } = useIntl();
   const [cat, setCat] = React.useState("all");
   const [q, setQ] = React.useState("");
   const [open, setOpen] = React.useState<number | null>(0);
@@ -113,7 +112,7 @@ export default function FaqPage() {
             </p>
             <div className="mt-6 max-w-md">
               <Input
-                placeholder="Zoek bijv. winterstalling, kranen, betalen..."
+                placeholder={t('faq.searchPlaceholder')}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 leftIcon={<Search className="h-4 w-4" />}
@@ -281,27 +280,21 @@ export default function FaqPage() {
               {t("faq.readyDesc")}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button
-                variant="gold"
-                size="lg"
-                rightIcon={<ArrowRight className="h-4 w-4" />}
-              >
-                {t("faq.contactBtn")}
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-              >
-                <MessageCircle className="mr-1.5 h-4 w-4" />
-                Chat met ons
-              </Button>
+              <Link href={`/${locale}/contact`}>
+                <Button
+                  variant="gold"
+                  size="lg"
+                  rightIcon={<ArrowRight className="h-4 w-4" />}
+                >
+                  {t("faq.contactBtn")}
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="grid gap-3 text-sm">
-            <Row icon={Phone}>0475 32 22 75</Row>
+            <Row icon={Phone}>{t("footer.phone")}</Row>
             <Row icon={Mail}>info@krekelberg-nautic.nl</Row>
-            <Row icon={MapPin}>Havenstraat 12, 6041 BC Roermond</Row>
+            <Row icon={MapPin}>{t("footer.address")}</Row>
           </div>
         </div>
       </section>

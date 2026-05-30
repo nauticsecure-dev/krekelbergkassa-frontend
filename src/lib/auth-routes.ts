@@ -99,6 +99,16 @@ export function canAccessAdmin(role: Role | undefined, isDemo: boolean): boolean
   return role === 'admin' || role === 'manager' || role === 'staff';
 }
 
+/** Work orders API is permission-gated — admin role cannot access /v1/work-orders. */
+export function canAccessWorkOrders(role: Role | undefined): boolean {
+  return role === 'staff' || role === 'manager';
+}
+
+export function isWorkOrdersPath(pathname: string): boolean {
+  const path = stripLocale(pathname);
+  return path === '/admin/werkorders' || path.startsWith('/admin/werkorders/');
+}
+
 export function canAccessPortal(
   role: Role | undefined,
   isPortalSession: boolean,

@@ -76,8 +76,8 @@ export function Header() {
       className={cn(
         'sticky top-0 z-40 w-full transition-all',
         scrolled
-          ? 'border-b border-navy-100/80 bg-white/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/75'
-          : 'border-b border-transparent bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/50'
+          ? 'border-b border-navy-100/80 bg-white/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/90'
+          : 'border-b border-transparent bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/90'
       )}
     >
       {/* Sub-bar */}

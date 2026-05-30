@@ -423,8 +423,8 @@
     "support": "Ondersteuning",
     "legal": "Juridisch",
     "copyright": "© {year} Krekelberg Nautic — Alle rechten voorbehouden.",
-    "address": "Havenstraat 12, 6041 BC Roermond",
-    "phone": "+31 475 32 22 75",
+    "address": "Hertenerweg 2, 6049AA Herten",
+    "phone": "+31 (0)475 31 56 61",
     "email": "info@krekelberg-nautic.nl"
   },
   "crane": {
@@ -436,7 +436,7 @@
     "phone": "Telefoonnummer",
     "email": "E-mailadres",
     "boatName": "Naam boot",
-    "boatLength": "Lengte (m)",
+    "boatLength": "Lengte (cm)",
     "boatWidth": "Breedte (m)",
     "boatWeight": "Gewicht (kg)",
     "services": "Kies uw diensten",
@@ -451,13 +451,26 @@
     "submit": "Afspraak aanvragen",
     "submitSuccess": "Afspraak aangevraagd",
     "submitFailed": "Aanvraag mislukt",
+    "confirmSubmit": "Je aanvraag versturen? Je ontvangt binnen 24 uur een bevestiging per e-mail.",
     "footerNote": "Uw aanvraag wordt binnen 24 uur bevestigd. Een betaalverzoek wordt toegestuurd.",
     "selectDate": "Selecteer eerst een datum",
-    "manualReview": "Manuele beoordeling vereist"
+    "manualReview": "Manuele beoordeling vereist",
+    "notes": "Opmerkingen (optioneel)",
+    "placeholders": {
+      "name": "Jan Jansen",
+      "phone": "06 12345678",
+      "email": "jan@voorbeeld.nl",
+      "boatName": "Aquila",
+      "boatLength": "890",
+      "boatWidth": "2.8",
+      "boatWeight": "3500",
+      "notes": "Bijv. gewenste ligplaats of bijzonderheden over uw boot"
+    }
   },
   "faq": {
     "title": "Veelgestelde vragen",
     "subtitle": "Vind direct antwoord op de meest gestelde vragen over onze diensten, planning en tarieven. Staat uw vraag er niet bij? Neem gerust contact met ons op.",
+    "searchPlaceholder": "Zoek bijv. winterstalling, kranen, betalen...",
     "categories": "Categorieën",
     "helpTitle": "Geen antwoord gevonden?",
     "helpDesc": "Wij staan voor u klaar tijdens kantooruren.",
@@ -490,15 +503,23 @@
     "badge": "Bezoek of bel ons",
     "title": "Welkom op de werf\nin Roermond.",
     "subtitle": "Onze werf, brokerage en appartementen vindt u in één maritieme locatie aan de Maasplassen. Onze mensen staan voor u klaar.",
-    "address": "Mr. Hartelaan 1, 6045 EM Roermond",
+    "address": "Hertenerweg 2, 6049AA Herten",
     "addressLabel": "Bezoekadres",
-    "phone": "+31 475 32 22 75",
+    "phone": "+31 (0)475 31 56 61",
     "phoneLabel": "Telefoon",
     "email": "info@krekelberg-nautic.nl",
     "emailLabel": "E-mail",
     "hoursTitle": "Openingstijden",
+    "hoursSubtitle": "Vaste weekplanning",
     "hoursHighSeason": "Hoogseizoen (april — oktober)",
     "hoursLowSeason": "Laagseizoen (november — maart)",
+    "monday": "Maandag",
+    "tuesday": "Dinsdag",
+    "wednesday": "Woensdag",
+    "thursday": "Donderdag",
+    "friday": "Vrijdag",
+    "saturday": "Zaterdag",
+    "sunday": "Zondag",
     "monFri": "ma — vr",
     "sat": "zaterdag",
     "sun": "zondag",
@@ -539,9 +560,9 @@
     "amenityHarbor": "Direct aan de jachthaven",
     "locationTitle": "Locatie",
     "locationBody": "U overnacht direct boven onze werf in Roermond, op slechts enkele meters van de Maasplassen. Het centrum van Roermond bereikt u in 5 minuten met de auto of fiets.",
-    "locationAddress": "Mr. Hartelaan 1, 6045 EM Roermond",
+    "locationAddress": "Hertenerweg 2, 6049AA Herten",
     "infoCta": "Vraag beschikbaarheid",
-    "phoneCta": "Bel 0475 32 22 75",
+    "phoneCta": "Bel +31 (0)475 31 56 61",
     "contactNote": "Reserveringen verlopen persoonlijk via mail of telefoon, zodat we elke gast persoonlijk te woord kunnen staan."
   },
   "verkoopPage": {
@@ -586,7 +607,10 @@
     "termsMiddle": " en ",
     "termsAfter": ".",
     "terms": "algemene voorwaarden",
-    "privacy": "privacyverklaring"
+    "privacy": "privacyverklaring",
+    "checkEmail": "Uw account is aangemaakt. Controleer uw e-mail voor de magic login link.",
+    "fullNamePlaceholder": "Jan Jansen",
+    "phonePlaceholder": "+31 6 12345678"
   },
   "loginExt": {
     "subtitle": "Toegang tot uw werfdossier, facturen en kraanafspraken in één beschermde omgeving van Krekelberg Nautic."
@@ -665,7 +689,7 @@
     "stat2Desc": "Beheer uw boten en bootgegevens.",
     "stat3Title": "Facturen",
     "stat3Desc": "Bekijk en download documenten.",
-    "address": "Mr. Hartelaan 1, 6045 EM Roermond",
+    "address": "Hertenerweg 2, 6049AA Herten",
     "physicalSupport": "Fysieke ondersteuning in Roermond",
     "signinBadge": "Vertrouwde maritieme service",
     "signinTitle": "Beheer uw werf, stalling\nen verkoop op één plek.",
@@ -693,7 +717,7 @@
     "forgotF2Title": "Geen wachtwoord-leak",
     "forgotF2Desc": "We tonen nooit of een mailadres bestaat.",
     "forgotF3Title": "Direct hulp",
-    "forgotF3Desc": "Bel 0475 32 22 75 voor persoonlijke ondersteuning."
+    "forgotF3Desc": "Bel +31 (0)475 31 56 61 voor persoonlijke ondersteuning."
   },
   "feed": {
     "title": "Tijdlijn",
@@ -1092,7 +1116,11 @@
       "noEmail": "geen e-mail",
       "operationFailed": "Actie mislukt",
       "confirm": "Bevestigen",
-      "reasonTooShort": "Geef minimaal {min} tekens op"
+      "reasonTooShort": "Geef minimaal {min} tekens op",
+      "back": "Terug",
+      "edit": "Bewerken",
+      "view": "Bekijken",
+      "confirmLogout": "Weet je zeker dat je wilt uitloggen?"
     },
     "dashboard": {
       "title": "Operatie",
@@ -1131,7 +1159,93 @@
         "activeSessions": "Actieve portal sessies",
         "newQuestions": "Nieuwe klantvragen",
         "totalCustomers": "Totaal klanten"
+      },
+      "calculatorCard": {
+        "title": "Calculator",
+        "subtitle": "Snel prijs berekenen voor jachthaven diensten",
+        "selectService": "Selecteer dienst"
       }
+    },
+    "search": {
+      "hint": "Typ minimaal 2 tekens om te zoeken in klanten, boten, facturen en meer.",
+      "noResults": "Geen resultaten gevonden.",
+      "sections": {
+        "customers": "Klanten",
+        "boats": "Boten",
+        "invoices": "Facturen",
+        "products": "Producten",
+        "stalling": "Stalling",
+        "calculator_records": "Calculator records"
+      }
+    },
+    "impersonation": {
+      "banner": "Je bent ingelogd als {name}",
+      "stop": "Stop impersonatie",
+      "action": "Impersoneren",
+      "failed": "Impersonatie mislukt",
+      "noEmail": "Geen e-mailadres voor deze klant",
+      "noUser": "Geen gebruiker gevonden voor dit e-mailadres",
+      "notAllowed": "Admin gebruikers kunnen niet geïmpersoneerd worden",
+      "confirmTitle": "Gebruiker impersoneren",
+      "confirmMessage": "Je logt in als {name}. Alle acties worden uitgevoerd namens deze gebruiker.",
+      "confirmStop": "Impersonatie beëindigen en terugkeren naar je eigen account?"
+    },
+    "workOrders": {
+      "title": "Werkorders",
+      "subtitle": "Plan en volg werkzaamheden per boot",
+      "new": "Nieuwe werkorder",
+      "createSubtitle": "Maak een werkorder aan voor onderhoud of reparatie",
+      "description": "Omschrijving",
+      "emptyTitle": "Geen werkorders",
+      "emptyMessage": "Er zijn nog geen werkorders aangemaakt.",
+      "total": "{count} werkorders",
+      "columns": {
+        "number": "Nummer",
+        "type": "Type",
+        "status": "Status",
+        "priority": "Prioriteit",
+        "due": "Deadline"
+      },
+      "status": {
+        "new": "Nieuw",
+        "inProgress": "In behandeling",
+        "done": "Afgerond",
+        "cancelled": "Geannuleerd"
+      },
+      "toasts": {
+        "created": "Werkorder aangemaakt"
+      },
+      "forbiddenTitle": "Geen toegang tot werkorders",
+      "forbiddenMessage": "Je account heeft geen permissie voor /v1/work-orders. De admin-rol moet in de API de work-orders rechten krijgen (Spatie-permissie), net als staff/manager."
+    },
+    "invoiceImports": {
+      "title": "Factuur import",
+      "subtitle": "Upload en verwerk inkomende facturen automatisch",
+      "upload": "PDF uploaden",
+      "queue": "Import wachtrij",
+      "approve": "Goedkeuren",
+      "confirmApprove": "Deze import goedkeuren en verwerken als factuur?",
+      "emptyTitle": "Geen imports",
+      "emptyMessage": "Upload een PDF om te starten.",
+      "columns": {
+        "file": "Bestand",
+        "status": "Status",
+        "date": "Datum"
+      },
+      "toasts": {
+        "uploaded": "Factuur geüpload voor verwerking"
+      }
+    },
+    "reminders": {
+      "title": "Slimme herinneringen",
+      "subtitle": "Overzicht van geplande en achterstallige klantherinneringen",
+      "invoiceDue": "Openstaande facturen",
+      "contractsExpiring": "Contracten verlopen",
+      "workOrdersDue": "Werkorders due",
+      "today": "Vandaag",
+      "upcoming": "Gepland",
+      "overdue": "Achterstallig",
+      "completed": "Afgehandeld"
     },
     "customers": {
       "title": "Klanten",
@@ -1174,7 +1288,8 @@
     },
     "sidebar": {
       "calculator": "Calculator",
-      "sync": "Offline / Sync"
+      "sync": "Offline / Sync",
+      "workOrders": "Werkorders"
     },
     "states": {
       "errorTitle": "Er ging iets mis",
@@ -1240,11 +1355,16 @@
       "selectCustomer": "Selecteer klant",
       "confirmDelete": "Boot verwijderen?",
       "total": "{count} boten",
+      "dossierSubtitle": "Volledig bootdossier met stalling, facturen en auditlog",
+      "editTitle": "Boot bewerken",
+      "editSubtitle": "Corrigeer lengte, locatie en andere gegevens",
       "toasts": {
         "created": "Boot aangemaakt",
         "createFailed": "Aanmaken mislukt",
         "deleted": "Boot verwijderd",
-        "deleteFailed": "Verwijderen mislukt"
+        "deleteFailed": "Verwijderen mislukt",
+        "updated": "Boot bijgewerkt",
+        "updateFailed": "Bijwerken mislukt"
       }
     },
     "kassa": {
@@ -1282,6 +1402,14 @@
       "createQuote": "Maak offerte",
       "modalTitle": "Nieuwe klant (kassa)",
       "modalSubtitle": "Naam en e-mail zijn voldoende voor snelle checkout.",
+      "splitPayment": "Split betaling",
+      "amountPlaceholder": "€",
+      "qrPayment": "Mollie QR",
+      "onAccount": "Op rekening",
+      "confirmCheckout": "Checkout afronden voor {total}? Betaalmethode: {method}.",
+      "confirmCheckoutTitle": "Checkout bevestigen",
+      "editProducts": "Producten beheren",
+      "scanBarcode": "Scan barcode",
       "creating": "Aanmaken…",
       "create": "Aanmaken",
       "toasts": {
@@ -1292,6 +1420,24 @@
         "checkoutFailed": "Checkout mislukt",
         "quoteDone": "Offerte berekend",
         "quoteFailed": "Offerte mislukt"
+      },
+      "analytics": {
+        "title": "Kassa analytics",
+        "subtitle": "Omzet, transacties en betaalmethoden",
+        "turnover": "Omzet",
+        "transactions": "Transacties",
+        "avgTicket": "Gem. bon",
+        "refunds": "Terugbetalingen",
+        "revenueChart": "Omzet per periode",
+        "paymentMethods": "Betaalmethoden",
+        "noChartData": "Nog geen omzetdata voor deze periode.",
+        "noPaymentData": "Nog geen betaalmethodedata.",
+        "periods": {
+          "today": "Vandaag",
+          "7d": "7 dagen",
+          "30d": "30 dagen",
+          "month": "Deze maand"
+        }
       }
     },
     "stalling": {
@@ -1321,10 +1467,24 @@
       "invoice": "Factuur",
       "cancel": "Annuleer",
       "confirmCancel": "Dit contract annuleren?",
+      "confirmCreateInvoice": "Factuur aanmaken voor dit stallingcontract?",
       "invoiceCreated": "Factuur aangemaakt",
       "cancelled": "Contract geannuleerd",
       "contracts": "{count} contracten",
-      "openCustomer": "Open klant"
+      "openCustomer": "Open klant",
+      "new": "Nieuw contract",
+      "createSubtitle": "Maak een stalling contract aan",
+      "auditTitle": "Audit log",
+      "auditSubtitle": "Recente wijzigingen aan stalling contracten",
+      "auditEmpty": "Geen audit events",
+      "auditEmptyMessage": "Er zijn nog geen stalling wijzigingen gelogd.",
+      "fields": {
+        "startDate": "Startdatum",
+        "endDate": "Einddatum"
+      },
+      "toasts": {
+        "created": "Contract aangemaakt"
+      }
     },
     "sync": {
       "eyebrow": "Integratie & datasync",
@@ -1342,6 +1502,8 @@
       "lastSync": "Laatste sync",
       "pendingChanges": "Pending wijzigingen",
       "clear": "Leegmaken",
+      "confirmClear": "Alle pending offline wijzigingen verwijderen? Niet-gesynchroniseerde data gaat verloren.",
+      "confirmDeleteItem": "Deze pending wijziging verwijderen?",
       "retry": "Retry",
       "noPending": "Geen pending offline wijzigingen.",
       "devices": "Geregistreerde sync devices",
@@ -1416,7 +1578,8 @@
         "bankTransfer": "Bankoverschrijving",
         "continuePay": "Doorgaan naar betaling",
         "payFailed": "Betaling starten mislukt",
-        "payOpened": "Betaalpagina geopend in een nieuw tabblad"
+        "payOpened": "Betaalpagina geopend in een nieuw tabblad",
+        "confirmPay": "Doorgaan naar betaling van {amount} via {method}?"
       },
       "stalling": {
         "title": "Mijn stalling",
@@ -1480,6 +1643,7 @@
         "item": "Bericht",
         "markAll": "Alles gelezen",
         "markAllDone": "Alle berichten gemarkeerd als gelezen",
+        "confirmMarkAll": "Alle {count} ongelezen berichten als gelezen markeren?",
         "filterAll": "Alle",
         "filterUnread": "Ongelezen",
         "filterRead": "Gelezen",
@@ -1653,7 +1817,11 @@
         "cancelled": "Factuur geannuleerd",
         "reminderSent": "Herinnering verstuurd",
         "markedPaid": "Factuur als betaald gemarkeerd"
-      }
+      },
+      "confirmCancel": "Deze factuur annuleren? Dit kan niet ongedaan worden gemaakt.",
+      "confirmCredit": "Een creditfactuur aanmaken voor deze factuur?",
+      "confirmSend": "Deze factuur per e-mail naar de klant versturen?",
+      "confirmMarkPaid": "Deze factuur handmatig als betaald markeren? Controleer het bedrag en de betaalmethode."
     },
     "customerDetail": {
       "fallbackTitle": "Klant",
@@ -1676,6 +1844,9 @@
       "files": "Bestanden",
       "file": "Bestand",
       "noFiles": "Geen bestanden gekoppeld aan deze klant.",
+      "timelineTitle": "Activiteitstijdlijn",
+      "timelineSubtitle": "Berichten, herinneringen en portal activiteit",
+      "timelineEmpty": "Nog geen tijdlijn items voor deze klant.",
       "boatType": "Type",
       "lengthCm": "Lengte (cm)",
       "locationCode": "Locatiecode",
@@ -1704,7 +1875,8 @@
         "createFailed": "Aanmaken mislukt",
         "invoiceCreated": "Factuur aangemaakt",
         "invoiceCreateFailed": "Factuur aanmaken mislukt"
-      }
+      },
+      "confirmNewInvoice": "Een nieuwe factuur aanmaken voor deze klant?"
     },
     "calculator": {
       "title": "Calculator",
@@ -1742,6 +1914,33 @@
         "selectCustomer": "Selecteer eerst een klant",
         "runCalculationFirst": "Voer eerst een berekening uit",
         "createFailed": "Aanmaken mislukt"
+      },
+      "confirmCreateInvoice": "Factuur aanmaken op basis van deze berekening?",
+      "confirmCreateQuote": "Offerte aanmaken op basis van deze berekening?",
+      "records": {
+        "title": "Calculator records",
+        "empty": "Nog geen opgeslagen berekeningen.",
+        "number": "Nummer",
+        "date": "Datum",
+        "service": "Dienst",
+        "total": "Totaal"
+      },
+      "pricing": {
+        "title": "Prijzen beheren",
+        "subtitle": "Pricing rules per bootlengte en dienst",
+        "saved": "Pricing rule opgeslagen",
+        "empty": "Nog geen pricing rules.",
+        "newRule": "Nieuwe pricing rule",
+        "selectProduct": "Selecteer product",
+        "confirmDelete": "Deze prijsregel verwijderen?",
+        "deleted": "Prijsregel verwijderd"
+      },
+      "manageServices": "Services beheren",
+      "editPricing": "Prijzen bewerken",
+      "history": {
+        "title": "Historie",
+        "subtitle": "Alle opgeslagen calculator berekeningen",
+        "emptyMessage": "Er zijn nog geen calculator records opgeslagen."
       }
     },
     "settings": {
@@ -1836,6 +2035,11 @@
       "title": "Producten",
       "subtitle": "Beheer productcatalogus voor kassa en facturatie",
       "new": "Nieuw product",
+      "createSubtitle": "Volledig productformulier met prijs, categorie en kassa-instellingen",
+      "detailTitle": "Product",
+      "backToList": "Terug naar overzicht",
+      "openInKassa": "Open in kassa",
+      "metaTitle": "Metadata",
       "searchPlaceholder": "Zoek op code of naam",
       "loading": "Producten laden",
       "emptyTitle": "Geen producten",
@@ -1853,17 +2057,49 @@
         "status": "Status"
       },
       "fields": {
-        "priceExcl": "Prijs excl. BTW"
+        "priceExcl": "Prijs excl. BTW",
+        "priceIncl": "Prijs incl. BTW",
+        "barcode": "Barcode",
+        "searchCode": "Zoekcode",
+        "color": "Kleur",
+        "description": "Omschrijving",
+        "descriptionPlaceholder": "Korte omschrijving voor kassa en facturen",
+        "serviceCode": "Service code",
+        "serviceCodeNone": "Geen service code",
+        "categoryNone": "Geen categorie",
+        "sku": "SKU",
+        "supplier": "Leverancier",
+        "imageUrl": "Afbeelding URL",
+        "tags": "Tags",
+        "tagsPlaceholder": "stalling, seizoen",
+        "aliases": "Aliassen",
+        "aliasesPlaceholder": "Alternatieve zoeknamen",
+        "created": "Aangemaakt",
+        "updated": "Bijgewerkt"
+      },
+      "sections": {
+        "identity": "Identiteit",
+        "classification": "Classificatie",
+        "pricing": "Prijzen",
+        "pos": "Kassa & voorraad"
+      },
+      "categories": {
+        "stalling": "Stalling",
+        "repair": "Reparatie / dienst",
+        "retail": "Retail",
+        "other": "Overig"
       },
       "modal": {
         "title": "Nieuw product",
-        "subtitle": "Voeg een product toe aan de catalogus."
+        "subtitle": "Voeg een product toe aan de catalogus.",
+        "editTitle": "Product bewerken"
       },
       "toasts": {
         "created": "Product aangemaakt",
         "createFailed": "Aanmaken mislukt",
         "deleted": "Product verwijderd",
-        "deleteFailed": "Verwijderen mislukt"
+        "deleteFailed": "Verwijderen mislukt",
+        "updated": "Product bijgewerkt"
       }
     },
     "payments": {
@@ -1918,7 +2154,8 @@
         "createFailed": "Aanmaken mislukt",
         "activated": "Gebruiker geactiveerd",
         "deactivated": "Gebruiker gedeactiveerd"
-      }
+      },
+      "confirmDeactivate": "Weet je zeker dat je {name} wilt deactiveren? Deze gebruiker kan daarna niet meer inloggen."
     },
     "calendar": {
       "title": "Kalender",
@@ -2026,6 +2263,14 @@
         "storage": "Storage",
         "webhooks": "Webhooks"
       },
+      "status": {
+        "healthy": "Operationeel",
+        "degraded": "Beperkt",
+        "error": "Storing",
+        "unknown": "Onbekend",
+        "conflict": "Conflict",
+        "latency": "Reactietijd {ms} ms"
+      },
       "repair": {
         "payments": "Betalingen",
         "webhooks": "Webhooks",
@@ -2042,6 +2287,8 @@
         "resendEmail": "E-mail opnieuw versturen",
         "regeneratePdf": "PDF opnieuw genereren",
         "mergeCustomers": "Klanten samenvoegen",
+        "confirmMergeCustomers": "Klanten samenvoegen? Alle gegevens van het duplicaat worden overgezet naar de hoofdklant. Dit kan niet ongedaan worden gemaakt.",
+        "confirmResendEmail": "Factuur-e-mail opnieuw versturen naar de klant?",
         "resolveKeepServer": "Serverversie behouden",
         "resolveUseClient": "Clientversie gebruiken",
         "resolveConflictTitle": "Sync conflict oplossen",
@@ -2072,6 +2319,7 @@
         "amount": "Bedrag (EUR)",
         "description": "Omschrijving"
       },
+      "confirmCredit": "{amount} toevoegen aan het tegoed van deze klant?",
       "toasts": {
         "credited": "Tegoed toegevoegd"
       }

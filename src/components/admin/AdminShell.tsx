@@ -10,11 +10,13 @@ import {
   LogOut,
   Menu,
   Plus,
-  Search,
   Settings,
   X,
 } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
+import { AdminGlobalSearch, AdminSearchTrigger, useGlobalSearchShortcut } from './AdminGlobalSearch';
+import { ImpersonationBanner } from '@/components/auth/ImpersonationBanner';
+import { ConfirmLogoutProvider, useConfirmLogout } from '@/components/auth/ConfirmLogoutProvider';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
 import { LanguageSwitcher } from '@/components/site/LanguageSwitcher';
@@ -30,7 +32,11 @@ import { adminService, invoicesService, stallingService } from '@/lib/services';
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
   const pathname = usePathname();
+
+  useGlobalSearchShortcut(() => setSearchOpen(true));
 
   React.useEffect(() => setOpen(false), [pathname]);
   React.useEffect(() => {
@@ -43,18 +49,29 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [open]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-sand-50">
-      <AdminSidebar />
+    <ConfirmLogoutProvider>
+      <div className="flex h-screen overflow-hidden bg-sand-50">
+      <AdminSidebar
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+      />
 
       <MobileDrawer open={open} onClose={() => setOpen(false)}>
         <AdminSidebar variant="mobile" />
       </MobileDrawer>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <GlobalTopbar onMenuClick={() => setOpen(true)} />
+        <ImpersonationBanner />
+        <GlobalTopbar
+          onMenuClick={() => setOpen(true)}
+          onSearchClick={() => setSearchOpen(true)}
+        />
         <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">{children}</main>
       </div>
+
+      <AdminGlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
+    </ConfirmLogoutProvider>
   );
 }
 
@@ -62,9 +79,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 /*                              Global Topbar                                  */
 /* -------------------------------------------------------------------------- */
 
-function GlobalTopbar({ onMenuClick }: { onMenuClick: () => void }) {
+function GlobalTopbar({
+  onMenuClick,
+  onSearchClick,
+}: {
+  onMenuClick: () => void;
+  onSearchClick: () => void;
+}) {
   const { t, locale } = useIntl();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { requestLogout } = useConfirmLogout();
   const { bellOpen, menuOpen, toggleBell, toggleMenu, closeAll } = useShellDropdowns();
   const notifications = useQuery([locale], async () => {
     const [invoices, stalling, reminders] = await Promise.all([
@@ -136,17 +160,7 @@ function GlobalTopbar({ onMenuClick }: { onMenuClick: () => void }) {
         </Link>
 
         {/* Search */}
-        <div className="relative hidden flex-1 lg:block">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
-          <input
-            type="search"
-            placeholder={t('admin.common.search')}
-            className="input-base w-full max-w-md pl-9"
-          />
-          <kbd className="absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-navy-100 bg-sand-50 px-1.5 py-0.5 text-[10px] font-semibold text-navy-500 sm:inline">
-            ⌘ K
-          </kbd>
-        </div>
+        <AdminSearchTrigger onClick={onSearchClick} />
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <Link
@@ -267,16 +281,8 @@ function GlobalTopbar({ onMenuClick }: { onMenuClick: () => void }) {
                   <HelpCircle className="h-4 w-4" />
                   {t('admin.sidebar.help')}
                 </Link>
-                <Link
-                  href={`/${locale}/admin/sync`}
-                  onClick={closeAll}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-navy-700 hover:bg-sand-50"
-                >
-                  <Bell className="h-4 w-4" />
-                  {t('adminNew.sidebar.sync')}
-                </Link>
                 <button
-                  onClick={() => void signOut()}
+                  onClick={requestLogout}
                   className="flex w-full items-center gap-2 border-t border-navy-100 px-4 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
                 >
                   <LogOut className="h-4 w-4" />

@@ -21,6 +21,8 @@ export type ApiError = {
   data?: unknown;
 };
 
+const REQUEST_TIMEOUT_MS = 25_000;
+
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
   query?: Record<
@@ -30,6 +32,7 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
   auth?: boolean;
   portalAuth?: boolean;
   queueWhenOffline?: boolean;
+  timeoutMs?: number;
 }
 
 function buildUrl(path: string, query?: RequestOptions['query']) {
@@ -78,17 +81,35 @@ export async function api<T = unknown>(
   }
 
   try {
-    const res = await fetch(buildUrl(path, opts.query), {
-      ...opts,
-      headers,
-      body:
-        opts.body == null
-          ? undefined
-          : opts.body instanceof FormData
-            ? opts.body
-            : JSON.stringify(opts.body),
-      credentials: credentialsMode,
-    });
+    const timeoutMs = opts.timeoutMs ?? REQUEST_TIMEOUT_MS;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    let res: Response;
+    try {
+      res = await fetch(buildUrl(path, opts.query), {
+        ...opts,
+        headers,
+        signal: controller.signal,
+        body:
+          opts.body == null
+            ? undefined
+            : opts.body instanceof FormData
+              ? opts.body
+              : JSON.stringify(opts.body),
+        credentials: credentialsMode,
+      });
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw {
+          status: 408,
+          message: 'Request timed out. Please try again.',
+        } satisfies ApiError;
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     const contentType = res.headers.get('content-type')?.toLowerCase() ?? '';
     const isJson = contentType.includes('application/json');

@@ -8,6 +8,7 @@ import { useIntl } from "@/i18n/IntlProvider";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/ToastProvider";
+import { getApiErrorMessage } from "@/lib/api-error";
 import {
   ROLE_REDIRECTS,
   coerceLoginRole,
@@ -60,9 +61,7 @@ function LoginPageContent() {
         router.push(`/${locale}/feed`);
       })
       .catch((err) => {
-        const message =
-          err instanceof Error ? err.message : t("common.loginFailed");
-        setError(message);
+        setError(getApiErrorMessage(err, t("common.loginFailed")));
       })
       .finally(() => setLoading(false));
   }, [verifyCustomerMagicLink, push, router, locale, t]);
@@ -83,7 +82,7 @@ function LoginPageContent() {
       await signIn(email, password, remember);
       router.push(dest);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.loginFailed"));
+      setError(getApiErrorMessage(err, t("common.loginFailed")));
     } finally {
       setLoading(false);
     }

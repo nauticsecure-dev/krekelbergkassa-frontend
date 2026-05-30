@@ -30,7 +30,9 @@ import {
 import { api } from '@/lib/api';
 import { syncService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 
 export default function SyncStatusPage() {
   const { t, locale } = useIntl();
@@ -41,6 +43,8 @@ export default function SyncStatusPage() {
     Array<{ device_id?: string; device_name?: string; last_sync_at?: string }>
   >([]);
   const [syncing, setSyncing] = React.useState(false);
+  const [confirmClear, setConfirmClear] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
 
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
 
@@ -65,11 +69,11 @@ export default function SyncStatusPage() {
       push({ tone: 'success', title: t('adminNew.sync.itemSynced') });
       await load();
     } catch (err) {
-      await markOfflineFailed(item.id, err instanceof Error ? err.message : 'Unknown sync error');
+      await markOfflineFailed(item.id, getApiErrorMessage(err, 'Unknown sync error'));
       push({
         tone: 'error',
         title: t('adminNew.sync.syncFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
       await load();
     }
@@ -146,12 +150,7 @@ export default function SyncStatusPage() {
                 variant="ghost"
                 size="sm"
                 leftIcon={<Trash2 className="h-4 w-4" />}
-                onClick={() =>
-                  void (async () => {
-                    await clearOfflineChanges();
-                    await load();
-                  })()
-                }
+                onClick={() => setConfirmClear(true)}
               >
                 {t('adminNew.sync.clear')}
               </Button>
@@ -175,12 +174,7 @@ export default function SyncStatusPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
-                          void (async () => {
-                            await removeOfflineChange(item.id);
-                            await load();
-                          })()
-                        }
+                        onClick={() => setDeleteTarget(item.id)}
                       >
                         {t('adminNew.common.delete')}
                       </Button>
@@ -226,6 +220,39 @@ export default function SyncStatusPage() {
           )}
         </AdminSectionCard>
       </AdminContent>
+
+      <AdminConfirmModal
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        onConfirm={async () => {
+          await clearOfflineChanges();
+          await load();
+          setConfirmClear(false);
+        }}
+        title={t('adminNew.sync.clear')}
+        message={t('adminNew.sync.confirmClear')}
+        confirmLabel={t('adminNew.sync.clear')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={Trash2}
+      />
+
+      <AdminConfirmModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await removeOfflineChange(deleteTarget);
+          await load();
+          setDeleteTarget(null);
+        }}
+        title={t('adminNew.common.delete')}
+        message={t('adminNew.sync.confirmDeleteItem')}
+        confirmLabel={t('adminNew.common.delete')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={Trash2}
+      />
     </>
   );
 }

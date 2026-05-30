@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="auth-input"
               required
-              placeholder="naam@voorbeeld.nl"
+              placeholder={t('adminNew.auth.emailPlaceholder')}
               autoComplete="email"
             />
           </div>

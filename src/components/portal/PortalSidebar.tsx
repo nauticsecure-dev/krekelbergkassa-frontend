@@ -19,6 +19,7 @@ import {
 import { Logo } from '@/components/ui/Logo';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useAuth } from '@/lib/auth-context';
+import { useConfirmLogout } from '@/components/auth/ConfirmLogoutProvider';
 import { Avatar } from '@/components/ui/Avatar';
 import { cn } from '@/lib/cn';
 
@@ -35,7 +36,8 @@ type PortalNavLink = {
 
 export function PortalSidebar({ variant = 'desktop' }: Props) {
   const { locale, t } = useIntl();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { requestLogout } = useConfirmLogout();
   const pathname = usePathname();
 
   const links: PortalNavLink[] = [
@@ -144,7 +146,7 @@ export function PortalSidebar({ variant = 'desktop' }: Props) {
             </div>
           </div>
           <button
-            onClick={() => void signOut()}
+            onClick={requestLogout}
             className="text-sand-100/40 hover:text-white"
             aria-label={t('adminNew.common.logout')}
           >

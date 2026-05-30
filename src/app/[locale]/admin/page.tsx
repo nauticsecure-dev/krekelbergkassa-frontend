@@ -1,13 +1,14 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import {
   AlertTriangle,
+  Bell,
   Calculator,
   CreditCard,
   Receipt,
   Sparkles,
-  Users,
   Warehouse,
 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
@@ -15,43 +16,56 @@ import {
   AdminContent,
   AdminQuickAction,
   AdminSectionCard,
+  AdminSelect,
   AdminStatusStrip,
 } from '@/components/admin/AdminUi';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { useQuery } from '@/lib/hooks/useAsync';
+import { useSyncStatus } from '@/lib/hooks/useSyncStatus';
 import {
-  adminService,
-  customersService,
   invoicesService,
   kassaService,
+  pricingService,
   stallingService,
-  syncService,
+  adminService,
 } from '@/lib/services';
 import { centsToEuro, formatCurrency } from '@/lib/format';
+import { normalizeRemindersSummary } from '@/lib/reminders-summary';
 import { useIntl } from '@/i18n/IntlProvider';
+import { useMutation } from '@/lib/hooks/useAsync';
+import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
+import { pricingTotalInclEuros } from '@/lib/pricing-result';
+import { useAuth } from '@/lib/auth-context';
+import { canAccessWorkOrders } from '@/lib/auth-routes';
 
 export default function AdminDashboardPage() {
   const { locale, t } = useIntl();
+  const { push } = useToast();
+  const { user } = useAuth();
+  const showWorkOrders = canAccessWorkOrders(user?.role);
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const sync = useSyncStatus();
+
+  const [calcService, setCalcService] = React.useState('winterstalling');
+  const [calcLength, setCalcLength] = React.useState('890');
+  const [calcResult, setCalcResult] = React.useState<number | null>(null);
+
+  const calculate = useMutation(pricingService.calculate);
 
   const { data, loading } = useQuery([locale], async () => {
-    const [invoices, stalling, sales, syncStatus, portalSessions, reminders, customers] =
-      await Promise.all([
-        invoicesService.list({ per_page: 100 }),
-        stallingService.list({ per_page: 100 }),
-        kassaService.recentSales().catch(() => []),
-        syncService.status().catch(() => null),
-        adminService.portalSessions({ per_page: 1 }).catch(() => null),
-        adminService.reminders({ per_page: 1 }).catch(() => null),
-        customersService.list({ per_page: 1 }).catch(() => null),
-      ]);
+    const [invoices, stalling, sales, analytics, reminders] = await Promise.all([
+      invoicesService.list({ per_page: 100 }),
+      stallingService.list({ per_page: 100 }),
+      kassaService.recentSales().catch(() => []),
+      kassaService.analytics().catch(() => null),
+      adminService.remindersSummary().catch(() => null),
+    ]);
 
     const overdueInvoices = invoices.data.filter((x) => x.is_overdue).length;
     const openInvoices = invoices.data.filter((x) => !x.is_fully_paid).length;
     const overdueStalling = stalling.data.filter((x) => x.payment_status === 'overdue').length;
-    const activePortalSessions = portalSessions?.meta?.total ?? portalSessions?.data.length ?? 0;
-    const openCustomerQuestions = reminders?.meta?.total ?? reminders?.data.length ?? 0;
-    const totalCustomers = customers?.meta?.total ?? customers?.data.length ?? 0;
     const todayRevenue = sales.reduce((sum, sale) => {
       const raw =
         typeof sale.total_amount_cents === 'string'
@@ -60,17 +74,44 @@ export default function AdminDashboardPage() {
       return sum + (Number.isFinite(raw) ? Number(raw) : 0);
     }, 0);
 
+    const analyticsTotals = analytics?.totals as Record<string, number> | undefined;
+    const reminderCounts = normalizeRemindersSummary(reminders);
+
     return {
       overdueInvoices,
       openInvoices,
       overdueStalling,
       todayRevenue,
-      syncStatus,
-      activePortalSessions,
-      openCustomerQuestions,
-      totalCustomers,
+      analyticsTurnover: analyticsTotals?.turnover_cents ?? todayRevenue,
+      reminderCounts,
     };
   });
+
+  const runQuickCalc = async () => {
+    try {
+      const res = await calculate.mutate({
+        length_cm: Number(calcLength),
+        services: [calcService === 'winterstalling' ? 'stalling' : calcService],
+        contract_type: calcService === 'winterstalling' ? 'winter' : undefined,
+        persist: false,
+      });
+      setCalcResult(pricingTotalInclEuros(res));
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.calculator.toasts.failed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
+
+  const syncLabel = !sync.online
+    ? t('adminNew.sync.offline')
+    : sync.failed > 0
+      ? t('adminNew.sync.error')
+      : sync.pending > 0
+        ? t('adminNew.sync.pending')
+        : t('adminNew.sync.online');
 
   return (
     <>
@@ -93,7 +134,7 @@ export default function AdminDashboardPage() {
             icon: CreditCard,
             tone: 'marine',
             loading,
-            href: `/${locale}/admin/facturen`,
+            href: `/${locale}/admin/facturen?status=open`,
           },
           {
             label: t('adminNew.dashboard.cards.stallingActions.title'),
@@ -115,15 +156,11 @@ export default function AdminDashboardPage() {
           },
           {
             label: t('adminNew.dashboard.cards.syncStatus.title'),
-            value: data?.syncStatus?.status ?? t('adminNew.common.unknown'),
-            hint: data?.syncStatus?.last_sync_at
-              ? t('adminNew.dashboard.cards.syncStatus.lastSync', {
-                  time: new Date(data.syncStatus.last_sync_at).toLocaleTimeString(dateLocale),
-                })
-              : t('adminNew.dashboard.cards.syncStatus.noSync'),
+            value: syncLabel,
+            hint: sync.pending > 0 ? `${sync.pending} pending` : t('adminNew.dashboard.cards.syncStatus.noSync'),
             icon: AlertTriangle,
-            tone: 'navy',
-            loading,
+            tone: !sync.online ? 'warning' : sync.failed > 0 ? 'danger' : 'success',
+            loading: sync.loading,
             href: `/${locale}/admin/sync`,
           },
         ]}
@@ -138,10 +175,10 @@ export default function AdminDashboardPage() {
           >
             <div className="grid gap-3 sm:grid-cols-2">
               <AdminQuickAction
-                href={`/${locale}/admin/klanten`}
-                label={t('adminNew.dashboard.actions.customers')}
-                icon={Users}
-                tone="marine"
+                href={`/${locale}/admin/kassa`}
+                label={t('admin.sidebar.kassa')}
+                icon={Receipt}
+                tone="gold"
               />
               <AdminQuickAction
                 href={`/${locale}/admin/stalling`}
@@ -165,45 +202,82 @@ export default function AdminDashboardPage() {
           </AdminSectionCard>
 
           <AdminSectionCard
-            title={t('adminNew.dashboard.portal.title')}
-            description={t('adminNew.dashboard.portal.openPortal')}
-            icon={Users}
-            action={
-              <Link
-                href={`/${locale}/feed`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-semibold text-marine-700 hover:text-marine-900"
-              >
-                {t('adminNew.dashboard.portal.openPortal')} →
-              </Link>
-            }
+            title={t('adminNew.dashboard.calculatorCard.title')}
+            description={t('adminNew.dashboard.calculatorCard.subtitle')}
+            icon={Calculator}
           >
-            <div className="space-y-2">
-              <AdminStatusStrip
-                label={t('adminNew.dashboard.portal.activeSessions')}
-                value={loading ? '…' : data?.activePortalSessions ?? 0}
-                tone="marine"
-              />
-              <AdminStatusStrip
-                label={t('adminNew.dashboard.portal.newQuestions')}
-                value={loading ? '…' : data?.openCustomerQuestions ?? 0}
-                tone={data?.openCustomerQuestions ? 'warning' : 'success'}
-              />
-              <AdminStatusStrip
-                label={t('adminNew.dashboard.portal.totalCustomers')}
-                value={loading ? '…' : data?.totalCustomers ?? 0}
-                tone="navy"
-              />
-            </div>
-            <div className="mt-4 flex items-center gap-2 rounded-xl bg-gradient-to-tr from-navy-950 to-marine-900 px-4 py-3 text-white">
-              <Sparkles className="h-4 w-4 text-gold-300" />
-              <span className="text-xs leading-relaxed text-sand-100/85">
-                {t('adminNew.dashboard.portal.openPortal')}
-              </span>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-500">
+                  {t('adminNew.dashboard.calculatorCard.selectService')}
+                </label>
+                <AdminSelect value={calcService} onChange={setCalcService}>
+                  <option value="winterstalling">{t('adminNew.stalling.type.winter')}</option>
+                  <option value="kranen">Kranen</option>
+                  <option value="afspuiten">Afspuiten</option>
+                  <option value="stalling">{t('adminNew.stalling.title')}</option>
+                </AdminSelect>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-500">
+                  {t('adminNew.calculator.lengthCm')}
+                </label>
+                <input
+                  type="number"
+                  className="input-base w-full"
+                  value={calcLength}
+                  onChange={(e) => setCalcLength(e.target.value)}
+                />
+              </div>
+              {calcResult !== null ? (
+                <AdminStatusStrip
+                  label={t('adminNew.calculator.result.totalPrice')}
+                  value={formatCurrency(calcResult, dateLocale)}
+                  tone="success"
+                />
+              ) : null}
+              <div className="flex flex-wrap gap-2">
+                <Button variant="gold" size="sm" onClick={() => void runQuickCalc()} disabled={calculate.loading}>
+                  {t('adminNew.calculator.calculate')}
+                </Button>
+                <Link href={`/${locale}/admin/calculator`}>
+                  <Button variant="outline" size="sm">
+                    {t('adminNew.dashboard.actions.calculator')} →
+                  </Button>
+                </Link>
+              </div>
             </div>
           </AdminSectionCard>
         </div>
+
+        <AdminSectionCard
+          title={t('adminNew.reminders.title')}
+          description={t('adminNew.reminders.subtitle')}
+          icon={Bell}
+          className="mt-5"
+        >
+          <div className={`grid gap-3 ${showWorkOrders ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+            <AdminStatusStrip
+              label={t('adminNew.reminders.invoiceDue')}
+              value={data?.reminderCounts?.invoiceDue ?? 0}
+              tone={(data?.reminderCounts?.invoiceDue ?? 0) > 0 ? 'warning' : 'success'}
+            />
+            <AdminStatusStrip
+              label={t('adminNew.reminders.contractsExpiring')}
+              value={data?.reminderCounts?.contractsExpiring ?? 0}
+              tone={(data?.reminderCounts?.contractsExpiring ?? 0) > 0 ? 'gold' : 'marine'}
+            />
+            {showWorkOrders ? (
+              <Link href={`/${locale}/admin/werkorders`} className="block">
+                <AdminStatusStrip
+                  label={t('adminNew.reminders.workOrdersDue')}
+                  value={data?.reminderCounts?.workOrdersDue ?? 0}
+                  tone={(data?.reminderCounts?.workOrdersDue ?? 0) > 0 ? 'danger' : 'navy'}
+                />
+              </Link>
+            ) : null}
+          </div>
+        </AdminSectionCard>
       </AdminContent>
     </>
   );

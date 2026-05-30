@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { Plus, Shield, UserCog } from 'lucide-react';
+import { Plus, Shield, UserCog, UserRound, UserX } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
   AdminContent,
   AdminModalBody,
@@ -22,9 +23,11 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { usersService } from '@/lib/services';
+import { canImpersonateUser, impersonateUser, ImpersonationError } from '@/lib/impersonate';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import { formatDate } from '@/lib/format';
 
@@ -39,11 +42,20 @@ export default function UsersPage() {
     password: '',
     role: 'staff',
   });
+  const [deactivateTarget, setDeactivateTarget] = React.useState<{ id: string; name: string } | null>(
+    null
+  );
+  const [impersonateTarget, setImpersonateTarget] = React.useState<{ id: string; name: string } | null>(
+    null
+  );
 
   const users = useQuery([page], () => usersService.list({ page, per_page: 20 }));
   const register = useMutation(usersService.register);
   const activate = useMutation(usersService.activate);
   const deactivate = useMutation(usersService.deactivate);
+  const updateUser = useMutation((payload: { id: string; data: Record<string, unknown> }) =>
+    usersService.update(payload.id, payload.data)
+  );
 
   const rows = users.data?.data ?? [];
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
@@ -60,7 +72,7 @@ export default function UsersPage() {
       push({
         tone: 'error',
         title: t('adminNew.users.toasts.createFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -78,7 +90,22 @@ export default function UsersPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
+
+  const onImpersonate = async (id: string) => {
+    try {
+      await impersonateUser(id, locale);
+    } catch (err) {
+      push({
+        tone: 'error',
+        title:
+          err instanceof ImpersonationError
+            ? t('adminNew.impersonation.notAllowed')
+            : t('adminNew.impersonation.failed'),
+        message: err instanceof ImpersonationError ? undefined : getApiErrorMessage(err),
       });
     }
   };
@@ -146,9 +173,43 @@ export default function UsersPage() {
                         {row.last_login_at ? formatDate(row.last_login_at, dateLocale) : '—'}
                       </AdminTableCell>
                       <AdminTableCell>
-                        <Button size="sm" variant="ghost" onClick={() => void toggleActive(row.id, row.active)}>
-                          {row.active ? t('adminNew.users.deactivate') : t('adminNew.users.activate')}
-                        </Button>
+                        <div className="flex flex-wrap justify-end gap-1">
+                          {canImpersonateUser(row.role) ? (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              leftIcon={<UserRound className="h-3.5 w-3.5" />}
+                              onClick={() => setImpersonateTarget({ id: row.id, name: row.name })}
+                            >
+                              {t('adminNew.impersonation.action')}
+                            </Button>
+                          ) : null}
+                          <select
+                            className="input-base max-w-[110px] py-1 text-xs"
+                            value={row.locale ?? 'nl-NL'}
+                            onChange={(e) =>
+                              void updateUser
+                                .mutate({ id: row.id, data: { locale: e.target.value } })
+                                .then(() => users.refetch())
+                            }
+                          >
+                            <option value="nl-NL">NL</option>
+                            <option value="en-GB">EN</option>
+                            <option value="de-DE">DE</option>
+                            <option value="fr-FR">FR</option>
+                          </select>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              row.active
+                                ? setDeactivateTarget({ id: row.id, name: row.name })
+                                : void toggleActive(row.id, row.active)
+                            }
+                          >
+                            {row.active ? t('adminNew.users.deactivate') : t('adminNew.users.activate')}
+                          </Button>
+                        </div>
                       </AdminTableCell>
                     </AdminTableRow>
                   ))}
@@ -193,6 +254,39 @@ export default function UsersPage() {
           </AdminModalFooter>
         </form>
       </Modal>
+
+      <AdminConfirmModal
+        open={!!deactivateTarget}
+        onClose={() => setDeactivateTarget(null)}
+        onConfirm={async () => {
+          if (!deactivateTarget) return;
+          await toggleActive(deactivateTarget.id, true);
+          setDeactivateTarget(null);
+        }}
+        title={t('adminNew.users.deactivate')}
+        message={t('adminNew.users.confirmDeactivate', { name: deactivateTarget?.name ?? '' })}
+        confirmLabel={t('adminNew.users.deactivate')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={UserX}
+        loading={deactivate.loading}
+      />
+
+      <AdminConfirmModal
+        open={!!impersonateTarget}
+        onClose={() => setImpersonateTarget(null)}
+        onConfirm={async () => {
+          if (!impersonateTarget) return;
+          await onImpersonate(impersonateTarget.id);
+          setImpersonateTarget(null);
+        }}
+        title={t('adminNew.impersonation.confirmTitle')}
+        message={t('adminNew.impersonation.confirmMessage', { name: impersonateTarget?.name ?? '' })}
+        confirmLabel={t('adminNew.impersonation.action')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={UserRound}
+      />
     </>
   );
 }

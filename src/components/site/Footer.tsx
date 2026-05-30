@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
 import { useIntl } from '@/i18n/IntlProvider';
 import { Mail, MapPin, Phone } from 'lucide-react';
+import { cn } from '@/lib/cn';
 
-export function Footer() {
+export function Footer({ className }: { className?: string }) {
   const { t, locale } = useIntl();
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-24 bg-navy-900 text-sand-100">
+    <footer className={cn('mt-24 bg-navy-900 text-sand-100', className)}>
       <div className="container-wide grid gap-10 py-14 md:grid-cols-4">
         <div>
           <Logo variant="light" />

@@ -93,3 +93,21 @@ export function hasPortalSession(): boolean {
 export function hasAnySession(): boolean {
   return !!getAuthToken() || !!getPortalToken();
 }
+
+const USER_CACHE_KEY = 'krek_user_cache';
+
+export function readCachedUser<T>(): T | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(USER_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeCachedUser(user: unknown | null) {
+  if (typeof window === 'undefined') return;
+  if (user) sessionStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
+  else sessionStorage.removeItem(USER_CACHE_KEY);
+}

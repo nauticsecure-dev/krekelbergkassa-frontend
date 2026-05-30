@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { getApiErrorMessage, getApiErrorStatus } from '@/lib/api-error';
 
 export function useQuery<T>(
   deps: React.DependencyList,
@@ -10,29 +11,42 @@ export function useQuery<T>(
   const [data, setData] = React.useState<T | null>(null);
   const [loading, setLoading] = React.useState<boolean>(options?.immediate !== false);
   const [error, setError] = React.useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = React.useState<number | null>(null);
+  const generationRef = React.useRef(0);
 
-  const run = React.useCallback(async () => {
+  const refetch = React.useCallback(async () => {
+    const generation = ++generationRef.current;
     setLoading(true);
     setError(null);
+    setErrorStatus(null);
     try {
       const res = await fn();
-      setData(res);
+      if (generationRef.current === generation) {
+        setData(res);
+      }
       return res;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unexpected error';
-      setError(message);
+      if (generationRef.current === generation) {
+        setError(getApiErrorMessage(err));
+        setErrorStatus(getApiErrorStatus(err) ?? null);
+      }
       throw err;
     } finally {
-      setLoading(false);
+      if (generationRef.current === generation) {
+        setLoading(false);
+      }
     }
   }, deps); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
     if (options?.immediate === false) return;
-    void run();
-  }, [run, options?.immediate]);
+    void refetch();
+    return () => {
+      generationRef.current += 1;
+    };
+  }, [refetch, options?.immediate]);
 
-  return { data, loading, error, refetch: run, setData };
+  return { data, loading, error, errorStatus, refetch, setData };
 }
 
 export function useMutation<TArgs extends unknown[], TResult>(
@@ -48,8 +62,7 @@ export function useMutation<TArgs extends unknown[], TResult>(
       try {
         return await fn(...args);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Unexpected error';
-        setError(message);
+        setError(getApiErrorMessage(err));
         throw err;
       } finally {
         setLoading(false);
