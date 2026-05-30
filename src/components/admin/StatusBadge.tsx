@@ -3,11 +3,19 @@
 import { Badge } from '@/components/ui/Badge';
 import { useIntl } from '@/i18n/IntlProvider';
 
-export function InvoiceStatusBadge({ status }: { status: string }) {
+export function InvoiceStatusBadge({
+  status,
+  isOverdue,
+}: {
+  status: string;
+  isOverdue?: boolean;
+}) {
   const { t } = useIntl();
   const normalized = status.toLowerCase();
   if (normalized.includes('paid')) return <Badge tone="success">{t('adminNew.status.paid')}</Badge>;
-  if (normalized.includes('overdue')) return <Badge tone="danger">{t('adminNew.status.overdue')}</Badge>;
+  if (normalized.includes('overdue') || isOverdue) {
+    return <Badge tone="danger">{t('adminNew.status.overdue')}</Badge>;
+  }
   if (normalized.includes('credit')) return <Badge tone="warning">{t('adminNew.status.credited')}</Badge>;
   if (normalized.includes('cancel')) return <Badge tone="sand">{t('adminNew.status.cancelled')}</Badge>;
   if (normalized.includes('draft')) return <Badge tone="navy">{t('adminNew.status.draft')}</Badge>;

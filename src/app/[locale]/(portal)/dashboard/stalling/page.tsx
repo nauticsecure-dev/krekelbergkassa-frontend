@@ -9,15 +9,15 @@ import {
 } from 'lucide-react';
 import { PortalPageHeader } from '@/components/portal/PortalShell';
 import {
-  ContractStatusBadge,
   PortalContent,
   PortalDetailGrid,
   PortalInteractiveRow,
   PortalModalBody,
   PortalModalFooter,
   PortalModalHeader,
+  PortalSectionCard,
+  ContractStatusBadge,
 } from '@/components/portal/PortalUi';
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
@@ -84,32 +84,31 @@ export default function PortalStallingPage() {
       />
 
       <PortalContent>
+        <PortalSectionCard
+          title={t('adminNew.portal.stalling.title')}
+          description={t('adminNew.portal.stalling.listOverview')}
+          icon={Warehouse}
+        >
         {contracts.loading ? (
-          <Card className="overflow-hidden">
-            <LoadingState label={t('adminNew.portal.stalling.loading')} variant="list" />
-          </Card>
+          <LoadingState label={t('adminNew.portal.stalling.loading')} variant="list" />
         ) : null}
 
         {!contracts.loading && contracts.error ? (
-          <Card>
-            <ErrorState message={contracts.error} onRetry={() => void contracts.refetch()} />
-          </Card>
+          <ErrorState message={contracts.error} onRetry={() => void contracts.refetch()} />
         ) : null}
 
         {!contracts.loading && !contracts.error && items.length === 0 ? (
-          <Card>
-            <EmptyState
-              title={t('adminNew.portal.stalling.empty')}
-              message={t('adminNew.portal.stalling.emptyMessage')}
-              action={
-                <Link href={`/${locale}/contact`}>
-                  <Button variant="gold" size="sm">
-                    {t('adminNew.portal.stalling.contact')}
-                  </Button>
-                </Link>
-              }
-            />
-          </Card>
+          <EmptyState
+            title={t('adminNew.portal.stalling.empty')}
+            message={t('adminNew.portal.stalling.emptyMessage')}
+            action={
+              <Link href={`/${locale}/contact`}>
+                <Button variant="gold" size="sm">
+                  {t('adminNew.portal.stalling.contact')}
+                </Button>
+              </Link>
+            }
+          />
         ) : null}
 
         {!contracts.loading && !contracts.error && items.length > 0 ? (
@@ -141,6 +140,7 @@ export default function PortalStallingPage() {
             ))}
           </div>
         ) : null}
+        </PortalSectionCard>
       </PortalContent>
 
       <Modal open={!!selected} onClose={() => setSelected(null)} size="lg">

@@ -6,6 +6,7 @@ import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
   AdminSearchInput,
+  AdminSectionCard,
   AdminSelect,
   AdminTable,
   AdminTableCard,
@@ -75,7 +76,12 @@ export default function AuditPage() {
       />
 
       <AdminContent>
-        <AdminToolbar>
+        <AdminSectionCard
+          title={t('adminNew.audit.title')}
+          description={t('adminNew.audit.subtitle')}
+          icon={Shield}
+        >
+        <AdminToolbar className="mb-4 border-0 bg-transparent p-0 shadow-none">
           <AdminSearchInput
             value={query}
             onChange={(value) => {
@@ -156,6 +162,7 @@ export default function AuditPage() {
             </AdminTable>
           ) : null}
         </AdminTableCard>
+        </AdminSectionCard>
       </AdminContent>
     </>
   );

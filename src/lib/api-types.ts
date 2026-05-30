@@ -499,3 +499,108 @@ export interface SyncStatus {
   device_id?: string;
   device_name?: string;
 }
+
+export type AppointmentStatus =
+  | 'pending_manual_review'
+  | 'confirmed'
+  | 'started'
+  | 'out_of_water'
+  | 'in_water'
+  | 'wash_started'
+  | 'completed'
+  | 'cancelled'
+  | 'no_show'
+  | string;
+
+export interface OpeningHour {
+  id: string;
+  type: string;
+  day_of_week: number | null;
+  specific_date: string | null;
+  open_from: string | null;
+  open_until: string | null;
+  is_closed: boolean;
+  label: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface BoatLocation {
+  id: string;
+  code: string;
+  section: string | null;
+  row: string | null;
+  slot: string | null;
+  difficulty: string;
+  extra_minutes: number;
+  is_blocked: boolean;
+  notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface CalendarConfig {
+  regular_hours: OpeningHour[];
+  exceptions: OpeningHour[];
+  lunch_block: OpeningHour | null;
+}
+
+export interface BookingSlotsResponse {
+  date: string;
+  duration_minutes: string;
+  slots: string[];
+  is_open: boolean;
+}
+
+export interface BookingCalendarDay {
+  date: string;
+  is_open: boolean;
+  open_from: string | null;
+  open_until: string | null;
+  label: string | null;
+}
+
+export interface BookingCalendarResponse {
+  days: BookingCalendarDay[];
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  active: boolean;
+  two_factor_enabled?: boolean;
+  last_login_at?: string | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface WalletTransaction {
+  id: string;
+  type: string;
+  amount_cents: number;
+  amount_euros?: number;
+  description: string;
+  notes?: string | null;
+  created_at: string;
+}
+
+export interface AdminWallet {
+  wallet_id?: string;
+  balance_cents: number;
+  balance_euros: number;
+  currency: string;
+  has_credit?: boolean;
+  transactions: WalletTransaction[];
+  total: number;
+  has_more?: boolean;
+}
+
+export interface HealthCheckResult {
+  status: string;
+  message?: string;
+  latency_ms?: number;
+  details?: Record<string, unknown>;
+  [key: string]: unknown;
+}

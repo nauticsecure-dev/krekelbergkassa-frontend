@@ -351,6 +351,78 @@ export function AdminPanel({
   );
 }
 
+export function AdminSectionCard({
+  title,
+  description,
+  icon: Icon,
+  action,
+  children,
+  className,
+}: {
+  title: string;
+  description?: string;
+  icon: LucideIcon;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={cn(
+        'surface-float overflow-hidden rounded-2xl border border-navy-100/60 bg-white',
+        className
+      )}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-navy-100/80 bg-gradient-to-r from-sand-50/90 via-white to-marine-50/30 px-5 py-4">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-marine-50 text-marine-700">
+            <Icon className="h-4 w-4" />
+          </span>
+          <div>
+            <h3 className="text-sm font-semibold text-navy-900">{title}</h3>
+            {description ? <p className="mt-0.5 text-xs text-navy-500">{description}</p> : null}
+          </div>
+        </div>
+        {action}
+      </div>
+      <div className="p-5">{children}</div>
+    </section>
+  );
+}
+
+export function AdminListItem({
+  title,
+  subtitle,
+  error,
+  meta,
+  actions,
+  className,
+}: {
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
+  error?: React.ReactNode;
+  meta?: React.ReactNode;
+  actions?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        'flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-gradient-to-r from-white to-sand-50/40 px-4 py-3 transition hover:border-navy-200',
+        className
+      )}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="font-medium text-navy-900">{title}</div>
+        {subtitle ? <div className="text-xs text-navy-500">{subtitle}</div> : null}
+        {error ? <div className="mt-0.5 text-xs text-rose-600">{error}</div> : null}
+      </div>
+      {meta ? <div className="text-xs text-navy-500">{meta}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
+    </div>
+  );
+}
+
 export function AdminModalHeader({
   title,
   subtitle,

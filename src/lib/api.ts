@@ -23,7 +23,10 @@ export type ApiError = {
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
-  query?: Record<string, string | number | boolean | undefined | null>;
+  query?: Record<
+    string,
+    string | number | boolean | undefined | null | string[]
+  >;
   auth?: boolean;
   portalAuth?: boolean;
   queueWhenOffline?: boolean;
@@ -33,7 +36,12 @@ function buildUrl(path: string, query?: RequestOptions['query']) {
   const url = new URL(path.startsWith('http') ? path : `${API_BASE}${path}`);
   if (query) {
     for (const [k, v] of Object.entries(query)) {
-      if (v !== undefined && v !== null && v !== '') {
+      if (v === undefined || v === null || v === '') continue;
+      if (Array.isArray(v)) {
+        for (const item of v) {
+          if (item !== '') url.searchParams.append(k, String(item));
+        }
+      } else {
         url.searchParams.set(k, String(v));
       }
     }

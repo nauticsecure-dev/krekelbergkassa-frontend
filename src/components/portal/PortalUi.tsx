@@ -20,6 +20,45 @@ export function PortalContent({
   );
 }
 
+export function PortalSectionCard({
+  title,
+  description,
+  icon: Icon,
+  action,
+  children,
+  className,
+}: {
+  title: string;
+  description?: string;
+  icon: LucideIcon;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={cn(
+        'surface-float overflow-hidden rounded-2xl border border-navy-100/60 bg-white',
+        className
+      )}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-navy-100/80 bg-gradient-to-r from-sand-50/90 via-white to-marine-50/30 px-5 py-4">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-marine-50 text-marine-700">
+            <Icon className="h-4 w-4" />
+          </span>
+          <div>
+            <h3 className="text-sm font-semibold text-navy-900">{title}</h3>
+            {description ? <p className="mt-0.5 text-xs text-navy-500">{description}</p> : null}
+          </div>
+        </div>
+        {action}
+      </div>
+      <div className="p-5">{children}</div>
+    </section>
+  );
+}
+
 export function PortalMetricGrid({ children }: { children: React.ReactNode }) {
   return (
     <div className="bento-grid sm:grid-cols-2 xl:grid-cols-4">{children}</div>

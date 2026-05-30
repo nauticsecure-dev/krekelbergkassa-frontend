@@ -19,8 +19,8 @@ import {
   PortalModalBody,
   PortalModalFooter,
   PortalModalHeader,
+  PortalSectionCard,
 } from '@/components/portal/PortalUi';
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
@@ -140,7 +140,12 @@ export default function PortalInvoicesPage() {
       />
 
       <PortalContent>
-        <PortalFilterBar>
+        <PortalSectionCard
+          title={t('adminNew.portal.invoices.title')}
+          description={t('adminNew.portal.invoices.listOverview')}
+          icon={FileText}
+        >
+        <PortalFilterBar className="mb-4">
           {STATUS_FILTERS.map((value) => (
             <PortalFilterPill key={value || 'all'} active={status === value} onClick={() => setStatus(value)}>
               {value
@@ -151,21 +156,15 @@ export default function PortalInvoicesPage() {
         </PortalFilterBar>
 
         {invoices.loading ? (
-          <Card className="overflow-hidden">
-            <LoadingState label={t('adminNew.portal.invoices.loading')} variant="list" />
-          </Card>
+          <LoadingState label={t('adminNew.portal.invoices.loading')} variant="list" />
         ) : null}
 
         {!invoices.loading && invoices.error ? (
-          <Card>
-            <ErrorState message={invoices.error} onRetry={() => void invoices.refetch()} />
-          </Card>
+          <ErrorState message={invoices.error} onRetry={() => void invoices.refetch()} />
         ) : null}
 
         {!invoices.loading && !invoices.error && rows.length === 0 ? (
-          <Card>
-            <EmptyState title={t('adminNew.portal.invoices.empty')} message={t('adminNew.portal.invoices.emptyMessage')} />
-          </Card>
+          <EmptyState title={t('adminNew.portal.invoices.empty')} message={t('adminNew.portal.invoices.emptyMessage')} />
         ) : null}
 
         {!invoices.loading && !invoices.error && rows.length > 0 ? (
@@ -203,6 +202,7 @@ export default function PortalInvoicesPage() {
             ))}
           </div>
         ) : null}
+        </PortalSectionCard>
       </PortalContent>
 
       <Modal

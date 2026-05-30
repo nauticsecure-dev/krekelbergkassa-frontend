@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import {
   FileText,
+  Link2,
   Mail,
   Phone,
   RefreshCw,
@@ -16,8 +17,8 @@ import { PortalPageHeader } from '@/components/portal/PortalShell';
 import {
   PortalContent,
   PortalDetailGrid,
+  PortalSectionCard,
 } from '@/components/portal/PortalUi';
-import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
@@ -81,14 +82,12 @@ export default function PortalSettingsPage() {
       <PortalContent>
         {me.loading ? <LoadingState label={t('adminNew.portal.settings.loading')} variant="detail" /> : null}
         {!me.loading && me.error ? (
-          <Card>
-            <ErrorState message={me.error} onRetry={() => void me.refetch()} />
-          </Card>
+          <ErrorState message={me.error} onRetry={() => void me.refetch()} />
         ) : null}
 
         {me.data ? (
-          <>
-            <Card className="overflow-hidden p-0">
+          <div className="space-y-5">
+            <section className="surface-float overflow-hidden rounded-2xl border border-navy-100/60 bg-white">
               <div className="relative isolate bg-navy-950 px-6 py-8 text-white sm:px-8">
                 <div
                   aria-hidden
@@ -136,16 +135,14 @@ export default function PortalSettingsPage() {
                   </Button>
                 </div>
               </div>
-            </Card>
+            </section>
 
             <div className="grid gap-5 lg:grid-cols-2">
-              <Card className="p-6">
-                <div className="mb-4 flex items-center gap-2">
-                  <User className="h-4 w-4 text-marine-600" />
-                  <h3 className="text-sm font-semibold text-navy-900">
-                    {t('adminNew.portal.settings.myDetails')}
-                  </h3>
-                </div>
+              <PortalSectionCard
+                title={t('adminNew.portal.settings.myDetails')}
+                description={t('adminNew.portal.settings.listOverview')}
+                icon={User}
+              >
                 <PortalDetailGrid
                   items={[
                     { label: t('adminNew.common.name'), value: me.data.customer.name },
@@ -157,53 +154,44 @@ export default function PortalSettingsPage() {
                     },
                   ]}
                 />
-              </Card>
+              </PortalSectionCard>
 
-              <Card className="p-6">
-                <div className="mb-4 flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-gold-600" />
-                  <h3 className="text-sm font-semibold text-navy-900">
-                    {t('adminNew.portal.settings.securityTitle')}
-                  </h3>
-                </div>
-                <p className="text-sm leading-relaxed text-navy-600">
-                  {t('adminNew.portal.settings.securityText')}
-                </p>
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center gap-2 rounded-lg border border-navy-100 bg-sand-50/60 px-3 py-2 text-sm text-navy-700">
+              <PortalSectionCard
+                title={t('adminNew.portal.settings.securityTitle')}
+                description={t('adminNew.portal.settings.securityText')}
+                icon={Shield}
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 rounded-xl border border-navy-100 bg-sand-50/60 px-3 py-2.5 text-sm text-navy-700">
                     <Mail className="h-4 w-4 text-navy-400" />
                     {t('adminNew.portal.settings.securityEmail')}
                   </div>
-                  <div className="flex items-center gap-2 rounded-lg border border-navy-100 bg-sand-50/60 px-3 py-2 text-sm text-navy-700">
+                  <div className="flex items-center gap-2 rounded-xl border border-navy-100 bg-sand-50/60 px-3 py-2.5 text-sm text-navy-700">
                     <Phone className="h-4 w-4 text-navy-400" />
                     {t('adminNew.portal.settings.securitySupport')}
                   </div>
                 </div>
-              </Card>
+              </PortalSectionCard>
             </div>
 
-            <Card className="p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold text-navy-900">
-                    {t('adminNew.portal.settings.quickLinks')}
-                  </div>
-                  <p className="mt-1 text-xs text-navy-500">{t('adminNew.portal.settings.quickLinksHint')}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Link href={`/${locale}/dashboard/facturen`}>
-                    <Button variant="outline" size="sm">{t('login.invoices')}</Button>
-                  </Link>
-                  <Link href={`/${locale}/dashboard/boten`}>
-                    <Button variant="outline" size="sm">{t('login.yourBoats')}</Button>
-                  </Link>
-                  <Link href={`/${locale}/faq`}>
-                    <Button variant="gold" size="sm">{t('admin.sidebar.help')}</Button>
-                  </Link>
-                </div>
+            <PortalSectionCard
+              title={t('adminNew.portal.settings.quickLinks')}
+              description={t('adminNew.portal.settings.quickLinksHint')}
+              icon={Link2}
+            >
+              <div className="flex flex-wrap gap-2">
+                <Link href={`/${locale}/dashboard/facturen`}>
+                  <Button variant="outline" size="sm">{t('login.invoices')}</Button>
+                </Link>
+                <Link href={`/${locale}/dashboard/boten`}>
+                  <Button variant="outline" size="sm">{t('login.yourBoats')}</Button>
+                </Link>
+                <Link href={`/${locale}/faq`}>
+                  <Button variant="gold" size="sm">{t('admin.sidebar.help')}</Button>
+                </Link>
               </div>
-            </Card>
-          </>
+            </PortalSectionCard>
+          </div>
         ) : null}
       </PortalContent>
     </>

@@ -15,8 +15,8 @@ import {
   PortalModalBody,
   PortalModalFooter,
   PortalModalHeader,
+  PortalSectionCard,
 } from '@/components/portal/PortalUi';
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
@@ -39,11 +39,6 @@ export default function PortalBoatsPage() {
       <PortalPageHeader
         title={t('adminNew.portal.boats.title')}
         subtitle={t('adminNew.portal.boats.subtitle')}
-        rightSlot={
-          <Link href={`/${locale}/kraanafspraak`}>
-            <Button variant="gold" size="sm">{t('adminNew.portal.boats.planService')}</Button>
-          </Link>
-        }
         stats={[
           {
             label: t('adminNew.portal.boats.metricTotal'),
@@ -81,25 +76,29 @@ export default function PortalBoatsPage() {
       />
 
       <PortalContent>
+        <PortalSectionCard
+          title={t('adminNew.portal.boats.title')}
+          description={t('adminNew.portal.boats.listOverview')}
+          icon={Ship}
+          action={
+            <Link href={`/${locale}/kraanafspraak`}>
+              <Button variant="gold" size="sm">{t('adminNew.portal.boats.planService')}</Button>
+            </Link>
+          }
+        >
         {boats.loading ? (
-          <Card className="overflow-hidden">
-            <LoadingState label={t('adminNew.portal.boats.loading')} variant="cards" />
-          </Card>
+          <LoadingState label={t('adminNew.portal.boats.loading')} variant="cards" />
         ) : null}
 
         {!boats.loading && boats.error ? (
-          <Card>
-            <ErrorState message={boats.error} onRetry={() => void boats.refetch()} />
-          </Card>
+          <ErrorState message={boats.error} onRetry={() => void boats.refetch()} />
         ) : null}
 
         {!boats.loading && !boats.error && items.length === 0 ? (
-          <Card>
-            <EmptyState
-              title={t('adminNew.portal.boats.empty')}
-              message={t('adminNew.portal.boats.emptyMessage')}
-            />
-          </Card>
+          <EmptyState
+            title={t('adminNew.portal.boats.empty')}
+            message={t('adminNew.portal.boats.emptyMessage')}
+          />
         ) : null}
 
         {!boats.loading && !boats.error && items.length > 0 ? (
@@ -143,6 +142,7 @@ export default function PortalBoatsPage() {
             ))}
           </div>
         ) : null}
+        </PortalSectionCard>
       </PortalContent>
 
       <Modal open={!!selected} onClose={() => setSelected(null)} size="lg">

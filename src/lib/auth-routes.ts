@@ -106,5 +106,8 @@ export function canAccessPortal(
 ): boolean {
   if (isPortalSession) return true;
   if (isDemo && role === 'customer') return true;
-  return role === 'customer';
+  if (role === 'customer') return true;
+  // Staff/admin may preview the customer portal while logged into the back office.
+  if (canAccessAdmin(role, isDemo)) return true;
+  return false;
 }

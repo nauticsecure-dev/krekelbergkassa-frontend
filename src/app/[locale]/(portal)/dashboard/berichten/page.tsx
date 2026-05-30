@@ -18,9 +18,9 @@ import {
   PortalModalBody,
   PortalModalFooter,
   PortalModalHeader,
+  PortalSectionCard,
   PortalSectionLabel,
 } from '@/components/portal/PortalUi';
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
@@ -98,19 +98,6 @@ export default function PortalMessagesPage() {
       <PortalPageHeader
         title={t('adminNew.portal.messages.title')}
         subtitle={t('adminNew.portal.messages.subtitle')}
-        rightSlot={
-          unreadCount > 0 ? (
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<CheckCheck className="h-4 w-4" />}
-              disabled={markAllRead.loading}
-              onClick={() => void handleMarkAllRead()}
-            >
-              {t('adminNew.portal.messages.markAll')}
-            </Button>
-          ) : null
-        }
         stats={[
           {
             label: t('adminNew.portal.messages.metricTotal'),
@@ -148,7 +135,25 @@ export default function PortalMessagesPage() {
       />
 
       <PortalContent>
-        <PortalFilterBar>
+        <PortalSectionCard
+          title={t('adminNew.portal.messages.title')}
+          description={t('adminNew.portal.messages.listOverview')}
+          icon={MessageCircle}
+          action={
+            unreadCount > 0 ? (
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<CheckCheck className="h-4 w-4" />}
+                disabled={markAllRead.loading}
+                onClick={() => void handleMarkAllRead()}
+              >
+                {t('adminNew.portal.messages.markAll')}
+              </Button>
+            ) : null
+          }
+        >
+        <PortalFilterBar className="mb-4">
           {(
             [
               ['', t('adminNew.portal.messages.filterAll')],
@@ -167,24 +172,18 @@ export default function PortalMessagesPage() {
         </PortalFilterBar>
 
         {timeline.loading ? (
-          <Card className="overflow-hidden">
-            <LoadingState label={t('adminNew.portal.messages.loading')} variant="list" />
-          </Card>
+          <LoadingState label={t('adminNew.portal.messages.loading')} variant="list" />
         ) : null}
 
         {!timeline.loading && timeline.error ? (
-          <Card>
-            <ErrorState message={timeline.error} onRetry={() => void timeline.refetch()} />
-          </Card>
+          <ErrorState message={timeline.error} onRetry={() => void timeline.refetch()} />
         ) : null}
 
         {!timeline.loading && !timeline.error && items.length === 0 ? (
-          <Card>
-            <EmptyState
-              title={t('adminNew.portal.messages.empty')}
-              message={t('adminNew.portal.messages.emptyMessage')}
-            />
-          </Card>
+          <EmptyState
+            title={t('adminNew.portal.messages.empty')}
+            message={t('adminNew.portal.messages.emptyMessage')}
+          />
         ) : null}
 
         {!timeline.loading && !timeline.error && items.length > 0 ? (
@@ -231,6 +230,7 @@ export default function PortalMessagesPage() {
             ))}
           </div>
         ) : null}
+        </PortalSectionCard>
       </PortalContent>
 
       <Modal open={!!selected} onClose={() => setSelected(null)} size="lg">

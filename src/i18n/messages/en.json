@@ -449,6 +449,8 @@
     "duration": "Duration",
     "estimate": "Estimated total",
     "submit": "Request appointment",
+    "submitSuccess": "Appointment requested",
+    "submitFailed": "Request failed",
     "footerNote": "Your request is confirmed within 24h. A payment link will follow by email.",
     "selectDate": "Please select a date first",
     "manualReview": "Manual review required"
@@ -892,6 +894,12 @@
       "boats": "Boats",
       "invoices": "Invoices",
       "contracts": "Contracts",
+      "appointments": "Appointments",
+      "payments": "Payments",
+      "products": "Products",
+      "users": "Users",
+      "calendarAdmin": "Calendar",
+      "system": "System",
       "audit": "Audit logs",
       "reports": "Reports",
       "settings": "Settings",
@@ -1082,7 +1090,9 @@
       "delete": "Delete",
       "logout": "Sign out",
       "noEmail": "no email",
-      "operationFailed": "Action failed"
+      "operationFailed": "Action failed",
+      "confirm": "Confirm",
+      "reasonTooShort": "Enter at least {min} characters"
     },
     "dashboard": {
       "title": "Operations",
@@ -1250,13 +1260,16 @@
       },
       "smartMatch": "Smart match",
       "products": "Products",
+      "productsOverview": "Tap a product to add it to the cart",
       "loadingProducts": "Loading products",
       "emptyProductsTitle": "No products",
       "emptyProductsMessage": "Adjust search or add pricing rules.",
       "match": "Match",
       "recentSales": "Recent sales",
+      "recentOverview": "Latest completed sales on this device",
       "noRecentSales": "No recent sales yet.",
       "cart": "Cart",
+      "cartOverview": "Review lines and complete checkout or create a quote",
       "lines": "{count} lines",
       "emptyCartMessage": "Add products to continue checkout.",
       "vat": "VAT",
@@ -1333,6 +1346,7 @@
       "noPending": "No pending offline changes.",
       "devices": "Registered sync devices",
       "noDevices": "No sync devices available yet.",
+      "devicesHint": "Devices that sync offline changes",
       "itemSynced": "Change synced",
       "syncFailed": "Sync failed",
       "error": "Sync error"
@@ -1341,6 +1355,7 @@
       "appointments": {
         "title": "My appointments",
         "subtitle": "Overview of crane appointments and scheduled work",
+        "listOverview": "View and filter all your scheduled crane appointments",
         "loading": "Loading appointments",
         "empty": "No appointments",
         "emptyMessage": "Book a new appointment via the crane planner.",
@@ -1380,6 +1395,7 @@
       "invoices": {
         "title": "My invoices",
         "subtitle": "View open invoices, download PDF and pay securely via Mollie",
+        "listOverview": "View outstanding invoices, download PDFs and pay online",
         "allStatuses": "All statuses",
         "loading": "Loading invoices",
         "empty": "No invoices",
@@ -1405,6 +1421,7 @@
       "stalling": {
         "title": "My storage",
         "subtitle": "Overview of active storage contracts and payment status",
+        "listOverview": "All your storage contracts in one place",
         "loading": "Loading contracts",
         "empty": "No contracts",
         "emptyMessage": "You do not have any active storage contracts yet.",
@@ -1423,6 +1440,7 @@
       "boats": {
         "title": "My boats",
         "subtitle": "View boats linked to your account",
+        "listOverview": "Overview of boats, locations and specifications",
         "loading": "Loading boats",
         "empty": "No boats",
         "emptyMessage": "No boats are linked to your account yet.",
@@ -1439,6 +1457,7 @@
       "documents": {
         "title": "Documents",
         "subtitle": "PDFs and relevant documents",
+        "listOverview": "Download invoice PDFs and other documents",
         "empty": "No documents yet",
         "emptyMessage": "Documents will appear here automatically when available.",
         "loading": "Loading documents",
@@ -1454,6 +1473,7 @@
       "messages": {
         "title": "Messages",
         "subtitle": "Notifications and messages from Krekelberg",
+        "listOverview": "Inbox with notifications, updates and reminders",
         "loading": "Loading messages",
         "empty": "No messages",
         "emptyMessage": "You currently have no messages in your inbox.",
@@ -1476,6 +1496,7 @@
       "settings": {
         "title": "Portal settings",
         "subtitle": "Account overview and security status",
+        "listOverview": "Personal details and preferences",
         "loading": "Loading account",
         "myDetails": "My details",
         "summary": "Summary",
@@ -1547,7 +1568,14 @@
         "status": "Status"
       },
       "toasts": {
-        "createFailed": "Creating invoice failed"
+        "createFailed": "Creating invoice failed",
+        "created": "Invoice created"
+      },
+      "selectCustomer": "Select a customer",
+      "modal": {
+        "title": "New invoice",
+        "subtitle": "Choose a customer to create a manual invoice.",
+        "noCustomers": "No customers found. Adjust your search or create a customer first."
       }
     },
     "invoiceDetail": {
@@ -1768,6 +1796,284 @@
         "mollieTestSuccess": "Mollie test successful",
         "paymentsSaved": "Payment settings saved",
         "localesSaved": "Locale settings saved"
+      }
+    },
+    "appointments": {
+      "title": "Appointments",
+      "subtitle": "Manage crane appointments, confirmations and status updates",
+      "loading": "Loading appointments",
+      "filterStatus": "Filter by status",
+      "allStatuses": "All statuses",
+      "statusPending": "Pending review",
+      "statusConfirmed": "Confirmed",
+      "statusStarted": "Started",
+      "statusCompleted": "Completed",
+      "statusCancelled": "Cancelled",
+      "emptyTitle": "No appointments",
+      "emptyMessage": "No appointments found yet.",
+      "confirm": "Confirm",
+      "complete": "Complete",
+      "cancel": "Cancel",
+      "confirmCancel": "Cancel this appointment?",
+      "cancelReason": "Cancelled via admin",
+      "total": "{count} appointments",
+      "today": "Today",
+      "listOverview": "Filter and manage all crane appointments",
+      "columns": {
+        "date": "Date",
+        "time": "Time",
+        "boat": "Boat",
+        "services": "Services",
+        "status": "Status"
+      },
+      "toasts": {
+        "confirmed": "Appointment confirmed",
+        "cancelled": "Appointment cancelled",
+        "completed": "Appointment completed"
+      }
+    },
+    "products": {
+      "title": "Products",
+      "subtitle": "Manage the product catalog for POS and invoicing",
+      "new": "New product",
+      "searchPlaceholder": "Search by code or name",
+      "loading": "Loading products",
+      "emptyTitle": "No products",
+      "emptyMessage": "Add products for use at the POS.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "confirmDelete": "Delete this product?",
+      "total": "{count} products",
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "category": "Category",
+        "price": "Price",
+        "vat": "VAT",
+        "status": "Status"
+      },
+      "fields": {
+        "priceExcl": "Price excl. VAT"
+      },
+      "modal": {
+        "title": "New product",
+        "subtitle": "Add a product to the catalog."
+      },
+      "toasts": {
+        "created": "Product created",
+        "createFailed": "Create failed",
+        "deleted": "Product deleted",
+        "deleteFailed": "Delete failed"
+      }
+    },
+    "payments": {
+      "title": "Payments",
+      "subtitle": "Overview of Mollie and POS payments",
+      "searchPlaceholder": "Search by customer or status",
+      "loading": "Loading payments",
+      "emptyTitle": "No payments",
+      "emptyMessage": "No payments found yet.",
+      "reconcile": "Reconcile",
+      "reconciled": "Reconciled",
+      "confirmReconcile": "Are you sure you want to reconcile this payment?",
+      "total": "{count} payments",
+      "columns": {
+        "date": "Date",
+        "customer": "Customer",
+        "method": "Method",
+        "amount": "Amount",
+        "status": "Status"
+      },
+      "toasts": {
+        "reconciled": "Payment reconciled"
+      }
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Manage staff and admin accounts",
+      "new": "New user",
+      "loading": "Loading users",
+      "emptyTitle": "No users",
+      "emptyMessage": "Register a new user.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "total": "{count} users",
+      "columns": {
+        "user": "User",
+        "role": "Role",
+        "status": "Status",
+        "lastLogin": "Last login"
+      },
+      "fields": {
+        "password": "Password"
+      },
+      "modal": {
+        "title": "New user",
+        "subtitle": "Create a staff or admin account."
+      },
+      "toasts": {
+        "created": "User created",
+        "createFailed": "Create failed",
+        "activated": "User activated",
+        "deactivated": "User deactivated"
+      }
+    },
+    "calendar": {
+      "title": "Calendar",
+      "subtitle": "Opening hours, exceptions and boat locations",
+      "loading": "Loading calendar",
+      "regularHours": "Regular opening hours",
+      "exceptions": "Exceptions",
+      "lunch": "Lunch break",
+      "locations": "Boat locations",
+      "closed": "Closed",
+      "open": "Open",
+      "blocked": "Blocked",
+      "newLocation": "New location",
+      "noRegular": "No regular hours",
+      "noRegularMessage": "No regular opening hours configured yet.",
+      "noExceptions": "No exceptions",
+      "noExceptionsMessage": "No calendar exceptions configured yet.",
+      "noLunch": "No lunch break configured",
+      "loadingLocations": "Loading locations",
+      "noLocations": "No locations",
+      "noLocationsMessage": "Add boat locations for scheduling.",
+      "weekOverview": "Weekly overview with opening hours and lunch break",
+      "today": "Today",
+      "exceptionsOverview": "Special days and holiday closures",
+      "locationsOverview": "Crane locations on the yard",
+      "metrics": {
+        "openDays": "Open days",
+        "openDaysHint": "Days with regular opening hours",
+        "exceptionsHint": "Scheduled exceptions",
+        "lunchSet": "Lunch break active",
+        "locationsHint": "{blocked} blocked"
+      },
+      "columns": {
+        "code": "Code",
+        "section": "Section",
+        "difficulty": "Difficulty",
+        "status": "Status"
+      },
+      "fields": {
+        "extraMinutes": "Extra minutes",
+        "dayOfWeek": "Day of week",
+        "openFrom": "Open from",
+        "openUntil": "Open until",
+        "closedDay": "Closed on this day",
+        "date": "Date",
+        "label": "Label",
+        "notes": "Notes"
+      },
+      "locationModal": {
+        "title": "New boat location",
+        "subtitle": "Add a location code for crane scheduling."
+      },
+      "editLocationModal": {
+        "title": "Edit location",
+        "subtitle": "Block locations or adjust difficulty."
+      },
+      "regularModal": {
+        "title": "Regular opening hours",
+        "subtitle": "Set opening hours per weekday."
+      },
+      "exceptionModal": {
+        "title": "Add exception",
+        "subtitle": "Close a specific day or adjust hours."
+      },
+      "lunchModal": {
+        "title": "Set lunch break",
+        "subtitle": "Time block when no appointments are scheduled."
+      },
+      "actions": {
+        "setRegular": "Set hours",
+        "addException": "Exception",
+        "setLunch": "Set lunch",
+        "edit": "Edit",
+        "block": "Block",
+        "unblock": "Unblock"
+      },
+      "days": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "toasts": {
+        "locationCreated": "Location created",
+        "locationUpdated": "Location updated",
+        "regularSaved": "Opening hours saved",
+        "exceptionSaved": "Exception saved",
+        "lunchSaved": "Lunch break saved"
+      }
+    },
+    "system": {
+      "title": "System",
+      "subtitle": "Health checks and repair tools for admins",
+      "refresh": "Refresh",
+      "loadingHealth": "Loading health status",
+      "checks": {
+        "overview": "Overview",
+        "database": "Database",
+        "queue": "Queue",
+        "mollie": "Mollie",
+        "mail": "Mail",
+        "storage": "Storage",
+        "webhooks": "Webhooks"
+      },
+      "repair": {
+        "payments": "Payments",
+        "webhooks": "Webhooks",
+        "sync": "Sync conflicts",
+        "invoices": "Invoices",
+        "customers": "Customers",
+        "idempotency": "Idempotency",
+        "mismatchedCount": "{count} mismatched payments",
+        "failedWebhooksCount": "{count} failed webhooks",
+        "conflictsCount": "{count} sync conflicts",
+        "syncMollie": "Sync Mollie status",
+        "replay": "Replay",
+        "retryWebhook": "Retry webhook",
+        "resendEmail": "Resend email",
+        "regeneratePdf": "Regenerate PDF",
+        "mergeCustomers": "Merge customers",
+        "resolveKeepServer": "Keep server version",
+        "resolveUseClient": "Use client version",
+        "resolveConflictTitle": "Resolve sync conflict",
+        "resolveConflictMessage": "Provide a reason for this resolution (min. 5 characters).",
+        "lookupIdempotency": "Look up"
+      },
+      "fields": {
+        "invoiceId": "Invoice ID",
+        "paymentId": "Payment ID",
+        "mainCustomerId": "Main customer ID",
+        "duplicateCustomerId": "Duplicate customer ID",
+        "idempotencyKey": "Idempotency key",
+        "reason": "Reason (min. 5 characters)"
+      },
+      "toasts": {
+        "actionDone": "Action completed",
+        "conflictResolved": "Conflict resolved",
+        "customersMerged": "Customers merged"
+      }
+    },
+    "wallet": {
+      "title": "Wallet",
+      "balanceHint": "Available credit for this customer",
+      "credit": "Add credit",
+      "defaultCreditDescription": "Manual credit",
+      "creditModal": {
+        "title": "Add credit",
+        "amount": "Amount (EUR)",
+        "description": "Description"
+      },
+      "toasts": {
+        "credited": "Credit added"
       }
     }
   }

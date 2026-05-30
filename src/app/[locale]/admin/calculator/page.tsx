@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Calculator, FilePlus2, Receipt, UserPlus } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { AdminContent, AdminPanel } from '@/components/admin/AdminUi';
+import { AdminContent, AdminSectionCard } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
@@ -11,6 +11,7 @@ import { customersService, invoicesService, pricingService } from '@/lib/service
 import { formatCurrency } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { cn } from '@/lib/cn';
 
 const SERVICE_IDS = ['afspuiten', 'kranen', 'stalling', 'hal'];
 
@@ -173,7 +174,11 @@ export default function CalculatorPage() {
       />
 
       <AdminContent className="grid gap-5 lg:grid-cols-[1fr_24rem]">
-        <AdminPanel title={t('adminNew.calculator.title')} description={t('adminNew.calculator.subtitle')}>
+        <AdminSectionCard
+          title={t('adminNew.calculator.title')}
+          description={t('adminNew.calculator.subtitle')}
+          icon={Calculator}
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label={t('adminNew.calculator.lengthCm')}
@@ -208,12 +213,14 @@ export default function CalculatorPage() {
                 return (
                   <button
                     key={service}
+                    type="button"
                     onClick={() => toggleService(service)}
-                    className={`rounded-lg border px-3 py-2 text-left text-sm ${
+                    className={cn(
+                      'rounded-xl border px-3 py-2.5 text-left text-sm transition',
                       active
-                        ? 'border-navy-900 bg-navy-900 text-white'
-                        : 'border-navy-100 bg-white text-navy-700 hover:bg-sand-50'
-                    }`}
+                        ? 'border-navy-900 bg-navy-900 text-white shadow-sm'
+                        : 'surface-float-hover border-navy-100 bg-white text-navy-700 hover:border-marine-200'
+                    )}
                   >
                     {t(`adminNew.calculator.servicesMap.${service}`)}
                   </button>
@@ -273,28 +280,33 @@ export default function CalculatorPage() {
               {t('adminNew.calculator.newCustomer')}
             </Button>
           </div>
-        </AdminPanel>
+        </AdminSectionCard>
 
-        <AdminPanel title={t('adminNew.calculator.result.title')}>
+        <AdminSectionCard
+          title={t('adminNew.calculator.result.title')}
+          description={t('adminNew.calculator.result.empty')}
+          icon={Receipt}
+          className="self-start"
+        >
           {!result ? (
-            <div className="mt-3 text-sm text-navy-500">
+            <div className="text-sm text-navy-500">
               {t('adminNew.calculator.result.empty')}
             </div>
           ) : (
-            <div className="mt-3 space-y-3 text-sm">
+            <div className="space-y-3 text-sm">
               {breakdown.map((item) => (
-                <div key={item.key} className="rounded-lg border border-navy-100 px-3 py-2">
+                <div key={item.key} className="rounded-xl border border-navy-100 bg-gradient-to-r from-white to-sand-50/40 px-3 py-2">
                   <div className="text-xs text-navy-500">{item.key}</div>
                   <div className="font-medium text-navy-900">{item.value}</div>
                 </div>
               ))}
-              <div className="rounded-lg border border-navy-100 bg-sand-50 px-3 py-2">
+              <div className="rounded-xl border border-marine-200/80 bg-gradient-to-r from-marine-50 to-white px-3 py-2">
                 <div className="text-xs text-navy-500">{t('adminNew.calculator.result.totalPrice')}</div>
                 <div className="text-xl font-semibold text-navy-900">
                   {formatCurrency(resolveTotal, locale === 'en' ? 'en-GB' : 'nl-NL')}
                 </div>
               </div>
-              <details className="rounded-lg border border-navy-100 p-3">
+              <details className="rounded-xl border border-navy-100 p-3">
                 <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-navy-500">
                   {t('adminNew.calculator.result.rawApi')}
                 </summary>
@@ -304,7 +316,7 @@ export default function CalculatorPage() {
               </details>
             </div>
           )}
-        </AdminPanel>
+        </AdminSectionCard>
       </AdminContent>
     </>
   );
