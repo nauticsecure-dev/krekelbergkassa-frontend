@@ -41,7 +41,7 @@ import {
 } from "@/lib/services";
 import { useMutation, useQuery } from "@/lib/hooks/useAsync";
 import type { Product, PricingRule } from "@/lib/api-types";
-import { formatCurrency, centsToEuro } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { productPriceInclEuros } from "@/lib/products";
 import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
 import { getApiErrorMessage } from "@/lib/api-error";
