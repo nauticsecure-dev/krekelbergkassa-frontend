@@ -27,6 +27,7 @@ import { boatsService, customersService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 
 export default function BoatsPage() {
@@ -74,7 +75,7 @@ export default function BoatsPage() {
       push({
         tone: 'error',
         title: t('adminNew.boats.toasts.createFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -88,7 +89,7 @@ export default function BoatsPage() {
       push({
         tone: 'error',
         title: t('adminNew.boats.toasts.deleteFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -208,6 +209,11 @@ export default function BoatsPage() {
                     <AdminTableCell>{boat.length_cm ? `${boat.length_cm} cm` : '—'}</AdminTableCell>
                     <AdminTableCell>{boat.location_code ?? '—'}</AdminTableCell>
                     <AdminTableCell className="text-right">
+                      <Link href={`/${locale}/admin/boten/${boat.id}`}>
+                        <Button variant="ghost" size="sm">
+                          {t('adminNew.common.edit')}
+                        </Button>
+                      </Link>
                       <Button
                         variant="ghost"
                         size="sm"

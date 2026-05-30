@@ -31,6 +31,8 @@ import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
 import type { PortalInvoice } from '@/lib/api-types';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 const STATUS_FILTERS = ['', 'open', 'paid', 'overdue', 'credited', 'cancelled'] as const;
 type StatusFilter = (typeof STATUS_FILTERS)[number];
@@ -46,6 +48,7 @@ export default function PortalInvoicesPage() {
   const [payOpen, setPayOpen] = React.useState(false);
   const [payMethod, setPayMethod] = React.useState('ideal');
   const [paying, setPaying] = React.useState(false);
+  const [confirmPay, setConfirmPay] = React.useState(false);
 
   const invoices = useQuery([status], () =>
     portalService.invoices({ status: status || undefined, per_page: 50 })
@@ -89,7 +92,7 @@ export default function PortalInvoicesPage() {
       push({
         tone: 'error',
         title: t('adminNew.portal.invoices.payFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     } finally {
       setPaying(false);
@@ -100,6 +103,21 @@ export default function PortalInvoicesPage() {
     const key = `adminNew.invoices.source.${source}` as const;
     const label = t(key);
     return label === key ? source : label;
+  };
+
+  const payMethodLabel = (method: string) => {
+    switch (method) {
+      case 'ideal':
+        return 'iDEAL';
+      case 'creditcard':
+        return t('adminNew.kassa.payment.creditcard');
+      case 'bancontact':
+        return 'Bancontact';
+      case 'banktransfer':
+        return t('adminNew.portal.invoices.bankTransfer');
+      default:
+        return method;
+    }
   };
 
   return (
@@ -332,7 +350,7 @@ export default function PortalInvoicesPage() {
                 variant="gold"
                 disabled={paying}
                 leftIcon={<ExternalLink className="h-4 w-4" />}
-                onClick={() => void openPayLink(selected)}
+                onClick={() => setConfirmPay(true)}
               >
                 {paying ? t('adminNew.kassa.processing') : t('adminNew.portal.invoices.continuePay')}
               </Button>
@@ -340,6 +358,26 @@ export default function PortalInvoicesPage() {
           </>
         ) : null}
       </Modal>
+
+      <ConfirmModal
+        open={confirmPay && !!selected}
+        onClose={() => setConfirmPay(false)}
+        onConfirm={async () => {
+          if (!selected) return;
+          await openPayLink(selected);
+          setConfirmPay(false);
+        }}
+        title={t('adminNew.portal.invoices.continuePay')}
+        message={t('adminNew.portal.invoices.confirmPay', {
+          amount: formatCurrency(centsToEuro(selected?.outstanding_cents ?? 0), dateLocale),
+          method: payMethodLabel(payMethod),
+        })}
+        confirmLabel={t('adminNew.portal.invoices.continuePay')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={CreditCard}
+        loading={paying}
+      />
     </>
   );
 }

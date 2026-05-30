@@ -6,10 +6,14 @@ import { useAuth } from '@/lib/auth-context';
 import {
   canAccessAdmin,
   canAccessPortal,
+  canAccessWorkOrders,
   isAdminPath,
   isPortalPath,
+  isProtectedPath,
+  isWorkOrdersPath,
   loginPath,
 } from '@/lib/auth-routes';
+import { hasAnySession } from '@/lib/auth-storage';
 import { useIntl } from '@/i18n/IntlProvider';
 
 function AuthLoading() {
@@ -29,32 +33,48 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { locale } = useIntl();
 
+  const protectedRoute = isProtectedPath(pathname);
+  const sessionHint = typeof window !== 'undefined' && hasAnySession();
+
+  const needsLogin = React.useMemo(() => {
+    if (!protectedRoute) return false;
+    // Token present — wait for /me before treating as logged out.
+    if (!user && sessionHint) return false;
+    if (!user) return true;
+    if (isAdminPath(pathname) && !canAccessAdmin(user.role, isDemo)) return true;
+    if (isPortalPath(pathname) && !canAccessPortal(user.role, isPortalSession, isDemo)) {
+      return true;
+    }
+    return false;
+  }, [pathname, user, isDemo, isPortalSession, protectedRoute, sessionHint]);
+
+  const deniedWorkOrders =
+    !!user && isWorkOrdersPath(pathname) && !canAccessWorkOrders(user.role);
+
+  const resolvingAuth = loading || (sessionHint && !user);
+
+  // Role-based redirect — no full-page login fallback, no dashboard flash loop.
   React.useEffect(() => {
-    if (loading) return;
+    if (!deniedWorkOrders) return;
+    router.replace(`/${locale}/admin`);
+  }, [deniedWorkOrders, router, locale]);
 
-    const admin = isAdminPath(pathname);
-    const portal = isPortalPath(pathname);
+  // Login redirect only when auth check finished and there is no session token.
+  React.useEffect(() => {
+    if (resolvingAuth || !protectedRoute) return;
+    if (!needsLogin) return;
+    router.replace(loginPath(locale, pathname));
+  }, [resolvingAuth, needsLogin, protectedRoute, router, locale, pathname]);
 
-    if (admin && !canAccessAdmin(user?.role, isDemo)) {
-      router.replace(loginPath(locale, pathname));
-      return;
-    }
+  if (deniedWorkOrders) {
+    return null;
+  }
 
-    if (portal && !canAccessPortal(user?.role, isPortalSession, isDemo)) {
-      router.replace(loginPath(locale, pathname));
-      return;
-    }
+  if (protectedRoute && resolvingAuth) {
+    return <AuthLoading />;
+  }
 
-    if (!user && (admin || portal)) {
-      router.replace(loginPath(locale, pathname));
-    }
-  }, [loading, user, isDemo, isPortalSession, pathname, router, locale]);
-
-  if (loading) return <AuthLoading />;
-  if (!user && (isAdminPath(pathname) || isPortalPath(pathname))) return <AuthLoading />;
-
-  if (isAdminPath(pathname) && !canAccessAdmin(user?.role, isDemo)) return <AuthLoading />;
-  if (isPortalPath(pathname) && !canAccessPortal(user?.role, isPortalSession, isDemo)) {
+  if (!loading && needsLogin) {
     return <AuthLoading />;
   }
 

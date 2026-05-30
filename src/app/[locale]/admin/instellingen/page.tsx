@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { settingsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { useIntl } from '@/i18n/IntlProvider';
 
@@ -108,7 +109,7 @@ export default function SettingsPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };

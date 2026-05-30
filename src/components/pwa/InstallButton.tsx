@@ -40,23 +40,44 @@ export function InstallButton({ variant = "header", className }: Props) {
 
   if (installed) return null;
 
-  const onInstallClick = async () => {
+  const runInstall = async () => {
     setStatus("installing");
     const result = await promptInstall();
     if (result === "accepted") {
       setStatus("installed");
       setTimeout(() => setOpen(false), 1200);
     } else if (result === "unavailable") {
-      // Native prompt not captured yet — fall back to "open browser menu" hint
       setStatus("idle");
+      setOpen(true);
     } else {
       setStatus("dismissed");
     }
   };
 
+  const onTriggerClick = () => {
+    if (platform === "ios-safari") {
+      setOpen(true);
+      return;
+    }
+    if (canInstall) {
+      void runInstall();
+      return;
+    }
+    setOpen(true);
+  };
+
+  const onInstallClick = async () => {
+    if (canInstall) {
+      await runInstall();
+      return;
+    }
+    setOpen(true);
+  };
+
   const HeaderTrigger = (
     <button
-      onClick={() => setOpen(true)}
+      type="button"
+      onClick={onTriggerClick}
       className={cn(
         "group relative inline-flex items-center gap-2 rounded-lg border border-navy-100 bg-white px-3 py-2 text-sm font-medium text-navy-800 transition hover:border-navy-200 hover:bg-sand-50",
         className,
@@ -76,7 +97,8 @@ export function InstallButton({ variant = "header", className }: Props) {
 
   const HeroTrigger = (
     <button
-      onClick={() => setOpen(true)}
+      type="button"
+      onClick={onTriggerClick}
       className={cn(
         "inline-flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2.5 text-sm font-medium text-white ring-1 ring-white/20 backdrop-blur transition hover:bg-white/15",
         className,

@@ -29,6 +29,7 @@ import { useIntl } from '@/i18n/IntlProvider';
 import { formatCurrency } from '@/lib/format';
 import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function PortalSettingsPage() {
   const { t, locale } = useIntl();
@@ -125,7 +126,7 @@ export default function PortalSettingsPage() {
                           push({
                             tone: 'error',
                             title: t('adminNew.common.operationFailed'),
-                            message: err instanceof Error ? err.message : undefined,
+                            message: getApiErrorMessage(err),
                           });
                         }
                       })()

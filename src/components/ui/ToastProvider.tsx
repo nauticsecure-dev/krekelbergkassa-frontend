@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { X } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { cn } from '@/lib/cn';
 
 type ToastTone = 'success' | 'error' | 'info';
@@ -11,10 +12,13 @@ interface ToastInput {
   title: string;
   message?: string;
   tone?: ToastTone;
+  duration?: number;
 }
 
 interface ToastContextValue {
   push: (toast: ToastInput) => void;
+  /** Shows API / thrown error text in a toast (react-hot-toast). */
+  pushError: (err: unknown, title?: string) => void;
 }
 
 const ToastContext = React.createContext<ToastContextValue | null>(null);
@@ -41,7 +45,7 @@ function KrekelbergToast({
   return (
     <div
       className={cn(
-        'pointer-events-auto w-full max-w-sm rounded-xl border px-4 py-3 shadow-elev backdrop-blur-sm transition-all duration-300',
+        'pointer-events-auto w-full max-w-md rounded-xl border px-4 py-3 shadow-elev backdrop-blur-sm transition-all duration-300',
         toneStyles[tone],
         visible ? 'translate-x-0 opacity-100' : 'translate-x-2 opacity-0'
       )}
@@ -50,7 +54,7 @@ function KrekelbergToast({
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold leading-snug">{title}</div>
           {message ? (
-            <div className="mt-0.5 text-xs leading-relaxed opacity-90">{message}</div>
+            <div className="mt-1 text-xs leading-relaxed opacity-90">{message}</div>
           ) : null}
         </div>
         <button
@@ -67,7 +71,10 @@ function KrekelbergToast({
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const push = React.useCallback(({ title, message, tone = 'info' }: ToastInput) => {
+  const push = React.useCallback(({ title, message, tone = 'info', duration }: ToastInput) => {
+    const resolvedDuration =
+      duration ?? (tone === 'error' ? 6500 : tone === 'success' ? 4500 : 4000);
+
     toast.custom(
       (t) => (
         <KrekelbergToast
@@ -78,12 +85,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           onDismiss={() => toast.dismiss(t.id)}
         />
       ),
-      { duration: 4500 }
+      { duration: resolvedDuration }
     );
   }, []);
 
+  const pushError = React.useCallback(
+    (err: unknown, title?: string) => {
+      const apiMessage = getApiErrorMessage(err);
+      if (title && title !== apiMessage) {
+        push({ tone: 'error', title, message: apiMessage });
+        return;
+      }
+      push({ tone: 'error', title: apiMessage });
+    },
+    [push]
+  );
+
   return (
-    <ToastContext.Provider value={{ push }}>
+    <ToastContext.Provider value={{ push, pushError }}>
       {children}
       <Toaster
         position="top-right"
@@ -103,3 +122,5 @@ export function useToast() {
   if (!ctx) throw new Error('useToast must be used inside ToastProvider');
   return ctx;
 }
+
+export { getApiErrorMessage };

@@ -189,6 +189,16 @@ export interface Product {
   price_excl_vat_euros: number;
   price_incl_vat_euros: number;
   active: boolean;
+  barcode?: string | null;
+  search_code?: string | null;
+  sku?: string | null;
+  supplier?: string | null;
+  color?: string | null;
+  image_url?: string | null;
+  tags?: string[] | null;
+  aliases?: string[] | null;
+  product_group_id?: string | null;
+  group?: { code?: string; name?: string; color?: string } | null;
   created_at: string;
   updated_at: string;
 }
@@ -570,8 +580,11 @@ export interface AdminUser {
   email: string;
   role: Role;
   active: boolean;
+  locale?: string | null;
   two_factor_enabled?: boolean;
   last_login_at?: string | null;
+  last_login_ip?: string | null;
+  locked_until?: string | null;
   created_at: string;
   updated_at?: string;
 }

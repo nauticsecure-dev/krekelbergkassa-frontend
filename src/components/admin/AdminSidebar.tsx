@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  BarChart3,
   Calendar,
   CalendarClock,
+  ChevronLeft,
+  ChevronRight,
   CreditCard,
   HelpCircle,
   Home,
@@ -23,6 +24,7 @@ import { useIntl } from '@/i18n/IntlProvider';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/lib/auth-context';
+import { useConfirmLogout } from '@/components/auth/ConfirmLogoutProvider';
 import { cn } from '@/lib/cn';
 
 interface NavItem {
@@ -35,12 +37,15 @@ interface NavItem {
 
 interface Props {
   variant?: 'desktop' | 'mobile';
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export function AdminSidebar({ variant = 'desktop' }: Props) {
+export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleCollapse }: Props) {
   const { t, locale } = useIntl();
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { requestLogout } = useConfirmLogout();
   const role = user?.role ?? 'staff';
 
   const main: NavItem[] = [
@@ -52,6 +57,7 @@ export function AdminSidebar({ variant = 'desktop' }: Props) {
     { href: `/${locale}/admin/klanten`, icon: Users, label: t('admin.sidebar.customers') },
     { href: `/${locale}/admin/boten`, icon: Ship, label: t('admin.sidebar.boats') },
     { href: `/${locale}/admin/facturen`, icon: CreditCard, label: t('admin.sidebar.invoices') },
+    { href: `/${locale}/admin/werkorders`, icon: Wrench, label: t('adminNew.sidebar.workOrders'), roles: ['staff', 'manager'] },
     { href: `/${locale}/admin/betalingen`, icon: CreditCard, label: t('admin.sidebar.payments') },
     { href: `/${locale}/admin/producten`, icon: Package, label: t('admin.sidebar.products') },
     // Template editor — no API yet; use /admin/stalling for live stalling contracts.
@@ -62,7 +68,6 @@ export function AdminSidebar({ variant = 'desktop' }: Props) {
     { href: `/${locale}/admin/kalender`, icon: Calendar, label: t('admin.sidebar.calendarAdmin') },
     { href: `/${locale}/admin/gebruikers`, icon: Users, label: t('admin.sidebar.users'), roles: ['admin', 'manager'] },
     { href: `/${locale}/admin/audit`, icon: ShieldCheck, label: t('admin.sidebar.audit'), roles: ['admin', 'manager'] },
-    { href: `/${locale}/admin/sync`, icon: BarChart3, label: t('adminNew.sidebar.sync') },
     { href: `/${locale}/admin/systeem`, icon: Wrench, label: t('admin.sidebar.system'), roles: ['admin'] },
     { href: `/${locale}/admin/instellingen`, icon: Settings, label: t('admin.sidebar.settings') },
     { href: `/${locale}/faq`, icon: HelpCircle, label: t('admin.sidebar.help') },
@@ -84,17 +89,17 @@ export function AdminSidebar({ variant = 'desktop' }: Props) {
     <>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3 scrollbar-thin">
         {visibleMain.map((l) => (
-          <Item key={l.href} {...l} active={isActive(l.href)} />
+          <Item key={l.href} {...l} active={isActive(l.href)} collapsed={collapsed} />
         ))}
         <SectionDivider />
         {visibleSecondary.map((l) => (
-          <Item key={l.href} {...l} active={isActive(l.href)} />
+          <Item key={l.href} {...l} active={isActive(l.href)} collapsed={collapsed} />
         ))}
       </nav>
       <UserFooter
         name={user?.name ?? 'Admin'}
         email={user?.email ?? 'admin@krekelberg.nl'}
-        onSignOut={() => void signOut()}
+        onSignOut={requestLogout}
         logoutLabel={t('adminNew.common.logout')}
       />
     </>
@@ -107,9 +112,24 @@ export function AdminSidebar({ variant = 'desktop' }: Props) {
   }
 
   return (
-    <aside className="hidden h-screen w-60 shrink-0 flex-col bg-navy-950 text-sand-100 lg:flex">
-      <div className="border-b border-white/5 px-5 py-4">
-        <Logo variant="light" />
+    <aside
+      className={cn(
+        'hidden h-screen shrink-0 flex-col bg-navy-950 text-sand-100 transition-[width] duration-200 lg:flex',
+        collapsed ? 'w-[4.5rem]' : 'w-60'
+      )}
+    >
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-4">
+        {!collapsed ? <Logo variant="light" /> : <span className="mx-auto text-xs font-bold text-gold-300">KN</span>}
+        {onToggleCollapse ? (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className="rounded-md p-1.5 text-sand-100/50 hover:bg-white/5 hover:text-white"
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </button>
+        ) : null}
       </div>
       {nav}
     </aside>
@@ -157,18 +177,22 @@ function Item({
   label,
   badge,
   active,
+  collapsed,
 }: {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   badge?: string;
   active: boolean;
+  collapsed?: boolean;
 }) {
   return (
     <Link
       href={href}
+      title={collapsed ? label : undefined}
       className={cn(
         'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+        collapsed && 'justify-center px-2',
         active
           ? 'bg-white/10 text-white'
           : 'text-sand-100/70 hover:bg-white/5 hover:text-white'
@@ -186,8 +210,8 @@ function Item({
           active ? 'text-gold-300' : 'text-sand-100/50 group-hover:text-white'
         )}
       />
-      <span className="flex-1">{label}</span>
-      {badge ? (
+      <span className="flex-1">{!collapsed ? label : null}</span>
+      {badge && !collapsed ? (
         <span
           className={cn(
             'rounded-md px-1.5 py-0.5 text-[10px] font-semibold',

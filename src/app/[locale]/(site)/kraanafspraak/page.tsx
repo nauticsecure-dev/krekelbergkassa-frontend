@@ -23,6 +23,8 @@ import {
 import { cn } from '@/lib/cn';
 import { bookingService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 // Services that map to backend pricing service codes
 const SERVICES = [
@@ -78,17 +80,21 @@ export default function KraanAfspraakPage() {
     length: '',
     width: '',
     weight: '',
+    notes: '',
   });
   const [selectedServices, setSelectedServices] = React.useState<string[]>(['afspuiten']);
   const [submitting, setSubmitting] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
+  const [confirmSubmit, setConfirmSubmit] = React.useState(false);
   const [openDays, setOpenDays] = React.useState<Record<string, boolean>>({});
   const [timeSlots, setTimeSlots] = React.useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = React.useState(false);
 
   const month = buildMonth(view.getFullYear(), view.getMonth());
   const monthLabel = `${DUTCH_MONTHS[view.getMonth()]} ${view.getFullYear()}`;
-  const lengthM = Number(form.length || 0);
+  const lengthCm = Number(form.length || 0);
+  const lengthM = lengthCm / 100;
+  const widthM = Number(form.width || 0);
 
   React.useEffect(() => {
     const from = new Date(view.getFullYear(), view.getMonth(), 1);
@@ -104,7 +110,7 @@ export default function KraanAfspraakPage() {
   }, [view]);
 
   React.useEffect(() => {
-    if (!picked || !selectedServices.length || !lengthM) {
+    if (!picked || !selectedServices.length || !lengthCm) {
       setTimeSlots([]);
       return;
     }
@@ -120,13 +126,13 @@ export default function KraanAfspraakPage() {
     void bookingService
       .slots({
         date: dateIso,
-        length_cm: Math.max(100, Math.round(lengthM * 100)),
+        length_cm: Math.max(100, lengthCm),
         service_codes: selectedServices,
       })
       .then((res) => setTimeSlots(res.is_open ? res.slots : []))
       .catch(() => setTimeSlots(TIME_SLOTS_FALLBACK))
       .finally(() => setLoadingSlots(false));
-  }, [picked, selectedServices, lengthM]);
+  }, [picked, selectedServices, lengthCm]);
 
   const toggleService = (code: string) =>
     setSelectedServices((cur) =>
@@ -152,7 +158,17 @@ export default function KraanAfspraakPage() {
   const isPicked = (d: Date) => picked?.getTime() === d.getTime();
 
   const submit = async () => {
-    if (!picked || !time || !form.name || !form.email || !form.boatName || !lengthM) return;
+    if (
+      !picked ||
+      !time ||
+      !form.name ||
+      !form.email ||
+      !form.boatName ||
+      !lengthCm ||
+      !widthM
+    ) {
+      return;
+    }
     setSubmitting(true);
     try {
       const dateIso = new Date(
@@ -163,6 +179,10 @@ export default function KraanAfspraakPage() {
         0,
         0
       ).toISOString();
+      const noteParts = [
+        manualReview ? t('crane.manualReview') : null,
+        form.notes.trim() || null,
+      ].filter(Boolean);
       await bookingService.book({
         name: form.name,
         email: form.email,
@@ -170,11 +190,11 @@ export default function KraanAfspraakPage() {
         locale,
         date: dateIso,
         start_time: time,
-        notes: manualReview ? t('crane.manualReview') : null,
+        notes: noteParts.length ? noteParts.join('\n\n') : null,
         boat: {
           name: form.boatName,
           length_m: lengthM,
-          width_m: Number(form.width || 0) || null,
+          width_m: widthM,
         },
         service_codes: selectedServices,
       });
@@ -184,7 +204,7 @@ export default function KraanAfspraakPage() {
       push({
         tone: 'error',
         title: t('crane.submitFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     } finally {
       setSubmitting(false);
@@ -219,20 +239,20 @@ export default function KraanAfspraakPage() {
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <Input
                 label={t('crane.name')}
-                placeholder="Jan Jansen"
+                placeholder={t('crane.placeholders.name')}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
               <Input
                 label={t('crane.phone')}
-                placeholder="06 12345678"
+                placeholder={t('crane.placeholders.phone')}
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
               />
               <Input
                 label={t('crane.email')}
                 type="email"
-                placeholder="jan@example.com"
+                placeholder={t('crane.placeholders.email')}
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
@@ -241,24 +261,33 @@ export default function KraanAfspraakPage() {
             <SectionTitle icon={<Ship className="h-4 w-4" />} className="mt-8">
               {t('crane.yourBoat')}
             </SectionTitle>
-            <div className="mt-4 grid gap-4 sm:grid-cols-4">
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <Input
-                className="sm:col-span-2"
+                className="sm:col-span-3"
                 label={t('crane.boatName')}
-                placeholder="Aquila"
+                placeholder={t('crane.placeholders.boatName')}
                 value={form.boatName}
                 onChange={(e) => setForm({ ...form, boatName: e.target.value })}
               />
               <Input
                 label={t('crane.boatLength')}
-                placeholder="8.90"
+                placeholder={t('crane.placeholders.boatLength')}
                 inputMode="decimal"
+                required
                 value={form.length}
                 onChange={(e) => setForm({ ...form, length: e.target.value })}
               />
               <Input
+                label={t('crane.boatWidth')}
+                placeholder={t('crane.placeholders.boatWidth')}
+                inputMode="decimal"
+                required
+                value={form.width}
+                onChange={(e) => setForm({ ...form, width: e.target.value })}
+              />
+              <Input
                 label={t('crane.boatWeight')}
-                placeholder="3500"
+                placeholder={t('crane.placeholders.boatWeight')}
                 inputMode="numeric"
                 value={form.weight}
                 onChange={(e) => setForm({ ...form, weight: e.target.value })}
@@ -315,6 +344,23 @@ export default function KraanAfspraakPage() {
                   </button>
                 );
               })}
+            </div>
+
+            <div className="mt-8">
+              <label
+                htmlFor="booking-notes"
+                className="mb-1.5 block text-sm font-medium text-navy-800"
+              >
+                {t('crane.notes')}
+              </label>
+              <textarea
+                id="booking-notes"
+                className="input-base min-h-[88px] resize-y"
+                maxLength={1000}
+                placeholder={t('crane.placeholders.notes')}
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              />
             </div>
 
             {/* Footnote */}
@@ -470,9 +516,17 @@ export default function KraanAfspraakPage() {
                 variant="gold"
                 size="lg"
                 fullWidth
-                disabled={submitting || submitted || !picked || !time || !selectedServices.length}
+                disabled={
+                  submitting ||
+                  submitted ||
+                  !picked ||
+                  !time ||
+                  !selectedServices.length ||
+                  !lengthCm ||
+                  !widthM
+                }
                 rightIcon={<ArrowRight className="h-4 w-4" />}
-                onClick={submit}
+                onClick={() => setConfirmSubmit(true)}
               >
                 {submitted ? 'Aanvraag verzonden' : t('crane.submit')}
               </Button>
@@ -480,6 +534,22 @@ export default function KraanAfspraakPage() {
           </Card>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmSubmit}
+        onClose={() => setConfirmSubmit(false)}
+        onConfirm={async () => {
+          await submit();
+          setConfirmSubmit(false);
+        }}
+        title={t('crane.submit')}
+        message={t('crane.confirmSubmit')}
+        confirmLabel={t('crane.submit')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={CalendarDays}
+        loading={submitting}
+      />
     </div>
   );
 }

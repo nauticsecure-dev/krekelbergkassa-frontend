@@ -27,6 +27,7 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { customersService } from '@/lib/services';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function CustomersPage() {
   const { locale, t } = useIntl();
@@ -60,7 +61,7 @@ export default function CustomersPage() {
       push({
         tone: 'error',
         title: t('adminNew.customers.toasts.createFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };

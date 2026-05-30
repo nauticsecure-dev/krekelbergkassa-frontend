@@ -1,14 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { Package, Plus, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Package, Pencil } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
   AdminContent,
-  AdminModalBody,
-  AdminModalFooter,
-  AdminModalHeader,
   AdminSearchInput,
   AdminSectionCard,
   AdminTable,
@@ -20,62 +18,37 @@ import {
   AdminTableRow,
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { productsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
-import { useToast } from '@/components/ui/ToastProvider';
 import { useIntl } from '@/i18n/IntlProvider';
 import { formatCurrency } from '@/lib/format';
+import { productPriceInclEuros } from '@/lib/products';
+import { Trash2 } from 'lucide-react';
+import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function ProductsPage() {
-  const { t } = useIntl();
+  const { locale, t } = useIntl();
   const { push } = useToast();
   const [query, setQuery] = React.useState('');
   const [page, setPage] = React.useState(1);
-  const [showCreate, setShowCreate] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
-  const [form, setForm] = React.useState({
-    code: '',
-    name: '',
-    category: '',
-    vat_rate: '21',
-    price_excl_vat: '',
-    active: true,
-  });
 
   const products = useQuery([query, page], () =>
     productsService.list({ search: query || undefined, page, per_page: 20 })
   );
-  const createProduct = useMutation(productsService.create);
   const deleteProduct = useMutation(productsService.remove);
 
   const rows = products.data?.data ?? [];
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
 
-  const onCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await createProduct.mutate({
-        code: form.code,
-        name: form.name,
-        category: form.category || null,
-        vat_rate: form.vat_rate,
-        price_excl_vat: Number(form.price_excl_vat),
-        active: form.active,
-      });
-      setShowCreate(false);
-      setForm({ code: '', name: '', category: '', vat_rate: '21', price_excl_vat: '', active: true });
-      await products.refetch();
-      push({ tone: 'success', title: t('adminNew.products.toasts.created') });
-    } catch (err) {
-      push({
-        tone: 'error',
-        title: t('adminNew.products.toasts.createFailed'),
-        message: err instanceof Error ? err.message : undefined,
-      });
-    }
+  const categoryLabel = (category: string | null | undefined) => {
+    if (!category) return '—';
+    const key = `adminNew.products.categories.${category}`;
+    const label = t(key);
+    return label === key ? category : label;
   };
 
   const onDelete = async (id: string) => {
@@ -87,7 +60,7 @@ export default function ProductsPage() {
       push({
         tone: 'error',
         title: t('adminNew.products.toasts.deleteFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -97,116 +70,113 @@ export default function ProductsPage() {
       <AdminPageHeader
         title={t('adminNew.products.title')}
         subtitle={t('adminNew.products.subtitle')}
+        rightSlot={
+          <Link href={`/${locale}/admin/producten/nieuw`}>
+            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+              {t('adminNew.products.new')}
+            </Button>
+          </Link>
+        }
       />
       <AdminContent>
         <AdminSectionCard
           title={t('adminNew.products.title')}
           description={t('adminNew.products.subtitle')}
           icon={Package}
-          action={
-            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-              {t('adminNew.products.new')}
-            </Button>
-          }
         >
-        <AdminSearchInput
-          placeholder={t('adminNew.products.searchPlaceholder')}
-          value={query}
-          onChange={(value) => {
-            setQuery(value);
-            setPage(1);
-          }}
-          className="mb-4"
-        />
+          <AdminSearchInput
+            placeholder={t('adminNew.products.searchPlaceholder')}
+            value={query}
+            onChange={(value) => {
+              setQuery(value);
+              setPage(1);
+            }}
+            className="mb-4"
+          />
 
-        <AdminTableCard>
-          {products.loading ? (
-            <LoadingState label={t('adminNew.products.loading')} />
-          ) : products.error ? (
-            <ErrorState message={products.error} onRetry={() => void products.refetch()} />
-          ) : rows.length === 0 ? (
-            <EmptyState title={t('adminNew.products.emptyTitle')} message={t('adminNew.products.emptyMessage')} />
-          ) : (
-            <>
-              <AdminTable>
-                <AdminTableHead>
-                  <AdminTableRow>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.code')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.name')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.category')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.price')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.vat')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.status')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
-                  </AdminTableRow>
-                </AdminTableHead>
-                <tbody>
-                  {rows.map((row) => (
-                    <AdminTableRow key={row.id}>
-                      <AdminTableCell>
-                        <div className="flex items-center gap-2">
-                          <Package className="h-4 w-4 text-marine-600" />
-                          {row.code}
-                        </div>
-                      </AdminTableCell>
-                      <AdminTableCell>{row.name}</AdminTableCell>
-                      <AdminTableCell>{row.category ?? '—'}</AdminTableCell>
-                      <AdminTableCell>{formatCurrency(row.price_incl_vat_euros ?? row.price_incl_vat)}</AdminTableCell>
-                      <AdminTableCell>{row.vat_rate}%</AdminTableCell>
-                      <AdminTableCell>
-                        <Badge tone={row.active ? 'success' : 'neutral'}>
-                          {row.active ? t('adminNew.products.active') : t('adminNew.products.inactive')}
-                        </Badge>
-                      </AdminTableCell>
-                      <AdminTableCell>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-                          onClick={() => setDeleteTarget(row.id)}
-                        >
-                          {t('adminNew.common.delete')}
-                        </Button>
-                      </AdminTableCell>
+          <AdminTableCard>
+            {products.loading ? (
+              <LoadingState label={t('adminNew.products.loading')} />
+            ) : products.error ? (
+              <ErrorState message={products.error} onRetry={() => void products.refetch()} />
+            ) : rows.length === 0 ? (
+              <EmptyState title={t('adminNew.products.emptyTitle')} message={t('adminNew.products.emptyMessage')} />
+            ) : (
+              <>
+                <AdminTable>
+                  <AdminTableHead>
+                    <AdminTableRow>
+                      <AdminTableHeaderCell>{t('adminNew.products.columns.name')}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{t('adminNew.products.columns.code')}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{t('adminNew.products.columns.category')}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{t('adminNew.products.fields.serviceCode')}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{t('adminNew.products.columns.price')}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{t('adminNew.products.columns.status')}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
                     </AdminTableRow>
-                  ))}
-                </tbody>
-              </AdminTable>
-              <AdminTableFooter
-                summary={t('adminNew.products.total', {
-                  count: products.data?.meta?.total ?? rows.length,
-                })}
-                meta={products.data?.meta}
-                onPageChange={setPage}
-              />
-            </>
-          )}
-        </AdminTableCard>
+                  </AdminTableHead>
+                  <tbody>
+                    {rows.map((row) => (
+                      <AdminTableRow key={row.id}>
+                        <AdminTableCell>
+                          <Link
+                            href={`/${locale}/admin/producten/${row.id}`}
+                            className="flex items-center gap-2 font-semibold text-marine-700 hover:text-marine-800"
+                          >
+                            <span
+                              className="h-3 w-3 shrink-0 rounded-full ring-1 ring-navy-100"
+                              style={{ backgroundColor: row.color ?? row.group?.color ?? '#e2e8f0' }}
+                            />
+                            {row.name}
+                          </Link>
+                          {row.description ? (
+                            <div className="mt-0.5 line-clamp-1 text-xs text-navy-500">{row.description}</div>
+                          ) : null}
+                        </AdminTableCell>
+                        <AdminTableCell className="font-mono text-xs">{row.code}</AdminTableCell>
+                        <AdminTableCell>
+                          {row.category ? (
+                            <Badge tone="neutral">{categoryLabel(row.category)}</Badge>
+                          ) : '—'}
+                        </AdminTableCell>
+                        <AdminTableCell className="text-xs text-navy-600">{row.service_code ?? '—'}</AdminTableCell>
+                        <AdminTableCell>{formatCurrency(productPriceInclEuros(row), dateLocale)}</AdminTableCell>
+                        <AdminTableCell>
+                          <Badge tone={row.active ? 'success' : 'neutral'}>
+                            {row.active ? t('adminNew.products.active') : t('adminNew.products.inactive')}
+                          </Badge>
+                        </AdminTableCell>
+                        <AdminTableCell>
+                          <div className="flex justify-end gap-1">
+                            <Link href={`/${locale}/admin/producten/${row.id}`}>
+                              <Button size="sm" variant="ghost" leftIcon={<Pencil className="h-3.5 w-3.5" />}>
+                                {t('adminNew.common.view')}
+                              </Button>
+                            </Link>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                              onClick={() => setDeleteTarget(row.id)}
+                            >
+                              {t('adminNew.common.delete')}
+                            </Button>
+                          </div>
+                        </AdminTableCell>
+                      </AdminTableRow>
+                    ))}
+                  </tbody>
+                </AdminTable>
+                <AdminTableFooter
+                  summary={t('adminNew.products.total', { count: products.data?.meta?.total ?? rows.length })}
+                  meta={products.data?.meta}
+                  onPageChange={setPage}
+                />
+              </>
+            )}
+          </AdminTableCard>
         </AdminSectionCard>
       </AdminContent>
-
-      <Modal open={showCreate} onClose={() => setShowCreate(false)}>
-        <form onSubmit={onCreate}>
-          <AdminModalHeader title={t('adminNew.products.modal.title')} subtitle={t('adminNew.products.modal.subtitle')} />
-          <AdminModalBody>
-            <div className="space-y-4">
-            <Input label={t('adminNew.products.columns.code')} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} required />
-            <Input label={t('adminNew.products.columns.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            <Input label={t('adminNew.products.columns.category')} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Input label={t('adminNew.products.fields.priceExcl')} inputMode="decimal" value={form.price_excl_vat} onChange={(e) => setForm({ ...form, price_excl_vat: e.target.value })} required />
-              <Input label={t('adminNew.products.columns.vat')} inputMode="decimal" value={form.vat_rate} onChange={(e) => setForm({ ...form, vat_rate: e.target.value })} required />
-            </div>
-            </div>
-          </AdminModalBody>
-          <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={createProduct.loading}>
-              {createProduct.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
-            </Button>
-          </AdminModalFooter>
-        </form>
-      </Modal>
 
       <AdminConfirmModal
         open={!!deleteTarget}

@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { InvoiceStatusBadge, PaymentStatusBadge } from '@/components/admin/StatusBadge';
 import { invoicesService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
@@ -32,10 +33,14 @@ export default function InvoiceDetailPage() {
   const params = useParams<{ id: string }>();
   const invoiceId = params?.id;
   const { locale, t } = useIntl();
-  const { push } = useToast();
+  const { push, pushError } = useToast();
 
   const [showReminder, setShowReminder] = React.useState(false);
   const [showMarkPaid, setShowMarkPaid] = React.useState(false);
+  const [confirmCancel, setConfirmCancel] = React.useState(false);
+  const [confirmCredit, setConfirmCredit] = React.useState(false);
+  const [confirmSend, setConfirmSend] = React.useState(false);
+  const [confirmMarkPaid, setConfirmMarkPaid] = React.useState(false);
   const [reminderSubject, setReminderSubject] = React.useState(
     t('adminNew.invoiceDetail.defaults.reminderSubject')
   );
@@ -86,11 +91,7 @@ export default function InvoiceDetailPage() {
       push({ tone: 'success', title: label });
       await refetch();
     } catch (err) {
-      push({
-        tone: 'error',
-        title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
-      });
+      pushError(err, t('adminNew.common.operationFailed'));
     }
   };
 
@@ -107,12 +108,7 @@ export default function InvoiceDetailPage() {
               variant="outline"
               size="sm"
               leftIcon={<Mail className="h-4 w-4" />}
-              onClick={() =>
-                void action(
-                  t('adminNew.invoiceDetail.toasts.invoiceSent'),
-                  () => sendInvoice.mutate()
-                )
-              }
+              onClick={() => setConfirmSend(true)}
             >
               {t('adminNew.invoiceDetail.actions.send')}
             </Button>
@@ -354,12 +350,7 @@ export default function InvoiceDetailPage() {
                       variant="outline"
                       size="sm"
                       fullWidth
-                      onClick={() =>
-                        void action(
-                          t('adminNew.invoiceDetail.toasts.credited'),
-                          () => creditInvoice.mutate()
-                        )
-                      }
+                      onClick={() => setConfirmCredit(true)}
                     >
                       {t('adminNew.invoiceDetail.actions.credit')}
                     </Button>
@@ -368,12 +359,7 @@ export default function InvoiceDetailPage() {
                       size="sm"
                       fullWidth
                       leftIcon={<XCircle className="h-4 w-4" />}
-                      onClick={() =>
-                        void action(
-                          t('adminNew.invoiceDetail.toasts.cancelled'),
-                          () => cancelInvoice.mutate()
-                        )
-                      }
+                      onClick={() => setConfirmCancel(true)}
                     >
                       {t('adminNew.common.cancel')}
                     </Button>
@@ -569,10 +555,7 @@ export default function InvoiceDetailPage() {
           className="p-6"
           onSubmit={(e) => {
             e.preventDefault();
-            void action(t('adminNew.invoiceDetail.toasts.markedPaid'), async () => {
-              await markPaid.mutate(paidMethod);
-              setShowMarkPaid(false);
-            });
+            setConfirmMarkPaid(true);
           }}
         >
           <h2 className="text-lg font-semibold text-navy-900">
@@ -605,6 +588,77 @@ export default function InvoiceDetailPage() {
           </div>
         </form>
       </Modal>
+
+      <AdminConfirmModal
+        open={confirmCancel}
+        onClose={() => setConfirmCancel(false)}
+        onConfirm={async () => {
+          await action(t('adminNew.invoiceDetail.toasts.cancelled'), () => cancelInvoice.mutate());
+          setConfirmCancel(false);
+        }}
+        title={t('adminNew.common.cancel')}
+        message={t('adminNew.invoiceDetail.confirmCancel')}
+        confirmLabel={t('adminNew.common.cancel')}
+        cancelLabel={t('adminNew.common.back')}
+        variant="danger"
+        icon={XCircle}
+        loading={cancelInvoice.loading}
+      />
+
+      <AdminConfirmModal
+        open={confirmCredit}
+        onClose={() => setConfirmCredit(false)}
+        onConfirm={async () => {
+          await action(t('adminNew.invoiceDetail.toasts.credited'), async () => {
+            const creditNote = await creditInvoice.mutate();
+            if (creditNote?.id) {
+              window.location.href = `/${locale}/admin/facturen/${creditNote.id}`;
+            }
+          });
+          setConfirmCredit(false);
+        }}
+        title={t('adminNew.invoiceDetail.actions.credit')}
+        message={t('adminNew.invoiceDetail.confirmCredit')}
+        confirmLabel={t('adminNew.invoiceDetail.actions.credit')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        loading={creditInvoice.loading}
+      />
+
+      <AdminConfirmModal
+        open={confirmSend}
+        onClose={() => setConfirmSend(false)}
+        onConfirm={async () => {
+          await action(t('adminNew.invoiceDetail.toasts.invoiceSent'), () => sendInvoice.mutate());
+          setConfirmSend(false);
+        }}
+        title={t('adminNew.invoiceDetail.actions.send')}
+        message={t('adminNew.invoiceDetail.confirmSend')}
+        confirmLabel={t('adminNew.invoiceDetail.actions.send')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={Mail}
+        loading={sendInvoice.loading}
+      />
+
+      <AdminConfirmModal
+        open={confirmMarkPaid}
+        onClose={() => setConfirmMarkPaid(false)}
+        onConfirm={async () => {
+          await action(t('adminNew.invoiceDetail.toasts.markedPaid'), async () => {
+            await markPaid.mutate(paidMethod);
+            setShowMarkPaid(false);
+          });
+          setConfirmMarkPaid(false);
+        }}
+        title={t('adminNew.invoiceDetail.markPaidModal.title')}
+        message={t('adminNew.invoiceDetail.confirmMarkPaid')}
+        confirmLabel={t('adminNew.invoiceDetail.actions.markPaid')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={CreditCard}
+        loading={markPaid.loading}
+      />
     </>
   );
 }

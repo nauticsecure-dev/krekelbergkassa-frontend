@@ -1,9 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { FileText, FilePlus2, Plus, User } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { FileText, FilePlus2, Plus, Upload, User } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
+  AdminFilterPill,
   AdminContent,
   AdminLinkButton,
   AdminModalBody,
@@ -30,23 +33,35 @@ import { customersService, invoicesService } from '@/lib/services';
 import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 
-export default function InvoicesPage() {
+export default function InvoicesPageWrapper() {
+  return (
+    <React.Suspense fallback={<LoadingState label="…" variant="table" />}>
+      <InvoicesPage />
+    </React.Suspense>
+  );
+}
+
+function InvoicesPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
+  const searchParams = useSearchParams();
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   const [search, setSearch] = React.useState('');
-  const [status, setStatus] = React.useState('');
+  const [status, setStatus] = React.useState(searchParams.get('status') ?? '');
+  const [paymentStatus, setPaymentStatus] = React.useState(searchParams.get('payment_status') ?? '');
   const [source, setSource] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
   const [customerId, setCustomerId] = React.useState('');
   const [customerSearch, setCustomerSearch] = React.useState('');
 
-  const invoices = useQuery([search, status, source, page], () =>
+  const invoices = useQuery([search, status, paymentStatus, source, page], () =>
     invoicesService.list({
       search: search || undefined,
       status: status || undefined,
+      payment_status: paymentStatus || undefined,
       source: source || undefined,
       page,
       per_page: 20,
@@ -104,7 +119,7 @@ export default function InvoicesPage() {
       push({
         tone: 'error',
         title: t('adminNew.invoices.toasts.createFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -126,24 +141,28 @@ export default function InvoicesPage() {
             value: openCount,
             tone: 'marine',
             loading: invoices.loading,
+            href: `/${locale}/admin/facturen?payment_status=open`,
           },
           {
             label: t('adminNew.invoices.metrics.overdue'),
             value: overdueCount,
             tone: 'danger',
             loading: invoices.loading,
+            href: `/${locale}/admin/facturen?payment_status=overdue`,
           },
           {
             label: t('adminNew.invoices.metrics.paid'),
             value: paidCount,
             tone: 'success',
             loading: invoices.loading,
+            href: `/${locale}/admin/facturen?payment_status=paid`,
           },
           {
             label: t('adminNew.invoices.metrics.openBalance'),
             value: formatCurrency(openBalance, dateLocale),
             tone: 'gold',
             loading: invoices.loading,
+            href: `/${locale}/admin/facturen?payment_status=open`,
           },
         ]}
       />
@@ -154,14 +173,21 @@ export default function InvoicesPage() {
           description={t('adminNew.invoices.subtitle')}
           icon={FileText}
           action={
-            <Button
-              variant="gold"
-              size="sm"
-              leftIcon={<Plus className="h-4 w-4" />}
-              onClick={openCreateModal}
-            >
-              {t('adminNew.invoices.new')}
-            </Button>
+            <div className="flex gap-2">
+              <Link href={`/${locale}/admin/facturen/import`}>
+                <Button variant="outline" size="sm" leftIcon={<Upload className="h-4 w-4" />}>
+                  {t('adminNew.invoiceImports.title')}
+                </Button>
+              </Link>
+              <Button
+                variant="gold"
+                size="sm"
+                leftIcon={<Plus className="h-4 w-4" />}
+                onClick={openCreateModal}
+              >
+                {t('adminNew.invoices.new')}
+              </Button>
+            </div>
           }
         >
         <AdminToolbar className="mb-4 border-0 bg-transparent p-0 shadow-none">
@@ -173,6 +199,25 @@ export default function InvoicesPage() {
             }}
             placeholder={t('adminNew.invoices.searchPlaceholder')}
           />
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: '', label: t('adminNew.invoices.allStatuses') },
+              { value: 'open', label: t('adminNew.status.open') },
+              { value: 'overdue', label: t('adminNew.status.overdue') },
+              { value: 'paid', label: t('adminNew.status.paid') },
+            ].map((pill) => (
+              <AdminFilterPill
+                key={pill.value || 'all'}
+                active={paymentStatus === pill.value}
+                onClick={() => {
+                  setPaymentStatus(pill.value);
+                  setPage(1);
+                }}
+              >
+                {pill.label}
+              </AdminFilterPill>
+            ))}
+          </div>
           <AdminSelect
             value={status}
             onChange={(value) => {

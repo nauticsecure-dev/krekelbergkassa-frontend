@@ -31,6 +31,8 @@ import type { PortalTimelineItem } from '@/lib/api-types';
 import { useIntl } from '@/i18n/IntlProvider';
 import { formatDateTime } from '@/lib/format';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 type ReadFilter = '' | 'unread' | 'read';
 
@@ -52,6 +54,7 @@ export default function PortalMessagesPage() {
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   const [readFilter, setReadFilter] = React.useState<ReadFilter>('');
   const [selected, setSelected] = React.useState<PortalTimelineItem | null>(null);
+  const [confirmMarkAll, setConfirmMarkAll] = React.useState(false);
 
   const timeline = useQuery([readFilter], () =>
     portalService.timeline({
@@ -88,7 +91,7 @@ export default function PortalMessagesPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -146,7 +149,7 @@ export default function PortalMessagesPage() {
                 size="sm"
                 leftIcon={<CheckCheck className="h-4 w-4" />}
                 disabled={markAllRead.loading}
-                onClick={() => void handleMarkAllRead()}
+                onClick={() => setConfirmMarkAll(true)}
               >
                 {t('adminNew.portal.messages.markAll')}
               </Button>
@@ -268,6 +271,22 @@ export default function PortalMessagesPage() {
           </>
         ) : null}
       </Modal>
+
+      <ConfirmModal
+        open={confirmMarkAll}
+        onClose={() => setConfirmMarkAll(false)}
+        onConfirm={async () => {
+          await handleMarkAllRead();
+          setConfirmMarkAll(false);
+        }}
+        title={t('adminNew.portal.messages.markAll')}
+        message={t('adminNew.portal.messages.confirmMarkAll', { count: String(unreadCount) })}
+        confirmLabel={t('adminNew.portal.messages.markAll')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={CheckCheck}
+        loading={markAllRead.loading}
+      />
     </>
   );
 }

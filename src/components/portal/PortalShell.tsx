@@ -20,6 +20,7 @@ import { Logo } from '@/components/ui/Logo';
 import { LanguageSwitcher } from '@/components/site/LanguageSwitcher';
 import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/lib/auth-context';
+import { ConfirmLogoutProvider, useConfirmLogout } from '@/components/auth/ConfirmLogoutProvider';
 import { useIntl } from '@/i18n/IntlProvider';
 import { cn } from '@/lib/cn';
 import { useShellDropdowns } from '@/components/shell/useShellDropdowns';
@@ -43,7 +44,8 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   }, [open]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-sand-50">
+    <ConfirmLogoutProvider>
+      <div className="flex h-screen overflow-hidden bg-sand-50">
       <PortalSidebar />
 
       <div
@@ -87,12 +89,14 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">{children}</main>
       </div>
     </div>
+    </ConfirmLogoutProvider>
   );
 }
 
 function PortalGlobalTopbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { t, locale } = useIntl();
-  const { user, signOut, isDemo } = useAuth();
+  const { user, isDemo } = useAuth();
+  const { requestLogout } = useConfirmLogout();
   const { bellOpen, menuOpen, toggleBell, toggleMenu, closeAll } = useShellDropdowns();
   const notifications = useQuery([locale], () =>
     portalService.notifications().catch(() => ({ unread_count: 0, latest: [] }))
@@ -255,7 +259,7 @@ function PortalGlobalTopbar({ onMenuClick }: { onMenuClick: () => void }) {
                 </Link>
                 <button
                   type="button"
-                  onClick={() => void signOut()}
+                  onClick={requestLogout}
                   className="flex w-full items-center gap-2 border-t border-navy-100 px-4 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
                 >
                   <LogOut className="h-4 w-4" />

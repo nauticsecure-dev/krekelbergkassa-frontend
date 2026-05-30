@@ -122,6 +122,30 @@ export const authService = {
       body: { token },
     });
   },
+  registerCustomer(payload: {
+    name: string;
+    email: string;
+    phone?: string | null;
+    preferred_locale?: string | null;
+    address?: {
+      street?: string | null;
+      house_number?: string | null;
+      postal_code?: string | null;
+      city?: string | null;
+      country?: string | null;
+      google_place_id?: string | null;
+    };
+  }) {
+    return api<{
+      success: boolean;
+      message: string;
+      customer: { id: string; name: string; email: string; preferred_locale: string };
+    }>('/v1/auth/customer/register', {
+      method: 'POST',
+      auth: false,
+      body: payload,
+    });
+  },
 };
 
 export const customersService = {
@@ -169,6 +193,9 @@ export const boatsService = {
   },
   remove(id: string) {
     return api<{ message: string }>(`/v1/boats/${id}`, { method: 'DELETE', queueWhenOffline: true });
+  },
+  dossier(id: string) {
+    return api<Record<string, unknown>>(`/v1/boats/${id}/dossier`);
   },
 };
 
@@ -322,7 +349,8 @@ export const kassaService = {
     idempotency_key?: string;
     device_id: string;
     customer_id?: string | null;
-    payment_method: string;
+    payment_method?: string;
+    payments?: Array<{ method: string; amount_cents: number; note?: string }>;
     locale?: string;
     redirect_url?: string;
     items: Array<{ product_id?: string; description?: string; quantity: number; unit_price_cents?: number; price_cents?: number; vat_rate?: number }>;
@@ -332,6 +360,9 @@ export const kassaService = {
       body: payload,
       queueWhenOffline: true,
     });
+  },
+  analytics(query?: Record<string, string | number | boolean | undefined>) {
+    return api<Record<string, unknown>>('/v1/kassa/analytics', { query });
   },
   quote(payload: { customer_id?: string; locale?: string; items: Array<Record<string, unknown>> }) {
     return api<Record<string, unknown>>('/v1/kassa/quote', {
@@ -355,24 +386,133 @@ export const kassaService = {
   },
 };
 
+const PRICING_CHANNELS = ['all', 'kassa', 'portal', 'stalling'] as const;
+
+type PricingChannel = (typeof PRICING_CHANNELS)[number];
+
+function pricingServiceCodes(payload: {
+  service_code?: string;
+  service_codes?: string[];
+  services?: string[];
+}): string[] {
+  if (payload.service_code) return [payload.service_code];
+  if (payload.service_codes?.length) return payload.service_codes;
+  if (payload.services?.length) return payload.services;
+  return [];
+}
+
+function pricingChannel(
+  channel?: string | null,
+  opts?: { serviceCodes?: string[]; contractType?: string },
+): PricingChannel {
+  if (channel && PRICING_CHANNELS.includes(channel as PricingChannel)) {
+    return channel as PricingChannel;
+  }
+  const codes = opts?.serviceCodes ?? [];
+  if (
+    opts?.contractType === 'winter' ||
+    codes.some((code) => code === 'stalling' || code === 'winterstalling')
+  ) {
+    return 'stalling';
+  }
+  return 'all';
+}
+
+function buildCalculatePayload(payload: {
+  length_cm: number;
+  service_code?: string;
+  service_codes?: string[];
+  services?: string[];
+  contract_type?: string;
+  customer_id?: string | null;
+  boat_id?: string | null;
+  channel?: string;
+  persist?: boolean | null;
+  status?: string | null;
+}) {
+  const serviceCodes = pricingServiceCodes(payload);
+  const service_code = serviceCodes[0];
+  if (!service_code) {
+    throw new Error('service_code is required');
+  }
+  return {
+    length_cm: payload.length_cm,
+    service_code,
+    channel: pricingChannel(payload.channel, {
+      serviceCodes,
+      contractType: payload.contract_type,
+    }),
+    customer_id: payload.customer_id ?? null,
+    boat_id: payload.boat_id ?? null,
+    ...(payload.persist != null ? { persist: payload.persist } : {}),
+    ...(payload.status ? { status: payload.status } : {}),
+  };
+}
+
+function buildPreviewPayload(payload: {
+  length_cm: number;
+  service_code?: string;
+  service_codes?: string[];
+  services?: string[];
+  contract_type?: string;
+  customer_id?: string | null;
+  boat_id?: string | null;
+  channel?: string;
+  persist?: boolean | null;
+  status?: string | null;
+}) {
+  const service_codes = pricingServiceCodes(payload);
+  if (!service_codes.length) {
+    throw new Error('service_codes is required');
+  }
+  return {
+    length_cm: payload.length_cm,
+    service_codes,
+    channel: pricingChannel(payload.channel, {
+      serviceCodes: service_codes,
+      contractType: payload.contract_type,
+    }),
+    customer_id: payload.customer_id ?? null,
+    boat_id: payload.boat_id ?? null,
+    ...(payload.persist != null ? { persist: payload.persist } : {}),
+    ...(payload.status ? { status: payload.status } : {}),
+  };
+}
+
 export const pricingService = {
   calculate(payload: {
     length_cm: number;
-    services: string[];
+    service_code?: string;
+    services?: string[];
+    service_codes?: string[];
     contract_type?: string;
     customer_id?: string | null;
+    boat_id?: string | null;
     locale?: string;
     channel?: string;
+    persist?: boolean | null;
+    status?: string | null;
   }) {
     return api<Record<string, unknown>>('/v1/pricing/calculate', {
       method: 'POST',
-      body: payload,
+      body: buildCalculatePayload(payload),
     });
   },
-  preview(payload: Record<string, unknown>) {
+  preview(payload: {
+    length_cm: number;
+    service_code?: string;
+    services?: string[];
+    service_codes?: string[];
+    contract_type?: string;
+    customer_id?: string | null;
+    boat_id?: string | null;
+    channel?: string;
+    persist?: boolean | null;
+    status?: string | null;
+  }) {
     return api<Record<string, unknown>>('/v1/pricing/preview', {
       method: 'POST',
-      body: payload,
+      body: buildPreviewPayload(payload),
     });
   },
   async rules(query?: Record<string, string | number | boolean | undefined>) {
@@ -401,6 +541,13 @@ export const pricingService = {
       method: 'DELETE',
       queueWhenOffline: true,
     });
+  },
+  async calculatorRecords(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/pricing/calculator-records', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  calculatorRecord(id: string) {
+    return api<Record<string, unknown>>(`/v1/pricing/calculator-records/${id}`);
   },
 };
 
@@ -637,6 +784,10 @@ export const adminService = {
       queueWhenOffline: true,
     });
   },
+  async timeline(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/admin/timeline', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
   timelineMessage(payload: { customer_id: string; title: string; body: string; type?: string }) {
     return api<Record<string, unknown>>('/v1/admin/timeline/message', {
       method: 'POST',
@@ -649,6 +800,18 @@ export const adminService = {
       method: 'POST',
       queueWhenOffline: true,
     });
+  },
+  remindersSummary() {
+    return api<{
+      invoice_due?: number;
+      contracts_expiring?: number;
+      work_orders_due?: number;
+      total?: number;
+      today?: number | Record<string, number>;
+      upcoming?: number | Record<string, number>;
+      overdue?: number | Record<string, number>;
+      completed?: number | Record<string, number>;
+    }>('/v1/admin/reminders/summary');
   },
 };
 
@@ -939,6 +1102,93 @@ export const usersService = {
   deactivate(id: string) {
     return api<AdminUser>(`/v1/admin/users/${id}/deactivate`, {
       method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  impersonate(id: string) {
+    return api<{
+      token: string;
+      expires_at: string;
+      user: AdminUser;
+    }>(`/v1/admin/users/${id}/impersonate`, { method: 'POST' });
+  },
+};
+
+export const workOrdersService = {
+  async list(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/work-orders', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  get(id: string) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}`);
+  },
+  create(payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/work-orders', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+};
+
+export const invoiceImportsService = {
+  async list(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/invoice-imports', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  create(payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/invoice-imports', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  get(id: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}`);
+  },
+  approve(id: string, payload?: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/approve`, {
+      method: 'POST',
+      body: payload ?? {},
+      queueWhenOffline: true,
+    });
+  },
+};
+
+export const searchService = {
+  search(q: string, limit = 8) {
+    return api<{
+      query: string;
+      intent: string;
+      result_count: number;
+      results: Record<string, Array<Record<string, unknown>>>;
+    }>('/v1/search', { query: { q, limit } });
+  },
+};
+
+export const productGroupsService = {
+  async list() {
+    const res = await api<unknown>('/v1/product-groups');
+    return asArray<Record<string, unknown>>(res);
+  },
+  create(payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/product-groups', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/product-groups/${id}`, {
+      method: 'PATCH',
+      body: payload,
       queueWhenOffline: true,
     });
   },

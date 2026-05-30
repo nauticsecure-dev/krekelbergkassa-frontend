@@ -5,6 +5,11 @@ import { auth } from './api';
 import type { ApiError } from './api';
 import { authService, extractLoginToken, portalService } from './services';
 import type { SessionUser } from './api-types';
+import {
+  hasAnySession,
+  readCachedUser,
+  writeCachedUser,
+} from './auth-storage';
 
 export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'guest';
 
@@ -82,6 +87,17 @@ function normalizeRole(role: string): Role {
   return 'staff';
 }
 
+function initialAuthState(): { user: User | null; loading: boolean } {
+  if (typeof window === 'undefined') {
+    return { user: null, loading: true };
+  }
+  const cached = readCachedUser<User>();
+  if (cached) {
+    return { user: cached, loading: false };
+  }
+  return { user: null, loading: hasAnySession() };
+}
+
 async function loadStaffSession(): Promise<User | null> {
   const me = await authService.me();
   return {
@@ -106,61 +122,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
   const [isDemo, setIsDemo] = React.useState(false);
   const [isPortalSession, setIsPortalSession] = React.useState(false);
+  const hydratedRef = React.useRef(false);
 
   const refresh = React.useCallback(async () => {
-    const token = auth.getToken();
-    const portalToken = auth.getPortalToken();
-    const hasStaffToken = !!token && !token.startsWith(DEMO_TOKEN_PREFIX);
-
-    if (token?.startsWith(DEMO_TOKEN_PREFIX)) {
-      const stored =
-        typeof window !== 'undefined' ? localStorage.getItem(DEMO_USER_KEY) : null;
-      const parsed: User | null = stored ? JSON.parse(stored) : null;
-      setUser(parsed ?? demoUserFor('customer'));
-      setIsDemo(true);
-      setIsPortalSession(false);
-      setLoading(false);
-      return;
+    if (hasAnySession() && !readCachedUser<User>()) {
+      setLoading(true);
     }
 
-    // Staff session takes priority — portal cookie must not override admin login on refresh.
-    if (hasStaffToken) {
-      try {
-        const staffUser = await loadStaffSession();
-        setUser(staffUser);
-        setIsDemo(false);
+    try {
+      const token = auth.getToken();
+      const portalToken = auth.getPortalToken();
+      const hasStaffToken = !!token && !token.startsWith(DEMO_TOKEN_PREFIX);
+
+      if (token?.startsWith(DEMO_TOKEN_PREFIX)) {
+        const stored =
+          typeof window !== 'undefined' ? localStorage.getItem(DEMO_USER_KEY) : null;
+        const parsed: User | null = stored ? JSON.parse(stored) : null;
+        setUser(parsed ?? demoUserFor('customer'));
+        setIsDemo(true);
         setIsPortalSession(false);
-        setLoading(false);
+        writeCachedUser(null);
         return;
-      } catch (err) {
-        if (isUnauthorized(err)) {
-          auth.clearSession();
+      }
+
+      // Staff session takes priority — portal cookie must not override admin login on refresh.
+      if (hasStaffToken) {
+        try {
+          const staffUser = await loadStaffSession();
+          setUser(staffUser);
+          writeCachedUser(staffUser);
+          setIsDemo(false);
+          setIsPortalSession(false);
+          return;
+        } catch (err) {
+          if (isUnauthorized(err)) {
+            auth.clearSession();
+            writeCachedUser(null);
+          } else {
+            const cached = readCachedUser<User>();
+            if (cached) {
+              setUser(cached);
+              setIsDemo(false);
+              setIsPortalSession(false);
+              return;
+            }
+          }
         }
       }
-    }
 
-    if (portalToken) {
-      try {
-        const portalUser = await loadPortalSession();
-        setUser(portalUser);
-        setIsDemo(false);
-        setIsPortalSession(true);
-        setLoading(false);
-        return;
-      } catch (err) {
-        if (isUnauthorized(err)) {
-          auth.clearPortalSession();
+      if (portalToken) {
+        try {
+          const portalUser = await loadPortalSession();
+          setUser(portalUser);
+          writeCachedUser(portalUser);
+          setIsDemo(false);
+          setIsPortalSession(true);
+          return;
+        } catch (err) {
+          if (isUnauthorized(err)) {
+            auth.clearPortalSession();
+            writeCachedUser(null);
+          } else {
+            const cached = readCachedUser<User>();
+            if (cached) {
+              setUser(cached);
+              setIsDemo(false);
+              setIsPortalSession(true);
+              return;
+            }
+          }
         }
       }
-    }
 
-    setUser(null);
-    setIsDemo(false);
-    setIsPortalSession(false);
-    setLoading(false);
+      setUser(null);
+      setIsDemo(false);
+      setIsPortalSession(false);
+      writeCachedUser(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    const state = initialAuthState();
+    setUser(state.user);
+    setLoading(state.loading);
     void refresh();
   }, [refresh]);
 
@@ -178,8 +226,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: normalizeRole(res.user.role),
       };
       setUser(next);
+      writeCachedUser(next);
       setIsDemo(false);
       setIsPortalSession(false);
+      setLoading(false);
       return next;
     },
     []
@@ -201,8 +251,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       locale: res.customer.preferred_locale,
     };
     setUser(next);
+    writeCachedUser(next);
     setIsDemo(false);
     setIsPortalSession(true);
+    setLoading(false);
     return next;
   }, []);
 
@@ -214,8 +266,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(DEMO_USER_KEY, JSON.stringify(demoUser));
     }
     setUser(demoUser);
+    writeCachedUser(null);
     setIsDemo(true);
     setIsPortalSession(role === 'customer');
+    setLoading(false);
     return demoUser;
   }, []);
 
@@ -240,9 +294,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     auth.clearSession();
+    writeCachedUser(null);
     setUser(null);
     setIsDemo(false);
     setIsPortalSession(false);
+    setLoading(false);
   }, []);
 
   return (

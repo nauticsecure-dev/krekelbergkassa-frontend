@@ -29,6 +29,7 @@ import { calendarService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import type { BoatLocation } from '@/lib/api-types';
 import { formatTimeRange, toTimeInputValue } from '@/lib/time';
@@ -110,7 +111,7 @@ export default function CalendarAdminPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -133,7 +134,7 @@ export default function CalendarAdminPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -149,7 +150,7 @@ export default function CalendarAdminPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -173,7 +174,7 @@ export default function CalendarAdminPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -208,7 +209,7 @@ export default function CalendarAdminPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };

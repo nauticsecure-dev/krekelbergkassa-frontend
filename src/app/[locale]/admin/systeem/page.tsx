@@ -27,11 +27,12 @@ import {
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Badge } from '@/components/ui/Badge';
+import { HealthStatusBadge, healthStatusMeta } from '@/components/admin/HealthStatus';
 import { adminHealthService, repairService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import type { HealthCheckResult, Payment } from '@/lib/api-types';
 
@@ -51,6 +52,8 @@ export default function SystemPage() {
     resolution: 'keep_server' | 'use_client';
   } | null>(null);
   const [conflictReason, setConflictReason] = React.useState('');
+  const [confirmMerge, setConfirmMerge] = React.useState(false);
+  const [confirmResendEmail, setConfirmResendEmail] = React.useState(false);
 
   const health = useQuery([], async () => {
     const [overview, database, queue, mollie, mail, storage, webhooks] = await Promise.all([
@@ -87,7 +90,7 @@ export default function SystemPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     } finally {
       setRunning(null);
@@ -113,6 +116,10 @@ export default function SystemPage() {
       push({ tone: 'error', title: t('adminNew.system.fields.reason') });
       return;
     }
+    setConfirmMerge(true);
+  };
+
+  const executeMergeCustomers = async () => {
     await runRepair(
       'merge-customers',
       () =>
@@ -136,7 +143,7 @@ export default function SystemPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     } finally {
       setRunning(null);
@@ -172,13 +179,13 @@ export default function SystemPage() {
         ) : checks ? (
           <>
             <AdminMetricGrid>
-              <HealthMetric label={t('adminNew.system.checks.overview')} value={checks.overview.status} icon={Activity} />
-              <HealthMetric label={t('adminNew.system.checks.database')} value={checks.database.status} icon={Database} />
-              <HealthMetric label={t('adminNew.system.checks.queue')} value={checks.queue.status} icon={Server} />
-              <HealthMetric label={t('adminNew.system.checks.mollie')} value={checks.mollie.status} icon={Activity} />
-              <HealthMetric label={t('adminNew.system.checks.mail')} value={checks.mail.status} icon={Mail} />
-              <HealthMetric label={t('adminNew.system.checks.storage')} value={checks.storage.status} icon={Server} />
-              <HealthMetric label={t('adminNew.system.checks.webhooks')} value={checks.webhooks.status} icon={Webhook} />
+              <HealthMetric label={t('adminNew.system.checks.overview')} check={checks.overview} icon={Activity} t={t} />
+              <HealthMetric label={t('adminNew.system.checks.database')} check={checks.database} icon={Database} t={t} />
+              <HealthMetric label={t('adminNew.system.checks.queue')} check={checks.queue} icon={Server} t={t} />
+              <HealthMetric label={t('adminNew.system.checks.mollie')} check={checks.mollie} icon={CreditCard} t={t} />
+              <HealthMetric label={t('adminNew.system.checks.mail')} check={checks.mail} icon={Mail} t={t} />
+              <HealthMetric label={t('adminNew.system.checks.storage')} check={checks.storage} icon={Server} t={t} />
+              <HealthMetric label={t('adminNew.system.checks.webhooks')} check={checks.webhooks} icon={Webhook} t={t} />
             </AdminMetricGrid>
 
             <div className="grid gap-5 lg:grid-cols-2">
@@ -270,7 +277,11 @@ export default function SystemPage() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="truncate">{String(item.entity_type ?? item.id)}</span>
-                        <Badge tone="warning">{String(item.status ?? 'conflict')}</Badge>
+                        <HealthStatusBadge
+                          size="sm"
+                          status={String(item.status ?? 'conflict')}
+                          label={t('adminNew.system.status.conflict')}
+                        />
                       </div>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <Button
@@ -312,11 +323,7 @@ export default function SystemPage() {
                       size="sm"
                       variant="secondary"
                       disabled={!invoiceId || running === 'resend-email'}
-                      onClick={() =>
-                        void runRepair('resend-email', () =>
-                          repairService.resendInvoiceEmail(invoiceId)
-                        )
-                      }
+                      onClick={() => setConfirmResendEmail(true)}
                     >
                       {t('adminNew.system.repair.resendEmail')}
                     </Button>
@@ -443,26 +450,67 @@ export default function SystemPage() {
         inputMinLength={5}
         inputRequiredMessage={t('adminNew.common.reasonTooShort', { min: '5' })}
       />
+
+      <AdminConfirmModal
+        open={confirmMerge}
+        onClose={() => setConfirmMerge(false)}
+        onConfirm={async () => {
+          await executeMergeCustomers();
+          setConfirmMerge(false);
+        }}
+        title={t('adminNew.system.repair.mergeCustomers')}
+        message={t('adminNew.system.repair.confirmMergeCustomers')}
+        confirmLabel={t('adminNew.system.repair.mergeCustomers')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={Users}
+        loading={running === 'merge-customers'}
+      />
+
+      <AdminConfirmModal
+        open={confirmResendEmail}
+        onClose={() => setConfirmResendEmail(false)}
+        onConfirm={async () => {
+          await runRepair('resend-email', () => repairService.resendInvoiceEmail(invoiceId));
+          setConfirmResendEmail(false);
+        }}
+        title={t('adminNew.system.repair.resendEmail')}
+        message={t('adminNew.system.repair.confirmResendEmail')}
+        confirmLabel={t('adminNew.system.repair.resendEmail')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={Mail}
+        loading={running === 'resend-email'}
+      />
     </>
   );
 }
 
 function HealthMetric({
   label,
-  value,
+  check,
   icon,
+  t,
 }: {
   label: string;
-  value: string;
+  check: HealthCheckResult;
   icon: LucideIcon;
+  t: (key: string) => string;
 }) {
-  const ok = value === 'ok' || value === 'healthy' || value === 'up';
+  const meta = healthStatusMeta(check.status);
+  const statusLabel = t(`adminNew.system.status.${meta.kind}`);
+  const hint =
+    check.latency_ms != null
+      ? t('adminNew.system.status.latency', { ms: String(check.latency_ms) })
+      : check.message || undefined;
+
   return (
     <AdminMetric
       label={label}
-      value={value}
+      value={<HealthStatusBadge status={check.status} label={statusLabel} />}
+      hint={hint}
       icon={icon}
-      tone={ok ? 'success' : value === 'degraded' ? 'warning' : 'danger'}
+      tone={meta.metricTone}
     />
   );
 }

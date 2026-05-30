@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { FilePlus2, Save, Ship, Users, Warehouse, CreditCard, Wallet, FileText } from 'lucide-react';
+import { FilePlus2, Save, Ship, Users, Warehouse, CreditCard, Wallet, FileText, UserRound, Clock } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { InvoiceStatusBadge } from '@/components/admin/StatusBadge';
 import {
   boatsService,
@@ -28,11 +29,14 @@ import {
   invoicesService,
   stallingService,
   walletsService,
+  adminService,
 } from '@/lib/services';
+import { findUserIdByEmail, impersonateUser, ImpersonationError } from '@/lib/impersonate';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatCurrency, formatDate, centsToEuro } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function CustomerDetailPage() {
   const params = useParams<{ id: string }>();
@@ -43,12 +47,15 @@ export default function CustomerDetailPage() {
   const [showEdit, setShowEdit] = React.useState(false);
   const [showBoat, setShowBoat] = React.useState(false);
   const [showWalletCredit, setShowWalletCredit] = React.useState(false);
+  const [showImpersonateConfirm, setShowImpersonateConfirm] = React.useState(false);
+  const [confirmNewInvoice, setConfirmNewInvoice] = React.useState(false);
+  const [confirmWalletCredit, setConfirmWalletCredit] = React.useState(false);
   const [walletAmount, setWalletAmount] = React.useState('');
   const [walletDescription, setWalletDescription] = React.useState('');
 
   const data = useQuery([customerId], async () => {
     if (!customerId) throw new Error('Missing customer id');
-    const [customer, boats, stalling, invoices, files, wallet] = await Promise.all([
+    const [customer, boats, stalling, invoices, files, wallet, timeline] = await Promise.all([
       customersService.get(customerId),
       boatsService.list({ customer_id: customerId, per_page: 100 }),
       stallingService.list({ customer_id: customerId, per_page: 100 }),
@@ -57,6 +64,7 @@ export default function CustomerDetailPage() {
         .list({ entity_type: 'customer', entity_id: customerId, per_page: 100 })
         .catch(() => ({ data: [] })),
       walletsService.get(customerId).catch(() => null),
+      adminService.timeline({ customer_id: customerId, per_page: 30 }).catch(() => ({ data: [] })),
     ]);
 
     return {
@@ -66,6 +74,7 @@ export default function CustomerDetailPage() {
       invoices: invoices.data,
       files: files.data,
       wallet,
+      timeline: timeline.data ?? [],
     };
   });
 
@@ -136,7 +145,7 @@ export default function CustomerDetailPage() {
       push({
         tone: 'error',
         title: t('adminNew.customerDetail.toasts.saveFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -159,7 +168,7 @@ export default function CustomerDetailPage() {
       push({
         tone: 'error',
         title: t('adminNew.customerDetail.toasts.createFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -173,13 +182,19 @@ export default function CustomerDetailPage() {
       push({
         tone: 'error',
         title: t('adminNew.customerDetail.toasts.invoiceCreateFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
 
   const onCreditWallet = async (e: React.FormEvent) => {
     e.preventDefault();
+    const euros = Number(walletAmount);
+    if (!euros) return;
+    setConfirmWalletCredit(true);
+  };
+
+  const executeWalletCredit = async () => {
     const euros = Number(walletAmount);
     if (!euros) return;
     try {
@@ -196,7 +211,7 @@ export default function CustomerDetailPage() {
       push({
         tone: 'error',
         title: t('adminNew.common.operationFailed'),
-        message: err instanceof Error ? err.message : undefined,
+        message: getApiErrorMessage(err),
       });
     }
   };
@@ -217,6 +232,14 @@ export default function CustomerDetailPage() {
             <Button
               variant="outline"
               size="sm"
+              leftIcon={<UserRound className="h-4 w-4" />}
+              onClick={() => setShowImpersonateConfirm(true)}
+            >
+              {t('adminNew.impersonation.action')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               leftIcon={<Save className="h-4 w-4" />}
               onClick={() => setShowEdit(true)}
             >
@@ -226,7 +249,7 @@ export default function CustomerDetailPage() {
               variant="gold"
               size="sm"
               leftIcon={<FilePlus2 className="h-4 w-4" />}
-              onClick={onCreateInvoice}
+              onClick={() => setConfirmNewInvoice(true)}
             >
               {t('adminNew.customerDetail.actions.newInvoice')}
             </Button>
@@ -497,6 +520,34 @@ export default function CustomerDetailPage() {
             </div>
 
             <AdminSectionCard
+              title={t('adminNew.customerDetail.timelineTitle')}
+              description={t('adminNew.customerDetail.timelineSubtitle')}
+              icon={Clock}
+            >
+              {data.data.timeline.length ? (
+                <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
+                  {data.data.timeline.map((item, idx) => (
+                    <div key={String(item.id ?? idx)} className="px-4 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="font-medium text-navy-900">{String(item.title ?? item.type ?? '—')}</div>
+                          {item.body ? (
+                            <div className="mt-1 text-sm text-navy-600">{String(item.body)}</div>
+                          ) : null}
+                        </div>
+                        <div className="shrink-0 text-xs text-navy-500">
+                          {item.created_at ? formatDate(String(item.created_at)) : '—'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-navy-500">{t('adminNew.customerDetail.timelineEmpty')}</div>
+              )}
+            </AdminSectionCard>
+
+            <AdminSectionCard
               title={t('adminNew.customerDetail.files')}
               description={t('adminNew.customerDetail.noFiles')}
               icon={FileText}
@@ -547,13 +598,21 @@ export default function CustomerDetailPage() {
               value={editForm.phone}
               onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))}
             />
-            <Input
-              label={t('adminNew.customerDetail.preferredLocale')}
-              value={editForm.preferred_locale}
-              onChange={(e) =>
-                setEditForm((p) => ({ ...p, preferred_locale: e.target.value }))
-              }
-            />
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.customerDetail.preferredLocale')}
+              </label>
+              <select
+                className="input-base w-full"
+                value={editForm.preferred_locale}
+                onChange={(e) => setEditForm((p) => ({ ...p, preferred_locale: e.target.value }))}
+              >
+                <option value="nl-NL">Nederlands (NL)</option>
+                <option value="en-GB">English (EN)</option>
+                <option value="de-DE">Deutsch (DE)</option>
+                <option value="fr-FR">Français (FR)</option>
+              </select>
+            </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.customerDetail.notes')}
@@ -660,6 +719,79 @@ export default function CustomerDetailPage() {
           </div>
         </form>
       </Modal>
+
+      <AdminConfirmModal
+        open={showImpersonateConfirm}
+        onClose={() => setShowImpersonateConfirm(false)}
+        onConfirm={async () => {
+          const email = data.data?.customer.email;
+          if (!email) {
+            push({ tone: 'error', title: t('adminNew.impersonation.noEmail') });
+            setShowImpersonateConfirm(false);
+            return;
+          }
+          try {
+            const userId = await findUserIdByEmail(email);
+            if (!userId) {
+              push({ tone: 'error', title: t('adminNew.impersonation.noUser') });
+              setShowImpersonateConfirm(false);
+              return;
+            }
+            await impersonateUser(userId, locale);
+          } catch (err) {
+            push({
+              tone: 'error',
+              title:
+                err instanceof ImpersonationError
+                  ? t('adminNew.impersonation.notAllowed')
+                  : t('adminNew.impersonation.failed'),
+              message: err instanceof ImpersonationError ? undefined : getApiErrorMessage(err),
+            });
+          } finally {
+            setShowImpersonateConfirm(false);
+          }
+        }}
+        title={t('adminNew.impersonation.confirmTitle')}
+        message={t('adminNew.impersonation.confirmMessage', { name: data.data?.customer.name ?? '' })}
+        confirmLabel={t('adminNew.impersonation.action')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={UserRound}
+      />
+
+      <AdminConfirmModal
+        open={confirmNewInvoice}
+        onClose={() => setConfirmNewInvoice(false)}
+        onConfirm={async () => {
+          await onCreateInvoice();
+          setConfirmNewInvoice(false);
+        }}
+        title={t('adminNew.customerDetail.actions.newInvoice')}
+        message={t('adminNew.customerDetail.confirmNewInvoice')}
+        confirmLabel={t('adminNew.customerDetail.actions.newInvoice')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={FilePlus2}
+        loading={createInvoice.loading}
+      />
+
+      <AdminConfirmModal
+        open={confirmWalletCredit}
+        onClose={() => setConfirmWalletCredit(false)}
+        onConfirm={async () => {
+          await executeWalletCredit();
+          setConfirmWalletCredit(false);
+        }}
+        title={t('adminNew.wallet.creditModal.title')}
+        message={t('adminNew.wallet.confirmCredit', {
+          amount: formatCurrency(Number(walletAmount) || 0, locale === 'en' ? 'en-GB' : 'nl-NL'),
+        })}
+        confirmLabel={t('adminNew.wallet.credit')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={Wallet}
+        loading={creditWallet.loading}
+      />
     </>
   );
 }
