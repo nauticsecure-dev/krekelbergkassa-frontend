@@ -24,7 +24,11 @@ export function isPortalPath(pathname: string): boolean {
     path === '/feed' ||
     path.startsWith('/feed/') ||
     path === '/dashboard' ||
-    path.startsWith('/dashboard/')
+    path.startsWith('/dashboard/') ||
+    // Operational planning is internal — customers only see their own
+    // appointments here; anonymous visitors are sent to login.
+    path === '/planning' ||
+    path.startsWith('/planning/')
   );
 }
 

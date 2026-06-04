@@ -3,6 +3,7 @@ import { ServicePage } from '@/components/site/ServicePage';
 export default function ZelfWerkenPage() {
   return (
     <ServicePage
+      adminProductSlug="zelf-werken"
       badge="Zelf werken aan uw boot"
       title="Werk zelf op de werf"
       subtitle="Combineer onze faciliteiten met uw eigen vakmanschap. Onze werf is uitgerust voor zelf-doe schippers met werkruimtes, gereedschap en advies."

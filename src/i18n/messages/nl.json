@@ -12,9 +12,9 @@
     "contact": "Contact",
     "login": "Inloggen",
     "bookCrane": "Plan kraanbeurt",
-    "subnavCta": "Voorjaarskraanbeurten — combineer en bespaar tot −15%",
+    "subnavCta": "Professionele service voor iedere boot",
     "subnavLocation": "Locatie · Roermond",
-    "megaCta": "Combineer services en bespaar tot 15%",
+    "megaCta": "Alles voor uw boot op één locatie",
     "megaAction": "Maak afspraak",
     "installShort": "App",
     "installLong": "App installeren"
@@ -81,7 +81,14 @@
     "understood": "Begrepen",
     "dismissed": "Installatie geannuleerd — u kunt het altijd opnieuw proberen.",
     "footnote": "Geen account nodig om te installeren · Veilig & privé",
-    "fallbackHint": "Tip: als er geen popup verschijnt, gebruik dan het menu van uw browser ‘App installeren’."
+    "fallbackHint": "Tip: als er geen popup verschijnt, gebruik dan het menu van uw browser ‘App installeren’.",
+    "modalDescShort": "Gebruik Krekelberg sneller vanaf uw startscherm.",
+    "benefitLine": "Werkt sneller, ook mobiel en offline.",
+    "installCta": "Installeren",
+    "later": "Later",
+    "close": "Sluiten",
+    "fallbackUnavailable": "Installeren is niet automatisch beschikbaar. Gebruik het browsermenu en kies 'App installeren'.",
+    "iosShort": "Tik op het deel-icoon en kies 'Zet op beginscherm'."
   },
   "over": {
     "heroBadge": "Over Krekelberg Nautic",
@@ -155,7 +162,7 @@
     "visitBadge": "Bezoek",
     "visitTitle": "Plan uw bezoek aan de werf",
     "visitBody": "U bent welkom op ons terrein in Roermond. We adviseren u graag persoonlijk, met of zonder afspraak.",
-    "hours": "Ma–vr 08:00–17:00 · zaterdag op afspraak",
+    "hours": "Ma–vr 09:00–17:30 · Wo gesloten · Za + Zo 10:00–17:00",
     "makeAppointment": "Maak een afspraak",
     "viewPlanning": "Bekijk planning",
     "mapAlt": "Foto van de jachthaven van Krekelberg Nautic"
@@ -360,14 +367,14 @@
     "contact": {
       "badge": "Contact & locatie",
       "title": "Plan uw bezoek aan de werf",
-      "hours": "Ma–vr 08:00–17:00 · za op afspraak",
+      "hours": "Ma–vr 09:00–17:30 · Wo gesloten · Za + Zo 10:00–17:00",
       "cta": "Maak afspraak",
       "planning": "Bekijk planning"
     },
     "cta": {
       "badge": "Klaar om te beginnen?",
       "title": "Reserveer uw kraanbeurt of stalling",
-      "subtitle": "Combineer meerdere services en bespaar tot 15%. Onze werfplanning is live in te zien.",
+      "subtitle": "Combineer meerdere services en plan eenvoudig online. Onze werfplanning is live in te zien.",
       "primary": "Plan kraanbeurt",
       "secondary": "Neem contact op"
     },
@@ -424,7 +431,7 @@
     "legal": "Juridisch",
     "copyright": "© {year} Krekelberg Nautic — Alle rechten voorbehouden.",
     "address": "Hertenerweg 2, 6049AA Herten",
-    "phone": "+31 (0)475 31 56 61",
+    "phone": "0475 315 661",
     "email": "info@krekelberg-nautic.nl"
   },
   "crane": {
@@ -465,7 +472,8 @@
       "boatWidth": "2.8",
       "boatWeight": "3500",
       "notes": "Bijv. gewenste ligplaats of bijzonderheden over uw boot"
-    }
+    },
+    "boatLengthHint": "In centimeters, bijv. 890 voor 8,90 m"
   },
   "faq": {
     "title": "Veelgestelde vragen",
@@ -477,7 +485,7 @@
     "contactBtn": "Neem contact op",
     "callUs": "Bel ons",
     "openYard": "Werfterrein",
-    "openYardDesc": "Ma-vr 08:00–17:00, za 09:00–13:00",
+    "openYardDesc": "Ma–vr 09:00–17:30 · Wo gesloten · Za + Zo 10:00–17:00",
     "professional": "Professioneel team",
     "professionalDesc": "Vakmensen met jarenlange ervaring",
     "trust": "Vertrouwd & verzekerd",
@@ -497,7 +505,8 @@
     "askQuestion": "Stel uw vraag",
     "ctaTitle": "Klaar om uw afspraak te plannen?",
     "ctaDesc": "Reserveer binnen 2 minuten en ontvang direct een indicatie van de kosten.",
-    "ctaContact": "Contact"
+    "ctaContact": "Contact",
+    "editService": "Bewerk service"
   },
   "contactPage": {
     "badge": "Bezoek of bel ons",
@@ -505,7 +514,7 @@
     "subtitle": "Onze werf, brokerage en appartementen vindt u in één maritieme locatie aan de Maasplassen. Onze mensen staan voor u klaar.",
     "address": "Hertenerweg 2, 6049AA Herten",
     "addressLabel": "Bezoekadres",
-    "phone": "+31 (0)475 31 56 61",
+    "phone": "0475 315 661",
     "phoneLabel": "Telefoon",
     "email": "info@krekelberg-nautic.nl",
     "emailLabel": "E-mail",
@@ -562,7 +571,7 @@
     "locationBody": "U overnacht direct boven onze werf in Roermond, op slechts enkele meters van de Maasplassen. Het centrum van Roermond bereikt u in 5 minuten met de auto of fiets.",
     "locationAddress": "Hertenerweg 2, 6049AA Herten",
     "infoCta": "Vraag beschikbaarheid",
-    "phoneCta": "Bel +31 (0)475 31 56 61",
+    "phoneCta": "Bel 0475 315 661",
     "contactNote": "Reserveringen verlopen persoonlijk via mail of telefoon, zodat we elke gast persoonlijk te woord kunnen staan."
   },
   "verkoopPage": {
@@ -717,7 +726,7 @@
     "forgotF2Title": "Geen wachtwoord-leak",
     "forgotF2Desc": "We tonen nooit of een mailadres bestaat.",
     "forgotF3Title": "Direct hulp",
-    "forgotF3Desc": "Bel +31 (0)475 31 56 61 voor persoonlijke ondersteuning."
+    "forgotF3Desc": "Bel 0475 315 661 voor persoonlijke ondersteuning."
   },
   "feed": {
     "title": "Tijdlijn",
@@ -837,7 +846,7 @@
     },
     "help": {
       "title": "Hulp nodig?",
-      "subtitle": "Wij staan ma–vr van 08:00 tot 17:00 voor u klaar."
+      "subtitle": "Wij staan ma–vr van 09:00 tot 17:30 voor u klaar."
     }
   },
   "portalSidebar": {
@@ -1497,7 +1506,7 @@
       "online": "Online",
       "offline": "Offline",
       "pending": "Pending",
-      "devices": "Sync-apparaten",
+      "devices": "Geregistreerde sync devices",
       "failed": "Mislukt",
       "lastSync": "Laatste sync",
       "pendingChanges": "Pending wijzigingen",
@@ -1506,7 +1515,6 @@
       "confirmDeleteItem": "Deze pending wijziging verwijderen?",
       "retry": "Retry",
       "noPending": "Geen pending offline wijzigingen.",
-      "devices": "Geregistreerde sync devices",
       "noDevices": "Nog geen sync devices beschikbaar.",
       "devicesHint": "Apparaten die offline wijzigingen synchroniseren",
       "itemSynced": "Wijziging gesynchroniseerd",
@@ -2324,5 +2332,31 @@
         "credited": "Tegoed toegevoegd"
       }
     }
+  },
+  "planning": {
+    "badge": "Planning",
+    "titleStaff": "Kraan- en werfplanning",
+    "titleCustomer": "Mijn afspraken",
+    "subtitleStaff": "Bekijk en beheer de werkverdeling op de werf. Sleep nieuwe afspraken in via de kraanafspraak.",
+    "subtitleCustomer": "Een overzicht van uw eigen afspraken op de werf.",
+    "thisWeek": "deze week",
+    "loading": "Planning laden…",
+    "prevWeek": "Vorige week",
+    "nextWeek": "Volgende week",
+    "today": "Vandaag",
+    "newAppointment": "Plan nieuwe afspraak",
+    "realtimeStaff": "Live gekoppeld aan de werfplanning",
+    "realtimeCustomer": "Alleen uw eigen afspraken zijn zichtbaar",
+    "appointment": "Afspraak",
+    "confirm": "Goedkeuren",
+    "markComplete": "Markeer voltooid",
+    "cancel": "Annuleren",
+    "cancelConfirm": "Weet u zeker dat u deze afspraak wilt annuleren? De afspraak blijft bewaard met status geannuleerd.",
+    "cancelReason": "Geannuleerd via planning",
+    "confirmed": "Afspraak goedgekeurd",
+    "completed": "Afspraak voltooid",
+    "cancelled": "Afspraak geannuleerd",
+    "actionFailed": "Actie mislukt",
+    "customerHint": "Neem contact op met de werf om deze afspraak te wijzigen of te annuleren."
   }
 }

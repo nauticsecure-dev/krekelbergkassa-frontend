@@ -20,6 +20,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
+import { companyInfo } from "@/lib/company";
 
 const SERVICES = [
   {
@@ -348,11 +349,13 @@ export default function HomePage() {
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm text-navy-700">
               <li className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-marine-700" /> Mr. Hartelaan 1,
-                6045 EM Roermond
+                <MapPin className="h-4 w-4 text-marine-700" /> {companyInfo.address}
               </li>
               <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-marine-700" /> 0475 32 22 75
+                <Phone className="h-4 w-4 text-marine-700" />{" "}
+                <a href={companyInfo.phoneHref} className="hover:text-navy-900">
+                  {companyInfo.phone}
+                </a>
               </li>
               <li className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-marine-700" />{" "}

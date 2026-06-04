@@ -4,7 +4,6 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Anchor,
   ArrowRight,
   Calendar,
   ChevronDown,
@@ -24,6 +23,7 @@ import { Button } from '@/components/ui/Button';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { InstallButton } from '@/components/pwa/InstallButton';
 import { cn } from '@/lib/cn';
+import { companyInfo } from '@/lib/company';
 
 interface MegaItem {
   href: string;
@@ -55,11 +55,7 @@ export function Header() {
     { href: `/${locale}/diensten/winterstalling`, icon: Warehouse, label: t('services.storage.title'), desc: t('services.storage.desc') },
     { href: `/${locale}/diensten/zelf-werken`, icon: Hammer, label: t('services.diy.title'), desc: t('services.diy.desc') },
     { href: `/${locale}/planning`, icon: Calendar, label: t('nav.planning'), desc: 'Live overzicht werfplanning' },
-  ];
-
-  const stayMega: MegaItem[] = [
     { href: `/${locale}/appartementen`, icon: Hotel, label: t('services.apartments.title'), desc: t('services.apartments.desc') },
-    { href: `/${locale}/verkoop`, icon: Anchor, label: t('services.sale.title'), desc: t('services.sale.desc') },
   ];
 
   const openMenu = (id: string) => {
@@ -94,7 +90,7 @@ export function Header() {
               {t('nav.subnavLocation')}
             </Link>
             <span className="opacity-30">·</span>
-            <a href="tel:+31475322275" className="inline-flex items-center gap-1.5 hover:text-white">
+            <a href={companyInfo.phoneHref} className="inline-flex items-center gap-1.5 hover:text-white">
               <Phone className="h-3 w-3" /> {t('footer.phone')}
             </a>
             <span className="opacity-30">·</span>
@@ -142,33 +138,12 @@ export function Header() {
                 />
               ) : null}
             </li>
-            <li
-              onMouseEnter={() => openMenu('stay')}
-              onMouseLeave={closeMenu}
-              className="relative"
+            <NavLink
+              href={`/${locale}/verkoop`}
+              active={pathname.startsWith(`/${locale}/verkoop`)}
             >
-              <NavLink
-                href={`/${locale}/verkoop`}
-                active={
-                  pathname.startsWith(`/${locale}/verkoop`) ||
-                  pathname.startsWith(`/${locale}/appartementen`)
-                }
-                hasMenu
-                expanded={hoveredMenu === 'stay'}
-              >
-                {t('nav.salesLocation')}
-              </NavLink>
-              {hoveredMenu === 'stay' ? (
-                <MegaPanel
-                  items={stayMega}
-                  locale={locale}
-                  groupLabel={t('header.groupStay')}
-                  onClose={() => setHoveredMenu(null)}
-                  ctaText={t('nav.megaCta')}
-                  actionText={t('nav.megaAction')}
-                />
-              ) : null}
-            </li>
+              {t('nav.salesLocation')}
+            </NavLink>
             <NavLink
               href={`/${locale}/over-ons`}
               active={pathname === `/${locale}/over-ons`}
@@ -216,13 +191,7 @@ export function Header() {
                 </MobileSubLink>
               ))}
             </MobileGroup>
-            <MobileGroup label={t('header.groupStay')}>
-              {stayMega.map((m) => (
-                <MobileSubLink key={m.href} href={m.href} icon={m.icon}>
-                  {m.label}
-                </MobileSubLink>
-              ))}
-            </MobileGroup>
+            <MobileLink href={`/${locale}/verkoop`}>{t('nav.salesLocation')}</MobileLink>
             <MobileLink href={`/${locale}/over-ons`}>{t('nav.about')}</MobileLink>
             <MobileLink href={`/${locale}/contact`}>{t('nav.contact')}</MobileLink>
             <div className="my-3 h-px bg-navy-100" />

@@ -1,4 +1,5 @@
 import { LegalPage } from '@/components/site/LegalPage';
+import { companyInfo } from '@/lib/company';
 
 export default function PrivacyPage() {
   return (
@@ -11,7 +12,7 @@ export default function PrivacyPage() {
         {
           heading: 'Verwerkingsverantwoordelijke',
           body: [
-            'Krekelberg Nautic B.V., gevestigd aan de Havenstraat 12 te Roermond, is verwerkingsverantwoordelijke voor de verwerking van persoonsgegevens zoals beschreven in deze privacyverklaring.',
+            `Krekelberg Nautic B.V., gevestigd aan de ${companyInfo.address}, is verwerkingsverantwoordelijke voor de verwerking van persoonsgegevens zoals beschreven in deze privacyverklaring.`,
           ],
         },
         {
@@ -41,7 +42,7 @@ export default function PrivacyPage() {
         {
           heading: 'Contact',
           body: [
-            'Heeft u vragen over deze privacyverklaring of klachten over hoe wij omgaan met uw gegevens, neem dan contact op via privacy@krekelberg-nautic.nl of bel 0475 32 22 75.',
+            `Heeft u vragen over deze privacyverklaring of klachten over hoe wij omgaan met uw gegevens, neem dan contact op via privacy@krekelberg-nautic.nl of bel ${companyInfo.phone}.`,
           ],
         },
       ]}

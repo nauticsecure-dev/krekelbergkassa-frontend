@@ -1,8 +1,11 @@
 import { ServicePage } from '@/components/site/ServicePage';
+import { tariffRanges } from '@/lib/pricing-table';
 
 export default function WinterstallingPage() {
   return (
     <ServicePage
+      adminProductSlug="winterberging"
+      priceFootnote="Winterberging-tarief per lengteklasse, inclusief BTW (incl. 2× kranen en afspuiten). De definitieve prijs volgt uit de exacte lengte van uw boot."
       badge="Winterstalling"
       title="Veilige winterstalling"
       subtitle="Binnen- en buitenstalling op een verzekerd werfterrein, ruim 10.000 m² in Roermond. Wij behandelen uw schip alsof het ons eigen schip is."
@@ -15,16 +18,9 @@ export default function WinterstallingPage() {
         { title: 'Toegang tijdens openingstijden', desc: 'Werk zelf of bezoek uw boot wanneer u wilt.' },
         { title: 'Stroomaansluiting', desc: 'Optioneel beschikbaar op verzoek.' },
         { title: 'Onderhoud op locatie', desc: 'Externe monteurs welkom onder werfvoorwaarden.' },
-        { title: 'Voor- en najaar combineren', desc: 'Combinatiekorting met kranen + afspuiten.' },
+        { title: 'Voor- en najaar combineren', desc: 'Kranen en afspuiten in één arrangement.' },
       ]}
-      priceRanges={[
-        { label: 'Buiten — 0–8m', price: '€ 450', note: 'Per seizoen' },
-        { label: 'Buiten — 8–12m', price: '€ 620' },
-        { label: 'Buiten — 12m+', price: '€ 820' },
-        { label: 'Binnen — 0–8m', price: '€ 650' },
-        { label: 'Binnen — 8–12m', price: '€ 880' },
-        { label: 'Binnen — 12m+', price: 'Op aanvraag' },
-      ]}
+      priceRanges={tariffRanges('winterberging')}
       faqs={[
         { q: 'Wanneer start het stallingsseizoen?', a: 'Winterstalling loopt van 1 november tot 30 april. Zomerstalling is mogelijk van 1 mei tot 31 oktober.' },
         { q: 'Kan ik tussentijds werkzaamheden uitvoeren?', a: 'Ja. Tijdens openingstijden bent u welkom op het werfterrein, met toegang tot werkruimtes en water/stroom.' },
