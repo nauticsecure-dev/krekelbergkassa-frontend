@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Pencil } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useIntl } from '@/i18n/IntlProvider';
+import { useAuth } from '@/lib/auth-context';
+import { canAccessAdmin } from '@/lib/auth-routes';
 
 export interface ServicePageProps {
   badge: string;
@@ -18,6 +20,10 @@ export interface ServicePageProps {
   heroImage?: string;
   inlineImage?: string;
   primaryCta?: { label: string; href: string };
+  /** Product/service slug — enables an "Edit service" link for admins. */
+  adminProductSlug?: string;
+  /** Optional caption under the pricing grid (e.g. data source / season). */
+  priceFootnote?: string;
 }
 
 export function ServicePage({
@@ -31,8 +37,12 @@ export function ServicePage({
   heroImage = '/img/krek/werf-hero.webp',
   inlineImage,
   primaryCta,
+  adminProductSlug,
+  priceFootnote,
 }: ServicePageProps) {
   const { t, locale } = useIntl();
+  const { user, isDemo } = useAuth();
+  const isAdmin = canAccessAdmin(user?.role, isDemo);
   const cta = primaryCta ?? { label: t('nav.bookCrane'), href: `/${locale}/kraanafspraak` };
   return (
     <>
@@ -113,11 +123,20 @@ export function ServicePage({
               <h2 className="heading-display text-3xl">{t('servicePage.pricesTitle')}</h2>
               <p className="mt-1 text-sm text-navy-500">{t('servicePage.pricesDesc')}</p>
             </div>
-            <Link href={cta.href}>
-              <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                {cta.label}
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              {isAdmin && adminProductSlug ? (
+                <Link href={`/${locale}/admin/producten?search=${encodeURIComponent(adminProductSlug)}`}>
+                  <Button variant="outline" leftIcon={<Pencil className="h-4 w-4" />}>
+                    {t('servicePage.editService')}
+                  </Button>
+                </Link>
+              ) : null}
+              <Link href={cta.href}>
+                <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
+                  {cta.label}
+                </Button>
+              </Link>
+            </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {priceRanges.map((p) => (
@@ -135,6 +154,9 @@ export function ServicePage({
               </Card>
             ))}
           </div>
+          {priceFootnote ? (
+            <p className="mt-4 text-xs text-navy-400">{priceFootnote}</p>
+          ) : null}
         </div>
       </section>
 

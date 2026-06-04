@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
   CheckCircle2,
@@ -9,53 +10,60 @@ import {
   ChevronRight,
   Clock,
   Droplets,
+  Hammer,
   Ship,
   Warehouse,
-  Hammer,
 } from 'lucide-react';
 import { SimpleHero } from '@/components/site/SimpleHero';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { useIntl } from '@/i18n/IntlProvider';
+import { useAuth } from '@/lib/auth-context';
+import { canAccessAdmin, loginPath } from '@/lib/auth-routes';
+import { useQuery, useMutation } from '@/lib/hooks/useAsync';
+import { appointmentsService, portalService } from '@/lib/services';
+import type { Appointment } from '@/lib/api-types';
+import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { cn } from '@/lib/cn';
 
 const DUTCH_DAYS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
-const SLOT_TYPES = [
-  { id: 'crane', label: 'Kraan', icon: Ship, tone: 'marine', count: 18 },
-  { id: 'wash', label: 'Afspuiten', icon: Droplets, tone: 'gold', count: 9 },
-  { id: 'storage', label: 'Stalling', icon: Warehouse, tone: 'navy', count: 5 },
-  { id: 'maintenance', label: 'Onderhoud', icon: Hammer, tone: 'sand', count: 3 },
+
+type SlotType = 'crane' | 'wash' | 'storage' | 'maintenance';
+
+const SLOT_TYPES: { id: SlotType; label: string; icon: typeof Ship; tone: string }[] = [
+  { id: 'crane', label: 'Kraan', icon: Ship, tone: 'marine' },
+  { id: 'wash', label: 'Afspuiten', icon: Droplets, tone: 'gold' },
+  { id: 'storage', label: 'Stalling', icon: Warehouse, tone: 'navy' },
+  { id: 'maintenance', label: 'Onderhoud', icon: Hammer, tone: 'sand' },
 ];
 
-interface Slot {
-  day: number; // 1-7
-  start: string;
-  durationMin: number;
-  type: 'crane' | 'wash' | 'storage' | 'maintenance';
-  boat: string;
+function slotTypeFor(codes: string[]): SlotType {
+  const c = (codes ?? []).map((x) => x.toLowerCase()).join(' ');
+  if (c.includes('kran') || c.includes('crane')) return 'crane';
+  if (c.includes('afspuit') || c.includes('wash')) return 'wash';
+  if (c.includes('stall') || c.includes('winter') || c.includes('berg')) return 'storage';
+  return 'maintenance';
 }
-
-const SLOTS: Slot[] = [
-  { day: 1, start: '08:30', durationMin: 30, type: 'crane', boat: 'Aquila 8.9m' },
-  { day: 1, start: '09:30', durationMin: 20, type: 'wash', boat: 'Aquila 8.9m' },
-  { day: 2, start: '10:00', durationMin: 30, type: 'crane', boat: 'Sea Breeze' },
-  { day: 2, start: '13:30', durationMin: 45, type: 'storage', boat: 'Atalanta 12.6m' },
-  { day: 3, start: '09:00', durationMin: 30, type: 'crane', boat: 'Mistral' },
-  { day: 3, start: '11:00', durationMin: 20, type: 'wash', boat: 'Mistral' },
-  { day: 4, start: '08:30', durationMin: 60, type: 'maintenance', boat: 'Vento' },
-  { day: 5, start: '09:30', durationMin: 30, type: 'crane', boat: 'Aurora' },
-  { day: 5, start: '14:00', durationMin: 30, type: 'crane', boat: 'Triton' },
-  { day: 6, start: '09:00', durationMin: 20, type: 'wash', boat: 'Calypso' },
-];
 
 function startOfWeek(d: Date) {
   const day = d.getDay();
-  const diff = (day === 0 ? -6 : 1 - day);
+  const diff = day === 0 ? -6 : 1 - day;
   const out = new Date(d);
   out.setDate(d.getDate() + diff);
   out.setHours(0, 0, 0, 0);
   return out;
+}
+
+function localKey(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function formatRange(start: Date) {
@@ -65,9 +73,37 @@ function formatRange(start: Date) {
   return `${start.getDate()} ${mNL[start.getMonth()]} – ${end.getDate()} ${mNL[end.getMonth()]} ${end.getFullYear()}`;
 }
 
+function statusTone(status: string): 'success' | 'warning' | 'navy' | 'danger' {
+  const s = status.toLowerCase();
+  if (s.includes('cancel')) return 'danger';
+  if (s.includes('complete')) return 'success';
+  if (s.includes('pending') || s.includes('review')) return 'warning';
+  return 'navy';
+}
+
+function isActive(status: string) {
+  const s = status.toLowerCase();
+  return !s.includes('cancel') && !s.includes('complete');
+}
+
 export default function PlanningPage() {
-  const { locale } = useIntl();
+  const { t, locale } = useIntl();
+  const { user, loading: authLoading, isDemo } = useAuth();
+  const router = useRouter();
+  const { push } = useToast();
+
+  const isStaff = canAccessAdmin(user?.role, isDemo);
+
+  // Client-side guard (middleware already gates server navigations).
+  React.useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace(loginPath(locale, `/${locale}/planning`));
+    }
+  }, [authLoading, user, router, locale]);
+
   const [base, setBase] = React.useState(() => startOfWeek(new Date()));
+  const [selected, setSelected] = React.useState<Appointment | null>(null);
+  const [cancelFor, setCancelFor] = React.useState<Appointment | null>(null);
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(base);
@@ -75,46 +111,108 @@ export default function PlanningPage() {
     return d;
   });
 
+  // Staff/admin see all appointments; customers only their own (portal).
+  const query = useQuery<{ data: Appointment[] }>(
+    [isStaff, Boolean(user)],
+    async () => {
+      if (!user) return { data: [] };
+      return isStaff
+        ? appointmentsService.list({ per_page: 200 })
+        : portalService.appointments({ per_page: 100 });
+    },
+    { immediate: Boolean(user) }
+  );
+
+  const appointments = React.useMemo(() => query.data?.data ?? [], [query.data]);
+
+  const confirm = useMutation(appointmentsService.confirm);
+  const updateStatus = useMutation(appointmentsService.updateStatus);
+  const cancel = useMutation((id: string, reason: string) =>
+    appointmentsService.cancel(id, reason)
+  );
+
+  const refetch = query.refetch;
+
+  const runAction = async (fn: () => Promise<unknown>, successKey: string) => {
+    try {
+      await fn();
+      push({ tone: 'success', title: t(successKey) });
+      setSelected(null);
+      await refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('planning.actionFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
   const move = (delta: number) => {
     const next = new Date(base);
     next.setDate(base.getDate() + delta * 7);
     setBase(next);
   };
 
+  // Index appointments by day key for the current week.
+  const byDay = React.useMemo(() => {
+    const map: Record<string, Appointment[]> = {};
+    for (const a of appointments) {
+      const key = (a.appointment_date || '').slice(0, 10);
+      (map[key] ??= []).push(a);
+    }
+    for (const key of Object.keys(map)) {
+      map[key].sort((x, y) => (x.start_time || '').localeCompare(y.start_time || ''));
+    }
+    return map;
+  }, [appointments]);
+
+  const weekCounts = React.useMemo(() => {
+    const counts: Record<SlotType, number> = { crane: 0, wash: 0, storage: 0, maintenance: 0 };
+    const weekKeys = new Set(days.map(localKey));
+    for (const a of appointments) {
+      if (!isActive(a.status)) continue;
+      if (!weekKeys.has((a.appointment_date || '').slice(0, 10))) continue;
+      counts[slotTypeFor(a.service_codes)] += 1;
+    }
+    return counts;
+  }, [appointments, days]);
+
+  if (authLoading || !user) {
+    return (
+      <div className="container-wide py-24">
+        <LoadingState label={t('planning.loading')} />
+      </div>
+    );
+  }
+
   return (
     <>
       <SimpleHero
-        badge="Planning"
-        title="Kraan- en werfplanning"
-        subtitle="Bekijk live de werkverdeling op de werf en plan uw afspraak in een open slot."
+        badge={t('planning.badge')}
+        title={isStaff ? t('planning.titleStaff') : t('planning.titleCustomer')}
+        subtitle={isStaff ? t('planning.subtitleStaff') : t('planning.subtitleCustomer')}
       />
 
-      {/* Legend stats */}
+      {/* Legend stats — live counts for this week */}
       <section className="container-wide -mt-10 grid gap-3 sm:grid-cols-4">
-        {SLOT_TYPES.map((t) => {
-          const Icon = t.icon;
+        {SLOT_TYPES.map((st) => {
+          const Icon = st.icon;
           return (
-            <Card key={t.id} className="flex items-center gap-3 p-4">
+            <Card key={st.id} className="flex items-center gap-3 p-4">
               <span
                 className={cn(
                   'flex h-10 w-10 items-center justify-center rounded-lg',
-                  t.tone === 'marine' && 'bg-marine-50 text-marine-700',
-                  t.tone === 'gold' && 'bg-gold-50 text-gold-700',
-                  t.tone === 'navy' && 'bg-navy-50 text-navy-700',
-                  t.tone === 'sand' && 'bg-sand-100 text-sand-800'
+                  st.tone === 'marine' && 'bg-marine-50 text-marine-700',
+                  st.tone === 'gold' && 'bg-gold-50 text-gold-700',
+                  st.tone === 'navy' && 'bg-navy-50 text-navy-700',
+                  st.tone === 'sand' && 'bg-sand-100 text-sand-800'
                 )}
               >
                 <Icon className="h-5 w-5" />
               </span>
               <div className="flex-1">
-                <div className="text-xs text-navy-500">{t.label} deze week</div>
+                <div className="text-xs text-navy-500">{st.label} {t('planning.thisWeek')}</div>
                 <div className="text-lg font-semibold text-navy-900">
-                  {t.count} slots
+                  {weekCounts[st.id]}
                 </div>
               </div>
-              <Badge tone="success" dot>
-                Open
-              </Badge>
             </Card>
           );
         })}
@@ -122,6 +220,9 @@ export default function PlanningPage() {
 
       {/* Calendar */}
       <section className="container-wide py-12">
+        {query.error ? (
+          <ErrorState message={query.error} onRetry={refetch} />
+        ) : null}
         <Card className="overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-navy-100 px-5 py-4">
             <div className="flex items-center gap-3">
@@ -129,7 +230,7 @@ export default function PlanningPage() {
                 <button
                   onClick={() => move(-1)}
                   className="rounded-md border border-navy-100 p-1.5 text-navy-700 hover:bg-sand-100"
-                  aria-label="Vorige week"
+                  aria-label={t('planning.prevWeek')}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -137,31 +238,28 @@ export default function PlanningPage() {
                   onClick={() => setBase(startOfWeek(new Date()))}
                   className="rounded-md border border-navy-100 px-3 py-1.5 text-xs font-medium text-navy-700 hover:bg-sand-100"
                 >
-                  Vandaag
+                  {t('planning.today')}
                 </button>
                 <button
                   onClick={() => move(1)}
                   className="rounded-md border border-navy-100 p-1.5 text-navy-700 hover:bg-sand-100"
-                  aria-label="Volgende week"
+                  aria-label={t('planning.nextWeek')}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
-              <div className="text-sm font-semibold text-navy-900">
-                {formatRange(base)}
-              </div>
+              <div className="text-sm font-semibold text-navy-900">{formatRange(base)}</div>
             </div>
             <Link href={`/${locale}/kraanafspraak`}>
               <Button variant="gold" size="sm" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                Plan nieuwe afspraak
+                {t('planning.newAppointment')}
               </Button>
             </Link>
           </div>
 
           <div className="grid grid-cols-7 border-b border-navy-100 bg-sand-50/40 text-xs">
             {days.map((d, i) => {
-              const isToday =
-                d.toDateString() === new Date().toDateString();
+              const isToday = d.toDateString() === new Date().toDateString();
               return (
                 <div
                   key={i}
@@ -186,54 +284,156 @@ export default function PlanningPage() {
             })}
           </div>
 
-          <div className="grid min-h-[460px] grid-cols-7 divide-x divide-navy-100">
-            {days.map((_, dayIdx) => {
-              const slots = SLOTS.filter((s) => s.day === dayIdx + 1);
-              return (
-                <div key={dayIdx} className="space-y-2 p-2">
-                  {slots.length === 0 ? (
-                    <div className="rounded-md border border-dashed border-navy-100 px-2 py-2 text-center text-[11px] text-navy-400">
-                      —
-                    </div>
-                  ) : null}
-                  {slots.map((s, i) => (
-                    <SlotCard key={i} slot={s} />
-                  ))}
-                </div>
-              );
-            })}
-          </div>
+          {query.loading ? (
+            <div className="p-8">
+              <LoadingState label={t('planning.loading')} />
+            </div>
+          ) : (
+            <div className="grid min-h-[460px] grid-cols-7 divide-x divide-navy-100">
+              {days.map((d, dayIdx) => {
+                const slots = byDay[localKey(d)] ?? [];
+                return (
+                  <div key={dayIdx} className="space-y-2 p-2">
+                    {slots.length === 0 ? (
+                      <div className="rounded-md border border-dashed border-navy-100 px-2 py-2 text-center text-[11px] text-navy-400">
+                        —
+                      </div>
+                    ) : null}
+                    {slots.map((a) => (
+                      <SlotCard key={a.id} appt={a} onClick={() => setSelected(a)} />
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-navy-500">
           <div className="flex items-center gap-3">
-            {SLOT_TYPES.map((t) => (
-              <span key={t.id} className="inline-flex items-center gap-1.5">
+            {SLOT_TYPES.map((st) => (
+              <span key={st.id} className="inline-flex items-center gap-1.5">
                 <span
                   className={cn(
                     'h-2.5 w-2.5 rounded-full',
-                    t.tone === 'marine' && 'bg-marine-500',
-                    t.tone === 'gold' && 'bg-gold-500',
-                    t.tone === 'navy' && 'bg-navy-900',
-                    t.tone === 'sand' && 'bg-sand-500'
+                    st.tone === 'marine' && 'bg-marine-500',
+                    st.tone === 'gold' && 'bg-gold-500',
+                    st.tone === 'navy' && 'bg-navy-900',
+                    st.tone === 'sand' && 'bg-sand-500'
                   )}
                 />
-                {t.label}
+                {st.label}
               </span>
             ))}
           </div>
           <div className="inline-flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-            Realtime synchronisatie met de werfplanning
+            {isStaff ? t('planning.realtimeStaff') : t('planning.realtimeCustomer')}
           </div>
         </div>
       </section>
+
+      {/* Appointment detail / actions */}
+      <Modal open={!!selected} onClose={() => setSelected(null)} size="md" className="p-6">
+        {selected ? (
+          <div>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-display text-xl text-navy-900">
+                  {(selected.boat as { name?: string } | undefined)?.name ?? t('planning.appointment')}
+                </h3>
+                <p className="mt-1 text-sm text-navy-500">
+                  {(selected.appointment_date || '').slice(0, 10)} · {(selected.start_time || '').slice(0, 5)}
+                  {selected.duration_minutes ? ` · ± ${selected.duration_minutes} min` : ''}
+                </p>
+              </div>
+              <Badge tone={statusTone(selected.status)}>{selected.status}</Badge>
+            </div>
+
+            {selected.service_codes?.length ? (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {selected.service_codes.map((c) => (
+                  <span key={c} className="rounded-md bg-sand-100 px-2 py-1 text-xs text-navy-700">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
+            {selected.customer_notes ? (
+              <p className="mt-4 rounded-lg border border-navy-100 bg-sand-50/60 p-3 text-sm text-navy-600">
+                {selected.customer_notes}
+              </p>
+            ) : null}
+
+            {isStaff ? (
+              <div className="mt-6 flex flex-wrap gap-2">
+                {selected.status.toLowerCase().includes('pending') ? (
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      runAction(() => confirm.mutate(selected.id), 'planning.confirmed')
+                    }
+                    disabled={confirm.loading}
+                  >
+                    {t('planning.confirm')}
+                  </Button>
+                ) : null}
+                {isActive(selected.status) ? (
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      runAction(
+                        () => updateStatus.mutate(selected.id, { status: 'completed' }),
+                        'planning.completed'
+                      )
+                    }
+                    disabled={updateStatus.loading}
+                  >
+                    {t('planning.markComplete')}
+                  </Button>
+                ) : null}
+                {isActive(selected.status) ? (
+                  <Button
+                    variant="danger"
+                    onClick={() => setCancelFor(selected)}
+                  >
+                    {t('planning.cancel')}
+                  </Button>
+                ) : null}
+              </div>
+            ) : (
+              <p className="mt-6 text-xs text-navy-400">{t('planning.customerHint')}</p>
+            )}
+          </div>
+        ) : null}
+      </Modal>
+
+      <ConfirmModal
+        open={!!cancelFor}
+        onClose={() => setCancelFor(null)}
+        onConfirm={async () => {
+          if (cancelFor) {
+            await runAction(
+              () => cancel.mutate(cancelFor.id, t('planning.cancelReason')),
+              'planning.cancelled'
+            );
+          }
+          setCancelFor(null);
+        }}
+        title={t('planning.cancel')}
+        message={t('planning.cancelConfirm')}
+        confirmLabel={t('planning.cancel')}
+        variant="danger"
+        loading={cancel.loading}
+      />
     </>
   );
 }
 
-function SlotCard({ slot }: { slot: Slot }) {
-  const meta = SLOT_TYPES.find((s) => s.id === slot.type)!;
+function SlotCard({ appt, onClick }: { appt: Appointment; onClick: () => void }) {
+  const type = slotTypeFor(appt.service_codes);
+  const meta = SLOT_TYPES.find((s) => s.id === type)!;
   const Icon = meta.icon;
   const tones: Record<string, string> = {
     marine: 'bg-marine-50 ring-marine-200 text-marine-800',
@@ -241,19 +441,24 @@ function SlotCard({ slot }: { slot: Slot }) {
     navy: 'bg-navy-50 ring-navy-200 text-navy-800',
     sand: 'bg-sand-100 ring-sand-200 text-sand-800',
   };
+  const cancelled = appt.status.toLowerCase().includes('cancel');
+  const boatName = (appt.boat as { name?: string } | undefined)?.name ?? '—';
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
       className={cn(
-        'rounded-md p-2 text-[11px] ring-1 ring-inset',
-        tones[meta.tone]
+        'w-full rounded-md p-2 text-left text-[11px] ring-1 ring-inset transition hover:brightness-95',
+        tones[meta.tone],
+        cancelled && 'opacity-50 line-through'
       )}
     >
       <div className="flex items-center gap-1 font-semibold">
         <Icon className="h-3 w-3" />
-        {slot.start}
+        {(appt.start_time || '').slice(0, 5)}
         <Clock className="ml-auto h-3 w-3 opacity-50" />
       </div>
-      <div className="mt-0.5 line-clamp-1 text-navy-700">{slot.boat}</div>
-    </div>
+      <div className="mt-0.5 line-clamp-1 text-navy-700">{boatName}</div>
+    </button>
   );
 }

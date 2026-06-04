@@ -5,6 +5,7 @@ import { Logo } from '@/components/ui/Logo';
 import { useIntl } from '@/i18n/IntlProvider';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { companyInfo } from '@/lib/company';
 
 export function Footer({ className }: { className?: string }) {
   const { t, locale } = useIntl();
@@ -53,7 +54,7 @@ export function Footer({ className }: { className?: string }) {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-sand-100/70" />
-              <a href="tel:+31475322275" className="hover:text-white">
+              <a href={companyInfo.phoneHref} className="hover:text-white">
                 {t('footer.phone')}
               </a>
             </li>

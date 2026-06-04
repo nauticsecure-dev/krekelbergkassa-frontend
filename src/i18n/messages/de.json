@@ -12,9 +12,9 @@
     "contact": "Kontakt",
     "login": "Anmelden",
     "bookCrane": "Krantermin",
-    "subnavCta": "Frühjahrs-Krantermine — kombinieren und bis zu 15% sparen",
+    "subnavCta": "Professioneller Service für jedes Boot",
     "subnavLocation": "Standort · Roermond",
-    "megaCta": "Leistungen kombinieren und bis zu 15% sparen",
+    "megaCta": "Alles für Ihr Boot an einem Ort",
     "megaAction": "Termin buchen",
     "installShort": "App",
     "installLong": "App installieren"
@@ -81,7 +81,14 @@
     "understood": "Verstanden",
     "dismissed": "Installation abgebrochen — Sie können es jederzeit erneut versuchen.",
     "footnote": "Kein Konto nötig · Sicher & privat",
-    "fallbackHint": "Tipp: Wenn kein Popup erscheint, nutzen Sie das Browser-Menü → 'App installieren'."
+    "fallbackHint": "Tipp: Wenn kein Popup erscheint, nutzen Sie das Browser-Menü → 'App installieren'.",
+    "modalDescShort": "Nutzen Sie Krekelberg schneller über Ihren Startbildschirm.",
+    "benefitLine": "Schneller, auch mobil und offline.",
+    "installCta": "Installieren",
+    "later": "Später",
+    "close": "Schließen",
+    "fallbackUnavailable": "Automatische Installation ist nicht verfügbar. Nutzen Sie das Browser-Menü und wählen Sie 'App installieren'.",
+    "iosShort": "Tippen Sie auf das Teilen-Symbol und wählen Sie 'Zum Home-Bildschirm'."
   },
   "over": {
     "heroBadge": "Über Krekelberg Nautic",
@@ -155,7 +162,7 @@
     "visitBadge": "Besuch",
     "visitTitle": "Planen Sie Ihren Werftbesuch",
     "visitBody": "Sie sind auf unserem Gelände in Roermond willkommen. Wir beraten Sie gern persönlich, mit oder ohne Termin.",
-    "hours": "Mo–Fr 08:00–17:00 · Sa nach Vereinbarung",
+    "hours": "Mo–Fr 09:00–17:30 · Mi geschlossen · Sa + So 10:00–17:00",
     "makeAppointment": "Termin buchen",
     "viewPlanning": "Planung ansehen",
     "mapAlt": "Foto des Krekelberg Nautic Yachthafens"
@@ -360,14 +367,14 @@
     "contact": {
       "badge": "Kontakt & Standort",
       "title": "Planen Sie Ihren Werftbesuch",
-      "hours": "Mo–Fr 08:00–17:00 · Sa nach Vereinbarung",
+      "hours": "Mo–Fr 09:00–17:30 · Mi geschlossen · Sa + So 10:00–17:00",
       "cta": "Termin buchen",
       "planning": "Planung ansehen"
     },
     "cta": {
       "badge": "Bereit loszulegen?",
       "title": "Reservieren Sie Ihren Krantermin oder Lagerplatz",
-      "subtitle": "Kombinieren Sie mehrere Leistungen und sparen Sie bis zu 15%. Unsere Werftplanung ist live einsehbar.",
+      "subtitle": "Kombinieren Sie mehrere Leistungen und buchen Sie einfach online. Unsere Werftplanung ist live einsehbar.",
       "primary": "Krantermin buchen",
       "secondary": "Kontakt aufnehmen"
     },
@@ -423,8 +430,8 @@
     "support": "Support",
     "legal": "Rechtliches",
     "copyright": "© {year} Krekelberg Nautic — Alle Rechte vorbehalten.",
-    "address": "Havenstraat 12, 6041 BC Roermond",
-    "phone": "+31 475 32 22 75",
+    "address": "Hertenerweg 2, 6049AA Herten",
+    "phone": "0475 315 661",
     "email": "info@krekelberg-nautic.nl"
   },
   "crane": {
@@ -436,7 +443,7 @@
     "phone": "Telefonnummer",
     "email": "E-Mail",
     "boatName": "Bootname",
-    "boatLength": "Länge (m)",
+    "boatLength": "Länge (cm)",
     "boatWidth": "Breite (m)",
     "boatWeight": "Gewicht (kg)",
     "services": "Leistungen wählen",
@@ -465,7 +472,8 @@
       "boatWidth": "2.8",
       "boatWeight": "3500",
       "notes": "z. B. gewünschter Liegeplatz oder Besonderheiten zu Ihrem Boot"
-    }
+    },
+    "boatLengthHint": "In Zentimetern, z. B. 890 für 8,90 m"
   },
   "faq": {
     "title": "Häufig gestellte Fragen",
@@ -477,7 +485,7 @@
     "contactBtn": "Kontakt aufnehmen",
     "callUs": "Anrufen",
     "openYard": "Werftöffnungszeiten",
-    "openYardDesc": "Mo-Fr 08:00–17:00, Sa 09:00–13:00",
+    "openYardDesc": "Mo–Fr 09:00–17:30 · Mi geschlossen · Sa + So 10:00–17:00",
     "professional": "Professionelles Team",
     "professionalDesc": "Fachleute mit jahrzehntelanger Erfahrung",
     "trust": "Vertrauenswürdig & versichert",
@@ -497,15 +505,16 @@
     "askQuestion": "Frage stellen",
     "ctaTitle": "Bereit, Ihren Termin zu buchen?",
     "ctaDesc": "Reservieren Sie in unter 2 Minuten und erhalten Sie sofort eine Kostenangabe.",
-    "ctaContact": "Kontakt"
+    "ctaContact": "Kontakt",
+    "editService": "Service bearbeiten"
   },
   "contactPage": {
     "badge": "Besuchen oder anrufen",
     "title": "Willkommen auf der Werft\nin Roermond.",
     "subtitle": "Werft, Brokerage und Apartments — alles an einem maritimen Standort an den Maasplassen. Unser Team hilft Ihnen gerne.",
-    "address": "Mr. Hartelaan 1, 6045 EM Roermond",
+    "address": "Hertenerweg 2, 6049AA Herten",
     "addressLabel": "Besuchsadresse",
-    "phone": "+31 475 32 22 75",
+    "phone": "0475 315 661",
     "phoneLabel": "Telefon",
     "email": "info@krekelberg-nautic.nl",
     "emailLabel": "E-Mail",
@@ -560,9 +569,9 @@
     "amenityHarbor": "Direkt am Yachthafen",
     "locationTitle": "Lage",
     "locationBody": "Sie übernachten direkt über unserer Werft in Roermond, nur wenige Meter von den Maasplassen entfernt. Das Zentrum von Roermond erreichen Sie in 5 Minuten.",
-    "locationAddress": "Mr. Hartelaan 1, 6045 EM Roermond",
+    "locationAddress": "Hertenerweg 2, 6049AA Herten",
     "infoCta": "Verfügbarkeit anfragen",
-    "phoneCta": "Anrufen +31 475 32 22 75",
+    "phoneCta": "Anrufen 0475 315 661",
     "contactNote": "Reservierungen verlaufen persönlich per Mail oder Telefon — so können wir jeden Gast individuell betreuen."
   },
   "verkoopPage": {
@@ -689,7 +698,7 @@
     "stat2Desc": "Boote und Bootdaten verwalten.",
     "stat3Title": "Rechnungen",
     "stat3Desc": "Rechnungen ansehen und Dokumente herunterladen.",
-    "address": "Mr. Hartelaan 1, 6045 EM Roermond",
+    "address": "Hertenerweg 2, 6049AA Herten",
     "physicalSupport": "Vor-Ort-Unterstützung in Roermond",
     "signinBadge": "Vertrauenswürdiger Maritime-Service",
     "signinTitle": "Verwalten Sie Werft, Lager\nund Verkauf an einem Ort.",
@@ -717,7 +726,7 @@
     "forgotF2Title": "Kein Passwort-Leak",
     "forgotF2Desc": "Wir verraten nie, ob eine E-Mail existiert.",
     "forgotF3Title": "Direkte Hilfe",
-    "forgotF3Desc": "Rufen Sie +31 475 32 22 75 für persönliche Unterstützung an."
+    "forgotF3Desc": "Rufen Sie 0475 315 661 für persönliche Unterstützung an."
   },
   "feed": {
     "title": "Aktivitäten",
@@ -837,7 +846,7 @@
     },
     "help": {
       "title": "Brauchen Sie Hilfe?",
-      "subtitle": "Wir sind Mo–Fr 08:00 bis 17:00 Uhr für Sie da."
+      "subtitle": "Wir sind Mo–Fr 09:00 bis 17:30 Uhr für Sie da."
     }
   },
   "portalSidebar": {
@@ -2313,5 +2322,31 @@
       "overdue": "Überfällig",
       "completed": "Erledigt"
     }
+  },
+  "planning": {
+    "badge": "Planung",
+    "titleStaff": "Kran- und Werftplanung",
+    "titleCustomer": "Meine Termine",
+    "subtitleStaff": "Werftplanung ansehen und verwalten. Neue Termine über die Kranbuchung anlegen.",
+    "subtitleCustomer": "Eine Übersicht Ihrer eigenen Termine auf der Werft.",
+    "thisWeek": "diese Woche",
+    "loading": "Planung wird geladen…",
+    "prevWeek": "Vorige Woche",
+    "nextWeek": "Nächste Woche",
+    "today": "Heute",
+    "newAppointment": "Neuer Termin",
+    "realtimeStaff": "Live mit der Werftplanung verbunden",
+    "realtimeCustomer": "Es werden nur Ihre eigenen Termine angezeigt",
+    "appointment": "Termin",
+    "confirm": "Genehmigen",
+    "markComplete": "Als erledigt markieren",
+    "cancel": "Stornieren",
+    "cancelConfirm": "Möchten Sie diesen Termin wirklich stornieren? Er bleibt mit Status storniert erhalten.",
+    "cancelReason": "Über Planung storniert",
+    "confirmed": "Termin genehmigt",
+    "completed": "Termin abgeschlossen",
+    "cancelled": "Termin storniert",
+    "actionFailed": "Aktion fehlgeschlagen",
+    "customerHint": "Kontaktieren Sie die Werft, um diesen Termin zu ändern oder zu stornieren."
   }
 }

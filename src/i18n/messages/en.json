@@ -12,9 +12,9 @@
     "contact": "Contact",
     "login": "Login",
     "bookCrane": "Book crane slot",
-    "subnavCta": "Spring crane slots — combine and save up to 15%",
+    "subnavCta": "Professional service for every boat",
     "subnavLocation": "Location · Roermond",
-    "megaCta": "Combine services and save up to 15%",
+    "megaCta": "Everything for your boat in one place",
     "megaAction": "Book now",
     "installShort": "App",
     "installLong": "Install app"
@@ -81,7 +81,14 @@
     "understood": "Got it",
     "dismissed": "Installation cancelled — you can always try again.",
     "footnote": "No account needed to install · Secure & private",
-    "fallbackHint": "Tip: if no popup appears, use your browser's menu → 'Install app'."
+    "fallbackHint": "Tip: if no popup appears, use your browser's menu → 'Install app'.",
+    "modalDescShort": "Use Krekelberg faster from your home screen.",
+    "benefitLine": "Faster, also on mobile and offline.",
+    "installCta": "Install",
+    "later": "Later",
+    "close": "Close",
+    "fallbackUnavailable": "Automatic install isn't available. Use the browser menu and choose 'Install app'.",
+    "iosShort": "Tap the share icon and choose 'Add to Home Screen'."
   },
   "over": {
     "heroBadge": "About Krekelberg Nautic",
@@ -155,7 +162,7 @@
     "visitBadge": "Visit",
     "visitTitle": "Plan your visit to the yard",
     "visitBody": "You're welcome on our site in Roermond. We're happy to advise you personally, with or without appointment.",
-    "hours": "Mon–Fri 08:00–17:00 · Sat by appointment",
+    "hours": "Mon–Fri 09:00–17:30 · Wed closed · Sat + Sun 10:00–17:00",
     "makeAppointment": "Book appointment",
     "viewPlanning": "View planning",
     "mapAlt": "Photo of the Krekelberg Nautic marina"
@@ -360,14 +367,14 @@
     "contact": {
       "badge": "Contact & location",
       "title": "Plan your visit to the yard",
-      "hours": "Mon–Fri 08:00–17:00 · Sat by appointment",
+      "hours": "Mon–Fri 09:00–17:30 · Wed closed · Sat + Sun 10:00–17:00",
       "cta": "Book appointment",
       "planning": "View planning"
     },
     "cta": {
       "badge": "Ready to start?",
       "title": "Reserve your crane slot or storage",
-      "subtitle": "Combine multiple services and save up to 15%. Our yard planning is live.",
+      "subtitle": "Combine multiple services and book easily online. Our yard planning is live.",
       "primary": "Book a crane slot",
       "secondary": "Get in touch"
     },
@@ -423,8 +430,8 @@
     "support": "Support",
     "legal": "Legal",
     "copyright": "© {year} Krekelberg Nautic — All rights reserved.",
-    "address": "Havenstraat 12, 6041 BC Roermond",
-    "phone": "+31 475 32 22 75",
+    "address": "Hertenerweg 2, 6049AA Herten",
+    "phone": "0475 315 661",
     "email": "info@krekelberg-nautic.nl"
   },
   "crane": {
@@ -436,7 +443,7 @@
     "phone": "Phone number",
     "email": "Email",
     "boatName": "Boat name",
-    "boatLength": "Length (m)",
+    "boatLength": "Length (cm)",
     "boatWidth": "Width (m)",
     "boatWeight": "Weight (kg)",
     "services": "Choose services",
@@ -465,7 +472,8 @@
       "boatWidth": "2.8",
       "boatWeight": "3500",
       "notes": "e.g. preferred berth or special details about your boat"
-    }
+    },
+    "boatLengthHint": "In centimetres, e.g. 890 for 8.90 m"
   },
   "faq": {
     "title": "Frequently asked questions",
@@ -477,7 +485,7 @@
     "contactBtn": "Contact us",
     "callUs": "Call us",
     "openYard": "Open yard",
-    "openYardDesc": "Mon-Fri 08:00–17:00, Sat 09:00–13:00",
+    "openYardDesc": "Mon–Fri 09:00–17:30 · Wed closed · Sat + Sun 10:00–17:00",
     "professional": "Professional team",
     "professionalDesc": "Decades of nautical experience",
     "trust": "Trusted & insured",
@@ -497,15 +505,16 @@
     "askQuestion": "Ask a question",
     "ctaTitle": "Ready to book your slot?",
     "ctaDesc": "Reserve in under 2 minutes and receive an instant cost indication.",
-    "ctaContact": "Contact"
+    "ctaContact": "Contact",
+    "editService": "Edit service"
   },
   "contactPage": {
     "badge": "Visit or call us",
     "title": "Welcome to the yard\nin Roermond.",
     "subtitle": "Yard, brokerage and apartments are all on one maritime location at the Maasplassen. Our team is happy to help.",
-    "address": "Mr. Hartelaan 1, 6045 EM Roermond",
+    "address": "Hertenerweg 2, 6049AA Herten",
     "addressLabel": "Visiting address",
-    "phone": "+31 475 32 22 75",
+    "phone": "0475 315 661",
     "phoneLabel": "Phone",
     "email": "info@krekelberg-nautic.nl",
     "emailLabel": "E-mail",
@@ -560,9 +569,9 @@
     "amenityHarbor": "Right on the marina",
     "locationTitle": "Location",
     "locationBody": "You stay directly above our Roermond yard, just metres from the Maasplassen. Roermond town centre is a 5-minute drive or bike ride away.",
-    "locationAddress": "Mr. Hartelaan 1, 6045 EM Roermond",
+    "locationAddress": "Hertenerweg 2, 6049AA Herten",
     "infoCta": "Check availability",
-    "phoneCta": "Call +31 475 32 22 75",
+    "phoneCta": "Call 0475 315 661",
     "contactNote": "Reservations are handled personally by mail or phone, so we can welcome every guest in person."
   },
   "verkoopPage": {
@@ -689,7 +698,7 @@
     "stat2Desc": "Manage your boats and registrations.",
     "stat3Title": "Invoices",
     "stat3Desc": "View invoices and download documents.",
-    "address": "Mr. Hartelaan 1, 6045 EM Roermond",
+    "address": "Hertenerweg 2, 6049AA Herten",
     "physicalSupport": "Physical support in Roermond",
     "signinBadge": "Trusted maritime service",
     "signinTitle": "Manage your yard, storage\nand sales in one place.",
@@ -717,7 +726,7 @@
     "forgotF2Title": "No password leak",
     "forgotF2Desc": "We never reveal whether an email exists.",
     "forgotF3Title": "Direct help",
-    "forgotF3Desc": "Call +31 475 32 22 75 for personal support."
+    "forgotF3Desc": "Call 0475 315 661 for personal support."
   },
   "feed": {
     "title": "Timeline",
@@ -837,7 +846,7 @@
     },
     "help": {
       "title": "Need help?",
-      "subtitle": "We are available Mon–Fri 08:00 to 17:00."
+      "subtitle": "We are available Mon–Fri 09:00 to 17:30."
     }
   },
   "portalSidebar": {
@@ -2313,5 +2322,31 @@
       "overdue": "Overdue",
       "completed": "Completed"
     }
+  },
+  "planning": {
+    "badge": "Planning",
+    "titleStaff": "Crane & yard planning",
+    "titleCustomer": "My appointments",
+    "subtitleStaff": "View and manage the yard schedule. Create new appointments via the crane booking.",
+    "subtitleCustomer": "An overview of your own appointments at the yard.",
+    "thisWeek": "this week",
+    "loading": "Loading planning…",
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "today": "Today",
+    "newAppointment": "New appointment",
+    "realtimeStaff": "Live linked to the yard planning",
+    "realtimeCustomer": "Only your own appointments are shown",
+    "appointment": "Appointment",
+    "confirm": "Approve",
+    "markComplete": "Mark complete",
+    "cancel": "Cancel",
+    "cancelConfirm": "Are you sure you want to cancel this appointment? It is kept with a cancelled status.",
+    "cancelReason": "Cancelled via planning",
+    "confirmed": "Appointment approved",
+    "completed": "Appointment completed",
+    "cancelled": "Appointment cancelled",
+    "actionFailed": "Action failed",
+    "customerHint": "Contact the yard to change or cancel this appointment."
   }
 }

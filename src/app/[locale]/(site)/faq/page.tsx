@@ -22,6 +22,7 @@ import {
   Warehouse,
 } from "lucide-react";
 import { useIntl } from "@/i18n/IntlProvider";
+import { companyInfo } from "@/lib/company";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -185,16 +186,16 @@ export default function FaqPage() {
               <p className="mt-2 text-sm text-marine-50">{t("faq.helpDesc")}</p>
               <div className="mt-4 space-y-2 text-sm">
                 <a
-                  href="tel:+31475322275"
+                  href={companyInfo.phoneHref}
                   className="flex items-center gap-2 font-medium hover:text-gold-200"
                 >
-                  <Phone className="h-4 w-4" /> 0475 32 22 75
+                  <Phone className="h-4 w-4" /> {companyInfo.phone}
                 </a>
                 <a
-                  href="mailto:info@krekelberg-nautic.nl"
+                  href={companyInfo.emailHref}
                   className="flex items-center gap-2 hover:text-gold-200"
                 >
-                  <Mail className="h-4 w-4" /> info@krekelberg-nautic.nl
+                  <Mail className="h-4 w-4" /> {companyInfo.email}
                 </a>
               </div>
               <Link href="#" className="mt-5 block">

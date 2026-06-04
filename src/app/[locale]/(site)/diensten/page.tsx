@@ -18,6 +18,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useIntl } from '@/i18n/IntlProvider';
+import { companyInfo } from '@/lib/company';
 import { cn } from '@/lib/cn';
 
 interface ServiceSection {
@@ -179,12 +180,12 @@ export default function DienstenPage() {
               <ul className="mt-5 space-y-2.5 text-sm text-navy-700">
                 <li className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-marine-700" />
-                  Mr. Hartelaan 1, 6045 EM Roermond
+                  {companyInfo.address}
                 </li>
                 <li className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-marine-700" />
-                  <a href="tel:+31475322275" className="hover:text-navy-900">
-                    0475 32 22 75
+                  <a href={companyInfo.phoneHref} className="hover:text-navy-900">
+                    {companyInfo.phone}
                   </a>
                 </li>
               </ul>

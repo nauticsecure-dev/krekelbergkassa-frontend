@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useIntl } from '@/i18n/IntlProvider';
+import { companyInfo } from '@/lib/company';
 
 export default function AppartementenPage() {
   const { t, locale } = useIntl();
@@ -46,7 +47,7 @@ export default function AppartementenPage() {
                 {t('apartmentsPage.infoCta')}
               </Button>
             </Link>
-            <a href="tel:+31475322275">
+            <a href={companyInfo.phoneHref}>
               <Button
                 variant="outline"
                 size="lg"
@@ -158,7 +159,7 @@ export default function AppartementenPage() {
         <Card className="overflow-hidden p-0">
           <iframe
             title="Google Maps"
-            src="https://maps.google.com/maps?q=Mr.+Hartelaan+1,+Roermond&t=&z=14&ie=UTF8&iwloc=&output=embed"
+            src={companyInfo.mapsEmbed}
             className="h-full min-h-[320px] w-full"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"

@@ -16,11 +16,10 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
+import { companyInfo, openingHoursRows } from "@/lib/company";
 
-const MAPS_URL =
-  "https://www.google.com/maps/dir/?api=1&destination=Mr.+Hartelaan+1,+Roermond";
-const MAPS_EMBED =
-  "https://maps.google.com/maps?q=Mr.+Hartelaan+1,+Roermond&t=&z=14&ie=UTF8&iwloc=&output=embed";
+const MAPS_URL = companyInfo.mapsUrl;
+const MAPS_EMBED = companyInfo.mapsEmbed;
 
 export default function ContactPage() {
   const { t } = useIntl();
@@ -49,7 +48,7 @@ export default function ContactPage() {
             {t("contactPage.subtitle")}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href={`tel:${t("contactPage.phone").replace(/\s/g, "")}`}>
+            <a href={companyInfo.phoneHref}>
               <Button
                 variant="gold"
                 size="lg"
@@ -86,7 +85,7 @@ export default function ContactPage() {
           label={t("contactPage.phoneLabel")}
           value={t("contactPage.phone")}
           actionLabel={t("contactPage.ctaCall")}
-          actionHref={`tel:${t("contactPage.phone").replace(/\s/g, "")}`}
+          actionHref={companyInfo.phoneHref}
         />
         <ContactCard
           icon={Mail}
@@ -113,15 +112,16 @@ export default function ContactPage() {
             </div>
           </div>
           <HoursTable
-            rows={[
-              { day: t("contactPage.monday"), value: "09:00 – 17:30" },
-              { day: t("contactPage.tuesday"), value: "09:00 – 17:30" },
-              { day: t("contactPage.wednesday"), value: t("contactPage.closed") },
-              { day: t("contactPage.thursday"), value: "09:00 – 17:30" },
-              { day: t("contactPage.friday"), value: "09:00 – 17:30" },
-              { day: t("contactPage.saturday"), value: "10:00 – 17:00" },
-              { day: t("contactPage.sunday"), value: "10:00 – 17:00" },
-            ]}
+            rows={openingHoursRows({
+              monday: t("contactPage.monday"),
+              tuesday: t("contactPage.tuesday"),
+              wednesday: t("contactPage.wednesday"),
+              thursday: t("contactPage.thursday"),
+              friday: t("contactPage.friday"),
+              saturday: t("contactPage.saturday"),
+              sunday: t("contactPage.sunday"),
+              closed: t("contactPage.closed"),
+            })}
           />
         </Card>
 

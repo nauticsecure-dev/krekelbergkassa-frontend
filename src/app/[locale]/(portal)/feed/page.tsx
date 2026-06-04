@@ -17,6 +17,7 @@ import {
   Warehouse,
 } from 'lucide-react';
 import { useIntl } from '@/i18n/IntlProvider';
+import { companyInfo } from '@/lib/company';
 import { useAuth } from '@/lib/auth-context';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -504,10 +505,10 @@ export default function FeedPage() {
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-navy-900">{t('feed.help.title')}</div>
                   <a
-                    href="tel:+31475322275"
+                    href={companyInfo.phoneHref}
                     className="text-xs font-medium text-marine-700 hover:underline"
                   >
-                    0475 32 22 75
+                    {companyInfo.phone}
                   </a>
                 </div>
               </div>

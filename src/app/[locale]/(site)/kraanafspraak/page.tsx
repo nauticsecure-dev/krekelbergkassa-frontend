@@ -25,16 +25,41 @@ import { bookingService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import {
+  MAX_TARIFF_CM,
+  scaledPrice,
+  tariffPrice,
+  type TariffColumn,
+} from '@/lib/pricing-table';
 
-// Services that map to backend pricing service codes
-const SERVICES = [
-  { code: 'kranen_uit', label: 'Kranen uit het water', baseDuration: 30, basePrice: 145, icon: Ship },
-  { code: 'kranen_in', label: 'Kranen in het water', baseDuration: 30, basePrice: 145, icon: Anchor },
-  { code: 'afspuiten', label: 'Romp afspuiten', baseDuration: 20, basePrice: 85, icon: Droplets },
+// Services that map to backend pricing service codes.
+// `tariff` links a service to a column of the real length-based price table
+// (krekelberg-nautic.nl/tarieven) so the price follows the boat length.
+// Services without a tariff column scale from their base price with length.
+interface CraneService {
+  code: string;
+  label: string;
+  baseDuration: number;
+  basePrice: number;
+  icon: typeof Ship;
+  tariff?: TariffColumn;
+}
+
+const SERVICES: CraneService[] = [
+  { code: 'kranen_uit', label: 'Kranen uit het water', baseDuration: 30, basePrice: 65, icon: Ship, tariff: 'kranen' },
+  { code: 'kranen_in', label: 'Kranen in het water', baseDuration: 30, basePrice: 65, icon: Anchor, tariff: 'kranen' },
+  { code: 'afspuiten', label: 'Romp afspuiten', baseDuration: 20, basePrice: 50, icon: Droplets, tariff: 'afspuiten' },
   { code: 'antifouling', label: 'Antifouling controle', baseDuration: 20, basePrice: 65, icon: Sparkles },
   { code: 'transport', label: 'Bok transport', baseDuration: 30, basePrice: 95, icon: Hammer },
   { code: 'plaats', label: 'Plaatsing winterstalling', baseDuration: 45, basePrice: 125, icon: Hammer },
 ];
+
+// Per-service price for the given boat length (cm). Falls back to the base
+// price when no length is entered yet.
+function servicePriceForLength(s: CraneService, lengthCm: number): number {
+  if (s.tariff) return tariffPrice(s.tariff, lengthCm) ?? s.basePrice;
+  return lengthCm ? scaledPrice(s.basePrice, lengthCm) : s.basePrice;
+}
 
 // Time slots fallback when API unavailable
 const TIME_SLOTS_FALLBACK = [
@@ -78,8 +103,6 @@ export default function KraanAfspraakPage() {
     email: '',
     boatName: '',
     length: '',
-    width: '',
-    weight: '',
     notes: '',
   });
   const [selectedServices, setSelectedServices] = React.useState<string[]>(['afspuiten']);
@@ -94,7 +117,6 @@ export default function KraanAfspraakPage() {
   const monthLabel = `${DUTCH_MONTHS[view.getMonth()]} ${view.getFullYear()}`;
   const lengthCm = Number(form.length || 0);
   const lengthM = lengthCm / 100;
-  const widthM = Number(form.width || 0);
 
   React.useEffect(() => {
     const from = new Date(view.getFullYear(), view.getMonth(), 1);
@@ -143,14 +165,13 @@ export default function KraanAfspraakPage() {
     (sum, s) => sum + s.baseDuration,
     0
   );
-  const totalPrice = SERVICES.filter((s) => selectedServices.includes(s.code)).reduce(
-    (sum, s) => sum + s.basePrice,
+  const finalPrice = SERVICES.filter((s) => selectedServices.includes(s.code)).reduce(
+    (sum, s) => sum + servicePriceForLength(s, lengthCm),
     0
   );
 
-  const surcharge = lengthM > 12 ? 95 : lengthM > 8 ? 35 : 0;
-  const finalPrice = totalPrice + surcharge;
-  const manualReview = lengthM > 14 || Number(form.weight || 0) > 15000;
+  // Boats longer than the published tariff table are priced on request.
+  const manualReview = lengthCm > MAX_TARIFF_CM;
 
   const isPast = (d: Date) => d.getTime() < today.getTime();
   const isOtherMonth = (d: Date) => d.getMonth() !== view.getMonth();
@@ -164,8 +185,7 @@ export default function KraanAfspraakPage() {
       !form.name ||
       !form.email ||
       !form.boatName ||
-      !lengthCm ||
-      !widthM
+      !lengthCm
     ) {
       return;
     }
@@ -194,7 +214,6 @@ export default function KraanAfspraakPage() {
         boat: {
           name: form.boatName,
           length_m: lengthM,
-          width_m: widthM,
         },
         service_codes: selectedServices,
       });
@@ -261,36 +280,23 @@ export default function KraanAfspraakPage() {
             <SectionTitle icon={<Ship className="h-4 w-4" />} className="mt-8">
               {t('crane.yourBoat')}
             </SectionTitle>
-            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <Input
-                className="sm:col-span-3"
+                className="sm:col-span-2"
                 label={t('crane.boatName')}
                 placeholder={t('crane.placeholders.boatName')}
                 value={form.boatName}
                 onChange={(e) => setForm({ ...form, boatName: e.target.value })}
               />
               <Input
+                className="sm:col-span-2"
                 label={t('crane.boatLength')}
                 placeholder={t('crane.placeholders.boatLength')}
-                inputMode="decimal"
+                inputMode="numeric"
                 required
+                hint={t('crane.boatLengthHint')}
                 value={form.length}
                 onChange={(e) => setForm({ ...form, length: e.target.value })}
-              />
-              <Input
-                label={t('crane.boatWidth')}
-                placeholder={t('crane.placeholders.boatWidth')}
-                inputMode="decimal"
-                required
-                value={form.width}
-                onChange={(e) => setForm({ ...form, width: e.target.value })}
-              />
-              <Input
-                label={t('crane.boatWeight')}
-                placeholder={t('crane.placeholders.boatWeight')}
-                inputMode="numeric"
-                value={form.weight}
-                onChange={(e) => setForm({ ...form, weight: e.target.value })}
               />
             </div>
 
@@ -339,7 +345,17 @@ export default function KraanAfspraakPage() {
                         active ? 'text-gold-300' : 'text-navy-900'
                       )}
                     >
-                      €{s.basePrice}
+                      €{servicePriceForLength(s, lengthCm)}
+                      {!lengthCm ? (
+                        <span
+                          className={cn(
+                            'ml-0.5 text-[10px] font-normal',
+                            active ? 'text-sand-100/70' : 'text-navy-400'
+                          )}
+                        >
+                          v.a.
+                        </span>
+                      ) : null}
                     </div>
                   </button>
                 );
@@ -522,8 +538,7 @@ export default function KraanAfspraakPage() {
                   !picked ||
                   !time ||
                   !selectedServices.length ||
-                  !lengthCm ||
-                  !widthM
+                  !lengthCm
                 }
                 rightIcon={<ArrowRight className="h-4 w-4" />}
                 onClick={() => setConfirmSubmit(true)}
