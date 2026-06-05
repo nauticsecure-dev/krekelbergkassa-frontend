@@ -17,13 +17,24 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
 import { companyInfo, openingHoursRows } from "@/lib/company";
+import { contentService } from "@/lib/services";
+import { useQuery } from "@/lib/hooks/useAsync";
+import { cn } from "@/lib/cn";
 
 const MAPS_URL = companyInfo.mapsUrl;
 const MAPS_EMBED = companyInfo.mapsEmbed;
 
 export default function ContactPage() {
-  const { t } = useIntl();
+  const { t, locale } = useIntl();
   const [sent, setSent] = React.useState(false);
+
+  // Trello #59: live "Open now / Closed" status + today highlight from the API.
+  const localeTag = locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
+  const hoursQuery = useQuery([localeTag], () =>
+    contentService.openingHours(localeTag).catch(() => null),
+  );
+  const liveStatus = hoursQuery.data?.status ?? null;
+  const apiHours = hoursQuery.data?.hours ?? [];
 
   return (
     <>
@@ -110,19 +121,72 @@ export default function ContactPage() {
                 {t("contactPage.hoursSubtitle")}
               </div>
             </div>
+            {liveStatus && (
+              <span
+                className={cn(
+                  "ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
+                  liveStatus.is_open
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-rose-50 text-rose-600",
+                )}
+                title={liveStatus.detail ?? undefined}
+              >
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    liveStatus.is_open ? "bg-emerald-500" : "bg-rose-400",
+                  )}
+                />
+                {liveStatus.label}
+              </span>
+            )}
           </div>
-          <HoursTable
-            rows={openingHoursRows({
-              monday: t("contactPage.monday"),
-              tuesday: t("contactPage.tuesday"),
-              wednesday: t("contactPage.wednesday"),
-              thursday: t("contactPage.thursday"),
-              friday: t("contactPage.friday"),
-              saturday: t("contactPage.saturday"),
-              sunday: t("contactPage.sunday"),
-              closed: t("contactPage.closed"),
-            })}
-          />
+          {liveStatus?.detail && (
+            <p className="-mt-1 mb-3 text-xs text-navy-500">{liveStatus.detail}</p>
+          )}
+          {apiHours.length ? (
+            <ul className="grid gap-1 text-sm">
+              {apiHours.map((h) => (
+                <li
+                  key={h.day}
+                  className={cn(
+                    "flex items-center justify-between border-b border-dashed border-navy-100 py-1.5 last:border-b-0",
+                    h.is_today && "rounded-md bg-sand-50 px-2",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "text-navy-600",
+                      h.is_today && "font-semibold text-navy-900",
+                    )}
+                  >
+                    {h.label}
+                    {h.is_today && (
+                      <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-marine-600">
+                        {t("contactPage.today")}
+                      </span>
+                    )}
+                  </span>
+                  <span className="font-semibold text-navy-900">
+                    {h.closed ? t("contactPage.closed") : h.display}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <HoursTable
+              rows={openingHoursRows({
+                monday: t("contactPage.monday"),
+                tuesday: t("contactPage.tuesday"),
+                wednesday: t("contactPage.wednesday"),
+                thursday: t("contactPage.thursday"),
+                friday: t("contactPage.friday"),
+                saturday: t("contactPage.saturday"),
+                sunday: t("contactPage.sunday"),
+                closed: t("contactPage.closed"),
+              })}
+            />
+          )}
         </Card>
 
         <Card className="overflow-hidden p-0">

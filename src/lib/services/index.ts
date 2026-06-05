@@ -15,6 +15,7 @@ import type {
   Invoice,
   InvoiceLine,
   KassaCheckoutResponse,
+  KassaQrSession,
   OpeningHour,
   PaginatedResponse,
   Payment,
@@ -175,6 +176,26 @@ export const customersService = {
   remove(id: string) {
     return api<{ message: string }>(`/v1/customers/${id}`, { method: 'DELETE', queueWhenOffline: true });
   },
+  // Trello #76: block / unblock / impersonate customers.
+  block(id: string, reason?: string) {
+    return api<{ message?: string; customer?: Customer }>(`/v1/customers/${id}/block`, {
+      method: 'POST',
+      body: { reason },
+      queueWhenOffline: true,
+    });
+  },
+  unblock(id: string) {
+    return api<{ message?: string; customer?: Customer }>(`/v1/customers/${id}/unblock`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  impersonate(id: string) {
+    return api<{ portal_token: string; expires_at?: string; customer: Customer }>(
+      `/v1/customers/${id}/impersonate`,
+      { method: 'POST' }
+    );
+  },
 };
 
 export const boatsService = {
@@ -230,11 +251,33 @@ export const stallingService = {
       queueWhenOffline: true,
     });
   },
-  generateInvoice(id: string) {
-    return api<Invoice>(`/v1/stalling/${id}/generate-invoice`, {
+  async generateInvoice(id: string) {
+    const res = await api<unknown>(`/v1/stalling/${id}/generate-invoice`, {
       method: 'POST',
       queueWhenOffline: true,
     });
+    // Backend wraps the invoice as { data: { id, ... } }; unwrap so the
+    // caller can read invoice.id directly (stalling FACTUUR redirect).
+    return maybeResource<Invoice>(res, 'data');
+  },
+  // Trello #73: dedicated status + location endpoints (quick-edit modal).
+  setStatus(id: string, status: string) {
+    return api<StallingContract>(`/v1/stalling/${id}/status`, {
+      method: 'PATCH',
+      body: { payment_status: status, status },
+      queueWhenOffline: true,
+    });
+  },
+  setLocation(id: string, location_code: string | null) {
+    return api<StallingContract>(`/v1/stalling/${id}/location`, {
+      method: 'PATCH',
+      body: { location_code },
+      queueWhenOffline: true,
+    });
+  },
+  async logs(id: string) {
+    const res = await api<unknown>(`/v1/stalling/${id}/logs`);
+    return asArray<AuditLog>(res);
   },
 };
 
@@ -269,8 +312,22 @@ export const invoicesService = {
       }
     );
   },
-  credit(id: string) {
-    return api<Invoice>(`/v1/invoices/${id}/credit`, { method: 'POST', queueWhenOffline: true });
+  credit(
+    id: string,
+    payload?: { mode?: 'full' | 'partial'; amount_cents?: number; reason?: string }
+  ) {
+    return api<Invoice>(`/v1/invoices/${id}/credit`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  email(id: string, payload?: { to?: string; subject?: string; body?: string; locale?: string }) {
+    return api<{ message?: string }>(`/v1/invoices/${id}/email`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
   },
   cancel(id: string) {
     return api<Invoice>(`/v1/invoices/${id}/cancel`, { method: 'POST', queueWhenOffline: true });
@@ -363,6 +420,49 @@ export const kassaService = {
   },
   analytics(query?: Record<string, string | number | boolean | undefined>) {
     return api<Record<string, unknown>>('/v1/kassa/analytics', { query });
+  },
+  // Trello #85: report export + cash day-close (dagafsluiting).
+  exportAnalytics(query?: Record<string, string | number | boolean | undefined>) {
+    return api<Blob>('/v1/kassa/analytics/export', { query: { ...query, format: 'csv' } });
+  },
+  async cashClosures(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/kassa/cash-closures', { query });
+    return asArray<Record<string, unknown>>(res);
+  },
+  cashClosure(id: string) {
+    return api<Record<string, unknown>>(`/v1/kassa/cash-closures/${id}`);
+  },
+  createCashClosure(payload: {
+    business_date: string;
+    opening_cash_cents: number;
+    cash_paid_out_cents?: number;
+    counted_cash_cents: number;
+    note?: string;
+  }) {
+    return api<Record<string, unknown>>('/v1/kassa/cash-closures', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  // Trello #72: Mollie QR sessions — created before an invoice exists, the
+  // invoice/payment are finalized by the webhook once paid.
+  async createQrSession(payload: {
+    device_id: string;
+    customer_id?: string | null;
+    method?: string;
+    redirect_url?: string;
+    items: Array<{ product_id?: string; description?: string; quantity: number; unit_price_cents?: number; vat_rate?: number }>;
+  }) {
+    const res = await api<unknown>('/v1/kassa/qr-sessions', { method: 'POST', body: payload });
+    return maybeResource<KassaQrSession>(res, 'data');
+  },
+  async qrSession(id: string) {
+    const res = await api<unknown>(`/v1/kassa/qr-sessions/${id}`);
+    return maybeResource<KassaQrSession>(res, 'data');
+  },
+  cancelQrSession(id: string) {
+    return api<unknown>(`/v1/kassa/qr-sessions/${id}/cancel`, { method: 'POST' });
   },
   quote(payload: { customer_id?: string; locale?: string; items: Array<Record<string, unknown>> }) {
     return api<Record<string, unknown>>('/v1/kassa/quote', {
@@ -549,7 +649,75 @@ export const pricingService = {
   calculatorRecord(id: string) {
     return api<Record<string, unknown>>(`/v1/pricing/calculator-records/${id}`);
   },
+  // Trello #68: row actions on the calculator records list.
+  duplicateCalculatorRecord(id: string) {
+    return api<Record<string, unknown>>(`/v1/pricing/calculator-records/${id}/duplicate`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  archiveCalculatorRecord(id: string) {
+    return api<Record<string, unknown>>(`/v1/pricing/calculator-records/${id}/archive`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  // Trello #107: makelaardij (brokerage) tariff table + preview.
+  async brokerageTariffs() {
+    const res = await api<unknown>('/v1/pricing/brokerage-tariffs');
+    return asArray<BrokerageTariff>(res);
+  },
+  createBrokerageTariff(payload: Record<string, unknown>) {
+    return api<BrokerageTariff>('/v1/pricing/brokerage-tariffs', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  updateBrokerageTariff(id: string, payload: Record<string, unknown>) {
+    return api<BrokerageTariff>(`/v1/pricing/brokerage-tariffs/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  deactivateBrokerageTariff(id: string) {
+    return api<BrokerageTariff>(`/v1/pricing/brokerage-tariffs/${id}/deactivate`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  brokeragePreview(payload: { length_cm: number; brokerage_start_date?: string }) {
+    return api<BrokeragePreview>('/v1/pricing/brokerage-preview', {
+      method: 'POST',
+      body: payload,
+    });
+  },
 };
+
+export interface BrokerageTariff {
+  id: string;
+  min_length_cm: number;
+  max_length_cm: number;
+  price_per_month: number;
+  price_per_month_euros?: number;
+  active_from?: string | null;
+  active?: boolean;
+  notes?: string | null;
+  range_label?: string;
+}
+export interface BrokeragePreview {
+  brokerage: boolean;
+  length_cm: number;
+  brokerage_start_date?: string;
+  brokerage_free_until?: string;
+  free_months?: number;
+  monthly_fee?: number;
+  monthly_fee_euros?: number;
+  currency?: string;
+  status?: string;
+  tariff?: { range_label?: string; price_per_month?: number };
+}
 
 export const productsService = {
   async list(query?: Record<string, string | number | boolean | undefined>) {
@@ -568,7 +736,45 @@ export const productsService = {
   remove(id: string) {
     return api<{ message: string }>(`/v1/products/${id}`, { method: 'DELETE', queueWhenOffline: true });
   },
+  // Trello #86: product sales stats + AI image generation.
+  async stats(id: string) {
+    const res = await api<unknown>(`/v1/products/${id}/stats`);
+    return maybeResource<Record<string, unknown>>(res, 'data');
+  },
+  async generateImage(id: string, payload: { prompt: string; quality?: string }) {
+    const res = await api<unknown>(`/v1/products/${id}/generate-image`, {
+      method: 'POST',
+      body: payload,
+    });
+    return maybeResource<{ product?: Product; image_url?: string }>(res, 'data');
+  },
+  // Trello #80: barcode scan lookup (USB / camera / manual).
+  scan(payload: { barcode: string; source?: string; barcode_type?: string; fast_scan?: boolean; quantity?: number }) {
+    return api<{ matched: boolean; product?: Product; scan_log?: Record<string, unknown> }>(
+      '/v1/products/scan',
+      { method: 'POST', body: payload }
+    );
+  },
+  // Trello #80/#86: staff favourites + product bundles for the kassa.
+  setFavorite(id: string, on: boolean) {
+    return api<Product>(`/v1/products/${id}/favorite`, {
+      method: on ? 'POST' : 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
+  async bundles() {
+    const res = await api<unknown>('/v1/products/bundles');
+    return asArray<ProductBundle>(res);
+  },
 };
+
+export interface ProductBundle {
+  id: string;
+  code?: string;
+  name: string;
+  color?: string | null;
+  items?: Array<{ product_id: string; quantity?: number; product?: Product }>;
+}
 
 export const filesService = {
   async list(query?: Record<string, string | number | boolean | undefined>) {
@@ -788,7 +994,25 @@ export const adminService = {
     const res = await api<unknown>('/v1/admin/timeline', { query });
     return asPaginated<Record<string, unknown>>(res);
   },
-  timelineMessage(payload: { customer_id: string; title: string; body: string; type?: string }) {
+  // Trello #109: unified staff feed over audit_logs + timeline_items.
+  async timelineFeed(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/timeline', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  createTimelineEvent(payload: Record<string, unknown>) {
+    return api<{ message?: string; timeline_item_id?: string }>('/v1/timeline/events', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  timelineMessage(payload: {
+    customer_id: string;
+    title: string;
+    body: string;
+    type?: string;
+    visibility?: 'internal' | 'customer';
+  }) {
     return api<Record<string, unknown>>('/v1/admin/timeline/message', {
       method: 'POST',
       body: payload,
@@ -812,6 +1036,53 @@ export const adminService = {
       overdue?: number | Record<string, number>;
       completed?: number | Record<string, number>;
     }>('/v1/admin/reminders/summary');
+  },
+  // Trello #90: reminder lifecycle + rules engine.
+  reminder(id: string) {
+    return api<Reminder>(`/v1/admin/reminders/${id}`);
+  },
+  createReminder(payload: Record<string, unknown>) {
+    return api<Reminder>('/v1/admin/reminders', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  completeReminder(id: string) {
+    return api<Reminder>(`/v1/admin/reminders/${id}/complete`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  dismissReminder(id: string) {
+    return api<Reminder>(`/v1/admin/reminders/${id}/dismiss`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  runReminderRules() {
+    return api<{ message?: string; count?: number }>('/v1/admin/reminders/run-rules', {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  async reminderRules() {
+    const res = await api<unknown>('/v1/admin/reminder-rules');
+    return asArray<Record<string, unknown>>(res);
+  },
+  createReminderRule(payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/admin/reminder-rules', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  updateReminderRule(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/admin/reminder-rules/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
   },
 };
 
@@ -950,6 +1221,23 @@ export const appointmentsService = {
     return api<Appointment>(`/v1/appointments/${id}/cancel`, {
       method: 'POST',
       body: { reason },
+      queueWhenOffline: true,
+    });
+  },
+  // Trello #99: drag/drop reschedule + resize.
+  schedule(
+    id: string,
+    payload: {
+      date: string;
+      start_time: string;
+      duration_minutes?: number;
+      staff_note?: string;
+      notify_customer?: boolean;
+    }
+  ) {
+    return api<Appointment>(`/v1/appointments/${id}/schedule`, {
+      method: 'POST',
+      body: payload,
       queueWhenOffline: true,
     });
   },
@@ -1136,7 +1424,45 @@ export const workOrdersService = {
       queueWhenOffline: true,
     });
   },
+  // Trello #88: metadata (statuses/types/priorities/technicians) + transitions.
+  metadata() {
+    return api<WorkOrderMetadata>('/v1/work-orders/metadata');
+  },
+  assign(id: string, payload: { assignee_id?: string | null; technician_id?: string | null }) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}/assign`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  start(id: string) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}/start`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  complete(id: string, payload?: { notes?: string; hours?: number }) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}/complete`, {
+      method: 'POST',
+      body: payload ?? {},
+      queueWhenOffline: true,
+    });
+  },
+  async generateInvoice(id: string) {
+    const res = await api<unknown>(`/v1/work-orders/${id}/generate-invoice`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+    return maybeResource<Invoice>(res, 'data');
+  },
 };
+
+export interface WorkOrderMetadata {
+  statuses?: Array<{ value: string; label: string }>;
+  types?: Array<{ value: string; label: string }>;
+  priorities?: Array<{ value: string; label: string }>;
+  technicians?: Array<{ id: string; name: string }>;
+}
 
 export const invoiceImportsService = {
   async list(query?: Record<string, string | number | boolean | undefined>) {
@@ -1159,6 +1485,89 @@ export const invoiceImportsService = {
       body: payload ?? {},
       queueWhenOffline: true,
     });
+  },
+  // Trello #70: review workflow transitions.
+  process(id: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/process`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  retry(id: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/retry`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  reject(id: string, reason?: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/reject`, {
+      method: 'POST',
+      body: { reason },
+      queueWhenOffline: true,
+    });
+  },
+  markDuplicate(id: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/mark-duplicate`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  // Trello #108: supplier delivery-note → waiting workbon.
+  markWorkbon(id: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/mark-workbon`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+};
+
+// Trello #70: tagged-PDF extraction templates (OCR template dashboard).
+export interface ExtractionZone {
+  field: string;
+  page?: number;
+  x: number; // 0..1 fractions of the page width/height
+  y: number;
+  w: number;
+  h: number;
+}
+export interface ExtractionTemplate {
+  id: string;
+  name: string;
+  document_type?: string | null;
+  supplier_email?: string | null;
+  match_keywords?: string[] | null;
+  field_zones?: ExtractionZone[];
+  active?: boolean;
+  usage_count?: number;
+  success_count?: number;
+  correction_count?: number;
+  average_confidence?: number;
+  last_used_at?: string | null;
+}
+export const extractionTemplatesService = {
+  async list() {
+    const res = await api<unknown>('/v1/invoice-extraction-templates');
+    return asArray<ExtractionTemplate>(res);
+  },
+  get(id: string) {
+    return api<ExtractionTemplate>(`/v1/invoice-extraction-templates/${id}`);
+  },
+  create(payload: Record<string, unknown>) {
+    return api<ExtractionTemplate>('/v1/invoice-extraction-templates', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<ExtractionTemplate>(`/v1/invoice-extraction-templates/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  metrics(id: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-extraction-templates/${id}/metrics`);
   },
 };
 
@@ -1189,6 +1598,12 @@ export const productGroupsService = {
     return api<Record<string, unknown>>(`/v1/product-groups/${id}`, {
       method: 'PATCH',
       body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  remove(id: string) {
+    return api<{ message?: string }>(`/v1/product-groups/${id}`, {
+      method: 'DELETE',
       queueWhenOffline: true,
     });
   },
@@ -1346,6 +1761,125 @@ export const healthService = {
   status() {
     return api<{ status: string; service: string; version: string; time: string }>('/health', {
       auth: false,
+    });
+  },
+};
+
+/* --- Public site content (Trello #77 FAQ, #59 opening hours) --- */
+
+export interface FaqQuestion {
+  cat?: string;
+  q: string;
+  a: string;
+  order?: number;
+  active?: boolean;
+}
+
+export interface FaqContent {
+  faq: {
+    heading?: string;
+    intro?: string;
+    questions: FaqQuestion[];
+  };
+  contact: {
+    show_chat: boolean;
+    chat_label?: string | null;
+    company?: Record<string, unknown>;
+  };
+}
+
+export interface OpeningHoursDay {
+  day: string;
+  label: string;
+  open: string | null;
+  close: string | null;
+  closed: boolean;
+  display: string;
+  is_today?: boolean;
+}
+
+export interface OpeningHoursResponse {
+  status: {
+    is_open: boolean;
+    label: string;
+    detail?: string | null;
+    closes_at?: string | null;
+    opens_at?: string | null;
+    next_open_day?: string | null;
+    next_open_time?: string | null;
+  };
+  hours: OpeningHoursDay[];
+}
+
+export const contentService = {
+  faq(locale?: string) {
+    return api<FaqContent>('/v1/content/faq', {
+      auth: false,
+      query: locale ? { locale } : undefined,
+    });
+  },
+  contact(locale?: string) {
+    return api<FaqContent['contact']>('/v1/content/contact', {
+      auth: false,
+      query: locale ? { locale } : undefined,
+    });
+  },
+  openingHours(locale?: string) {
+    return api<OpeningHoursResponse>('/v1/opening-hours', {
+      auth: false,
+      query: locale ? { locale } : undefined,
+    });
+  },
+  // Admin FAQ editor (Trello #77)
+  faqSettings() {
+    return api<Record<string, unknown>>('/v1/admin/settings/faq');
+  },
+  updateFaqSettings(payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/admin/settings/faq', {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+};
+
+// Trello #98 / #100: public service catalog — diensten pages read tariffs
+// from the single product DB instead of the static front-end table.
+export interface ServiceCatalogTariff {
+  range_from_cm: number;
+  range_to_cm: number;
+  range_label: string;
+  price_type: string;
+  price_incl_vat?: number;
+  price_incl_vat_euros?: number;
+  display_price: string;
+  duration_minutes?: number;
+  channel?: string;
+  is_on_request: boolean;
+}
+export interface ServiceCatalogService {
+  code: string;
+  slug?: string;
+  service_code?: string;
+  name?: string;
+  category?: string;
+  description?: string;
+  group?: { code?: string; name?: string; color?: string } | null;
+  tariffs?: ServiceCatalogTariff[];
+  visibility?: { kassa?: boolean; calculator?: boolean; public?: boolean; booking?: boolean };
+}
+export interface ServiceCatalogPage {
+  page?: { slug?: string; title?: string };
+  services: ServiceCatalogService[];
+}
+export const serviceCatalogService = {
+  page(slug: string) {
+    return api<ServiceCatalogPage>(`/v1/service-catalog/pages/${slug}`, { auth: false });
+  },
+  services(group?: string) {
+    return api<{ services: ServiceCatalogService[] }>('/v1/service-catalog/services', {
+      auth: false,
+      query: group ? { group } : undefined,
     });
   },
 };

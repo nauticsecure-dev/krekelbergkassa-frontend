@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { FileText, FilePlus2, Plus, Upload, User } from 'lucide-react';
+import { CalendarRange, FileText, FilePlus2, Plus, Upload, User, X } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminFilterPill,
@@ -22,14 +22,13 @@ import {
   AdminTableHead,
   AdminTableHeaderCell,
   AdminTableRow,
-  AdminToolbar,
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
 import { InvoiceStatusBadge } from '@/components/admin/StatusBadge';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { customersService, invoicesService } from '@/lib/services';
+import { customersService, invoicesService, productGroupsService } from '@/lib/services';
 import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -52,20 +51,34 @@ function InvoicesPage() {
   const [status, setStatus] = React.useState(searchParams.get('status') ?? '');
   const [paymentStatus, setPaymentStatus] = React.useState(searchParams.get('payment_status') ?? '');
   const [source, setSource] = React.useState('');
+  const [productGroup, setProductGroup] = React.useState('');
+  const [paymentMethod, setPaymentMethod] = React.useState('');
+  const [dateFrom, setDateFrom] = React.useState('');
+  const [dateTo, setDateTo] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
   const [customerId, setCustomerId] = React.useState('');
   const [customerSearch, setCustomerSearch] = React.useState('');
 
-  const invoices = useQuery([search, status, paymentStatus, source, page], () =>
-    invoicesService.list({
-      search: search || undefined,
-      status: status || undefined,
-      payment_status: paymentStatus || undefined,
-      source: source || undefined,
-      page,
-      per_page: 20,
-    })
+  const groups = useQuery(['invoice-product-groups'], () =>
+    productGroupsService.list().catch(() => [])
+  );
+
+  const invoices = useQuery(
+    [search, status, paymentStatus, source, productGroup, paymentMethod, dateFrom, dateTo, page],
+    () =>
+      invoicesService.list({
+        search: search || undefined,
+        status: status || undefined,
+        payment_status: paymentStatus || undefined,
+        source: source || undefined,
+        product_group: productGroup || undefined,
+        payment_method: paymentMethod || undefined,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
+        page,
+        per_page: 20,
+      })
   );
 
   const customers = useQuery(
@@ -190,34 +203,38 @@ function InvoicesPage() {
             </div>
           }
         >
-        <AdminToolbar className="mb-4 border-0 bg-transparent p-0 shadow-none">
-          <AdminSearchInput
-            value={search}
-            onChange={(value) => {
-              setSearch(value);
-              setPage(1);
-            }}
-            placeholder={t('adminNew.invoices.searchPlaceholder')}
-          />
-          <div className="flex flex-wrap gap-2">
-            {[
-              { value: '', label: t('adminNew.invoices.allStatuses') },
-              { value: 'open', label: t('adminNew.status.open') },
-              { value: 'overdue', label: t('adminNew.status.overdue') },
-              { value: 'paid', label: t('adminNew.status.paid') },
-            ].map((pill) => (
-              <AdminFilterPill
-                key={pill.value || 'all'}
-                active={paymentStatus === pill.value}
-                onClick={() => {
-                  setPaymentStatus(pill.value);
-                  setPage(1);
-                }}
-              >
-                {pill.label}
-              </AdminFilterPill>
-            ))}
+        <div className="mb-4 space-y-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <AdminSearchInput
+              value={search}
+              onChange={(value) => {
+                setSearch(value);
+                setPage(1);
+              }}
+              placeholder={t('adminNew.invoices.searchPlaceholder')}
+              className="lg:flex-1"
+            />
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: '', label: t('adminNew.invoices.allStatuses') },
+                { value: 'open', label: t('adminNew.status.open') },
+                { value: 'overdue', label: t('adminNew.status.overdue') },
+                { value: 'paid', label: t('adminNew.status.paid') },
+              ].map((pill) => (
+                <AdminFilterPill
+                  key={pill.value || 'all'}
+                  active={paymentStatus === pill.value}
+                  onClick={() => {
+                    setPaymentStatus(pill.value);
+                    setPage(1);
+                  }}
+                >
+                  {pill.label}
+                </AdminFilterPill>
+              ))}
+            </div>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
           <AdminSelect
             value={status}
             onChange={(value) => {
@@ -246,7 +263,79 @@ function InvoicesPage() {
             <option value="manual">{t('adminNew.invoices.source.manual')}</option>
             <option value="calculator">{t('adminNew.invoices.source.calculator')}</option>
           </AdminSelect>
-        </AdminToolbar>
+          <AdminSelect
+            value={productGroup}
+            onChange={(value) => {
+              setProductGroup(value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.invoices.allGroups')}</option>
+            {(groups.data ?? []).map((g) => {
+              const code = String((g as Record<string, unknown>).code ?? '');
+              const name = String((g as Record<string, unknown>).name ?? code);
+              return code ? (
+                <option key={code} value={code}>
+                  {name}
+                </option>
+              ) : null;
+            })}
+          </AdminSelect>
+          <AdminSelect
+            value={paymentMethod}
+            onChange={(value) => {
+              setPaymentMethod(value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.invoices.allMethods')}</option>
+            <option value="pin">{t('adminNew.invoiceDetail.paymentMethods.pin')}</option>
+            <option value="cash">{t('adminNew.invoiceDetail.paymentMethods.cash')}</option>
+            <option value="ideal">iDEAL</option>
+            <option value="banktransfer">{t('adminNew.invoiceDetail.paymentMethods.banktransfer')}</option>
+          </AdminSelect>
+          <div className="flex h-10 items-center gap-1 rounded-lg border border-navy-200 bg-white px-2 text-sm text-navy-600">
+            <CalendarRange className="h-4 w-4 shrink-0 text-navy-400" />
+            <input
+              type="date"
+              aria-label={t('adminNew.invoices.dateFrom')}
+              value={dateFrom}
+              max={dateTo || undefined}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setPage(1);
+              }}
+              className="w-[7.5rem] border-0 bg-transparent p-0 text-sm text-navy-700 focus:outline-none focus:ring-0"
+            />
+            <span className="text-navy-300">–</span>
+            <input
+              type="date"
+              aria-label={t('adminNew.invoices.dateTo')}
+              value={dateTo}
+              min={dateFrom || undefined}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setPage(1);
+              }}
+              className="w-[7.5rem] border-0 bg-transparent p-0 text-sm text-navy-700 focus:outline-none focus:ring-0"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                type="button"
+                aria-label={t('adminNew.common.cancel')}
+                onClick={() => {
+                  setDateFrom('');
+                  setDateTo('');
+                  setPage(1);
+                }}
+                className="ml-0.5 rounded p-0.5 text-navy-400 hover:bg-sand-100 hover:text-navy-700"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          </div>
+        </div>
 
         <AdminTableCard
           footer={

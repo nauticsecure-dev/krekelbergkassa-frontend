@@ -18,6 +18,7 @@ import {
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
@@ -116,6 +117,33 @@ export default function CustomerDetailPage() {
     length_cm: '',
     location_code: '',
   });
+
+  // Trello #89: post a timeline message (internal note or customer-visible).
+  const [tlBody, setTlBody] = React.useState('');
+  const [tlVisibility, setTlVisibility] = React.useState<'internal' | 'customer'>('internal');
+  const postTimeline = useMutation((payload: { title: string; body: string; visibility: 'internal' | 'customer' }) =>
+    adminService.timelineMessage({ customer_id: customerId!, ...payload })
+  );
+
+  const handlePostTimeline = async () => {
+    if (!tlBody.trim() || !customerId) return;
+    try {
+      await postTimeline.mutate({
+        title: tlBody.trim().slice(0, 60),
+        body: tlBody.trim(),
+        visibility: tlVisibility,
+      });
+      setTlBody('');
+      push({ tone: 'success', title: t('adminNew.customerDetail.timelinePosted') });
+      await data.refetch();
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.common.operationFailed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
 
   React.useEffect(() => {
     if (!data.data?.customer) return;
@@ -524,13 +552,59 @@ export default function CustomerDetailPage() {
               description={t('adminNew.customerDetail.timelineSubtitle')}
               icon={Clock}
             >
+              {/* Trello #89: composer for internal notes / customer-visible messages */}
+              <div className="mb-4 rounded-xl border border-navy-100 bg-sand-50/40 p-3">
+                <textarea
+                  className="input-base min-h-16 w-full"
+                  placeholder={t('adminNew.customerDetail.timelinePlaceholder')}
+                  value={tlBody}
+                  onChange={(e) => setTlBody(e.target.value)}
+                />
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="inline-flex overflow-hidden rounded-lg border border-navy-200">
+                    {(['internal', 'customer'] as const).map((v) => (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => setTlVisibility(v)}
+                        className={
+                          'px-3 py-1.5 text-xs font-semibold transition ' +
+                          (tlVisibility === v
+                            ? 'bg-marine-600 text-white'
+                            : 'bg-white text-navy-600 hover:bg-sand-50')
+                        }
+                      >
+                        {v === 'internal'
+                          ? t('adminNew.customerDetail.timelineInternal')
+                          : t('adminNew.customerDetail.timelineCustomer')}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="gold"
+                    disabled={!tlBody.trim() || postTimeline.loading}
+                    onClick={() => void handlePostTimeline()}
+                  >
+                    {t('adminNew.customerDetail.timelinePost')}
+                  </Button>
+                </div>
+              </div>
+
               {data.data.timeline.length ? (
                 <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
-                  {data.data.timeline.map((item, idx) => (
+                  {data.data.timeline.map((item, idx) => {
+                    const internal = String(item.visibility ?? '') === 'internal';
+                    return (
                     <div key={String(item.id ?? idx)} className="px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="font-medium text-navy-900">{String(item.title ?? item.type ?? '—')}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-navy-900">{String(item.title ?? item.type ?? '—')}</span>
+                            {internal ? (
+                              <Badge tone="sand">{t('adminNew.customerDetail.timelineInternal')}</Badge>
+                            ) : null}
+                          </div>
                           {item.body ? (
                             <div className="mt-1 text-sm text-navy-600">{String(item.body)}</div>
                           ) : null}
@@ -540,7 +614,8 @@ export default function CustomerDetailPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-sm text-navy-500">{t('adminNew.customerDetail.timelineEmpty')}</div>

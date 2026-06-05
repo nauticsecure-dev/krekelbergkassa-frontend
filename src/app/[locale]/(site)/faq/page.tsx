@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { useIntl } from "@/i18n/IntlProvider";
 import { companyInfo } from "@/lib/company";
+import { contentService } from "@/lib/services";
+import { useQuery } from "@/lib/hooks/useAsync";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -88,7 +90,17 @@ export default function FaqPage() {
   const [q, setQ] = React.useState("");
   const [open, setOpen] = React.useState<number | null>(0);
 
-  const visible = QUESTIONS.filter(
+  // Trello #77: FAQ content is now managed in the admin (settings.faq).
+  // Falls back to the static list if the content API is unavailable.
+  const faqQuery = useQuery([locale], () => contentService.faq(locale).catch(() => null));
+  const apiQuestions = (faqQuery.data?.faq?.questions ?? [])
+    .filter((item) => item.active !== false && item.q)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const questions = apiQuestions.length
+    ? apiQuestions.map((item) => ({ cat: item.cat ?? "all", q: item.q, a: item.a }))
+    : QUESTIONS;
+
+  const visible = questions.filter(
     (item) =>
       (cat === "all" || item.cat === cat) &&
       (q.length === 0 ||
@@ -146,6 +158,10 @@ export default function FaqPage() {
               {CATEGORIES.map((c) => {
                 const Icon = c.icon;
                 const active = cat === c.id;
+                const count =
+                  c.id === "all"
+                    ? questions.length
+                    : questions.filter((item) => item.cat === c.id).length;
                 return (
                   <li key={c.id}>
                     <button
@@ -169,7 +185,7 @@ export default function FaqPage() {
                             : "bg-navy-50 text-navy-500",
                         )}
                       >
-                        {c.count}
+                        {count}
                       </span>
                     </button>
                   </li>

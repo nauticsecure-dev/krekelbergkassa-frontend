@@ -130,8 +130,42 @@ export default function PlanningPage() {
   const cancel = useMutation((id: string, reason: string) =>
     appointmentsService.cancel(id, reason)
   );
+  const reschedule = useMutation(
+    (payload: { id: string; date: string; start_time: string; duration_minutes?: number }) =>
+      appointmentsService.schedule(payload.id, {
+        date: payload.date,
+        start_time: payload.start_time,
+        duration_minutes: payload.duration_minutes,
+        notify_customer: false,
+        staff_note: 'Verplaatst via planning (drag & drop).',
+      })
+  );
+
+  // Trello #99: staff drag/drop reschedule between days.
+  const [draggingId, setDraggingId] = React.useState<string | null>(null);
+  const [dragOverKey, setDragOverKey] = React.useState<string | null>(null);
 
   const refetch = query.refetch;
+
+  const onDropDay = async (dayKey: string) => {
+    const appt = appointments.find((a) => a.id === draggingId);
+    setDragOverKey(null);
+    setDraggingId(null);
+    if (!appt || !isStaff) return;
+    if ((appt.appointment_date || '').slice(0, 10) === dayKey) return;
+    try {
+      await reschedule.mutate({
+        id: appt.id,
+        date: dayKey,
+        start_time: (appt.start_time || '09:00').slice(0, 5),
+        duration_minutes: appt.duration_minutes ?? undefined,
+      });
+      push({ tone: 'success', title: t('planning.rescheduled') });
+      await refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('planning.actionFailed'), message: getApiErrorMessage(err) });
+    }
+  };
 
   const runAction = async (fn: () => Promise<unknown>, successKey: string) => {
     try {
@@ -291,16 +325,47 @@ export default function PlanningPage() {
           ) : (
             <div className="grid min-h-[460px] grid-cols-7 divide-x divide-navy-100">
               {days.map((d, dayIdx) => {
-                const slots = byDay[localKey(d)] ?? [];
+                const dayKey = localKey(d);
+                const slots = byDay[dayKey] ?? [];
                 return (
-                  <div key={dayIdx} className="space-y-2 p-2">
+                  <div
+                    key={dayIdx}
+                    className={cn(
+                      'space-y-2 p-2 transition',
+                      isStaff && dragOverKey === dayKey && 'bg-marine-50/70 ring-2 ring-inset ring-marine-300'
+                    )}
+                    onDragOver={
+                      isStaff
+                        ? (e) => {
+                            e.preventDefault();
+                            if (dragOverKey !== dayKey) setDragOverKey(dayKey);
+                          }
+                        : undefined
+                    }
+                    onDragLeave={
+                      isStaff
+                        ? () => setDragOverKey((k) => (k === dayKey ? null : k))
+                        : undefined
+                    }
+                    onDrop={isStaff ? () => void onDropDay(dayKey) : undefined}
+                  >
                     {slots.length === 0 ? (
                       <div className="rounded-md border border-dashed border-navy-100 px-2 py-2 text-center text-[11px] text-navy-400">
                         —
                       </div>
                     ) : null}
                     {slots.map((a) => (
-                      <SlotCard key={a.id} appt={a} onClick={() => setSelected(a)} />
+                      <SlotCard
+                        key={a.id}
+                        appt={a}
+                        onClick={() => setSelected(a)}
+                        draggable={isStaff && isActive(a.status)}
+                        onDragStart={() => setDraggingId(a.id)}
+                        onDragEnd={() => {
+                          setDraggingId(null);
+                          setDragOverKey(null);
+                        }}
+                      />
                     ))}
                   </div>
                 );
@@ -328,7 +393,9 @@ export default function PlanningPage() {
           </div>
           <div className="inline-flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-            {isStaff ? t('planning.realtimeStaff') : t('planning.realtimeCustomer')}
+            {isStaff
+              ? `${t('planning.realtimeStaff')} · ${t('planning.dragHint')}`
+              : t('planning.realtimeCustomer')}
           </div>
         </div>
       </section>
@@ -431,7 +498,19 @@ export default function PlanningPage() {
   );
 }
 
-function SlotCard({ appt, onClick }: { appt: Appointment; onClick: () => void }) {
+function SlotCard({
+  appt,
+  onClick,
+  draggable,
+  onDragStart,
+  onDragEnd,
+}: {
+  appt: Appointment;
+  onClick: () => void;
+  draggable?: boolean;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
+}) {
   const type = slotTypeFor(appt.service_codes);
   const meta = SLOT_TYPES.find((s) => s.id === type)!;
   const Icon = meta.icon;
@@ -447,8 +526,12 @@ function SlotCard({ appt, onClick }: { appt: Appointment; onClick: () => void })
     <button
       type="button"
       onClick={onClick}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       className={cn(
         'w-full rounded-md p-2 text-left text-[11px] ring-1 ring-inset transition hover:brightness-95',
+        draggable && 'cursor-grab active:cursor-grabbing',
         tones[meta.tone],
         cancelled && 'opacity-50 line-through'
       )}

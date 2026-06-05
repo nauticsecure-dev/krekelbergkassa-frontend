@@ -1,0 +1,393 @@
+'use client';
+
+import * as React from 'react';
+import {
+  AlarmClock,
+  BellRing,
+  CheckCircle2,
+  Plus,
+  PlayCircle,
+  Sparkles,
+  XCircle,
+} from 'lucide-react';
+import { AdminPageHeader } from '@/components/admin/AdminShell';
+import {
+  AdminContent,
+  AdminModalBody,
+  AdminModalFooter,
+  AdminModalHeader,
+  AdminSectionCard,
+  AdminTable,
+  AdminTableCard,
+  AdminTableCell,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableRow,
+} from '@/components/admin/AdminUi';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
+import { adminService } from '@/lib/services';
+import { useMutation, useQuery } from '@/lib/hooks/useAsync';
+import { formatDate } from '@/lib/format';
+import { useIntl } from '@/i18n/IntlProvider';
+import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
+
+const num = (v: unknown): number => (typeof v === 'number' ? v : 0);
+
+const emptyRule = {
+  entity_type: 'invoice',
+  trigger_type: 'overdue_after',
+  days_after: '14',
+  channel: 'manual',
+  title_template: '',
+  body_template: '',
+  enabled: true,
+};
+
+export default function RemindersPage() {
+  const { locale, t } = useIntl();
+  const { push } = useToast();
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+
+  const [showRule, setShowRule] = React.useState(false);
+  const [rule, setRule] = React.useState(emptyRule);
+
+  const summary = useQuery(['reminders-summary'], () => adminService.remindersSummary());
+  const reminders = useQuery(['reminders-list'], () => adminService.reminders({ per_page: 50 }));
+  const rules = useQuery(['reminder-rules'], () => adminService.reminderRules().catch(() => []));
+
+  const runRules = useMutation(() => adminService.runReminderRules());
+  const completeR = useMutation((id: string) => adminService.completeReminder(id));
+  const dismissR = useMutation((id: string) => adminService.dismissReminder(id));
+  const createRule = useMutation((payload: Record<string, unknown>) =>
+    adminService.createReminderRule(payload)
+  );
+
+  const refetchAll = async () => {
+    await Promise.all([summary.refetch(), reminders.refetch()]);
+  };
+
+  const action = async (label: string, fn: () => Promise<unknown>, refetchRules = false) => {
+    try {
+      await fn();
+      push({ tone: 'success', title: label });
+      await refetchAll();
+      if (refetchRules) await rules.refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
+  const onCreateRule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await action(
+      t('adminNew.reminders.toasts.ruleCreated'),
+      async () => {
+        await createRule.mutate({
+          entity_type: rule.entity_type,
+          trigger_type: rule.trigger_type,
+          days_after: rule.days_after ? Number(rule.days_after) : 0,
+          channel: rule.channel,
+          title_template: rule.title_template || undefined,
+          body_template: rule.body_template || undefined,
+          enabled: rule.enabled,
+        });
+        setShowRule(false);
+        setRule(emptyRule);
+      },
+      true
+    );
+  };
+
+  const rows = reminders.data?.data ?? [];
+  const ruleRows = (rules.data ?? []) as Array<Record<string, unknown>>;
+
+  const isOpen = (status: string) => {
+    const s = (status || '').toLowerCase();
+    return !s.includes('complete') && !s.includes('dismiss');
+  };
+
+  return (
+    <>
+      <AdminPageHeader
+        title={t('adminNew.reminders.title')}
+        subtitle={t('adminNew.reminders.subtitle')}
+        rightSlot={
+          <Button
+            variant="gold"
+            size="sm"
+            leftIcon={<PlayCircle className="h-4 w-4" />}
+            disabled={runRules.loading}
+            onClick={() => void action(t('adminNew.reminders.toasts.rulesRan'), () => runRules.mutate(), true)}
+          >
+            {t('adminNew.reminders.runRules')}
+          </Button>
+        }
+        stats={[
+          {
+            label: t('adminNew.reminders.stats.today'),
+            value: num(summary.data?.today),
+            icon: AlarmClock,
+            tone: 'marine',
+            loading: summary.loading,
+          },
+          {
+            label: t('adminNew.reminders.stats.upcoming'),
+            value: num(summary.data?.upcoming),
+            icon: BellRing,
+            tone: 'navy',
+            loading: summary.loading,
+          },
+          {
+            label: t('adminNew.reminders.stats.overdue'),
+            value: num(summary.data?.overdue),
+            icon: XCircle,
+            tone: num(summary.data?.overdue) > 0 ? 'danger' : 'success',
+            loading: summary.loading,
+          },
+          {
+            label: t('adminNew.reminders.stats.completed'),
+            value: num(summary.data?.completed),
+            icon: CheckCircle2,
+            tone: 'success',
+            loading: summary.loading,
+          },
+        ]}
+      />
+
+      <AdminContent>
+        <AdminSectionCard
+          title={t('adminNew.reminders.listTitle')}
+          description={t('adminNew.reminders.listSubtitle')}
+          icon={BellRing}
+        >
+          <AdminTableCard>
+            {reminders.loading ? (
+              <LoadingState label={t('adminNew.common.loading')} variant="table" />
+            ) : reminders.error ? (
+              <ErrorState message={reminders.error} onRetry={() => void reminders.refetch()} />
+            ) : rows.length === 0 ? (
+              <EmptyState
+                title={t('adminNew.reminders.emptyTitle')}
+                message={t('adminNew.reminders.emptyMessage')}
+              />
+            ) : (
+              <AdminTable minWidth={840}>
+                <AdminTableHead>
+                  <tr>
+                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.subject')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.type')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.channel')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.status')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.date')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
+                  </tr>
+                </AdminTableHead>
+                <tbody>
+                  {rows.map((r) => {
+                    const title = (r as { title?: string }).title ?? r.subject ?? r.type;
+                    return (
+                      <AdminTableRow key={r.id}>
+                        <AdminTableCell className="font-medium text-navy-900">{title || '—'}</AdminTableCell>
+                        <AdminTableCell className="capitalize">{r.type}</AdminTableCell>
+                        <AdminTableCell className="capitalize">{r.channel}</AdminTableCell>
+                        <AdminTableCell>
+                          <Badge tone={isOpen(r.status) ? 'marine' : 'success'}>{r.status}</Badge>
+                        </AdminTableCell>
+                        <AdminTableCell className="whitespace-nowrap text-sm text-navy-600">
+                          {formatDate(
+                            (r as { trigger_at?: string }).trigger_at ?? r.sent_at ?? r.created_at,
+                            dateLocale
+                          )}
+                        </AdminTableCell>
+                        <AdminTableCell>
+                          {isOpen(r.status) ? (
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                                disabled={completeR.loading}
+                                onClick={() =>
+                                  void action(t('adminNew.reminders.toasts.completed'), () =>
+                                    completeR.mutate(r.id)
+                                  )
+                                }
+                              >
+                                {t('adminNew.reminders.complete')}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={<XCircle className="h-3.5 w-3.5" />}
+                                disabled={dismissR.loading}
+                                onClick={() =>
+                                  void action(t('adminNew.reminders.toasts.dismissed'), () =>
+                                    dismissR.mutate(r.id)
+                                  )
+                                }
+                              >
+                                {t('adminNew.reminders.dismiss')}
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="text-right text-xs text-navy-400">
+                              {t('adminNew.reminders.done')}
+                            </div>
+                          )}
+                        </AdminTableCell>
+                      </AdminTableRow>
+                    );
+                  })}
+                </tbody>
+              </AdminTable>
+            )}
+          </AdminTableCard>
+        </AdminSectionCard>
+
+        <AdminSectionCard
+          title={t('adminNew.reminders.rulesTitle')}
+          description={t('adminNew.reminders.rulesSubtitle')}
+          icon={Sparkles}
+          className="mt-5"
+          action={
+            <Button variant="outline" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowRule(true)}>
+              {t('adminNew.reminders.newRule')}
+            </Button>
+          }
+        >
+          {rules.loading ? (
+            <LoadingState label={t('adminNew.common.loading')} variant="table" />
+          ) : ruleRows.length === 0 ? (
+            <EmptyState
+              title={t('adminNew.reminders.rulesEmptyTitle')}
+              message={t('adminNew.reminders.rulesEmptyMessage')}
+            />
+          ) : (
+            <div className="space-y-2">
+              {ruleRows.map((rl) => (
+                <div
+                  key={String(rl.id)}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-navy-100 px-4 py-3 text-sm"
+                >
+                  <div>
+                    <div className="font-semibold text-navy-900">
+                      {String(rl.title_template ?? rl.entity_type ?? '—')}
+                    </div>
+                    <div className="text-xs text-navy-500">
+                      {String(rl.entity_type ?? '')} · {String(rl.trigger_type ?? '')}
+                      {rl.days_after != null ? ` · ${rl.days_after}d` : ''} · {String(rl.channel ?? '')}
+                    </div>
+                  </div>
+                  <Badge tone={rl.enabled === false ? 'neutral' : 'success'}>
+                    {rl.enabled === false
+                      ? t('adminNew.reminders.ruleDisabled')
+                      : t('adminNew.reminders.ruleEnabled')}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </AdminSectionCard>
+      </AdminContent>
+
+      <Modal open={showRule} onClose={() => setShowRule(false)} size="md">
+        <form onSubmit={onCreateRule}>
+          <AdminModalHeader
+            title={t('adminNew.reminders.newRule')}
+            subtitle={t('adminNew.reminders.ruleSubtitle')}
+          />
+          <AdminModalBody>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                  {t('adminNew.reminders.ruleFields.entity')}
+                </label>
+                <select
+                  className="input-base w-full"
+                  value={rule.entity_type}
+                  onChange={(e) => setRule({ ...rule, entity_type: e.target.value })}
+                >
+                  <option value="invoice">{t('adminNew.reminders.entities.invoice')}</option>
+                  <option value="stalling_contract">{t('adminNew.reminders.entities.contract')}</option>
+                  <option value="work_order">{t('adminNew.reminders.entities.workOrder')}</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                  {t('adminNew.reminders.ruleFields.trigger')}
+                </label>
+                <select
+                  className="input-base w-full"
+                  value={rule.trigger_type}
+                  onChange={(e) => setRule({ ...rule, trigger_type: e.target.value })}
+                >
+                  <option value="overdue_after">{t('adminNew.reminders.triggers.overdueAfter')}</option>
+                  <option value="due_before">{t('adminNew.reminders.triggers.dueBefore')}</option>
+                  <option value="expires_before">{t('adminNew.reminders.triggers.expiresBefore')}</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input
+                label={t('adminNew.reminders.ruleFields.days')}
+                type="number"
+                value={rule.days_after}
+                onChange={(e) => setRule({ ...rule, days_after: e.target.value })}
+              />
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                  {t('adminNew.reminders.ruleFields.channel')}
+                </label>
+                <select
+                  className="input-base w-full"
+                  value={rule.channel}
+                  onChange={(e) => setRule({ ...rule, channel: e.target.value })}
+                >
+                  <option value="manual">{t('adminNew.reminders.channels.manual')}</option>
+                  <option value="email">{t('adminNew.reminders.channels.email')}</option>
+                </select>
+              </div>
+            </div>
+            <Input
+              label={t('adminNew.reminders.ruleFields.title')}
+              value={rule.title_template}
+              onChange={(e) => setRule({ ...rule, title_template: e.target.value })}
+            />
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.reminders.ruleFields.body')}
+              </label>
+              <textarea
+                className="input-base min-h-20 w-full"
+                value={rule.body_template}
+                onChange={(e) => setRule({ ...rule, body_template: e.target.value })}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-navy-800">
+              <input
+                type="checkbox"
+                checked={rule.enabled}
+                onChange={(e) => setRule({ ...rule, enabled: e.target.checked })}
+                className="h-4 w-4 rounded border-navy-300"
+              />
+              {t('adminNew.reminders.ruleFields.enabled')}
+            </label>
+          </AdminModalBody>
+          <AdminModalFooter>
+            <Button type="button" variant="ghost" onClick={() => setShowRule(false)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button type="submit" variant="gold" disabled={createRule.loading}>
+              {t('adminNew.common.save')}
+            </Button>
+          </AdminModalFooter>
+        </form>
+      </Modal>
+    </>
+  );
+}

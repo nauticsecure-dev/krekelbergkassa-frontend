@@ -5,9 +5,12 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
+  BarChart3,
+  Image as ImageIcon,
   Package,
   Pencil,
   ShoppingCart,
+  Sparkles,
   Tag,
   Trash2,
   Wallet,
@@ -17,11 +20,16 @@ import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
   AdminContent,
+  AdminModalBody,
+  AdminModalFooter,
+  AdminModalHeader,
   AdminSectionCard,
   AdminStatusStrip,
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/Modal';
+import { Input } from '@/components/ui/Input';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
@@ -58,12 +66,34 @@ export default function ProductDetailPage() {
   const [editing, setEditing] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [form, setForm] = React.useState<ProductFormState | null>(null);
+  const [showAi, setShowAi] = React.useState(false);
+  const [aiPrompt, setAiPrompt] = React.useState('');
 
   const product = useQuery([id], () => productsService.get(id));
+  // Trello #86: sales stats + AI image generation
+  const stats = useQuery([id, 'stats'], () => productsService.stats(id).catch(() => null));
   const updateProduct = useMutation((payload: Record<string, unknown>) =>
     productsService.update(id, payload)
   );
   const deleteProduct = useMutation(productsService.remove);
+  const generateImage = useMutation((prompt: string) =>
+    productsService.generateImage(id, { prompt, quality: 'low' })
+  );
+
+  const onGenerateImage = async () => {
+    try {
+      await generateImage.mutate(aiPrompt.trim() || `POS tile image for ${product.data?.name ?? 'product'}`);
+      setShowAi(false);
+      await product.refetch();
+      push({ tone: 'success', title: t('adminNew.products.ai.done') });
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.common.operationFailed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
 
   React.useEffect(() => {
     if (product.data) setForm(productToForm(product.data));
@@ -244,6 +274,66 @@ export default function ProductDetailPage() {
                 </div>
               </AdminSectionCard>
 
+              <AdminSectionCard title={t('adminNew.products.ai.imageTitle')} icon={ImageIcon}>
+                <div className="overflow-hidden rounded-xl border border-navy-100 bg-sand-50/50">
+                  {p.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.image_url} alt={p.name} className="aspect-square w-full object-cover" />
+                  ) : (
+                    <div className="flex aspect-square w-full items-center justify-center text-navy-300">
+                      <ImageIcon className="h-10 w-10" />
+                    </div>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  className="mt-3"
+                  leftIcon={<Sparkles className="h-4 w-4" />}
+                  onClick={() => {
+                    setAiPrompt('');
+                    setShowAi(true);
+                  }}
+                >
+                  {t('adminNew.products.ai.generate')}
+                </Button>
+              </AdminSectionCard>
+
+              <AdminSectionCard title={t('adminNew.products.statsTitle')} icon={BarChart3}>
+                {stats.data ? (
+                  <div className="space-y-3">
+                    <AdminStatusStrip
+                      label={t('adminNew.products.stats.timesSold')}
+                      value={String((stats.data as Record<string, unknown>).times_sold ?? 0)}
+                      tone="marine"
+                    />
+                    <AdminStatusStrip
+                      label={t('adminNew.products.stats.revenue')}
+                      value={formatCurrency(
+                        Number((stats.data as Record<string, unknown>).revenue_incl_vat ?? 0) / 100,
+                        dateLocale
+                      )}
+                      tone="gold"
+                    />
+                    <AdminStatusStrip
+                      label={t('adminNew.products.stats.lastSale')}
+                      value={
+                        (stats.data as Record<string, unknown>).last_sale_date
+                          ? formatDateTime(
+                              String((stats.data as Record<string, unknown>).last_sale_date),
+                              dateLocale
+                            )
+                          : '—'
+                      }
+                      tone="navy"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-sm text-navy-500">{t('adminNew.products.stats.empty')}</p>
+                )}
+              </AdminSectionCard>
+
               <AdminSectionCard title={t('adminNew.products.metaTitle')} icon={Clock}>
                 <dl>
                   <DetailRow label={t('adminNew.products.fields.created')} value={formatDateTime(p.created_at, dateLocale)} />
@@ -286,6 +376,37 @@ export default function ProductDetailPage() {
           </form>
         ) : null}
       </AdminContent>
+
+      <Modal open={showAi} onClose={() => setShowAi(false)} size="md">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void onGenerateImage();
+          }}
+        >
+          <AdminModalHeader
+            title={t('adminNew.products.ai.generate')}
+            subtitle={t('adminNew.products.ai.subtitle')}
+          />
+          <AdminModalBody>
+            <Input
+              label={t('adminNew.products.ai.prompt')}
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder={p ? `POS tile image for ${p.name}` : ''}
+            />
+            <p className="text-xs text-navy-400">{t('adminNew.products.ai.hint')}</p>
+          </AdminModalBody>
+          <AdminModalFooter>
+            <Button type="button" variant="ghost" onClick={() => setShowAi(false)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button type="submit" variant="gold" disabled={generateImage.loading}>
+              {generateImage.loading ? t('adminNew.products.ai.generating') : t('adminNew.products.ai.generate')}
+            </Button>
+          </AdminModalFooter>
+        </form>
+      </Modal>
 
       <AdminConfirmModal
         open={deleteOpen}

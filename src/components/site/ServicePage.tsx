@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Pencil } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
@@ -8,6 +9,8 @@ import { Badge } from '@/components/ui/Badge';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin } from '@/lib/auth-routes';
+import { useQuery } from '@/lib/hooks/useAsync';
+import { serviceCatalogService } from '@/lib/services';
 
 export interface ServicePageProps {
   badge: string;
@@ -24,6 +27,12 @@ export interface ServicePageProps {
   adminProductSlug?: string;
   /** Optional caption under the pricing grid (e.g. data source / season). */
   priceFootnote?: string;
+  /**
+   * Public service-catalog slug. When set, live tariffs are fetched from
+   * `/v1/service-catalog/pages/{slug}` and replace `priceRanges`; the static
+   * `priceRanges` prop remains the fallback if the API is unavailable/empty.
+   */
+  catalogSlug?: string;
 }
 
 export function ServicePage({
@@ -39,11 +48,32 @@ export function ServicePage({
   primaryCta,
   adminProductSlug,
   priceFootnote,
+  catalogSlug,
 }: ServicePageProps) {
   const { t, locale } = useIntl();
   const { user, isDemo } = useAuth();
   const isAdmin = canAccessAdmin(user?.role, isDemo);
   const cta = primaryCta ?? { label: t('nav.bookCrane'), href: `/${locale}/kraanafspraak` };
+
+  // Trello #98/#100: prefer live tariffs from the shared product DB, fall back
+  // to the static length table passed in via `priceRanges`.
+  const catalogQuery = useQuery([catalogSlug ?? ''], () =>
+    catalogSlug ? serviceCatalogService.page(catalogSlug).catch(() => null) : Promise.resolve(null),
+  );
+  const liveRanges = React.useMemo(() => {
+    const services = catalogQuery.data?.services ?? [];
+    const tariffs = services.flatMap((s) => s.tariffs ?? []);
+    if (!tariffs.length) return null;
+    return tariffs
+      .slice()
+      .sort((a, b) => a.range_from_cm - b.range_from_cm)
+      .map((tf) => ({
+        label: tf.range_label,
+        price: tf.is_on_request ? t('servicePage.onRequest') : tf.display_price,
+        note: tf.range_from_cm === 0 ? t('servicePage.from') : undefined,
+      }));
+  }, [catalogQuery.data, t]);
+  const ranges = liveRanges ?? priceRanges;
   return (
     <>
       {/* Hero with real photo */}
@@ -139,7 +169,7 @@ export function ServicePage({
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {priceRanges.map((p) => (
+            {ranges.map((p) => (
               <Card key={p.label} className="flex items-center justify-between p-5">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">

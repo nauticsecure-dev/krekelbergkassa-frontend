@@ -3,15 +3,21 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  Activity,
+  BarChart3,
+  BellRing,
   Calendar,
   CalendarClock,
+  Coins,
   ChevronLeft,
   ChevronRight,
   CreditCard,
   HelpCircle,
   Home,
+  Layers,
   LogOut,
   Package,
+  Receipt,
   Settings,
   ShieldCheck,
   ShoppingCart,
@@ -51,6 +57,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
   const main: NavItem[] = [
     { href: `/${locale}/admin`, icon: Home, label: t('admin.sidebar.dashboard') },
     { href: `/${locale}/admin/kassa`, icon: ShoppingCart, label: t('admin.sidebar.kassa'), badge: 'POS' },
+    { href: `/${locale}/admin/verkopen`, icon: Receipt, label: t('adminNew.sidebar.sales') },
     { href: `/${locale}/admin/afspraken`, icon: CalendarClock, label: t('admin.sidebar.appointments') },
     { href: `/${locale}/admin/calculator`, icon: Calendar, label: t('adminNew.sidebar.calculator') },
     { href: `/${locale}/admin/stalling`, icon: Warehouse, label: t('admin.sidebar.stalling') },
@@ -60,6 +67,10 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
     { href: `/${locale}/admin/werkorders`, icon: Wrench, label: t('adminNew.sidebar.workOrders'), roles: ['staff', 'manager'] },
     { href: `/${locale}/admin/betalingen`, icon: CreditCard, label: t('admin.sidebar.payments') },
     { href: `/${locale}/admin/producten`, icon: Package, label: t('admin.sidebar.products') },
+    { href: `/${locale}/admin/product-groepen`, icon: Layers, label: t('adminNew.sidebar.productGroups') },
+    { href: `/${locale}/admin/rapportages`, icon: BarChart3, label: t('adminNew.sidebar.reports') },
+    { href: `/${locale}/admin/tarieven/makelaardij`, icon: Coins, label: t('adminNew.sidebar.brokerage'), roles: ['admin', 'manager'] },
+    { href: `/${locale}/admin/reminders`, icon: BellRing, label: t('adminNew.sidebar.reminders'), roles: ['admin', 'manager'] },
     // Template editor — no API yet; use /admin/stalling for live stalling contracts.
     // { href: `/${locale}/admin/contracten`, icon: FileText, label: t('admin.sidebar.contracts'), roles: ['admin', 'manager'] },
   ];
@@ -67,6 +78,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
   const secondary: NavItem[] = [
     { href: `/${locale}/admin/kalender`, icon: Calendar, label: t('admin.sidebar.calendarAdmin') },
     { href: `/${locale}/admin/gebruikers`, icon: Users, label: t('admin.sidebar.users'), roles: ['admin', 'manager'] },
+    { href: `/${locale}/admin/timeline`, icon: Activity, label: t('adminNew.sidebar.timeline'), roles: ['admin', 'manager'] },
     { href: `/${locale}/admin/audit`, icon: ShieldCheck, label: t('admin.sidebar.audit'), roles: ['admin', 'manager'] },
     { href: `/${locale}/admin/systeem`, icon: Wrench, label: t('admin.sidebar.system'), roles: ['admin'] },
     { href: `/${locale}/admin/instellingen`, icon: Settings, label: t('admin.sidebar.settings') },

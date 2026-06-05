@@ -5,6 +5,7 @@ export default function AfspuitenPage() {
   return (
     <ServicePage
       adminProductSlug="afspuiten"
+      catalogSlug="afspuiten"
       priceFootnote="Prijzen per lengteklasse, inclusief BTW. De definitieve prijs volgt uit de exacte lengte van uw boot."
       badge="Afspuiten / pressure washing"
       title="Romp professioneel afspuiten"

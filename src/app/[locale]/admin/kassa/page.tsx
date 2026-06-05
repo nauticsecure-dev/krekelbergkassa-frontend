@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   Anchor,
   ArrowDownUp,
@@ -40,6 +41,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { EmptyState, LoadingState } from "@/components/admin/DataState";
 import { AdminConfirmModal } from "@/components/admin/AdminConfirmModal";
+import { BarcodeScannerModal } from "@/components/admin/BarcodeScannerModal";
 import {
   customersService,
   kassaService,
@@ -47,7 +49,7 @@ import {
   productsService,
 } from "@/lib/services";
 import { useMutation, useQuery } from "@/lib/hooks/useAsync";
-import type { Product, PricingRule } from "@/lib/api-types";
+import type { Product, PricingRule, KassaQrSession } from "@/lib/api-types";
 import { formatCurrency } from "@/lib/format";
 import { productPriceInclEuros } from "@/lib/products";
 import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
@@ -79,21 +81,33 @@ const CATEGORY_PALETTE = [
   "#e11d48",
 ];
 
-function categoryMeta(name: string, index: number): { icon: LucideIcon; accent: string } {
+function categoryMeta(
+  name: string,
+  index: number,
+): { icon: LucideIcon; accent: string } {
   const n = name.toLowerCase();
   if (n.includes("afspuit") || n.includes("was") || n.includes("clean"))
     return { icon: Droplets, accent: "#1f93b8" };
-  if (n.includes("kraan") || n.includes("kran") || n.includes("lift") || n.includes("crane"))
+  if (
+    n.includes("kraan") ||
+    n.includes("kran") ||
+    n.includes("lift") ||
+    n.includes("crane")
+  )
     return { icon: Anchor, accent: "#0ea5e9" };
   if (n.includes("stalling") || n.includes("winter") || n.includes("storage"))
     return { icon: Warehouse, accent: "#bd8528" };
-  return { icon: MoreHorizontal, accent: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length] };
+  return {
+    icon: MoreHorizontal,
+    accent: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
+  };
 }
 
 export default function KassaPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const localeTag = locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
+  const localeTag =
+    locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
 
   const [query, setQuery] = React.useState("");
   const [activeCategory, setActiveCategory] = React.useState("");
@@ -105,14 +119,20 @@ export default function KassaPage() {
   const [noteDraft, setNoteDraft] = React.useState("");
   const [showSplitModal, setShowSplitModal] = React.useState(false);
   const [showQrModal, setShowQrModal] = React.useState(false);
-  const [qrUrl, setQrUrl] = React.useState<string | null>(null);
+  const [qrSession, setQrSession] = React.useState<KassaQrSession | null>(null);
+  const [qrStarting, setQrStarting] = React.useState(false);
+  const [qrCopied, setQrCopied] = React.useState(false);
   const [splitPayments, setSplitPayments] = React.useState([
     { method: "pin", amount: "" },
     { method: "cash", amount: "" },
   ]);
   const [cart, setCart] = React.useState<CartItem[]>([]);
   const [showCustomerModal, setShowCustomerModal] = React.useState(false);
-  const [newCustomer, setNewCustomer] = React.useState({ name: "", email: "", phone: "" });
+  const [newCustomer, setNewCustomer] = React.useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
   const [checkoutConfirm, setCheckoutConfirm] = React.useState<
     "standard" | "split" | "qr" | "on_account" | null
   >(null);
@@ -147,6 +167,65 @@ export default function KassaPage() {
   const checkout = useMutation(kassaService.checkout);
   const quote = useMutation(kassaService.quote);
 
+  // Trello #80/#86: favourites, recently-used and bundles for fast checkout.
+  const bundlesQuery = useQuery(["kassa-bundles"], () =>
+    productsService.bundles().catch(() => []),
+  );
+  const [favoriteIds, setFavoriteIds] = React.useState<Set<string>>(new Set());
+  const [recentIds, setRecentIds] = React.useState<string[]>([]);
+
+  // Seed favourites from the product resource's is_favorite flag.
+  React.useEffect(() => {
+    const favs = productsQuery.data?.data
+      ?.filter((p) => p.is_favorite)
+      .map((p) => p.id);
+    if (favs && favs.length) setFavoriteIds(new Set(favs));
+  }, [productsQuery.data?.data]);
+
+  // Recently-used is tracked per device in localStorage (no extra endpoint).
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem("kassa-recent-products");
+      if (raw) setRecentIds(JSON.parse(raw) as string[]);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const pushRecent = React.useCallback((productId?: string) => {
+    if (!productId) return;
+    setRecentIds((prev) => {
+      const next = [productId, ...prev.filter((id) => id !== productId)].slice(
+        0,
+        8,
+      );
+      try {
+        localStorage.setItem("kassa-recent-products", JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleFavorite = (productId: string) => {
+    const on = !favoriteIds.has(productId);
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(productId);
+      else next.delete(productId);
+      return next;
+    });
+    void productsService.setFavorite(productId, on).catch(() => {
+      // revert on failure
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (on) next.delete(productId);
+        else next.add(productId);
+        return next;
+      });
+    });
+  };
+
   const numericInput = Number(query.replace(/[^0-9]/g, ""));
   const queryText = query.replace(/[0-9]/g, "").trim().toLowerCase();
 
@@ -159,24 +238,11 @@ export default function KassaPage() {
     [pricingQuery.data?.data],
   );
 
-  React.useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && query.length >= 8 && /^\d+$/.test(query)) {
-        const match = allProducts.find(
-          (p) => p.barcode === query || p.code === query,
-        );
-        if (match) {
-          addProduct(match);
-          setQuery("");
-        }
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [query, allProducts]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const categories = React.useMemo(() => {
-    const set = new Map<string, { label: string; icon: LucideIcon; accent: string }>();
+    const set = new Map<
+      string,
+      { label: string; icon: LucideIcon; accent: string }
+    >();
     allProducts.forEach((p) => {
       const key = (p.category ?? p.group?.name ?? "").trim();
       if (!key || set.has(key.toLowerCase())) return;
@@ -204,6 +270,10 @@ export default function KassaPage() {
         product.service_code,
         product.barcode,
         product.search_code,
+        // Trello #86: also match SKU, tags and aliases.
+        product.sku,
+        ...(product.tags ?? []),
+        ...(product.aliases ?? []),
       ]
         .filter(Boolean)
         .join(" ")
@@ -218,7 +288,8 @@ export default function KassaPage() {
   const rangeTiles = React.useMemo(() => {
     if (!numericInput) return [];
     const rules = allRules.filter((rule) => {
-      const product = allProducts.find((p) => p.id === rule.product_id) ?? rule.product;
+      const product =
+        allProducts.find((p) => p.id === rule.product_id) ?? rule.product;
       if (queryText && !productMatchesText(product, queryText)) return false;
       if (
         activeCategory &&
@@ -228,7 +299,14 @@ export default function KassaPage() {
       return true;
     });
     return [...rules].sort((a, b) => a.range_from_cm - b.range_from_cm);
-  }, [numericInput, queryText, activeCategory, allRules, allProducts, productMatchesText]);
+  }, [
+    numericInput,
+    queryText,
+    activeCategory,
+    allRules,
+    allProducts,
+    productMatchesText,
+  ]);
 
   const visibleProducts = React.useMemo(() => {
     let list = allProducts;
@@ -244,9 +322,13 @@ export default function KassaPage() {
     }
     const sorted = [...list];
     if (sortBy === "priceAsc")
-      sorted.sort((a, b) => productPriceInclEuros(a) - productPriceInclEuros(b));
+      sorted.sort(
+        (a, b) => productPriceInclEuros(a) - productPriceInclEuros(b),
+      );
     else if (sortBy === "priceDesc")
-      sorted.sort((a, b) => productPriceInclEuros(b) - productPriceInclEuros(a));
+      sorted.sort(
+        (a, b) => productPriceInclEuros(b) - productPriceInclEuros(a),
+      );
     else if (sortBy === "name")
       sorted.sort((a, b) => a.name.localeCompare(b.name));
     return sorted;
@@ -268,9 +350,7 @@ export default function KassaPage() {
     });
     const ranked = Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
-      .map(([desc]) =>
-        allProducts.find((p) => p.name.toLowerCase() === desc),
-      )
+      .map(([desc]) => allProducts.find((p) => p.name.toLowerCase() === desc))
       .filter(Boolean) as Product[];
     const result = ranked.slice(0, 4);
     if (result.length < 4) {
@@ -285,7 +365,8 @@ export default function KassaPage() {
   const addProduct = (product: Product, rule?: PricingRule | null) => {
     const unitCents = rule
       ? rule.price_incl_vat
-      : Math.round(productPriceInclEuros(product) * 100) || product.price_incl_vat;
+      : Math.round(productPriceInclEuros(product) * 100) ||
+        product.price_incl_vat;
     const description = rule
       ? `${product.name} (${rule.range_from_cm}-${rule.range_to_cm} cm)`
       : product.name;
@@ -314,7 +395,61 @@ export default function KassaPage() {
         },
       ];
     });
+    pushRecent(product.id);
+    // Trello #62: confirm each add with a toast.
+    push({
+      tone: "success",
+      title: t("adminNew.kassa.toasts.added", { name: description }),
+    });
   };
+
+  // Trello #80: add every product in a bundle with one click.
+  const addBundle = (bundle: {
+    name: string;
+    items?: Array<{ product_id: string; quantity?: number; product?: Product }>;
+  }) => {
+    const items = bundle.items ?? [];
+    let added = 0;
+    items.forEach((it) => {
+      const product =
+        it.product ?? allProducts.find((p) => p.id === it.product_id);
+      if (!product) return;
+      const times = Math.max(1, it.quantity ?? 1);
+      for (let i = 0; i < times; i += 1) addProduct(product);
+      added += 1;
+    });
+    if (!added) {
+      push({ tone: "error", title: t("adminNew.kassa.bundleEmpty") });
+    }
+  };
+
+  // Trello #80: barcode scan — resolve via the backend (search_code / EAN /
+  // alias lookup + scan log) and auto-add the matched product. Works for the
+  // USB/keyboard search box and the camera scanner (source = "camera").
+  const [scanning, setScanning] = React.useState(false);
+  const [showCamera, setShowCamera] = React.useState(false);
+  const runScan = async (rawCode: string, source = "usb") => {
+    const code = rawCode.trim();
+    if (!code) return;
+    setScanning(true);
+    try {
+      const res = await productsService.scan({ barcode: code, source });
+      if (res.matched && res.product) {
+        addProduct(res.product as Product);
+        if (source !== "camera") setQuery("");
+      } else {
+        push({
+          tone: "error",
+          title: t("adminNew.kassa.scanNotFound", { code }),
+        });
+      }
+    } catch {
+      /* fall back to the client-side text filter already showing results */
+    } finally {
+      setScanning(false);
+    }
+  };
+  const handleBarcodeScan = () => runScan(query, "usb");
 
   const removeItem = (id: string) =>
     setCart((prev) => prev.filter((item) => item.id !== id));
@@ -438,9 +573,97 @@ export default function KassaPage() {
     }
   };
 
+  // Trello #72: QR flow uses a payment session (no invoice up front); the
+  // webhook finalizes the invoice once Mollie confirms payment.
+  const startQrSession = async () => {
+    if (!cart.length) {
+      push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
+      return;
+    }
+    setQrStarting(true);
+    setQrSession(null);
+    setQrCopied(false);
+    setShowQrModal(true);
+    try {
+      const session = await kassaService.createQrSession({
+        device_id: getDeviceId(),
+        customer_id: customerId || undefined,
+        method: "ideal",
+        redirect_url:
+          typeof window !== "undefined" ? window.location.href : undefined,
+        items: cart.map((item) => ({
+          product_id: item.product_id,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price_cents: item.unit_price_cents,
+          vat_rate: item.vat_rate,
+        })),
+      });
+      setQrSession(session);
+    } catch (err) {
+      setShowQrModal(false);
+      push({
+        tone: "error",
+        title: t("adminNew.kassa.toasts.checkoutFailed"),
+        message: getApiErrorMessage(err),
+      });
+    } finally {
+      setQrStarting(false);
+    }
+  };
+
+  // Poll the QR session while pending; finalize cart on success.
+  const qrSettled = React.useRef(false);
+  React.useEffect(() => {
+    const id = qrSession?.session_id;
+    const status = (qrSession?.status ?? "").toLowerCase();
+    if (!showQrModal || !id) return;
+    if (status === "paid" || status === "completed") {
+      if (!qrSettled.current) {
+        qrSettled.current = true;
+        setCart([]);
+        setNote("");
+        void recentSales.refetch();
+        void todayQuery.refetch();
+        push({
+          tone: "success",
+          title: t("adminNew.kassa.toasts.checkoutDone"),
+        });
+      }
+      return;
+    }
+    if (
+      status === "expired" ||
+      status === "failed" ||
+      status === "canceled" ||
+      status === "cancelled"
+    ) {
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const next = await kassaService.qrSession(id);
+        setQrSession(next);
+      } catch {
+        /* keep last state; will retry on next tick */
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [showQrModal, qrSession, recentSales, todayQuery, push, t]);
+
+  const closeQrModal = () => {
+    setShowQrModal(false);
+    qrSettled.current = false;
+    setQrSession(null);
+  };
+
   const handleCheckout = async (
     mode: "standard" | "split" | "qr" | "on_account" = "standard",
   ) => {
+    if (mode === "qr") {
+      await startQrSession();
+      return;
+    }
     if (!cart.length) {
       push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
       return;
@@ -470,7 +693,7 @@ export default function KassaPage() {
           }));
       } else {
         payload.payment_method =
-          mode === "qr" ? "ideal" : mode === "on_account" ? "invoice" : paymentMethod;
+          mode === "on_account" ? "invoice" : paymentMethod;
       }
 
       const res = await checkout.mutate(payload);
@@ -490,10 +713,7 @@ export default function KassaPage() {
       void recentSales.refetch();
       void todayQuery.refetch();
 
-      if (mode === "qr" && checkoutUrl) {
-        setQrUrl(checkoutUrl);
-        setShowQrModal(true);
-      } else if (checkoutUrl) {
+      if (checkoutUrl) {
         const popup = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
         if (!popup) {
           window.location.assign(checkoutUrl);
@@ -543,6 +763,20 @@ export default function KassaPage() {
   };
 
   const lastSale = recentSales.data?.[0];
+  // Trello #62: safe total (never NaN) + deep link to the real invoice.
+  const lastSaleEuros = lastSale
+    ? Number(
+        lastSale.total_euros ??
+          lastSale.total_amount_euros ??
+          Number(lastSale.total_amount_cents ?? 0) / 100,
+      ) || 0
+    : 0;
+  const lastSaleHref =
+    lastSale?.invoice_url ??
+    lastSale?.admin_url ??
+    (lastSale?.invoice_id
+      ? `/${locale}/admin/facturen/${lastSale.invoice_id}`
+      : undefined);
   const todayTurnover = todayQuery.data?.totals.turnover_cents ?? 0;
   const todayTransactions = todayQuery.data?.totals.transaction_count ?? 0;
 
@@ -566,6 +800,25 @@ export default function KassaPage() {
             tone: totalCents > 0 ? "gold" : "success",
             href: `#cart`,
           },
+          {
+            label: t("adminNew.kassa.products"),
+            value:
+              productsQuery.data?.meta?.total ??
+              productsQuery.data?.data.length ??
+              0,
+            icon: Warehouse,
+            tone: "navy",
+            href: `/${locale}/admin/producten`,
+            loading: productsQuery.loading,
+          },
+          {
+            label: t("adminNew.kassa.recentSales"),
+            value: recentSales.data?.length ?? 0,
+            icon: Receipt,
+            tone: "marine",
+            href: `/${locale}/admin/verkopen`,
+            loading: recentSales.loading,
+          },
         ]}
       />
 
@@ -587,7 +840,9 @@ export default function KassaPage() {
                 label={cat.label}
                 icon={cat.icon}
                 accent={cat.accent}
-                active={activeCategory.toLowerCase() === cat.label.toLowerCase()}
+                active={
+                  activeCategory.toLowerCase() === cat.label.toLowerCase()
+                }
                 onClick={() => setActiveCategory(cat.label)}
               />
             ))}
@@ -604,7 +859,8 @@ export default function KassaPage() {
                 variant="outline"
                 size="sm"
                 leftIcon={<ScanLine className="h-4 w-4 text-marine-600" />}
-                onClick={() => searchRef.current?.focus()}
+                disabled={scanning}
+                onClick={() => setShowCamera(true)}
               >
                 {t("adminNew.kassa.scanBarcode")}
               </Button>
@@ -620,6 +876,12 @@ export default function KassaPage() {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void handleBarcodeScan();
+                  }
+                }}
                 placeholder={t("adminNew.kassa.searchPlaceholder")}
                 className="input-base w-full pl-9"
               />
@@ -637,9 +899,15 @@ export default function KassaPage() {
                   className="input-base cursor-pointer py-2 pl-9 pr-8 text-sm"
                   aria-label={t("adminNew.kassa.sortBy")}
                 >
-                  <option value="recommended">{t("adminNew.kassa.sort.recommended")}</option>
-                  <option value="priceAsc">{t("adminNew.kassa.sort.priceAsc")}</option>
-                  <option value="priceDesc">{t("adminNew.kassa.sort.priceDesc")}</option>
+                  <option value="recommended">
+                    {t("adminNew.kassa.sort.recommended")}
+                  </option>
+                  <option value="priceAsc">
+                    {t("adminNew.kassa.sort.priceAsc")}
+                  </option>
+                  <option value="priceDesc">
+                    {t("adminNew.kassa.sort.priceDesc")}
+                  </option>
                   <option value="name">{t("adminNew.kassa.sort.name")}</option>
                 </select>
               </label>
@@ -650,11 +918,89 @@ export default function KassaPage() {
           {matchingRule ? (
             <div className="flex items-center gap-2 rounded-xl border border-marine-200/80 bg-gradient-to-r from-marine-50 to-white px-4 py-3 text-sm text-marine-800">
               <Star className="h-4 w-4 text-marine-500" />
-              <span className="font-semibold">{t("adminNew.kassa.smartMatch")}:</span>
+              <span className="font-semibold">
+                {t("adminNew.kassa.smartMatch")}:
+              </span>
               {matchingRule.range_from_cm}–{matchingRule.range_to_cm} cm ·{" "}
               {formatCurrency(matchingRule.price_incl_vat_euros, localeTag)}
             </div>
           ) : null}
+
+          {/* Trello #80/#86: favourites, recently used and bundles */}
+          {(() => {
+            const favProducts = allProducts.filter((p) =>
+              favoriteIds.has(p.id),
+            );
+            const recentProducts = recentIds
+              .map((id) => allProducts.find((p) => p.id === id))
+              .filter((p): p is Product => Boolean(p));
+            const bundles = bundlesQuery.data ?? [];
+            const renderChip = (
+              key: string,
+              label: string,
+              accent: string | null | undefined,
+              onClick: () => void,
+            ) => (
+              <button
+                key={key}
+                type="button"
+                onClick={onClick}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-navy-100 bg-white px-3 py-1.5 text-xs font-semibold text-navy-700 shadow-sm transition hover:border-marine-200 hover:bg-sand-50"
+              >
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: accent ?? "#1f93b8" }}
+                />
+                {label}
+              </button>
+            );
+            if (
+              !favProducts.length &&
+              !recentProducts.length &&
+              !bundles.length
+            )
+              return null;
+            return (
+              <div className="mb-4 space-y-2">
+                {favProducts.length ? (
+                  <QuickRow icon={Star} label={t("adminNew.kassa.favourites")}>
+                    {favProducts.map((p) =>
+                      renderChip(p.id, p.name, p.color ?? p.group?.color, () =>
+                        addProduct(p),
+                      ),
+                    )}
+                  </QuickRow>
+                ) : null}
+                {recentProducts.length ? (
+                  <QuickRow
+                    icon={MoreHorizontal}
+                    label={t("adminNew.kassa.recentlyUsed")}
+                  >
+                    {recentProducts.map((p) =>
+                      renderChip(
+                        `r-${p.id}`,
+                        p.name,
+                        p.color ?? p.group?.color,
+                        () => addProduct(p),
+                      ),
+                    )}
+                  </QuickRow>
+                ) : null}
+                {bundles.length ? (
+                  <QuickRow
+                    icon={ShoppingCart}
+                    label={t("adminNew.kassa.bundles")}
+                  >
+                    {bundles.map((b) =>
+                      renderChip(`b-${b.id}`, b.name, b.color, () =>
+                        addBundle(b),
+                      ),
+                    )}
+                  </QuickRow>
+                ) : null}
+              </div>
+            );
+          })()}
 
           {/* Results */}
           <div>
@@ -670,7 +1016,10 @@ export default function KassaPage() {
             </div>
 
             {productsQuery.loading ? (
-              <LoadingState label={t("adminNew.kassa.loadingProducts")} variant="cards" />
+              <LoadingState
+                label={t("adminNew.kassa.loadingProducts")}
+                variant="cards"
+              />
             ) : resultCount === 0 ? (
               <EmptyState
                 title={t("adminNew.kassa.emptyProductsTitle")}
@@ -680,7 +1029,8 @@ export default function KassaPage() {
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {rangeTiles.map((rule) => {
                   const product =
-                    allProducts.find((p) => p.id === rule.product_id) ?? rule.product;
+                    allProducts.find((p) => p.id === rule.product_id) ??
+                    rule.product;
                   const inRange =
                     numericInput >= rule.range_from_cm &&
                     numericInput <= rule.range_to_cm;
@@ -689,8 +1039,13 @@ export default function KassaPage() {
                     <CatalogTile
                       key={rule.id}
                       title={`${rule.range_from_cm} – ${rule.range_to_cm} cm`}
-                      price={formatCurrency(rule.price_incl_vat_euros, localeTag)}
-                      accent={product?.color ?? product?.group?.color ?? "#1f93b8"}
+                      price={formatCurrency(
+                        rule.price_incl_vat_euros,
+                        localeTag,
+                      )}
+                      accent={
+                        product?.color ?? product?.group?.color ?? "#1f93b8"
+                      }
                       selected={cart.some((i) => i.id === tileId)}
                       highlighted={inRange}
                       onClick={() => product && addProduct(product, rule)}
@@ -705,22 +1060,43 @@ export default function KassaPage() {
                     matchingRule && matchingRule.product_id === product.id
                       ? matchingRule
                       : null;
+                  const fav = favoriteIds.has(product.id);
                   return (
-                    <CatalogTile
-                      key={product.id}
-                      title={product.name}
-                      subtitle={product.code}
-                      price={formatCurrency(
-                        ruleMatch
-                          ? ruleMatch.price_incl_vat_euros
-                          : productPriceInclEuros(product),
-                        localeTag,
-                      )}
-                      accent={product.color ?? product.group?.color ?? "#1f93b8"}
-                      selected={cartHas(product.id)}
-                      highlighted={!!ruleMatch}
-                      onClick={() => addProduct(product, ruleMatch)}
-                    />
+                    <div key={product.id} className="relative h-full">
+                      <button
+                        type="button"
+                        aria-pressed={fav}
+                        aria-label={t("adminNew.kassa.favouriteToggle")}
+                        onClick={() => toggleFavorite(product.id)}
+                        className="absolute bottom-1.5 right-1.5 z-10 rounded-full bg-white/70 p-1 transition hover:scale-110"
+                      >
+                        <Star
+                          className={cn(
+                            "h-3.5 w-3.5",
+                            fav
+                              ? "fill-gold-400 text-gold-500"
+                              : "text-navy-200",
+                          )}
+                        />
+                      </button>
+                      <CatalogTile
+                        title={product.name}
+                        subtitle={product.code}
+                        price={formatCurrency(
+                          ruleMatch
+                            ? ruleMatch.price_incl_vat_euros
+                            : productPriceInclEuros(product),
+                          localeTag,
+                        )}
+                        accent={
+                          product.color ?? product.group?.color ?? "#1f93b8"
+                        }
+                        image={product.image_url}
+                        selected={cartHas(product.id)}
+                        highlighted={!!ruleMatch}
+                        onClick={() => addProduct(product, ruleMatch)}
+                      />
+                    </div>
                   );
                 })}
               </div>
@@ -748,7 +1124,10 @@ export default function KassaPage() {
                         {product.name}
                       </div>
                       <div className="text-xs text-marine-700">
-                        {formatCurrency(productPriceInclEuros(product), localeTag)}
+                        {formatCurrency(
+                          productPriceInclEuros(product),
+                          localeTag,
+                        )}
                       </div>
                     </div>
                   </button>
@@ -763,12 +1142,9 @@ export default function KassaPage() {
               icon={Star}
               tone="gold"
               label={t("adminNew.kassa.lastSale")}
-              value={
-                lastSale
-                  ? formatCurrency(Number(lastSale.total_euros), localeTag)
-                  : "—"
-              }
+              value={lastSale ? formatCurrency(lastSaleEuros, localeTag) : "—"}
               hint={lastSale?.invoice_number ?? undefined}
+              href={lastSaleHref}
               loading={recentSales.loading}
             />
             <StatStrip
@@ -817,11 +1193,17 @@ export default function KassaPage() {
                   >
                     <span
                       className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-sand-50"
-                      style={{ borderLeft: `3px solid ${item.color ?? "#1f93b8"}` }}
+                      style={{
+                        borderLeft: `3px solid ${item.color ?? "#1f93b8"}`,
+                      }}
                     >
                       {item.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={item.image_url} alt="" className="h-full w-full object-cover" />
+                        <img
+                          src={item.image_url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <Ship className="h-5 w-5 text-marine-400" />
                       )}
@@ -875,7 +1257,10 @@ export default function KassaPage() {
 
             {/* Totals */}
             <div className="space-y-1.5 border-t border-navy-100/80 px-4 py-3 text-sm">
-              <Row label={t("adminNew.kassa.totalExcl")} value={money(exclCents)} />
+              <Row
+                label={t("adminNew.kassa.totalExcl")}
+                value={money(exclCents)}
+              />
               <Row
                 label={t("adminNew.kassa.vatPercent", { rate: primaryVatRate })}
                 value={money(vatCents)}
@@ -937,7 +1322,8 @@ export default function KassaPage() {
               </option>
               {(customersQuery.data?.data ?? []).map((customer) => (
                 <option key={customer.id} value={customer.id}>
-                  {customer.name} · {customer.email ?? t("adminNew.common.noEmail")}
+                  {customer.name} ·{" "}
+                  {customer.email ?? t("adminNew.common.noEmail")}
                 </option>
               ))}
             </select>
@@ -1011,7 +1397,9 @@ export default function KassaPage() {
           <button
             type="button"
             onClick={() =>
-              setCheckoutConfirm(paymentMethod === "invoice" ? "on_account" : "standard")
+              setCheckoutConfirm(
+                paymentMethod === "invoice" ? "on_account" : "standard",
+              )
             }
             disabled={checkout.loading || cart.length === 0}
             className="flex w-full items-center justify-between rounded-2xl bg-marine-600 px-5 py-4 text-left font-semibold text-white shadow-elev transition hover:bg-marine-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -1028,7 +1416,11 @@ export default function KassaPage() {
       </AdminContent>
 
       {/* Note modal */}
-      <Modal open={showNoteModal} onClose={() => setShowNoteModal(false)} size="md">
+      <Modal
+        open={showNoteModal}
+        onClose={() => setShowNoteModal(false)}
+        size="md"
+      >
         <AdminModalHeader title={t("adminNew.kassa.noteTitle")} />
         <AdminModalBody>
           <textarea
@@ -1059,7 +1451,11 @@ export default function KassaPage() {
       </Modal>
 
       {/* Split modal */}
-      <Modal open={showSplitModal} onClose={() => setShowSplitModal(false)} size="md">
+      <Modal
+        open={showSplitModal}
+        onClose={() => setShowSplitModal(false)}
+        size="md"
+      >
         <AdminModalHeader title={t("adminNew.kassa.splitPayment")} />
         <AdminModalBody>
           {splitPayments.map((row, idx) => (
@@ -1069,7 +1465,9 @@ export default function KassaPage() {
                 value={row.method}
                 onChange={(e) =>
                   setSplitPayments((prev) =>
-                    prev.map((p, i) => (i === idx ? { ...p, method: e.target.value } : p)),
+                    prev.map((p, i) =>
+                      i === idx ? { ...p, method: e.target.value } : p,
+                    ),
                   )
                 }
               >
@@ -1082,7 +1480,9 @@ export default function KassaPage() {
                 value={row.amount}
                 onChange={(e) =>
                   setSplitPayments((prev) =>
-                    prev.map((p, i) => (i === idx ? { ...p, amount: e.target.value } : p)),
+                    prev.map((p, i) =>
+                      i === idx ? { ...p, amount: e.target.value } : p,
+                    ),
                   )
                 }
                 placeholder={t("adminNew.kassa.amountPlaceholder")}
@@ -1100,35 +1500,152 @@ export default function KassaPage() {
         </AdminModalFooter>
       </Modal>
 
-      {/* QR modal */}
-      <Modal open={showQrModal} onClose={() => setShowQrModal(false)} size="md">
-        <AdminModalHeader title={t("adminNew.kassa.qrPayment")} />
+      {/* Camera barcode scanner (opened by the Scan barcode button) */}
+      <BarcodeScannerModal
+        open={showCamera}
+        onClose={() => setShowCamera(false)}
+        onDetected={(code) => {
+          void runScan(code, "camera");
+          setShowCamera(false);
+        }}
+      />
+
+      <Modal open={showQrModal} onClose={closeQrModal} size="md">
+        <AdminModalHeader
+          title={t("adminNew.kassa.qrPayment")}
+          subtitle={t("adminNew.kassa.qrSubtitle")}
+        />
         <AdminModalBody>
-          <div className="text-center">
-            {qrUrl ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrUrl)}`}
-                  alt="Mollie QR"
-                  className="mx-auto rounded-lg border border-navy-100"
-                />
-                <a
-                  href={qrUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-marine-700"
-                >
-                  {qrUrl} <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              </>
-            ) : null}
-          </div>
+          {(() => {
+            const status = (
+              qrSession?.status ?? (qrStarting ? "pending" : "")
+            ).toLowerCase();
+            const payUrl =
+              qrSession?.checkout_url ?? qrSession?.qr_payload ?? null;
+            const paid = status === "paid" || status === "completed";
+            const failed =
+              status === "expired" ||
+              status === "failed" ||
+              status === "canceled" ||
+              status === "cancelled";
+            const statusKey = paid
+              ? "qrPaid"
+              : failed
+                ? "qrFailed"
+                : "qrWaiting";
+            return (
+              <div className="text-center">
+                {qrStarting && !qrSession ? (
+                  <div className="py-10">
+                    <LoadingState label={t("adminNew.kassa.qrCreating")} />
+                  </div>
+                ) : paid ? (
+                  <div className="py-6">
+                    <Check className="mx-auto h-14 w-14 rounded-full bg-emerald-50 p-3 text-emerald-600" />
+                    <div className="mt-3 text-lg font-semibold text-navy-900">
+                      {t("adminNew.kassa.qrPaid")}
+                    </div>
+                    {qrSession?.invoice_id ? (
+                      <Link
+                        href={`/${locale}/admin/facturen/${qrSession.invoice_id}`}
+                        className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-marine-700"
+                      >
+                        {qrSession.invoice_number ??
+                          t("adminNew.invoiceDetail.actions.openPdf")}
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Link>
+                    ) : null}
+                  </div>
+                ) : failed ? (
+                  <div className="py-6">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+                      <QrCode className="h-7 w-7" />
+                    </div>
+                    <div className="mt-3 text-lg font-semibold text-navy-900">
+                      {t("adminNew.kassa.qrFailed")}
+                    </div>
+                  </div>
+                ) : payUrl ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(payUrl)}`}
+                      alt="Mollie QR"
+                      className="mx-auto rounded-lg border border-navy-100"
+                    />
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-marine-50 px-3 py-1 text-xs font-semibold text-marine-700">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-marine-500" />
+                      {t(`adminNew.kassa.${statusKey}`)}
+                    </div>
+                    <div className="mt-4 flex flex-wrap justify-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        leftIcon={<Check className="h-3.5 w-3.5" />}
+                        onClick={() => {
+                          void navigator.clipboard?.writeText(payUrl);
+                          setQrCopied(true);
+                        }}
+                      >
+                        {qrCopied
+                          ? t("adminNew.kassa.qrCopied")
+                          : t("adminNew.kassa.qrCopy")}
+                      </Button>
+                      <a
+                        href={payUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          leftIcon={<ExternalLink className="h-3.5 w-3.5" />}
+                        >
+                          {t("adminNew.kassa.qrOpen")}
+                        </Button>
+                      </a>
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            );
+          })()}
         </AdminModalBody>
+        <AdminModalFooter>
+          {qrSession &&
+          ![
+            "paid",
+            "completed",
+            "expired",
+            "failed",
+            "canceled",
+            "cancelled",
+          ].includes((qrSession.status ?? "").toLowerCase()) ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (qrSession?.session_id)
+                  void kassaService
+                    .cancelQrSession(qrSession.session_id)
+                    .catch(() => {});
+                closeQrModal();
+              }}
+            >
+              {t("adminNew.kassa.qrCancel")}
+            </Button>
+          ) : null}
+          <Button variant="gold" onClick={closeQrModal}>
+            {t("adminNew.common.close")}
+          </Button>
+        </AdminModalFooter>
       </Modal>
 
       {/* New customer modal */}
-      <Modal open={showCustomerModal} onClose={() => setShowCustomerModal(false)} size="md">
+      <Modal
+        open={showCustomerModal}
+        onClose={() => setShowCustomerModal(false)}
+        size="md"
+      >
         <form onSubmit={handleCreateCustomer}>
           <AdminModalHeader
             title={t("adminNew.kassa.modalTitle")}
@@ -1226,7 +1743,9 @@ function CategoryTab({
     <button
       type="button"
       onClick={onClick}
-      style={active ? { backgroundColor: accent, borderColor: accent } : undefined}
+      style={
+        active ? { backgroundColor: accent, borderColor: accent } : undefined
+      }
       className={cn(
         "inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition",
         active
@@ -1234,7 +1753,10 @@ function CategoryTab({
           : "border-navy-100 bg-white text-navy-700 hover:border-navy-200 hover:bg-sand-50",
       )}
     >
-      <Icon className="h-4 w-4" style={active ? undefined : { color: accent }} />
+      <Icon
+        className="h-4 w-4"
+        style={active ? undefined : { color: accent }}
+      />
       {label}
     </button>
   );
@@ -1247,6 +1769,7 @@ function CatalogTile({
   accent,
   selected,
   highlighted,
+  image,
   onClick,
 }: {
   title: string;
@@ -1255,6 +1778,7 @@ function CatalogTile({
   accent: string;
   selected?: boolean;
   highlighted?: boolean;
+  image?: string | null;
   onClick: () => void;
 }) {
   return (
@@ -1263,7 +1787,7 @@ function CatalogTile({
       onClick={onClick}
       style={!selected ? { borderLeftColor: accent } : undefined}
       className={cn(
-        "group relative flex flex-col justify-between gap-2 rounded-xl border p-3 text-left transition",
+        "group relative flex h-full flex-col justify-between gap-2 rounded-xl border p-3 text-left transition w-full",
         selected
           ? "border-marine-500 bg-marine-500 text-white shadow-sm"
           : cn(
@@ -1297,6 +1821,11 @@ function CatalogTile({
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/25">
             <Check className="h-3 w-3" />
           </span>
+        ) : image ? (
+          <span className="h-8 w-8 shrink-0 overflow-hidden rounded-md ring-1 ring-navy-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={image} alt="" className="h-full w-full object-cover" />
+          </span>
         ) : (
           <Ship
             className={cn(
@@ -1325,6 +1854,7 @@ function StatStrip({
   value,
   hint,
   loading,
+  href,
 }: {
   icon: LucideIcon;
   tone: "navy" | "marine" | "gold";
@@ -1332,15 +1862,21 @@ function StatStrip({
   value: React.ReactNode;
   hint?: string;
   loading?: boolean;
+  href?: string;
 }) {
   const tones: Record<string, string> = {
     navy: "bg-navy-50 text-navy-700",
     marine: "bg-marine-50 text-marine-700",
     gold: "bg-gold-50 text-gold-700",
   };
-  return (
-    <div className="flex items-center gap-3 rounded-2xl border border-navy-100/70 bg-white px-4 py-3 shadow-card">
-      <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", tones[tone])}>
+  const inner = (
+    <>
+      <span
+        className={cn(
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+          tones[tone],
+        )}
+      >
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0">
@@ -1350,14 +1886,29 @@ function StatStrip({
         {loading ? (
           <span className="mt-1 block h-5 w-16 animate-pulse rounded bg-navy-100" />
         ) : (
-          <div className="truncate text-lg font-semibold text-navy-900">{value}</div>
+          <div className="truncate text-lg font-semibold text-navy-900">
+            {value}
+          </div>
         )}
         {hint && !loading ? (
           <div className="truncate text-xs text-navy-400">{hint}</div>
         ) : null}
       </div>
-    </div>
+    </>
   );
+  const base =
+    "flex items-center gap-3 rounded-2xl border border-navy-100/70 bg-white px-4 py-3 shadow-card";
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={cn(base, "transition hover:border-navy-200 hover:shadow-md")}
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return <div className={base}>{inner}</div>;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -1365,6 +1916,28 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between">
       <span className="text-navy-500">{label}</span>
       <span className="font-medium text-navy-800">{value}</span>
+    </div>
+  );
+}
+
+function QuickRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: LucideIcon;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-navy-400">
+        <Icon className="h-3.5 w-3.5" />
+        {label}
+      </span>
+      <div className="flex flex-1 gap-1.5 overflow-x-auto pb-0.5">
+        {children}
+      </div>
     </div>
   );
 }

@@ -506,7 +506,9 @@
     "ctaTitle": "Klaar om uw afspraak te plannen?",
     "ctaDesc": "Reserveer binnen 2 minuten en ontvang direct een indicatie van de kosten.",
     "ctaContact": "Contact",
-    "editService": "Bewerk service"
+    "editService": "Bewerk service",
+    "onRequest": "Op aanvraag",
+    "from": "vanaf"
   },
   "contactPage": {
     "badge": "Bezoek of bel ons",
@@ -529,6 +531,7 @@
     "friday": "Vrijdag",
     "saturday": "Zaterdag",
     "sunday": "Zondag",
+    "today": "Vandaag",
     "monFri": "ma — vr",
     "sat": "zaterdag",
     "sun": "zondag",
@@ -1113,6 +1116,7 @@
     "common": {
       "loading": "Laden…",
       "unknown": "Onbekend",
+      "close": "Sluiten",
       "name": "Naam",
       "email": "E-mail",
       "phone": "Telefoon",
@@ -1222,7 +1226,32 @@
         "cancelled": "Geannuleerd"
       },
       "toasts": {
-        "created": "Werkorder aangemaakt"
+        "created": "Werkorder aangemaakt",
+        "assigned": "Werkorder toegewezen",
+        "started": "Werkorder gestart",
+        "completed": "Werkorder afgerond",
+        "invoiceCreated": "Factuur aangemaakt"
+      },
+      "detail": {
+        "open": "Openen",
+        "back": "← Terug naar werkorders",
+        "overview": "Werkorder-overzicht",
+        "boat": "Boot",
+        "assignee": "Toegewezen aan",
+        "unassigned": "Niet toegewezen",
+        "created": "Aangemaakt",
+        "assign": "Toewijzen",
+        "assignSubtitle": "Wijs deze werkorder toe aan een monteur",
+        "start": "Starten",
+        "complete": "Afronden",
+        "completeSubtitle": "Registreer de afrondingsgegevens",
+        "hours": "Gewerkte uren",
+        "completionNotes": "Afrondingsnotities",
+        "generateInvoice": "Factuur genereren",
+        "photos": "Foto's",
+        "noPhotos": "Geen foto's toegevoegd.",
+        "documents": "Documenten",
+        "noDocuments": "Geen documenten toegevoegd."
       },
       "forbiddenTitle": "Geen toegang tot werkorders",
       "forbiddenMessage": "Je account heeft geen permissie voor /v1/work-orders. De admin-rol moet in de API de work-orders rechten krijgen (Spatie-permissie), net als staff/manager."
@@ -1233,16 +1262,96 @@
       "upload": "PDF uploaden",
       "queue": "Import wachtrij",
       "approve": "Goedkeuren",
+      "process": "Verwerken",
+      "reject": "Afwijzen",
+      "markDuplicate": "Markeer als duplicaat",
+      "markWorkbon": "Markeer als werkbon",
       "confirmApprove": "Deze import goedkeuren en verwerken als factuur?",
+      "confirmReject": "Deze import afwijzen?",
+      "confirmWorkbon": "Een leveranciers-werkbon (werkorder) aanmaken die wacht op de leveranciersfactuur?",
+      "searchPlaceholder": "Zoek op bestand, leverancier of afzender",
+      "allStatuses": "Alle statussen",
+      "allSources": "Alle bronnen",
+      "sourceUpload": "Upload",
+      "sourceEmail": "E-mail",
       "emptyTitle": "Geen imports",
       "emptyMessage": "Upload een PDF om te starten.",
       "columns": {
         "file": "Bestand",
+        "supplier": "Leverancier",
+        "source": "Bron",
         "status": "Status",
         "date": "Datum"
       },
       "toasts": {
-        "uploaded": "Factuur geüpload voor verwerking"
+        "uploaded": "Factuur geüpload voor verwerking",
+        "processed": "Import verwerkt",
+        "approved": "Import goedgekeurd",
+        "rejected": "Import afgewezen",
+        "markedDuplicate": "Gemarkeerd als duplicaat",
+        "workbon": "Werkbon aangemaakt"
+      }
+    },
+    "templates": {
+      "title": "Extractiesjablonen",
+      "subtitle": "Tag velden op een document zodat toekomstige imports automatisch worden uitgelezen",
+      "new": "Nieuw sjabloon",
+      "editTitle": "Sjabloon bewerken",
+      "editorSubtitle": "Laad een voorbeelddocument en teken de veldzones",
+      "listTitle": "Sjablonen",
+      "listSubtitle": "Herbruikbare getagde documentindelingen en hun OCR-metrics",
+      "detailsTitle": "Sjabloongegevens",
+      "zonesTitle": "Getagde veldzones",
+      "zonesSubtitle": "Teken een kader rond elke waarde op het document en wijs een veld toe",
+      "emptyTitle": "Nog geen sjablonen",
+      "emptyMessage": "Maak een sjabloon om het systeem te leren waar elke waarde staat.",
+      "nameRequired": "Geef het sjabloon eerst een naam",
+      "saved": "Sjabloon opgeslagen",
+      "emailTitle": "E-mail import",
+      "emailSubtitle": "Stuur leveranciersfacturen door en ze worden automatisch imports",
+      "emailAddress": "Doorstuuradres",
+      "emailHint": "Stuur PDF's hierheen door of laat leveranciers ze hierheen sturen; passende sjablonen lezen de data uit en maken een review-item.",
+      "loadDoc": "Voorbeelddocument laden",
+      "changeDoc": "Document wijzigen",
+      "loadPrompt": "Laad een PDF of afbeelding om te taggen",
+      "rendering": "Document renderen…",
+      "renderError": "Kon dit document niet renderen.",
+      "unsupported": "Niet-ondersteund bestandstype.",
+      "activeField": "Tekenveld",
+      "drawHint": "Sleep over het document om een kader voor het gekozen veld te tekenen.",
+      "zones": "Zones",
+      "noZones": "Nog geen zones — teken er een op het document.",
+      "keywordsPlaceholder": "bijv. ABC Marine, antifouling",
+      "columns": {
+        "name": "Naam",
+        "supplier": "Leverancier e-mail",
+        "zones": "Zones",
+        "usage": "Gebruikt",
+        "confidence": "Gem. vertrouwen",
+        "lastUsed": "Laatst gebruikt"
+      },
+      "fieldsMeta": {
+        "name": "Sjabloonnaam",
+        "documentType": "Documenttype",
+        "supplierEmail": "Leverancier e-mail",
+        "keywords": "Match-trefwoorden"
+      },
+      "docTypes": {
+        "purchase_invoice": "Inkoopfactuur",
+        "delivery_note": "Pakbon",
+        "credit_note": "Creditnota",
+        "quote": "Offerte"
+      },
+      "fields": {
+        "invoice_number": "Factuurnummer",
+        "invoice_date": "Factuurdatum",
+        "due_date": "Vervaldatum",
+        "supplier": "Leverancier",
+        "subtotal": "Subtotaal",
+        "vat": "BTW",
+        "total": "Totaal",
+        "iban": "IBAN",
+        "line_items": "Regels"
       }
     },
     "reminders": {
@@ -1254,7 +1363,65 @@
       "today": "Vandaag",
       "upcoming": "Gepland",
       "overdue": "Achterstallig",
-      "completed": "Afgehandeld"
+      "completed": "Afgehandeld",
+      "runRules": "Regels nu uitvoeren",
+      "stats": {
+        "today": "Vandaag te doen",
+        "upcoming": "Gepland",
+        "overdue": "Achterstallig",
+        "completed": "Afgehandeld"
+      },
+      "listTitle": "Herinneringen",
+      "listSubtitle": "Open herinneringen die actie vereisen",
+      "emptyTitle": "Geen herinneringen",
+      "emptyMessage": "Er is momenteel niets dat aandacht nodig heeft.",
+      "columns": {
+        "subject": "Onderwerp",
+        "type": "Type",
+        "channel": "Kanaal",
+        "status": "Status",
+        "date": "Datum"
+      },
+      "complete": "Afronden",
+      "dismiss": "Negeren",
+      "done": "Klaar",
+      "rulesTitle": "Automatiseringsregels",
+      "rulesSubtitle": "Regels die automatisch herinneringen aanmaken",
+      "newRule": "Nieuwe regel",
+      "rulesEmptyTitle": "Nog geen regels",
+      "rulesEmptyMessage": "Voeg een regel toe om herinneringen te automatiseren.",
+      "ruleEnabled": "Actief",
+      "ruleDisabled": "Uit",
+      "ruleSubtitle": "De engine maakt herinneringen aan als voorwaarden matchen",
+      "ruleFields": {
+        "entity": "Geldt voor",
+        "trigger": "Trigger",
+        "days": "Dagen",
+        "channel": "Kanaal",
+        "title": "Titelsjabloon",
+        "body": "Tekstsjabloon",
+        "enabled": "Actief"
+      },
+      "entities": {
+        "invoice": "Factuur",
+        "contract": "Stallingcontract",
+        "workOrder": "Werkorder"
+      },
+      "triggers": {
+        "overdueAfter": "Achterstallig na X dagen",
+        "dueBefore": "Vervalt binnen X dagen",
+        "expiresBefore": "Verloopt binnen X dagen"
+      },
+      "channels": {
+        "manual": "Handmatig (taak)",
+        "email": "E-mail"
+      },
+      "toasts": {
+        "rulesRan": "Regels uitgevoerd",
+        "completed": "Herinnering afgerond",
+        "dismissed": "Herinnering genegeerd",
+        "ruleCreated": "Regel aangemaakt"
+      }
     },
     "customers": {
       "title": "Klanten",
@@ -1269,18 +1436,30 @@
         "contact": "Contact",
         "locale": "Taal",
         "boats": "Boten",
-        "created": "Aangemaakt"
+        "created": "Aangemaakt",
+        "status": "Status",
+        "lastLogin": "Laatste login"
       },
       "details": "Details",
       "total": "{count} klanten totaal",
       "results": "{count} resultaten",
+      "allLanguages": "Alle talen",
+      "allStatuses": "Alle statussen",
+      "statusActive": "Actief",
+      "statusBlocked": "Geblokkeerd",
+      "impersonate": "Inloggen als",
+      "block": "Blokkeren",
+      "unblock": "Deblokkeren",
+      "confirmBlock": "{name} blokkeren? De klant wordt uitgelogd en kan niet meer inloggen.",
       "modal": {
         "title": "Nieuwe klant",
         "subtitle": "Minimaal naam en e-mail voor snelle registratie."
       },
       "toasts": {
         "created": "Klant aangemaakt",
-        "createFailed": "Aanmaken mislukt"
+        "createFailed": "Aanmaken mislukt",
+        "blocked": "Klant geblokkeerd",
+        "unblocked": "Klant gedeblokkeerd"
       }
     },
     "auth": {
@@ -1298,7 +1477,185 @@
     "sidebar": {
       "calculator": "Calculator",
       "sync": "Offline / Sync",
-      "workOrders": "Werkorders"
+      "workOrders": "Werkorders",
+      "productGroups": "Productgroepen",
+      "reports": "Rapportages",
+      "reminders": "Herinneringen",
+      "brokerage": "Makelaardij-tarieven",
+      "timeline": "Tijdlijn",
+      "sales": "Verkopen"
+    },
+    "sales": {
+      "title": "Verkopen",
+      "subtitle": "Recente kassaverkopen en hun facturen",
+      "listTitle": "Recente verkopen",
+      "listSubtitle": "Elke transactie verwerkt op de kassa",
+      "searchPlaceholder": "Zoek op factuur of klant",
+      "count": "{count} verkopen",
+      "total": "Totaal",
+      "emptyTitle": "Nog geen verkopen",
+      "emptyMessage": "Verkopen verschijnen hier nadat je hebt afgerekend op de kassa.",
+      "openInvoice": "Open factuur",
+      "noInvoice": "Geen factuur",
+      "columns": {
+        "invoice": "Factuur",
+        "customer": "Klant",
+        "amount": "Bedrag",
+        "method": "Methode",
+        "status": "Status",
+        "date": "Datum"
+      }
+    },
+    "timeline": {
+      "title": "Tijdlijn",
+      "subtitle": "Eén feed van alles wat er op het platform gebeurt",
+      "feedTitle": "Activiteitenfeed",
+      "feedSubtitle": "Audit-gebeurtenissen en module-activiteit op één plek",
+      "searchPlaceholder": "Zoek op titel, factuur, klant…",
+      "allCategories": "Alle categorieën",
+      "from": "Vanaf",
+      "to": "Tot",
+      "open": "Openen",
+      "count": "{count} gebeurtenissen",
+      "emptyTitle": "Nog niets hier",
+      "emptyMessage": "Activiteit verschijnt zodra het platform gebruikt wordt.",
+      "categories": {
+        "finance": "Financieel",
+        "storage": "Stalling",
+        "operations": "Operatie",
+        "planning": "Planning",
+        "customer": "Klant",
+        "system": "Systeem"
+      }
+    },
+    "productGroups": {
+      "title": "Productgroepen",
+      "subtitle": "Beheer groepen, kleuren en BTW voor kassa en rapportage",
+      "new": "Nieuwe groep",
+      "editTitle": "Groep bewerken",
+      "formSubtitle": "Groepen bepalen POS-kleuren en omzetcategorieën",
+      "emptyTitle": "Geen productgroepen",
+      "emptyMessage": "Maak je eerste groep aan om de kassa te kleuren.",
+      "active": "Actief",
+      "inactive": "Inactief",
+      "confirmDelete": "Deze productgroep verwijderen?",
+      "columns": {
+        "group": "Groep",
+        "code": "Code",
+        "vat": "BTW",
+        "status": "Status"
+      },
+      "fields": {
+        "code": "Code",
+        "name": "Naam",
+        "color": "Kleur",
+        "icon": "Icoon",
+        "sortOrder": "Sorteervolgorde",
+        "vatRate": "Standaard BTW %",
+        "vatCode": "BTW-code",
+        "description": "Omschrijving",
+        "active": "Actief"
+      },
+      "toasts": {
+        "created": "Groep aangemaakt",
+        "updated": "Groep bijgewerkt",
+        "deleted": "Groep verwijderd"
+      }
+    },
+    "scanner": {
+      "title": "Scannen met camera",
+      "hint": "Richt de camera op een barcode of QR-code",
+      "starting": "Camera starten…",
+      "denied": "Cameratoegang geweigerd. Sta de camera toe en probeer opnieuw.",
+      "error": "Kon de camera op dit apparaat niet starten."
+    },
+    "brokerage": {
+      "title": "Makelaardij-tarieven",
+      "subtitle": "Maandelijkse makelaardij-stallingkosten per bootlengte",
+      "intro": "Boten te koop krijgen 6 maanden gratis, daarna een maandtarief op basis van lengte.",
+      "new": "Nieuw tarief",
+      "editTitle": "Tarief bewerken",
+      "formSubtitle": "Stel het maandtarief in voor een lengteklasse",
+      "emptyTitle": "Nog geen tarieven",
+      "emptyMessage": "Voeg de eerste makelaardij-lengteklasse toe.",
+      "active": "Actief",
+      "inactive": "Inactief",
+      "deactivate": "Deactiveren",
+      "confirmDeactivate": "Dit tarief deactiveren?",
+      "columns": {
+        "range": "Lengteklasse",
+        "perMonth": "Per maand",
+        "activeFrom": "Actief vanaf",
+        "status": "Status"
+      },
+      "fields": {
+        "minLength": "Min lengte (cm)",
+        "maxLength": "Max lengte (cm)",
+        "perMonth": "Prijs per maand",
+        "activeFrom": "Actief vanaf",
+        "notes": "Notities"
+      },
+      "toasts": {
+        "created": "Tarief aangemaakt",
+        "updated": "Tarief bijgewerkt",
+        "deactivated": "Tarief gedeactiveerd"
+      }
+    },
+    "reports": {
+      "title": "Rapportages",
+      "subtitle": "Omzet, BTW, omzet per groep en betaalmethoden",
+      "export": "Exporteer CSV",
+      "cashClose": "Dagafsluiting",
+      "noData": "Geen data voor deze periode.",
+      "vatTitle": "BTW-overzicht",
+      "methodsTitle": "Betaalmethoden",
+      "groupTitle": "Omzet per productgroep",
+      "marginMissing": "Marge excl. {count} factuurregels zonder kostprijs.",
+      "presets": {
+        "today": "Vandaag",
+        "yesterday": "Gisteren",
+        "last_7_days": "Laatste 7 dagen",
+        "last_30_days": "Laatste 30 dagen",
+        "this_month": "Deze maand",
+        "previous_month": "Vorige maand",
+        "this_year": "Dit jaar"
+      },
+      "totals": {
+        "turnover": "Omzet",
+        "received": "Ontvangen",
+        "open": "Openstaand",
+        "margin": "Brutomarge"
+      },
+      "vat": {
+        "rate": "Tarief",
+        "total": "Totaal",
+        "paid": "Betaald",
+        "outstanding": "Openstaand"
+      }
+    },
+    "cashClose": {
+      "title": "Dagafsluiting",
+      "subtitle": "Tel de kassalade aan het einde van de dag",
+      "formTitle": "Nieuwe dagafsluiting",
+      "submit": "Dagafsluiting opslaan",
+      "historyTitle": "Recente afsluitingen",
+      "emptyTitle": "Nog geen afsluitingen",
+      "emptyMessage": "Registreer je eerste dagafsluiting.",
+      "fields": {
+        "opening": "Beginkas",
+        "paidOut": "Uitbetaald contant",
+        "counted": "Geteld contant",
+        "note": "Notitie"
+      },
+      "columns": {
+        "date": "Datum",
+        "expected": "Verwacht",
+        "counted": "Geteld",
+        "difference": "Verschil"
+      },
+      "toasts": {
+        "created": "Dagafsluiting opgeslagen"
+      }
     },
     "states": {
       "errorTitle": "Er ging iets mis",
@@ -1367,6 +1724,13 @@
       "dossierSubtitle": "Volledig bootdossier met stalling, facturen en auditlog",
       "editTitle": "Boot bewerken",
       "editSubtitle": "Corrigeer lengte, locatie en andere gegevens",
+      "tabs": {
+        "overview": "Overzicht",
+        "storage": "Stalling",
+        "financial": "Facturen",
+        "workOrders": "Werkorders",
+        "history": "Historie"
+      },
       "toasts": {
         "created": "Boot aangemaakt",
         "createFailed": "Aanmaken mislukt",
@@ -1414,6 +1778,15 @@
       "splitPayment": "Split betaling",
       "amountPlaceholder": "€",
       "qrPayment": "Mollie QR",
+      "qrSubtitle": "Klant scant om te betalen met iDEAL — de factuur volgt na betaling",
+      "qrCreating": "Betaling aanmaken…",
+      "qrWaiting": "Wachten op betaling",
+      "qrPaid": "Betaling ontvangen",
+      "qrFailed": "Betaling mislukt of verlopen",
+      "qrCopy": "Kopieer link",
+      "qrCopied": "Gekopieerd",
+      "qrOpen": "Openen",
+      "qrCancel": "Betaling annuleren",
       "onAccount": "Op rekening",
       "allCategories": "Alle",
       "quickAdd": "Snel toevoegen",
@@ -1449,6 +1822,14 @@
       "confirmCheckoutTitle": "Checkout bevestigen",
       "editProducts": "Producten beheren",
       "scanBarcode": "Scan barcode",
+      "scanNotFound": "Geen product gevonden voor \"{code}\"",
+      "camera": "Camera",
+      "fastScan": "Snel scannen",
+      "favourites": "Favorieten",
+      "recentlyUsed": "Recent gebruikt",
+      "bundles": "Bundels",
+      "bundleEmpty": "Deze bundel heeft geen beschikbare producten",
+      "favouriteToggle": "Favoriet wisselen",
       "creating": "Aanmaken…",
       "create": "Aanmaken",
       "toasts": {
@@ -1458,7 +1839,8 @@
         "checkoutDone": "Checkout verwerkt",
         "checkoutFailed": "Checkout mislukt",
         "quoteDone": "Offerte berekend",
-        "quoteFailed": "Offerte mislukt"
+        "quoteFailed": "Offerte mislukt",
+        "added": "{name} toegevoegd aan winkelmandje"
       },
       "analytics": {
         "title": "Kassa analytics",
@@ -1501,6 +1883,7 @@
         "type": "Type",
         "paidUntil": "Paid until",
         "openBalance": "Open saldo",
+        "location": "Locatie",
         "status": "Status"
       },
       "invoice": "Factuur",
@@ -1521,8 +1904,27 @@
         "startDate": "Startdatum",
         "endDate": "Einddatum"
       },
+      "quickEdit": {
+        "title": "Contract bijwerken",
+        "subtitle": "Wijzig betaalstatus en stallinglocatie",
+        "statusLabel": "Betaalstatus",
+        "locationLabel": "Stallinglocatie",
+        "locationPlaceholder": "bijv. Loods A · rij 3",
+        "locationEmpty": "Geen locatie ingesteld",
+        "editAria": "Status en locatie bewerken"
+      },
+      "brokerage": {
+        "toggle": "Makelaardij",
+        "startDate": "Startdatum makelaardij",
+        "needLength": "Kies een boot met bekende lengte om het tarief te tonen.",
+        "freeUntil": "Gratis tot",
+        "monthlyFee": "Maandtarief",
+        "months": "maanden"
+      },
       "toasts": {
-        "created": "Contract aangemaakt"
+        "created": "Contract aangemaakt",
+        "statusUpdated": "Status bijgewerkt",
+        "locationUpdated": "Locatie bijgewerkt"
       }
     },
     "sync": {
@@ -1741,6 +2143,10 @@
       "searchPlaceholder": "Zoek op factuurnummer, klant of e-mail",
       "allStatuses": "Alle statussen",
       "allSources": "Alle bronnen",
+      "allGroups": "Alle groepen",
+      "allMethods": "Alle methoden",
+      "dateFrom": "Vanaf datum",
+      "dateTo": "Tot datum",
       "loading": "Facturen laden",
       "emptyTitle": "Geen facturen",
       "emptyMessage": "Geen facturen voor de huidige filters.",
@@ -1828,9 +2234,24 @@
         "markPaid": "Markeer betaald",
         "mollieLink": "Mollie link",
         "regeneratePdf": "PDF opnieuw genereren",
-        "openPdf": "Open PDF",
+        "openPdf": "Openen",
+        "downloadPdf": "Downloaden",
+        "printPdf": "Afdrukken",
+        "emailPdf": "E-mailen",
         "sendReminder": "Herinnering versturen",
         "credit": "Crediteren"
+      },
+      "pdfActions": "Factuur-PDF",
+      "creditModal": {
+        "title": "Creditnota aanmaken",
+        "subtitle": "Maak een volledige of gedeeltelijke creditfactuur voor deze factuur.",
+        "scope": "Creditbedrag",
+        "full": "Volledig crediteren",
+        "partial": "Gedeeltelijk crediteren",
+        "amount": "Te crediteren bedrag",
+        "reason": "Reden (verplicht)",
+        "reasonPlaceholder": "Waarom wordt deze factuur gecrediteerd?",
+        "confirm": "Creditnota aanmaken"
       },
       "paymentMethods": {
         "cash": "Contant",
@@ -1851,6 +2272,8 @@
         "invoiceSent": "Factuur verzonden",
         "paymentLinkCreated": "Betaallink aangemaakt",
         "pdfRegenerated": "PDF opnieuw opgebouwd",
+        "pdfDownloaded": "PDF gedownload",
+        "emailed": "Factuur ge-e-maild",
         "credited": "Creditfactuur aangemaakt",
         "cancelled": "Factuur geannuleerd",
         "reminderSent": "Herinnering verstuurd",
@@ -1885,6 +2308,11 @@
       "timelineTitle": "Activiteitstijdlijn",
       "timelineSubtitle": "Berichten, herinneringen en portal activiteit",
       "timelineEmpty": "Nog geen tijdlijn items voor deze klant.",
+      "timelinePlaceholder": "Schrijf een notitie of bericht…",
+      "timelineInternal": "Intern",
+      "timelineCustomer": "Zichtbaar voor klant",
+      "timelinePost": "Plaatsen",
+      "timelinePosted": "Toegevoegd aan tijdlijn",
       "boatType": "Type",
       "lengthCm": "Lengte (cm)",
       "locationCode": "Locatiecode",
@@ -1957,11 +2385,31 @@
       "confirmCreateQuote": "Offerte aanmaken op basis van deze berekening?",
       "records": {
         "title": "Calculator records",
+        "subtitle": "Elke opgeslagen berekening — open om verder te gaan, om te zetten of te dupliceren.",
         "empty": "Nog geen opgeslagen berekeningen.",
         "number": "Nummer",
         "date": "Datum",
+        "customer": "Klant",
         "service": "Dienst",
-        "total": "Totaal"
+        "status": "Status",
+        "documents": "Documenten",
+        "createdBy": "Aangemaakt door",
+        "total": "Totaal",
+        "quote": "Offerte",
+        "invoice": "Factuur",
+        "open": "Openen",
+        "duplicate": "Dupliceren",
+        "archive": "Archiveren",
+        "loaded": "Berekening geladen",
+        "duplicated": "Berekening gedupliceerd",
+        "archived": "Berekening gearchiveerd",
+        "confirmArchive": "Deze berekening archiveren?",
+        "searchPlaceholder": "Zoek nummer, klant, boot...",
+        "allServices": "Alle diensten",
+        "allStatuses": "Alle statussen",
+        "statusSaved": "Opgeslagen",
+        "statusDraft": "Concept",
+        "statusArchived": "Gearchiveerd"
       },
       "pricing": {
         "title": "Prijzen beheren",
@@ -2078,6 +2526,22 @@
       "backToList": "Terug naar overzicht",
       "openInKassa": "Open in kassa",
       "metaTitle": "Metadata",
+      "statsTitle": "Verkoopstatistieken",
+      "stats": {
+        "timesSold": "Aantal verkocht",
+        "revenue": "Omzet (incl. BTW)",
+        "lastSale": "Laatste verkoop",
+        "empty": "Nog geen verkopen geregistreerd."
+      },
+      "ai": {
+        "imageTitle": "Productafbeelding",
+        "generate": "Genereer met AI",
+        "generating": "Genereren…",
+        "subtitle": "Maak een nette POS-tegelafbeelding met AI",
+        "prompt": "Beschrijf de afbeelding",
+        "hint": "Laat leeg om de productnaam te gebruiken.",
+        "done": "Afbeelding gegenereerd"
+      },
       "searchPlaceholder": "Zoek op code of naam",
       "loading": "Producten laden",
       "emptyTitle": "Geen producten",
@@ -2377,6 +2841,8 @@
     "newAppointment": "Plan nieuwe afspraak",
     "realtimeStaff": "Live gekoppeld aan de werfplanning",
     "realtimeCustomer": "Alleen uw eigen afspraken zijn zichtbaar",
+    "rescheduled": "Afspraak verplaatst",
+    "dragHint": "Sleep een afspraak naar een andere dag om te verplaatsen",
     "appointment": "Afspraak",
     "confirm": "Goedkeuren",
     "markComplete": "Markeer voltooid",

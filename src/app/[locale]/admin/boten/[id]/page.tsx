@@ -63,6 +63,18 @@ export default function BoatDossierPage() {
   const storage = (dossier.data?.storage_contracts ?? []) as Array<Record<string, unknown>>;
   const invoices = ((dossier.data?.financial as Record<string, unknown>)?.invoices ??
     []) as Array<Record<string, unknown>>;
+  const workOrders = (dossier.data?.work_orders ?? []) as Array<Record<string, unknown>>;
+
+  const [tab, setTab] = React.useState<'overview' | 'storage' | 'financial' | 'workOrders' | 'history'>(
+    'overview'
+  );
+  const tabs = [
+    { id: 'overview' as const, label: t('adminNew.boats.tabs.overview') },
+    { id: 'storage' as const, label: t('adminNew.boats.tabs.storage'), count: storage.length },
+    { id: 'financial' as const, label: t('adminNew.boats.tabs.financial'), count: invoices.length },
+    { id: 'workOrders' as const, label: t('adminNew.boats.tabs.workOrders'), count: workOrders.length },
+    { id: 'history' as const, label: t('adminNew.boats.tabs.history') },
+  ];
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +144,7 @@ export default function BoatDossierPage() {
         ]}
       />
 
-      <AdminContent className="grid gap-5 lg:grid-cols-2">
+      <AdminContent>
         {dossier.loading ? <LoadingState label={t('adminNew.common.loading')} /> : null}
         {dossier.error ? (
           <ErrorState message={dossier.error} onRetry={() => void dossier.refetch()} />
@@ -140,70 +152,140 @@ export default function BoatDossierPage() {
 
         {!dossier.loading && !dossier.error ? (
           <>
-            <AdminSectionCard title={t('adminNew.boats.columns.owner')} icon={Ship}>
-              <div className="space-y-2 text-sm">
-                <AdminStatusStrip label={t('adminNew.common.name')} value={String(owner.name ?? '—')} tone="marine" />
-                {owner.id ? (
-                  <Link
-                    href={`/${locale}/admin/klanten/${owner.id}`}
-                    className="text-sm font-semibold text-marine-700 hover:text-marine-900"
-                  >
-                    {t('adminNew.customers.details')} →
-                  </Link>
-                ) : null}
-              </div>
-            </AdminSectionCard>
-
-            <AdminSectionCard title={t('adminNew.stalling.title')} icon={Warehouse}>
-              <div className="space-y-2">
-                {storage.length === 0 ? (
-                  <p className="text-sm text-navy-500">{t('adminNew.stalling.emptyMessage')}</p>
-                ) : (
-                  storage.map((c) => (
-                    <div key={String(c.id)} className="rounded-lg border border-navy-100 px-3 py-2 text-sm">
-                      <div className="font-semibold text-navy-900">{String(c.contract_number ?? '—')}</div>
-                      <div className="text-navy-500">{String(c.status ?? '')}</div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </AdminSectionCard>
-
-            <div className="lg:col-span-2">
-            <AdminSectionCard title={t('admin.sidebar.invoices')} icon={FileText}>
-              <div className="space-y-2">
-                {invoices.length === 0 ? (
-                  <p className="text-sm text-navy-500">{t('adminNew.invoices.emptyMessage')}</p>
-                ) : (
-                  invoices.map((inv) => (
-                    <Link
-                      key={String(inv.id)}
-                      href={`/${locale}/admin/facturen/${inv.id}`}
-                      className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2 text-sm hover:bg-sand-50"
+            <div className="mb-5 flex flex-wrap gap-1 border-b border-navy-100">
+              {tabs.map((tb) => (
+                <button
+                  key={tb.id}
+                  type="button"
+                  onClick={() => setTab(tb.id)}
+                  className={
+                    '-mb-px inline-flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition ' +
+                    (tab === tb.id
+                      ? 'border-marine-600 text-marine-700'
+                      : 'border-transparent text-navy-500 hover:text-navy-800')
+                  }
+                >
+                  {tb.label}
+                  {typeof tb.count === 'number' ? (
+                    <span
+                      className={
+                        'rounded-full px-1.5 py-0.5 text-[10px] font-semibold ' +
+                        (tab === tb.id ? 'bg-marine-100 text-marine-700' : 'bg-navy-100 text-navy-500')
+                      }
                     >
-                      <span className="font-semibold text-navy-900">{String(inv.invoice_number ?? inv.id)}</span>
-                      <span>{formatCurrency(Number(inv.total_amount ?? 0) / 100, dateLocale)}</span>
-                    </Link>
-                  ))
-                )}
-              </div>
-            </AdminSectionCard>
+                      {tb.count}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
             </div>
 
-            <div className="lg:col-span-2">
-            <AdminSectionCard title={t('admin.sidebar.audit')} icon={Anchor}>
-              <div className="space-y-2">
-                {(audit.data ?? []).slice(0, 10).map((log) => (
-                  <div key={log.id} className="rounded-lg border border-navy-100 px-3 py-2 text-sm">
-                    <div className="font-medium text-navy-900">{log.action}</div>
-                    <div className="text-xs text-navy-500">
-                      {formatDate(log.created_at, dateLocale)} · {log.user?.name ?? '—'}
-                    </div>
+            {tab === 'overview' ? (
+              <div className="grid gap-5 lg:grid-cols-2">
+                <AdminSectionCard title={t('adminNew.boats.columns.owner')} icon={Ship}>
+                  <div className="space-y-2 text-sm">
+                    <AdminStatusStrip label={t('adminNew.common.name')} value={String(owner.name ?? '—')} tone="marine" />
+                    {owner.id ? (
+                      <Link
+                        href={`/${locale}/admin/klanten/${owner.id}`}
+                        className="text-sm font-semibold text-marine-700 hover:text-marine-900"
+                      >
+                        {t('adminNew.customers.details')} →
+                      </Link>
+                    ) : null}
                   </div>
-                ))}
+                </AdminSectionCard>
+                <AdminSectionCard title={t('adminNew.boats.tabs.overview')} icon={Anchor}>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <Field label={t('adminNew.boats.columns.type')} value={String(boat.type ?? '—')} />
+                    <Field label={t('adminNew.boats.columns.length')} value={boat.length_cm ? `${boat.length_cm} cm` : '—'} />
+                    <Field label={t('adminNew.boats.fields.widthCm')} value={boat.width_cm ? `${boat.width_cm} cm` : '—'} />
+                    <Field label={t('adminNew.boats.columns.location')} value={String(boat.location_code ?? '—')} />
+                  </div>
+                </AdminSectionCard>
               </div>
-            </AdminSectionCard>
-            </div>
+            ) : null}
+
+            {tab === 'storage' ? (
+              <AdminSectionCard title={t('adminNew.stalling.title')} icon={Warehouse}>
+                <div className="space-y-2">
+                  {storage.length === 0 ? (
+                    <p className="text-sm text-navy-500">{t('adminNew.stalling.emptyMessage')}</p>
+                  ) : (
+                    storage.map((c) => (
+                      <div key={String(c.id)} className="rounded-lg border border-navy-100 px-3 py-2 text-sm">
+                        <div className="font-semibold text-navy-900">{String(c.contract_number ?? '—')}</div>
+                        <div className="text-navy-500">{String(c.status ?? '')}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </AdminSectionCard>
+            ) : null}
+
+            {tab === 'financial' ? (
+              <AdminSectionCard title={t('admin.sidebar.invoices')} icon={FileText}>
+                <div className="space-y-2">
+                  {invoices.length === 0 ? (
+                    <p className="text-sm text-navy-500">{t('adminNew.invoices.emptyMessage')}</p>
+                  ) : (
+                    invoices.map((inv) => (
+                      <Link
+                        key={String(inv.id)}
+                        href={`/${locale}/admin/facturen/${inv.id}`}
+                        className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2 text-sm hover:bg-sand-50"
+                      >
+                        <span className="font-semibold text-navy-900">{String(inv.invoice_number ?? inv.id)}</span>
+                        <span>{formatCurrency(Number(inv.total_amount ?? 0) / 100, dateLocale)}</span>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </AdminSectionCard>
+            ) : null}
+
+            {tab === 'workOrders' ? (
+              <AdminSectionCard title={t('adminNew.workOrders.title')} icon={FileText}>
+                <div className="space-y-2">
+                  {workOrders.length === 0 ? (
+                    <p className="text-sm text-navy-500">{t('adminNew.workOrders.emptyMessage')}</p>
+                  ) : (
+                    workOrders.map((wo) => (
+                      <Link
+                        key={String(wo.id)}
+                        href={`/${locale}/admin/werkorders/${wo.id}`}
+                        className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2 text-sm hover:bg-sand-50"
+                      >
+                        <span className="font-semibold text-navy-900">
+                          {String(wo.number ?? wo.id)}
+                          <span className="ml-2 font-normal text-navy-500">{String(wo.type ?? '')}</span>
+                        </span>
+                        <span className="text-navy-500">{String(wo.status ?? '')}</span>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </AdminSectionCard>
+            ) : null}
+
+            {tab === 'history' ? (
+              <AdminSectionCard title={t('admin.sidebar.audit')} icon={Anchor}>
+                <div className="space-y-2">
+                  {(audit.data ?? []).length === 0 ? (
+                    <p className="text-sm text-navy-500">{t('adminNew.stalling.auditEmptyMessage')}</p>
+                  ) : (
+                    (audit.data ?? []).slice(0, 20).map((log) => (
+                      <div key={log.id} className="rounded-lg border border-navy-100 px-3 py-2 text-sm">
+                        <div className="font-medium text-navy-900">{log.action}</div>
+                        <div className="text-xs text-navy-500">
+                          {formatDate(log.created_at, dateLocale)} · {log.user?.name ?? '—'}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </AdminSectionCard>
+            ) : null}
           </>
         ) : null}
       </AdminContent>
@@ -223,5 +305,14 @@ export default function BoatDossierPage() {
         </form>
       </Modal>
     </>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">{label}</div>
+      <div className="mt-0.5 font-medium text-navy-900">{value}</div>
+    </div>
   );
 }

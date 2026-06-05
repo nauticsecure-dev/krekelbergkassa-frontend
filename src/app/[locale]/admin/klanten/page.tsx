@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Plus, Users } from 'lucide-react';
+import { Ban, LogIn, Plus, ShieldCheck, Users } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -11,6 +11,7 @@ import {
   AdminModalHeader,
   AdminSearchInput,
   AdminSectionCard,
+  AdminSelect,
   AdminTable,
   AdminTableCard,
   AdminTableCell,
@@ -20,11 +21,14 @@ import {
   AdminTableRow,
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { customersService } from '@/lib/services';
+import { impersonateCustomer, ImpersonationError } from '@/lib/impersonate';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -34,15 +38,54 @@ export default function CustomersPage() {
   const { push } = useToast();
 
   const [query, setQuery] = React.useState('');
+  const [language, setLanguage] = React.useState('');
+  const [status, setStatus] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
   const [form, setForm] = React.useState({ name: '', email: '', phone: '' });
+  const [blockTarget, setBlockTarget] = React.useState<{ id: string; name: string } | null>(null);
+  const [impersonateTarget, setImpersonateTarget] = React.useState<{ id: string; name: string } | null>(
+    null
+  );
 
-  const customers = useQuery([query, page], () =>
-    customersService.list({ search: query || undefined, page, per_page: 20 })
+  const customers = useQuery([query, language, status, page], () =>
+    customersService.list({
+      search: query || undefined,
+      language: language || undefined,
+      status: status || undefined,
+      blocked: status === 'blocked' ? true : undefined,
+      page,
+      per_page: 20,
+    })
   );
 
   const createCustomer = useMutation(customersService.create);
+  const blockCustomer = useMutation((p: { id: string; reason?: string }) =>
+    customersService.block(p.id, p.reason)
+  );
+  const unblockCustomer = useMutation((id: string) => customersService.unblock(id));
+
+  const onUnblock = async (id: string) => {
+    try {
+      await unblockCustomer.mutate(id);
+      push({ tone: 'success', title: t('adminNew.customers.toasts.unblocked') });
+      await customers.refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
+  const onImpersonate = async (id: string) => {
+    try {
+      await impersonateCustomer(id, locale);
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.impersonation.failed'),
+        message: err instanceof ImpersonationError ? err.message : getApiErrorMessage(err),
+      });
+    }
+  };
 
   const submitCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,15 +160,40 @@ export default function CustomersPage() {
             </Button>
           }
         >
-        <AdminSearchInput
-          value={query}
-          onChange={(value) => {
-            setQuery(value);
-            setPage(1);
-          }}
-          placeholder={t('adminNew.customers.searchPlaceholder')}
-          className="mb-4"
-        />
+        <div className="mb-4 flex flex-wrap items-end gap-2">
+          <AdminSearchInput
+            value={query}
+            onChange={(value) => {
+              setQuery(value);
+              setPage(1);
+            }}
+            placeholder={t('adminNew.customers.searchPlaceholder')}
+            className="flex-1"
+          />
+          <AdminSelect
+            value={language}
+            onChange={(value) => {
+              setLanguage(value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.customers.allLanguages')}</option>
+            <option value="nl">NL</option>
+            <option value="en">EN</option>
+            <option value="de">DE</option>
+          </AdminSelect>
+          <AdminSelect
+            value={status}
+            onChange={(value) => {
+              setStatus(value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.customers.allStatuses')}</option>
+            <option value="active">{t('adminNew.customers.statusActive')}</option>
+            <option value="blocked">{t('adminNew.customers.statusBlocked')}</option>
+          </AdminSelect>
+        </div>
 
         <AdminTableCard
           footer={
@@ -165,13 +233,16 @@ export default function CustomersPage() {
                   <AdminTableHeaderCell>{t('adminNew.customers.columns.customer')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.customers.columns.contact')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.customers.columns.locale')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.customers.columns.boats')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.customers.columns.created')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.customers.columns.status')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.customers.columns.lastLogin')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
               <tbody>
-                {customers.data?.data.map((customer) => (
+                {customers.data?.data.map((customer) => {
+                  const blocked = customer.is_blocked || customer.status === 'blocked';
+                  const lastLogin = customer.last_login_at ?? customer.last_active_at;
+                  return (
                   <AdminTableRow key={customer.id}>
                     <AdminTableCell>
                       <div className="font-semibold text-navy-900">{customer.name}</div>
@@ -182,17 +253,54 @@ export default function CustomersPage() {
                       <div className="text-xs text-navy-500">{customer.phone ?? '—'}</div>
                     </AdminTableCell>
                     <AdminTableCell className="uppercase">{customer.preferred_locale || '—'}</AdminTableCell>
-                    <AdminTableCell>{customer.boats_count ?? 0}</AdminTableCell>
                     <AdminTableCell>
-                      {new Date(customer.created_at).toLocaleDateString(dateLocale)}
+                      <Badge tone={blocked ? 'danger' : 'success'}>
+                        {blocked
+                          ? t('adminNew.customers.statusBlocked')
+                          : t('adminNew.customers.statusActive')}
+                      </Badge>
+                    </AdminTableCell>
+                    <AdminTableCell className="whitespace-nowrap text-sm text-navy-600">
+                      {lastLogin ? new Date(lastLogin).toLocaleDateString(dateLocale) : '—'}
                     </AdminTableCell>
                     <AdminTableCell className="text-right">
-                      <AdminLinkButton href={`/${locale}/admin/klanten/${customer.id}`}>
-                        {t('adminNew.customers.details')}
-                      </AdminLinkButton>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          leftIcon={<LogIn className="h-3.5 w-3.5" />}
+                          onClick={() => setImpersonateTarget({ id: customer.id, name: customer.name })}
+                        >
+                          {t('adminNew.customers.impersonate')}
+                        </Button>
+                        {blocked ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<ShieldCheck className="h-3.5 w-3.5" />}
+                            disabled={unblockCustomer.loading}
+                            onClick={() => void onUnblock(customer.id)}
+                          >
+                            {t('adminNew.customers.unblock')}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<Ban className="h-3.5 w-3.5" />}
+                            onClick={() => setBlockTarget({ id: customer.id, name: customer.name })}
+                          >
+                            {t('adminNew.customers.block')}
+                          </Button>
+                        )}
+                        <AdminLinkButton href={`/${locale}/admin/klanten/${customer.id}`}>
+                          {t('adminNew.customers.details')}
+                        </AdminLinkButton>
+                      </div>
                     </AdminTableCell>
                   </AdminTableRow>
-                ))}
+                  );
+                })}
               </tbody>
             </AdminTable>
           ) : null}
@@ -235,6 +343,45 @@ export default function CustomersPage() {
           </AdminModalFooter>
         </form>
       </Modal>
+
+      <AdminConfirmModal
+        open={!!blockTarget}
+        onClose={() => setBlockTarget(null)}
+        onConfirm={async () => {
+          if (!blockTarget) return;
+          try {
+            await blockCustomer.mutate({ id: blockTarget.id });
+            push({ tone: 'success', title: t('adminNew.customers.toasts.blocked') });
+            await customers.refetch();
+          } catch (err) {
+            push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+          }
+          setBlockTarget(null);
+        }}
+        title={t('adminNew.customers.block')}
+        message={t('adminNew.customers.confirmBlock', { name: blockTarget?.name ?? '' })}
+        confirmLabel={t('adminNew.customers.block')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={Ban}
+        loading={blockCustomer.loading}
+      />
+
+      <AdminConfirmModal
+        open={!!impersonateTarget}
+        onClose={() => setImpersonateTarget(null)}
+        onConfirm={async () => {
+          if (!impersonateTarget) return;
+          await onImpersonate(impersonateTarget.id);
+          setImpersonateTarget(null);
+        }}
+        title={t('adminNew.customers.impersonate')}
+        message={t('adminNew.impersonation.confirmMessage', { name: impersonateTarget?.name ?? '' })}
+        confirmLabel={t('adminNew.customers.impersonate')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={LogIn}
+      />
     </>
   );
 }
