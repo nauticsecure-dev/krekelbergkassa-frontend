@@ -1415,6 +1415,36 @@
       "amountPlaceholder": "€",
       "qrPayment": "Mollie QR",
       "onAccount": "Op rekening",
+      "allCategories": "Alle",
+      "quickAdd": "Snel toevoegen",
+      "filter": "Filter",
+      "sortBy": "Sorteer op",
+      "sort": {
+        "recommended": "Aanbevolen",
+        "priceAsc": "Prijs (laag → hoog)",
+        "priceDesc": "Prijs (hoog → laag)",
+        "name": "Naam (A → Z)"
+      },
+      "resultsTitle": "{category} resultaten",
+      "matchCount": "{count} resultaten",
+      "mostChosen": "Meest gekozen",
+      "showMore": "Meer weergeven",
+      "totalExcl": "Totaal excl.",
+      "vatPercent": "BTW ({rate}%)",
+      "addNote": "Opmerking toevoegen",
+      "noteTitle": "Opmerking",
+      "notePlaceholder": "Voeg een opmerking toe voor deze verkoop…",
+      "noteSaved": "Opmerking opgeslagen",
+      "clearCart": "Winkelwagen legen",
+      "customer": "Klant",
+      "newCustomer": "Nieuwe klant toevoegen",
+      "customerHint": "Er wordt automatisch een account aangemaakt en de factuur wordt gemaild.",
+      "paymentMethodTitle": "Betaalmethode",
+      "payNow": "Afrekenen",
+      "downPayment": "Aanbetaling",
+      "lastSale": "Laatste verkoop",
+      "totalToday": "Totaal vandaag",
+      "transactionsCount": "Aantal transacties",
       "confirmCheckout": "Checkout afronden voor {total}? Betaalmethode: {method}.",
       "confirmCheckoutTitle": "Checkout bevestigen",
       "editProducts": "Producten beheren",
@@ -2112,14 +2142,14 @@
     },
     "payments": {
       "title": "Betalingen",
-      "subtitle": "Overzicht van Mollie- en kassabetalingen",
+      "subtitle": "Overzicht van Mollie- en kassabetalingen. Markeer een betaling als verwerkt zodra je deze hebt gecontroleerd tegen je boekhouding.",
       "searchPlaceholder": "Zoek op klant of status",
       "loading": "Betalingen laden",
       "emptyTitle": "Geen betalingen",
       "emptyMessage": "Er zijn nog geen betalingen gevonden.",
-      "reconcile": "Afstemmen",
-      "reconciled": "Afgestemd",
-      "confirmReconcile": "Weet je zeker dat je deze betaling wilt afstemmen?",
+      "reconcile": "Markeren als verwerkt",
+      "reconciled": "Verwerkt",
+      "confirmReconcile": "Weet je zeker dat je deze betaling als verwerkt wilt markeren? Hiermee bevestig je dat de betaling is gecontroleerd tegen je boekhouding.",
       "total": "{count} betalingen",
       "columns": {
         "date": "Datum",
@@ -2129,7 +2159,7 @@
         "status": "Status"
       },
       "toasts": {
-        "reconciled": "Betaling afgestemd"
+        "reconciled": "Betaling gemarkeerd als verwerkt"
       }
     },
     "users": {

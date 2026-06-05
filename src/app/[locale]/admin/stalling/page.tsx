@@ -153,11 +153,6 @@ export default function StallingPage() {
             tone: 'gold',
             loading: contracts.loading,
           },
-          {
-            label: t('adminNew.stalling.columns.type'),
-            value: type ? t(`adminNew.stalling.type.${type}`) : t('adminNew.stalling.allTypes'),
-            tone: 'navy',
-          },
         ]}
       />
 
@@ -176,33 +171,43 @@ export default function StallingPage() {
             }}
             placeholder={t('adminNew.stalling.searchPlaceholder')}
           />
-          <AdminSelect
-            value={status}
-            onChange={(value) => {
-              setStatus(value);
-              setPage(1);
-            }}
-          >
-            <option value="">{t('adminNew.stalling.allStatuses')}</option>
-            <option value="paid">{t('adminNew.status.paid')}</option>
-            <option value="expiring">{t('adminNew.status.expiring')}</option>
-            <option value="overdue">{t('adminNew.status.overdue')}</option>
-            <option value="open">{t('adminNew.status.open')}</option>
-            <option value="cancelled">{t('adminNew.status.cancelled')}</option>
-          </AdminSelect>
-          <AdminSelect
-            value={type}
-            onChange={(value) => {
-              setType(value);
-              setPage(1);
-            }}
-          >
-            <option value="">{t('adminNew.stalling.allTypes')}</option>
-            <option value="winter">{t('adminNew.stalling.type.winter')}</option>
-            <option value="summer">{t('adminNew.stalling.type.summer')}</option>
-            <option value="year">{t('adminNew.stalling.type.year')}</option>
-            <option value="week">{t('adminNew.stalling.type.week')}</option>
-          </AdminSelect>
+          <label className="flex flex-col gap-1 lg:w-auto">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
+              {t('adminNew.stalling.columns.status')}
+            </span>
+            <AdminSelect
+              value={status}
+              onChange={(value) => {
+                setStatus(value);
+                setPage(1);
+              }}
+            >
+              <option value="">{t('adminNew.stalling.allStatuses')}</option>
+              <option value="paid">{t('adminNew.status.paid')}</option>
+              <option value="expiring">{t('adminNew.status.expiring')}</option>
+              <option value="overdue">{t('adminNew.status.overdue')}</option>
+              <option value="open">{t('adminNew.status.open')}</option>
+              <option value="cancelled">{t('adminNew.status.cancelled')}</option>
+            </AdminSelect>
+          </label>
+          <label className="flex flex-col gap-1 lg:w-auto">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
+              {t('adminNew.stalling.columns.type')}
+            </span>
+            <AdminSelect
+              value={type}
+              onChange={(value) => {
+                setType(value);
+                setPage(1);
+              }}
+            >
+              <option value="">{t('adminNew.stalling.allTypes')}</option>
+              <option value="winter">{t('adminNew.stalling.type.winter')}</option>
+              <option value="summer">{t('adminNew.stalling.type.summer')}</option>
+              <option value="year">{t('adminNew.stalling.type.year')}</option>
+              <option value="week">{t('adminNew.stalling.type.week')}</option>
+            </AdminSelect>
+          </label>
         </AdminToolbar>
 
         <AdminTableCard
