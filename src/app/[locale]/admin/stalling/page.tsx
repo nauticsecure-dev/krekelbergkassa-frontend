@@ -65,7 +65,18 @@ export default function StallingPage() {
     start_date: '',
     end_date: '',
     paid_until: '',
+    location: '',
+    payment_route: 'email',
+    send_contract_email: true,
+    deposit_pct: '',
   });
+  // Trello #107: inline "+ new boat / + new customer" so staff don't have to
+  // leave the contract modal. Both call the existing create endpoints, refetch
+  // the option lists, and auto-select the freshly created record.
+  const [showNewBoat, setShowNewBoat] = React.useState(false);
+  const [showNewCustomer, setShowNewCustomer] = React.useState(false);
+  const [newBoat, setNewBoat] = React.useState({ name: '', length_cm: '', boat_type: '' });
+  const [newCustomer, setNewCustomer] = React.useState({ name: '', email: '', phone: '' });
   // Trello #107: brokerage (makelaardij) preview. The brokerage start date is
   // its own date (not the storage start) — the free-period runs from here.
   const [brokerage, setBrokerage] = React.useState(false);
@@ -113,6 +124,75 @@ export default function StallingPage() {
       cancelled = true;
     };
   }, [brokerage, selectedBoatLength, brokerageStart]);
+
+  // Trello #107: when the contract type changes, prefill the season dates that
+  // match each storage product. Staff can still override either date.
+  const applyTypeDefaults = React.useCallback((nextType: string) => {
+    const today = new Date();
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    let start = '';
+    let end = '';
+    if (nextType === 'winter') {
+      const y = today.getMonth() >= 9 ? today.getFullYear() : today.getFullYear() - 1;
+      start = `${y}-10-01`;
+      end = `${y + 1}-05-01`;
+    } else if (nextType === 'summer') {
+      const y = today.getFullYear();
+      start = `${y}-05-01`;
+      end = `${y}-10-01`;
+    } else if (nextType === 'year') {
+      start = iso(today);
+      const next = new Date(today);
+      next.setFullYear(next.getFullYear() + 1);
+      end = iso(next);
+    } else if (nextType === 'week') {
+      start = iso(today);
+      const next = new Date(today);
+      next.setDate(next.getDate() + 7);
+      end = iso(next);
+    }
+    return { start, end };
+  }, []);
+
+  const createBoat = useMutation(boatsService.create);
+  const createCustomer = useMutation(customersService.create);
+
+  const onCreateBoat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const created = await createBoat.mutate({
+        name: newBoat.name,
+        length_cm: newBoat.length_cm ? Number(newBoat.length_cm) : undefined,
+        boat_type: newBoat.boat_type || undefined,
+        customer_id: createForm.customer_id || undefined,
+      });
+      await boats.refetch();
+      if (created?.id) setCreateForm((f) => ({ ...f, boat_id: created.id }));
+      setShowNewBoat(false);
+      setNewBoat({ name: '', length_cm: '', boat_type: '' });
+      push({ tone: 'success', title: t('adminNew.boats.toasts.created') });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
+  const onCreateCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const created = await createCustomer.mutate({
+        name: newCustomer.name,
+        email: newCustomer.email || undefined,
+        phone: newCustomer.phone || undefined,
+      });
+      await customers.refetch();
+      if (created?.id) setCreateForm((f) => ({ ...f, customer_id: created.id }));
+      setShowNewCustomer(false);
+      setNewCustomer({ name: '', email: '', phone: '' });
+      push({ tone: 'success', title: t('adminNew.customers.toasts.created') });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
 
   const createContract = useMutation(stallingService.create);
   const createInvoice = useMutation((id: string) => stallingService.generateInvoice(id));
@@ -181,9 +261,24 @@ export default function StallingPage() {
         start_date: createForm.start_date,
         end_date: createForm.end_date,
         paid_until: createForm.paid_until || undefined,
+        location: createForm.location || undefined,
+        payment_route: createForm.payment_route || undefined,
+        send_contract_email: createForm.send_contract_email,
+        deposit_pct: createForm.deposit_pct ? Number(createForm.deposit_pct) : undefined,
       });
       setShowCreate(false);
-      setCreateForm({ boat_id: '', customer_id: '', type: 'winter', start_date: '', end_date: '', paid_until: '' });
+      setCreateForm({
+        boat_id: '',
+        customer_id: '',
+        type: 'winter',
+        start_date: '',
+        end_date: '',
+        paid_until: '',
+        location: '',
+        payment_route: 'email',
+        send_contract_email: true,
+        deposit_pct: '',
+      });
       setBrokerage(false);
       setBrokerageStart('');
       await contracts.refetch();
@@ -454,25 +549,49 @@ export default function StallingPage() {
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.boat')}</label>
-              <select className="input-base w-full" value={createForm.boat_id} onChange={(e) => setCreateForm({ ...createForm, boat_id: e.target.value })} required>
-                <option value="">{t('adminNew.boats.selectCustomer')}</option>
-                {(boats.data?.data ?? []).map((b) => (
-                  <option key={b.id} value={b.id}>{b.name}</option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select className="input-base w-full" value={createForm.boat_id} onChange={(e) => setCreateForm({ ...createForm, boat_id: e.target.value })} required>
+                  <option value="">{t('adminNew.boats.selectCustomer')}</option>
+                  {(boats.data?.data ?? []).map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+                <Button type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewBoat(true)}>
+                  {t('adminNew.stalling.fields.newBoat')}
+                </Button>
+              </div>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.customer')}</label>
-              <select className="input-base w-full" value={createForm.customer_id} onChange={(e) => setCreateForm({ ...createForm, customer_id: e.target.value })}>
-                <option value="">{t('adminNew.kassa.selectCustomer')}</option>
-                {(customers.data?.data ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select className="input-base w-full" value={createForm.customer_id} onChange={(e) => setCreateForm({ ...createForm, customer_id: e.target.value })}>
+                  <option value="">{t('adminNew.kassa.selectCustomer')}</option>
+                  {(customers.data?.data ?? []).map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <Button type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewCustomer(true)}>
+                  {t('adminNew.stalling.fields.newCustomer')}
+                </Button>
+              </div>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.type')}</label>
-              <select className="input-base w-full" value={createForm.type} onChange={(e) => setCreateForm({ ...createForm, type: e.target.value })}>
+              <select
+                className="input-base w-full"
+                value={createForm.type}
+                onChange={(e) => {
+                  const nextType = e.target.value;
+                  const { start, end } = applyTypeDefaults(nextType);
+                  setCreateForm((f) => ({
+                    ...f,
+                    type: nextType,
+                    // Only prefill empty fields so a manual override is never clobbered.
+                    start_date: f.start_date || start,
+                    end_date: f.end_date || end,
+                  }));
+                }}
+              >
                 <option value="winter">{t('adminNew.stalling.type.winter')}</option>
                 <option value="summer">{t('adminNew.stalling.type.summer')}</option>
                 <option value="year">{t('adminNew.stalling.type.year')}</option>
@@ -482,6 +601,38 @@ export default function StallingPage() {
             <Input label={t('adminNew.stalling.fields.startDate')} type="date" value={createForm.start_date} onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })} required />
             <Input label={t('adminNew.stalling.fields.endDate')} type="date" value={createForm.end_date} onChange={(e) => setCreateForm({ ...createForm, end_date: e.target.value })} required />
             <Input label={t('adminNew.stalling.columns.paidUntil')} type="date" value={createForm.paid_until} onChange={(e) => setCreateForm({ ...createForm, paid_until: e.target.value })} />
+            <Input
+              label={t('adminNew.stalling.fields.location')}
+              value={createForm.location}
+              onChange={(e) => setCreateForm({ ...createForm, location: e.target.value })}
+              placeholder={t('adminNew.stalling.quickEdit.locationPlaceholder')}
+              leftIcon={<MapPin className="h-4 w-4" />}
+            />
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.paymentRoute')}</label>
+              <select className="input-base w-full" value={createForm.payment_route} onChange={(e) => setCreateForm({ ...createForm, payment_route: e.target.value })}>
+                <option value="email">{t('adminNew.stalling.fields.payByEmail')}</option>
+                <option value="kassa">{t('adminNew.stalling.fields.payAtKassa')}</option>
+              </select>
+            </div>
+            <Input
+              label={t('adminNew.stalling.fields.depositPct')}
+              type="number"
+              min={0}
+              max={100}
+              value={createForm.deposit_pct}
+              onChange={(e) => setCreateForm({ ...createForm, deposit_pct: e.target.value })}
+              placeholder="0"
+            />
+            <label className="flex items-center gap-2 text-sm font-medium text-navy-800">
+              <input
+                type="checkbox"
+                checked={createForm.send_contract_email}
+                onChange={(e) => setCreateForm({ ...createForm, send_contract_email: e.target.checked })}
+                className="h-4 w-4 rounded border-navy-300"
+              />
+              {t('adminNew.stalling.fields.sendContractEmail')}
+            </label>
 
             {/* Trello #107: brokerage (makelaardij) toggle + live preview */}
             <div className="rounded-xl border border-navy-100 bg-sand-50/40 p-3">
@@ -540,6 +691,38 @@ export default function StallingPage() {
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
             <Button type="submit" variant="gold" disabled={createContract.loading}>{t('adminNew.common.save')}</Button>
+          </AdminModalFooter>
+        </form>
+      </Modal>
+
+      {/* Trello #107: inline new-boat modal */}
+      <Modal open={showNewBoat} onClose={() => setShowNewBoat(false)} size="sm">
+        <form onSubmit={onCreateBoat}>
+          <AdminModalHeader title={t('adminNew.stalling.fields.newBoat')} />
+          <AdminModalBody>
+            <Input label={t('adminNew.stalling.fields.boatName')} value={newBoat.name} onChange={(e) => setNewBoat({ ...newBoat, name: e.target.value })} required leftIcon={<Ship className="h-4 w-4" />} />
+            <Input label={t('adminNew.stalling.fields.lengthCm')} type="number" min={0} value={newBoat.length_cm} onChange={(e) => setNewBoat({ ...newBoat, length_cm: e.target.value })} />
+            <Input label={t('adminNew.stalling.fields.boatType')} value={newBoat.boat_type} onChange={(e) => setNewBoat({ ...newBoat, boat_type: e.target.value })} />
+          </AdminModalBody>
+          <AdminModalFooter>
+            <Button type="button" variant="ghost" onClick={() => setShowNewBoat(false)}>{t('adminNew.common.cancel')}</Button>
+            <Button type="submit" variant="gold" disabled={createBoat.loading}>{t('adminNew.common.save')}</Button>
+          </AdminModalFooter>
+        </form>
+      </Modal>
+
+      {/* Trello #107: inline new-customer modal */}
+      <Modal open={showNewCustomer} onClose={() => setShowNewCustomer(false)} size="sm">
+        <form onSubmit={onCreateCustomer}>
+          <AdminModalHeader title={t('adminNew.stalling.fields.newCustomer')} />
+          <AdminModalBody>
+            <Input label={t('adminNew.stalling.fields.customerName')} value={newCustomer.name} onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })} required />
+            <Input label={t('adminNew.stalling.fields.customerEmail')} type="email" value={newCustomer.email} onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })} />
+            <Input label={t('adminNew.stalling.fields.customerPhone')} value={newCustomer.phone} onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })} />
+          </AdminModalBody>
+          <AdminModalFooter>
+            <Button type="button" variant="ghost" onClick={() => setShowNewCustomer(false)}>{t('adminNew.common.cancel')}</Button>
+            <Button type="submit" variant="gold" disabled={createCustomer.loading}>{t('adminNew.common.save')}</Button>
           </AdminModalFooter>
         </form>
       </Modal>

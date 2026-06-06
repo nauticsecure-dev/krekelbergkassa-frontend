@@ -15,6 +15,7 @@ import {
   MessageSquarePlus,
   Minus,
   MoreHorizontal,
+  Pencil,
   Plus,
   QrCode,
   Receipt,
@@ -128,10 +129,19 @@ export default function KassaPage() {
   ]);
   const [cart, setCart] = React.useState<CartItem[]>([]);
   const [showCustomerModal, setShowCustomerModal] = React.useState(false);
+  // Trello #62: searchable customer picker
+  const [showCustomerPicker, setShowCustomerPicker] = React.useState(false);
+  const [customerPickerSearch, setCustomerPickerSearch] = React.useState("");
   const [newCustomer, setNewCustomer] = React.useState({
     name: "",
     email: "",
     phone: "",
+    company_name: "",
+    street: "",
+    house_number: "",
+    postal_code: "",
+    city: "",
+    country: "",
   });
   const [checkoutConfirm, setCheckoutConfirm] = React.useState<
     "standard" | "split" | "qr" | "on_account" | null
@@ -236,6 +246,11 @@ export default function KassaPage() {
   const allRules = React.useMemo(
     () => pricingQuery.data?.data ?? [],
     [pricingQuery.data?.data],
+  );
+  // Trello #62: currently-selected customer for the picker display.
+  const selectedCustomer = React.useMemo(
+    () => (customersQuery.data?.data ?? []).find((c) => c.id === customerId) ?? null,
+    [customersQuery.data, customerId],
   );
 
   const categories = React.useMemo(() => {
@@ -555,10 +570,31 @@ export default function KassaPage() {
         name: newCustomer.name,
         email: newCustomer.email || null,
         phone: newCustomer.phone || null,
-      });
+        company_name: newCustomer.company_name || null,
+        is_business: !!newCustomer.company_name,
+        address: newCustomer.street
+          ? {
+              street: newCustomer.street,
+              house_number: newCustomer.house_number || null,
+              postal_code: newCustomer.postal_code || null,
+              city: newCustomer.city || null,
+              country: newCustomer.country || null,
+            }
+          : undefined,
+      } as Parameters<typeof createCustomer.mutate>[0]);
       setCustomerId(created.id);
       setShowCustomerModal(false);
-      setNewCustomer({ name: "", email: "", phone: "" });
+      setNewCustomer({
+        name: "",
+        email: "",
+        phone: "",
+        company_name: "",
+        street: "",
+        house_number: "",
+        postal_code: "",
+        city: "",
+        country: "",
+      });
       await customersQuery.refetch();
       push({
         tone: "success",
@@ -864,6 +900,15 @@ export default function KassaPage() {
               >
                 {t("adminNew.kassa.scanBarcode")}
               </Button>
+              <Link href={`/${locale}/admin/producten`}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<Pencil className="h-4 w-4 text-navy-500" />}
+                >
+                  {t("adminNew.kassa.manageProducts")}
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -1310,31 +1355,43 @@ export default function KassaPage() {
               <UserPlus className="h-4 w-4 text-marine-600" />
               {t("adminNew.kassa.customer")}
             </h3>
-            <select
-              value={customerId}
-              onChange={(e) => setCustomerId(e.target.value)}
-              className="input-base w-full"
-            >
-              <option value="">
-                {customersQuery.loading
-                  ? t("adminNew.common.loading")
-                  : t("adminNew.kassa.selectCustomer")}
-              </option>
-              {(customersQuery.data?.data ?? []).map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.name} ·{" "}
-                  {customer.email ?? t("adminNew.common.noEmail")}
-                </option>
-              ))}
-            </select>
             <button
               type="button"
-              onClick={() => setShowCustomerModal(true)}
-              className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-marine-700 hover:text-marine-900"
+              onClick={() => setShowCustomerPicker(true)}
+              className="flex w-full items-center justify-between rounded-lg border border-navy-200 bg-white px-3 py-2 text-left text-sm transition hover:border-marine-300"
             >
-              <Plus className="h-4 w-4" />
-              {t("adminNew.kassa.newCustomer")}
+              <span className={selectedCustomer ? "text-navy-900" : "text-navy-400"}>
+                {selectedCustomer
+                  ? `${selectedCustomer.name}${selectedCustomer.email ? ` · ${selectedCustomer.email}` : ""}`
+                  : t("adminNew.kassa.selectCustomer")}
+              </span>
+              <ScanLine className="h-4 w-4 rotate-90 text-navy-300" />
             </button>
+            <div className="mt-2 flex items-center gap-3 text-sm">
+              <button
+                type="button"
+                onClick={() => setShowCustomerModal(true)}
+                className="inline-flex items-center gap-1.5 font-semibold text-marine-700 hover:text-marine-900"
+              >
+                <Plus className="h-4 w-4" />
+                {t("adminNew.kassa.newCustomer")}
+              </button>
+              {customerId ? (
+                <Link
+                  href={`/${locale}/admin/klanten/${customerId}`}
+                  className="inline-flex items-center gap-1 font-semibold text-navy-500 hover:text-navy-800"
+                >
+                  {t("adminNew.kassa.viewCustomer")}
+                </Link>
+              ) : (
+                <Link
+                  href={`/${locale}/admin/klanten`}
+                  className="inline-flex items-center gap-1 font-semibold text-navy-500 hover:text-navy-800"
+                >
+                  {t("adminNew.kassa.allCustomers")}
+                </Link>
+              )}
+            </div>
             <p className="mt-2 text-xs leading-relaxed text-navy-400">
               {t("adminNew.kassa.customerHint")}
             </p>
@@ -1675,6 +1732,53 @@ export default function KassaPage() {
                 setNewCustomer((prev) => ({ ...prev, phone: e.target.value }))
               }
             />
+            <Input
+              label={t("adminNew.kassa.companyName")}
+              value={newCustomer.company_name}
+              onChange={(e) =>
+                setNewCustomer((prev) => ({ ...prev, company_name: e.target.value }))
+              }
+            />
+            <div className="grid grid-cols-[1fr_7rem] gap-2">
+              <Input
+                label={t("adminNew.kassa.street")}
+                value={newCustomer.street}
+                onChange={(e) =>
+                  setNewCustomer((prev) => ({ ...prev, street: e.target.value }))
+                }
+              />
+              <Input
+                label={t("adminNew.kassa.houseNumber")}
+                value={newCustomer.house_number}
+                onChange={(e) =>
+                  setNewCustomer((prev) => ({ ...prev, house_number: e.target.value }))
+                }
+              />
+            </div>
+            <div className="grid grid-cols-[8rem_1fr] gap-2">
+              <Input
+                label={t("adminNew.kassa.postalCode")}
+                value={newCustomer.postal_code}
+                onChange={(e) =>
+                  setNewCustomer((prev) => ({ ...prev, postal_code: e.target.value }))
+                }
+              />
+              <Input
+                label={t("adminNew.kassa.city")}
+                value={newCustomer.city}
+                onChange={(e) =>
+                  setNewCustomer((prev) => ({ ...prev, city: e.target.value }))
+                }
+              />
+            </div>
+            <Input
+              label={t("adminNew.kassa.country")}
+              value={newCustomer.country}
+              onChange={(e) =>
+                setNewCustomer((prev) => ({ ...prev, country: e.target.value }))
+              }
+            />
+            <p className="text-xs text-navy-400">{t("adminNew.kassa.addressHint")}</p>
           </AdminModalBody>
           <AdminModalFooter>
             <Button
@@ -1696,6 +1800,84 @@ export default function KassaPage() {
             </Button>
           </AdminModalFooter>
         </form>
+      </Modal>
+
+      {/* Trello #62: searchable customer picker */}
+      <Modal open={showCustomerPicker} onClose={() => setShowCustomerPicker(false)} size="md">
+        <AdminModalHeader
+          title={t("adminNew.kassa.pickCustomer")}
+          subtitle={t("adminNew.kassa.pickCustomerHint")}
+        />
+        <AdminModalBody>
+          <Input
+            autoFocus
+            placeholder={t("adminNew.kassa.customerSearch")}
+            value={customerPickerSearch}
+            onChange={(e) => setCustomerPickerSearch(e.target.value)}
+            leftIcon={<UserPlus className="h-4 w-4" />}
+          />
+          <div className="mt-2 max-h-72 divide-y divide-navy-100 overflow-y-auto rounded-lg border border-navy-100">
+            <button
+              type="button"
+              onClick={() => {
+                setCustomerId("");
+                setShowCustomerPicker(false);
+              }}
+              className="flex w-full items-center px-3 py-2 text-left text-sm text-navy-500 hover:bg-sand-50"
+            >
+              {t("adminNew.kassa.noCustomer")}
+            </button>
+            {(customersQuery.data?.data ?? [])
+              .filter((c) => {
+                const q = customerPickerSearch.trim().toLowerCase();
+                if (!q) return true;
+                return (
+                  c.name.toLowerCase().includes(q) ||
+                  (c.email ?? "").toLowerCase().includes(q) ||
+                  (c.phone ?? "").toLowerCase().includes(q)
+                );
+              })
+              .slice(0, 50)
+              .map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setCustomerId(c.id);
+                    setShowCustomerPicker(false);
+                  }}
+                  className={cn(
+                    "flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-sand-50",
+                    c.id === customerId && "bg-marine-50",
+                  )}
+                >
+                  <span className="font-medium text-navy-900">{c.name}</span>
+                  <span className="text-xs text-navy-500">
+                    {c.email ?? t("adminNew.common.noEmail")}
+                    {c.phone ? ` · ${c.phone}` : ""}
+                  </span>
+                </button>
+              ))}
+          </div>
+        </AdminModalBody>
+        <AdminModalFooter>
+          <Link href={`/${locale}/admin/klanten`} className="mr-auto">
+            <Button type="button" variant="ghost">
+              {t("adminNew.kassa.allCustomers")}
+            </Button>
+          </Link>
+          <Button
+            type="button"
+            variant="outline"
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={() => {
+              setShowCustomerPicker(false);
+              setShowCustomerModal(true);
+            }}
+          >
+            {t("adminNew.kassa.newCustomer")}
+          </Button>
+        </AdminModalFooter>
       </Modal>
 
       <AdminConfirmModal

@@ -510,6 +510,15 @@
     "onRequest": "Op aanvraag",
     "from": "vanaf"
   },
+  "verify": {
+    "verifying": "Je wordt aangemeld…",
+    "verifyingHint": "We verifiëren je beveiligde login-link.",
+    "success": "Je bent aangemeld",
+    "redirecting": "We brengen je naar je portaal…",
+    "failed": "Link ongeldig of verlopen",
+    "failedHint": "Deze login-link is niet meer geldig. Vraag een nieuwe aan op de inlogpagina.",
+    "backToLogin": "Terug naar inloggen"
+  },
   "contactPage": {
     "badge": "Bezoek of bel ons",
     "title": "Welkom op de werf\nin Roermond.",
@@ -1522,9 +1531,11 @@
       "categories": {
         "finance": "Financieel",
         "storage": "Stalling",
-        "operations": "Operatie",
         "planning": "Planning",
-        "customer": "Klant",
+        "crm": "Klanten",
+        "boats": "Boten",
+        "supplier_ocr": "Leverancier / OCR",
+        "accounting": "Boekhouding",
         "system": "Systeem"
       }
     },
@@ -1605,12 +1616,23 @@
       "title": "Rapportages",
       "subtitle": "Omzet, BTW, omzet per groep en betaalmethoden",
       "export": "Exporteer CSV",
+      "print": "Afdrukken",
       "cashClose": "Dagafsluiting",
       "noData": "Geen data voor deze periode.",
+      "noAging": "Geen openstaande facturen.",
       "vatTitle": "BTW-overzicht",
       "methodsTitle": "Betaalmethoden",
       "groupTitle": "Omzet per productgroep",
+      "agingTitle": "Factuurouderdom",
+      "storageTitle": "Stalling",
+      "occupancyTitle": "Bezetting",
+      "occupancyNoCapacity": "Stel hal-/locatiecapaciteit in om bezetting % te zien.",
+      "customersTitle": "Topklanten",
+      "forecastTitle": "Prognose",
+      "forecastTotal": "Prognose ({days} dagen)",
+      "concentration": "Top 10 klanten = {pct}% van de omzet",
       "marginMissing": "Marge excl. {count} factuurregels zonder kostprijs.",
+      "marginValue": "Brutomarge {pct}%",
       "presets": {
         "today": "Vandaag",
         "yesterday": "Gisteren",
@@ -1618,7 +1640,12 @@
         "last_30_days": "Laatste 30 dagen",
         "this_month": "Deze maand",
         "previous_month": "Vorige maand",
-        "this_year": "Dit jaar"
+        "q1": "K1",
+        "q2": "K2",
+        "q3": "K3",
+        "q4": "K4",
+        "this_year": "Dit jaar",
+        "previous_year": "Vorig jaar"
       },
       "totals": {
         "turnover": "Omzet",
@@ -1631,6 +1658,12 @@
         "total": "Totaal",
         "paid": "Betaald",
         "outstanding": "Openstaand"
+      },
+      "storage": {
+        "activeContracts": "Actieve contracten",
+        "boatsInStorage": "Boten in stalling",
+        "expiring30": "Verloopt in 30 dagen",
+        "openBalance": "Open saldo"
       }
     },
     "cashClose": {
@@ -1824,6 +1857,20 @@
       "scanBarcode": "Scan barcode",
       "scanNotFound": "Geen product gevonden voor \"{code}\"",
       "camera": "Camera",
+      "manageProducts": "Producten beheren",
+      "viewCustomer": "Bekijk / bewerk",
+      "allCustomers": "Alle klanten",
+      "pickCustomer": "Klant selecteren",
+      "pickCustomerHint": "Zoek op naam, e-mail of telefoon",
+      "customerSearch": "Zoek klant…",
+      "noCustomer": "Geen klant (balie)",
+      "companyName": "Bedrijfsnaam",
+      "street": "Straat",
+      "houseNumber": "Nr.",
+      "postalCode": "Postcode",
+      "city": "Plaats",
+      "country": "Land",
+      "addressHint": "Adres is optioneel maar aanbevolen voor facturatie.",
       "fastScan": "Snel scannen",
       "favourites": "Favorieten",
       "recentlyUsed": "Recent gebruikt",
@@ -1902,7 +1949,21 @@
       "auditEmptyMessage": "Er zijn nog geen stalling wijzigingen gelogd.",
       "fields": {
         "startDate": "Startdatum",
-        "endDate": "Einddatum"
+        "endDate": "Einddatum",
+        "newBoat": "Nieuwe boot",
+        "newCustomer": "Nieuwe klant",
+        "boatName": "Bootnaam",
+        "lengthCm": "Lengte (cm)",
+        "boatType": "Type boot",
+        "customerName": "Naam",
+        "customerEmail": "E-mail",
+        "customerPhone": "Telefoon",
+        "location": "Locatie / bok",
+        "paymentRoute": "Betaalwijze",
+        "payByEmail": "Betaallink per e-mail sturen",
+        "payAtKassa": "Betalen aan de kassa",
+        "depositPct": "Aanbetaling (%)",
+        "sendContractEmail": "Contract naar klant e-mailen"
       },
       "quickEdit": {
         "title": "Contract bijwerken",
@@ -2407,8 +2468,22 @@
         "searchPlaceholder": "Zoek nummer, klant, boot...",
         "allServices": "Alle diensten",
         "allStatuses": "Alle statussen",
+        "allCustomers": "Alle klanten",
+        "allDocuments": "Alle documenten",
+        "hasQuote": "Heeft offerte",
+        "hasInvoice": "Heeft factuur",
+        "noDocuments": "Geen documenten",
+        "dateFrom": "Vanaf datum",
+        "dateTo": "Tot datum",
+        "createQuote": "Offerte",
+        "createInvoice": "Factuur",
+        "created": "Document aangemaakt",
         "statusSaved": "Opgeslagen",
         "statusDraft": "Concept",
+        "statusQuote": "Omgezet naar offerte",
+        "statusInvoice": "Omgezet naar factuur",
+        "statusPaid": "Betaald",
+        "statusCancelled": "Geannuleerd",
         "statusArchived": "Gearchiveerd"
       },
       "pricing": {
