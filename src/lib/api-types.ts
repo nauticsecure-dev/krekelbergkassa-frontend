@@ -48,6 +48,16 @@ export interface Customer {
   boats?: Boat[];
   created_at: string;
   updated_at: string;
+  // Trello #76: user/customer management
+  gender?: string | null;
+  status?: string | null;
+  is_blocked?: boolean;
+  blocked_at?: string | null;
+  block_reason?: string | null;
+  last_login_at?: string | null;
+  last_active_at?: string | null;
+  city?: string | null;
+  country?: string | null;
 }
 
 export type BoatType = 'motor' | 'sail' | 'rib' | 'trailer' | 'other';
@@ -199,6 +209,10 @@ export interface Product {
   aliases?: string[] | null;
   product_group_id?: string | null;
   group?: { code?: string; name?: string; color?: string } | null;
+  // Trello #80/#86: POS rendering + favourites
+  display_color?: string | null;
+  display_icon?: string | null;
+  is_favorite?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -243,6 +257,15 @@ export interface Sale {
   customer?: Customer | null;
   lines?: InvoiceLine[];
   payments?: Payment[];
+  // Trello #62: recent-sales deep links + display helpers
+  invoice_id?: string | null;
+  invoice_url?: string | null;
+  admin_url?: string | null;
+  total_amount_euros?: number | string | null;
+  customer_name?: string | null;
+  payment_methods?: string[];
+  created_date?: string | null;
+  created_time?: string | null;
 }
 
 export interface KassaCheckoutPayment {
@@ -283,6 +306,23 @@ export interface KassaCheckoutResponse {
   url?: string | null;
   message?: string;
   lines?: KassaCheckoutLine[];
+}
+
+// Trello #72: Mollie QR payment session
+export interface KassaQrSession {
+  session_id: string;
+  status: string;
+  amount_cents?: number;
+  currency?: string;
+  checkout_url?: string | null;
+  qr_payload?: string | null;
+  poll_url?: string | null;
+  invoice_id?: string | null;
+  invoice_number?: string | null;
+  payment_id?: string | null;
+  expires_at?: string | null;
+  paid_at?: string | null;
+  completed_at?: string | null;
 }
 
 export interface AuditLog {

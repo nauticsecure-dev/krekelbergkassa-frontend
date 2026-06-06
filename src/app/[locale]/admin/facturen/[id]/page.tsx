@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { CreditCard, Mail, Printer, Receipt, RefreshCw, Send, User, Users, XCircle } from 'lucide-react';
+import { CreditCard, Download, FileText, Mail, Printer, Receipt, RefreshCw, Send, User, Users, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -38,7 +38,10 @@ export default function InvoiceDetailPage() {
   const [showReminder, setShowReminder] = React.useState(false);
   const [showMarkPaid, setShowMarkPaid] = React.useState(false);
   const [confirmCancel, setConfirmCancel] = React.useState(false);
-  const [confirmCredit, setConfirmCredit] = React.useState(false);
+  const [showCredit, setShowCredit] = React.useState(false);
+  const [creditMode, setCreditMode] = React.useState<'full' | 'partial'>('full');
+  const [creditAmount, setCreditAmount] = React.useState('');
+  const [creditReason, setCreditReason] = React.useState('');
   const [confirmSend, setConfirmSend] = React.useState(false);
   const [confirmMarkPaid, setConfirmMarkPaid] = React.useState(false);
   const [reminderSubject, setReminderSubject] = React.useState(
@@ -69,7 +72,13 @@ export default function InvoiceDetailPage() {
       locale: locale === 'en' ? 'en-GB' : 'nl-NL',
     })
   );
-  const creditInvoice = useMutation(() => invoicesService.credit(invoiceId));
+  const creditInvoice = useMutation(
+    (payload: { mode: 'full' | 'partial'; amount_cents?: number; reason: string }) =>
+      invoicesService.credit(invoiceId, payload)
+  );
+  const emailInvoice = useMutation(() =>
+    invoicesService.email(invoiceId, { locale: locale === 'en' ? 'en-GB' : 'nl-NL' })
+  );
   const cancelInvoice = useMutation(() => invoicesService.cancel(invoiceId));
   const sendReminder = useMutation(() =>
     invoicesService.sendReminder(invoiceId, {
@@ -96,6 +105,53 @@ export default function InvoiceDetailPage() {
   };
 
   const invoice = data.data?.invoice;
+
+  const onOpenCredit = () => {
+    setCreditMode('full');
+    setCreditAmount(
+      invoice ? centsToEuro(invoice.outstanding_cents || 0).toFixed(2) : ''
+    );
+    setCreditReason('');
+    setShowCredit(true);
+  };
+
+  const onSubmitCredit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void action(t('adminNew.invoiceDetail.toasts.credited'), async () => {
+      const amount_cents =
+        creditMode === 'partial'
+          ? Math.round(parseFloat(creditAmount.replace(',', '.') || '0') * 100)
+          : undefined;
+      const creditNote = await creditInvoice.mutate({
+        mode: creditMode,
+        amount_cents,
+        reason: creditReason.trim(),
+      });
+      setShowCredit(false);
+      if (creditNote?.id) {
+        window.location.href = `/${locale}/admin/facturen/${creditNote.id}`;
+      }
+    });
+  };
+
+  const printPdf = () => {
+    if (!invoice?.pdf_url) return;
+    const win = window.open(invoice.pdf_url, '_blank', 'noopener,noreferrer');
+    if (win) win.addEventListener('load', () => win.print());
+  };
+
+  const downloadPdf = () =>
+    action(t('adminNew.invoiceDetail.toasts.pdfDownloaded'), async () => {
+      const blob = await invoicesService.getPdfDownload(invoiceId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${invoice?.invoice_number ?? 'invoice'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
 
   return (
     <>
@@ -313,11 +369,65 @@ export default function InvoiceDetailPage() {
                   </div>
 
                   <div className="space-y-2">
+                    <div className="rounded-xl border border-navy-100/70 bg-white p-2">
+                      <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-widest text-navy-400">
+                        {t('adminNew.invoiceDetail.pdfActions')}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {invoice.pdf_url ? (
+                          <a
+                            href={invoice.pdf_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm font-medium text-navy-800 transition hover:bg-sand-50"
+                          >
+                            <FileText className="h-4 w-4" />
+                            {t('adminNew.invoiceDetail.actions.openPdf')}
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-navy-100 bg-sand-50/50 px-3 py-2 text-sm font-medium text-navy-300">
+                            <FileText className="h-4 w-4" />
+                            {t('adminNew.invoiceDetail.actions.openPdf')}
+                          </span>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          leftIcon={<Download className="h-4 w-4" />}
+                          onClick={() => void downloadPdf()}
+                        >
+                          {t('adminNew.invoiceDetail.actions.downloadPdf')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          leftIcon={<Printer className="h-4 w-4" />}
+                          disabled={!invoice.pdf_url}
+                          onClick={printPdf}
+                        >
+                          {t('adminNew.invoiceDetail.actions.printPdf')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          leftIcon={<Mail className="h-4 w-4" />}
+                          disabled={emailInvoice.loading}
+                          onClick={() =>
+                            void action(
+                              t('adminNew.invoiceDetail.toasts.emailed'),
+                              () => emailInvoice.mutate()
+                            )
+                          }
+                        >
+                          {t('adminNew.invoiceDetail.actions.emailPdf')}
+                        </Button>
+                      </div>
+                    </div>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       fullWidth
-                      leftIcon={<Printer className="h-4 w-4" />}
+                      leftIcon={<RefreshCw className="h-4 w-4" />}
                       onClick={() =>
                         void action(
                           t('adminNew.invoiceDetail.toasts.pdfRegenerated'),
@@ -327,16 +437,6 @@ export default function InvoiceDetailPage() {
                     >
                       {t('adminNew.invoiceDetail.actions.regeneratePdf')}
                     </Button>
-                    {invoice.pdf_url ? (
-                      <a
-                        href={invoice.pdf_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex w-full items-center justify-center rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm font-medium text-navy-800 transition hover:bg-sand-50"
-                      >
-                        {t('adminNew.invoiceDetail.actions.openPdf')}
-                      </a>
-                    ) : null}
                     <Button
                       variant="outline"
                       size="sm"
@@ -350,7 +450,7 @@ export default function InvoiceDetailPage() {
                       variant="outline"
                       size="sm"
                       fullWidth
-                      onClick={() => setConfirmCredit(true)}
+                      onClick={onOpenCredit}
                     >
                       {t('adminNew.invoiceDetail.actions.credit')}
                     </Button>
@@ -605,25 +705,76 @@ export default function InvoiceDetailPage() {
         loading={cancelInvoice.loading}
       />
 
-      <AdminConfirmModal
-        open={confirmCredit}
-        onClose={() => setConfirmCredit(false)}
-        onConfirm={async () => {
-          await action(t('adminNew.invoiceDetail.toasts.credited'), async () => {
-            const creditNote = await creditInvoice.mutate();
-            if (creditNote?.id) {
-              window.location.href = `/${locale}/admin/facturen/${creditNote.id}`;
-            }
-          });
-          setConfirmCredit(false);
-        }}
-        title={t('adminNew.invoiceDetail.actions.credit')}
-        message={t('adminNew.invoiceDetail.confirmCredit')}
-        confirmLabel={t('adminNew.invoiceDetail.actions.credit')}
-        cancelLabel={t('adminNew.common.cancel')}
-        variant="primary"
-        loading={creditInvoice.loading}
-      />
+      <Modal open={showCredit} onClose={() => setShowCredit(false)} size="md">
+        <form className="p-6" onSubmit={onSubmitCredit}>
+          <h2 className="text-lg font-semibold text-navy-900">
+            {t('adminNew.invoiceDetail.creditModal.title')}
+          </h2>
+          <p className="mt-1 text-sm text-navy-500">
+            {t('adminNew.invoiceDetail.creditModal.subtitle')}
+          </p>
+          <div className="mt-4 space-y-4">
+            <div>
+              <span className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.invoiceDetail.creditModal.scope')}
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {(['full', 'partial'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setCreditMode(mode)}
+                    className={
+                      'rounded-lg border px-3 py-2 text-sm font-medium transition ' +
+                      (creditMode === mode
+                        ? 'border-marine-500 bg-marine-50 text-marine-800'
+                        : 'border-navy-200 bg-white text-navy-700 hover:bg-sand-50')
+                    }
+                  >
+                    {t(`adminNew.invoiceDetail.creditModal.${mode}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {creditMode === 'partial' ? (
+              <Input
+                label={t('adminNew.invoiceDetail.creditModal.amount')}
+                type="number"
+                step="0.01"
+                min="0"
+                value={creditAmount}
+                onChange={(e) => setCreditAmount(e.target.value)}
+                leftIcon={<span className="text-navy-400">€</span>}
+                required
+              />
+            ) : null}
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.invoiceDetail.creditModal.reason')}
+              </label>
+              <textarea
+                className="input-base min-h-28"
+                value={creditReason}
+                onChange={(e) => setCreditReason(e.target.value)}
+                placeholder={t('adminNew.invoiceDetail.creditModal.reasonPlaceholder')}
+                required
+              />
+            </div>
+          </div>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setShowCredit(false)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={creditInvoice.loading || !creditReason.trim()}
+            >
+              {t('adminNew.invoiceDetail.creditModal.confirm')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       <AdminConfirmModal
         open={confirmSend}

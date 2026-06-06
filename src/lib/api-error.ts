@@ -38,12 +38,21 @@ function extractMessageFromPayload(payload: unknown): string | null {
   return null;
 }
 
+/** Trello #104: the backend correlation id for an error, if any. */
+export function getApiRequestId(err: unknown): string | undefined {
+  if (isApiError(err) && err.requestId) return err.requestId;
+  return undefined;
+}
+
 export function getApiErrorMessage(err: unknown, fallback = 'Unexpected error'): string {
+  const requestId = getApiRequestId(err);
+  const withRef = (msg: string) => (requestId ? `${msg} (ref: ${requestId})` : msg);
+
   if (isApiError(err)) {
     const fromData = extractMessageFromPayload(err.data);
-    if (fromData) return fromData;
-    if (err.message.trim()) return err.message.trim();
-    return fallback;
+    if (fromData) return withRef(fromData);
+    if (err.message.trim()) return withRef(err.message.trim());
+    return withRef(fallback);
   }
 
   if (err instanceof Error && err.message.trim()) {

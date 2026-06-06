@@ -214,23 +214,36 @@ export function AdminTableHead({ children }: { children: React.ReactNode }) {
 export function AdminTableRow({
   children,
   className,
+  onClick,
 }: {
   children: React.ReactNode;
   className?: string;
+  onClick?: React.MouseEventHandler<HTMLTableRowElement>;
 }) {
   return (
-    <tr className={cn('transition hover:bg-sand-50/80', className)}>{children}</tr>
+    <tr className={cn('transition hover:bg-sand-50/80', className)} onClick={onClick}>
+      {children}
+    </tr>
   );
 }
 
 export function AdminTableCell({
   children,
   className,
+  onClick,
 }: {
   children: React.ReactNode;
   className?: string;
+  onClick?: React.MouseEventHandler<HTMLTableCellElement>;
 }) {
-  return <td className={cn('border-t border-navy-100 px-4 py-3.5 align-middle', className)}>{children}</td>;
+  return (
+    <td
+      className={cn('border-t border-navy-100 px-4 py-3.5 align-middle', className)}
+      onClick={onClick}
+    >
+      {children}
+    </td>
+  );
 }
 
 export function AdminTableHeaderCell({

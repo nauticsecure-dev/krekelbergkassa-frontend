@@ -7,6 +7,7 @@ import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminContent, AdminSectionCard, AdminTable, AdminTableCard, AdminTableCell, AdminTableHead, AdminTableHeaderCell, AdminTableRow } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/Badge';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { customersService, invoicesService, pricingService } from '@/lib/services';
 import { formatCurrency } from '@/lib/format';
@@ -30,17 +31,71 @@ export default function CalculatorPage() {
   const [result, setResult] = React.useState<Record<string, unknown> | null>(null);
   const [createConfirm, setCreateConfirm] = React.useState<'invoice' | 'quote' | null>(null);
 
+  // Trello #68: records list filters
+  const [recSearch, setRecSearch] = React.useState('');
+  const [recStatus, setRecStatus] = React.useState('');
+  const [recService, setRecService] = React.useState('');
+  const [archiveTarget, setArchiveTarget] = React.useState<string | null>(null);
+
   const customers = useQuery(['calculator-customers'], () =>
     customersService.list({ per_page: 100 })
   );
-  const records = useQuery(['calculator-records'], () =>
-    pricingService.calculatorRecords({ per_page: 50 })
+  const records = useQuery(['calculator-records', recSearch, recStatus, recService], () =>
+    pricingService.calculatorRecords({
+      per_page: 50,
+      search: recSearch || undefined,
+      status: recStatus || undefined,
+      service_type: recService || undefined,
+    })
   );
   const calculate = useMutation(pricingService.calculate);
   const preview = useMutation(pricingService.preview);
   const createInvoice = useMutation((payload: Record<string, unknown>) =>
     invoicesService.create(payload)
   );
+  const duplicateRecord = useMutation((id: string) =>
+    pricingService.duplicateCalculatorRecord(id)
+  );
+  const archiveRecord = useMutation((id: string) =>
+    pricingService.archiveCalculatorRecord(id)
+  );
+
+  const loadRecord = async (id: string) => {
+    try {
+      const rec = await pricingService.calculatorRecord(id);
+      const payload = (rec.payload ?? rec) as Record<string, unknown>;
+      if (payload.length_cm != null) setLengthCm(String(payload.length_cm));
+      if (payload.contract_type) setContractType(String(payload.contract_type));
+      const svcs = (payload.services ?? payload.service_codes) as unknown;
+      if (Array.isArray(svcs) && svcs.length) setSelectedServices(svcs.map(String));
+      else if (rec.service_type) setSelectedServices([String(rec.service_type)]);
+      if (payload.customer_id) setCustomerId(String(payload.customer_id));
+      const res = (rec.result ?? rec) as Record<string, unknown>;
+      setResult(res);
+      if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+      push({ tone: 'success', title: t('adminNew.calculator.records.loaded') });
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.calculator.toasts.failed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
+
+  const runRecordAction = async (label: string, fn: () => Promise<unknown>) => {
+    try {
+      await fn();
+      push({ tone: 'success', title: label });
+      await records.refetch();
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.common.operationFailed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
 
   const toggleService = (service: string) => {
     setSelectedServices((prev) =>
@@ -342,31 +397,137 @@ export default function CalculatorPage() {
       </AdminContent>
 
       <AdminContent>
-        <AdminSectionCard title={t('adminNew.calculator.records.title')} icon={Calculator}>
+        <AdminSectionCard
+          title={t('adminNew.calculator.records.title')}
+          description={t('adminNew.calculator.records.subtitle')}
+          icon={Calculator}
+        >
+          <div className="mb-4 grid gap-2 sm:grid-cols-3">
+            <Input
+              placeholder={t('adminNew.calculator.records.searchPlaceholder')}
+              value={recSearch}
+              onChange={(e) => setRecSearch(e.target.value)}
+              leftIcon={<Calculator className="h-4 w-4" />}
+            />
+            <select className="input-base" value={recService} onChange={(e) => setRecService(e.target.value)}>
+              <option value="">{t('adminNew.calculator.records.allServices')}</option>
+              {SERVICE_IDS.map((s) => (
+                <option key={s} value={s}>
+                  {t(`adminNew.calculator.servicesMap.${s}`)}
+                </option>
+              ))}
+            </select>
+            <select className="input-base" value={recStatus} onChange={(e) => setRecStatus(e.target.value)}>
+              <option value="">{t('adminNew.calculator.records.allStatuses')}</option>
+              <option value="saved">{t('adminNew.calculator.records.statusSaved')}</option>
+              <option value="draft">{t('adminNew.calculator.records.statusDraft')}</option>
+              <option value="archived">{t('adminNew.calculator.records.statusArchived')}</option>
+            </select>
+          </div>
+
           {(records.data?.data ?? []).length === 0 ? (
             <div className="text-sm text-navy-500">{t('adminNew.calculator.records.empty')}</div>
           ) : (
             <AdminTableCard>
-              <AdminTable minWidth={720}>
+              <AdminTable minWidth={1040}>
                 <AdminTableHead>
                   <tr>
                     <AdminTableHeaderCell>{t('adminNew.calculator.records.number')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.calculator.records.date')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.calculator.records.customer')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.calculator.records.service')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.calculator.records.status')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.calculator.records.documents')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.calculator.records.createdBy')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.calculator.records.total')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
                 <tbody>
-                  {(records.data?.data ?? []).map((rec) => (
-                    <AdminTableRow key={String(rec.id)}>
-                      <AdminTableCell className="font-semibold">{String(rec.number ?? rec.id)}</AdminTableCell>
-                      <AdminTableCell>{rec.created_at ? new Date(String(rec.created_at)).toLocaleDateString() : '—'}</AdminTableCell>
-                      <AdminTableCell>{String(rec.service_type ?? '—')}</AdminTableCell>
-                      <AdminTableCell>
-                        {formatCurrency(Number(rec.total_amount ?? 0) / 100, locale === 'en' ? 'en-GB' : 'nl-NL')}
-                      </AdminTableCell>
-                    </AdminTableRow>
-                  ))}
+                  {(records.data?.data ?? []).map((rec) => {
+                    const id = String(rec.id);
+                    const totalEuros =
+                      rec.total_amount_euros != null
+                        ? Number(rec.total_amount_euros)
+                        : Number(rec.total_amount ?? 0) / 100;
+                    const actions = (rec.available_actions ?? {}) as Record<string, boolean>;
+                    return (
+                      <AdminTableRow
+                        key={id}
+                        className="cursor-pointer"
+                        onClick={() => void loadRecord(id)}
+                      >
+                        <AdminTableCell className="font-semibold text-marine-700">
+                          {String(rec.calculator_number ?? rec.number ?? rec.id)}
+                        </AdminTableCell>
+                        <AdminTableCell className="whitespace-nowrap">
+                          {String(rec.created_date ?? (rec.created_at ? new Date(String(rec.created_at)).toLocaleDateString() : '—'))}
+                        </AdminTableCell>
+                        <AdminTableCell>
+                          <div>{String(rec.customer_name ?? '—')}</div>
+                          {rec.boat_name ? (
+                            <div className="text-xs text-navy-500">{String(rec.boat_name)}</div>
+                          ) : null}
+                        </AdminTableCell>
+                        <AdminTableCell className="capitalize">{String(rec.service_type ?? '—')}</AdminTableCell>
+                        <AdminTableCell>
+                          <Badge tone={String(rec.status) === 'archived' ? 'sand' : 'marine'}>
+                            {String(rec.status ?? 'saved')}
+                          </Badge>
+                        </AdminTableCell>
+                        <AdminTableCell>
+                          <div className="flex gap-1">
+                            {rec.has_quote ? (
+                              <Badge tone="navy">{t('adminNew.calculator.records.quote')}</Badge>
+                            ) : null}
+                            {rec.has_invoice ? (
+                              <Badge tone="success">{t('adminNew.calculator.records.invoice')}</Badge>
+                            ) : null}
+                            {!rec.has_quote && !rec.has_invoice ? (
+                              <span className="text-xs text-navy-400">—</span>
+                            ) : null}
+                          </div>
+                        </AdminTableCell>
+                        <AdminTableCell className="text-sm text-navy-600">
+                          {String(rec.created_by_name ?? '—')}
+                        </AdminTableCell>
+                        <AdminTableCell className="font-semibold text-navy-900">
+                          {formatCurrency(totalEuros, locale === 'en' ? 'en-GB' : 'nl-NL')}
+                        </AdminTableCell>
+                        <AdminTableCell onClick={(e) => e.stopPropagation()}>
+                          <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => void loadRecord(id)}>
+                              {t('adminNew.calculator.records.open')}
+                            </Button>
+                            {actions.duplicate !== false ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={duplicateRecord.loading}
+                                onClick={() =>
+                                  void runRecordAction(
+                                    t('adminNew.calculator.records.duplicated'),
+                                    () => duplicateRecord.mutate(id)
+                                  )
+                                }
+                              >
+                                {t('adminNew.calculator.records.duplicate')}
+                              </Button>
+                            ) : null}
+                            {actions.archive !== false && String(rec.status) !== 'archived' ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setArchiveTarget(id)}
+                              >
+                                {t('adminNew.calculator.records.archive')}
+                              </Button>
+                            ) : null}
+                          </div>
+                        </AdminTableCell>
+                      </AdminTableRow>
+                    );
+                  })}
                 </tbody>
               </AdminTable>
             </AdminTableCard>
@@ -397,6 +558,25 @@ export default function CalculatorPage() {
         variant="primary"
         icon={FilePlus2}
         loading={createInvoice.loading}
+      />
+
+      <AdminConfirmModal
+        open={!!archiveTarget}
+        onClose={() => setArchiveTarget(null)}
+        onConfirm={async () => {
+          if (!archiveTarget) return;
+          await runRecordAction(
+            t('adminNew.calculator.records.archived'),
+            () => archiveRecord.mutate(archiveTarget)
+          );
+          setArchiveTarget(null);
+        }}
+        title={t('adminNew.calculator.records.archive')}
+        message={t('adminNew.calculator.records.confirmArchive')}
+        confirmLabel={t('adminNew.calculator.records.archive')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        loading={archiveRecord.loading}
       />
     </>
   );

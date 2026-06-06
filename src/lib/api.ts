@@ -19,9 +19,23 @@ export type ApiError = {
   code?: string;
   message: string;
   data?: unknown;
+  /** Trello #104: correlation id echoed by the backend (X-Request-Id). */
+  requestId?: string;
 };
 
 const REQUEST_TIMEOUT_MS = 25_000;
+
+/** Trello #104: generate a correlation id sent as X-Request-Id. */
+function generateRequestId(): string {
+  try {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+      return `req_${crypto.randomUUID().replace(/-/g, '').slice(0, 20)}`;
+    }
+  } catch {
+    /* fall through */
+  }
+  return `req_${Math.random().toString(36).slice(2, 12)}${Math.random().toString(36).slice(2, 8)}`;
+}
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
@@ -69,6 +83,10 @@ export async function api<T = unknown>(
     headers.set('Content-Type', 'application/json');
   }
   headers.set('Accept', 'application/json');
+
+  // Trello #104: send a correlation id (reuse one if the caller set it).
+  const requestId = headers.get('X-Request-Id') ?? generateRequestId();
+  headers.set('X-Request-Id', requestId);
 
   if (opts.auth !== false) {
     const token = getAuthToken();
@@ -136,6 +154,7 @@ export async function api<T = unknown>(
             ? String((payload as Record<string, unknown>).code)
             : undefined),
         data: payload,
+        requestId: res.headers.get('X-Request-Id') ?? requestId,
       };
       throw err;
     }

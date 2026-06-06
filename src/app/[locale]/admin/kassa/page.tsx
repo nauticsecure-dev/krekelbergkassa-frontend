@@ -3,36 +3,45 @@
 import * as React from "react";
 import Link from "next/link";
 import {
+  Anchor,
+  ArrowDownUp,
+  Banknote,
+  Check,
   CreditCard,
+  Droplets,
   ExternalLink,
-  Package,
+  FileText,
+  Filter,
+  MessageSquarePlus,
+  Minus,
+  MoreHorizontal,
   Plus,
   QrCode,
   Receipt,
-  Settings,
+  ScanLine,
+  Ship,
   ShoppingCart,
+  Star,
   Trash2,
   UserPlus,
+  Wallet,
+  Warehouse,
+  Zap,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import {
   AdminContent,
-  AdminListItem,
   AdminModalBody,
   AdminModalFooter,
   AdminModalHeader,
-  AdminSearchInput,
-  AdminSectionCard,
-  AdminSelect,
-  AdminToolbar,
 } from "@/components/admin/AdminUi";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
-import { Badge } from "@/components/ui/Badge";
 import { EmptyState, LoadingState } from "@/components/admin/DataState";
 import { AdminConfirmModal } from "@/components/admin/AdminConfirmModal";
-import { KassaAnalyticsDashboard } from "@/components/admin/KassaAnalyticsDashboard";
+import { BarcodeScannerModal } from "@/components/admin/BarcodeScannerModal";
 import {
   customersService,
   kassaService,
@@ -40,7 +49,7 @@ import {
   productsService,
 } from "@/lib/services";
 import { useMutation, useQuery } from "@/lib/hooks/useAsync";
-import type { Product, PricingRule } from "@/lib/api-types";
+import type { Product, PricingRule, KassaQrSession } from "@/lib/api-types";
 import { formatCurrency } from "@/lib/format";
 import { productPriceInclEuros } from "@/lib/products";
 import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
@@ -48,6 +57,7 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { useIntl } from "@/i18n/IntlProvider";
 import { useToast } from "@/components/ui/ToastProvider";
 import { getDeviceId } from "@/lib/device";
+import { cn } from "@/lib/cn";
 
 interface CartItem {
   id: string;
@@ -56,28 +66,78 @@ interface CartItem {
   quantity: number;
   unit_price_cents: number;
   vat_rate: number;
+  image_url?: string | null;
+  color?: string | null;
+}
+
+type SortKey = "recommended" | "priceAsc" | "priceDesc" | "name";
+
+const CATEGORY_PALETTE = [
+  "#1f93b8",
+  "#0ea5e9",
+  "#bd8528",
+  "#7c3aed",
+  "#059669",
+  "#e11d48",
+];
+
+function categoryMeta(
+  name: string,
+  index: number,
+): { icon: LucideIcon; accent: string } {
+  const n = name.toLowerCase();
+  if (n.includes("afspuit") || n.includes("was") || n.includes("clean"))
+    return { icon: Droplets, accent: "#1f93b8" };
+  if (
+    n.includes("kraan") ||
+    n.includes("kran") ||
+    n.includes("lift") ||
+    n.includes("crane")
+  )
+    return { icon: Anchor, accent: "#0ea5e9" };
+  if (n.includes("stalling") || n.includes("winter") || n.includes("storage"))
+    return { icon: Warehouse, accent: "#bd8528" };
+  return {
+    icon: MoreHorizontal,
+    accent: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
+  };
 }
 
 export default function KassaPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
+  const localeTag =
+    locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
 
   const [query, setQuery] = React.useState("");
+  const [activeCategory, setActiveCategory] = React.useState("");
+  const [sortBy, setSortBy] = React.useState<SortKey>("recommended");
   const [customerId, setCustomerId] = React.useState("");
   const [paymentMethod, setPaymentMethod] = React.useState("pin");
+  const [note, setNote] = React.useState("");
+  const [showNoteModal, setShowNoteModal] = React.useState(false);
+  const [noteDraft, setNoteDraft] = React.useState("");
   const [showSplitModal, setShowSplitModal] = React.useState(false);
   const [showQrModal, setShowQrModal] = React.useState(false);
-  const [qrUrl, setQrUrl] = React.useState<string | null>(null);
+  const [qrSession, setQrSession] = React.useState<KassaQrSession | null>(null);
+  const [qrStarting, setQrStarting] = React.useState(false);
+  const [qrCopied, setQrCopied] = React.useState(false);
   const [splitPayments, setSplitPayments] = React.useState([
     { method: "pin", amount: "" },
     { method: "cash", amount: "" },
   ]);
   const [cart, setCart] = React.useState<CartItem[]>([]);
   const [showCustomerModal, setShowCustomerModal] = React.useState(false);
-  const [newCustomer, setNewCustomer] = React.useState({ name: "", email: "" });
+  const [newCustomer, setNewCustomer] = React.useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
   const [checkoutConfirm, setCheckoutConfirm] = React.useState<
     "standard" | "split" | "qr" | "on_account" | null
   >(null);
+
+  const searchRef = React.useRef<HTMLInputElement>(null);
 
   const productsQuery = useQuery(["products"], () =>
     productsService.list({ per_page: 200, active: true }),
@@ -88,58 +148,121 @@ export default function KassaPage() {
   const customersQuery = useQuery(["customers-kassa"], () =>
     customersService.list({ per_page: 100 }),
   );
-  const [analyticsPeriod, setAnalyticsPeriod] = React.useState("7d");
-  const recentSales = useQuery(["kassa-recent", analyticsPeriod], () =>
-    kassaService.recentSales({ period: analyticsPeriod }).catch(() => []),
+  const recentSales = useQuery(["kassa-recent"], () =>
+    kassaService.recentSales({}).catch(() => []),
   );
-  const analyticsQuery = useQuery(["kassa-analytics", analyticsPeriod], async () => {
+  const todayQuery = useQuery(["kassa-today"], async () => {
     const [analytics, sales] = await Promise.all([
-      kassaService.analytics({ period: analyticsPeriod }).catch(() => null),
-      kassaService.recentSales({ period: analyticsPeriod }).catch(() => []),
+      kassaService.analytics({ period: "today" }).catch(() => null),
+      kassaService.recentSales({ period: "today" }).catch(() => []),
     ]);
     return normalizeKassaAnalytics(
       analytics as Record<string, unknown> | null,
       sales,
-      locale === "en" ? "en-GB" : "nl-NL",
+      localeTag,
     );
   });
-
-  React.useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && query.length >= 8 && /^\d+$/.test(query)) {
-        const match = (productsQuery.data?.data ?? []).find(
-          (p) => p.barcode === query || p.code === query,
-        );
-        if (match) {
-          addProduct(match);
-          setQuery("");
-        }
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [query, productsQuery.data?.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const createCustomer = useMutation(customersService.create);
   const checkout = useMutation(kassaService.checkout);
   const quote = useMutation(kassaService.quote);
 
+  // Trello #80/#86: favourites, recently-used and bundles for fast checkout.
+  const bundlesQuery = useQuery(["kassa-bundles"], () =>
+    productsService.bundles().catch(() => []),
+  );
+  const [favoriteIds, setFavoriteIds] = React.useState<Set<string>>(new Set());
+  const [recentIds, setRecentIds] = React.useState<string[]>([]);
+
+  // Seed favourites from the product resource's is_favorite flag.
+  React.useEffect(() => {
+    const favs = productsQuery.data?.data
+      ?.filter((p) => p.is_favorite)
+      .map((p) => p.id);
+    if (favs && favs.length) setFavoriteIds(new Set(favs));
+  }, [productsQuery.data?.data]);
+
+  // Recently-used is tracked per device in localStorage (no extra endpoint).
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem("kassa-recent-products");
+      if (raw) setRecentIds(JSON.parse(raw) as string[]);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const pushRecent = React.useCallback((productId?: string) => {
+    if (!productId) return;
+    setRecentIds((prev) => {
+      const next = [productId, ...prev.filter((id) => id !== productId)].slice(
+        0,
+        8,
+      );
+      try {
+        localStorage.setItem("kassa-recent-products", JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleFavorite = (productId: string) => {
+    const on = !favoriteIds.has(productId);
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(productId);
+      else next.delete(productId);
+      return next;
+    });
+    void productsService.setFavorite(productId, on).catch(() => {
+      // revert on failure
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (on) next.delete(productId);
+        else next.add(productId);
+        return next;
+      });
+    });
+  };
+
   const numericInput = Number(query.replace(/[^0-9]/g, ""));
+  const queryText = query.replace(/[0-9]/g, "").trim().toLowerCase();
+
+  const allProducts = React.useMemo(
+    () => productsQuery.data?.data ?? [],
+    [productsQuery.data?.data],
+  );
+  const allRules = React.useMemo(
+    () => pricingQuery.data?.data ?? [],
+    [pricingQuery.data?.data],
+  );
+
+  const categories = React.useMemo(() => {
+    const set = new Map<
+      string,
+      { label: string; icon: LucideIcon; accent: string }
+    >();
+    allProducts.forEach((p) => {
+      const key = (p.category ?? p.group?.name ?? "").trim();
+      if (!key || set.has(key.toLowerCase())) return;
+      const meta = categoryMeta(key, set.size);
+      set.set(key.toLowerCase(), { label: key, ...meta });
+    });
+    return Array.from(set.values());
+  }, [allProducts]);
 
   const matchingRule = React.useMemo(() => {
     if (!numericInput) return null;
-    return (pricingQuery.data?.data ?? []).find(
+    return allRules.find(
       (rule) =>
         numericInput >= rule.range_from_cm && numericInput <= rule.range_to_cm,
     );
-  }, [numericInput, pricingQuery.data?.data]);
+  }, [numericInput, allRules]);
 
-  const visibleProducts = React.useMemo(() => {
-    const list = productsQuery.data?.data ?? [];
-    if (!query.trim()) return list;
-
-    const q = query.toLowerCase();
-    return list.filter((product) => {
+  const productMatchesText = React.useCallback(
+    (product: Product | undefined, q: string) => {
+      if (!product) return false;
       const fields = [
         product.name,
         product.code,
@@ -147,18 +270,103 @@ export default function KassaPage() {
         product.service_code,
         product.barcode,
         product.search_code,
+        // Trello #86: also match SKU, tags and aliases.
+        product.sku,
+        ...(product.tags ?? []),
+        ...(product.aliases ?? []),
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return fields.includes(q);
+    },
+    [],
+  );
+
+  // When the staff types a length (e.g. "afspuiten 880"), show the matching
+  // size-range tiles like the template instead of plain product cards.
+  const rangeTiles = React.useMemo(() => {
+    if (!numericInput) return [];
+    const rules = allRules.filter((rule) => {
+      const product =
+        allProducts.find((p) => p.id === rule.product_id) ?? rule.product;
+      if (queryText && !productMatchesText(product, queryText)) return false;
+      if (
+        activeCategory &&
+        (product?.category ?? "").toLowerCase() !== activeCategory.toLowerCase()
+      )
+        return false;
+      return true;
     });
-  }, [productsQuery.data?.data, query]);
+    return [...rules].sort((a, b) => a.range_from_cm - b.range_from_cm);
+  }, [
+    numericInput,
+    queryText,
+    activeCategory,
+    allRules,
+    allProducts,
+    productMatchesText,
+  ]);
+
+  const visibleProducts = React.useMemo(() => {
+    let list = allProducts;
+    if (activeCategory) {
+      list = list.filter(
+        (p) =>
+          (p.category ?? p.group?.name ?? "").toLowerCase() ===
+          activeCategory.toLowerCase(),
+      );
+    }
+    if (queryText) {
+      list = list.filter((p) => productMatchesText(p, queryText));
+    }
+    const sorted = [...list];
+    if (sortBy === "priceAsc")
+      sorted.sort(
+        (a, b) => productPriceInclEuros(a) - productPriceInclEuros(b),
+      );
+    else if (sortBy === "priceDesc")
+      sorted.sort(
+        (a, b) => productPriceInclEuros(b) - productPriceInclEuros(a),
+      );
+    else if (sortBy === "name")
+      sorted.sort((a, b) => a.name.localeCompare(b.name));
+    return sorted;
+  }, [allProducts, activeCategory, queryText, sortBy, productMatchesText]);
+
+  const usingRanges = rangeTiles.length > 0;
+  const resultCount = usingRanges ? rangeTiles.length : visibleProducts.length;
+  const categoryLabel = activeCategory || t("adminNew.kassa.allCategories");
+
+  const mostChosen = React.useMemo(() => {
+    // Aggregate the most frequent line descriptions across recent sales, then
+    // resolve them back to products for quick re-adding.
+    const counts = new Map<string, number>();
+    (recentSales.data ?? []).forEach((sale) => {
+      (sale.lines ?? []).forEach((line) => {
+        const key = (line.description ?? "").toLowerCase();
+        if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+      });
+    });
+    const ranked = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([desc]) => allProducts.find((p) => p.name.toLowerCase() === desc))
+      .filter(Boolean) as Product[];
+    const result = ranked.slice(0, 4);
+    if (result.length < 4) {
+      for (const p of allProducts) {
+        if (result.length >= 4) break;
+        if (!result.includes(p)) result.push(p);
+      }
+    }
+    return result;
+  }, [recentSales.data, allProducts]);
 
   const addProduct = (product: Product, rule?: PricingRule | null) => {
     const unitCents = rule
       ? rule.price_incl_vat
-      : Math.round(productPriceInclEuros(product) * 100) || product.price_incl_vat;
+      : Math.round(productPriceInclEuros(product) * 100) ||
+        product.price_incl_vat;
     const description = rule
       ? `${product.name} (${rule.range_from_cm}-${rule.range_to_cm} cm)`
       : product.name;
@@ -182,13 +390,79 @@ export default function KassaPage() {
           quantity: 1,
           unit_price_cents: unitCents,
           vat_rate: Number(product.vat_rate ?? 21),
+          image_url: product.image_url,
+          color: product.color ?? product.group?.color ?? null,
         },
       ];
     });
+    pushRecent(product.id);
+    // Trello #62: confirm each add with a toast.
+    push({
+      tone: "success",
+      title: t("adminNew.kassa.toasts.added", { name: description }),
+    });
   };
+
+  // Trello #80: add every product in a bundle with one click.
+  const addBundle = (bundle: {
+    name: string;
+    items?: Array<{ product_id: string; quantity?: number; product?: Product }>;
+  }) => {
+    const items = bundle.items ?? [];
+    let added = 0;
+    items.forEach((it) => {
+      const product =
+        it.product ?? allProducts.find((p) => p.id === it.product_id);
+      if (!product) return;
+      const times = Math.max(1, it.quantity ?? 1);
+      for (let i = 0; i < times; i += 1) addProduct(product);
+      added += 1;
+    });
+    if (!added) {
+      push({ tone: "error", title: t("adminNew.kassa.bundleEmpty") });
+    }
+  };
+
+  // Trello #80: barcode scan — resolve via the backend (search_code / EAN /
+  // alias lookup + scan log) and auto-add the matched product. Works for the
+  // USB/keyboard search box and the camera scanner (source = "camera").
+  const [scanning, setScanning] = React.useState(false);
+  const [showCamera, setShowCamera] = React.useState(false);
+  const runScan = async (rawCode: string, source = "usb") => {
+    const code = rawCode.trim();
+    if (!code) return;
+    setScanning(true);
+    try {
+      const res = await productsService.scan({ barcode: code, source });
+      if (res.matched && res.product) {
+        addProduct(res.product as Product);
+        if (source !== "camera") setQuery("");
+      } else {
+        push({
+          tone: "error",
+          title: t("adminNew.kassa.scanNotFound", { code }),
+        });
+      }
+    } catch {
+      /* fall back to the client-side text filter already showing results */
+    } finally {
+      setScanning(false);
+    }
+  };
+  const handleBarcodeScan = () => runScan(query, "usb");
 
   const removeItem = (id: string) =>
     setCart((prev) => prev.filter((item) => item.id !== id));
+
+  const changeQty = (id: string, delta: number) =>
+    setCart((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, quantity: Math.max(1, p.quantity + delta) } : p,
+      ),
+    );
+
+  const cartHas = (productId?: string) =>
+    !!productId && cart.some((item) => item.product_id === productId);
 
   const subtotalCents = cart.reduce(
     (sum, item) => sum + item.unit_price_cents * item.quantity,
@@ -204,7 +478,55 @@ export default function KassaPage() {
     0,
   );
   const totalCents = subtotalCents;
-  const localeTag = locale === "en" ? "en-GB" : "nl-NL";
+  const exclCents = subtotalCents - vatCents;
+  const primaryVatRate = cart[0]?.vat_rate ?? 21;
+  const money = (cents: number) => formatCurrency(cents / 100, localeTag);
+
+  const PAYMENT_BUTTONS: Array<{
+    method: string;
+    label: string;
+    icon: LucideIcon;
+    classes: string;
+    activeClasses: string;
+    action?: () => void;
+  }> = [
+    {
+      method: "cash",
+      label: t("adminNew.kassa.payment.cash"),
+      icon: Banknote,
+      classes: "border-emerald-200 text-emerald-700 hover:bg-emerald-50",
+      activeClasses: "border-emerald-500 bg-emerald-500 text-white shadow-sm",
+    },
+    {
+      method: "pin",
+      label: t("adminNew.kassa.payment.pin"),
+      icon: CreditCard,
+      classes: "border-marine-200 text-marine-700 hover:bg-marine-50",
+      activeClasses: "border-marine-500 bg-marine-500 text-white shadow-sm",
+    },
+    {
+      method: "creditcard",
+      label: t("adminNew.kassa.payment.creditcard"),
+      icon: CreditCard,
+      classes: "border-violet-200 text-violet-700 hover:bg-violet-50",
+      activeClasses: "border-violet-500 bg-violet-500 text-white shadow-sm",
+    },
+    {
+      method: "invoice",
+      label: t("adminNew.kassa.payment.invoice"),
+      icon: FileText,
+      classes: "border-amber-200 text-amber-700 hover:bg-amber-50",
+      activeClasses: "border-amber-500 bg-amber-500 text-white shadow-sm",
+    },
+    {
+      method: "downpayment",
+      label: t("adminNew.kassa.downPayment"),
+      icon: Wallet,
+      classes: "border-slate-200 text-slate-600 hover:bg-slate-50",
+      activeClasses: "border-slate-500 bg-slate-500 text-white shadow-sm",
+      action: () => setShowSplitModal(true),
+    },
+  ];
 
   const checkoutMethodLabel = (mode: NonNullable<typeof checkoutConfirm>) => {
     switch (mode) {
@@ -232,10 +554,11 @@ export default function KassaPage() {
       const created = await createCustomer.mutate({
         name: newCustomer.name,
         email: newCustomer.email || null,
+        phone: newCustomer.phone || null,
       });
       setCustomerId(created.id);
       setShowCustomerModal(false);
-      setNewCustomer({ name: "", email: "" });
+      setNewCustomer({ name: "", email: "", phone: "" });
       await customersQuery.refetch();
       push({
         tone: "success",
@@ -250,7 +573,97 @@ export default function KassaPage() {
     }
   };
 
-  const handleCheckout = async (mode: "standard" | "split" | "qr" | "on_account" = "standard") => {
+  // Trello #72: QR flow uses a payment session (no invoice up front); the
+  // webhook finalizes the invoice once Mollie confirms payment.
+  const startQrSession = async () => {
+    if (!cart.length) {
+      push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
+      return;
+    }
+    setQrStarting(true);
+    setQrSession(null);
+    setQrCopied(false);
+    setShowQrModal(true);
+    try {
+      const session = await kassaService.createQrSession({
+        device_id: getDeviceId(),
+        customer_id: customerId || undefined,
+        method: "ideal",
+        redirect_url:
+          typeof window !== "undefined" ? window.location.href : undefined,
+        items: cart.map((item) => ({
+          product_id: item.product_id,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price_cents: item.unit_price_cents,
+          vat_rate: item.vat_rate,
+        })),
+      });
+      setQrSession(session);
+    } catch (err) {
+      setShowQrModal(false);
+      push({
+        tone: "error",
+        title: t("adminNew.kassa.toasts.checkoutFailed"),
+        message: getApiErrorMessage(err),
+      });
+    } finally {
+      setQrStarting(false);
+    }
+  };
+
+  // Poll the QR session while pending; finalize cart on success.
+  const qrSettled = React.useRef(false);
+  React.useEffect(() => {
+    const id = qrSession?.session_id;
+    const status = (qrSession?.status ?? "").toLowerCase();
+    if (!showQrModal || !id) return;
+    if (status === "paid" || status === "completed") {
+      if (!qrSettled.current) {
+        qrSettled.current = true;
+        setCart([]);
+        setNote("");
+        void recentSales.refetch();
+        void todayQuery.refetch();
+        push({
+          tone: "success",
+          title: t("adminNew.kassa.toasts.checkoutDone"),
+        });
+      }
+      return;
+    }
+    if (
+      status === "expired" ||
+      status === "failed" ||
+      status === "canceled" ||
+      status === "cancelled"
+    ) {
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const next = await kassaService.qrSession(id);
+        setQrSession(next);
+      } catch {
+        /* keep last state; will retry on next tick */
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [showQrModal, qrSession, recentSales, todayQuery, push, t]);
+
+  const closeQrModal = () => {
+    setShowQrModal(false);
+    qrSettled.current = false;
+    setQrSession(null);
+  };
+
+  const handleCheckout = async (
+    mode: "standard" | "split" | "qr" | "on_account" = "standard",
+  ) => {
+    if (mode === "qr") {
+      await startQrSession();
+      return;
+    }
     if (!cart.length) {
       push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
       return;
@@ -280,7 +693,7 @@ export default function KassaPage() {
           }));
       } else {
         payload.payment_method =
-          mode === "qr" ? "ideal" : mode === "on_account" ? "invoice" : paymentMethod;
+          mode === "on_account" ? "invoice" : paymentMethod;
       }
 
       const res = await checkout.mutate(payload);
@@ -295,14 +708,12 @@ export default function KassaPage() {
         typeof res === "string" ? undefined : res.invoice_number;
 
       setCart([]);
+      setNote("");
       setShowSplitModal(false);
       void recentSales.refetch();
-      void analyticsQuery.refetch();
+      void todayQuery.refetch();
 
-      if (mode === "qr" && checkoutUrl) {
-        setQrUrl(checkoutUrl);
-        setShowQrModal(true);
-      } else if (checkoutUrl) {
+      if (checkoutUrl) {
         const popup = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
         if (!popup) {
           window.location.assign(checkoutUrl);
@@ -351,6 +762,24 @@ export default function KassaPage() {
     }
   };
 
+  const lastSale = recentSales.data?.[0];
+  // Trello #62: safe total (never NaN) + deep link to the real invoice.
+  const lastSaleEuros = lastSale
+    ? Number(
+        lastSale.total_euros ??
+          lastSale.total_amount_euros ??
+          Number(lastSale.total_amount_cents ?? 0) / 100,
+      ) || 0
+    : 0;
+  const lastSaleHref =
+    lastSale?.invoice_url ??
+    lastSale?.admin_url ??
+    (lastSale?.invoice_id
+      ? `/${locale}/admin/facturen/${lastSale.invoice_id}`
+      : undefined);
+  const todayTurnover = todayQuery.data?.totals.turnover_cents ?? 0;
+  const todayTransactions = todayQuery.data?.totals.transaction_count ?? 0;
+
   return (
     <>
       <AdminPageHeader
@@ -366,335 +795,580 @@ export default function KassaPage() {
           },
           {
             label: t("adminNew.kassa.total"),
-            value: formatCurrency(totalCents / 100, localeTag),
+            value: money(totalCents),
             icon: CreditCard,
             tone: totalCents > 0 ? "gold" : "success",
             href: `#cart`,
           },
+          {
+            label: t("adminNew.kassa.products"),
+            value:
+              productsQuery.data?.meta?.total ??
+              productsQuery.data?.data.length ??
+              0,
+            icon: Warehouse,
+            tone: "navy",
+            href: `/${locale}/admin/producten`,
+            loading: productsQuery.loading,
+          },
+          {
+            label: t("adminNew.kassa.recentSales"),
+            value: recentSales.data?.length ?? 0,
+            icon: Receipt,
+            tone: "marine",
+            href: `/${locale}/admin/verkopen`,
+            loading: recentSales.loading,
+          },
         ]}
       />
 
-      <AdminContent>
-        <KassaAnalyticsDashboard
-          analytics={analyticsQuery.data}
-          loading={analyticsQuery.loading}
-          period={analyticsPeriod}
-          onPeriodChange={setAnalyticsPeriod}
-        />
-      </AdminContent>
-
-      <AdminContent className="grid gap-5 xl:grid-cols-[1fr_24rem]">
-        <div className="space-y-5">
-          <AdminSectionCard
-            title={t("adminNew.kassa.title")}
-            description={t("adminNew.kassa.subtitle")}
-            icon={ShoppingCart}
-          >
-            <AdminToolbar className="border-0 bg-transparent p-0 shadow-none">
-              <AdminSearchInput
-                value={query}
-                onChange={setQuery}
-                placeholder={t("adminNew.kassa.searchPlaceholder")}
+      <AdminContent className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
+        {/* ----------------------------- LEFT: catalog ---------------------------- */}
+        <div className="min-w-0 space-y-4">
+          {/* Category tabs + quick actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            <CategoryTab
+              label={t("adminNew.kassa.allCategories")}
+              icon={ShoppingCart}
+              accent="#1a2e48"
+              active={activeCategory === ""}
+              onClick={() => setActiveCategory("")}
+            />
+            {categories.map((cat) => (
+              <CategoryTab
+                key={cat.label}
+                label={cat.label}
+                icon={cat.icon}
+                accent={cat.accent}
+                active={
+                  activeCategory.toLowerCase() === cat.label.toLowerCase()
+                }
+                onClick={() => setActiveCategory(cat.label)}
               />
-              <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-                <AdminSelect
-                  value={customerId}
-                  onChange={setCustomerId}
-                  className="min-w-[200px] flex-1"
+            ))}
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Zap className="h-4 w-4 text-gold-500" />}
+                onClick={() => searchRef.current?.focus()}
+              >
+                {t("adminNew.kassa.quickAdd")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<ScanLine className="h-4 w-4 text-marine-600" />}
+                disabled={scanning}
+                onClick={() => setShowCamera(true)}
+              >
+                {t("adminNew.kassa.scanBarcode")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Search + sort */}
+          <div className="flex flex-col gap-3 rounded-2xl border border-navy-100/70 bg-white p-3 shadow-card sm:flex-row sm:items-center">
+            <div className="relative min-w-0 flex-1">
+              <ScanLine className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
+              <input
+                ref={searchRef}
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void handleBarcodeScan();
+                  }
+                }}
+                placeholder={t("adminNew.kassa.searchPlaceholder")}
+                className="input-base w-full pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="hidden items-center gap-1.5 rounded-lg border border-navy-100 px-3 py-2 text-sm text-navy-500 sm:inline-flex">
+                <Filter className="h-4 w-4" />
+                {t("adminNew.kassa.filter")}
+              </span>
+              <label className="relative inline-flex items-center">
+                <ArrowDownUp className="pointer-events-none absolute left-3 h-4 w-4 text-navy-400" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortKey)}
+                  className="input-base cursor-pointer py-2 pl-9 pr-8 text-sm"
+                  aria-label={t("adminNew.kassa.sortBy")}
                 >
-                  <option value="">
-                    {customersQuery.loading
-                      ? t("adminNew.common.loading")
-                      : t("adminNew.kassa.selectCustomer")}
+                  <option value="recommended">
+                    {t("adminNew.kassa.sort.recommended")}
                   </option>
-                  {(customersQuery.data?.data ?? []).map((customer) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name} ·{" "}
-                      {customer.email ?? t("adminNew.common.noEmail")}
-                    </option>
-                  ))}
-                </AdminSelect>
-                <Button
-                  variant="outline"
-                  size="md"
-                  leftIcon={<UserPlus className="h-4 w-4" />}
-                  onClick={() => setShowCustomerModal(true)}
-                >
-                  {t("adminNew.common.new")}
-                </Button>
-              </div>
-              <AdminSelect value={paymentMethod} onChange={setPaymentMethod}>
-                <option value="cash">{t("adminNew.kassa.payment.cash")}</option>
-                <option value="pin">{t("adminNew.kassa.payment.pin")}</option>
-                <option value="invoice">
-                  {t("adminNew.kassa.payment.invoice")}
-                </option>
-                <option value="ideal">iDEAL</option>
-                <option value="creditcard">
-                  {t("adminNew.kassa.payment.creditcard")}
-                </option>
-                <option value="bancontact">Bancontact</option>
-              </AdminSelect>
-            </AdminToolbar>
+                  <option value="priceAsc">
+                    {t("adminNew.kassa.sort.priceAsc")}
+                  </option>
+                  <option value="priceDesc">
+                    {t("adminNew.kassa.sort.priceDesc")}
+                  </option>
+                  <option value="name">{t("adminNew.kassa.sort.name")}</option>
+                </select>
+              </label>
+            </div>
+          </div>
 
-            {matchingRule ? (
-              <div className="mt-4 rounded-xl border border-marine-200/80 bg-gradient-to-r from-marine-50 to-white px-4 py-3 text-sm text-marine-800">
-                {t("adminNew.kassa.smartMatch")}: {matchingRule.range_from_cm}–
-                {matchingRule.range_to_cm} cm ·{" "}
-                {formatCurrency(
-                  matchingRule.price_incl_vat_euros,
-                  locale === "en" ? "en-GB" : "nl-NL",
-                )}
-              </div>
-            ) : null}
-          </AdminSectionCard>
+          {/* Smart match banner */}
+          {matchingRule ? (
+            <div className="flex items-center gap-2 rounded-xl border border-marine-200/80 bg-gradient-to-r from-marine-50 to-white px-4 py-3 text-sm text-marine-800">
+              <Star className="h-4 w-4 text-marine-500" />
+              <span className="font-semibold">
+                {t("adminNew.kassa.smartMatch")}:
+              </span>
+              {matchingRule.range_from_cm}–{matchingRule.range_to_cm} cm ·{" "}
+              {formatCurrency(matchingRule.price_incl_vat_euros, localeTag)}
+            </div>
+          ) : null}
 
-          <AdminSectionCard
-            title={t("adminNew.kassa.products")}
-            description={t("adminNew.kassa.productsOverview")}
-            icon={Package}
-            action={
-              <Link href={`/${locale}/admin/producten`}>
-                <Button variant="ghost" size="sm" leftIcon={<Settings className="h-4 w-4" />}>
-                  {t("adminNew.kassa.editProducts")}
-                </Button>
-              </Link>
-            }
-          >
+          {/* Trello #80/#86: favourites, recently used and bundles */}
+          {(() => {
+            const favProducts = allProducts.filter((p) =>
+              favoriteIds.has(p.id),
+            );
+            const recentProducts = recentIds
+              .map((id) => allProducts.find((p) => p.id === id))
+              .filter((p): p is Product => Boolean(p));
+            const bundles = bundlesQuery.data ?? [];
+            const renderChip = (
+              key: string,
+              label: string,
+              accent: string | null | undefined,
+              onClick: () => void,
+            ) => (
+              <button
+                key={key}
+                type="button"
+                onClick={onClick}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-navy-100 bg-white px-3 py-1.5 text-xs font-semibold text-navy-700 shadow-sm transition hover:border-marine-200 hover:bg-sand-50"
+              >
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: accent ?? "#1f93b8" }}
+                />
+                {label}
+              </button>
+            );
+            if (
+              !favProducts.length &&
+              !recentProducts.length &&
+              !bundles.length
+            )
+              return null;
+            return (
+              <div className="mb-4 space-y-2">
+                {favProducts.length ? (
+                  <QuickRow icon={Star} label={t("adminNew.kassa.favourites")}>
+                    {favProducts.map((p) =>
+                      renderChip(p.id, p.name, p.color ?? p.group?.color, () =>
+                        addProduct(p),
+                      ),
+                    )}
+                  </QuickRow>
+                ) : null}
+                {recentProducts.length ? (
+                  <QuickRow
+                    icon={MoreHorizontal}
+                    label={t("adminNew.kassa.recentlyUsed")}
+                  >
+                    {recentProducts.map((p) =>
+                      renderChip(
+                        `r-${p.id}`,
+                        p.name,
+                        p.color ?? p.group?.color,
+                        () => addProduct(p),
+                      ),
+                    )}
+                  </QuickRow>
+                ) : null}
+                {bundles.length ? (
+                  <QuickRow
+                    icon={ShoppingCart}
+                    label={t("adminNew.kassa.bundles")}
+                  >
+                    {bundles.map((b) =>
+                      renderChip(`b-${b.id}`, b.name, b.color, () =>
+                        addBundle(b),
+                      ),
+                    )}
+                  </QuickRow>
+                ) : null}
+              </div>
+            );
+          })()}
+
+          {/* Results */}
+          <div>
+            <div className="mb-3 flex items-baseline gap-2">
+              <h2 className="text-lg font-semibold text-navy-900">
+                {t("adminNew.kassa.resultsTitle", { category: categoryLabel })}
+              </h2>
+              {!productsQuery.loading ? (
+                <span className="text-sm font-medium text-emerald-600">
+                  ({t("adminNew.kassa.matchCount", { count: resultCount })})
+                </span>
+              ) : null}
+            </div>
+
             {productsQuery.loading ? (
               <LoadingState
                 label={t("adminNew.kassa.loadingProducts")}
                 variant="cards"
               />
-            ) : null}
-            {!productsQuery.loading && visibleProducts.length === 0 ? (
+            ) : resultCount === 0 ? (
               <EmptyState
                 title={t("adminNew.kassa.emptyProductsTitle")}
                 message={t("adminNew.kassa.emptyProductsMessage")}
               />
-            ) : null}
-            {!productsQuery.loading && visibleProducts.length > 0 ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {visibleProducts.slice(0, 18).map((product) => {
+            ) : usingRanges ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {rangeTiles.map((rule) => {
+                  const product =
+                    allProducts.find((p) => p.id === rule.product_id) ??
+                    rule.product;
+                  const inRange =
+                    numericInput >= rule.range_from_cm &&
+                    numericInput <= rule.range_to_cm;
+                  const tileId = `${rule.product_id}-${rule.id}`;
+                  return (
+                    <CatalogTile
+                      key={rule.id}
+                      title={`${rule.range_from_cm} – ${rule.range_to_cm} cm`}
+                      price={formatCurrency(
+                        rule.price_incl_vat_euros,
+                        localeTag,
+                      )}
+                      accent={
+                        product?.color ?? product?.group?.color ?? "#1f93b8"
+                      }
+                      selected={cart.some((i) => i.id === tileId)}
+                      highlighted={inRange}
+                      onClick={() => product && addProduct(product, rule)}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {visibleProducts.slice(0, 24).map((product) => {
                   const ruleMatch =
                     matchingRule && matchingRule.product_id === product.id
                       ? matchingRule
                       : null;
+                  const fav = favoriteIds.has(product.id);
                   return (
-                    <button
-                      key={product.id}
-                      type="button"
-                      className="surface-float-hover rounded-xl border border-navy-100/80 bg-white p-3 text-left transition hover:border-marine-200"
-                      style={{
-                        borderLeftWidth: product.color ? 4 : undefined,
-                        borderLeftColor: product.color ?? product.group?.color ?? undefined,
-                      }}
-                      onClick={() => addProduct(product, ruleMatch)}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="font-semibold text-navy-900">
-                            {product.name}
-                          </div>
-                          <div className="text-xs text-navy-500">
-                            {product.code}
-                          </div>
-                        </div>
-                        {ruleMatch ? (
-                          <Badge tone="marine">
-                            {t("adminNew.kassa.match")}
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <div className="mt-2 text-sm font-semibold text-navy-900">
-                        {formatCurrency(
+                    <div key={product.id} className="relative h-full">
+                      <button
+                        type="button"
+                        aria-pressed={fav}
+                        aria-label={t("adminNew.kassa.favouriteToggle")}
+                        onClick={() => toggleFavorite(product.id)}
+                        className="absolute bottom-1.5 right-1.5 z-10 rounded-full bg-white/70 p-1 transition hover:scale-110"
+                      >
+                        <Star
+                          className={cn(
+                            "h-3.5 w-3.5",
+                            fav
+                              ? "fill-gold-400 text-gold-500"
+                              : "text-navy-200",
+                          )}
+                        />
+                      </button>
+                      <CatalogTile
+                        title={product.name}
+                        subtitle={product.code}
+                        price={formatCurrency(
                           ruleMatch
                             ? ruleMatch.price_incl_vat_euros
                             : productPriceInclEuros(product),
-                          locale === "en" ? "en-GB" : "nl-NL",
+                          localeTag,
                         )}
-                      </div>
-                    </button>
+                        accent={
+                          product.color ?? product.group?.color ?? "#1f93b8"
+                        }
+                        image={product.image_url}
+                        selected={cartHas(product.id)}
+                        highlighted={!!ruleMatch}
+                        onClick={() => addProduct(product, ruleMatch)}
+                      />
+                    </div>
                   );
                 })}
               </div>
-            ) : null}
-          </AdminSectionCard>
-
-          <div id="recent-sales">
-          <AdminSectionCard
-            title={t("adminNew.kassa.recentSales")}
-            description={t("adminNew.kassa.recentOverview")}
-            icon={Receipt}
-          >
-            {recentSales.loading ? (
-              <LoadingState label={t("adminNew.common.loading")} variant="list" />
-            ) : null}
-            {!recentSales.loading && (recentSales.data?.length ?? 0) === 0 ? (
-              <div className="text-sm text-navy-500">
-                {t("adminNew.kassa.noRecentSales")}
-              </div>
-            ) : null}
-            {!recentSales.loading && (recentSales.data?.length ?? 0) > 0 ? (
-              <div className="space-y-2">
-                {(recentSales.data ?? []).slice(0, 8).map((sale) => (
-                  <Link
-                    key={sale.id}
-                    href={`/${locale}/admin/kassa`}
-                  >
-                    <AdminListItem
-                      title={sale.invoice_number ?? sale.id}
-                      subtitle={new Date(sale.created_at).toLocaleString(
-                        locale === "en" ? "en-GB" : "nl-NL",
-                      )}
-                      meta={
-                        <div className="text-right">
-                          <div className="font-semibold text-navy-900">
-                            {formatCurrency(
-                              Number(sale.total_euros),
-                              locale === "en" ? "en-GB" : "nl-NL",
-                            )}
-                          </div>
-                          <div className="text-xs text-navy-500">
-                            {sale.payment_status}
-                          </div>
-                        </div>
-                      }
-                    />
-                  </Link>
-                ))}
-              </div>
-            ) : null}
-          </AdminSectionCard>
-          </div>
-        </div>
-
-        <div id="cart">
-        <AdminSectionCard
-          className="sticky top-24 self-start"
-          title={t("adminNew.kassa.cart")}
-          description={t("adminNew.kassa.cartOverview")}
-          icon={CreditCard}
-          action={
-            <Badge tone="navy">
-              {t("adminNew.kassa.lines", { count: cart.length })}
-            </Badge>
-          }
-        >
-          <div className="-mx-1 -mt-1 space-y-3">
-          <div className="max-h-[420px] space-y-2 overflow-y-auto px-1">
-            {cart.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-3 py-8 text-center text-sm text-navy-500">
-                {t("adminNew.kassa.emptyCartMessage")}
-              </div>
-            ) : (
-              cart.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-xl border border-navy-100 bg-gradient-to-r from-white to-sand-50/40 p-3"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-medium text-navy-900">
-                        {item.description}
-                      </div>
-                      <div className="text-xs text-navy-500">
-                        {t("adminNew.kassa.vat")} {item.vat_rate}%
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="rounded-md p-1 text-navy-400 hover:bg-sand-100 hover:text-rose-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="rounded border border-navy-200 px-2 py-0.5"
-                        onClick={() =>
-                          setCart((prev) =>
-                            prev.map((p) =>
-                              p.id === item.id
-                                ? {
-                                    ...p,
-                                    quantity: Math.max(1, p.quantity - 1),
-                                  }
-                                : p,
-                            ),
-                          )
-                        }
-                      >
-                        -
-                      </button>
-                      <span className="min-w-6 text-center">
-                        {item.quantity}
-                      </span>
-                      <button
-                        className="rounded border border-navy-200 px-2 py-0.5"
-                        onClick={() =>
-                          setCart((prev) =>
-                            prev.map((p) =>
-                              p.id === item.id
-                                ? { ...p, quantity: p.quantity + 1 }
-                                : p,
-                            ),
-                          )
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
-                    <div className="font-semibold text-navy-900">
-                      {formatCurrency(
-                        (item.unit_price_cents * item.quantity) / 100,
-                        locale === "en" ? "en-GB" : "nl-NL",
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))
             )}
           </div>
 
-          <div className="space-y-2 rounded-xl border border-navy-100 bg-sand-50/60 p-4 text-sm">
-            <Row
-              label={t("adminNew.kassa.subtotal")}
-              value={formatCurrency(
-                subtotalCents / 100,
-                locale === "en" ? "en-GB" : "nl-NL",
-              )}
-            />
-            <Row
-              label={t("adminNew.kassa.vatIncluded")}
-              value={formatCurrency(
-                vatCents / 100,
-                locale === "en" ? "en-GB" : "nl-NL",
-              )}
-            />
-            <Row
-              label={t("adminNew.kassa.total")}
-              value={formatCurrency(
-                totalCents / 100,
-                locale === "en" ? "en-GB" : "nl-NL",
-              )}
-              strong
-            />
+          {/* Most chosen */}
+          {mostChosen.length > 0 ? (
+            <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-navy-900">
+                <Star className="h-4 w-4 text-gold-500" />
+                {t("adminNew.kassa.mostChosen")}
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {mostChosen.map((product) => (
+                  <button
+                    key={product.id}
+                    type="button"
+                    onClick={() => addProduct(product)}
+                    className="flex items-center gap-2 rounded-xl border border-navy-100 bg-sand-50/60 px-3 py-2 text-left transition hover:border-marine-200 hover:bg-white"
+                  >
+                    <Ship className="h-4 w-4 shrink-0 text-marine-500" />
+                    <div className="min-w-0">
+                      <div className="truncate text-xs font-semibold text-navy-900">
+                        {product.name}
+                      </div>
+                      <div className="text-xs text-marine-700">
+                        {formatCurrency(
+                          productPriceInclEuros(product),
+                          localeTag,
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
-            <div className="pt-2 grid gap-2">
+          {/* Bottom stats strip */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <StatStrip
+              icon={Star}
+              tone="gold"
+              label={t("adminNew.kassa.lastSale")}
+              value={lastSale ? formatCurrency(lastSaleEuros, localeTag) : "—"}
+              hint={lastSale?.invoice_number ?? undefined}
+              href={lastSaleHref}
+              loading={recentSales.loading}
+            />
+            <StatStrip
+              icon={Receipt}
+              tone="marine"
+              label={t("adminNew.kassa.totalToday")}
+              value={money(todayTurnover)}
+              loading={todayQuery.loading}
+            />
+            <StatStrip
+              icon={ShoppingCart}
+              tone="navy"
+              label={t("adminNew.kassa.transactionsCount")}
+              value={todayTransactions}
+              loading={todayQuery.loading}
+            />
+          </div>
+        </div>
+
+        {/* ----------------------------- RIGHT: checkout --------------------------- */}
+        <div id="cart" className="space-y-4 xl:sticky xl:top-24">
+          {/* Cart */}
+          <div className="overflow-hidden rounded-2xl border border-navy-100/70 bg-white shadow-card">
+            <div className="flex items-center justify-between border-b border-navy-100/80 bg-gradient-to-r from-sand-50/90 to-white px-4 py-3">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4 text-marine-600" />
+                <h3 className="text-sm font-semibold text-navy-900">
+                  {t("adminNew.kassa.cart")}
+                </h3>
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-marine-500 px-1.5 text-xs font-bold text-white">
+                  {cart.length}
+                </span>
+              </div>
+            </div>
+
+            <div className="max-h-[340px] space-y-2 overflow-y-auto scrollbar-thin p-3">
+              {cart.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-3 py-8 text-center text-sm text-navy-500">
+                  {t("adminNew.kassa.emptyCartMessage")}
+                </div>
+              ) : (
+                cart.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 rounded-xl border border-navy-100 bg-white p-2.5"
+                  >
+                    <span
+                      className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-sand-50"
+                      style={{
+                        borderLeft: `3px solid ${item.color ?? "#1f93b8"}`,
+                      }}
+                    >
+                      {item.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.image_url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Ship className="h-5 w-5 text-marine-400" />
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-navy-900">
+                        {item.description}
+                      </div>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <button
+                          onClick={() => changeQty(item.id, -1)}
+                          className="flex h-6 w-6 items-center justify-center rounded-md border border-navy-200 text-navy-600 hover:bg-sand-50"
+                          aria-label="-"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="min-w-6 text-center text-sm tabular-nums">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => changeQty(item.id, 1)}
+                          className="flex h-6 w-6 items-center justify-center rounded-md border border-navy-200 text-navy-600 hover:bg-sand-50"
+                          aria-label="+"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-sm font-semibold text-navy-900">
+                        {money(item.unit_price_cents * item.quantity)}
+                      </span>
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="rounded-md p-1 text-navy-400 hover:bg-sand-100 hover:text-rose-600"
+                        aria-label="delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {note ? (
+              <div className="mx-3 mb-2 rounded-lg bg-sand-50 px-3 py-2 text-xs text-navy-600">
+                {note}
+              </div>
+            ) : null}
+
+            {/* Totals */}
+            <div className="space-y-1.5 border-t border-navy-100/80 px-4 py-3 text-sm">
+              <Row
+                label={t("adminNew.kassa.totalExcl")}
+                value={money(exclCents)}
+              />
+              <Row
+                label={t("adminNew.kassa.vatPercent", { rate: primaryVatRate })}
+                value={money(vatCents)}
+              />
+              <div className="mt-1 flex items-center justify-between border-t border-navy-100 pt-2">
+                <span className="text-base font-bold text-navy-900">
+                  {t("adminNew.kassa.total")}
+                </span>
+                <span className="text-xl font-bold text-navy-900">
+                  {money(totalCents)}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-2 border-t border-navy-100/80 px-3 py-3">
               <Button
-                variant="gold"
-                size="md"
+                variant="outline"
+                size="sm"
                 fullWidth
-                leftIcon={<CreditCard className="h-4 w-4" />}
-                onClick={() => setCheckoutConfirm("standard")}
-                disabled={checkout.loading}
+                leftIcon={<MessageSquarePlus className="h-4 w-4" />}
+                onClick={() => {
+                  setNoteDraft(note);
+                  setShowNoteModal(true);
+                }}
               >
-                {checkout.loading
-                  ? t("adminNew.kassa.processing")
-                  : t("adminNew.kassa.checkout")}
+                {t("adminNew.kassa.addNote")}
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                fullWidth
+                leftIcon={<Trash2 className="h-4 w-4" />}
+                onClick={() => {
+                  setCart([]);
+                  setNote("");
+                }}
+                className="text-rose-600 hover:bg-rose-50"
+              >
+                {t("adminNew.kassa.clearCart")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Customer */}
+          <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-navy-900">
+              <UserPlus className="h-4 w-4 text-marine-600" />
+              {t("adminNew.kassa.customer")}
+            </h3>
+            <select
+              value={customerId}
+              onChange={(e) => setCustomerId(e.target.value)}
+              className="input-base w-full"
+            >
+              <option value="">
+                {customersQuery.loading
+                  ? t("adminNew.common.loading")
+                  : t("adminNew.kassa.selectCustomer")}
+              </option>
+              {(customersQuery.data?.data ?? []).map((customer) => (
+                <option key={customer.id} value={customer.id}>
+                  {customer.name} ·{" "}
+                  {customer.email ?? t("adminNew.common.noEmail")}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => setShowCustomerModal(true)}
+              className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-marine-700 hover:text-marine-900"
+            >
+              <Plus className="h-4 w-4" />
+              {t("adminNew.kassa.newCustomer")}
+            </button>
+            <p className="mt-2 text-xs leading-relaxed text-navy-400">
+              {t("adminNew.kassa.customerHint")}
+            </p>
+          </div>
+
+          {/* Payment methods */}
+          <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
+            <h3 className="mb-3 text-sm font-semibold text-navy-900">
+              {t("adminNew.kassa.paymentMethodTitle")}
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {PAYMENT_BUTTONS.map((btn) => {
+                const Icon = btn.icon;
+                const active = !btn.action && paymentMethod === btn.method;
+                return (
+                  <button
+                    key={btn.method}
+                    type="button"
+                    onClick={() =>
+                      btn.action ? btn.action() : setPaymentMethod(btn.method)
+                    }
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition",
+                      active ? btn.activeClasses : `bg-white ${btn.classes}`,
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {btn.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -709,38 +1383,79 @@ export default function KassaPage() {
                 variant="outline"
                 size="sm"
                 fullWidth
-                onClick={() => setShowSplitModal(true)}
+                onClick={handleQuote}
+                disabled={quote.loading}
               >
-                {t("adminNew.kassa.splitPayment")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                fullWidth
-                onClick={() => setCheckoutConfirm("on_account")}
-              >
-                {t("adminNew.kassa.onAccount")}
+                {quote.loading
+                  ? t("adminNew.kassa.calculating")
+                  : t("adminNew.kassa.createQuote")}
               </Button>
             </div>
-            <Button
-              variant="outline"
-              size="md"
-              fullWidth
-              leftIcon={<ShoppingCart className="h-4 w-4" />}
-              onClick={handleQuote}
-              disabled={quote.loading}
-            >
-              {quote.loading
-                ? t("adminNew.kassa.calculating")
-                : t("adminNew.kassa.createQuote")}
-            </Button>
           </div>
-          </div>
-        </AdminSectionCard>
+
+          {/* Checkout */}
+          <button
+            type="button"
+            onClick={() =>
+              setCheckoutConfirm(
+                paymentMethod === "invoice" ? "on_account" : "standard",
+              )
+            }
+            disabled={checkout.loading || cart.length === 0}
+            className="flex w-full items-center justify-between rounded-2xl bg-marine-600 px-5 py-4 text-left font-semibold text-white shadow-elev transition hover:bg-marine-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="flex items-center gap-2 text-base">
+              <CreditCard className="h-5 w-5" />
+              {checkout.loading
+                ? t("adminNew.kassa.processing")
+                : t("adminNew.kassa.payNow")}
+            </span>
+            <span className="text-xl font-bold">{money(totalCents)}</span>
+          </button>
         </div>
       </AdminContent>
 
-      <Modal open={showSplitModal} onClose={() => setShowSplitModal(false)} size="md">
+      {/* Note modal */}
+      <Modal
+        open={showNoteModal}
+        onClose={() => setShowNoteModal(false)}
+        size="md"
+      >
+        <AdminModalHeader title={t("adminNew.kassa.noteTitle")} />
+        <AdminModalBody>
+          <textarea
+            value={noteDraft}
+            onChange={(e) => setNoteDraft(e.target.value)}
+            placeholder={t("adminNew.kassa.notePlaceholder")}
+            rows={4}
+            className="input-base w-full resize-none"
+          />
+        </AdminModalBody>
+        <AdminModalFooter>
+          <Button variant="ghost" onClick={() => setShowNoteModal(false)}>
+            {t("adminNew.common.cancel")}
+          </Button>
+          <Button
+            variant="gold"
+            onClick={() => {
+              setNote(noteDraft.trim());
+              setShowNoteModal(false);
+              if (noteDraft.trim()) {
+                push({ tone: "success", title: t("adminNew.kassa.noteSaved") });
+              }
+            }}
+          >
+            {t("adminNew.common.save")}
+          </Button>
+        </AdminModalFooter>
+      </Modal>
+
+      {/* Split modal */}
+      <Modal
+        open={showSplitModal}
+        onClose={() => setShowSplitModal(false)}
+        size="md"
+      >
         <AdminModalHeader title={t("adminNew.kassa.splitPayment")} />
         <AdminModalBody>
           {splitPayments.map((row, idx) => (
@@ -750,7 +1465,9 @@ export default function KassaPage() {
                 value={row.method}
                 onChange={(e) =>
                   setSplitPayments((prev) =>
-                    prev.map((p, i) => (i === idx ? { ...p, method: e.target.value } : p)),
+                    prev.map((p, i) =>
+                      i === idx ? { ...p, method: e.target.value } : p,
+                    ),
                   )
                 }
               >
@@ -763,7 +1480,9 @@ export default function KassaPage() {
                 value={row.amount}
                 onChange={(e) =>
                   setSplitPayments((prev) =>
-                    prev.map((p, i) => (i === idx ? { ...p, amount: e.target.value } : p)),
+                    prev.map((p, i) =>
+                      i === idx ? { ...p, amount: e.target.value } : p,
+                    ),
                   )
                 }
                 placeholder={t("adminNew.kassa.amountPlaceholder")}
@@ -772,32 +1491,156 @@ export default function KassaPage() {
           ))}
         </AdminModalBody>
         <AdminModalFooter>
-          <Button variant="ghost" onClick={() => setShowSplitModal(false)}>{t("adminNew.common.cancel")}</Button>
-          <Button variant="gold" onClick={() => setCheckoutConfirm("split")}>{t("adminNew.kassa.checkout")}</Button>
+          <Button variant="ghost" onClick={() => setShowSplitModal(false)}>
+            {t("adminNew.common.cancel")}
+          </Button>
+          <Button variant="gold" onClick={() => setCheckoutConfirm("split")}>
+            {t("adminNew.kassa.checkout")}
+          </Button>
         </AdminModalFooter>
       </Modal>
 
-      <Modal open={showQrModal} onClose={() => setShowQrModal(false)} size="md">
-        <AdminModalHeader title={t("adminNew.kassa.qrPayment")} />
+      {/* Camera barcode scanner (opened by the Scan barcode button) */}
+      <BarcodeScannerModal
+        open={showCamera}
+        onClose={() => setShowCamera(false)}
+        onDetected={(code) => {
+          void runScan(code, "camera");
+          setShowCamera(false);
+        }}
+      />
+
+      <Modal open={showQrModal} onClose={closeQrModal} size="md">
+        <AdminModalHeader
+          title={t("adminNew.kassa.qrPayment")}
+          subtitle={t("adminNew.kassa.qrSubtitle")}
+        />
         <AdminModalBody>
-          <div className="text-center">
-          {qrUrl ? (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrUrl)}`}
-                alt="Mollie QR"
-                className="mx-auto rounded-lg border border-navy-100"
-              />
-              <a href={qrUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-marine-700">
-                {qrUrl} <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            </>
-          ) : null}
-          </div>
+          {(() => {
+            const status = (
+              qrSession?.status ?? (qrStarting ? "pending" : "")
+            ).toLowerCase();
+            const payUrl =
+              qrSession?.checkout_url ?? qrSession?.qr_payload ?? null;
+            const paid = status === "paid" || status === "completed";
+            const failed =
+              status === "expired" ||
+              status === "failed" ||
+              status === "canceled" ||
+              status === "cancelled";
+            const statusKey = paid
+              ? "qrPaid"
+              : failed
+                ? "qrFailed"
+                : "qrWaiting";
+            return (
+              <div className="text-center">
+                {qrStarting && !qrSession ? (
+                  <div className="py-10">
+                    <LoadingState label={t("adminNew.kassa.qrCreating")} />
+                  </div>
+                ) : paid ? (
+                  <div className="py-6">
+                    <Check className="mx-auto h-14 w-14 rounded-full bg-emerald-50 p-3 text-emerald-600" />
+                    <div className="mt-3 text-lg font-semibold text-navy-900">
+                      {t("adminNew.kassa.qrPaid")}
+                    </div>
+                    {qrSession?.invoice_id ? (
+                      <Link
+                        href={`/${locale}/admin/facturen/${qrSession.invoice_id}`}
+                        className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-marine-700"
+                      >
+                        {qrSession.invoice_number ??
+                          t("adminNew.invoiceDetail.actions.openPdf")}
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Link>
+                    ) : null}
+                  </div>
+                ) : failed ? (
+                  <div className="py-6">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+                      <QrCode className="h-7 w-7" />
+                    </div>
+                    <div className="mt-3 text-lg font-semibold text-navy-900">
+                      {t("adminNew.kassa.qrFailed")}
+                    </div>
+                  </div>
+                ) : payUrl ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(payUrl)}`}
+                      alt="Mollie QR"
+                      className="mx-auto rounded-lg border border-navy-100"
+                    />
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-marine-50 px-3 py-1 text-xs font-semibold text-marine-700">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-marine-500" />
+                      {t(`adminNew.kassa.${statusKey}`)}
+                    </div>
+                    <div className="mt-4 flex flex-wrap justify-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        leftIcon={<Check className="h-3.5 w-3.5" />}
+                        onClick={() => {
+                          void navigator.clipboard?.writeText(payUrl);
+                          setQrCopied(true);
+                        }}
+                      >
+                        {qrCopied
+                          ? t("adminNew.kassa.qrCopied")
+                          : t("adminNew.kassa.qrCopy")}
+                      </Button>
+                      <a
+                        href={payUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          leftIcon={<ExternalLink className="h-3.5 w-3.5" />}
+                        >
+                          {t("adminNew.kassa.qrOpen")}
+                        </Button>
+                      </a>
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            );
+          })()}
         </AdminModalBody>
+        <AdminModalFooter>
+          {qrSession &&
+          ![
+            "paid",
+            "completed",
+            "expired",
+            "failed",
+            "canceled",
+            "cancelled",
+          ].includes((qrSession.status ?? "").toLowerCase()) ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (qrSession?.session_id)
+                  void kassaService
+                    .cancelQrSession(qrSession.session_id)
+                    .catch(() => {});
+                closeQrModal();
+              }}
+            >
+              {t("adminNew.kassa.qrCancel")}
+            </Button>
+          ) : null}
+          <Button variant="gold" onClick={closeQrModal}>
+            {t("adminNew.common.close")}
+          </Button>
+        </AdminModalFooter>
       </Modal>
 
+      {/* New customer modal */}
       <Modal
         open={showCustomerModal}
         onClose={() => setShowCustomerModal(false)}
@@ -824,6 +1667,13 @@ export default function KassaPage() {
                 setNewCustomer((prev) => ({ ...prev, email: e.target.value }))
               }
               type="email"
+            />
+            <Input
+              label={t("adminNew.common.phone")}
+              value={newCustomer.phone}
+              onChange={(e) =>
+                setNewCustomer((prev) => ({ ...prev, phone: e.target.value }))
+              }
             />
           </AdminModalBody>
           <AdminModalFooter>
@@ -859,7 +1709,7 @@ export default function KassaPage() {
         }}
         title={t("adminNew.kassa.confirmCheckoutTitle")}
         message={t("adminNew.kassa.confirmCheckout", {
-          total: formatCurrency(totalCents / 100, localeTag),
+          total: money(totalCents),
           method: checkoutConfirm ? checkoutMethodLabel(checkoutConfirm) : "",
         })}
         confirmLabel={t("adminNew.kassa.checkout")}
@@ -872,23 +1722,222 @@ export default function KassaPage() {
   );
 }
 
-function Row({
+/* -------------------------------------------------------------------------- */
+/*                              Sub-components                                 */
+/* -------------------------------------------------------------------------- */
+
+function CategoryTab({
   label,
-  value,
-  strong,
+  icon: Icon,
+  accent,
+  active,
+  onClick,
 }: {
   label: string;
-  value: string;
-  strong?: boolean;
+  icon: LucideIcon;
+  accent: string;
+  active: boolean;
+  onClick: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-navy-600">{label}</span>
-      <span
-        className={strong ? "font-semibold text-navy-900" : "text-navy-800"}
+    <button
+      type="button"
+      onClick={onClick}
+      style={
+        active ? { backgroundColor: accent, borderColor: accent } : undefined
+      }
+      className={cn(
+        "inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition",
+        active
+          ? "text-white shadow-sm"
+          : "border-navy-100 bg-white text-navy-700 hover:border-navy-200 hover:bg-sand-50",
+      )}
+    >
+      <Icon
+        className="h-4 w-4"
+        style={active ? undefined : { color: accent }}
+      />
+      {label}
+    </button>
+  );
+}
+
+function CatalogTile({
+  title,
+  subtitle,
+  price,
+  accent,
+  selected,
+  highlighted,
+  image,
+  onClick,
+}: {
+  title: string;
+  subtitle?: string;
+  price: string;
+  accent: string;
+  selected?: boolean;
+  highlighted?: boolean;
+  image?: string | null;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={!selected ? { borderLeftColor: accent } : undefined}
+      className={cn(
+        "group relative flex h-full flex-col justify-between gap-2 rounded-xl border p-3 text-left transition w-full",
+        selected
+          ? "border-marine-500 bg-marine-500 text-white shadow-sm"
+          : cn(
+              "border-l-4 border-navy-100/80 bg-white hover:-translate-y-0.5 hover:border-marine-200 hover:shadow-card",
+              highlighted && "ring-2 ring-marine-300",
+            ),
+      )}
+    >
+      <div className="flex items-start justify-between gap-1">
+        <div className="min-w-0">
+          <div
+            className={cn(
+              "text-sm font-semibold leading-tight",
+              selected ? "text-white" : "text-navy-900",
+            )}
+          >
+            {title}
+          </div>
+          {subtitle ? (
+            <div
+              className={cn(
+                "mt-0.5 truncate text-xs",
+                selected ? "text-white/80" : "text-navy-400",
+              )}
+            >
+              {subtitle}
+            </div>
+          ) : null}
+        </div>
+        {selected ? (
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/25">
+            <Check className="h-3 w-3" />
+          </span>
+        ) : image ? (
+          <span className="h-8 w-8 shrink-0 overflow-hidden rounded-md ring-1 ring-navy-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={image} alt="" className="h-full w-full object-cover" />
+          </span>
+        ) : (
+          <Ship
+            className={cn(
+              "h-4 w-4 shrink-0 transition",
+              "text-navy-300 group-hover:text-marine-400",
+            )}
+          />
+        )}
+      </div>
+      <div
+        className={cn(
+          "text-base font-bold",
+          selected ? "text-white" : "text-marine-700",
+        )}
       >
-        {value}
+        {price}
+      </div>
+    </button>
+  );
+}
+
+function StatStrip({
+  icon: Icon,
+  tone,
+  label,
+  value,
+  hint,
+  loading,
+  href,
+}: {
+  icon: LucideIcon;
+  tone: "navy" | "marine" | "gold";
+  label: string;
+  value: React.ReactNode;
+  hint?: string;
+  loading?: boolean;
+  href?: string;
+}) {
+  const tones: Record<string, string> = {
+    navy: "bg-navy-50 text-navy-700",
+    marine: "bg-marine-50 text-marine-700",
+    gold: "bg-gold-50 text-gold-700",
+  };
+  const inner = (
+    <>
+      <span
+        className={cn(
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+          tones[tone],
+        )}
+      >
+        <Icon className="h-4 w-4" />
       </span>
+      <div className="min-w-0">
+        <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
+          {label}
+        </div>
+        {loading ? (
+          <span className="mt-1 block h-5 w-16 animate-pulse rounded bg-navy-100" />
+        ) : (
+          <div className="truncate text-lg font-semibold text-navy-900">
+            {value}
+          </div>
+        )}
+        {hint && !loading ? (
+          <div className="truncate text-xs text-navy-400">{hint}</div>
+        ) : null}
+      </div>
+    </>
+  );
+  const base =
+    "flex items-center gap-3 rounded-2xl border border-navy-100/70 bg-white px-4 py-3 shadow-card";
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={cn(base, "transition hover:border-navy-200 hover:shadow-md")}
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return <div className={base}>{inner}</div>;
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-navy-500">{label}</span>
+      <span className="font-medium text-navy-800">{value}</span>
+    </div>
+  );
+}
+
+function QuickRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: LucideIcon;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-navy-400">
+        <Icon className="h-3.5 w-3.5" />
+        {label}
+      </span>
+      <div className="flex flex-1 gap-1.5 overflow-x-auto pb-0.5">
+        {children}
+      </div>
     </div>
   );
 }

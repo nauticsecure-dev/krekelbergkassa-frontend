@@ -128,7 +128,14 @@ export default function WorkOrdersPage() {
                 <tbody>
                   {rows.map((row) => (
                     <AdminTableRow key={String(row.id)}>
-                      <AdminTableCell className="font-semibold">{String(row.number ?? row.id)}</AdminTableCell>
+                      <AdminTableCell className="font-semibold">
+                        <Link
+                          href={`/${locale}/admin/werkorders/${row.id}`}
+                          className="text-marine-700 hover:text-marine-900"
+                        >
+                          {String(row.number ?? row.id)}
+                        </Link>
+                      </AdminTableCell>
                       <AdminTableCell>{String(row.type ?? '—')}</AdminTableCell>
                       <AdminTableCell>
                         <select
@@ -152,12 +159,13 @@ export default function WorkOrdersPage() {
                       <AdminTableCell>
                         {row.due_date ? formatDate(String(row.due_date), dateLocale) : '—'}
                       </AdminTableCell>
-                      <AdminTableCell>
-                        {row.boat_id ? (
-                          <Link href={`/${locale}/admin/boten/${row.boat_id}`} className="text-sm font-semibold text-marine-700">
-                            {t('adminNew.boats.title')} →
-                          </Link>
-                        ) : null}
+                      <AdminTableCell className="text-right">
+                        <Link
+                          href={`/${locale}/admin/werkorders/${row.id}`}
+                          className="text-sm font-semibold text-marine-700 hover:text-marine-900"
+                        >
+                          {t('adminNew.workOrders.detail.open')} →
+                        </Link>
                       </AdminTableCell>
                     </AdminTableRow>
                   ))}

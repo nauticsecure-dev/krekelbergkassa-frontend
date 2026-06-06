@@ -506,7 +506,9 @@
     "ctaTitle": "Bereit, Ihren Termin zu buchen?",
     "ctaDesc": "Reservieren Sie in unter 2 Minuten und erhalten Sie sofort eine Kostenangabe.",
     "ctaContact": "Kontakt",
-    "editService": "Service bearbeiten"
+    "editService": "Service bearbeiten",
+    "onRequest": "Auf Anfrage",
+    "from": "ab"
   },
   "contactPage": {
     "badge": "Besuchen oder anrufen",
@@ -548,7 +550,8 @@
     "thursday": "Donnerstag",
     "friday": "Freitag",
     "saturday": "Samstag",
-    "sunday": "Sonntag"
+    "sunday": "Sonntag",
+    "today": "Heute"
   },
   "apartmentsPage": {
     "badge": "Aufenthalt an den Maasplassen",
@@ -1113,6 +1116,7 @@
     "common": {
       "loading": "Laden…",
       "unknown": "Unbekannt",
+      "close": "Schließen",
       "name": "Name",
       "email": "E-Mail",
       "phone": "Telefon",
@@ -1188,18 +1192,30 @@
         "contact": "Kontakt",
         "locale": "Sprache",
         "boats": "Boote",
-        "created": "Erstellt"
+        "created": "Erstellt",
+        "status": "Status",
+        "lastLogin": "Letzter Login"
       },
       "details": "Details",
       "total": "{count} Kunden gesamt",
       "results": "{count} Ergebnisse",
+      "allLanguages": "Alle Sprachen",
+      "allStatuses": "Alle Status",
+      "statusActive": "Aktiv",
+      "statusBlocked": "Gesperrt",
+      "impersonate": "Anmelden als",
+      "block": "Sperren",
+      "unblock": "Entsperren",
+      "confirmBlock": "{name} sperren? Der Kunde wird abgemeldet und kann sich nicht mehr anmelden.",
       "modal": {
         "title": "Neuer Kunde",
         "subtitle": "Name und E-Mail reichen für die schnelle Erfassung."
       },
       "toasts": {
         "created": "Kunde erstellt",
-        "createFailed": "Erstellung fehlgeschlagen"
+        "createFailed": "Erstellung fehlgeschlagen",
+        "blocked": "Kunde gesperrt",
+        "unblocked": "Kunde entsperrt"
       }
     },
     "auth": {
@@ -1217,7 +1233,185 @@
     "sidebar": {
       "calculator": "Rechner",
       "sync": "Offline / Sync",
-      "workOrders": "Arbeitsaufträge"
+      "workOrders": "Arbeitsaufträge",
+      "productGroups": "Produktgruppen",
+      "reports": "Berichte",
+      "reminders": "Erinnerungen",
+      "brokerage": "Maklertarife",
+      "timeline": "Zeitleiste",
+      "sales": "Verkäufe"
+    },
+    "sales": {
+      "title": "Verkäufe",
+      "subtitle": "Letzte Kassenverkäufe und ihre Rechnungen",
+      "listTitle": "Letzte Verkäufe",
+      "listSubtitle": "Jede an der Kasse verarbeitete Transaktion",
+      "searchPlaceholder": "Nach Rechnung oder Kunde suchen",
+      "count": "{count} Verkäufe",
+      "total": "Gesamt",
+      "emptyTitle": "Noch keine Verkäufe",
+      "emptyMessage": "Verkäufe erscheinen hier, nachdem Sie an der Kasse abgerechnet haben.",
+      "openInvoice": "Rechnung öffnen",
+      "noInvoice": "Keine Rechnung",
+      "columns": {
+        "invoice": "Rechnung",
+        "customer": "Kunde",
+        "amount": "Betrag",
+        "method": "Methode",
+        "status": "Status",
+        "date": "Datum"
+      }
+    },
+    "timeline": {
+      "title": "Zeitleiste",
+      "subtitle": "Ein Feed für alles, was auf der Plattform passiert",
+      "feedTitle": "Aktivitätsfeed",
+      "feedSubtitle": "Audit-Ereignisse und Modul-Aktivität an einem Ort",
+      "searchPlaceholder": "Nach Titel, Rechnung, Kunde suchen…",
+      "allCategories": "Alle Kategorien",
+      "from": "Von",
+      "to": "Bis",
+      "open": "Öffnen",
+      "count": "{count} Ereignisse",
+      "emptyTitle": "Noch nichts hier",
+      "emptyMessage": "Aktivität erscheint, sobald die Plattform genutzt wird.",
+      "categories": {
+        "finance": "Finanzen",
+        "storage": "Lagerung",
+        "operations": "Betrieb",
+        "planning": "Planung",
+        "customer": "Kunde",
+        "system": "System"
+      }
+    },
+    "productGroups": {
+      "title": "Produktgruppen",
+      "subtitle": "Gruppen, Farben und MwSt. für Kasse und Berichte verwalten",
+      "new": "Neue Gruppe",
+      "editTitle": "Gruppe bearbeiten",
+      "formSubtitle": "Gruppen bestimmen POS-Farben und Umsatzkategorien",
+      "emptyTitle": "Keine Produktgruppen",
+      "emptyMessage": "Erstellen Sie Ihre erste Gruppe, um die Kasse farblich zu kennzeichnen.",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "confirmDelete": "Diese Produktgruppe löschen?",
+      "columns": {
+        "group": "Gruppe",
+        "code": "Code",
+        "vat": "MwSt.",
+        "status": "Status"
+      },
+      "fields": {
+        "code": "Code",
+        "name": "Name",
+        "color": "Farbe",
+        "icon": "Symbol",
+        "sortOrder": "Sortierreihenfolge",
+        "vatRate": "Standard-MwSt. %",
+        "vatCode": "MwSt.-Code",
+        "description": "Beschreibung",
+        "active": "Aktiv"
+      },
+      "toasts": {
+        "created": "Gruppe erstellt",
+        "updated": "Gruppe aktualisiert",
+        "deleted": "Gruppe gelöscht"
+      }
+    },
+    "scanner": {
+      "title": "Mit Kamera scannen",
+      "hint": "Richten Sie die Kamera auf einen Barcode oder QR-Code",
+      "starting": "Kamera wird gestartet…",
+      "denied": "Kamerazugriff verweigert. Erlauben Sie die Kamera und versuchen Sie es erneut.",
+      "error": "Die Kamera konnte auf diesem Gerät nicht gestartet werden."
+    },
+    "brokerage": {
+      "title": "Maklertarife",
+      "subtitle": "Monatliche Makler-Lagergebühren nach Bootslänge",
+      "intro": "Boote zum Verkauf erhalten 6 Monate gratis, danach eine monatliche Gebühr nach Länge.",
+      "new": "Neuer Tarif",
+      "editTitle": "Tarif bearbeiten",
+      "formSubtitle": "Monatsgebühr für einen Längenbereich festlegen",
+      "emptyTitle": "Noch keine Tarife",
+      "emptyMessage": "Fügen Sie den ersten Makler-Längenbereich hinzu.",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "deactivate": "Deaktivieren",
+      "confirmDeactivate": "Diesen Tarif deaktivieren?",
+      "columns": {
+        "range": "Längenbereich",
+        "perMonth": "Pro Monat",
+        "activeFrom": "Aktiv ab",
+        "status": "Status"
+      },
+      "fields": {
+        "minLength": "Min. Länge (cm)",
+        "maxLength": "Max. Länge (cm)",
+        "perMonth": "Preis pro Monat",
+        "activeFrom": "Aktiv ab",
+        "notes": "Notizen"
+      },
+      "toasts": {
+        "created": "Tarif erstellt",
+        "updated": "Tarif aktualisiert",
+        "deactivated": "Tarif deaktiviert"
+      }
+    },
+    "reports": {
+      "title": "Berichte",
+      "subtitle": "Umsatz, MwSt., Umsatz nach Gruppe und Zahlungsmethoden",
+      "export": "CSV exportieren",
+      "cashClose": "Tagesabschluss",
+      "noData": "Keine Daten für diesen Zeitraum.",
+      "vatTitle": "MwSt.-Aufschlüsselung",
+      "methodsTitle": "Zahlungsmethoden",
+      "groupTitle": "Umsatz nach Produktgruppe",
+      "marginMissing": "Marge ohne {count} Rechnungszeilen ohne Kostenpreis.",
+      "presets": {
+        "today": "Heute",
+        "yesterday": "Gestern",
+        "last_7_days": "Letzte 7 Tage",
+        "last_30_days": "Letzte 30 Tage",
+        "this_month": "Dieser Monat",
+        "previous_month": "Vormonat",
+        "this_year": "Dieses Jahr"
+      },
+      "totals": {
+        "turnover": "Umsatz",
+        "received": "Erhalten",
+        "open": "Offen",
+        "margin": "Bruttomarge"
+      },
+      "vat": {
+        "rate": "Satz",
+        "total": "Gesamt",
+        "paid": "Bezahlt",
+        "outstanding": "Offen"
+      }
+    },
+    "cashClose": {
+      "title": "Tagesabschluss",
+      "subtitle": "Kassenlade am Ende des Tages abgleichen",
+      "formTitle": "Neuer Tagesabschluss",
+      "submit": "Tagesabschluss speichern",
+      "historyTitle": "Letzte Abschlüsse",
+      "emptyTitle": "Noch keine Abschlüsse",
+      "emptyMessage": "Erfassen Sie Ihren ersten Tagesabschluss.",
+      "fields": {
+        "opening": "Anfangsbestand",
+        "paidOut": "Bar ausgezahlt",
+        "counted": "Gezähltes Bargeld",
+        "note": "Notiz"
+      },
+      "columns": {
+        "date": "Datum",
+        "expected": "Erwartet",
+        "counted": "Gezählt",
+        "difference": "Differenz"
+      },
+      "toasts": {
+        "created": "Tagesabschluss gespeichert"
+      }
     },
     "states": {
       "errorTitle": "Etwas ist schiefgelaufen",
@@ -1293,7 +1487,14 @@
       },
       "editTitle": "Boot bearbeiten",
       "editSubtitle": "Länge, Standort und andere Angaben korrigieren",
-      "dossierSubtitle": "Vollständige Bootakte mit Lagerung, Rechnungen und Audit-Log"
+      "dossierSubtitle": "Vollständige Bootakte mit Lagerung, Rechnungen und Audit-Log",
+      "tabs": {
+        "overview": "Übersicht",
+        "storage": "Lagerung",
+        "financial": "Rechnungen",
+        "workOrders": "Arbeitsaufträge",
+        "history": "Verlauf"
+      }
     },
     "kassa": {
       "title": "Kasse",
@@ -1339,15 +1540,64 @@
         "checkoutDone": "Checkout abgeschlossen",
         "checkoutFailed": "Checkout fehlgeschlagen",
         "quoteDone": "Angebot berechnet",
-        "quoteFailed": "Angebot fehlgeschlagen"
+        "quoteFailed": "Angebot fehlgeschlagen",
+        "added": "{name} zum Warenkorb hinzugefügt"
       },
       "splitPayment": "Geteilte Zahlung",
       "amountPlaceholder": "€",
       "qrPayment": "Mollie QR",
+      "qrSubtitle": "Kunde scannt zum Bezahlen mit iDEAL — die Rechnung folgt nach der Zahlung",
+      "qrCreating": "Zahlung wird erstellt…",
+      "qrWaiting": "Warten auf Zahlung",
+      "qrPaid": "Zahlung erhalten",
+      "qrFailed": "Zahlung fehlgeschlagen oder abgelaufen",
+      "qrCopy": "Link kopieren",
+      "qrCopied": "Kopiert",
+      "qrOpen": "Öffnen",
+      "qrCancel": "Zahlung abbrechen",
       "onAccount": "Auf Rechnung",
+      "allCategories": "Alle",
+      "quickAdd": "Schnell hinzufügen",
+      "filter": "Filter",
+      "sortBy": "Sortieren nach",
+      "sort": {
+        "recommended": "Empfohlen",
+        "priceAsc": "Preis (niedrig → hoch)",
+        "priceDesc": "Preis (hoch → niedrig)",
+        "name": "Name (A → Z)"
+      },
+      "resultsTitle": "{category} Ergebnisse",
+      "matchCount": "{count} Ergebnisse",
+      "mostChosen": "Meistgewählt",
+      "showMore": "Mehr anzeigen",
+      "totalExcl": "Gesamt exkl.",
+      "vatPercent": "MwSt. ({rate}%)",
+      "addNote": "Notiz hinzufügen",
+      "noteTitle": "Notiz",
+      "notePlaceholder": "Notiz für diesen Verkauf hinzufügen…",
+      "noteSaved": "Notiz gespeichert",
+      "clearCart": "Warenkorb leeren",
+      "customer": "Kunde",
+      "newCustomer": "Neuen Kunden hinzufügen",
+      "customerHint": "Ein Konto wird automatisch erstellt und die Rechnung wird per E-Mail gesendet.",
+      "paymentMethodTitle": "Zahlungsmethode",
+      "payNow": "Bezahlen",
+      "downPayment": "Anzahlung",
+      "lastSale": "Letzter Verkauf",
+      "totalToday": "Gesamt heute",
+      "transactionsCount": "Transaktionen",
       "confirmCheckout": "Checkout für {total} abschließen? Zahlungsmethode: {method}.",
       "confirmCheckoutTitle": "Checkout bestätigen",
       "editProducts": "Produkte verwalten",
+      "scanBarcode": "Barcode scannen",
+      "scanNotFound": "Kein Produkt gefunden für \"{code}\"",
+      "camera": "Kamera",
+      "fastScan": "Schnellscan",
+      "favourites": "Favoriten",
+      "recentlyUsed": "Kürzlich verwendet",
+      "bundles": "Bundles",
+      "bundleEmpty": "Dieses Bundle hat keine verfügbaren Produkte",
+      "favouriteToggle": "Favorit umschalten",
       "analytics": {
         "title": "Kassen-Analyse",
         "subtitle": "Umsatz, Transaktionen und Zahlungsmethoden",
@@ -1389,6 +1639,7 @@
         "type": "Typ",
         "paidUntil": "Bezahlt bis",
         "openBalance": "Offener Saldo",
+        "location": "Standort",
         "status": "Status"
       },
       "invoice": "Rechnung",
@@ -1409,8 +1660,27 @@
         "startDate": "Startdatum",
         "endDate": "Enddatum"
       },
+      "quickEdit": {
+        "title": "Vertrag aktualisieren",
+        "subtitle": "Zahlungsstatus und Lagerort ändern",
+        "statusLabel": "Zahlungsstatus",
+        "locationLabel": "Lagerort",
+        "locationPlaceholder": "z. B. Halle A · Reihe 3",
+        "locationEmpty": "Kein Standort festgelegt",
+        "editAria": "Status und Standort bearbeiten"
+      },
+      "brokerage": {
+        "toggle": "Makler (makelaardij)",
+        "startDate": "Makler-Startdatum",
+        "needLength": "Wählen Sie ein Boot mit bekannter Länge, um die Gebühr anzuzeigen.",
+        "freeUntil": "Gratis bis",
+        "monthlyFee": "Monatsgebühr",
+        "months": "Monate"
+      },
       "toasts": {
-        "created": "Vertrag erstellt"
+        "created": "Vertrag erstellt",
+        "statusUpdated": "Status aktualisiert",
+        "locationUpdated": "Standort aktualisiert"
       }
     },
     "sync": {
@@ -1629,6 +1899,10 @@
       "searchPlaceholder": "Nach Rechnungsnummer, Kunde oder E-Mail suchen",
       "allStatuses": "Alle Status",
       "allSources": "Alle Quellen",
+      "allGroups": "Alle Gruppen",
+      "allMethods": "Alle Methoden",
+      "dateFrom": "Von Datum",
+      "dateTo": "Bis Datum",
       "loading": "Rechnungen laden",
       "emptyTitle": "Keine Rechnungen",
       "emptyMessage": "Keine Rechnungen für die aktuellen Filter.",
@@ -1716,9 +1990,24 @@
         "markPaid": "Als bezahlt markieren",
         "mollieLink": "Mollie-Link",
         "regeneratePdf": "PDF neu erzeugen",
-        "openPdf": "PDF öffnen",
+        "openPdf": "Öffnen",
+        "downloadPdf": "Herunterladen",
+        "printPdf": "Drucken",
+        "emailPdf": "E-Mail",
         "sendReminder": "Erinnerung senden",
         "credit": "Gutschrift"
+      },
+      "pdfActions": "Rechnungs-PDF",
+      "creditModal": {
+        "title": "Gutschrift erstellen",
+        "subtitle": "Erstellen Sie eine vollständige oder teilweise Gutschrift für diese Rechnung.",
+        "scope": "Gutschriftbetrag",
+        "full": "Vollständige Gutschrift",
+        "partial": "Teilgutschrift",
+        "amount": "Gutzuschreibender Betrag",
+        "reason": "Grund (erforderlich)",
+        "reasonPlaceholder": "Warum wird diese Rechnung gutgeschrieben?",
+        "confirm": "Gutschrift erstellen"
       },
       "paymentMethods": {
         "cash": "Bar",
@@ -1739,6 +2028,8 @@
         "invoiceSent": "Rechnung gesendet",
         "paymentLinkCreated": "Zahlungslink erstellt",
         "pdfRegenerated": "PDF neu erzeugt",
+        "pdfDownloaded": "PDF heruntergeladen",
+        "emailed": "Rechnung per E-Mail gesendet",
         "credited": "Gutschrift erstellt",
         "cancelled": "Rechnung storniert",
         "reminderSent": "Erinnerung gesendet",
@@ -1802,7 +2093,12 @@
       "confirmNewInvoice": "Neue Rechnung für diesen Kunden erstellen?",
       "timelineTitle": "Aktivitäts-Zeitleiste",
       "timelineSubtitle": "Nachrichten, Erinnerungen und Portal-Aktivität",
-      "timelineEmpty": "Noch keine Zeitleisten-Einträge für diesen Kunden."
+      "timelineEmpty": "Noch keine Zeitleisten-Einträge für diesen Kunden.",
+      "timelinePlaceholder": "Notiz oder Nachricht schreiben…",
+      "timelineInternal": "Intern",
+      "timelineCustomer": "Für Kunde sichtbar",
+      "timelinePost": "Posten",
+      "timelinePosted": "Zur Zeitleiste hinzugefügt"
     },
     "calculator": {
       "title": "Rechner",
@@ -1851,11 +2147,31 @@
       },
       "records": {
         "title": "Rechner-Einträge",
+        "subtitle": "Jede gespeicherte Berechnung — öffnen zum Fortsetzen, Umwandeln oder Duplizieren.",
         "empty": "Noch keine gespeicherten Berechnungen.",
         "number": "Nummer",
         "date": "Datum",
+        "customer": "Kunde",
         "service": "Dienst",
-        "total": "Gesamt"
+        "status": "Status",
+        "documents": "Dokumente",
+        "createdBy": "Erstellt von",
+        "total": "Gesamt",
+        "quote": "Angebot",
+        "invoice": "Rechnung",
+        "open": "Öffnen",
+        "duplicate": "Duplizieren",
+        "archive": "Archivieren",
+        "loaded": "Berechnung geladen",
+        "duplicated": "Berechnung dupliziert",
+        "archived": "Berechnung archiviert",
+        "confirmArchive": "Diese Berechnung archivieren?",
+        "searchPlaceholder": "Nummer, Kunde, Boot suchen...",
+        "allServices": "Alle Dienste",
+        "allStatuses": "Alle Status",
+        "statusSaved": "Gespeichert",
+        "statusDraft": "Entwurf",
+        "statusArchived": "Archiviert"
       },
       "pricing": {
         "title": "Preise verwalten",
@@ -1965,6 +2281,22 @@
       "backToList": "Zurück zur Liste",
       "openInKassa": "In Kasse öffnen",
       "metaTitle": "Metadaten",
+      "statsTitle": "Verkaufsstatistik",
+      "stats": {
+        "timesSold": "Verkauft",
+        "revenue": "Umsatz (inkl. MwSt.)",
+        "lastSale": "Letzter Verkauf",
+        "empty": "Noch keine Verkäufe erfasst."
+      },
+      "ai": {
+        "imageTitle": "Produktbild",
+        "generate": "Mit KI generieren",
+        "generating": "Wird generiert…",
+        "subtitle": "Erstellen Sie ein sauberes POS-Kachelbild mit KI",
+        "prompt": "Bild beschreiben",
+        "hint": "Leer lassen, um den Produktnamen zu verwenden.",
+        "done": "Bild generiert"
+      },
       "searchPlaceholder": "Nach Code oder Name suchen",
       "loading": "Produkte laden",
       "emptyTitle": "Keine Produkte",
@@ -2271,16 +2603,96 @@
       "upload": "PDF hochladen",
       "queue": "Import-Warteschlange",
       "approve": "Genehmigen",
+      "process": "Verarbeiten",
+      "reject": "Ablehnen",
+      "markDuplicate": "Als Duplikat markieren",
+      "markWorkbon": "Als Werkbon markieren",
       "confirmApprove": "Diesen Import genehmigen und als Rechnung verarbeiten?",
+      "confirmReject": "Diesen Import ablehnen?",
+      "confirmWorkbon": "Einen Lieferanten-Werkbon (Arbeitsauftrag) erstellen, der auf die Lieferantenrechnung wartet?",
+      "searchPlaceholder": "Nach Datei, Lieferant oder Absender suchen",
+      "allStatuses": "Alle Status",
+      "allSources": "Alle Quellen",
+      "sourceUpload": "Upload",
+      "sourceEmail": "E-Mail",
       "emptyTitle": "Keine Importe",
       "emptyMessage": "Laden Sie ein PDF hoch, um zu beginnen.",
       "columns": {
         "file": "Datei",
+        "supplier": "Lieferant",
+        "source": "Quelle",
         "status": "Status",
         "date": "Datum"
       },
       "toasts": {
-        "uploaded": "Rechnung zur Verarbeitung hochgeladen"
+        "uploaded": "Rechnung zur Verarbeitung hochgeladen",
+        "processed": "Import verarbeitet",
+        "approved": "Import genehmigt",
+        "rejected": "Import abgelehnt",
+        "markedDuplicate": "Als Duplikat markiert",
+        "workbon": "Werkbon erstellt"
+      }
+    },
+    "templates": {
+      "title": "Extraktionsvorlagen",
+      "subtitle": "Felder auf einem Dokument markieren, damit künftige Importe automatisch ausgelesen werden",
+      "new": "Neue Vorlage",
+      "editTitle": "Vorlage bearbeiten",
+      "editorSubtitle": "Laden Sie ein Beispieldokument und zeichnen Sie die Feldzonen",
+      "listTitle": "Vorlagen",
+      "listSubtitle": "Wiederverwendbare getaggte Dokumentlayouts und ihre OCR-Metriken",
+      "detailsTitle": "Vorlagendetails",
+      "zonesTitle": "Getaggte Feldzonen",
+      "zonesSubtitle": "Zeichnen Sie einen Rahmen um jeden Wert und weisen Sie ein Feld zu",
+      "emptyTitle": "Noch keine Vorlagen",
+      "emptyMessage": "Erstellen Sie eine Vorlage, um dem System die Position jedes Werts beizubringen.",
+      "nameRequired": "Geben Sie der Vorlage zuerst einen Namen",
+      "saved": "Vorlage gespeichert",
+      "emailTitle": "E-Mail-Import",
+      "emailSubtitle": "Lieferantenrechnungen weiterleiten — sie werden automatisch zu Importen",
+      "emailAddress": "Weiterleitungsadresse",
+      "emailHint": "Leiten Sie PDFs hierher weiter oder lassen Sie Lieferanten sie hierher senden; passende Vorlagen lesen die Daten aus und erstellen ein Prüf-Element.",
+      "loadDoc": "Beispieldokument laden",
+      "changeDoc": "Dokument ändern",
+      "loadPrompt": "Laden Sie ein PDF oder Bild, um zu taggen",
+      "rendering": "Dokument wird gerendert…",
+      "renderError": "Dieses Dokument konnte nicht gerendert werden.",
+      "unsupported": "Nicht unterstützter Dateityp.",
+      "activeField": "Zeichenfeld",
+      "drawHint": "Ziehen Sie über das Dokument, um einen Rahmen für das gewählte Feld zu zeichnen.",
+      "zones": "Zonen",
+      "noZones": "Noch keine Zonen — zeichnen Sie eine auf dem Dokument.",
+      "keywordsPlaceholder": "z. B. ABC Marine, Antifouling",
+      "columns": {
+        "name": "Name",
+        "supplier": "Lieferanten-E-Mail",
+        "zones": "Zonen",
+        "usage": "Verwendet",
+        "confidence": "Ø Konfidenz",
+        "lastUsed": "Zuletzt verwendet"
+      },
+      "fieldsMeta": {
+        "name": "Vorlagenname",
+        "documentType": "Dokumenttyp",
+        "supplierEmail": "Lieferanten-E-Mail",
+        "keywords": "Match-Schlüsselwörter"
+      },
+      "docTypes": {
+        "purchase_invoice": "Eingangsrechnung",
+        "delivery_note": "Lieferschein",
+        "credit_note": "Gutschrift",
+        "quote": "Angebot"
+      },
+      "fields": {
+        "invoice_number": "Rechnungsnummer",
+        "invoice_date": "Rechnungsdatum",
+        "due_date": "Fälligkeitsdatum",
+        "supplier": "Lieferant",
+        "subtotal": "Zwischensumme",
+        "vat": "MwSt.",
+        "total": "Gesamt",
+        "iban": "IBAN",
+        "line_items": "Positionen"
       }
     },
     "workOrders": {
@@ -2306,7 +2718,32 @@
         "cancelled": "Storniert"
       },
       "toasts": {
-        "created": "Arbeitsauftrag erstellt"
+        "created": "Arbeitsauftrag erstellt",
+        "assigned": "Arbeitsauftrag zugewiesen",
+        "started": "Arbeitsauftrag gestartet",
+        "completed": "Arbeitsauftrag abgeschlossen",
+        "invoiceCreated": "Rechnung erstellt"
+      },
+      "detail": {
+        "open": "Öffnen",
+        "back": "← Zurück zu Arbeitsaufträgen",
+        "overview": "Arbeitsauftrag-Übersicht",
+        "boat": "Boot",
+        "assignee": "Zugewiesen an",
+        "unassigned": "Nicht zugewiesen",
+        "created": "Erstellt",
+        "assign": "Zuweisen",
+        "assignSubtitle": "Diesen Arbeitsauftrag einem Techniker zuweisen",
+        "start": "Starten",
+        "complete": "Abschließen",
+        "completeSubtitle": "Abschlussdetails erfassen",
+        "hours": "Geleistete Stunden",
+        "completionNotes": "Abschlussnotizen",
+        "generateInvoice": "Rechnung generieren",
+        "photos": "Fotos",
+        "noPhotos": "Keine Fotos angehängt.",
+        "documents": "Dokumente",
+        "noDocuments": "Keine Dokumente angehängt."
       },
       "forbiddenTitle": "Kein Zugriff auf Arbeitsaufträge",
       "forbiddenMessage": "Ihr Konto hat keine Berechtigung für /v1/work-orders. Der Admin-Rolle müssen in der API die work-orders-Rechte zugewiesen werden (Spatie), wie bei Staff/Manager."
@@ -2320,7 +2757,65 @@
       "today": "Heute",
       "upcoming": "Geplant",
       "overdue": "Überfällig",
-      "completed": "Erledigt"
+      "completed": "Erledigt",
+      "runRules": "Regeln jetzt ausführen",
+      "stats": {
+        "today": "Heute fällig",
+        "upcoming": "Geplant",
+        "overdue": "Überfällig",
+        "completed": "Erledigt"
+      },
+      "listTitle": "Erinnerungen",
+      "listSubtitle": "Offene Erinnerungen, die Aktion erfordern",
+      "emptyTitle": "Keine Erinnerungen",
+      "emptyMessage": "Derzeit ist nichts zu erledigen.",
+      "columns": {
+        "subject": "Betreff",
+        "type": "Typ",
+        "channel": "Kanal",
+        "status": "Status",
+        "date": "Datum"
+      },
+      "complete": "Abschließen",
+      "dismiss": "Verwerfen",
+      "done": "Fertig",
+      "rulesTitle": "Automatisierungsregeln",
+      "rulesSubtitle": "Regeln, die automatisch Erinnerungen erstellen",
+      "newRule": "Neue Regel",
+      "rulesEmptyTitle": "Noch keine Regeln",
+      "rulesEmptyMessage": "Fügen Sie eine Regel hinzu, um Erinnerungen zu automatisieren.",
+      "ruleEnabled": "Aktiv",
+      "ruleDisabled": "Aus",
+      "ruleSubtitle": "Die Engine erstellt Erinnerungen, wenn Bedingungen zutreffen",
+      "ruleFields": {
+        "entity": "Gilt für",
+        "trigger": "Auslöser",
+        "days": "Tage",
+        "channel": "Kanal",
+        "title": "Titelvorlage",
+        "body": "Textvorlage",
+        "enabled": "Aktiv"
+      },
+      "entities": {
+        "invoice": "Rechnung",
+        "contract": "Lagervertrag",
+        "workOrder": "Arbeitsauftrag"
+      },
+      "triggers": {
+        "overdueAfter": "Überfällig nach X Tagen",
+        "dueBefore": "Fällig in X Tagen",
+        "expiresBefore": "Läuft ab in X Tagen"
+      },
+      "channels": {
+        "manual": "Manuell (Aufgabe)",
+        "email": "E-Mail"
+      },
+      "toasts": {
+        "rulesRan": "Regeln ausgeführt",
+        "completed": "Erinnerung abgeschlossen",
+        "dismissed": "Erinnerung verworfen",
+        "ruleCreated": "Regel erstellt"
+      }
     }
   },
   "planning": {
@@ -2337,6 +2832,8 @@
     "newAppointment": "Neuer Termin",
     "realtimeStaff": "Live mit der Werftplanung verbunden",
     "realtimeCustomer": "Es werden nur Ihre eigenen Termine angezeigt",
+    "rescheduled": "Termin verschoben",
+    "dragHint": "Ziehen Sie einen Termin auf einen anderen Tag, um ihn zu verschieben",
     "appointment": "Termin",
     "confirm": "Genehmigen",
     "markComplete": "Als erledigt markieren",

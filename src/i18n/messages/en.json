@@ -506,7 +506,9 @@
     "ctaTitle": "Ready to book your slot?",
     "ctaDesc": "Reserve in under 2 minutes and receive an instant cost indication.",
     "ctaContact": "Contact",
-    "editService": "Edit service"
+    "editService": "Edit service",
+    "onRequest": "On request",
+    "from": "from"
   },
   "contactPage": {
     "badge": "Visit or call us",
@@ -548,7 +550,8 @@
     "thursday": "Thursday",
     "friday": "Friday",
     "saturday": "Saturday",
-    "sunday": "Sunday"
+    "sunday": "Sunday",
+    "today": "Today"
   },
   "apartmentsPage": {
     "badge": "Stay at the Maasplassen",
@@ -1113,6 +1116,7 @@
     "common": {
       "loading": "Loading…",
       "unknown": "Unknown",
+      "close": "Close",
       "name": "Name",
       "email": "Email",
       "phone": "Phone",
@@ -1188,18 +1192,30 @@
         "contact": "Contact",
         "locale": "Locale",
         "boats": "Boats",
-        "created": "Created"
+        "created": "Created",
+        "status": "Status",
+        "lastLogin": "Last login"
       },
       "details": "Details",
       "total": "{count} customers total",
       "results": "{count} results",
+      "allLanguages": "All languages",
+      "allStatuses": "All statuses",
+      "statusActive": "Active",
+      "statusBlocked": "Blocked",
+      "impersonate": "Log in as",
+      "block": "Block",
+      "unblock": "Unblock",
+      "confirmBlock": "Block {name}? They will be signed out and cannot log in.",
       "modal": {
         "title": "New customer",
         "subtitle": "Name and email are enough for quick registration."
       },
       "toasts": {
         "created": "Customer created",
-        "createFailed": "Create failed"
+        "createFailed": "Create failed",
+        "blocked": "Customer blocked",
+        "unblocked": "Customer unblocked"
       }
     },
     "auth": {
@@ -1217,7 +1233,185 @@
     "sidebar": {
       "calculator": "Calculator",
       "sync": "Offline / Sync",
-      "workOrders": "Work orders"
+      "workOrders": "Work orders",
+      "productGroups": "Product groups",
+      "reports": "Reports",
+      "reminders": "Reminders",
+      "brokerage": "Brokerage tariffs",
+      "timeline": "Timeline",
+      "sales": "Sales"
+    },
+    "sales": {
+      "title": "Sales",
+      "subtitle": "Recent kassa sales and their invoices",
+      "listTitle": "Recent sales",
+      "listSubtitle": "Every transaction processed at the kassa",
+      "searchPlaceholder": "Search by invoice or customer",
+      "count": "{count} sales",
+      "total": "Total",
+      "emptyTitle": "No sales yet",
+      "emptyMessage": "Sales appear here after you check out at the kassa.",
+      "openInvoice": "Open invoice",
+      "noInvoice": "No invoice",
+      "columns": {
+        "invoice": "Invoice",
+        "customer": "Customer",
+        "amount": "Amount",
+        "method": "Method",
+        "status": "Status",
+        "date": "Date"
+      }
+    },
+    "timeline": {
+      "title": "Timeline",
+      "subtitle": "One feed of everything happening across the platform",
+      "feedTitle": "Activity feed",
+      "feedSubtitle": "Audit events and module activity in one place",
+      "searchPlaceholder": "Search by title, invoice, customer…",
+      "allCategories": "All categories",
+      "from": "From",
+      "to": "To",
+      "open": "Open",
+      "count": "{count} events",
+      "emptyTitle": "Nothing here yet",
+      "emptyMessage": "Activity will appear as the platform is used.",
+      "categories": {
+        "finance": "Finance",
+        "storage": "Storage",
+        "operations": "Operations",
+        "planning": "Planning",
+        "customer": "Customer",
+        "system": "System"
+      }
+    },
+    "productGroups": {
+      "title": "Product groups",
+      "subtitle": "Manage groups, colours and VAT used across kassa and reporting",
+      "new": "New group",
+      "editTitle": "Edit group",
+      "formSubtitle": "Groups drive POS colours and revenue categorisation",
+      "emptyTitle": "No product groups",
+      "emptyMessage": "Create your first group to colour-code the kassa.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "confirmDelete": "Delete this product group?",
+      "columns": {
+        "group": "Group",
+        "code": "Code",
+        "vat": "VAT",
+        "status": "Status"
+      },
+      "fields": {
+        "code": "Code",
+        "name": "Name",
+        "color": "Colour",
+        "icon": "Icon",
+        "sortOrder": "Sort order",
+        "vatRate": "Default VAT %",
+        "vatCode": "VAT code",
+        "description": "Description",
+        "active": "Active"
+      },
+      "toasts": {
+        "created": "Group created",
+        "updated": "Group updated",
+        "deleted": "Group deleted"
+      }
+    },
+    "scanner": {
+      "title": "Scan with camera",
+      "hint": "Point the camera at a barcode or QR code",
+      "starting": "Starting camera…",
+      "denied": "Camera access denied. Allow camera permission and try again.",
+      "error": "Could not start the camera on this device."
+    },
+    "brokerage": {
+      "title": "Brokerage tariffs",
+      "subtitle": "Monthly makelaardij storage fees by boat length",
+      "intro": "Boats for sale get 6 months free, then a monthly fee based on length.",
+      "new": "New tariff",
+      "editTitle": "Edit tariff",
+      "formSubtitle": "Set the monthly fee for a boat-length range",
+      "emptyTitle": "No tariffs yet",
+      "emptyMessage": "Add the first brokerage tariff range.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "deactivate": "Deactivate",
+      "confirmDeactivate": "Deactivate this tariff?",
+      "columns": {
+        "range": "Length range",
+        "perMonth": "Per month",
+        "activeFrom": "Active from",
+        "status": "Status"
+      },
+      "fields": {
+        "minLength": "Min length (cm)",
+        "maxLength": "Max length (cm)",
+        "perMonth": "Price per month",
+        "activeFrom": "Active from",
+        "notes": "Notes"
+      },
+      "toasts": {
+        "created": "Tariff created",
+        "updated": "Tariff updated",
+        "deactivated": "Tariff deactivated"
+      }
+    },
+    "reports": {
+      "title": "Reports",
+      "subtitle": "Turnover, VAT, revenue by group and payment methods",
+      "export": "Export CSV",
+      "cashClose": "Cash close",
+      "noData": "No data for this period.",
+      "vatTitle": "VAT breakdown",
+      "methodsTitle": "Payment methods",
+      "groupTitle": "Revenue by product group",
+      "marginMissing": "Margin excludes {count} invoice lines without a cost price.",
+      "presets": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last_7_days": "Last 7 days",
+        "last_30_days": "Last 30 days",
+        "this_month": "This month",
+        "previous_month": "Previous month",
+        "this_year": "This year"
+      },
+      "totals": {
+        "turnover": "Turnover",
+        "received": "Received",
+        "open": "Outstanding",
+        "margin": "Gross margin"
+      },
+      "vat": {
+        "rate": "Rate",
+        "total": "Total",
+        "paid": "Paid",
+        "outstanding": "Outstanding"
+      }
+    },
+    "cashClose": {
+      "title": "Cash close",
+      "subtitle": "Reconcile the cash drawer at the end of the day",
+      "formTitle": "New cash close",
+      "submit": "Save cash close",
+      "historyTitle": "Recent closes",
+      "emptyTitle": "No cash closes yet",
+      "emptyMessage": "Record your first end-of-day cash close.",
+      "fields": {
+        "opening": "Opening cash",
+        "paidOut": "Cash paid out",
+        "counted": "Counted cash",
+        "note": "Note"
+      },
+      "columns": {
+        "date": "Date",
+        "expected": "Expected",
+        "counted": "Counted",
+        "difference": "Difference"
+      },
+      "toasts": {
+        "created": "Cash close saved"
+      }
     },
     "states": {
       "errorTitle": "Something went wrong",
@@ -1293,7 +1487,14 @@
       },
       "editTitle": "Edit boat",
       "editSubtitle": "Update length, location and other details",
-      "dossierSubtitle": "Full boat dossier with storage, invoices and audit log"
+      "dossierSubtitle": "Full boat dossier with storage, invoices and audit log",
+      "tabs": {
+        "overview": "Overview",
+        "storage": "Storage",
+        "financial": "Invoices",
+        "workOrders": "Work orders",
+        "history": "History"
+      }
     },
     "kassa": {
       "title": "Cash Desk",
@@ -1339,15 +1540,64 @@
         "checkoutDone": "Checkout completed",
         "checkoutFailed": "Checkout failed",
         "quoteDone": "Quote calculated",
-        "quoteFailed": "Quote failed"
+        "quoteFailed": "Quote failed",
+        "added": "{name} added to cart"
       },
       "splitPayment": "Split payment",
       "amountPlaceholder": "€",
       "qrPayment": "Mollie QR",
+      "qrSubtitle": "Customer scans to pay with iDEAL — the invoice is created after payment",
+      "qrCreating": "Creating payment…",
+      "qrWaiting": "Waiting for payment",
+      "qrPaid": "Payment received",
+      "qrFailed": "Payment failed or expired",
+      "qrCopy": "Copy link",
+      "qrCopied": "Copied",
+      "qrOpen": "Open",
+      "qrCancel": "Cancel payment",
       "onAccount": "On account",
+      "allCategories": "All",
+      "quickAdd": "Quick add",
+      "filter": "Filter",
+      "sortBy": "Sort by",
+      "sort": {
+        "recommended": "Recommended",
+        "priceAsc": "Price (low → high)",
+        "priceDesc": "Price (high → low)",
+        "name": "Name (A → Z)"
+      },
+      "resultsTitle": "{category} results",
+      "matchCount": "{count} results",
+      "mostChosen": "Most chosen",
+      "showMore": "Show more",
+      "totalExcl": "Total excl.",
+      "vatPercent": "VAT ({rate}%)",
+      "addNote": "Add note",
+      "noteTitle": "Note",
+      "notePlaceholder": "Add a note for this sale…",
+      "noteSaved": "Note saved",
+      "clearCart": "Clear cart",
+      "customer": "Customer",
+      "newCustomer": "Add new customer",
+      "customerHint": "An account is created automatically and the invoice is emailed.",
+      "paymentMethodTitle": "Payment method",
+      "payNow": "Check out",
+      "downPayment": "Down payment",
+      "lastSale": "Last sale",
+      "totalToday": "Total today",
+      "transactionsCount": "Transactions",
       "confirmCheckout": "Complete checkout for {total}? Payment method: {method}.",
       "confirmCheckoutTitle": "Confirm checkout",
       "editProducts": "Manage products",
+      "scanBarcode": "Scan barcode",
+      "scanNotFound": "No product found for \"{code}\"",
+      "camera": "Camera",
+      "fastScan": "Fast scan",
+      "favourites": "Favourites",
+      "recentlyUsed": "Recently used",
+      "bundles": "Bundles",
+      "bundleEmpty": "This bundle has no available products",
+      "favouriteToggle": "Toggle favourite",
       "analytics": {
         "title": "Cash desk analytics",
         "subtitle": "Turnover, transactions and payment methods",
@@ -1389,6 +1639,7 @@
         "type": "Type",
         "paidUntil": "Paid until",
         "openBalance": "Open balance",
+        "location": "Location",
         "status": "Status"
       },
       "invoice": "Invoice",
@@ -1409,8 +1660,27 @@
         "startDate": "Start date",
         "endDate": "End date"
       },
+      "quickEdit": {
+        "title": "Update contract",
+        "subtitle": "Change payment status and storage location",
+        "statusLabel": "Payment status",
+        "locationLabel": "Storage location",
+        "locationPlaceholder": "e.g. Hall A · row 3",
+        "locationEmpty": "No location set",
+        "editAria": "Edit status and location"
+      },
+      "brokerage": {
+        "toggle": "Brokerage (makelaardij)",
+        "startDate": "Brokerage start date",
+        "needLength": "Select a boat with a known length to preview the fee.",
+        "freeUntil": "Free until",
+        "monthlyFee": "Monthly fee",
+        "months": "months"
+      },
       "toasts": {
-        "created": "Contract created"
+        "created": "Contract created",
+        "statusUpdated": "Status updated",
+        "locationUpdated": "Location updated"
       }
     },
     "sync": {
@@ -1629,6 +1899,10 @@
       "searchPlaceholder": "Search by invoice number, customer or email",
       "allStatuses": "All statuses",
       "allSources": "All sources",
+      "allGroups": "All groups",
+      "allMethods": "All methods",
+      "dateFrom": "From date",
+      "dateTo": "To date",
       "loading": "Loading invoices",
       "emptyTitle": "No invoices",
       "emptyMessage": "No invoices match the current filters.",
@@ -1716,9 +1990,24 @@
         "markPaid": "Mark paid",
         "mollieLink": "Mollie link",
         "regeneratePdf": "Regenerate PDF",
-        "openPdf": "Open PDF",
+        "openPdf": "Open",
+        "downloadPdf": "Download",
+        "printPdf": "Print",
+        "emailPdf": "Email",
         "sendReminder": "Send reminder",
         "credit": "Credit"
+      },
+      "pdfActions": "Invoice PDF",
+      "creditModal": {
+        "title": "Create credit note",
+        "subtitle": "Issue a full or partial credit invoice for this invoice.",
+        "scope": "Credit amount",
+        "full": "Full credit",
+        "partial": "Partial credit",
+        "amount": "Amount to credit",
+        "reason": "Reason (required)",
+        "reasonPlaceholder": "Why is this invoice being credited?",
+        "confirm": "Create credit note"
       },
       "paymentMethods": {
         "cash": "Cash",
@@ -1739,6 +2028,8 @@
         "invoiceSent": "Invoice sent",
         "paymentLinkCreated": "Payment link created",
         "pdfRegenerated": "PDF regenerated",
+        "pdfDownloaded": "PDF downloaded",
+        "emailed": "Invoice emailed",
         "credited": "Credit invoice created",
         "cancelled": "Invoice cancelled",
         "reminderSent": "Reminder sent",
@@ -1802,7 +2093,12 @@
       "confirmNewInvoice": "Create a new invoice for this customer?",
       "timelineTitle": "Activity timeline",
       "timelineSubtitle": "Messages, reminders and portal activity",
-      "timelineEmpty": "No timeline items for this customer yet."
+      "timelineEmpty": "No timeline items for this customer yet.",
+      "timelinePlaceholder": "Write a note or message…",
+      "timelineInternal": "Internal",
+      "timelineCustomer": "Customer-visible",
+      "timelinePost": "Post",
+      "timelinePosted": "Added to timeline"
     },
     "calculator": {
       "title": "Calculator",
@@ -1851,11 +2147,31 @@
       },
       "records": {
         "title": "Calculator records",
+        "subtitle": "Every saved calculation — open to continue, convert or duplicate.",
         "empty": "No saved calculations yet.",
         "number": "Number",
         "date": "Date",
+        "customer": "Customer",
         "service": "Service",
-        "total": "Total"
+        "status": "Status",
+        "documents": "Documents",
+        "createdBy": "Created by",
+        "total": "Total",
+        "quote": "Quote",
+        "invoice": "Invoice",
+        "open": "Open",
+        "duplicate": "Duplicate",
+        "archive": "Archive",
+        "loaded": "Calculation loaded",
+        "duplicated": "Calculation duplicated",
+        "archived": "Calculation archived",
+        "confirmArchive": "Archive this calculation?",
+        "searchPlaceholder": "Search number, customer, boat...",
+        "allServices": "All services",
+        "allStatuses": "All statuses",
+        "statusSaved": "Saved",
+        "statusDraft": "Draft",
+        "statusArchived": "Archived"
       },
       "pricing": {
         "title": "Manage pricing",
@@ -1965,6 +2281,22 @@
       "backToList": "Back to list",
       "openInKassa": "Open in POS",
       "metaTitle": "Metadata",
+      "statsTitle": "Sales stats",
+      "stats": {
+        "timesSold": "Times sold",
+        "revenue": "Revenue (incl. VAT)",
+        "lastSale": "Last sale",
+        "empty": "No sales recorded yet."
+      },
+      "ai": {
+        "imageTitle": "Product image",
+        "generate": "Generate with AI",
+        "generating": "Generating…",
+        "subtitle": "Create a clean POS tile image with AI",
+        "prompt": "Describe the image",
+        "hint": "Leave empty to use the product name.",
+        "done": "Image generated"
+      },
       "searchPlaceholder": "Search by code or name",
       "loading": "Loading products",
       "emptyTitle": "No products",
@@ -2271,16 +2603,96 @@
       "upload": "Upload PDF",
       "queue": "Import queue",
       "approve": "Approve",
+      "process": "Process",
+      "reject": "Reject",
+      "markDuplicate": "Mark duplicate",
+      "markWorkbon": "Mark as workbon",
       "confirmApprove": "Approve this import and process it as an invoice?",
+      "confirmReject": "Reject this import?",
+      "confirmWorkbon": "Create a supplier workbon (work order) waiting for the supplier invoice?",
+      "searchPlaceholder": "Search by file, supplier or sender",
+      "allStatuses": "All statuses",
+      "allSources": "All sources",
+      "sourceUpload": "Upload",
+      "sourceEmail": "Email",
       "emptyTitle": "No imports",
       "emptyMessage": "Upload a PDF to get started.",
       "columns": {
         "file": "File",
+        "supplier": "Supplier",
+        "source": "Source",
         "status": "Status",
         "date": "Date"
       },
       "toasts": {
-        "uploaded": "Invoice uploaded for processing"
+        "uploaded": "Invoice uploaded for processing",
+        "processed": "Import processed",
+        "approved": "Import approved",
+        "rejected": "Import rejected",
+        "markedDuplicate": "Marked as duplicate",
+        "workbon": "Workbon created"
+      }
+    },
+    "templates": {
+      "title": "Extraction templates",
+      "subtitle": "Tag fields on a document so future imports extract automatically",
+      "new": "New template",
+      "editTitle": "Edit template",
+      "editorSubtitle": "Load a sample document and draw the field zones",
+      "listTitle": "Templates",
+      "listSubtitle": "Reusable tagged-document layouts and their OCR metrics",
+      "detailsTitle": "Template details",
+      "zonesTitle": "Tagged field zones",
+      "zonesSubtitle": "Draw a box around each value on the document and assign a field",
+      "emptyTitle": "No templates yet",
+      "emptyMessage": "Create a template to teach the system where each value sits.",
+      "nameRequired": "Give the template a name first",
+      "saved": "Template saved",
+      "emailTitle": "Email import",
+      "emailSubtitle": "Forward supplier invoices and they become imports automatically",
+      "emailAddress": "Forwarding address",
+      "emailHint": "Forward or set suppliers to send PDFs here; matching templates extract the data and create a review item.",
+      "loadDoc": "Load sample document",
+      "changeDoc": "Change document",
+      "loadPrompt": "Load a PDF or image to start tagging",
+      "rendering": "Rendering document…",
+      "renderError": "Could not render this document.",
+      "unsupported": "Unsupported file type.",
+      "activeField": "Drawing field",
+      "drawHint": "Drag on the document to draw a box for the selected field.",
+      "zones": "Zones",
+      "noZones": "No zones yet — draw one on the document.",
+      "keywordsPlaceholder": "e.g. ABC Marine, antifouling",
+      "columns": {
+        "name": "Name",
+        "supplier": "Supplier email",
+        "zones": "Zones",
+        "usage": "Used",
+        "confidence": "Avg confidence",
+        "lastUsed": "Last used"
+      },
+      "fieldsMeta": {
+        "name": "Template name",
+        "documentType": "Document type",
+        "supplierEmail": "Supplier email",
+        "keywords": "Match keywords"
+      },
+      "docTypes": {
+        "purchase_invoice": "Purchase invoice",
+        "delivery_note": "Delivery note",
+        "credit_note": "Credit note",
+        "quote": "Quote"
+      },
+      "fields": {
+        "invoice_number": "Invoice number",
+        "invoice_date": "Invoice date",
+        "due_date": "Due date",
+        "supplier": "Supplier",
+        "subtotal": "Subtotal",
+        "vat": "VAT",
+        "total": "Total",
+        "iban": "IBAN",
+        "line_items": "Line items"
       }
     },
     "workOrders": {
@@ -2306,7 +2718,32 @@
         "cancelled": "Cancelled"
       },
       "toasts": {
-        "created": "Work order created"
+        "created": "Work order created",
+        "assigned": "Work order assigned",
+        "started": "Work order started",
+        "completed": "Work order completed",
+        "invoiceCreated": "Invoice created"
+      },
+      "detail": {
+        "open": "Open",
+        "back": "← Back to work orders",
+        "overview": "Work order overview",
+        "boat": "Boat",
+        "assignee": "Assignee",
+        "unassigned": "Unassigned",
+        "created": "Created",
+        "assign": "Assign",
+        "assignSubtitle": "Assign this work order to a technician",
+        "start": "Start",
+        "complete": "Complete",
+        "completeSubtitle": "Register completion details",
+        "hours": "Hours worked",
+        "completionNotes": "Completion notes",
+        "generateInvoice": "Generate invoice",
+        "photos": "Photos",
+        "noPhotos": "No photos attached.",
+        "documents": "Documents",
+        "noDocuments": "No documents attached."
       },
       "forbiddenTitle": "No access to work orders",
       "forbiddenMessage": "Your account does not have permission for /v1/work-orders. The admin role needs work-orders permissions granted in the API (Spatie), same as staff/manager."
@@ -2320,7 +2757,65 @@
       "today": "Today",
       "upcoming": "Upcoming",
       "overdue": "Overdue",
-      "completed": "Completed"
+      "completed": "Completed",
+      "runRules": "Run rules now",
+      "stats": {
+        "today": "Due today",
+        "upcoming": "Upcoming",
+        "overdue": "Overdue",
+        "completed": "Completed"
+      },
+      "listTitle": "Reminders",
+      "listSubtitle": "Open reminders that need action",
+      "emptyTitle": "No reminders",
+      "emptyMessage": "Nothing needs attention right now.",
+      "columns": {
+        "subject": "Subject",
+        "type": "Type",
+        "channel": "Channel",
+        "status": "Status",
+        "date": "Date"
+      },
+      "complete": "Complete",
+      "dismiss": "Dismiss",
+      "done": "Done",
+      "rulesTitle": "Automation rules",
+      "rulesSubtitle": "Rules that automatically create reminders",
+      "newRule": "New rule",
+      "rulesEmptyTitle": "No rules yet",
+      "rulesEmptyMessage": "Add a rule to automate reminders.",
+      "ruleEnabled": "Enabled",
+      "ruleDisabled": "Disabled",
+      "ruleSubtitle": "The engine creates reminders when conditions match",
+      "ruleFields": {
+        "entity": "Applies to",
+        "trigger": "Trigger",
+        "days": "Days",
+        "channel": "Channel",
+        "title": "Title template",
+        "body": "Body template",
+        "enabled": "Enabled"
+      },
+      "entities": {
+        "invoice": "Invoice",
+        "contract": "Storage contract",
+        "workOrder": "Work order"
+      },
+      "triggers": {
+        "overdueAfter": "Overdue after X days",
+        "dueBefore": "Due within X days",
+        "expiresBefore": "Expires within X days"
+      },
+      "channels": {
+        "manual": "Manual (task)",
+        "email": "Email"
+      },
+      "toasts": {
+        "rulesRan": "Rules executed",
+        "completed": "Reminder completed",
+        "dismissed": "Reminder dismissed",
+        "ruleCreated": "Rule created"
+      }
     }
   },
   "planning": {
@@ -2337,6 +2832,8 @@
     "newAppointment": "New appointment",
     "realtimeStaff": "Live linked to the yard planning",
     "realtimeCustomer": "Only your own appointments are shown",
+    "rescheduled": "Appointment rescheduled",
+    "dragHint": "Drag an appointment to another day to reschedule",
     "appointment": "Appointment",
     "confirm": "Approve",
     "markComplete": "Mark complete",

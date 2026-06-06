@@ -2,8 +2,10 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { FilePlus2, Plus, Ship, ShieldCheck, Warehouse, XCircle } from 'lucide-react';
+import { FilePlus2, MapPin, Pencil, Plus, Ship, ShieldCheck, Warehouse, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { PaymentStatusBadge } from '@/components/admin/StatusBadge';
+import type { StallingContract } from '@/lib/api-types';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
   AdminContent,
@@ -28,7 +30,14 @@ import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { auditService, boatsService, customersService, stallingService } from '@/lib/services';
+import {
+  auditService,
+  boatsService,
+  customersService,
+  pricingService,
+  stallingService,
+  type BrokeragePreview,
+} from '@/lib/services';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -45,6 +54,9 @@ export default function StallingPage() {
   const [page, setPage] = React.useState(1);
   const [cancelTarget, setCancelTarget] = React.useState<string | null>(null);
   const [invoiceTarget, setInvoiceTarget] = React.useState<string | null>(null);
+  const [editTarget, setEditTarget] = React.useState<StallingContract | null>(null);
+  const [editStatus, setEditStatus] = React.useState('');
+  const [editLocation, setEditLocation] = React.useState('');
   const [showCreate, setShowCreate] = React.useState(false);
   const [createForm, setCreateForm] = React.useState({
     boat_id: '',
@@ -54,6 +66,11 @@ export default function StallingPage() {
     end_date: '',
     paid_until: '',
   });
+  // Trello #107: brokerage (makelaardij) preview. The brokerage start date is
+  // its own date (not the storage start) — the free-period runs from here.
+  const [brokerage, setBrokerage] = React.useState(false);
+  const [brokerageStart, setBrokerageStart] = React.useState('');
+  const [brokeragePreview, setBrokeragePreview] = React.useState<BrokeragePreview | null>(null);
 
   const contracts = useQuery([search, status, type, page], () =>
     stallingService.list({
@@ -70,12 +87,72 @@ export default function StallingPage() {
   const boats = useQuery(['stalling-boats'], () => boatsService.list({ per_page: 200 }));
   const customers = useQuery(['stalling-customers'], () => customersService.list({ per_page: 200 }));
 
+  const selectedBoatLength = React.useMemo(() => {
+    const boat = (boats.data?.data ?? []).find((b) => b.id === createForm.boat_id);
+    return boat?.length_cm ?? null;
+  }, [boats.data, createForm.boat_id]);
+
+  React.useEffect(() => {
+    if (!brokerage || !selectedBoatLength) {
+      setBrokeragePreview(null);
+      return;
+    }
+    let cancelled = false;
+    void pricingService
+      .brokeragePreview({
+        length_cm: selectedBoatLength,
+        brokerage_start_date: brokerageStart || undefined,
+      })
+      .then((res) => {
+        if (!cancelled) setBrokeragePreview(res);
+      })
+      .catch(() => {
+        if (!cancelled) setBrokeragePreview(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [brokerage, selectedBoatLength, brokerageStart]);
+
   const createContract = useMutation(stallingService.create);
-  const updateContract = useMutation((payload: { id: string; data: Record<string, unknown> }) =>
-    stallingService.update(payload.id, payload.data)
-  );
   const createInvoice = useMutation((id: string) => stallingService.generateInvoice(id));
   const cancelContract = useMutation((id: string) => stallingService.cancel(id, 'Cancelled by staff'));
+  const setStatusM = useMutation((p: { id: string; status: string }) =>
+    stallingService.setStatus(p.id, p.status)
+  );
+  const setLocationM = useMutation((p: { id: string; location: string }) =>
+    stallingService.setLocation(p.id, p.location || null)
+  );
+
+  const openEdit = (contract: StallingContract) => {
+    setEditTarget(contract);
+    setEditStatus(contract.payment_status);
+    setEditLocation(contract.boat?.location_code ?? '');
+  };
+
+  const onSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTarget) return;
+    const id = editTarget.id;
+    try {
+      if (editStatus !== editTarget.payment_status) {
+        await setStatusM.mutate({ id, status: editStatus });
+        push({ tone: 'success', title: t('adminNew.stalling.toasts.statusUpdated') });
+      }
+      if (editLocation !== (editTarget.boat?.location_code ?? '')) {
+        await setLocationM.mutate({ id, location: editLocation });
+        push({ tone: 'success', title: t('adminNew.stalling.toasts.locationUpdated') });
+      }
+      setEditTarget(null);
+      await contracts.refetch();
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.common.operationFailed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
 
   const execute = async (label: string, fn: () => Promise<unknown>, redirectInvoice = false) => {
     try {
@@ -107,6 +184,8 @@ export default function StallingPage() {
       });
       setShowCreate(false);
       setCreateForm({ boat_id: '', customer_id: '', type: 'winter', start_date: '', end_date: '', paid_until: '' });
+      setBrokerage(false);
+      setBrokerageStart('');
       await contracts.refetch();
       push({ tone: 'success', title: t('adminNew.stalling.toasts.created') });
     } catch (err) {
@@ -153,11 +232,6 @@ export default function StallingPage() {
             tone: 'gold',
             loading: contracts.loading,
           },
-          {
-            label: t('adminNew.stalling.columns.type'),
-            value: type ? t(`adminNew.stalling.type.${type}`) : t('adminNew.stalling.allTypes'),
-            tone: 'navy',
-          },
         ]}
       />
 
@@ -176,33 +250,43 @@ export default function StallingPage() {
             }}
             placeholder={t('adminNew.stalling.searchPlaceholder')}
           />
-          <AdminSelect
-            value={status}
-            onChange={(value) => {
-              setStatus(value);
-              setPage(1);
-            }}
-          >
-            <option value="">{t('adminNew.stalling.allStatuses')}</option>
-            <option value="paid">{t('adminNew.status.paid')}</option>
-            <option value="expiring">{t('adminNew.status.expiring')}</option>
-            <option value="overdue">{t('adminNew.status.overdue')}</option>
-            <option value="open">{t('adminNew.status.open')}</option>
-            <option value="cancelled">{t('adminNew.status.cancelled')}</option>
-          </AdminSelect>
-          <AdminSelect
-            value={type}
-            onChange={(value) => {
-              setType(value);
-              setPage(1);
-            }}
-          >
-            <option value="">{t('adminNew.stalling.allTypes')}</option>
-            <option value="winter">{t('adminNew.stalling.type.winter')}</option>
-            <option value="summer">{t('adminNew.stalling.type.summer')}</option>
-            <option value="year">{t('adminNew.stalling.type.year')}</option>
-            <option value="week">{t('adminNew.stalling.type.week')}</option>
-          </AdminSelect>
+          <label className="flex flex-col gap-1 lg:w-auto">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
+              {t('adminNew.stalling.columns.status')}
+            </span>
+            <AdminSelect
+              value={status}
+              onChange={(value) => {
+                setStatus(value);
+                setPage(1);
+              }}
+            >
+              <option value="">{t('adminNew.stalling.allStatuses')}</option>
+              <option value="paid">{t('adminNew.status.paid')}</option>
+              <option value="expiring">{t('adminNew.status.expiring')}</option>
+              <option value="overdue">{t('adminNew.status.overdue')}</option>
+              <option value="open">{t('adminNew.status.open')}</option>
+              <option value="cancelled">{t('adminNew.status.cancelled')}</option>
+            </AdminSelect>
+          </label>
+          <label className="flex flex-col gap-1 lg:w-auto">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
+              {t('adminNew.stalling.columns.type')}
+            </span>
+            <AdminSelect
+              value={type}
+              onChange={(value) => {
+                setType(value);
+                setPage(1);
+              }}
+            >
+              <option value="">{t('adminNew.stalling.allTypes')}</option>
+              <option value="winter">{t('adminNew.stalling.type.winter')}</option>
+              <option value="summer">{t('adminNew.stalling.type.summer')}</option>
+              <option value="year">{t('adminNew.stalling.type.year')}</option>
+              <option value="week">{t('adminNew.stalling.type.week')}</option>
+            </AdminSelect>
+          </label>
         </AdminToolbar>
 
         <AdminTableCard
@@ -241,6 +325,7 @@ export default function StallingPage() {
                   <AdminTableHeaderCell>{t('adminNew.stalling.columns.type')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.stalling.columns.paidUntil')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.stalling.columns.openBalance')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.stalling.columns.location')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.stalling.columns.status')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                 </tr>
@@ -274,21 +359,27 @@ export default function StallingPage() {
                       {formatCurrency(contract.open_balance_cents / 100, dateLocale)}
                     </AdminTableCell>
                     <AdminTableCell>
-                      <select
-                        className="input-base py-1 text-xs"
-                        value={contract.payment_status}
-                        onChange={(e) =>
-                          void updateContract
-                            .mutate({ id: contract.id, data: { payment_status: e.target.value } })
-                            .then(() => contracts.refetch())
-                        }
+                      {contract.boat?.location_code ? (
+                        <span className="inline-flex items-center gap-1 text-sm text-navy-700">
+                          <MapPin className="h-3.5 w-3.5 text-navy-400" />
+                          {contract.boat.location_code}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-navy-400">
+                          {t('adminNew.stalling.quickEdit.locationEmpty')}
+                        </span>
+                      )}
+                    </AdminTableCell>
+                    <AdminTableCell>
+                      <button
+                        type="button"
+                        onClick={() => openEdit(contract)}
+                        aria-label={t('adminNew.stalling.quickEdit.editAria')}
+                        className="inline-flex items-center gap-1.5 rounded-full transition hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-marine-400"
                       >
-                        <option value="paid">{t('adminNew.status.paid')}</option>
-                        <option value="expiring">{t('adminNew.status.expiring')}</option>
-                        <option value="overdue">{t('adminNew.status.overdue')}</option>
-                        <option value="open">{t('adminNew.status.open')}</option>
-                        <option value="cancelled">{t('adminNew.status.cancelled')}</option>
-                      </select>
+                        <PaymentStatusBadge status={contract.payment_status} />
+                        <Pencil className="h-3 w-3 text-navy-400" />
+                      </button>
                     </AdminTableCell>
                     <AdminTableCell>
                       <div className="flex justify-end gap-2">
@@ -391,10 +482,110 @@ export default function StallingPage() {
             <Input label={t('adminNew.stalling.fields.startDate')} type="date" value={createForm.start_date} onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })} required />
             <Input label={t('adminNew.stalling.fields.endDate')} type="date" value={createForm.end_date} onChange={(e) => setCreateForm({ ...createForm, end_date: e.target.value })} required />
             <Input label={t('adminNew.stalling.columns.paidUntil')} type="date" value={createForm.paid_until} onChange={(e) => setCreateForm({ ...createForm, paid_until: e.target.value })} />
+
+            {/* Trello #107: brokerage (makelaardij) toggle + live preview */}
+            <div className="rounded-xl border border-navy-100 bg-sand-50/40 p-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-navy-800">
+                <input
+                  type="checkbox"
+                  checked={brokerage}
+                  onChange={(e) => setBrokerage(e.target.checked)}
+                  className="h-4 w-4 rounded border-navy-300"
+                />
+                {t('adminNew.stalling.brokerage.toggle')}
+              </label>
+              {brokerage ? (
+                <div className="mt-2 text-sm">
+                  <Input
+                    label={t('adminNew.stalling.brokerage.startDate')}
+                    type="date"
+                    value={brokerageStart}
+                    onChange={(e) => setBrokerageStart(e.target.value)}
+                  />
+                  <div className="mt-2">
+                  {!selectedBoatLength ? (
+                    <p className="text-xs text-navy-500">{t('adminNew.stalling.brokerage.needLength')}</p>
+                  ) : brokeragePreview ? (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-navy-500">{t('adminNew.stalling.brokerage.freeUntil')}</span>
+                        <span className="font-semibold text-emerald-700">
+                          {brokeragePreview.brokerage_free_until
+                            ? formatDate(brokeragePreview.brokerage_free_until, dateLocale)
+                            : `${brokeragePreview.free_months ?? 6} ${t('adminNew.stalling.brokerage.months')}`}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-navy-500">{t('adminNew.stalling.brokerage.monthlyFee')}</span>
+                        <span className="font-semibold text-navy-900">
+                          {formatCurrency(
+                            brokeragePreview.monthly_fee_euros ??
+                              (brokeragePreview.monthly_fee ?? 0) / 100,
+                            dateLocale
+                          )}
+                        </span>
+                      </div>
+                      {brokeragePreview.tariff?.range_label ? (
+                        <div className="text-xs text-navy-400">{brokeragePreview.tariff.range_label}</div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-navy-400">{t('adminNew.common.loading')}</p>
+                  )}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
             <Button type="submit" variant="gold" disabled={createContract.loading}>{t('adminNew.common.save')}</Button>
+          </AdminModalFooter>
+        </form>
+      </Modal>
+
+      <Modal open={!!editTarget} onClose={() => setEditTarget(null)} size="sm">
+        <form onSubmit={onSaveEdit}>
+          <AdminModalHeader
+            title={t('adminNew.stalling.quickEdit.title')}
+            subtitle={
+              editTarget?.boat?.name
+                ? `${editTarget.boat.name} · ${t('adminNew.stalling.quickEdit.subtitle')}`
+                : t('adminNew.stalling.quickEdit.subtitle')
+            }
+          />
+          <AdminModalBody>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.stalling.quickEdit.statusLabel')}
+              </label>
+              <select
+                className="input-base w-full"
+                value={editStatus}
+                onChange={(e) => setEditStatus(e.target.value)}
+              >
+                <option value="paid">{t('adminNew.status.paid')}</option>
+                <option value="expiring">{t('adminNew.status.expiring')}</option>
+                <option value="overdue">{t('adminNew.status.overdue')}</option>
+                <option value="open">{t('adminNew.status.open')}</option>
+                <option value="cancelled">{t('adminNew.status.cancelled')}</option>
+              </select>
+            </div>
+            <Input
+              label={t('adminNew.stalling.quickEdit.locationLabel')}
+              value={editLocation}
+              onChange={(e) => setEditLocation(e.target.value)}
+              placeholder={t('adminNew.stalling.quickEdit.locationPlaceholder')}
+              leftIcon={<MapPin className="h-4 w-4" />}
+            />
+          </AdminModalBody>
+          <AdminModalFooter>
+            <Button type="button" variant="ghost" onClick={() => setEditTarget(null)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button type="submit" variant="gold" disabled={setStatusM.loading || setLocationM.loading}>
+              {t('adminNew.common.save')}
+            </Button>
           </AdminModalFooter>
         </form>
       </Modal>
