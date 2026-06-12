@@ -510,6 +510,15 @@
     "onRequest": "On request",
     "from": "from"
   },
+  "verify": {
+    "verifying": "Signing you in…",
+    "verifyingHint": "Verifying your secure login link.",
+    "success": "You're signed in",
+    "redirecting": "Taking you to your portal…",
+    "failed": "Link invalid or expired",
+    "failedHint": "This login link is no longer valid. Request a new one from the login page.",
+    "backToLogin": "Back to login"
+  },
   "contactPage": {
     "badge": "Visit or call us",
     "title": "Welcome to the yard\nin Roermond.",
@@ -1278,9 +1287,11 @@
       "categories": {
         "finance": "Finance",
         "storage": "Storage",
-        "operations": "Operations",
         "planning": "Planning",
-        "customer": "Customer",
+        "crm": "Customers",
+        "boats": "Boats",
+        "supplier_ocr": "Supplier / OCR",
+        "accounting": "Accounting",
         "system": "System"
       }
     },
@@ -1361,12 +1372,23 @@
       "title": "Reports",
       "subtitle": "Turnover, VAT, revenue by group and payment methods",
       "export": "Export CSV",
+      "print": "Print",
       "cashClose": "Cash close",
       "noData": "No data for this period.",
+      "noAging": "No outstanding invoices.",
       "vatTitle": "VAT breakdown",
       "methodsTitle": "Payment methods",
       "groupTitle": "Revenue by product group",
+      "agingTitle": "Invoice aging",
+      "storageTitle": "Storage",
+      "occupancyTitle": "Occupancy",
+      "occupancyNoCapacity": "Set hall/location capacity to see occupancy %.",
+      "customersTitle": "Top customers",
+      "forecastTitle": "Forecast",
+      "forecastTotal": "Forecast ({days} days)",
+      "concentration": "Top 10 customers = {pct}% of revenue",
       "marginMissing": "Margin excludes {count} invoice lines without a cost price.",
+      "marginValue": "Gross margin {pct}%",
       "presets": {
         "today": "Today",
         "yesterday": "Yesterday",
@@ -1374,7 +1396,12 @@
         "last_30_days": "Last 30 days",
         "this_month": "This month",
         "previous_month": "Previous month",
-        "this_year": "This year"
+        "q1": "Q1",
+        "q2": "Q2",
+        "q3": "Q3",
+        "q4": "Q4",
+        "this_year": "This year",
+        "previous_year": "Previous year"
       },
       "totals": {
         "turnover": "Turnover",
@@ -1387,6 +1414,12 @@
         "total": "Total",
         "paid": "Paid",
         "outstanding": "Outstanding"
+      },
+      "storage": {
+        "activeContracts": "Active contracts",
+        "boatsInStorage": "Boats in storage",
+        "expiring30": "Expiring in 30 days",
+        "openBalance": "Open balance"
       }
     },
     "cashClose": {
@@ -1592,6 +1625,20 @@
       "scanBarcode": "Scan barcode",
       "scanNotFound": "No product found for \"{code}\"",
       "camera": "Camera",
+      "manageProducts": "Manage products",
+      "viewCustomer": "View / edit",
+      "allCustomers": "All customers",
+      "pickCustomer": "Select customer",
+      "pickCustomerHint": "Search by name, email or phone",
+      "customerSearch": "Search customer…",
+      "noCustomer": "No customer (walk-in)",
+      "companyName": "Company name",
+      "street": "Street",
+      "houseNumber": "No.",
+      "postalCode": "Postal code",
+      "city": "City",
+      "country": "Country",
+      "addressHint": "Address is optional but recommended for invoicing.",
       "fastScan": "Fast scan",
       "favourites": "Favourites",
       "recentlyUsed": "Recently used",
@@ -1658,7 +1705,21 @@
       "auditEmptyMessage": "No storage changes logged yet.",
       "fields": {
         "startDate": "Start date",
-        "endDate": "End date"
+        "endDate": "End date",
+        "newBoat": "New boat",
+        "newCustomer": "New customer",
+        "boatName": "Boat name",
+        "lengthCm": "Length (cm)",
+        "boatType": "Boat type",
+        "customerName": "Name",
+        "customerEmail": "Email",
+        "customerPhone": "Phone",
+        "location": "Location / rack",
+        "paymentRoute": "Payment route",
+        "payByEmail": "Send payment link by email",
+        "payAtKassa": "Pay at the register",
+        "depositPct": "Deposit (%)",
+        "sendContractEmail": "Email the contract to the customer"
       },
       "quickEdit": {
         "title": "Update contract",
@@ -2169,8 +2230,22 @@
         "searchPlaceholder": "Search number, customer, boat...",
         "allServices": "All services",
         "allStatuses": "All statuses",
+        "allCustomers": "All customers",
+        "allDocuments": "All documents",
+        "hasQuote": "Has quote",
+        "hasInvoice": "Has invoice",
+        "noDocuments": "No documents",
+        "dateFrom": "From date",
+        "dateTo": "To date",
+        "createQuote": "Offerte",
+        "createInvoice": "Factuur",
+        "created": "Document created",
         "statusSaved": "Saved",
         "statusDraft": "Draft",
+        "statusQuote": "Converted to quote",
+        "statusInvoice": "Converted to invoice",
+        "statusPaid": "Paid",
+        "statusCancelled": "Cancelled",
         "statusArchived": "Archived"
       },
       "pricing": {

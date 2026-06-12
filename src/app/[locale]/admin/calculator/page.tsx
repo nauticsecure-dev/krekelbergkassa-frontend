@@ -35,18 +35,29 @@ export default function CalculatorPage() {
   const [recSearch, setRecSearch] = React.useState('');
   const [recStatus, setRecStatus] = React.useState('');
   const [recService, setRecService] = React.useState('');
+  const [recCustomer, setRecCustomer] = React.useState('');
+  const [recDocs, setRecDocs] = React.useState(''); // '', 'quote', 'invoice', 'none'
+  const [recFrom, setRecFrom] = React.useState('');
+  const [recTo, setRecTo] = React.useState('');
   const [archiveTarget, setArchiveTarget] = React.useState<string | null>(null);
 
   const customers = useQuery(['calculator-customers'], () =>
     customersService.list({ per_page: 100 })
   );
-  const records = useQuery(['calculator-records', recSearch, recStatus, recService], () =>
-    pricingService.calculatorRecords({
-      per_page: 50,
-      search: recSearch || undefined,
-      status: recStatus || undefined,
-      service_type: recService || undefined,
-    })
+  const records = useQuery(
+    ['calculator-records', recSearch, recStatus, recService, recCustomer, recDocs, recFrom, recTo],
+    () =>
+      pricingService.calculatorRecords({
+        per_page: 50,
+        search: recSearch || undefined,
+        status: recStatus || undefined,
+        service_type: recService || undefined,
+        customer_id: recCustomer || undefined,
+        has_quote: recDocs === 'quote' ? true : recDocs === 'none' ? false : undefined,
+        has_invoice: recDocs === 'invoice' ? true : undefined,
+        date_from: recFrom || undefined,
+        date_to: recTo || undefined,
+      })
   );
   const calculate = useMutation(pricingService.calculate);
   const preview = useMutation(pricingService.preview);
@@ -78,6 +89,44 @@ export default function CalculatorPage() {
       push({
         tone: 'error',
         title: t('adminNew.calculator.toasts.failed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
+
+  // Trello #68: create an offerte/factuur directly from a records row.
+  const createFromRecord = async (id: string, mode: 'quote' | 'invoice') => {
+    try {
+      const rec = await pricingService.calculatorRecord(id);
+      const payload = (rec.payload ?? rec) as Record<string, unknown>;
+      const result = (rec.result ?? rec) as Record<string, unknown>;
+      const custId = payload.customer_id ? String(payload.customer_id) : '';
+      if (!custId) {
+        await loadRecord(id);
+        push({ tone: 'error', title: t('adminNew.calculator.toasts.selectCustomer') });
+        return;
+      }
+      const svcs = (payload.services ?? payload.service_codes) as unknown;
+      const svcLabel = Array.isArray(svcs) ? svcs.map(String).join(', ') : String(rec.service_type ?? '');
+      const invoice = await createInvoice.mutate({
+        customer_id: custId,
+        source: 'calculator',
+        lines: [
+          {
+            description: `${t('adminNew.calculator.linePrefix')} (${svcLabel}) - ${payload.length_cm ?? ''} cm`,
+            quantity: 1,
+            unit_price: pricingTotalInclCents(result),
+            vat_rate: Number(result.vat_rate ?? 21),
+          },
+        ],
+        metadata: { mode, calculator_record_id: id },
+      });
+      push({ tone: 'success', title: t('adminNew.calculator.records.created') });
+      window.location.href = `/${locale}/admin/facturen/${invoice.id}`;
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.calculator.toasts.createFailed'),
         message: getApiErrorMessage(err),
       });
     }
@@ -402,13 +451,21 @@ export default function CalculatorPage() {
           description={t('adminNew.calculator.records.subtitle')}
           icon={Calculator}
         >
-          <div className="mb-4 grid gap-2 sm:grid-cols-3">
+          <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <Input
               placeholder={t('adminNew.calculator.records.searchPlaceholder')}
               value={recSearch}
               onChange={(e) => setRecSearch(e.target.value)}
               leftIcon={<Calculator className="h-4 w-4" />}
             />
+            <select className="input-base" value={recCustomer} onChange={(e) => setRecCustomer(e.target.value)}>
+              <option value="">{t('adminNew.calculator.records.allCustomers')}</option>
+              {(customers.data?.data ?? []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
             <select className="input-base" value={recService} onChange={(e) => setRecService(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allServices')}</option>
               {SERVICE_IDS.map((s) => (
@@ -421,8 +478,30 @@ export default function CalculatorPage() {
               <option value="">{t('adminNew.calculator.records.allStatuses')}</option>
               <option value="saved">{t('adminNew.calculator.records.statusSaved')}</option>
               <option value="draft">{t('adminNew.calculator.records.statusDraft')}</option>
+              <option value="converted_to_quote">{t('adminNew.calculator.records.statusQuote')}</option>
+              <option value="converted_to_invoice">{t('adminNew.calculator.records.statusInvoice')}</option>
+              <option value="paid">{t('adminNew.calculator.records.statusPaid')}</option>
+              <option value="cancelled">{t('adminNew.calculator.records.statusCancelled')}</option>
               <option value="archived">{t('adminNew.calculator.records.statusArchived')}</option>
             </select>
+            <select className="input-base" value={recDocs} onChange={(e) => setRecDocs(e.target.value)}>
+              <option value="">{t('adminNew.calculator.records.allDocuments')}</option>
+              <option value="quote">{t('adminNew.calculator.records.hasQuote')}</option>
+              <option value="invoice">{t('adminNew.calculator.records.hasInvoice')}</option>
+              <option value="none">{t('adminNew.calculator.records.noDocuments')}</option>
+            </select>
+            <Input
+              type="date"
+              aria-label={t('adminNew.calculator.records.dateFrom')}
+              value={recFrom}
+              onChange={(e) => setRecFrom(e.target.value)}
+            />
+            <Input
+              type="date"
+              aria-label={t('adminNew.calculator.records.dateTo')}
+              value={recTo}
+              onChange={(e) => setRecTo(e.target.value)}
+            />
           </div>
 
           {(records.data?.data ?? []).length === 0 ? (
@@ -495,10 +574,28 @@ export default function CalculatorPage() {
                           {formatCurrency(totalEuros, locale === 'en' ? 'en-GB' : 'nl-NL')}
                         </AdminTableCell>
                         <AdminTableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex justify-end gap-1">
+                          <div className="flex flex-wrap justify-end gap-1">
                             <Button variant="ghost" size="sm" onClick={() => void loadRecord(id)}>
                               {t('adminNew.calculator.records.open')}
                             </Button>
+                            {actions.create_quote !== false && !rec.has_quote ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => void createFromRecord(id, 'quote')}
+                              >
+                                {t('adminNew.calculator.records.createQuote')}
+                              </Button>
+                            ) : null}
+                            {actions.create_invoice !== false && !rec.has_invoice ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => void createFromRecord(id, 'invoice')}
+                              >
+                                {t('adminNew.calculator.records.createInvoice')}
+                              </Button>
+                            ) : null}
                             {actions.duplicate !== false ? (
                               <Button
                                 variant="ghost"

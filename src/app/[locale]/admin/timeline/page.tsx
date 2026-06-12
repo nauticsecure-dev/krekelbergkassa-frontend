@@ -4,11 +4,12 @@ import * as React from 'react';
 import {
   Activity,
   ArrowUpRight,
+  CalendarClock,
   CreditCard,
   FileText,
   Ship,
   User,
-  Wrench,
+  Warehouse,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
@@ -36,20 +37,33 @@ const str = (r: Rec, ...keys: string[]): string => {
   return '';
 };
 
-const CATEGORIES = ['finance', 'storage', 'operations', 'planning', 'customer', 'system'];
+// Trello #109: must match UnifiedTimelineService categories exactly.
+const CATEGORIES = [
+  'finance',
+  'storage',
+  'planning',
+  'crm',
+  'boats',
+  'supplier_ocr',
+  'accounting',
+  'system',
+];
 
 function categoryMeta(category: string): { icon: LucideIcon; tone: React.ComponentProps<typeof Badge>['tone'] } {
   switch (category) {
     case 'finance':
+    case 'accounting':
       return { icon: CreditCard, tone: 'gold' };
     case 'storage':
+      return { icon: Warehouse, tone: 'marine' };
+    case 'boats':
       return { icon: Ship, tone: 'marine' };
-    case 'operations':
-      return { icon: Wrench, tone: 'navy' };
-    case 'customer':
+    case 'crm':
       return { icon: User, tone: 'success' };
     case 'planning':
-      return { icon: FileText, tone: 'marine' };
+      return { icon: CalendarClock, tone: 'marine' };
+    case 'supplier_ocr':
+      return { icon: FileText, tone: 'navy' };
     default:
       return { icon: Activity, tone: 'neutral' };
   }

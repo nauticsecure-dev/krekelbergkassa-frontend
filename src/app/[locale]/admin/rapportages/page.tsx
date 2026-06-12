@@ -2,12 +2,34 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { BarChart3, CreditCard, Download, Layers, Receipt, Wallet } from 'lucide-react';
+import {
+  BarChart3,
+  CreditCard,
+  Download,
+  Layers,
+  Printer,
+  Receipt,
+  Ship,
+  Users,
+  Wallet,
+} from 'lucide-react';
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
   AdminSectionCard,
   AdminSelect,
+  AdminStatusStrip,
   AdminTable,
   AdminTableCell,
   AdminTableHead,
@@ -15,6 +37,7 @@ import {
   AdminTableRow,
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { kassaService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
@@ -23,12 +46,28 @@ import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 
-const PRESETS = ['today', 'yesterday', 'last_7_days', 'last_30_days', 'this_month', 'previous_month', 'this_year'];
+const PRESETS = [
+  'today',
+  'yesterday',
+  'last_7_days',
+  'last_30_days',
+  'this_month',
+  'previous_month',
+  'q1',
+  'q2',
+  'q3',
+  'q4',
+  'this_year',
+  'previous_year',
+];
+
+const PIE_COLORS = ['#1f93b8', '#0ea5e9', '#bd8528', '#7c3aed', '#059669', '#e11d48', '#475569'];
 
 type Rec = Record<string, unknown>;
 const obj = (v: unknown): Rec => (v && typeof v === 'object' ? (v as Rec) : {});
 const arr = (v: unknown): Rec[] => (Array.isArray(v) ? (v as Rec[]) : []);
 const n = (v: unknown): number => (typeof v === 'number' ? v : Number(v) || 0);
+const str = (v: unknown): string => (v == null ? '' : String(v));
 
 export default function ReportsPage() {
   const { locale, t } = useIntl();
@@ -60,11 +99,43 @@ export default function ReportsPage() {
   };
 
   const data = report.data ?? {};
+  const periodMeta = obj(data.period);
+  const from = str(periodMeta.from);
+  const to = str(periodMeta.to);
   const totals = obj(data.totals);
   const vat = arr(data.vat_breakdown);
   const byGroup = arr(data.revenue_by_group);
   const methods = arr(data.payment_methods);
   const margin = obj(data.margin);
+  const storage = obj(data.storage);
+  const occupancy = obj(data.occupancy);
+  const customerAnalytics = obj(data.customer_analytics);
+  const topCustomers = arr(customerAnalytics.top_customers_by_revenue);
+  const forecast = obj(data.forecast);
+  // Aging may arrive under a few keys depending on backend version.
+  const aging = arr(data.invoice_aging).length ? arr(data.invoice_aging) : arr(data.aging);
+
+  const groupDrillHref = (code: string) => {
+    const params = new URLSearchParams();
+    if (code) params.set('product_group', code);
+    if (from) params.set('date_from', from);
+    if (to) params.set('date_to', to);
+    return `/${locale}/admin/facturen?${params.toString()}`;
+  };
+
+  const methodPie = methods.map((m, i) => ({
+    name: str(m.method) || '—',
+    value: n(m.total) / 100,
+    fill: PIE_COLORS[i % PIE_COLORS.length],
+  }));
+  const groupBars = byGroup
+    .slice()
+    .sort((a, b) => n(b.total_incl_vat) - n(a.total_incl_vat))
+    .map((g) => ({ name: str(g.group_name ?? g.group_code) || '—', value: n(g.total_incl_vat) / 100 }));
+  const agingBars = aging.map((a) => ({
+    name: str(a.label ?? a.range ?? a.bucket) || '—',
+    value: n(a.amount_cents ?? a.total_cents ?? a.amount) / (a.amount != null ? 1 : 100),
+  }));
 
   return (
     <>
@@ -85,6 +156,14 @@ export default function ReportsPage() {
                 {t('adminNew.reports.cashClose')}
               </Button>
             </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Printer className="h-4 w-4" />}
+              onClick={() => window.print()}
+            >
+              {t('adminNew.reports.print')}
+            </Button>
             <Button
               variant="gold"
               size="sm"
@@ -134,7 +213,72 @@ export default function ReportsPage() {
 
         {!report.loading && !report.error ? (
           <>
+            {/* Charts */}
             <div className="bento-grid lg:grid-cols-2">
+              <AdminSectionCard title={t('adminNew.reports.groupTitle')} icon={Layers}>
+                {groupBars.length ? (
+                  <ResponsiveContainer width="100%" height={240}>
+                    <BarChart data={groupBars} layout="vertical" margin={{ left: 8, right: 16 }}>
+                      <XAxis type="number" hide />
+                      <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12 }} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v, dateLocale)} />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]} fill="#1f93b8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
+                )}
+                {byGroup.length ? (
+                  <div className="mt-3 space-y-1">
+                    {byGroup.map((g, i) => (
+                      <Link
+                        key={i}
+                        href={groupDrillHref(str(g.group_code ?? g.group_name))}
+                        className="flex items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-sand-50"
+                      >
+                        <span className="font-medium text-navy-800">{str(g.group_name ?? g.group_code) || '—'}</span>
+                        <span className="font-semibold text-marine-700">{money(g.total_incl_vat)} →</span>
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </AdminSectionCard>
+
+              <AdminSectionCard title={t('adminNew.reports.methodsTitle')} icon={CreditCard}>
+                {methodPie.length ? (
+                  <div className="flex items-center gap-4">
+                    <ResponsiveContainer width="55%" height={200}>
+                      <PieChart>
+                        <Pie data={methodPie} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80}>
+                          {methodPie.map((entry, i) => (
+                            <Cell key={i} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(v: number) => formatCurrency(v, dateLocale)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="flex-1 space-y-1.5">
+                      {methodPie.map((m, i) => (
+                        <div key={i} className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-2 capitalize text-navy-700">
+                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: m.fill }} />
+                            {m.name}
+                          </span>
+                          <span className="font-semibold text-navy-900">
+                            {formatCurrency(m.value, dateLocale)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
+                )}
+              </AdminSectionCard>
+            </div>
+
+            {/* VAT + aging */}
+            <div className="bento-grid mt-5 lg:grid-cols-2">
               <AdminSectionCard title={t('adminNew.reports.vatTitle')} icon={Receipt}>
                 {vat.length ? (
                   <AdminTable minWidth={420}>
@@ -162,21 +306,77 @@ export default function ReportsPage() {
                 )}
               </AdminSectionCard>
 
-              <AdminSectionCard title={t('adminNew.reports.methodsTitle')} icon={CreditCard}>
-                {methods.length ? (
+              <AdminSectionCard title={t('adminNew.reports.agingTitle')} icon={Receipt}>
+                {agingBars.length ? (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={agingBars} margin={{ left: 8, right: 8 }}>
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                      <YAxis hide />
+                      <Tooltip formatter={(v: number) => formatCurrency(v, dateLocale)} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="#e11d48" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-sm text-navy-500">{t('adminNew.reports.noAging')}</p>
+                )}
+              </AdminSectionCard>
+            </div>
+
+            {/* Storage + occupancy */}
+            <div className="bento-grid mt-5 lg:grid-cols-2">
+              <AdminSectionCard title={t('adminNew.reports.storageTitle')} icon={Ship}>
+                <div className="grid grid-cols-2 gap-3">
+                  <AdminStatusStrip
+                    label={t('adminNew.reports.storage.activeContracts')}
+                    value={String(n(storage.active_contracts))}
+                    tone="marine"
+                  />
+                  <AdminStatusStrip
+                    label={t('adminNew.reports.storage.boatsInStorage')}
+                    value={String(n(storage.boats_in_storage))}
+                    tone="navy"
+                  />
+                  <AdminStatusStrip
+                    label={t('adminNew.reports.storage.expiring30')}
+                    value={String(n(storage.expiring_30_days ?? storage.expiring_in_30_days))}
+                    tone="gold"
+                  />
+                  <AdminStatusStrip
+                    label={t('adminNew.reports.storage.openBalance')}
+                    value={money(storage.open_balance_cents ?? storage.open_balance)}
+                    tone="warning"
+                  />
+                </div>
+              </AdminSectionCard>
+
+              <AdminSectionCard title={t('adminNew.reports.occupancyTitle')} icon={Ship}>
+                {arr(occupancy.locations).length ? (
                   <div className="space-y-2">
-                    {methods.map((m, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2 text-sm"
-                      >
-                        <span className="font-medium capitalize text-navy-800">{String(m.method ?? '—')}</span>
-                        <span className="flex items-center gap-3">
-                          <span className="text-xs text-navy-400">{n(m.count)}×</span>
-                          <span className="font-semibold text-navy-900">{money(m.total)}</span>
-                        </span>
-                      </div>
-                    ))}
+                    {arr(occupancy.locations).map((loc, i) => {
+                      const cap = n(loc.capacity);
+                      const occ = n(loc.occupied_boats);
+                      const pct = cap > 0 ? Math.round((occ / cap) * 100) : null;
+                      return (
+                        <div key={i}>
+                          <div className="mb-1 flex items-center justify-between text-sm">
+                            <span className="font-medium text-navy-800">{str(loc.location_code) || '—'}</span>
+                            <span className="text-navy-600">
+                              {occ}
+                              {cap ? ` / ${cap}` : ''} {pct != null ? `· ${pct}%` : ''}
+                            </span>
+                          </div>
+                          <div className="h-2 overflow-hidden rounded-full bg-navy-100">
+                            <div
+                              className="h-full rounded-full bg-marine-500"
+                              style={{ width: `${pct ?? Math.min(100, occ)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {occupancy.capacity_configured === false ? (
+                      <p className="pt-1 text-xs text-navy-400">{t('adminNew.reports.occupancyNoCapacity')}</p>
+                    ) : null}
                   </div>
                 ) : (
                   <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
@@ -184,42 +384,64 @@ export default function ReportsPage() {
               </AdminSectionCard>
             </div>
 
-            <AdminSectionCard title={t('adminNew.reports.groupTitle')} icon={Layers} className="mt-5">
-              {byGroup.length ? (
-                <div className="space-y-2">
-                  {byGroup
-                    .slice()
-                    .sort((a, b) => n(b.total_incl_vat) - n(a.total_incl_vat))
-                    .map((g, i) => {
-                      const max = Math.max(...byGroup.map((x) => n(x.total_incl_vat)), 1);
-                      const pct = Math.round((n(g.total_incl_vat) / max) * 100);
-                      return (
-                        <div key={i}>
-                          <div className="mb-1 flex items-center justify-between text-sm">
-                            <span className="font-medium text-navy-800">
-                              {String(g.group_name ?? g.group_code ?? '—')}
-                            </span>
-                            <span className="font-semibold text-navy-900">{money(g.total_incl_vat)}</span>
-                          </div>
-                          <div className="h-2 overflow-hidden rounded-full bg-navy-100">
-                            <div className="h-full rounded-full bg-marine-500" style={{ width: `${pct}%` }} />
-                          </div>
-                        </div>
-                      );
-                    })}
+            {/* Customers + forecast */}
+            <div className="bento-grid mt-5 lg:grid-cols-2">
+              <AdminSectionCard title={t('adminNew.reports.customersTitle')} icon={Users}>
+                {topCustomers.length ? (
+                  <div className="space-y-1.5">
+                    {topCustomers.slice(0, 10).map((c, i) => (
+                      <div key={i} className="flex items-center justify-between rounded-md px-2 py-1 text-sm">
+                        <span className="text-navy-800">
+                          {str(c.name ?? c.customer_name) || '—'}
+                        </span>
+                        <span className="font-semibold text-navy-900">
+                          {money(c.revenue_cents ?? c.total_incl_vat ?? c.revenue)}
+                        </span>
+                      </div>
+                    ))}
+                    {customerAnalytics.concentration_pct != null ? (
+                      <p className="pt-1 text-xs text-navy-400">
+                        {t('adminNew.reports.concentration', {
+                          pct: n(customerAnalytics.concentration_pct),
+                        })}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
+                )}
+              </AdminSectionCard>
+
+              <AdminSectionCard title={t('adminNew.reports.forecastTitle')} icon={BarChart3}>
+                <div className="space-y-3">
+                  <AdminStatusStrip
+                    label={t('adminNew.reports.forecastTotal', { days: n(forecast.horizon_days) || 90 })}
+                    value={money(forecast.total_cents)}
+                    tone="gold"
+                  />
+                  {arr(forecast.streams).map((s, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm">
+                      <span className="text-navy-600">{str(s.label ?? s.type) || '—'}</span>
+                      <span className="font-semibold text-navy-900">{money(s.total_cents ?? s.amount_cents)}</span>
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
-              )}
-            </AdminSectionCard>
+              </AdminSectionCard>
+            </div>
 
             {margin.available === false ? (
               <p className="mt-3 text-xs text-navy-400">
-                {t('adminNew.reports.marginMissing', {
-                  count: n(margin.missing_cost_line_count),
-                })}
+                {t('adminNew.reports.marginMissing', { count: n(margin.missing_cost_line_count) })}
               </p>
-            ) : null}
+            ) : (
+              <div className="mt-3">
+                <Badge tone="success">
+                  {t('adminNew.reports.marginValue', {
+                    pct: n(margin.gross_margin_pct ?? margin.margin_pct),
+                  })}
+                </Badge>
+              </div>
+            )}
           </>
         ) : null}
       </AdminContent>

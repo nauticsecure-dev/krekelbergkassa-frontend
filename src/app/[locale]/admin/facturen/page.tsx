@@ -51,10 +51,10 @@ function InvoicesPage() {
   const [status, setStatus] = React.useState(searchParams.get('status') ?? '');
   const [paymentStatus, setPaymentStatus] = React.useState(searchParams.get('payment_status') ?? '');
   const [source, setSource] = React.useState('');
-  const [productGroup, setProductGroup] = React.useState('');
-  const [paymentMethod, setPaymentMethod] = React.useState('');
-  const [dateFrom, setDateFrom] = React.useState('');
-  const [dateTo, setDateTo] = React.useState('');
+  const [productGroup, setProductGroup] = React.useState(searchParams.get('product_group') ?? '');
+  const [paymentMethod, setPaymentMethod] = React.useState(searchParams.get('payment_method') ?? '');
+  const [dateFrom, setDateFrom] = React.useState(searchParams.get('date_from') ?? '');
+  const [dateTo, setDateTo] = React.useState(searchParams.get('date_to') ?? '');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
   const [customerId, setCustomerId] = React.useState('');

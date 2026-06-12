@@ -4,7 +4,7 @@ import { tariffRanges } from '@/lib/pricing-table';
 export default function WinterstallingPage() {
   return (
     <ServicePage
-      adminProductSlug="winterberging"
+      adminProductSlug="STALL-WINTER"
       catalogSlug="winterstalling"
       priceFootnote="Winterberging-tarief per lengteklasse, inclusief BTW (incl. 2× kranen en afspuiten). De definitieve prijs volgt uit de exacte lengte van uw boot."
       badge="Winterstalling"
