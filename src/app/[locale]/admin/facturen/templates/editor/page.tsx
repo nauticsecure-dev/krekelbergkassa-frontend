@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { LoadingState } from '@/components/admin/DataState';
 import { DocumentZoneEditor } from '@/components/admin/DocumentZoneEditor';
-import { extractionTemplatesService, type ExtractionZone } from '@/lib/services';
+import { extractionTemplatesService, invoiceImportsService, type ExtractionZone } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -22,6 +22,7 @@ function EditorInner() {
   const router = useRouter();
   const params = useSearchParams();
   const id = params.get('id');
+  const importId = params.get('importId');
 
   const [name, setName] = React.useState('');
   const [documentType, setDocumentType] = React.useState('purchase_invoice');
@@ -32,6 +33,13 @@ function EditorInner() {
   const existing = useQuery([id ?? 'new'], () =>
     id ? extractionTemplatesService.get(id) : Promise.resolve(null)
   );
+
+  // Trello #70/#81: when arriving from a saved import, load its source PDF
+  // into the zone editor so staff can tag fields against the real document.
+  const sourcePdf = useQuery([importId ?? 'no-import'], () =>
+    importId ? invoiceImportsService.sourcePdf(importId).catch(() => null) : Promise.resolve(null)
+  );
+  const sourceUrl = sourcePdf.data?.signed_url ?? null;
 
   React.useEffect(() => {
     const tpl = existing.data;
@@ -141,7 +149,7 @@ function EditorInner() {
           icon={ScanText}
           className="mt-5"
         >
-          <DocumentZoneEditor zones={zones} onChange={setZones} />
+          <DocumentZoneEditor zones={zones} onChange={setZones} sourceUrl={sourceUrl} />
         </AdminSectionCard>
       </AdminContent>
     </>

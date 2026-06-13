@@ -46,12 +46,22 @@ import {
   timelinePresentation,
 } from '@/lib/portal-feed';
 
-type TypeFilter = '' | 'appointments' | 'invoices' | 'storage';
+type TypeFilter =
+  | ''
+  | 'appointments'
+  | 'invoices'
+  | 'payments'
+  | 'storage'
+  | 'contracts'
+  | 'work_orders'
+  | 'photos'
+  | 'documents';
 
 export default function FeedPage() {
   const { t, locale } = useIntl();
   const { user } = useAuth();
   const [typeFilter, setTypeFilter] = React.useState<TypeFilter>('');
+  const [search, setSearch] = React.useState('');
 
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   const firstName = (user?.name ?? 'Jan').split(' ')[0];
@@ -113,7 +123,7 @@ export default function FeedPage() {
     me?.customer?.phone,
     me?.customer?.preferred_locale,
   ]);
-  const filteredTimeline = filterTimelineItems(feed.data?.timeline.items ?? [], typeFilter);
+  const filteredTimeline = filterTimelineItems(feed.data?.timeline.items ?? [], typeFilter, search);
   const groupedTimeline = groupFeedTimeline(filteredTimeline);
   const nextAppt = nextUpcomingAppointment(feed.data?.appointments.data ?? []);
   const nextContract = nearestContractEnd(feed.data?.contracts ?? []);
@@ -344,16 +354,30 @@ export default function FeedPage() {
                 <h2 className="heading-display text-2xl">{t('feed.timelineTitle')}</h2>
                 <p className="mt-1 text-sm text-navy-500">{t('feed.timelineSubtitle')}</p>
               </div>
-              <select
-                className="input-base h-9 w-auto pr-9 text-sm"
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
-              >
-                <option value="">{t('feed.filterAll')}</option>
-                <option value="appointments">{t('feed.filterAppointments')}</option>
-                <option value="invoices">{t('feed.filterInvoices')}</option>
-                <option value="storage">{t('feed.filterStorage')}</option>
-              </select>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="search"
+                  className="input-base h-9 w-44 text-sm"
+                  placeholder={t('feed.searchPlaceholder')}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <select
+                  className="input-base h-9 w-auto pr-9 text-sm"
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
+                >
+                  <option value="">{t('feed.filterAll')}</option>
+                  <option value="appointments">{t('feed.filterAppointments')}</option>
+                  <option value="invoices">{t('feed.filterInvoices')}</option>
+                  <option value="payments">{t('feed.filterPayments')}</option>
+                  <option value="storage">{t('feed.filterStorage')}</option>
+                  <option value="contracts">{t('feed.filterContracts')}</option>
+                  <option value="work_orders">{t('feed.filterWorkOrders')}</option>
+                  <option value="photos">{t('feed.filterPhotos')}</option>
+                  <option value="documents">{t('feed.filterDocuments')}</option>
+                </select>
+              </div>
             </div>
 
             {feed.loading ? (
@@ -540,15 +564,19 @@ function FeedTimelineItem({
     item.message ??
     formatDateTime(item.created_at, dateLocale);
   const unread = isTimelineUnread(item);
+  // Trello #89: ACTION REQUIRED — backend supplies cta_label/cta_url
+  // (e.g. "Pay now", "Renew contract") on actionable items.
+  const cta = (item as { cta_label?: string; cta_url?: string });
+  const isHigh = (item.priority === 'high' || item.priority === 'urgent') && !!cta.cta_url;
 
   return (
     <TimelineItem
       icon={Icon}
-      tone={presentation.tone}
-      title={title}
+      tone={isHigh ? 'gold' : presentation.tone}
+      title={isHigh ? `${t('feed.actionRequired')} · ${title}` : title}
       meta={meta}
-      cta={t('feed.openItem')}
-      href={presentation.href}
+      cta={cta.cta_label ?? t('feed.openItem')}
+      href={cta.cta_url ?? presentation.href}
       priority={presentation.priority}
       unread={unread}
     />

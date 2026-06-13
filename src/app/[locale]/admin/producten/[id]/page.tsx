@@ -79,6 +79,24 @@ export default function ProductDetailPage() {
   const generateImage = useMutation((prompt: string) =>
     productsService.generateImage(id, { prompt, quality: 'low' })
   );
+  // Trello #86: multipart image upload from local device.
+  const uploadImage = useMutation((file: File) => {
+    const fd = new FormData();
+    fd.append('image', file);
+    return productsService.uploadImage(id, fd);
+  });
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const onUploadImage = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      await uploadImage.mutate(file);
+      await product.refetch();
+      push({ tone: 'success', title: t('adminNew.products.ai.uploaded') });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
 
   const onGenerateImage = async () => {
     try {
@@ -285,11 +303,32 @@ export default function ProductDetailPage() {
                     </div>
                   )}
                 </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    void onUploadImage(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
                 <Button
                   variant="outline"
                   size="sm"
                   fullWidth
                   className="mt-3"
+                  leftIcon={<ImageIcon className="h-4 w-4" />}
+                  disabled={uploadImage.loading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {uploadImage.loading ? t('adminNew.products.ai.uploading') : t('adminNew.products.ai.upload')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  className="mt-2"
                   leftIcon={<Sparkles className="h-4 w-4" />}
                   onClick={() => {
                     setAiPrompt('');
@@ -311,11 +350,25 @@ export default function ProductDetailPage() {
                     <AdminStatusStrip
                       label={t('adminNew.products.stats.revenue')}
                       value={formatCurrency(
-                        Number((stats.data as Record<string, unknown>).revenue_incl_vat ?? 0) / 100,
+                        Number((stats.data as Record<string, unknown>).revenue_incl_vat ?? (stats.data as Record<string, unknown>).revenue_cents ?? 0) / 100,
                         dateLocale
                       )}
                       tone="gold"
                     />
+                    {(stats.data as Record<string, unknown>).margin_cents != null ? (
+                      <AdminStatusStrip
+                        label={t('adminNew.products.stats.margin')}
+                        value={`${formatCurrency(
+                          Number((stats.data as Record<string, unknown>).margin_cents ?? 0) / 100,
+                          dateLocale
+                        )}${
+                          (stats.data as Record<string, unknown>).margin_percent != null
+                            ? ` · ${Number((stats.data as Record<string, unknown>).margin_percent).toFixed(1)}%`
+                            : ''
+                        }`}
+                        tone="success"
+                      />
+                    ) : null}
                     <AdminStatusStrip
                       label={t('adminNew.products.stats.lastSale')}
                       value={

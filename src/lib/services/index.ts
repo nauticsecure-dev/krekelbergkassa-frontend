@@ -218,6 +218,53 @@ export const boatsService = {
   dossier(id: string) {
     return api<Record<string, unknown>>(`/v1/boats/${id}/dossier`);
   },
+  // Trello #87: fleet stats, ownership transfer, audit, QR, photos/documents.
+  aggregateStats() {
+    return api<Record<string, unknown>>('/v1/boats/stats');
+  },
+  qr(id: string) {
+    return api<{ qr_code?: string; payload?: string; label?: string; dossier_url?: string }>(
+      `/v1/boats/${id}/qr`
+    );
+  },
+  transfer(id: string, payload: { customer_id: string; transfer_reason?: string; ownership_notes?: string }) {
+    return api<Boat>(`/v1/boats/${id}/transfer`, { method: 'POST', body: payload, queueWhenOffline: true });
+  },
+  async auditLog(id: string, query?: Record<string, string | number | undefined>) {
+    const res = await api<unknown>(`/v1/boats/${id}/audit-log`, { query });
+    return asPaginated<AuditLog>(res);
+  },
+  async documents(id: string) {
+    return api<{ documents?: Array<Record<string, unknown>>; categories?: string[] }>(
+      `/v1/boats/${id}/documents`
+    );
+  },
+  uploadPhoto(id: string, formData: FormData) {
+    return api<Record<string, unknown>>(`/v1/boats/${id}/photos`, {
+      method: 'POST',
+      body: formData,
+      queueWhenOffline: true,
+    });
+  },
+  deletePhoto(id: string, fileId: string) {
+    return api<{ message?: string }>(`/v1/boats/${id}/photos/${fileId}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
+  uploadDocument(id: string, formData: FormData) {
+    return api<Record<string, unknown>>(`/v1/boats/${id}/documents`, {
+      method: 'POST',
+      body: formData,
+      queueWhenOffline: true,
+    });
+  },
+  deleteDocument(id: string, fileId: string) {
+    return api<{ message?: string }>(`/v1/boats/${id}/documents/${fileId}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
 };
 
 export const stallingService = {
@@ -264,7 +311,15 @@ export const stallingService = {
   setStatus(id: string, status: string) {
     return api<StallingContract>(`/v1/stalling/${id}/status`, {
       method: 'PATCH',
-      body: { payment_status: status, status },
+      body: { payment_status: status },
+      queueWhenOffline: true,
+    });
+  },
+  // Trello #73: lifecycle status quick-edit (active/ended/cancelled/checked_out).
+  setLifecycle(id: string, status: string) {
+    return api<StallingContract>(`/v1/stalling/${id}/status`, {
+      method: 'PATCH',
+      body: { status },
       queueWhenOffline: true,
     });
   },
@@ -275,9 +330,47 @@ export const stallingService = {
       queueWhenOffline: true,
     });
   },
-  async logs(id: string) {
-    const res = await api<unknown>(`/v1/stalling/${id}/logs`);
-    return asArray<AuditLog>(res);
+  async logs(id: string, query?: Record<string, string | number | undefined>) {
+    const res = await api<unknown>(`/v1/stalling/${id}/logs`, { query });
+    return asPaginated<AuditLog>(res);
+  },
+  // Trello #73: dossier (one-call overview) + photos/documents on a contract.
+  dossier(id: string) {
+    return api<Record<string, unknown>>(`/v1/stalling/${id}/dossier`);
+  },
+  async photos(id: string) {
+    const res = await api<unknown>(`/v1/stalling/${id}/photos`);
+    return asArray<Record<string, unknown>>(res);
+  },
+  uploadPhoto(id: string, formData: FormData) {
+    return api<Record<string, unknown>>(`/v1/stalling/${id}/photos`, {
+      method: 'POST',
+      body: formData,
+      queueWhenOffline: true,
+    });
+  },
+  deletePhoto(id: string, fileId: string) {
+    return api<{ message?: string }>(`/v1/stalling/${id}/photos/${fileId}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
+  async documents(id: string) {
+    const res = await api<unknown>(`/v1/stalling/${id}/documents`);
+    return asArray<Record<string, unknown>>(res);
+  },
+  uploadDocument(id: string, formData: FormData) {
+    return api<Record<string, unknown>>(`/v1/stalling/${id}/documents`, {
+      method: 'POST',
+      body: formData,
+      queueWhenOffline: true,
+    });
+  },
+  deleteDocument(id: string, fileId: string) {
+    return api<{ message?: string }>(`/v1/stalling/${id}/documents/${fileId}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
   },
 };
 
@@ -410,6 +503,11 @@ export const kassaService = {
     payments?: Array<{ method: string; amount_cents: number; note?: string }>;
     locale?: string;
     redirect_url?: string;
+    // Trello #79: total override creates a separate DISCOUNT line (never silently
+    // changes product prices); a reason is required when adjusting.
+    adjusted_total_cents?: number;
+    adjustment_reason?: string;
+    on_account_note?: string;
     items: Array<{ product_id?: string; description?: string; quantity: number; unit_price_cents?: number; price_cents?: number; vat_rate?: number }>;
   }) {
     return api<string | KassaCheckoutResponse>('/v1/kassa/checkout', {
@@ -463,6 +561,18 @@ export const kassaService = {
   },
   cancelQrSession(id: string) {
     return api<unknown>(`/v1/kassa/qr-sessions/${id}/cancel`, { method: 'POST' });
+  },
+  // Trello #72: regenerate an expired QR session + email the payment link.
+  async regenerateQrSession(id: string) {
+    const res = await api<unknown>(`/v1/kassa/qr-sessions/${id}/regenerate`, { method: 'POST' });
+    return maybeResource<KassaQrSession>(res, 'data');
+  },
+  sendPaymentLink(id: string, payload?: { email?: string }) {
+    return api<{ message?: string }>(`/v1/kassa/qr-sessions/${id}/send-link`, {
+      method: 'POST',
+      body: payload ?? {},
+      queueWhenOffline: true,
+    });
   },
   quote(payload: { customer_id?: string; locale?: string; items: Array<Record<string, unknown>> }) {
     return api<Record<string, unknown>>('/v1/kassa/quote', {
@@ -765,6 +875,13 @@ export const productsService = {
   async bundles() {
     const res = await api<unknown>('/v1/products/bundles');
     return asArray<ProductBundle>(res);
+  },
+  // Trello #86: multipart product image upload (replaces URL-only field).
+  uploadImage(id: string, formData: FormData) {
+    return api<{ message?: string; image_url?: string; file_id?: string; product?: Product }>(
+      `/v1/products/${id}/upload-image`,
+      { method: 'POST', body: formData, queueWhenOffline: true }
+    );
   },
 };
 
@@ -1070,6 +1187,12 @@ export const adminService = {
     const res = await api<unknown>('/v1/admin/reminder-rules');
     return asArray<Record<string, unknown>>(res);
   },
+  // Full index response incl. `options` (entity types, channels, reminder_types).
+  reminderRuleOptions() {
+    return api<{ data?: Array<Record<string, unknown>>; options?: Record<string, unknown> }>(
+      '/v1/admin/reminder-rules'
+    );
+  },
   createReminderRule(payload: Record<string, unknown>) {
     return api<Record<string, unknown>>('/v1/admin/reminder-rules', {
       method: 'POST',
@@ -1083,6 +1206,22 @@ export const adminService = {
       body: payload,
       queueWhenOffline: true,
     });
+  },
+  deleteReminderRule(id: string) {
+    return api<{ message?: string }>(`/v1/admin/reminder-rules/${id}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
+  previewReminderRule(id: string, payload?: { entity_id?: string }) {
+    return api<Record<string, unknown>>(`/v1/admin/reminder-rules/${id}/preview`, {
+      method: 'POST',
+      body: payload ?? {},
+    });
+  },
+  // Trello #90: customer health score.
+  customerHealth(customerId: string) {
+    return api<Record<string, unknown>>(`/v1/customers/${customerId}/health`);
   },
 };
 
@@ -1455,6 +1594,74 @@ export const workOrdersService = {
     });
     return maybeResource<Invoice>(res, 'data');
   },
+  // Trello #88: stats dashboard, time entries, materials, uploads, audit log.
+  stats(query?: Record<string, string | number | undefined>) {
+    return api<Record<string, unknown>>('/v1/work-orders/stats', { query });
+  },
+  async timeEntries(id: string) {
+    const res = await api<unknown>(`/v1/work-orders/${id}/time-entries`);
+    return asArray<Record<string, unknown>>(res);
+  },
+  addTimeEntry(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}/time-entries`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  deleteTimeEntry(id: string, entryId: string) {
+    return api<{ message?: string }>(`/v1/work-orders/${id}/time-entries/${entryId}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
+  async materials(id: string) {
+    const res = await api<unknown>(`/v1/work-orders/${id}/materials`);
+    return asArray<Record<string, unknown>>(res);
+  },
+  addMaterial(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}/materials`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  deleteMaterial(id: string, materialId: string) {
+    return api<{ message?: string }>(`/v1/work-orders/${id}/materials/${materialId}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
+  uploadPhoto(id: string, formData: FormData) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}/photos`, {
+      method: 'POST',
+      body: formData,
+      queueWhenOffline: true,
+    });
+  },
+  deletePhoto(id: string, fileId: string) {
+    return api<{ message?: string }>(`/v1/work-orders/${id}/photos/${fileId}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
+  uploadDocument(id: string, formData: FormData) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}/documents`, {
+      method: 'POST',
+      body: formData,
+      queueWhenOffline: true,
+    });
+  },
+  deleteDocument(id: string, fileId: string) {
+    return api<{ message?: string }>(`/v1/work-orders/${id}/documents/${fileId}`, {
+      method: 'DELETE',
+      queueWhenOffline: true,
+    });
+  },
+  async auditLog(id: string, query?: Record<string, string | number | undefined>) {
+    const res = await api<unknown>(`/v1/work-orders/${id}/audit-log`, { query });
+    return asPaginated<AuditLog>(res);
+  },
 };
 
 export interface WorkOrderMetadata {
@@ -1518,6 +1725,32 @@ export const invoiceImportsService = {
       method: 'POST',
       queueWhenOffline: true,
     });
+  },
+  // Trello #108: multi-file upload, bulk actions, workbon matching, OCR source pdf.
+  batch(formData: FormData) {
+    return api<Record<string, unknown>>('/v1/invoice-imports/batch', {
+      method: 'POST',
+      body: formData,
+      queueWhenOffline: true,
+    });
+  },
+  bulkAction(payload: { ids: string[]; action: string; supplier_id?: string; customer_id?: string; boat_id?: string }) {
+    return api<Record<string, unknown>>('/v1/invoice-imports/bulk-action', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  proposeMatches(id: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/propose-matches`);
+  },
+  resolveLineItems(id: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/resolve-line-items`);
+  },
+  sourcePdf(id: string) {
+    return api<{ file_id?: string; filename?: string; mime_type?: string; signed_url?: string }>(
+      `/v1/invoice-imports/${id}/source-pdf`
+    );
   },
 };
 
@@ -1583,8 +1816,8 @@ export const searchService = {
 };
 
 export const productGroupsService = {
-  async list() {
-    const res = await api<unknown>('/v1/product-groups');
+  async list(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/product-groups', { query });
     return asArray<Record<string, unknown>>(res);
   },
   create(payload: Record<string, unknown>) {
@@ -1606,6 +1839,76 @@ export const productGroupsService = {
       method: 'DELETE',
       queueWhenOffline: true,
     });
+  },
+  // Trello #86: archive (distinct from deactivate toggle).
+  archive(id: string) {
+    return api<{ message?: string; data?: Record<string, unknown> }>(
+      `/v1/product-groups/${id}/archive`,
+      { method: 'POST', queueWhenOffline: true }
+    );
+  },
+};
+
+// Trello #108: suppliers, ledger accounts, supplier payables, accounting.
+export const suppliersService = {
+  async list(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/suppliers', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  get(id: string) {
+    return api<Record<string, unknown>>(`/v1/suppliers/${id}`);
+  },
+  create(payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/suppliers', { method: 'POST', body: payload, queueWhenOffline: true });
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/suppliers/${id}`, { method: 'PATCH', body: payload, queueWhenOffline: true });
+  },
+  remove(id: string) {
+    return api<{ message?: string }>(`/v1/suppliers/${id}`, { method: 'DELETE', queueWhenOffline: true });
+  },
+  async mappings(supplierId: string) {
+    const res = await api<unknown>(`/v1/suppliers/${supplierId}/mappings`);
+    return asArray<Record<string, unknown>>(res);
+  },
+  createMapping(supplierId: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/suppliers/${supplierId}/mappings`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+};
+
+export const ledgerAccountsService = {
+  async list(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/ledger-accounts', { query });
+    return asArray<Record<string, unknown>>(res);
+  },
+  create(payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/ledger-accounts', { method: 'POST', body: payload, queueWhenOffline: true });
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/ledger-accounts/${id}`, { method: 'PATCH', body: payload, queueWhenOffline: true });
+  },
+};
+
+export const supplierPayablesService = {
+  async list(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/supplier-payables', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  markPaid(id: string) {
+    return api<Record<string, unknown>>(`/v1/supplier-payables/${id}/mark-paid`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+};
+
+export const accountingService = {
+  dashboard(query?: Record<string, string | number | boolean | undefined>) {
+    return api<Record<string, unknown>>('/v1/admin/accounting/dashboard', { query });
   },
 };
 

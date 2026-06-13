@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { FilePlus2, MapPin, Pencil, Plus, Ship, ShieldCheck, Warehouse, XCircle } from 'lucide-react';
+import { Eye, FilePlus2, MapPin, Pencil, Plus, Ship, ShieldCheck, Warehouse, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { PaymentStatusBadge } from '@/components/admin/StatusBadge';
 import type { StallingContract } from '@/lib/api-types';
@@ -56,6 +56,7 @@ export default function StallingPage() {
   const [invoiceTarget, setInvoiceTarget] = React.useState<string | null>(null);
   const [editTarget, setEditTarget] = React.useState<StallingContract | null>(null);
   const [editStatus, setEditStatus] = React.useState('');
+  const [editLifecycle, setEditLifecycle] = React.useState('');
   const [editLocation, setEditLocation] = React.useState('');
   const [showCreate, setShowCreate] = React.useState(false);
   const [createForm, setCreateForm] = React.useState({
@@ -66,6 +67,7 @@ export default function StallingPage() {
     end_date: '',
     paid_until: '',
     location: '',
+    bok_number: '',
     payment_route: 'email',
     send_contract_email: true,
     deposit_pct: '',
@@ -203,10 +205,14 @@ export default function StallingPage() {
   const setLocationM = useMutation((p: { id: string; location: string }) =>
     stallingService.setLocation(p.id, p.location || null)
   );
+  const setLifecycleM = useMutation((p: { id: string; status: string }) =>
+    stallingService.setLifecycle(p.id, p.status)
+  );
 
   const openEdit = (contract: StallingContract) => {
     setEditTarget(contract);
     setEditStatus(contract.payment_status);
+    setEditLifecycle(contract.status ?? '');
     setEditLocation(contract.boat?.location_code ?? '');
   };
 
@@ -217,6 +223,10 @@ export default function StallingPage() {
     try {
       if (editStatus !== editTarget.payment_status) {
         await setStatusM.mutate({ id, status: editStatus });
+        push({ tone: 'success', title: t('adminNew.stalling.toasts.statusUpdated') });
+      }
+      if (editLifecycle && editLifecycle !== (editTarget.status ?? '')) {
+        await setLifecycleM.mutate({ id, status: editLifecycle });
         push({ tone: 'success', title: t('adminNew.stalling.toasts.statusUpdated') });
       }
       if (editLocation !== (editTarget.boat?.location_code ?? '')) {
@@ -262,6 +272,7 @@ export default function StallingPage() {
         end_date: createForm.end_date,
         paid_until: createForm.paid_until || undefined,
         location: createForm.location || undefined,
+        bok_number: createForm.bok_number || undefined,
         payment_route: createForm.payment_route || undefined,
         send_contract_email: createForm.send_contract_email,
         deposit_pct: createForm.deposit_pct ? Number(createForm.deposit_pct) : undefined,
@@ -275,6 +286,7 @@ export default function StallingPage() {
         end_date: '',
         paid_until: '',
         location: '',
+        bok_number: '',
         payment_route: 'email',
         send_contract_email: true,
         deposit_pct: '',
@@ -478,6 +490,15 @@ export default function StallingPage() {
                     </AdminTableCell>
                     <AdminTableCell>
                       <div className="flex justify-end gap-2">
+                        <Link href={`/${locale}/admin/stalling/${contract.id}`}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            leftIcon={<Eye className="h-3.5 w-3.5" />}
+                          >
+                            {t('adminNew.common.open')}
+                          </Button>
+                        </Link>
                         <Button
                           variant="outline"
                           size="sm"
@@ -523,10 +544,14 @@ export default function StallingPage() {
                   <AdminTableHeaderCell>{t('adminNew.audit.columns.time')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.audit.columns.actor')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.audit.columns.action')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.audit.columns.changes')}</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
               <tbody>
-                {(auditLogs.data?.data ?? []).map((log) => (
+                {(auditLogs.data?.data ?? []).map((log) => {
+                  const changes =
+                    ((log as unknown as { changes?: Array<{ field_name?: string; old_value?: unknown; new_value?: unknown }> }).changes) ?? [];
+                  return (
                   <AdminTableRow key={log.id}>
                     <AdminTableCell className="whitespace-nowrap text-sm">
                       {formatDate(log.created_at, dateLocale)}
@@ -535,8 +560,24 @@ export default function StallingPage() {
                     <AdminTableCell>
                       <Badge tone="neutral">{log.action}</Badge>
                     </AdminTableCell>
+                    <AdminTableCell>
+                      {changes.length === 0 ? (
+                        <span className="text-xs text-navy-400">—</span>
+                      ) : (
+                        <div className="space-y-0.5">
+                          {changes.map((c, j) => (
+                            <div key={j} className="text-xs text-navy-600">
+                              <span className="font-medium text-navy-700">{c.field_name}</span>:{' '}
+                              <span className="text-rose-600">{String(c.old_value ?? '—')}</span> →{' '}
+                              <span className="text-emerald-700">{String(c.new_value ?? '—')}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </AdminTableCell>
                   </AdminTableRow>
-                ))}
+                  );
+                })}
               </tbody>
             </AdminTable>
           ) : null}
@@ -607,6 +648,12 @@ export default function StallingPage() {
               onChange={(e) => setCreateForm({ ...createForm, location: e.target.value })}
               placeholder={t('adminNew.stalling.quickEdit.locationPlaceholder')}
               leftIcon={<MapPin className="h-4 w-4" />}
+            />
+            <Input
+              label={t('adminNew.stalling.fields.bokNumber')}
+              value={createForm.bok_number}
+              onChange={(e) => setCreateForm({ ...createForm, bok_number: e.target.value })}
+              placeholder={t('adminNew.stalling.fields.bokNumberPlaceholder')}
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.paymentRoute')}</label>
@@ -754,6 +801,21 @@ export default function StallingPage() {
                 <option value="cancelled">{t('adminNew.status.cancelled')}</option>
               </select>
             </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.stalling.quickEdit.lifecycleLabel')}
+              </label>
+              <select
+                className="input-base w-full"
+                value={editLifecycle}
+                onChange={(e) => setEditLifecycle(e.target.value)}
+              >
+                <option value="active">{t('adminNew.stalling.lifecycle.active')}</option>
+                <option value="ended">{t('adminNew.stalling.lifecycle.ended')}</option>
+                <option value="checked_out">{t('adminNew.stalling.lifecycle.checkedOut')}</option>
+                <option value="cancelled">{t('adminNew.stalling.lifecycle.cancelled')}</option>
+              </select>
+            </div>
             <Input
               label={t('adminNew.stalling.quickEdit.locationLabel')}
               value={editLocation}
@@ -766,7 +828,7 @@ export default function StallingPage() {
             <Button type="button" variant="ghost" onClick={() => setEditTarget(null)}>
               {t('adminNew.common.cancel')}
             </Button>
-            <Button type="submit" variant="gold" disabled={setStatusM.loading || setLocationM.loading}>
+            <Button type="submit" variant="gold" disabled={setStatusM.loading || setLocationM.loading || setLifecycleM.loading}>
               {t('adminNew.common.save')}
             </Button>
           </AdminModalFooter>

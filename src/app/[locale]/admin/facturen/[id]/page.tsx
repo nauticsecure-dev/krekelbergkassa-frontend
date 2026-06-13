@@ -249,6 +249,46 @@ export default function InvoiceDetailPage() {
               tone="warning"
             />
 
+            {(() => {
+              // Trello #79: link the original invoice ⇄ its credit notes.
+              const inv = invoice as unknown as {
+                credited_invoice?: { id?: string; invoice_number?: string } | null;
+                credit_notes?: Array<{ id?: string; invoice_number?: string }>;
+              };
+              const creditedInvoice = inv.credited_invoice;
+              const creditNotes = inv.credit_notes ?? [];
+              if (!creditedInvoice && creditNotes.length === 0) return null;
+              return (
+                <AdminStatusStrip
+                  label={creditedInvoice ? t('adminNew.invoiceDetail.creditedFor') : t('adminNew.invoiceDetail.creditNotes')}
+                  value={
+                    <span className="flex flex-wrap gap-2">
+                      {creditedInvoice?.id ? (
+                        <Link
+                          href={`/${locale}/admin/facturen/${creditedInvoice.id}`}
+                          className="font-semibold text-marine-700 hover:text-marine-800"
+                        >
+                          {creditedInvoice.invoice_number ?? creditedInvoice.id}
+                        </Link>
+                      ) : null}
+                      {creditNotes.map((cn) =>
+                        cn.id ? (
+                          <Link
+                            key={cn.id}
+                            href={`/${locale}/admin/facturen/${cn.id}`}
+                            className="font-semibold text-marine-700 hover:text-marine-800"
+                          >
+                            {cn.invoice_number ?? cn.id}
+                          </Link>
+                        ) : null
+                      )}
+                    </span>
+                  }
+                  tone="marine"
+                />
+              );
+            })()}
+
             <div className="bento-grid lg:grid-cols-3">
               <AdminSectionCard
                 className="lg:col-span-2"

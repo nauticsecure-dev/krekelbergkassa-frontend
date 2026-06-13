@@ -32,10 +32,15 @@ const ZONE_COLORS: Record<string, string> = {
 };
 
 async function renderPdfFirstPage(file: File): Promise<string> {
+  return renderPdfFromData(await file.arrayBuffer());
+}
+
+// Trello #70/#81: render a PDF supplied as raw bytes (used for both picked
+// files and a saved import's source PDF fetched from its signed URL).
+async function renderPdfFromData(data: ArrayBuffer): Promise<string> {
   const pdfjs = await import('pdfjs-dist');
   // Worker is copied to /public so it isn't run through the app's minifier.
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-  const data = await file.arrayBuffer();
   const doc = await pdfjs.getDocument({ data }).promise;
   const page = await doc.getPage(1);
   const viewport = page.getViewport({ scale: 1.5 });
@@ -51,9 +56,12 @@ async function renderPdfFirstPage(file: File): Promise<string> {
 export function DocumentZoneEditor({
   zones,
   onChange,
+  sourceUrl,
 }: {
   zones: ExtractionZone[];
   onChange: (zones: ExtractionZone[]) => void;
+  // Trello #70/#81: pre-load a saved import's source PDF/image for tagging.
+  sourceUrl?: string | null;
 }) {
   const { t } = useIntl();
   const fileRef = React.useRef<HTMLInputElement>(null);
@@ -61,6 +69,33 @@ export function DocumentZoneEditor({
   const [docUrl, setDocUrl] = React.useState<string | null>(null);
   const [loadingDoc, setLoadingDoc] = React.useState(false);
   const [docError, setDocError] = React.useState<string | null>(null);
+
+  // Load the supplied source document (image rendered directly, PDF rasterised).
+  React.useEffect(() => {
+    if (!sourceUrl) return;
+    let cancelled = false;
+    (async () => {
+      setDocError(null);
+      setLoadingDoc(true);
+      try {
+        const res = await fetch(sourceUrl);
+        const blob = await res.blob();
+        if (blob.type.startsWith('image/')) {
+          if (!cancelled) setDocUrl(URL.createObjectURL(blob));
+        } else {
+          const png = await renderPdfFromData(await blob.arrayBuffer());
+          if (!cancelled) setDocUrl(png);
+        }
+      } catch {
+        if (!cancelled) setDocError(t('adminNew.templates.renderError'));
+      } finally {
+        if (!cancelled) setLoadingDoc(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceUrl, t]);
   const [field, setField] = React.useState<string>('total');
   const [draft, setDraft] = React.useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const dragRef = React.useRef<{ startX: number; startY: number } | null>(null);

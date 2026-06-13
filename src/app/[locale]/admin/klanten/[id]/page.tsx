@@ -108,6 +108,11 @@ export default function CustomerDetailPage() {
     email: '',
     phone: '',
     preferred_locale: 'nl-NL',
+    gender: '',
+    street: '',
+    postal_code: '',
+    city: '',
+    country: '',
     notes: '',
   });
 
@@ -147,11 +152,18 @@ export default function CustomerDetailPage() {
 
   React.useEffect(() => {
     if (!data.data?.customer) return;
+    const c = data.data.customer as unknown as Record<string, unknown>;
+    const s = (k: string) => (typeof c[k] === 'string' ? (c[k] as string) : '');
     setEditForm({
       name: data.data.customer.name,
       email: data.data.customer.email ?? '',
       phone: data.data.customer.phone ?? '',
       preferred_locale: data.data.customer.preferred_locale || 'nl-NL',
+      gender: s('gender'),
+      street: s('street') || s('address'),
+      postal_code: s('postal_code') || s('zip'),
+      city: s('city'),
+      country: s('country'),
       notes: data.data.customer.notes ?? '',
     });
   }, [data.data?.customer]);
@@ -164,6 +176,11 @@ export default function CustomerDetailPage() {
         email: editForm.email || null,
         phone: editForm.phone || null,
         preferred_locale: editForm.preferred_locale,
+        gender: editForm.gender || null,
+        street: editForm.street || null,
+        postal_code: editForm.postal_code || null,
+        city: editForm.city || null,
+        country: editForm.country || null,
         notes: editForm.notes || null,
       });
       push({ tone: 'success', title: t('adminNew.customerDetail.toasts.customerUpdated') });
@@ -688,6 +705,43 @@ export default function CustomerDetailPage() {
                 <option value="fr-FR">Français (FR)</option>
               </select>
             </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.customerDetail.gender')}
+              </label>
+              <select
+                className="input-base w-full"
+                value={editForm.gender}
+                onChange={(e) => setEditForm((p) => ({ ...p, gender: e.target.value }))}
+              >
+                <option value="">{t('adminNew.customerDetail.genderUnspecified')}</option>
+                <option value="male">{t('adminNew.customerDetail.genderMale')}</option>
+                <option value="female">{t('adminNew.customerDetail.genderFemale')}</option>
+                <option value="other">{t('adminNew.customerDetail.genderOther')}</option>
+              </select>
+            </div>
+            <Input
+              label={t('adminNew.customerDetail.street')}
+              value={editForm.street}
+              onChange={(e) => setEditForm((p) => ({ ...p, street: e.target.value }))}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label={t('adminNew.customerDetail.postalCode')}
+                value={editForm.postal_code}
+                onChange={(e) => setEditForm((p) => ({ ...p, postal_code: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.customerDetail.city')}
+                value={editForm.city}
+                onChange={(e) => setEditForm((p) => ({ ...p, city: e.target.value }))}
+              />
+            </div>
+            <Input
+              label={t('adminNew.customerDetail.country')}
+              value={editForm.country}
+              onChange={(e) => setEditForm((p) => ({ ...p, country: e.target.value }))}
+            />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.customerDetail.notes')}

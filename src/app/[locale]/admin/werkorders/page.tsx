@@ -41,10 +41,14 @@ export default function WorkOrdersPage() {
     priority: 'normal',
     description: '',
     due_date: '',
+    assigned_to_user_id: '',
+    estimated_hours: '',
   });
 
   const orders = useQuery([page], () => workOrdersService.list({ page, per_page: 20 }));
   const boats = useQuery(['wo-boats'], () => boatsService.list({ per_page: 100 }));
+  const metadata = useQuery(['wo-metadata'], () => workOrdersService.metadata().catch(() => null));
+  const technicians = metadata.data?.technicians ?? [];
   const createOrder = useMutation(workOrdersService.create);
   const updateOrder = useMutation((payload: { id: string; data: Record<string, unknown> }) =>
     workOrdersService.update(payload.id, payload.data)
@@ -62,9 +66,11 @@ export default function WorkOrdersPage() {
         priority: form.priority,
         description: form.description,
         due_date: form.due_date || undefined,
+        assigned_to_user_id: form.assigned_to_user_id || undefined,
+        estimated_hours: form.estimated_hours ? Number(form.estimated_hours) : undefined,
       });
       setShowCreate(false);
-      setForm({ boat_id: '', type: '', priority: 'normal', description: '', due_date: '' });
+      setForm({ boat_id: '', type: '', priority: 'normal', description: '', due_date: '', assigned_to_user_id: '', estimated_hours: '' });
       await orders.refetch();
       push({ tone: 'success', title: t('adminNew.workOrders.toasts.created') });
     } catch (err) {
@@ -118,9 +124,13 @@ export default function WorkOrdersPage() {
                 <AdminTableHead>
                   <tr>
                     <AdminTableHeaderCell>{t('adminNew.workOrders.columns.number')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.boat')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.workOrders.columns.type')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.assignee')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.workOrders.columns.status')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.workOrders.columns.priority')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.hours')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.invoiceStatus')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.workOrders.columns.due')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>&nbsp;</AdminTableHeaderCell>
                   </tr>
@@ -136,7 +146,24 @@ export default function WorkOrdersPage() {
                           {String(row.number ?? row.id)}
                         </Link>
                       </AdminTableCell>
+                      <AdminTableCell className="text-sm">
+                        {String(
+                          row.boat_name ??
+                            (row.boat as { name?: string } | undefined)?.name ??
+                            '—'
+                        )}
+                        {row.customer_name ? (
+                          <div className="text-xs text-navy-400">{String(row.customer_name)}</div>
+                        ) : null}
+                      </AdminTableCell>
                       <AdminTableCell>{String(row.type ?? '—')}</AdminTableCell>
+                      <AdminTableCell className="text-sm">
+                        {String(
+                          (row.assigned_to as { name?: string } | undefined)?.name ??
+                            row.assignee_name ??
+                            '—'
+                        )}
+                      </AdminTableCell>
                       <AdminTableCell>
                         <select
                           className="input-base py-1 text-xs"
@@ -149,12 +176,23 @@ export default function WorkOrdersPage() {
                         >
                           <option value="new">{t('adminNew.workOrders.status.new')}</option>
                           <option value="in_progress">{t('adminNew.workOrders.status.inProgress')}</option>
-                          <option value="done">{t('adminNew.workOrders.status.done')}</option>
+                          <option value="completed">{t('adminNew.workOrders.status.completed')}</option>
                           <option value="cancelled">{t('adminNew.workOrders.status.cancelled')}</option>
                         </select>
                       </AdminTableCell>
                       <AdminTableCell>
                         <Badge tone="neutral">{String(row.priority ?? 'normal')}</Badge>
+                      </AdminTableCell>
+                      <AdminTableCell className="text-sm">
+                        {(() => {
+                          const totals = (row.totals as { labor_hours?: number } | undefined) ?? {};
+                          return totals.labor_hours != null ? Number(totals.labor_hours).toFixed(2) : '—';
+                        })()}
+                      </AdminTableCell>
+                      <AdminTableCell>
+                        <Badge tone={String(row.invoice_status ?? '').includes('not') ? 'neutral' : 'marine'}>
+                          {String(row.invoice_status ?? '—')}
+                        </Badge>
                       </AdminTableCell>
                       <AdminTableCell>
                         {row.due_date ? formatDate(String(row.due_date), dateLocale) : '—'}
@@ -190,6 +228,18 @@ export default function WorkOrdersPage() {
               </select>
             </div>
             <Input label={t('adminNew.workOrders.columns.type')} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} required />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.assignee')}</label>
+                <select className="input-base w-full" value={form.assigned_to_user_id} onChange={(e) => setForm({ ...form, assigned_to_user_id: e.target.value })}>
+                  <option value="">{t('adminNew.workOrders.detail.unassigned')}</option>
+                  {technicians.map((tech) => (
+                    <option key={tech.id} value={tech.id}>{tech.name}</option>
+                  ))}
+                </select>
+              </div>
+              <Input label={t('adminNew.workOrders.detail.estimatedHours')} type="number" value={form.estimated_hours} onChange={(e) => setForm({ ...form, estimated_hours: e.target.value })} />
+            </div>
             <Input label={t('adminNew.workOrders.columns.due')} type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
             <textarea className="input-base min-h-24 w-full" placeholder={t('adminNew.workOrders.description')} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </AdminModalBody>

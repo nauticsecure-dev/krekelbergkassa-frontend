@@ -12,6 +12,7 @@ import {
   AdminModalHeader,
   AdminSearchInput,
   AdminSectionCard,
+  AdminSelect,
   AdminTable,
   AdminTableCard,
   AdminTableCell,
@@ -34,6 +35,7 @@ export default function BoatsPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const [query, setQuery] = React.useState('');
+  const [statusFilter, setStatusFilter] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
@@ -46,8 +48,8 @@ export default function BoatsPage() {
     location_code: '',
   });
 
-  const boats = useQuery([query, page], () =>
-    boatsService.list({ search: query || undefined, page, per_page: 20 })
+  const boats = useQuery([query, statusFilter, page], () =>
+    boatsService.list({ search: query || undefined, status: statusFilter || undefined, page, per_page: 20 })
   );
   const customers = useQuery(['boats-customers'], () => customersService.list({ per_page: 100 }));
 
@@ -143,15 +145,29 @@ export default function BoatsPage() {
             </Button>
           }
         >
-        <AdminSearchInput
-          value={query}
-          onChange={(value) => {
-            setQuery(value);
-            setPage(1);
-          }}
-          placeholder={t('adminNew.boats.searchPlaceholder')}
-          className="mb-4"
-        />
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <AdminSearchInput
+            value={query}
+            onChange={(value) => {
+              setQuery(value);
+              setPage(1);
+            }}
+            placeholder={t('adminNew.boats.searchPlaceholder')}
+            className="flex-1"
+          />
+          <AdminSelect
+            value={statusFilter}
+            onChange={(v) => {
+              setStatusFilter(v);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.boats.statusAll')}</option>
+            <option value="in_storage">{t('adminNew.boats.statusInStorage')}</option>
+            <option value="work_in_progress">{t('adminNew.boats.statusWorkInProgress')}</option>
+            <option value="registered">{t('adminNew.boats.statusRegistered')}</option>
+          </AdminSelect>
+        </div>
 
         <AdminTableCard
           footer={
@@ -180,8 +196,9 @@ export default function BoatsPage() {
                 <tr>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.boat')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.owner')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.boats.fields.brand')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.type')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.boats.columns.length')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.boats.columns.status')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.location')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                 </tr>
@@ -205,8 +222,20 @@ export default function BoatsPage() {
                         '—'
                       )}
                     </AdminTableCell>
+                    <AdminTableCell className="text-sm">
+                      {String((boat as unknown as Record<string, unknown>).brand ?? '—')}
+                      {(boat as unknown as Record<string, unknown>).model ? (
+                        <div className="text-xs text-navy-400">{String((boat as unknown as Record<string, unknown>).model)}</div>
+                      ) : null}
+                    </AdminTableCell>
                     <AdminTableCell className="capitalize">{boat.type}</AdminTableCell>
-                    <AdminTableCell>{boat.length_cm ? `${boat.length_cm} cm` : '—'}</AdminTableCell>
+                    <AdminTableCell>
+                      {(() => {
+                        const cs = String((boat as unknown as Record<string, unknown>).current_status ?? '');
+                        const key = `adminNew.boats.status${cs === 'in_storage' ? 'InStorage' : cs === 'work_in_progress' ? 'WorkInProgress' : cs === 'registered' ? 'Registered' : ''}`;
+                        return cs ? t(key) : '—';
+                      })()}
+                    </AdminTableCell>
                     <AdminTableCell>{boat.location_code ?? '—'}</AdminTableCell>
                     <AdminTableCell className="text-right">
                       <Link href={`/${locale}/admin/boten/${boat.id}`}>
