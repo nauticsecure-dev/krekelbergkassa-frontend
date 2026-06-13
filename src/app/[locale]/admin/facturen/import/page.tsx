@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, FileUp, ScanText, Upload } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, FileUp, ScanText, Upload, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -45,6 +45,21 @@ function isDeliveryNote(row: Rec): boolean {
   return dt.includes('delivery') || dt.includes('bon');
 }
 
+// Trello #108/#81: OCR confidence may arrive as 0..1 or 0..100 under several keys.
+function ocrConfidence(row: Rec): number | null {
+  const raw = row.ocr_confidence ?? row.confidence ?? row.extraction_confidence ?? row.average_confidence;
+  if (raw == null) return null;
+  const n = Number(raw);
+  if (Number.isNaN(n)) return null;
+  return n <= 1 ? Math.round(n * 100) : Math.round(n);
+}
+
+function confidenceTone(pct: number): React.ComponentProps<typeof Badge>['tone'] {
+  if (pct >= 85) return 'success';
+  if (pct >= 60) return 'gold';
+  return 'danger';
+}
+
 export default function InvoiceImportsPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
@@ -56,6 +71,8 @@ export default function InvoiceImportsPage() {
   const [approveTarget, setApproveTarget] = React.useState<string | null>(null);
   const [rejectTarget, setRejectTarget] = React.useState<string | null>(null);
   const [workbonTarget, setWorkbonTarget] = React.useState<string | null>(null);
+  const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  const batchRef = React.useRef<HTMLInputElement>(null);
 
   const imports = useQuery([search, status, source], () =>
     invoiceImportsService.list({
@@ -70,9 +87,48 @@ export default function InvoiceImportsPage() {
   const rejectM = useMutation((id: string) => invoiceImportsService.reject(id));
   const dupM = useMutation((id: string) => invoiceImportsService.markDuplicate(id));
   const workbonM = useMutation((id: string) => invoiceImportsService.markWorkbon(id));
+  const bulkM = useMutation((p: { ids: string[]; action: string }) => invoiceImportsService.bulkAction(p));
 
   const rows = (imports.data?.data ?? []) as Rec[];
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+
+  const toggle = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const toggleAll = () =>
+    setSelected((prev) => (prev.size === rows.length ? new Set() : new Set(rows.map((r) => String(r.id)))));
+
+  const runBulk = async (action: string, label: string) => {
+    if (selected.size === 0) return;
+    try {
+      await bulkM.mutate({ ids: Array.from(selected), action });
+      push({ tone: 'success', title: label });
+      setSelected(new Set());
+      await imports.refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
+  const onBatchUpload = async (files: FileList) => {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      Array.from(files).forEach((f) => fd.append('files[]', f));
+      fd.append('source', 'upload');
+      await invoiceImportsService.batch(fd);
+      await imports.refetch();
+      push({ tone: 'success', title: t('adminNew.invoiceImports.toasts.batchUploaded', { count: files.length }) });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const runAction = async (label: string, fn: () => Promise<unknown>) => {
     try {
@@ -127,13 +183,22 @@ export default function InvoiceImportsPage() {
               </Button>
             </Link>
             <Button
-              variant="gold"
+              variant="outline"
               size="sm"
               leftIcon={<Upload className="h-4 w-4" />}
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
             >
               {t('adminNew.invoiceImports.upload')}
+            </Button>
+            <Button
+              variant="gold"
+              size="sm"
+              leftIcon={<FileUp className="h-4 w-4" />}
+              disabled={uploading}
+              onClick={() => batchRef.current?.click()}
+            >
+              {t('adminNew.invoiceImports.batchUpload')}
             </Button>
             <input
               ref={fileRef}
@@ -143,6 +208,17 @@ export default function InvoiceImportsPage() {
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) void onUpload(file);
+                e.target.value = '';
+              }}
+            />
+            <input
+              ref={batchRef}
+              type="file"
+              accept="application/pdf,image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length) void onBatchUpload(e.target.files);
                 e.target.value = '';
               }}
             />
@@ -173,6 +249,38 @@ export default function InvoiceImportsPage() {
             </AdminSelect>
           </div>
 
+          {selected.size > 0 ? (
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-marine-200 bg-marine-50/60 px-4 py-2.5">
+              <span className="text-sm font-semibold text-navy-800">
+                {t('adminNew.invoiceImports.selectedCount', { count: selected.size })}
+              </span>
+              <div className="ml-auto flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                  disabled={bulkM.loading}
+                  onClick={() => void runBulk('approve', t('adminNew.invoiceImports.toasts.bulkApproved'))}
+                >
+                  {t('adminNew.invoiceImports.approve')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-rose-600"
+                  leftIcon={<XCircle className="h-3.5 w-3.5" />}
+                  disabled={bulkM.loading}
+                  onClick={() => void runBulk('reject', t('adminNew.invoiceImports.toasts.bulkRejected'))}
+                >
+                  {t('adminNew.invoiceImports.reject')}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+                  {t('adminNew.common.clear')}
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
           <AdminTableCard>
             {imports.loading ? (
               <LoadingState label={t('adminNew.common.loading')} variant="table" />
@@ -187,9 +295,18 @@ export default function InvoiceImportsPage() {
               <AdminTable minWidth={980}>
                 <AdminTableHead>
                   <tr>
+                    <AdminTableHeaderCell className="w-10">
+                      <input
+                        type="checkbox"
+                        aria-label={t('adminNew.invoiceImports.selectAll')}
+                        checked={rows.length > 0 && selected.size === rows.length}
+                        onChange={toggleAll}
+                      />
+                    </AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.file')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.supplier')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.source')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.confidence')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.status')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.date')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
@@ -200,10 +317,21 @@ export default function InvoiceImportsPage() {
                     const id = String(row.id);
                     const st = String(row.status ?? 'uploaded');
                     const open = !/approv|reject/i.test(st);
+                    const conf = ocrConfidence(row);
                     return (
                       <AdminTableRow key={id}>
+                        <AdminTableCell className="w-10">
+                          <input
+                            type="checkbox"
+                            aria-label={t('adminNew.invoiceImports.selectRow')}
+                            checked={selected.has(id)}
+                            onChange={() => toggle(id)}
+                          />
+                        </AdminTableCell>
                         <AdminTableCell className="font-medium text-navy-900">
-                          {String(row.original_filename ?? row.id)}
+                          <Link href={`/${locale}/admin/facturen/import/${id}`} className="hover:text-marine-700">
+                            {String(row.original_filename ?? row.id)}
+                          </Link>
                           {row.supplier_document_number ? (
                             <div className="text-xs text-navy-400">#{String(row.supplier_document_number)}</div>
                           ) : null}
@@ -213,6 +341,13 @@ export default function InvoiceImportsPage() {
                         </AdminTableCell>
                         <AdminTableCell className="capitalize">{String(row.source ?? '—')}</AdminTableCell>
                         <AdminTableCell>
+                          {conf == null ? (
+                            <span className="text-xs text-navy-400">—</span>
+                          ) : (
+                            <Badge tone={confidenceTone(conf)}>{conf}%</Badge>
+                          )}
+                        </AdminTableCell>
+                        <AdminTableCell>
                           <Badge tone={statusTone(st)}>{st.replace(/_/g, ' ')}</Badge>
                         </AdminTableCell>
                         <AdminTableCell className="whitespace-nowrap text-sm text-navy-600">
@@ -220,6 +355,11 @@ export default function InvoiceImportsPage() {
                         </AdminTableCell>
                         <AdminTableCell>
                           <div className="flex flex-wrap justify-end gap-1">
+                            <Link href={`/${locale}/admin/facturen/import/${id}`}>
+                              <Button variant="outline" size="sm">
+                                {t('adminNew.invoiceImports.review')}
+                              </Button>
+                            </Link>
                             {st === 'uploaded' ? (
                               <Button
                                 variant="outline"

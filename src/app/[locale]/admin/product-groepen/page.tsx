@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Layers, Plus, Trash2 } from 'lucide-react';
+import { Archive, Layers, Plus, Trash2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
@@ -43,6 +43,9 @@ const emptyForm = {
   description: '',
   default_vat_rate: '21',
   vat_code: '',
+  revenue_account: '',
+  cost_center: '',
+  profit_center: '',
   sort_order: '0',
   active: true,
 };
@@ -63,6 +66,7 @@ export default function ProductGroupsPage() {
     productGroupsService.update(p.id, p.data)
   );
   const deleteGroup = useMutation((id: string) => productGroupsService.remove(id));
+  const archiveGroup = useMutation((id: string) => productGroupsService.archive(id));
 
   const rows = (groups.data ?? []) as Group[];
 
@@ -84,6 +88,9 @@ export default function ProductGroupsPage() {
       description: str(g, 'description'),
       default_vat_rate: str(g, 'default_vat_rate') || '21',
       vat_code: str(g, 'vat_code'),
+      revenue_account: str(g, 'revenue_account'),
+      cost_center: str(g, 'cost_center'),
+      profit_center: str(g, 'profit_center'),
       sort_order: str(g, 'sort_order') || '0',
       active: g.active !== false,
     });
@@ -100,6 +107,9 @@ export default function ProductGroupsPage() {
       description: form.description || null,
       default_vat_rate: form.default_vat_rate ? Number(form.default_vat_rate) : null,
       vat_code: form.vat_code || null,
+      revenue_account: form.revenue_account || null,
+      cost_center: form.cost_center || null,
+      profit_center: form.profit_center || null,
       sort_order: form.sort_order ? Number(form.sort_order) : 0,
       active: form.active,
     };
@@ -119,6 +129,16 @@ export default function ProductGroupsPage() {
         title: t('adminNew.common.operationFailed'),
         message: getApiErrorMessage(err),
       });
+    }
+  };
+
+  const onArchive = async (id: string) => {
+    try {
+      await archiveGroup.mutate(id);
+      push({ tone: 'success', title: t('adminNew.productGroups.toasts.archived') });
+      await groups.refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
     }
   };
 
@@ -217,6 +237,15 @@ export default function ProductGroupsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              leftIcon={<Archive className="h-3.5 w-3.5" />}
+                              disabled={archiveGroup.loading}
+                              onClick={() => void onArchive(String(g.id))}
+                            >
+                              {t('adminNew.productGroups.archive')}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               leftIcon={<Trash2 className="h-3.5 w-3.5" />}
                               onClick={() => setDeleteTarget(String(g.id))}
                             >
@@ -308,6 +337,26 @@ export default function ProductGroupsPage() {
                 value={form.vat_code}
                 onChange={(e) => setForm({ ...form, vat_code: e.target.value })}
                 placeholder="BTW21"
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Input
+                label={t('adminNew.productGroups.fields.revenueAccount')}
+                value={form.revenue_account}
+                onChange={(e) => setForm({ ...form, revenue_account: e.target.value })}
+                placeholder="8000"
+              />
+              <Input
+                label={t('adminNew.productGroups.fields.costCenter')}
+                value={form.cost_center}
+                onChange={(e) => setForm({ ...form, cost_center: e.target.value })}
+                placeholder="WERF"
+              />
+              <Input
+                label={t('adminNew.productGroups.fields.profitCenter')}
+                value={form.profit_center}
+                onChange={(e) => setForm({ ...form, profit_center: e.target.value })}
               />
             </div>
 

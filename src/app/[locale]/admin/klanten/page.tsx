@@ -44,6 +44,7 @@ export default function CustomersPage() {
   const [showCreate, setShowCreate] = React.useState(false);
   const [form, setForm] = React.useState({ name: '', email: '', phone: '' });
   const [blockTarget, setBlockTarget] = React.useState<{ id: string; name: string } | null>(null);
+  const [blockReason, setBlockReason] = React.useState('');
   const [impersonateTarget, setImpersonateTarget] = React.useState<{ id: string; name: string } | null>(
     null
   );
@@ -344,28 +345,51 @@ export default function CustomersPage() {
         </form>
       </Modal>
 
-      <AdminConfirmModal
-        open={!!blockTarget}
-        onClose={() => setBlockTarget(null)}
-        onConfirm={async () => {
-          if (!blockTarget) return;
-          try {
-            await blockCustomer.mutate({ id: blockTarget.id });
-            push({ tone: 'success', title: t('adminNew.customers.toasts.blocked') });
-            await customers.refetch();
-          } catch (err) {
-            push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
-          }
-          setBlockTarget(null);
-        }}
-        title={t('adminNew.customers.block')}
-        message={t('adminNew.customers.confirmBlock', { name: blockTarget?.name ?? '' })}
-        confirmLabel={t('adminNew.customers.block')}
-        cancelLabel={t('adminNew.common.cancel')}
-        variant="danger"
-        icon={Ban}
-        loading={blockCustomer.loading}
-      />
+      <Modal open={!!blockTarget} onClose={() => { setBlockTarget(null); setBlockReason(''); }} size="sm">
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!blockTarget) return;
+            try {
+              await blockCustomer.mutate({ id: blockTarget.id, reason: blockReason || undefined });
+              push({ tone: 'success', title: t('adminNew.customers.toasts.blocked') });
+              await customers.refetch();
+            } catch (err) {
+              push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+            }
+            setBlockTarget(null);
+            setBlockReason('');
+          }}
+          className="p-6"
+        >
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-navy-900">
+            <Ban className="h-5 w-5 text-rose-500" />
+            {t('adminNew.customers.block')}
+          </h2>
+          <p className="mt-2 text-sm text-navy-600">
+            {t('adminNew.customers.confirmBlock', { name: blockTarget?.name ?? '' })}
+          </p>
+          <div className="mt-4">
+            <label className="mb-1.5 block text-sm font-medium text-navy-800">
+              {t('adminNew.customers.blockReason')}
+            </label>
+            <textarea
+              className="input-base min-h-20 w-full"
+              value={blockReason}
+              onChange={(e) => setBlockReason(e.target.value)}
+              placeholder={t('adminNew.customers.blockReasonPlaceholder')}
+            />
+          </div>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => { setBlockTarget(null); setBlockReason(''); }}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button type="submit" variant="danger" disabled={blockCustomer.loading}>
+              {t('adminNew.customers.block')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       <AdminConfirmModal
         open={!!impersonateTarget}

@@ -859,7 +859,14 @@
     "help": {
       "title": "Need help?",
       "subtitle": "We are available Mon–Fri 09:00 to 17:30."
-    }
+    },
+    "searchPlaceholder": "Search activity…",
+    "filterPayments": "Payments",
+    "filterContracts": "Contracts",
+    "filterWorkOrders": "Work orders",
+    "filterPhotos": "Photos",
+    "filterDocuments": "Documents",
+    "actionRequired": "Action required"
   },
   "portalSidebar": {
     "documents": "Documents"
@@ -1142,7 +1149,12 @@
       "back": "Back",
       "edit": "Edit",
       "view": "View",
-      "confirmLogout": "Are you sure you want to sign out?"
+      "confirmLogout": "Are you sure you want to sign out?",
+      "add": "Add",
+      "deleted": "Removed",
+      "open": "Open",
+      "clear": "Clear",
+      "all": "All"
     },
     "dashboard": {
       "title": "Operations",
@@ -1203,7 +1215,9 @@
         "boats": "Boats",
         "created": "Created",
         "status": "Status",
-        "lastLogin": "Last login"
+        "lastLogin": "Last login",
+        "email": "Email",
+        "phone": "Phone"
       },
       "details": "Details",
       "total": "{count} customers total",
@@ -1225,7 +1239,9 @@
         "createFailed": "Create failed",
         "blocked": "Customer blocked",
         "unblocked": "Customer unblocked"
-      }
+      },
+      "blockReason": "Reason (optional)",
+      "blockReasonPlaceholder": "Why is this customer being blocked?"
     },
     "auth": {
       "portalSessionActive": "Portal session active",
@@ -1248,7 +1264,9 @@
       "reminders": "Reminders",
       "brokerage": "Brokerage tariffs",
       "timeline": "Timeline",
-      "sales": "Sales"
+      "sales": "Sales",
+      "suppliers": "Suppliers",
+      "accounting": "Accounting"
     },
     "sales": {
       "title": "Sales",
@@ -1321,13 +1339,18 @@
         "vatRate": "Default VAT %",
         "vatCode": "VAT code",
         "description": "Description",
-        "active": "Active"
+        "active": "Active",
+        "revenueAccount": "Revenue account",
+        "costCenter": "Cost center",
+        "profitCenter": "Profit center"
       },
       "toasts": {
         "created": "Group created",
         "updated": "Group updated",
-        "deleted": "Group deleted"
-      }
+        "deleted": "Group deleted",
+        "archived": "Group archived"
+      },
+      "archive": "Archive"
     },
     "scanner": {
       "title": "Scan with camera",
@@ -1420,7 +1443,9 @@
         "boatsInStorage": "Boats in storage",
         "expiring30": "Expiring in 30 days",
         "openBalance": "Open balance"
-      }
+      },
+      "topProductsTitle": "Top products",
+      "slowProductsTitle": "Slow products"
     },
     "cashClose": {
       "title": "Cash close",
@@ -1478,7 +1503,8 @@
         "time": "Time",
         "action": "Action",
         "entity": "Entity",
-        "actor": "Actor"
+        "actor": "Actor",
+        "changes": "Changes"
       },
       "events": "{count} events"
     },
@@ -1495,12 +1521,20 @@
         "owner": "Owner",
         "type": "Type",
         "length": "Length",
-        "location": "Location"
+        "location": "Location",
+        "status": "Status"
       },
       "fields": {
         "lengthCm": "Length (cm)",
         "widthCm": "Width (cm)",
-        "locationCode": "Location code"
+        "locationCode": "Location code",
+        "brand": "Brand",
+        "model": "Model",
+        "buildYear": "Build year",
+        "engineBrand": "Engine brand",
+        "engineType": "Engine type",
+        "mmsi": "MMSI",
+        "insuranceNumber": "Insurance no."
       },
       "type": {
         "motor": "Motor",
@@ -1516,7 +1550,9 @@
         "deleted": "Boat deleted",
         "deleteFailed": "Delete failed",
         "updated": "Boat updated",
-        "updateFailed": "Update failed"
+        "updateFailed": "Update failed",
+        "transferred": "Ownership transferred",
+        "fileUploaded": "File uploaded"
       },
       "editTitle": "Edit boat",
       "editSubtitle": "Update length, location and other details",
@@ -1526,8 +1562,48 @@
         "storage": "Storage",
         "financial": "Invoices",
         "workOrders": "Work orders",
-        "history": "History"
-      }
+        "history": "History",
+        "ownership": "Ownership",
+        "photos": "Photos",
+        "documents": "Documents",
+        "timeline": "Timeline"
+      },
+      "stats": {
+        "daysInStorage": "Days in storage",
+        "revenue": "Revenue"
+      },
+      "photoFolders": {
+        "arrival": "Arrival",
+        "inspection": "Inspection",
+        "maintenance": "Maintenance",
+        "damage": "Damage",
+        "departure": "Departure"
+      },
+      "docCategories": {
+        "insurance": "Insurance",
+        "registration": "Registration",
+        "ce_certificate": "CE certificate",
+        "purchase_agreement": "Purchase agreement",
+        "survey": "Survey",
+        "other": "Other"
+      },
+      "qrTitle": "QR code",
+      "printLabel": "Print label",
+      "transfer": "Transfer owner",
+      "transferSubtitle": "Move this boat to a new owner",
+      "newOwner": "New owner",
+      "transferReason": "Reason",
+      "ownershipNotes": "Notes",
+      "ownershipHistory": "Ownership history",
+      "noOwnershipHistory": "No ownership history yet.",
+      "currentOwner": "current",
+      "noPhotos": "No photos yet.",
+      "noDocuments": "No documents yet.",
+      "noTimeline": "No timeline events yet.",
+      "statusAll": "All statuses",
+      "statusInStorage": "In storage",
+      "statusWorkInProgress": "Work in progress",
+      "statusRegistered": "Registered"
     },
     "kassa": {
       "title": "Cash Desk",
@@ -1662,7 +1738,19 @@
           "30d": "30 days",
           "month": "This month"
         }
-      }
+      },
+      "qrScanToPay": "Scan to pay {amount}",
+      "qrExpired": "Payment expired",
+      "qrRegenerate": "Regenerate QR",
+      "qrWhatsapp": "Send by WhatsApp",
+      "qrWhatsappText": "Pay your Krekelberg invoice here:",
+      "qrSendEmail": "Send by email",
+      "qrLinkSent": "Payment link sent",
+      "adjustTotal": "Adjust total / discount",
+      "adjustNewTotal": "New total (incl. VAT)",
+      "adjustReason": "Reason for adjustment",
+      "adjustReasonPlaceholder": "e.g. Customer loyalty discount",
+      "adjustReasonRequired": "A reason is required to adjust the total"
     },
     "stalling": {
       "title": "Storage",
@@ -1719,7 +1807,9 @@
         "payByEmail": "Send payment link by email",
         "payAtKassa": "Pay at the register",
         "depositPct": "Deposit (%)",
-        "sendContractEmail": "Email the contract to the customer"
+        "sendContractEmail": "Email the contract to the customer",
+        "bokNumber": "Bok / berth number",
+        "bokNumberPlaceholder": "e.g. BOK-12"
       },
       "quickEdit": {
         "title": "Update contract",
@@ -1728,7 +1818,8 @@
         "locationLabel": "Storage location",
         "locationPlaceholder": "e.g. Hall A · row 3",
         "locationEmpty": "No location set",
-        "editAria": "Edit status and location"
+        "editAria": "Edit status and location",
+        "lifecycleLabel": "Contract status"
       },
       "brokerage": {
         "toggle": "Brokerage (makelaardij)",
@@ -1742,6 +1833,15 @@
         "created": "Contract created",
         "statusUpdated": "Status updated",
         "locationUpdated": "Location updated"
+      },
+      "lifecycle": {
+        "active": "Active",
+        "ended": "Ended",
+        "checkedOut": "Checked out",
+        "cancelled": "Cancelled"
+      },
+      "tabs": {
+        "overview": "Overview"
       }
     },
     "sync": {
@@ -2099,7 +2199,9 @@
       "confirmCancel": "Cancel this invoice? This cannot be undone.",
       "confirmCredit": "Create a credit invoice for this invoice?",
       "confirmSend": "Send this invoice to the customer by email?",
-      "confirmMarkPaid": "Mark this invoice as paid manually? Verify the amount and payment method."
+      "confirmMarkPaid": "Mark this invoice as paid manually? Verify the amount and payment method.",
+      "creditedFor": "Credit note for",
+      "creditNotes": "Credit notes"
     },
     "customerDetail": {
       "fallbackTitle": "Customer",
@@ -2159,7 +2261,16 @@
       "timelineInternal": "Internal",
       "timelineCustomer": "Customer-visible",
       "timelinePost": "Post",
-      "timelinePosted": "Added to timeline"
+      "timelinePosted": "Added to timeline",
+      "gender": "Gender",
+      "genderUnspecified": "Not specified",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "genderOther": "Other",
+      "street": "Street & number",
+      "postalCode": "Postal code",
+      "city": "City",
+      "country": "Country"
     },
     "calculator": {
       "title": "Calculator",
@@ -2361,7 +2472,8 @@
         "timesSold": "Times sold",
         "revenue": "Revenue (incl. VAT)",
         "lastSale": "Last sale",
-        "empty": "No sales recorded yet."
+        "empty": "No sales recorded yet.",
+        "margin": "Margin"
       },
       "ai": {
         "imageTitle": "Product image",
@@ -2370,7 +2482,10 @@
         "subtitle": "Create a clean POS tile image with AI",
         "prompt": "Describe the image",
         "hint": "Leave empty to use the product name.",
-        "done": "Image generated"
+        "done": "Image generated",
+        "upload": "Upload image",
+        "uploading": "Uploading…",
+        "uploaded": "Image uploaded"
       },
       "searchPlaceholder": "Search by code or name",
       "loading": "Loading products",
@@ -2697,7 +2812,8 @@
         "supplier": "Supplier",
         "source": "Source",
         "status": "Status",
-        "date": "Date"
+        "date": "Date",
+        "confidence": "Confidence"
       },
       "toasts": {
         "uploaded": "Invoice uploaded for processing",
@@ -2705,7 +2821,35 @@
         "approved": "Import approved",
         "rejected": "Import rejected",
         "markedDuplicate": "Marked as duplicate",
-        "workbon": "Workbon created"
+        "workbon": "Workbon created",
+        "bulkApproved": "Selected imports approved",
+        "bulkRejected": "Selected imports rejected",
+        "batchUploaded": "{count} files uploaded"
+      },
+      "review": "Review",
+      "batchUpload": "Batch upload",
+      "selectAll": "Select all",
+      "selectRow": "Select row",
+      "selectedCount": "{count} selected",
+      "reviewScreen": {
+        "title": "Import review",
+        "document": "Source document",
+        "extracted": "Extracted fields",
+        "matches": "Suggested matches",
+        "matchesSubtitle": "Proposed products and customers based on OCR.",
+        "lineItems": "Line items",
+        "noDocument": "No source document available.",
+        "noLineItems": "No line items extracted.",
+        "supplier": "Supplier",
+        "documentNumber": "Document number",
+        "date": "Invoice date",
+        "total": "Total",
+        "vat": "VAT",
+        "description": "Description",
+        "qty": "Qty",
+        "unitPrice": "Unit price",
+        "lineTotal": "Line total",
+        "tagFields": "Tag fields"
       }
     },
     "templates": {
@@ -2784,20 +2928,28 @@
         "type": "Type",
         "status": "Status",
         "priority": "Priority",
-        "due": "Due date"
+        "due": "Due date",
+        "boat": "Boat",
+        "assignee": "Assigned to",
+        "hours": "Hours",
+        "invoiceStatus": "Invoice"
       },
       "status": {
         "new": "New",
         "inProgress": "In progress",
         "done": "Done",
-        "cancelled": "Cancelled"
+        "cancelled": "Cancelled",
+        "completed": "Completed"
       },
       "toasts": {
         "created": "Work order created",
         "assigned": "Work order assigned",
         "started": "Work order started",
         "completed": "Work order completed",
-        "invoiceCreated": "Invoice created"
+        "invoiceCreated": "Invoice created",
+        "timeAdded": "Time entry added",
+        "materialAdded": "Material added",
+        "fileUploaded": "File uploaded"
       },
       "detail": {
         "open": "Open",
@@ -2818,10 +2970,29 @@
         "photos": "Photos",
         "noPhotos": "No photos attached.",
         "documents": "Documents",
-        "noDocuments": "No documents attached."
+        "noDocuments": "No documents attached.",
+        "timeTracking": "Time tracking",
+        "materials": "Materials",
+        "rate": "Rate €/h",
+        "timeNote": "Note (optional)",
+        "noTime": "No time logged yet.",
+        "noMaterials": "No materials yet.",
+        "materialDesc": "Description",
+        "qty": "Qty",
+        "unitPrice": "Unit €",
+        "activity": "Activity",
+        "noActivity": "No activity yet.",
+        "estimatedHours": "Estimated hours"
       },
       "forbiddenTitle": "No access to work orders",
-      "forbiddenMessage": "Your account does not have permission for /v1/work-orders. The admin role needs work-orders permissions granted in the API (Spatie), same as staff/manager."
+      "forbiddenMessage": "Your account does not have permission for /v1/work-orders. The admin role needs work-orders permissions granted in the API (Spatie), same as staff/manager.",
+      "photoFolders": {
+        "before": "Before",
+        "during": "During",
+        "after": "After",
+        "damage": "Damage",
+        "inspection": "Inspection"
+      }
     },
     "reminders": {
       "title": "Smart reminders",
@@ -2869,27 +3040,115 @@
         "channel": "Channel",
         "title": "Title template",
         "body": "Body template",
-        "enabled": "Enabled"
+        "enabled": "Enabled",
+        "daysBefore": "Days before",
+        "daysAfter": "Days after",
+        "reminderType": "Reminder type",
+        "reminderTypeAuto": "Auto (derive from days)"
       },
       "entities": {
         "invoice": "Invoice",
         "contract": "Storage contract",
-        "workOrder": "Work order"
+        "workOrder": "Work order",
+        "insurance": "Insurance",
+        "planning": "Planning"
       },
       "triggers": {
         "overdueAfter": "Overdue after X days",
         "dueBefore": "Due within X days",
-        "expiresBefore": "Expires within X days"
+        "expiresBefore": "Expires within X days",
+        "inactiveAfter": "No activity for X days"
       },
       "channels": {
         "manual": "Manual (task)",
-        "email": "Email"
+        "email": "Email",
+        "portal": "Portal",
+        "whatsapp": "WhatsApp",
+        "push": "Push"
       },
       "toasts": {
         "rulesRan": "Rules executed",
         "completed": "Reminder completed",
         "dismissed": "Reminder dismissed",
-        "ruleCreated": "Rule created"
+        "ruleCreated": "Rule created",
+        "ruleDeleted": "Rule deleted"
+      },
+      "statusAll": "All statuses",
+      "statusPending": "Pending",
+      "statusSent": "Sent",
+      "statusCompleted": "Completed",
+      "statusDismissed": "Dismissed",
+      "preview": "Preview",
+      "previewTitle": "Reminder preview"
+    },
+    "suppliers": {
+      "title": "Suppliers",
+      "subtitle": "Manage suppliers, product mappings and ledger defaults.",
+      "listTitle": "Suppliers",
+      "new": "New supplier",
+      "editTitle": "Edit supplier",
+      "searchPlaceholder": "Search by name, email or VAT…",
+      "emptyTitle": "No suppliers yet",
+      "emptyMessage": "Add your first supplier to start matching imported invoices.",
+      "formSubtitle": "Contact details and accounting defaults.",
+      "termDays": "{days} days",
+      "detailsTitle": "Supplier details",
+      "mappingsTitle": "Product mappings",
+      "mappingsSubtitle": "Link supplier SKUs to your products for automatic matching.",
+      "addMapping": "Add mapping",
+      "mappingsEmptyTitle": "No mappings",
+      "mappingsEmptyMessage": "Add a mapping so imports auto-match this supplier’s line items.",
+      "selectProduct": "Select a product…",
+      "columns": {
+        "name": "Name",
+        "contact": "Contact",
+        "vat": "VAT number",
+        "terms": "Payment terms"
+      },
+      "fields": {
+        "email": "Email",
+        "phone": "Phone",
+        "paymentTerms": "Payment terms (days)",
+        "ledgerAccount": "Default ledger account",
+        "ledgerAccountPlaceholder": "e.g. 4000 — Purchases"
+      },
+      "mapColumns": {
+        "sku": "Supplier SKU",
+        "description": "Supplier description",
+        "product": "Product"
+      },
+      "toasts": {
+        "created": "Supplier created",
+        "updated": "Supplier updated",
+        "mappingCreated": "Mapping added"
+      }
+    },
+    "accounting": {
+      "title": "Accounting",
+      "subtitle": "Revenue, expenses, VAT and supplier payables at a glance.",
+      "payablesTitle": "Supplier payables",
+      "payablesSubtitle": "Outstanding supplier invoices awaiting payment.",
+      "payablesEmptyTitle": "Nothing outstanding",
+      "payablesEmptyMessage": "There are no supplier payables matching this filter.",
+      "markPaid": "Mark paid",
+      "ledgerTitle": "Ledger breakdown",
+      "ledgerSubtitle": "Totals per ledger account.",
+      "ledgerEmpty": "No ledger data available yet.",
+      "stats": {
+        "revenue": "Revenue",
+        "expenses": "Expenses",
+        "outstandingPayables": "Outstanding payables",
+        "vat": "VAT payable"
+      },
+      "payColumns": {
+        "supplier": "Supplier",
+        "reference": "Reference",
+        "due": "Due date",
+        "amount": "Amount",
+        "status": "Status"
+      },
+      "toasts": {
+        "markedPaid": "Marked as paid"
       }
     }
   },

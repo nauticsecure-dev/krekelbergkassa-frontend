@@ -112,6 +112,12 @@ export default function ReportsPage() {
   const customerAnalytics = obj(data.customer_analytics);
   const topCustomers = arr(customerAnalytics.top_customers_by_revenue);
   const forecast = obj(data.forecast);
+  // Trello #86: per-product revenue breakdown (top / slow products).
+  const products = obj(data.products);
+  const topProducts = arr(products.top_products).length
+    ? arr(products.top_products)
+    : arr(products.by_product);
+  const slowProducts = arr(products.slow_products);
   // Aging may arrive under a few keys depending on backend version.
   const aging = arr(data.invoice_aging).length ? arr(data.invoice_aging) : arr(data.aging);
 
@@ -427,6 +433,36 @@ export default function ReportsPage() {
                   ))}
                 </div>
               </AdminSectionCard>
+
+              {topProducts.length ? (
+                <AdminSectionCard title={t('adminNew.reports.topProductsTitle')} icon={BarChart3}>
+                  <div className="space-y-1.5">
+                    {topProducts.slice(0, 10).map((p, i) => (
+                      <div key={i} className="flex items-center justify-between rounded-md px-2 py-1 text-sm">
+                        <span className="truncate text-navy-800">{str(p.product_name ?? p.name) || '—'}</span>
+                        <span className="ml-3 shrink-0 font-semibold text-navy-900">
+                          {money(p.revenue_incl_vat ?? p.revenue_cents)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </AdminSectionCard>
+              ) : null}
+
+              {slowProducts.length ? (
+                <AdminSectionCard title={t('adminNew.reports.slowProductsTitle')} icon={BarChart3}>
+                  <div className="space-y-1.5">
+                    {slowProducts.slice(0, 10).map((p, i) => (
+                      <div key={i} className="flex items-center justify-between rounded-md px-2 py-1 text-sm">
+                        <span className="truncate text-navy-800">{str(p.product_name ?? p.name) || '—'}</span>
+                        <span className="ml-3 shrink-0 font-semibold text-navy-900">
+                          {money(p.revenue_incl_vat ?? p.revenue_cents)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </AdminSectionCard>
+              ) : null}
             </div>
 
             {margin.available === false ? (

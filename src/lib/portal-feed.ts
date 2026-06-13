@@ -55,21 +55,43 @@ export function isTimelineUnread(item: PortalTimelineItem) {
   return !item.read_at && item.status !== 'read';
 }
 
+// Trello #89: portal feed filter now covers all categories and supports a
+// free-text search. Prefers the backend `category` field, falls back to regex.
+const TIMELINE_MATCHERS: Record<string, RegExp> = {
+  appointments: /appointment|crane|service|afspraak|planning/i,
+  invoices: /invoice|billing|factuur/i,
+  payments: /payment|paid|refund|betaling|mollie/i,
+  storage: /storage|stalling|contract|season|boat_moved|checked/i,
+  work_orders: /work[_\s-]?order|werkorder|repair|maintenance/i,
+  photos: /photo|image|foto/i,
+  documents: /document|file|insurance|certificate/i,
+  contracts: /contract|renew|stalling/i,
+};
+
 export function filterTimelineItems(
   items: PortalTimelineItem[],
-  filter: '' | 'appointments' | 'invoices' | 'storage'
+  filter: string,
+  search?: string
 ) {
-  if (!filter) return items;
-  const matchers: Record<typeof filter, RegExp> = {
-    appointments: /appointment|crane|service|afspraak/i,
-    invoices: /invoice|payment|billing|factuur|betaling/i,
-    storage: /storage|stalling|contract|season/i,
-  };
-  const re = matchers[filter];
-  return items.filter((item) => {
-    const haystack = `${item.type ?? ''} ${item.related_type ?? ''} ${item.title ?? ''}`;
-    return re.test(haystack);
-  });
+  let out = items;
+  if (filter) {
+    const re = TIMELINE_MATCHERS[filter];
+    out = out.filter((item) => {
+      const cat = ((item as { category?: string }).category ?? '').toLowerCase();
+      if (cat && (cat === filter || cat === filter.replace(/s$/, ''))) return true;
+      if (!re) return false;
+      const haystack = `${cat} ${item.type ?? ''} ${item.related_type ?? ''} ${item.title ?? ''}`;
+      return re.test(haystack);
+    });
+  }
+  const q = (search ?? '').trim().toLowerCase();
+  if (q) {
+    out = out.filter((item) => {
+      const hay = `${item.title ?? ''} ${(item as { message?: string }).message ?? ''} ${item.type ?? ''}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  return out;
 }
 
 export function groupFeedTimeline(items: PortalTimelineItem[]) {

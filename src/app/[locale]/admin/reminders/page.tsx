@@ -17,6 +17,7 @@ import {
   AdminModalFooter,
   AdminModalHeader,
   AdminSectionCard,
+  AdminSelect,
   AdminTable,
   AdminTableCard,
   AdminTableCell,
@@ -29,6 +30,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
+import { Trash2 } from 'lucide-react';
 import { adminService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatDate } from '@/lib/format';
@@ -36,11 +38,25 @@ import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 
-const num = (v: unknown): number => (typeof v === 'number' ? v : 0);
+// Trello #90: the summary endpoint now nests counts, e.g.
+// { today: { invoice_due, reminders_due }, upcoming: {...}, ... }.
+// Accept both the new nested shape and the old flat number.
+const bucket = (v: unknown): number => {
+  if (typeof v === 'number') return v;
+  if (v && typeof v === 'object') {
+    return Object.values(v as Record<string, unknown>).reduce<number>(
+      (sum, n) => sum + (typeof n === 'number' ? n : 0),
+      0
+    );
+  }
+  return 0;
+};
 
 const emptyRule = {
   entity_type: 'invoice',
   trigger_type: 'overdue_after',
+  reminder_type: '',
+  days_before: '7',
   days_after: '14',
   channel: 'manual',
   title_template: '',
@@ -55,10 +71,16 @@ export default function RemindersPage() {
 
   const [showRule, setShowRule] = React.useState(false);
   const [rule, setRule] = React.useState(emptyRule);
+  const [statusFilter, setStatusFilter] = React.useState('');
 
   const summary = useQuery(['reminders-summary'], () => adminService.remindersSummary());
-  const reminders = useQuery(['reminders-list'], () => adminService.reminders({ per_page: 50 }));
-  const rules = useQuery(['reminder-rules'], () => adminService.reminderRules().catch(() => []));
+  const reminders = useQuery(['reminders-list', statusFilter], () =>
+    adminService.reminders({ per_page: 50, status: statusFilter || undefined })
+  );
+  // Pull the full index response so we can read `options.reminder_types` for the rule form.
+  const ruleData = useQuery(['reminder-rules'], () =>
+    adminService.reminderRuleOptions().catch(() => ({ data: [], options: {} }))
+  );
 
   const runRules = useMutation(() => adminService.runReminderRules());
   const completeR = useMutation((id: string) => adminService.completeReminder(id));
@@ -66,6 +88,8 @@ export default function RemindersPage() {
   const createRule = useMutation((payload: Record<string, unknown>) =>
     adminService.createReminderRule(payload)
   );
+  const deleteRule = useMutation((id: string) => adminService.deleteReminderRule(id));
+  const previewRule = useMutation((id: string) => adminService.previewReminderRule(id));
 
   const refetchAll = async () => {
     await Promise.all([summary.refetch(), reminders.refetch()]);
@@ -76,11 +100,14 @@ export default function RemindersPage() {
       await fn();
       push({ tone: 'success', title: label });
       await refetchAll();
-      if (refetchRules) await rules.refetch();
+      if (refetchRules) await ruleData.refetch();
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
     }
   };
+
+  // days_before fires for due/expiry triggers, days_after for overdue/inactive triggers.
+  const usesDaysBefore = rule.trigger_type === 'due_before' || rule.trigger_type === 'expires_before';
 
   const onCreateRule = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +117,9 @@ export default function RemindersPage() {
         await createRule.mutate({
           entity_type: rule.entity_type,
           trigger_type: rule.trigger_type,
-          days_after: rule.days_after ? Number(rule.days_after) : 0,
+          reminder_type: rule.reminder_type || undefined,
+          days_before: usesDaysBefore && rule.days_before ? Number(rule.days_before) : undefined,
+          days_after: !usesDaysBefore && rule.days_after ? Number(rule.days_after) : undefined,
           channel: rule.channel,
           title_template: rule.title_template || undefined,
           body_template: rule.body_template || undefined,
@@ -103,8 +132,21 @@ export default function RemindersPage() {
     );
   };
 
+  const onPreviewRule = async (id: string) => {
+    try {
+      const res = await previewRule.mutate(id);
+      const subject = (res as { subject?: string; title?: string }).subject ?? (res as { title?: string }).title;
+      const body = (res as { body?: string; message?: string }).body ?? (res as { message?: string }).message;
+      push({ tone: 'info', title: subject || t('adminNew.reminders.previewTitle'), message: body });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
   const rows = reminders.data?.data ?? [];
-  const ruleRows = (rules.data ?? []) as Array<Record<string, unknown>>;
+  const ruleRows = (ruleData.data?.data ?? []) as Array<Record<string, unknown>>;
+  const ruleOptions = (ruleData.data?.options ?? {}) as Record<string, unknown>;
+  const reminderTypes = (ruleOptions.reminder_types as string[] | undefined) ?? [];
 
   const isOpen = (status: string) => {
     const s = (status || '').toLowerCase();
@@ -130,28 +172,28 @@ export default function RemindersPage() {
         stats={[
           {
             label: t('adminNew.reminders.stats.today'),
-            value: num(summary.data?.today),
+            value: bucket(summary.data?.today),
             icon: AlarmClock,
             tone: 'marine',
             loading: summary.loading,
           },
           {
             label: t('adminNew.reminders.stats.upcoming'),
-            value: num(summary.data?.upcoming),
+            value: bucket(summary.data?.upcoming),
             icon: BellRing,
             tone: 'navy',
             loading: summary.loading,
           },
           {
             label: t('adminNew.reminders.stats.overdue'),
-            value: num(summary.data?.overdue),
+            value: bucket(summary.data?.overdue),
             icon: XCircle,
-            tone: num(summary.data?.overdue) > 0 ? 'danger' : 'success',
+            tone: bucket(summary.data?.overdue) > 0 ? 'danger' : 'success',
             loading: summary.loading,
           },
           {
             label: t('adminNew.reminders.stats.completed'),
-            value: num(summary.data?.completed),
+            value: bucket(summary.data?.completed),
             icon: CheckCircle2,
             tone: 'success',
             loading: summary.loading,
@@ -164,6 +206,15 @@ export default function RemindersPage() {
           title={t('adminNew.reminders.listTitle')}
           description={t('adminNew.reminders.listSubtitle')}
           icon={BellRing}
+          action={
+            <AdminSelect value={statusFilter} onChange={setStatusFilter}>
+              <option value="">{t('adminNew.reminders.statusAll')}</option>
+              <option value="pending">{t('adminNew.reminders.statusPending')}</option>
+              <option value="sent">{t('adminNew.reminders.statusSent')}</option>
+              <option value="completed">{t('adminNew.reminders.statusCompleted')}</option>
+              <option value="dismissed">{t('adminNew.reminders.statusDismissed')}</option>
+            </AdminSelect>
+          }
         >
           <AdminTableCard>
             {reminders.loading ? (
@@ -260,7 +311,7 @@ export default function RemindersPage() {
             </Button>
           }
         >
-          {rules.loading ? (
+          {ruleData.loading ? (
             <LoadingState label={t('adminNew.common.loading')} variant="table" />
           ) : ruleRows.length === 0 ? (
             <EmptyState
@@ -276,18 +327,40 @@ export default function RemindersPage() {
                 >
                   <div>
                     <div className="font-semibold text-navy-900">
-                      {String(rl.title_template ?? rl.entity_type ?? '—')}
+                      {String(rl.title_template ?? rl.reminder_type ?? rl.entity_type ?? '—')}
                     </div>
                     <div className="text-xs text-navy-500">
                       {String(rl.entity_type ?? '')} · {String(rl.trigger_type ?? '')}
-                      {rl.days_after != null ? ` · ${rl.days_after}d` : ''} · {String(rl.channel ?? '')}
+                      {rl.days_before != null ? ` · ${rl.days_before}d before` : ''}
+                      {rl.days_after != null ? ` · ${rl.days_after}d after` : ''} · {String(rl.channel ?? '')}
                     </div>
                   </div>
-                  <Badge tone={rl.enabled === false ? 'neutral' : 'success'}>
-                    {rl.enabled === false
-                      ? t('adminNew.reminders.ruleDisabled')
-                      : t('adminNew.reminders.ruleEnabled')}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge tone={rl.enabled === false ? 'neutral' : 'success'}>
+                      {rl.enabled === false
+                        ? t('adminNew.reminders.ruleDisabled')
+                        : t('adminNew.reminders.ruleEnabled')}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={previewRule.loading}
+                      onClick={() => void onPreviewRule(String(rl.id))}
+                    >
+                      {t('adminNew.reminders.preview')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                      disabled={deleteRule.loading}
+                      onClick={() =>
+                        void action(t('adminNew.reminders.toasts.ruleDeleted'), () => deleteRule.mutate(String(rl.id)), true)
+                      }
+                    >
+                      {t('adminNew.common.delete')}
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -315,6 +388,8 @@ export default function RemindersPage() {
                   <option value="invoice">{t('adminNew.reminders.entities.invoice')}</option>
                   <option value="stalling_contract">{t('adminNew.reminders.entities.contract')}</option>
                   <option value="work_order">{t('adminNew.reminders.entities.workOrder')}</option>
+                  <option value="insurance">{t('adminNew.reminders.entities.insurance')}</option>
+                  <option value="planning">{t('adminNew.reminders.entities.planning')}</option>
                 </select>
               </div>
               <div>
@@ -329,15 +404,18 @@ export default function RemindersPage() {
                   <option value="overdue_after">{t('adminNew.reminders.triggers.overdueAfter')}</option>
                   <option value="due_before">{t('adminNew.reminders.triggers.dueBefore')}</option>
                   <option value="expires_before">{t('adminNew.reminders.triggers.expiresBefore')}</option>
+                  <option value="inactive_after">{t('adminNew.reminders.triggers.inactiveAfter')}</option>
                 </select>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Input
-                label={t('adminNew.reminders.ruleFields.days')}
+                label={usesDaysBefore ? t('adminNew.reminders.ruleFields.daysBefore') : t('adminNew.reminders.ruleFields.daysAfter')}
                 type="number"
-                value={rule.days_after}
-                onChange={(e) => setRule({ ...rule, days_after: e.target.value })}
+                value={usesDaysBefore ? rule.days_before : rule.days_after}
+                onChange={(e) =>
+                  setRule(usesDaysBefore ? { ...rule, days_before: e.target.value } : { ...rule, days_after: e.target.value })
+                }
               />
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
@@ -350,9 +428,31 @@ export default function RemindersPage() {
                 >
                   <option value="manual">{t('adminNew.reminders.channels.manual')}</option>
                   <option value="email">{t('adminNew.reminders.channels.email')}</option>
+                  <option value="portal">{t('adminNew.reminders.channels.portal')}</option>
+                  <option value="whatsapp">{t('adminNew.reminders.channels.whatsapp')}</option>
+                  <option value="push">{t('adminNew.reminders.channels.push')}</option>
                 </select>
               </div>
             </div>
+            {reminderTypes.length > 0 ? (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                  {t('adminNew.reminders.ruleFields.reminderType')}
+                </label>
+                <select
+                  className="input-base w-full"
+                  value={rule.reminder_type}
+                  onChange={(e) => setRule({ ...rule, reminder_type: e.target.value })}
+                >
+                  <option value="">{t('adminNew.reminders.ruleFields.reminderTypeAuto')}</option>
+                  {reminderTypes.map((rt) => (
+                    <option key={rt} value={rt}>
+                      {rt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
             <Input
               label={t('adminNew.reminders.ruleFields.title')}
               value={rule.title_template}

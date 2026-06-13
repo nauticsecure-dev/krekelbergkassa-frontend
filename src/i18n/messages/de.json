@@ -859,7 +859,14 @@
     "help": {
       "title": "Brauchen Sie Hilfe?",
       "subtitle": "Wir sind Mo–Fr 09:00 bis 17:30 Uhr für Sie da."
-    }
+    },
+    "searchPlaceholder": "Aktivität suchen…",
+    "filterPayments": "Zahlungen",
+    "filterContracts": "Verträge",
+    "filterWorkOrders": "Arbeitsaufträge",
+    "filterPhotos": "Fotos",
+    "filterDocuments": "Dokumente",
+    "actionRequired": "Aktion erforderlich"
   },
   "portalSidebar": {
     "documents": "Dokumente"
@@ -1142,7 +1149,12 @@
       "back": "Zurück",
       "edit": "Bearbeiten",
       "view": "Ansehen",
-      "confirmLogout": "Möchten Sie sich wirklich abmelden?"
+      "confirmLogout": "Möchten Sie sich wirklich abmelden?",
+      "add": "Hinzufügen",
+      "deleted": "Entfernt",
+      "open": "Öffnen",
+      "clear": "Löschen",
+      "all": "Alle"
     },
     "dashboard": {
       "title": "Betrieb",
@@ -1203,7 +1215,9 @@
         "boats": "Boote",
         "created": "Erstellt",
         "status": "Status",
-        "lastLogin": "Letzter Login"
+        "lastLogin": "Letzter Login",
+        "email": "E-Mail",
+        "phone": "Telefon"
       },
       "details": "Details",
       "total": "{count} Kunden gesamt",
@@ -1225,7 +1239,9 @@
         "createFailed": "Erstellung fehlgeschlagen",
         "blocked": "Kunde gesperrt",
         "unblocked": "Kunde entsperrt"
-      }
+      },
+      "blockReason": "Grund (optional)",
+      "blockReasonPlaceholder": "Warum wird dieser Kunde gesperrt?"
     },
     "auth": {
       "portalSessionActive": "Portal-Sitzung aktiv",
@@ -1248,7 +1264,9 @@
       "reminders": "Erinnerungen",
       "brokerage": "Maklertarife",
       "timeline": "Zeitleiste",
-      "sales": "Verkäufe"
+      "sales": "Verkäufe",
+      "suppliers": "Lieferanten",
+      "accounting": "Buchhaltung"
     },
     "sales": {
       "title": "Verkäufe",
@@ -1321,13 +1339,18 @@
         "vatRate": "Standard-MwSt. %",
         "vatCode": "MwSt.-Code",
         "description": "Beschreibung",
-        "active": "Aktiv"
+        "active": "Aktiv",
+        "revenueAccount": "Erlöskonto",
+        "costCenter": "Kostenstelle",
+        "profitCenter": "Profitcenter"
       },
       "toasts": {
         "created": "Gruppe erstellt",
         "updated": "Gruppe aktualisiert",
-        "deleted": "Gruppe gelöscht"
-      }
+        "deleted": "Gruppe gelöscht",
+        "archived": "Gruppe archiviert"
+      },
+      "archive": "Archivieren"
     },
     "scanner": {
       "title": "Mit Kamera scannen",
@@ -1420,7 +1443,9 @@
         "boatsInStorage": "Boote im Lager",
         "expiring30": "Läuft in 30 Tagen ab",
         "openBalance": "Offener Saldo"
-      }
+      },
+      "topProductsTitle": "Top-Produkte",
+      "slowProductsTitle": "Langsame Produkte"
     },
     "cashClose": {
       "title": "Tagesabschluss",
@@ -1478,7 +1503,8 @@
         "time": "Zeit",
         "action": "Aktion",
         "entity": "Entität",
-        "actor": "Akteur"
+        "actor": "Akteur",
+        "changes": "Änderungen"
       },
       "events": "{count} Ereignisse"
     },
@@ -1495,12 +1521,20 @@
         "owner": "Eigentümer",
         "type": "Typ",
         "length": "Länge",
-        "location": "Standort"
+        "location": "Standort",
+        "status": "Status"
       },
       "fields": {
         "lengthCm": "Länge (cm)",
         "widthCm": "Breite (cm)",
-        "locationCode": "Standortcode"
+        "locationCode": "Standortcode",
+        "brand": "Marke",
+        "model": "Modell",
+        "buildYear": "Baujahr",
+        "engineBrand": "Motormarke",
+        "engineType": "Motortyp",
+        "mmsi": "MMSI",
+        "insuranceNumber": "Versicherungsnr."
       },
       "type": {
         "motor": "Motor",
@@ -1516,7 +1550,9 @@
         "deleted": "Boot gelöscht",
         "deleteFailed": "Löschen fehlgeschlagen",
         "updated": "Boot aktualisiert",
-        "updateFailed": "Aktualisierung fehlgeschlagen"
+        "updateFailed": "Aktualisierung fehlgeschlagen",
+        "transferred": "Eigentum übertragen",
+        "fileUploaded": "Datei hochgeladen"
       },
       "editTitle": "Boot bearbeiten",
       "editSubtitle": "Länge, Standort und andere Angaben korrigieren",
@@ -1526,8 +1562,48 @@
         "storage": "Lagerung",
         "financial": "Rechnungen",
         "workOrders": "Arbeitsaufträge",
-        "history": "Verlauf"
-      }
+        "history": "Verlauf",
+        "ownership": "Eigentum",
+        "photos": "Fotos",
+        "documents": "Dokumente",
+        "timeline": "Zeitleiste"
+      },
+      "stats": {
+        "daysInStorage": "Tage im Lager",
+        "revenue": "Umsatz"
+      },
+      "photoFolders": {
+        "arrival": "Ankunft",
+        "inspection": "Inspektion",
+        "maintenance": "Wartung",
+        "damage": "Schaden",
+        "departure": "Abfahrt"
+      },
+      "docCategories": {
+        "insurance": "Versicherung",
+        "registration": "Registrierung",
+        "ce_certificate": "CE-Zertifikat",
+        "purchase_agreement": "Kaufvertrag",
+        "survey": "Gutachten",
+        "other": "Sonstiges"
+      },
+      "qrTitle": "QR-Code",
+      "printLabel": "Etikett drucken",
+      "transfer": "Eigentümer ändern",
+      "transferSubtitle": "Dieses Boot einem neuen Eigentümer zuweisen",
+      "newOwner": "Neuer Eigentümer",
+      "transferReason": "Grund",
+      "ownershipNotes": "Notizen",
+      "ownershipHistory": "Eigentumshistorie",
+      "noOwnershipHistory": "Noch keine Eigentumshistorie.",
+      "currentOwner": "aktuell",
+      "noPhotos": "Noch keine Fotos.",
+      "noDocuments": "Noch keine Dokumente.",
+      "noTimeline": "Noch keine Zeitleiste.",
+      "statusAll": "Alle Status",
+      "statusInStorage": "Im Lager",
+      "statusWorkInProgress": "In Arbeit",
+      "statusRegistered": "Registriert"
     },
     "kassa": {
       "title": "Kasse",
@@ -1662,7 +1738,19 @@
           "30d": "30 Tage",
           "month": "Dieser Monat"
         }
-      }
+      },
+      "qrScanToPay": "Scannen, um {amount} zu zahlen",
+      "qrExpired": "Zahlung abgelaufen",
+      "qrRegenerate": "QR neu erzeugen",
+      "qrWhatsapp": "Per WhatsApp senden",
+      "qrWhatsappText": "Zahlen Sie hier Ihre Krekelberg-Rechnung:",
+      "qrSendEmail": "Per E-Mail senden",
+      "qrLinkSent": "Zahlungslink gesendet",
+      "adjustTotal": "Summe anpassen / Rabatt",
+      "adjustNewTotal": "Neue Summe (inkl. MwSt.)",
+      "adjustReason": "Grund für die Anpassung",
+      "adjustReasonPlaceholder": "z. B. Kundenrabatt",
+      "adjustReasonRequired": "Ein Grund ist für die Anpassung erforderlich"
     },
     "stalling": {
       "title": "Lagerung",
@@ -1719,7 +1807,9 @@
         "payByEmail": "Zahlungslink per E-Mail senden",
         "payAtKassa": "An der Kasse bezahlen",
         "depositPct": "Anzahlung (%)",
-        "sendContractEmail": "Vertrag an den Kunden senden"
+        "sendContractEmail": "Vertrag an den Kunden senden",
+        "bokNumber": "Bock-/Liegeplatznummer",
+        "bokNumberPlaceholder": "z. B. BOK-12"
       },
       "quickEdit": {
         "title": "Vertrag aktualisieren",
@@ -1728,7 +1818,8 @@
         "locationLabel": "Lagerort",
         "locationPlaceholder": "z. B. Halle A · Reihe 3",
         "locationEmpty": "Kein Standort festgelegt",
-        "editAria": "Status und Standort bearbeiten"
+        "editAria": "Status und Standort bearbeiten",
+        "lifecycleLabel": "Vertragsstatus"
       },
       "brokerage": {
         "toggle": "Makler (makelaardij)",
@@ -1742,6 +1833,15 @@
         "created": "Vertrag erstellt",
         "statusUpdated": "Status aktualisiert",
         "locationUpdated": "Standort aktualisiert"
+      },
+      "lifecycle": {
+        "active": "Aktiv",
+        "ended": "Beendet",
+        "checkedOut": "Ausgecheckt",
+        "cancelled": "Storniert"
+      },
+      "tabs": {
+        "overview": "Übersicht"
       }
     },
     "sync": {
@@ -2099,7 +2199,9 @@
       "confirmCancel": "Diese Rechnung stornieren? Dies kann nicht rückgängig gemacht werden.",
       "confirmCredit": "Eine Gutschrift für diese Rechnung erstellen?",
       "confirmSend": "Diese Rechnung per E-Mail an den Kunden senden?",
-      "confirmMarkPaid": "Diese Rechnung manuell als bezahlt markieren? Betrag und Zahlungsmethode prüfen."
+      "confirmMarkPaid": "Diese Rechnung manuell als bezahlt markieren? Betrag und Zahlungsmethode prüfen.",
+      "creditedFor": "Gutschrift für",
+      "creditNotes": "Gutschriften"
     },
     "customerDetail": {
       "fallbackTitle": "Kunde",
@@ -2159,7 +2261,16 @@
       "timelineInternal": "Intern",
       "timelineCustomer": "Für Kunde sichtbar",
       "timelinePost": "Posten",
-      "timelinePosted": "Zur Zeitleiste hinzugefügt"
+      "timelinePosted": "Zur Zeitleiste hinzugefügt",
+      "gender": "Geschlecht",
+      "genderUnspecified": "Nicht angegeben",
+      "genderMale": "Männlich",
+      "genderFemale": "Weiblich",
+      "genderOther": "Andere",
+      "street": "Straße & Nr.",
+      "postalCode": "PLZ",
+      "city": "Stadt",
+      "country": "Land"
     },
     "calculator": {
       "title": "Rechner",
@@ -2361,7 +2472,8 @@
         "timesSold": "Verkauft",
         "revenue": "Umsatz (inkl. MwSt.)",
         "lastSale": "Letzter Verkauf",
-        "empty": "Noch keine Verkäufe erfasst."
+        "empty": "Noch keine Verkäufe erfasst.",
+        "margin": "Marge"
       },
       "ai": {
         "imageTitle": "Produktbild",
@@ -2370,7 +2482,10 @@
         "subtitle": "Erstellen Sie ein sauberes POS-Kachelbild mit KI",
         "prompt": "Bild beschreiben",
         "hint": "Leer lassen, um den Produktnamen zu verwenden.",
-        "done": "Bild generiert"
+        "done": "Bild generiert",
+        "upload": "Bild hochladen",
+        "uploading": "Wird hochgeladen…",
+        "uploaded": "Bild hochgeladen"
       },
       "searchPlaceholder": "Nach Code oder Name suchen",
       "loading": "Produkte laden",
@@ -2697,7 +2812,8 @@
         "supplier": "Lieferant",
         "source": "Quelle",
         "status": "Status",
-        "date": "Datum"
+        "date": "Datum",
+        "confidence": "Konfidenz"
       },
       "toasts": {
         "uploaded": "Rechnung zur Verarbeitung hochgeladen",
@@ -2705,7 +2821,35 @@
         "approved": "Import genehmigt",
         "rejected": "Import abgelehnt",
         "markedDuplicate": "Als Duplikat markiert",
-        "workbon": "Werkbon erstellt"
+        "workbon": "Werkbon erstellt",
+        "bulkApproved": "Ausgewählte Importe genehmigt",
+        "bulkRejected": "Ausgewählte Importe abgelehnt",
+        "batchUploaded": "{count} Dateien hochgeladen"
+      },
+      "review": "Prüfen",
+      "batchUpload": "Stapel-Upload",
+      "selectAll": "Alle auswählen",
+      "selectRow": "Zeile auswählen",
+      "selectedCount": "{count} ausgewählt",
+      "reviewScreen": {
+        "title": "Importprüfung",
+        "document": "Quelldokument",
+        "extracted": "Extrahierte Felder",
+        "matches": "Vorgeschlagene Treffer",
+        "matchesSubtitle": "Vorgeschlagene Produkte und Kunden basierend auf OCR.",
+        "lineItems": "Positionen",
+        "noDocument": "Kein Quelldokument verfügbar.",
+        "noLineItems": "Keine Positionen extrahiert.",
+        "supplier": "Lieferant",
+        "documentNumber": "Belegnummer",
+        "date": "Rechnungsdatum",
+        "total": "Gesamt",
+        "vat": "USt.",
+        "description": "Beschreibung",
+        "qty": "Menge",
+        "unitPrice": "Stückpreis",
+        "lineTotal": "Positionssumme",
+        "tagFields": "Felder markieren"
       }
     },
     "templates": {
@@ -2784,20 +2928,28 @@
         "type": "Typ",
         "status": "Status",
         "priority": "Priorität",
-        "due": "Fälligkeitsdatum"
+        "due": "Fälligkeitsdatum",
+        "boat": "Boot",
+        "assignee": "Zugewiesen an",
+        "hours": "Stunden",
+        "invoiceStatus": "Rechnung"
       },
       "status": {
         "new": "Neu",
         "inProgress": "In Bearbeitung",
         "done": "Abgeschlossen",
-        "cancelled": "Storniert"
+        "cancelled": "Storniert",
+        "completed": "Abgeschlossen"
       },
       "toasts": {
         "created": "Arbeitsauftrag erstellt",
         "assigned": "Arbeitsauftrag zugewiesen",
         "started": "Arbeitsauftrag gestartet",
         "completed": "Arbeitsauftrag abgeschlossen",
-        "invoiceCreated": "Rechnung erstellt"
+        "invoiceCreated": "Rechnung erstellt",
+        "timeAdded": "Zeit hinzugefügt",
+        "materialAdded": "Material hinzugefügt",
+        "fileUploaded": "Datei hochgeladen"
       },
       "detail": {
         "open": "Öffnen",
@@ -2818,10 +2970,29 @@
         "photos": "Fotos",
         "noPhotos": "Keine Fotos angehängt.",
         "documents": "Dokumente",
-        "noDocuments": "Keine Dokumente angehängt."
+        "noDocuments": "Keine Dokumente angehängt.",
+        "timeTracking": "Zeiterfassung",
+        "materials": "Materialien",
+        "rate": "Satz €/Std",
+        "timeNote": "Notiz (optional)",
+        "noTime": "Noch keine Zeit erfasst.",
+        "noMaterials": "Noch keine Materialien.",
+        "materialDesc": "Beschreibung",
+        "qty": "Anz.",
+        "unitPrice": "Stück €",
+        "activity": "Aktivität",
+        "noActivity": "Noch keine Aktivität.",
+        "estimatedHours": "Geschätzte Stunden"
       },
       "forbiddenTitle": "Kein Zugriff auf Arbeitsaufträge",
-      "forbiddenMessage": "Ihr Konto hat keine Berechtigung für /v1/work-orders. Der Admin-Rolle müssen in der API die work-orders-Rechte zugewiesen werden (Spatie), wie bei Staff/Manager."
+      "forbiddenMessage": "Ihr Konto hat keine Berechtigung für /v1/work-orders. Der Admin-Rolle müssen in der API die work-orders-Rechte zugewiesen werden (Spatie), wie bei Staff/Manager.",
+      "photoFolders": {
+        "before": "Vorher",
+        "during": "Während",
+        "after": "Nachher",
+        "damage": "Schaden",
+        "inspection": "Inspektion"
+      }
     },
     "reminders": {
       "title": "Intelligente Erinnerungen",
@@ -2869,27 +3040,115 @@
         "channel": "Kanal",
         "title": "Titelvorlage",
         "body": "Textvorlage",
-        "enabled": "Aktiv"
+        "enabled": "Aktiv",
+        "daysBefore": "Tage vorher",
+        "daysAfter": "Tage danach",
+        "reminderType": "Erinnerungstyp",
+        "reminderTypeAuto": "Automatisch (aus Tagen)"
       },
       "entities": {
         "invoice": "Rechnung",
         "contract": "Lagervertrag",
-        "workOrder": "Arbeitsauftrag"
+        "workOrder": "Arbeitsauftrag",
+        "insurance": "Versicherung",
+        "planning": "Planung"
       },
       "triggers": {
         "overdueAfter": "Überfällig nach X Tagen",
         "dueBefore": "Fällig in X Tagen",
-        "expiresBefore": "Läuft ab in X Tagen"
+        "expiresBefore": "Läuft ab in X Tagen",
+        "inactiveAfter": "Keine Aktivität für X Tage"
       },
       "channels": {
         "manual": "Manuell (Aufgabe)",
-        "email": "E-Mail"
+        "email": "E-Mail",
+        "portal": "Portal",
+        "whatsapp": "WhatsApp",
+        "push": "Push"
       },
       "toasts": {
         "rulesRan": "Regeln ausgeführt",
         "completed": "Erinnerung abgeschlossen",
         "dismissed": "Erinnerung verworfen",
-        "ruleCreated": "Regel erstellt"
+        "ruleCreated": "Regel erstellt",
+        "ruleDeleted": "Regel gelöscht"
+      },
+      "statusAll": "Alle Status",
+      "statusPending": "Ausstehend",
+      "statusSent": "Gesendet",
+      "statusCompleted": "Abgeschlossen",
+      "statusDismissed": "Verworfen",
+      "preview": "Vorschau",
+      "previewTitle": "Erinnerungs-Vorschau"
+    },
+    "suppliers": {
+      "title": "Lieferanten",
+      "subtitle": "Lieferanten, Produktzuordnungen und Konten-Standardwerte verwalten.",
+      "listTitle": "Lieferanten",
+      "new": "Neuer Lieferant",
+      "editTitle": "Lieferant bearbeiten",
+      "searchPlaceholder": "Nach Name, E-Mail oder USt-IdNr. suchen…",
+      "emptyTitle": "Noch keine Lieferanten",
+      "emptyMessage": "Fügen Sie Ihren ersten Lieferanten hinzu, um importierte Rechnungen zuzuordnen.",
+      "formSubtitle": "Kontaktdaten und Buchhaltungs-Standardwerte.",
+      "termDays": "{days} Tage",
+      "detailsTitle": "Lieferantendetails",
+      "mappingsTitle": "Produktzuordnungen",
+      "mappingsSubtitle": "Lieferanten-SKUs mit Ihren Produkten verknüpfen für automatische Zuordnung.",
+      "addMapping": "Zuordnung hinzufügen",
+      "mappingsEmptyTitle": "Keine Zuordnungen",
+      "mappingsEmptyMessage": "Fügen Sie eine Zuordnung hinzu, damit Importe die Positionen dieses Lieferanten automatisch zuordnen.",
+      "selectProduct": "Produkt auswählen…",
+      "columns": {
+        "name": "Name",
+        "contact": "Kontakt",
+        "vat": "USt-IdNr.",
+        "terms": "Zahlungsziel"
+      },
+      "fields": {
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "paymentTerms": "Zahlungsziel (Tage)",
+        "ledgerAccount": "Standard-Sachkonto",
+        "ledgerAccountPlaceholder": "z. B. 4000 — Einkauf"
+      },
+      "mapColumns": {
+        "sku": "Lieferanten-SKU",
+        "description": "Lieferantenbeschreibung",
+        "product": "Produkt"
+      },
+      "toasts": {
+        "created": "Lieferant erstellt",
+        "updated": "Lieferant aktualisiert",
+        "mappingCreated": "Zuordnung hinzugefügt"
+      }
+    },
+    "accounting": {
+      "title": "Buchhaltung",
+      "subtitle": "Umsatz, Kosten, USt. und Verbindlichkeiten auf einen Blick.",
+      "payablesTitle": "Verbindlichkeiten",
+      "payablesSubtitle": "Offene Lieferantenrechnungen, die auf Zahlung warten.",
+      "payablesEmptyTitle": "Nichts offen",
+      "payablesEmptyMessage": "Es gibt keine Verbindlichkeiten für diesen Filter.",
+      "markPaid": "Als bezahlt markieren",
+      "ledgerTitle": "Kontenaufschlüsselung",
+      "ledgerSubtitle": "Summen pro Sachkonto.",
+      "ledgerEmpty": "Noch keine Kontendaten verfügbar.",
+      "stats": {
+        "revenue": "Umsatz",
+        "expenses": "Kosten",
+        "outstandingPayables": "Offene Verbindlichkeiten",
+        "vat": "Zu zahlende USt."
+      },
+      "payColumns": {
+        "supplier": "Lieferant",
+        "reference": "Referenz",
+        "due": "Fälligkeitsdatum",
+        "amount": "Betrag",
+        "status": "Status"
+      },
+      "toasts": {
+        "markedPaid": "Als bezahlt markiert"
       }
     }
   },

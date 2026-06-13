@@ -12,6 +12,8 @@ import {
   ExternalLink,
   FileText,
   Filter,
+  Mail,
+  MessageCircle,
   MessageSquarePlus,
   Minus,
   MoreHorizontal,
@@ -19,6 +21,7 @@ import {
   Plus,
   QrCode,
   Receipt,
+  RefreshCw,
   ScanLine,
   Ship,
   ShoppingCart,
@@ -116,6 +119,10 @@ export default function KassaPage() {
   const [customerId, setCustomerId] = React.useState("");
   const [paymentMethod, setPaymentMethod] = React.useState("pin");
   const [note, setNote] = React.useState("");
+  // Trello #79: optional total adjustment → separate DISCOUNT line + required reason.
+  const [adjustEnabled, setAdjustEnabled] = React.useState(false);
+  const [adjustedTotal, setAdjustedTotal] = React.useState("");
+  const [adjustmentReason, setAdjustmentReason] = React.useState("");
   const [showNoteModal, setShowNoteModal] = React.useState(false);
   const [noteDraft, setNoteDraft] = React.useState("");
   const [showSplitModal, setShowSplitModal] = React.useState(false);
@@ -732,6 +739,16 @@ export default function KassaPage() {
           mode === "on_account" ? "invoice" : paymentMethod;
       }
 
+      // Total adjustment → backend records a DISCOUNT line; reason is mandatory.
+      if (adjustEnabled && adjustedTotal !== "") {
+        if (!adjustmentReason.trim()) {
+          push({ tone: "error", title: t("adminNew.kassa.adjustReasonRequired") });
+          return;
+        }
+        payload.adjusted_total_cents = Math.round(Number(adjustedTotal) * 100);
+        payload.adjustment_reason = adjustmentReason.trim();
+      }
+
       const res = await checkout.mutate(payload);
       const checkoutUrl =
         typeof res === "string"
@@ -745,6 +762,9 @@ export default function KassaPage() {
 
       setCart([]);
       setNote("");
+      setAdjustEnabled(false);
+      setAdjustedTotal("");
+      setAdjustmentReason("");
       setShowSplitModal(false);
       void recentSales.refetch();
       void todayQuery.refetch();
@@ -1450,6 +1470,41 @@ export default function KassaPage() {
             </div>
           </div>
 
+          {/* Trello #79: total adjustment / discount with mandatory reason */}
+          <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
+            <label className="flex items-center gap-2 text-sm font-semibold text-navy-900">
+              <input
+                type="checkbox"
+                checked={adjustEnabled}
+                onChange={(e) => {
+                  setAdjustEnabled(e.target.checked);
+                  if (e.target.checked && adjustedTotal === "") {
+                    setAdjustedTotal((totalCents / 100).toFixed(2));
+                  }
+                }}
+                className="h-4 w-4 rounded border-navy-300"
+              />
+              {t("adminNew.kassa.adjustTotal")}
+            </label>
+            {adjustEnabled ? (
+              <div className="mt-3 space-y-2">
+                <Input
+                  label={t("adminNew.kassa.adjustNewTotal")}
+                  inputMode="decimal"
+                  value={adjustedTotal}
+                  onChange={(e) => setAdjustedTotal(e.target.value)}
+                />
+                <Input
+                  label={t("adminNew.kassa.adjustReason")}
+                  value={adjustmentReason}
+                  onChange={(e) => setAdjustmentReason(e.target.value)}
+                  placeholder={t("adminNew.kassa.adjustReasonPlaceholder")}
+                  required
+                />
+              </div>
+            ) : null}
+          </div>
+
           {/* Checkout */}
           <button
             type="button"
@@ -1580,8 +1635,9 @@ export default function KassaPage() {
             const payUrl =
               qrSession?.checkout_url ?? qrSession?.qr_payload ?? null;
             const paid = status === "paid" || status === "completed";
+            const expired = status === "expired";
             const failed =
-              status === "expired" ||
+              expired ||
               status === "failed" ||
               status === "canceled" ||
               status === "cancelled";
@@ -1590,8 +1646,38 @@ export default function KassaPage() {
               : failed
                 ? "qrFailed"
                 : "qrWaiting";
+            const amountLabel =
+              qrSession?.amount_cents != null
+                ? money(qrSession.amount_cents)
+                : totalCents > 0
+                  ? money(totalCents)
+                  : null;
+            const regenerate = async () => {
+              if (!qrSession?.session_id) return;
+              try {
+                const next = await kassaService.regenerateQrSession(qrSession.session_id);
+                setQrSession(next);
+                setQrCopied(false);
+              } catch (err) {
+                push({ tone: "error", title: t("adminNew.common.operationFailed"), message: getApiErrorMessage(err) });
+              }
+            };
+            const sendEmail = async () => {
+              if (!qrSession?.session_id) return;
+              try {
+                await kassaService.sendPaymentLink(qrSession.session_id);
+                push({ tone: "success", title: t("adminNew.kassa.qrLinkSent") });
+              } catch (err) {
+                push({ tone: "error", title: t("adminNew.common.operationFailed"), message: getApiErrorMessage(err) });
+              }
+            };
             return (
               <div className="text-center">
+                {amountLabel && !paid ? (
+                  <div className="mb-3 text-lg font-semibold text-navy-900">
+                    {t("adminNew.kassa.qrScanToPay", { amount: amountLabel })}
+                  </div>
+                ) : null}
                 {qrStarting && !qrSession ? (
                   <div className="py-10">
                     <LoadingState label={t("adminNew.kassa.qrCreating")} />
@@ -1619,7 +1705,17 @@ export default function KassaPage() {
                       <QrCode className="h-7 w-7" />
                     </div>
                     <div className="mt-3 text-lg font-semibold text-navy-900">
-                      {t("adminNew.kassa.qrFailed")}
+                      {expired ? t("adminNew.kassa.qrExpired") : t("adminNew.kassa.qrFailed")}
+                    </div>
+                    <div className="mt-4 flex justify-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+                        onClick={() => void regenerate()}
+                      >
+                        {t("adminNew.kassa.qrRegenerate")}
+                      </Button>
                     </div>
                   </div>
                 ) : payUrl ? (
@@ -1661,6 +1757,37 @@ export default function KassaPage() {
                           {t("adminNew.kassa.qrOpen")}
                         </Button>
                       </a>
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(
+                          `${t("adminNew.kassa.qrWhatsappText")} ${payUrl}`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          leftIcon={<MessageCircle className="h-3.5 w-3.5" />}
+                        >
+                          {t("adminNew.kassa.qrWhatsapp")}
+                        </Button>
+                      </a>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        leftIcon={<Mail className="h-3.5 w-3.5" />}
+                        onClick={() => void sendEmail()}
+                      >
+                        {t("adminNew.kassa.qrSendEmail")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+                        onClick={() => void regenerate()}
+                      >
+                        {t("adminNew.kassa.qrRegenerate")}
+                      </Button>
                     </div>
                   </>
                 ) : null}

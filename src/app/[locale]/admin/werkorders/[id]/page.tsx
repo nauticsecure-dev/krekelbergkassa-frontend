@@ -5,11 +5,17 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
   CheckCircle2,
+  Clock,
   FileText,
+  History,
   Image as ImageIcon,
+  Package,
   PlayCircle,
+  Plus,
   Receipt,
   Ship,
+  Trash2,
+  Upload,
   UserPlus,
   Wrench,
 } from 'lucide-react';
@@ -69,6 +75,12 @@ export default function WorkOrderDetailPage() {
   const [showComplete, setShowComplete] = React.useState(false);
   const [completeNotes, setCompleteNotes] = React.useState('');
   const [completeHours, setCompleteHours] = React.useState('');
+  // Trello #88: inline time entry + material add forms.
+  const [timeForm, setTimeForm] = React.useState({ hours: '', rate: '', note: '' });
+  const [materialForm, setMaterialForm] = React.useState({ description: '', quantity: '1', unit_price: '' });
+  const [photoFolder, setPhotoFolder] = React.useState('before');
+  const photoInputRef = React.useRef<HTMLInputElement | null>(null);
+  const docInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const data = useQuery([id], async () => {
     if (!id) throw new Error('Missing work order id');
@@ -78,6 +90,9 @@ export default function WorkOrderDetailPage() {
     ]);
     return { order, metadata };
   });
+  const audit = useQuery([id, 'audit'], () =>
+    id ? workOrdersService.auditLog(id, { per_page: 25 }).catch(() => null) : Promise.resolve(null)
+  );
 
   const assignM = useMutation(() => workOrdersService.assign(id, { assignee_id: assignee || null }));
   const startM = useMutation(() => workOrdersService.start(id));
@@ -88,12 +103,58 @@ export default function WorkOrderDetailPage() {
     })
   );
   const invoiceM = useMutation(() => workOrdersService.generateInvoice(id));
+  const addTime = useMutation((payload: Record<string, unknown>) => workOrdersService.addTimeEntry(id, payload));
+  const delTime = useMutation((entryId: string) => workOrdersService.deleteTimeEntry(id, entryId));
+  const addMaterial = useMutation((payload: Record<string, unknown>) => workOrdersService.addMaterial(id, payload));
+  const delMaterial = useMutation((materialId: string) => workOrdersService.deleteMaterial(id, materialId));
+  const uploadPhoto = useMutation((fd: FormData) => workOrdersService.uploadPhoto(id, fd));
+  const uploadDoc = useMutation((fd: FormData) => workOrdersService.uploadDocument(id, fd));
+  const delPhoto = useMutation((fileId: string) => workOrdersService.deletePhoto(id, fileId));
+  const delDoc = useMutation((fileId: string) => workOrdersService.deleteDocument(id, fileId));
+
+  const refetchAll = async () => {
+    await Promise.all([data.refetch(), audit.refetch()]);
+  };
+
+  const onAddTime = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await run(t('adminNew.workOrders.toasts.timeAdded'), async () => {
+      await addTime.mutate({
+        duration_minutes: timeForm.hours ? Math.round(Number(timeForm.hours) * 60) : undefined,
+        hourly_rate: timeForm.rate ? Math.round(Number(timeForm.rate) * 100) : undefined,
+        note: timeForm.note || undefined,
+      });
+      setTimeForm({ hours: '', rate: '', note: '' });
+    });
+  };
+
+  const onAddMaterial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await run(t('adminNew.workOrders.toasts.materialAdded'), async () => {
+      await addMaterial.mutate({
+        description: materialForm.description,
+        quantity: materialForm.quantity ? Number(materialForm.quantity) : 1,
+        unit_price: materialForm.unit_price ? Math.round(Number(materialForm.unit_price) * 100) : 0,
+      });
+      setMaterialForm({ description: '', quantity: '1', unit_price: '' });
+    });
+  };
+
+  const onUpload = async (kind: 'photo' | 'document', file: File | undefined) => {
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    if (kind === 'photo') fd.append('folder', photoFolder);
+    await run(t('adminNew.workOrders.toasts.fileUploaded'), () =>
+      kind === 'photo' ? uploadPhoto.mutate(fd) : uploadDoc.mutate(fd)
+    );
+  };
 
   const run = async (label: string, fn: () => Promise<unknown>) => {
     try {
       await fn();
       push({ tone: 'success', title: label });
-      await data.refetch();
+      await refetchAll();
     } catch (err) {
       pushError(err, t('adminNew.common.operationFailed'));
     }
@@ -104,8 +165,14 @@ export default function WorkOrderDetailPage() {
   const status = str(order, 'status') || 'new';
   const photos = arr(order, 'photos');
   const documents = arr(order, 'documents');
+  const timeEntries = arr(order, 'time_entries');
+  const materials = arr(order, 'materials');
+  const auditRows = (audit.data?.data ?? []) as unknown as Row[];
   const boatId = str(order, 'boat_id');
   const assigneeName = str(order, 'assignee_name', 'technician_name');
+  const totals = (order?.totals ?? {}) as Record<string, unknown>;
+  const money = (cents: unknown) =>
+    typeof cents === 'number' ? `€${(cents / 100).toFixed(2)}` : '€0.00';
 
   return (
     <>
@@ -253,23 +320,189 @@ export default function WorkOrderDetailPage() {
               </AdminSectionCard>
             </div>
 
+            {/* Trello #88: time tracking + materials */}
             <div className="bento-grid lg:grid-cols-2">
-              <AdminSectionCard title={t('adminNew.workOrders.detail.photos')} icon={ImageIcon}>
+              <AdminSectionCard
+                title={t('adminNew.workOrders.detail.timeTracking')}
+                icon={Clock}
+                action={
+                  totals.labor_hours != null ? (
+                    <Badge tone="marine">
+                      {`${Number(totals.labor_hours).toFixed(2)} ${t('adminNew.workOrders.detail.hours')} · ${money(totals.labor_cents)}`}
+                    </Badge>
+                  ) : null
+                }
+              >
+                {timeEntries.length ? (
+                  <ul className="mb-3 divide-y divide-navy-100 rounded-xl border border-navy-100/70 text-sm">
+                    {timeEntries.map((te, i) => (
+                      <li key={str(te, 'id') || i} className="flex items-center justify-between px-3 py-2">
+                        <span className="text-navy-700">
+                          {str(te, 'user') || str(te, 'note') || `#${i + 1}`} ·{' '}
+                          {te.duration_minutes != null ? `${(Number(te.duration_minutes) / 60).toFixed(2)}h` : ''}
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <span className="font-semibold text-navy-900">{money(te.line_total)}</span>
+                          <button
+                            type="button"
+                            className="text-navy-300 hover:text-rose-600"
+                            onClick={() => void run(t('adminNew.common.deleted'), () => delTime.mutate(str(te, 'id')))}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mb-3 text-sm text-navy-500">{t('adminNew.workOrders.detail.noTime')}</p>
+                )}
+                <form onSubmit={onAddTime} className="grid grid-cols-3 gap-2">
+                  <input
+                    className="input-base"
+                    placeholder={t('adminNew.workOrders.detail.hours')}
+                    inputMode="decimal"
+                    value={timeForm.hours}
+                    onChange={(e) => setTimeForm({ ...timeForm, hours: e.target.value })}
+                  />
+                  <input
+                    className="input-base"
+                    placeholder={t('adminNew.workOrders.detail.rate')}
+                    inputMode="decimal"
+                    value={timeForm.rate}
+                    onChange={(e) => setTimeForm({ ...timeForm, rate: e.target.value })}
+                  />
+                  <Button type="submit" size="sm" variant="outline" leftIcon={<Plus className="h-3.5 w-3.5" />} disabled={addTime.loading}>
+                    {t('adminNew.common.add')}
+                  </Button>
+                  <input
+                    className="input-base col-span-3"
+                    placeholder={t('adminNew.workOrders.detail.timeNote')}
+                    value={timeForm.note}
+                    onChange={(e) => setTimeForm({ ...timeForm, note: e.target.value })}
+                  />
+                </form>
+              </AdminSectionCard>
+
+              <AdminSectionCard
+                title={t('adminNew.workOrders.detail.materials')}
+                icon={Package}
+                action={
+                  totals.materials_cents != null ? <Badge tone="gold">{money(totals.materials_cents)}</Badge> : null
+                }
+              >
+                {materials.length ? (
+                  <ul className="mb-3 divide-y divide-navy-100 rounded-xl border border-navy-100/70 text-sm">
+                    {materials.map((m, i) => (
+                      <li key={str(m, 'id') || i} className="flex items-center justify-between px-3 py-2">
+                        <span className="text-navy-700">
+                          {str(m, 'description')} × {str(m, 'quantity')}
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <span className="font-semibold text-navy-900">{money(m.line_total)}</span>
+                          <button
+                            type="button"
+                            className="text-navy-300 hover:text-rose-600"
+                            onClick={() => void run(t('adminNew.common.deleted'), () => delMaterial.mutate(str(m, 'id')))}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mb-3 text-sm text-navy-500">{t('adminNew.workOrders.detail.noMaterials')}</p>
+                )}
+                <form onSubmit={onAddMaterial} className="grid grid-cols-4 gap-2">
+                  <input
+                    className="input-base col-span-2"
+                    placeholder={t('adminNew.workOrders.detail.materialDesc')}
+                    value={materialForm.description}
+                    onChange={(e) => setMaterialForm({ ...materialForm, description: e.target.value })}
+                    required
+                  />
+                  <input
+                    className="input-base"
+                    placeholder={t('adminNew.workOrders.detail.qty')}
+                    inputMode="decimal"
+                    value={materialForm.quantity}
+                    onChange={(e) => setMaterialForm({ ...materialForm, quantity: e.target.value })}
+                  />
+                  <input
+                    className="input-base"
+                    placeholder={t('adminNew.workOrders.detail.unitPrice')}
+                    inputMode="decimal"
+                    value={materialForm.unit_price}
+                    onChange={(e) => setMaterialForm({ ...materialForm, unit_price: e.target.value })}
+                  />
+                  <Button type="submit" size="sm" variant="outline" leftIcon={<Plus className="h-3.5 w-3.5" />} disabled={addMaterial.loading} className="col-span-4">
+                    {t('adminNew.common.add')}
+                  </Button>
+                </form>
+              </AdminSectionCard>
+            </div>
+
+            <div className="bento-grid lg:grid-cols-2">
+              <AdminSectionCard
+                title={t('adminNew.workOrders.detail.photos')}
+                icon={ImageIcon}
+                action={
+                  <div className="flex items-center gap-2">
+                    <select
+                      className="input-base h-8 py-0 text-xs"
+                      value={photoFolder}
+                      onChange={(e) => setPhotoFolder(e.target.value)}
+                    >
+                      {['before', 'during', 'after', 'damage', 'inspection'].map((f) => (
+                        <option key={f} value={f}>
+                          {t(`adminNew.workOrders.photoFolders.${f}`)}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        void onUpload('photo', e.target.files?.[0]);
+                        e.target.value = '';
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      leftIcon={<Upload className="h-3.5 w-3.5" />}
+                      disabled={uploadPhoto.loading}
+                      onClick={() => photoInputRef.current?.click()}
+                    >
+                      {t('adminNew.common.add')}
+                    </Button>
+                  </div>
+                }
+              >
                 {photos.length ? (
                   <div className="grid grid-cols-3 gap-2">
                     {photos.map((p, i) => {
-                      const url = str(p, 'url', 'path');
+                      const url = str(p, 'url', 'path', 'signed_url');
+                      const fileId = str(p, 'file_id', 'id');
                       return (
-                        <a
-                          key={str(p, 'id') || i}
-                          href={url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="aspect-square overflow-hidden rounded-lg border border-navy-100 bg-sand-50"
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={url} alt="" className="h-full w-full object-cover" />
-                        </a>
+                        <div key={fileId || i} className="group relative aspect-square overflow-hidden rounded-lg border border-navy-100 bg-sand-50">
+                          <a href={url} target="_blank" rel="noreferrer">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt="" className="h-full w-full object-cover" />
+                          </a>
+                          {fileId ? (
+                            <button
+                              type="button"
+                              className="absolute right-1 top-1 rounded-full bg-white/90 p-1 text-rose-600 opacity-0 transition group-hover:opacity-100"
+                              onClick={() => void run(t('adminNew.common.deleted'), () => delPhoto.mutate(fileId))}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          ) : null}
+                        </div>
                       );
                     })}
                   </div>
@@ -278,28 +511,89 @@ export default function WorkOrderDetailPage() {
                 )}
               </AdminSectionCard>
 
-              <AdminSectionCard title={t('adminNew.workOrders.detail.documents')} icon={FileText}>
+              <AdminSectionCard
+                title={t('adminNew.workOrders.detail.documents')}
+                icon={FileText}
+                action={
+                  <>
+                    <input
+                      ref={docInputRef}
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => {
+                        void onUpload('document', e.target.files?.[0]);
+                        e.target.value = '';
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      leftIcon={<Upload className="h-3.5 w-3.5" />}
+                      disabled={uploadDoc.loading}
+                      onClick={() => docInputRef.current?.click()}
+                    >
+                      {t('adminNew.common.add')}
+                    </Button>
+                  </>
+                }
+              >
                 {documents.length ? (
                   <ul className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
-                    {documents.map((d, i) => (
-                      <li key={str(d, 'id') || i} className="flex items-center justify-between px-4 py-3 text-sm">
-                        <span className="text-navy-800">{str(d, 'name', 'filename') || `#${i + 1}`}</span>
-                        <a
-                          href={str(d, 'url', 'path')}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-semibold text-marine-700 hover:text-marine-900"
-                        >
-                          {t('adminNew.invoiceDetail.actions.openPdf')}
-                        </a>
-                      </li>
-                    ))}
+                    {documents.map((d, i) => {
+                      const fileId = str(d, 'file_id', 'id');
+                      return (
+                        <li key={fileId || i} className="flex items-center justify-between px-4 py-3 text-sm">
+                          <span className="text-navy-800">{str(d, 'name', 'filename') || `#${i + 1}`}</span>
+                          <span className="flex items-center gap-3">
+                            <a
+                              href={str(d, 'url', 'path', 'signed_url')}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="font-semibold text-marine-700 hover:text-marine-900"
+                            >
+                              {t('adminNew.invoiceDetail.actions.openPdf')}
+                            </a>
+                            {fileId ? (
+                              <button
+                                type="button"
+                                className="text-navy-300 hover:text-rose-600"
+                                onClick={() => void run(t('adminNew.common.deleted'), () => delDoc.mutate(fileId))}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            ) : null}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className="py-6 text-sm text-navy-500">{t('adminNew.workOrders.detail.noDocuments')}</p>
                 )}
               </AdminSectionCard>
             </div>
+
+            {/* Trello #88: activity / audit timeline */}
+            <AdminSectionCard title={t('adminNew.workOrders.detail.activity')} icon={History}>
+              {auditRows.length ? (
+                <ol className="space-y-2">
+                  {auditRows.map((a, i) => (
+                    <li key={str(a, 'id') || i} className="flex items-start gap-3 text-sm">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marine-400" />
+                      <div>
+                        <div className="text-navy-800">{str(a, 'action') || '—'}</div>
+                        <div className="text-xs text-navy-400">
+                          {(a.user as { name?: string } | undefined)?.name ?? ''}
+                          {str(a, 'created_at') ? ` · ${formatDate(str(a, 'created_at'), dateLocale)}` : ''}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="py-4 text-sm text-navy-500">{t('adminNew.workOrders.detail.noActivity')}</p>
+              )}
+            </AdminSectionCard>
 
             <Link
               href={`/${locale}/admin/werkorders`}
