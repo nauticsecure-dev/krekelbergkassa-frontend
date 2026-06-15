@@ -43,6 +43,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { AddressAutocomplete } from "@/components/ui/AddressAutocomplete";
 import { EmptyState, LoadingState } from "@/components/admin/DataState";
 import { AdminConfirmModal } from "@/components/admin/AdminConfirmModal";
 import { BarcodeScannerModal } from "@/components/admin/BarcodeScannerModal";
@@ -149,12 +150,59 @@ export default function KassaPage() {
     postal_code: "",
     city: "",
     country: "",
+    google_place_id: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
+    notes: "",
   });
+  const [showMobileCart, setShowMobileCart] = React.useState(false);
   const [checkoutConfirm, setCheckoutConfirm] = React.useState<
     "standard" | "split" | "qr" | "on_account" | null
   >(null);
 
   const searchRef = React.useRef<HTMLInputElement>(null);
+
+  // POS keyboard shortcuts (ignored when typing in inputs).
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      const inField =
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        (e.target as HTMLElement)?.isContentEditable;
+      if (e.key === "/" && !inField) {
+        e.preventDefault();
+        searchRef.current?.focus();
+        return;
+      }
+      if (inField) return;
+      if (e.key === "F2" || (e.ctrlKey && e.key === "k")) {
+        e.preventDefault();
+        setShowCustomerPicker(true);
+        return;
+      }
+      if (e.key === "F4" || (e.ctrlKey && e.key === "Enter")) {
+        e.preventDefault();
+        if (cart.length) {
+          setCheckoutConfirm(
+            paymentMethod === "invoice" ? "on_account" : "standard",
+          );
+        }
+        return;
+      }
+      if (e.key === "F8" || (e.ctrlKey && e.key === "Backspace")) {
+        e.preventDefault();
+        if (cart.length) {
+          setCart([]);
+          setNote("");
+          push({ tone: "success", title: t("adminNew.kassa.clearCart") });
+        }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [cart.length, paymentMethod, push, t]);
 
   const productsQuery = useQuery(["products"], () =>
     productsService.list({ per_page: 200, active: true }),
@@ -579,6 +627,7 @@ export default function KassaPage() {
         phone: newCustomer.phone || null,
         company_name: newCustomer.company_name || null,
         is_business: !!newCustomer.company_name,
+        notes: newCustomer.notes || null,
         address: newCustomer.street
           ? {
               street: newCustomer.street,
@@ -586,9 +635,12 @@ export default function KassaPage() {
               postal_code: newCustomer.postal_code || null,
               city: newCustomer.city || null,
               country: newCustomer.country || null,
+              google_place_id: newCustomer.google_place_id || null,
+              latitude: newCustomer.latitude,
+              longitude: newCustomer.longitude,
             }
           : undefined,
-      } as Parameters<typeof createCustomer.mutate>[0]);
+      });
       setCustomerId(created.id);
       setShowCustomerModal(false);
       setNewCustomer({
@@ -601,6 +653,10 @@ export default function KassaPage() {
         postal_code: "",
         city: "",
         country: "",
+        google_place_id: "",
+        latitude: null,
+        longitude: null,
+        notes: "",
       });
       await customersQuery.refetch();
       push({
@@ -865,6 +921,9 @@ export default function KassaPage() {
             icon: Warehouse,
             tone: "navy",
             href: `/${locale}/admin/producten`,
+            actionIcon: Pencil,
+            actionHref: `/${locale}/admin/producten`,
+            actionLabel: t("adminNew.kassa.editProducts"),
             loading: productsQuery.loading,
           },
           {
@@ -879,6 +938,58 @@ export default function KassaPage() {
       />
 
       <AdminContent className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
+        {/* Top bar: primary search + customer (Trello #62 layout) */}
+        <div className="col-span-full space-y-3 rounded-2xl border border-marine-200/60 bg-gradient-to-br from-white to-sand-50/80 p-4 shadow-card">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
+            <div className="relative min-w-0 flex-[2]">
+              <ScanLine className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-marine-500" />
+              <input
+                ref={searchRef}
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void handleBarcodeScan();
+                  }
+                }}
+                placeholder={t("adminNew.kassa.searchPlaceholder")}
+                className="input-base w-full py-3.5 pl-12 text-base font-medium shadow-sm"
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-navy-100 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-navy-400 sm:inline">
+                /
+              </span>
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => setShowCustomerPicker(true)}
+                className="flex flex-1 items-center justify-between rounded-xl border border-navy-200 bg-white px-4 py-3 text-left text-sm shadow-sm transition hover:border-marine-300"
+              >
+                <span className={selectedCustomer ? "font-medium text-navy-900" : "text-navy-400"}>
+                  {selectedCustomer
+                    ? selectedCustomer.name
+                    : t("adminNew.kassa.selectCustomer")}
+                </span>
+                <UserPlus className="h-4 w-4 text-marine-600" />
+              </button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 py-3"
+                leftIcon={<Plus className="h-4 w-4" />}
+                onClick={() => setShowCustomerModal(true)}
+              >
+                {t("adminNew.kassa.newCustomer")}
+              </Button>
+            </div>
+          </div>
+          <p className="text-xs text-navy-400">
+            {t("adminNew.kassa.keyboardHints")}
+          </p>
+        </div>
+
         {/* ----------------------------- LEFT: catalog ---------------------------- */}
         <div className="min-w-0 space-y-4">
           {/* Category tabs + quick actions */}
@@ -932,51 +1043,32 @@ export default function KassaPage() {
             </div>
           </div>
 
-          {/* Search + sort */}
-          <div className="flex flex-col gap-3 rounded-2xl border border-navy-100/70 bg-white p-3 shadow-card sm:flex-row sm:items-center">
-            <div className="relative min-w-0 flex-1">
-              <ScanLine className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
-              <input
-                ref={searchRef}
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    void handleBarcodeScan();
-                  }
-                }}
-                placeholder={t("adminNew.kassa.searchPlaceholder")}
-                className="input-base w-full pl-9"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="hidden items-center gap-1.5 rounded-lg border border-navy-100 px-3 py-2 text-sm text-navy-500 sm:inline-flex">
-                <Filter className="h-4 w-4" />
-                {t("adminNew.kassa.filter")}
-              </span>
-              <label className="relative inline-flex items-center">
-                <ArrowDownUp className="pointer-events-none absolute left-3 h-4 w-4 text-navy-400" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortKey)}
-                  className="input-base cursor-pointer py-2 pl-9 pr-8 text-sm"
-                  aria-label={t("adminNew.kassa.sortBy")}
-                >
-                  <option value="recommended">
-                    {t("adminNew.kassa.sort.recommended")}
-                  </option>
-                  <option value="priceAsc">
-                    {t("adminNew.kassa.sort.priceAsc")}
-                  </option>
-                  <option value="priceDesc">
-                    {t("adminNew.kassa.sort.priceDesc")}
-                  </option>
-                  <option value="name">{t("adminNew.kassa.sort.name")}</option>
-                </select>
-              </label>
-            </div>
+          {/* Sort (search lives in the top bar) */}
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-navy-100/70 bg-white p-3 shadow-card">
+            <span className="hidden items-center gap-1.5 rounded-lg border border-navy-100 px-3 py-2 text-sm text-navy-500 sm:inline-flex">
+              <Filter className="h-4 w-4" />
+              {t("adminNew.kassa.filter")}
+            </span>
+            <label className="relative ml-auto inline-flex items-center">
+              <ArrowDownUp className="pointer-events-none absolute left-3 h-4 w-4 text-navy-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortKey)}
+                className="input-base cursor-pointer py-2 pl-9 pr-8 text-sm"
+                aria-label={t("adminNew.kassa.sortBy")}
+              >
+                <option value="recommended">
+                  {t("adminNew.kassa.sort.recommended")}
+                </option>
+                <option value="priceAsc">
+                  {t("adminNew.kassa.sort.priceAsc")}
+                </option>
+                <option value="priceDesc">
+                  {t("adminNew.kassa.sort.priceDesc")}
+                </option>
+                <option value="name">{t("adminNew.kassa.sort.name")}</option>
+              </select>
+            </label>
           </div>
 
           {/* Smart match banner */}
@@ -1227,10 +1319,83 @@ export default function KassaPage() {
               loading={todayQuery.loading}
             />
           </div>
+          {/* Recent sales list */}
+          <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-navy-900">
+                <Receipt className="h-4 w-4 text-marine-600" />
+                {t("adminNew.kassa.recentSales")}
+              </h3>
+              <Link
+                href={`/${locale}/admin/verkopen`}
+                className="text-xs font-semibold text-marine-700 hover:text-marine-900"
+              >
+                {t("adminNew.kassa.viewAllSales")}
+              </Link>
+            </div>
+            {recentSales.loading ? (
+              <LoadingState label={t("adminNew.common.loading")} variant="list" />
+            ) : recentSales.error ? (
+              <p className="text-sm text-navy-500">{t("adminNew.kassa.noRecentSales")}</p>
+            ) : !recentSales.data?.length ? (
+              <p className="text-sm text-navy-500">{t("adminNew.kassa.noRecentSales")}</p>
+            ) : (
+              <ul className="divide-y divide-navy-50">
+                {(recentSales.data ?? []).slice(0, 5).map((sale, i) => {
+                  const euros =
+                    Number(
+                      sale.total_euros ??
+                        sale.total_amount_euros ??
+                        Number(sale.total_amount_cents ?? 0) / 100,
+                    ) || 0;
+                  const href =
+                    sale.invoice_url ??
+                    sale.admin_url ??
+                    (sale.invoice_id
+                      ? `/${locale}/admin/facturen/${sale.invoice_id}`
+                      : undefined);
+                  return (
+                    <li key={sale.id ?? sale.invoice_id ?? String((sale as { sale_id?: string }).sale_id ?? i)}>
+                      {href ? (
+                        <Link
+                          href={href}
+                          className="flex items-center justify-between py-2 text-sm hover:text-marine-700"
+                        >
+                          <span className="font-medium text-navy-800">
+                            {sale.invoice_number ?? sale.customer_name ?? "—"}
+                          </span>
+                          <span className="font-semibold tabular-nums text-navy-900">
+                            {formatCurrency(euros, localeTag)}
+                          </span>
+                        </Link>
+                      ) : (
+                        <div className="flex items-center justify-between py-2 text-sm">
+                          <span className="font-medium text-navy-800">
+                            {sale.invoice_number ?? "—"}
+                          </span>
+                          <span className="font-semibold tabular-nums text-navy-900">
+                            {formatCurrency(euros, localeTag)}
+                          </span>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         </div>
 
         {/* ----------------------------- RIGHT: checkout --------------------------- */}
-        <div id="cart" className="space-y-4 xl:sticky xl:top-24">
+        <div
+          id="cart"
+          className={cn(
+            "space-y-4 xl:sticky xl:top-24",
+            showMobileCart
+              ? "max-xl:fixed max-xl:inset-x-0 max-xl:bottom-0 max-xl:z-50 max-xl:max-h-[92vh] max-xl:overflow-y-auto max-xl:rounded-t-2xl max-xl:border-t max-xl:border-navy-100 max-xl:bg-sand-50 max-xl:p-4 max-xl:pb-6 max-xl:shadow-elev"
+              : "max-xl:hidden",
+          )}
+        >
           {/* Cart */}
           <div className="overflow-hidden rounded-2xl border border-navy-100/70 bg-white shadow-card">
             <div className="flex items-center justify-between border-b border-navy-100/80 bg-gradient-to-r from-sand-50/90 to-white px-4 py-3">
@@ -1527,6 +1692,21 @@ export default function KassaPage() {
         </div>
       </AdminContent>
 
+      {/* Mobile cart bar */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-100/80 bg-white/95 p-3 shadow-elev backdrop-blur-sm xl:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileCart((v) => !v)}
+          className="flex w-full items-center justify-between rounded-xl bg-marine-600 px-4 py-3.5 text-left font-semibold text-white"
+        >
+          <span className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            {t("adminNew.kassa.cart")} ({cart.length})
+          </span>
+          <span className="text-lg font-bold tabular-nums">{money(totalCents)}</span>
+        </button>
+      </div>
+
       {/* Note modal */}
       <Modal
         open={showNoteModal}
@@ -1585,6 +1765,10 @@ export default function KassaPage() {
               >
                 <option value="pin">PIN</option>
                 <option value="cash">{t("adminNew.kassa.payment.cash")}</option>
+                <option value="ideal">iDEAL</option>
+                <option value="creditcard">{t("adminNew.kassa.payment.creditcard")}</option>
+                <option value="bancontact">Bancontact</option>
+                <option value="banktransfer">{t("adminNew.kassa.payment.banktransfer")}</option>
               </select>
               <Input
                 type="number"
@@ -1866,6 +2050,23 @@ export default function KassaPage() {
                 setNewCustomer((prev) => ({ ...prev, company_name: e.target.value }))
               }
             />
+            <AddressAutocomplete
+              label={t("adminNew.kassa.searchAddress")}
+              placeholder={t("adminNew.kassa.searchAddressPlaceholder")}
+              onSelect={(addr) =>
+                setNewCustomer((prev) => ({
+                  ...prev,
+                  street: addr.street,
+                  house_number: addr.house_number,
+                  postal_code: addr.postal_code,
+                  city: addr.city,
+                  country: addr.country,
+                  google_place_id: addr.google_place_id,
+                  latitude: addr.latitude,
+                  longitude: addr.longitude,
+                }))
+              }
+            />
             <div className="grid grid-cols-[1fr_7rem] gap-2">
               <Input
                 label={t("adminNew.kassa.street")}
@@ -1905,6 +2106,20 @@ export default function KassaPage() {
                 setNewCustomer((prev) => ({ ...prev, country: e.target.value }))
               }
             />
+            <div>
+              <label className="mb-1 block text-sm font-medium text-navy-700">
+                {t("adminNew.kassa.customerNotes")}
+              </label>
+              <textarea
+                value={newCustomer.notes}
+                onChange={(e) =>
+                  setNewCustomer((prev) => ({ ...prev, notes: e.target.value }))
+                }
+                rows={2}
+                className="input-base w-full resize-none"
+                placeholder={t("adminNew.kassa.customerNotesPlaceholder")}
+              />
+            </div>
             <p className="text-xs text-navy-400">{t("adminNew.kassa.addressHint")}</p>
           </AdminModalBody>
           <AdminModalFooter>

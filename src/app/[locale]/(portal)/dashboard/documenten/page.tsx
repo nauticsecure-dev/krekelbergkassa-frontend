@@ -20,13 +20,89 @@ import { portalService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
+import type { PortalInvoice } from '@/lib/api-types';
+
+type DocRow = {
+  id: string;
+  title: string;
+  subtitle: string;
+  date?: string;
+  status?: string;
+  pdfUrl: string;
+  invoiceId?: string;
+};
+
+function collectDocuments(invoices: PortalInvoice[]): DocRow[] {
+  const rows: DocRow[] = [];
+  const seen = new Set<string>();
+
+  const push = (row: DocRow) => {
+    const key = `${row.id}-${row.pdfUrl}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    rows.push(row);
+  };
+
+  for (const inv of invoices) {
+    const docs = inv.documents ?? [];
+    if (docs.length) {
+      for (const doc of docs) {
+        const pdfUrl = doc.pdf_url ?? doc.open_url ?? doc.download_url ?? '';
+        if (!pdfUrl) continue;
+        push({
+          id: doc.invoice_id ?? `${inv.id}-${doc.type ?? 'doc'}`,
+          title: doc.invoice_number ?? doc.label ?? inv.invoice_number,
+          subtitle: doc.label ?? doc.type ?? 'PDF',
+          date: inv.created_at,
+          status: inv.status,
+          pdfUrl,
+          invoiceId: doc.invoice_id ?? inv.id,
+        });
+      }
+      continue;
+    }
+
+    if (inv.pdf_url) {
+      push({
+        id: inv.id,
+        title: inv.invoice_number,
+        subtitle: 'invoice',
+        date: inv.created_at,
+        status: inv.status,
+        pdfUrl: inv.pdf?.open_url ?? inv.pdf_url,
+        invoiceId: inv.id,
+      });
+    }
+
+    for (const cn of inv.credit_notes ?? []) {
+      if (!cn.pdf_url) continue;
+      push({
+        id: cn.id ?? `${inv.id}-cn`,
+        title: cn.invoice_number ?? 'Credit note',
+        subtitle: 'credit_note',
+        date: inv.created_at,
+        status: cn.status,
+        pdfUrl: cn.pdf_url,
+        invoiceId: cn.id,
+      });
+    }
+  }
+
+  return rows.sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
+}
 
 export default function PortalDocumentsPage() {
   const { t, locale } = useIntl();
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
 
   const invoices = useQuery([], () => portalService.invoices({ per_page: 100 }));
-  const documents = (invoices.data?.data ?? []).filter((inv) => inv.pdf_url);
+  const documents = collectDocuments(invoices.data?.data ?? []);
+
+  const docLabel = (type: string) => {
+    if (type === 'credit_note') return t('adminNew.portal.documents.creditNotePdf');
+    if (type === 'invoice') return t('adminNew.portal.documents.invoicePdf');
+    return type;
+  };
 
   return (
     <>
@@ -43,25 +119,26 @@ export default function PortalDocumentsPage() {
           },
           {
             label: t('adminNew.portal.documents.metricInvoices'),
-            value: documents.length,
+            value: documents.filter((d) => d.subtitle === 'invoice').length,
             icon: FileText,
             tone: 'navy',
             loading: invoices.loading,
           },
           {
-            label: t('adminNew.portal.documents.metricLatest'),
-            value: documents[0]?.created_at
-              ? formatDate(documents[0].created_at, dateLocale)
-              : '—',
-            icon: Download,
+            label: t('adminNew.portal.documents.metricCreditNotes'),
+            value: documents.filter((d) => d.subtitle === 'credit_note').length,
+            icon: FileText,
             tone: 'gold',
             loading: invoices.loading,
           },
           {
-            label: t('adminNew.portal.documents.metricFormats'),
-            value: 'PDF',
-            icon: FileText,
+            label: t('adminNew.portal.documents.metricLatest'),
+            value: documents[0]?.date
+              ? formatDate(documents[0].date, dateLocale)
+              : '—',
+            icon: Download,
             tone: 'success',
+            loading: invoices.loading,
           },
         ]}
       />
@@ -91,17 +168,26 @@ export default function PortalDocumentsPage() {
           <div className="space-y-2.5">
             {documents.map((doc) => (
               <PortalInteractiveRow
-                key={doc.id}
+                key={`${doc.id}-${doc.pdfUrl}`}
                 icon={FileText}
-                tone="navy"
-                title={doc.invoice_number}
-                subtitle={t('adminNew.portal.documents.invoicePdf')}
-                meta={formatDate(doc.created_at, dateLocale)}
+                tone={doc.subtitle === 'credit_note' ? 'gold' : 'navy'}
+                title={doc.title}
+                subtitle={docLabel(doc.subtitle)}
+                meta={doc.date ? formatDate(doc.date, dateLocale) : undefined}
                 trailing={
                   <div className="flex flex-wrap items-center gap-2">
-                    <PaymentStatusBadge status={String(doc.status)} />
+                    {doc.status ? <PaymentStatusBadge status={String(doc.status)} /> : null}
+                    {doc.invoiceId ? (
+                      <Link
+                        href={`/${locale}/dashboard/facturen`}
+                        className="text-xs font-semibold text-marine-700 hover:text-marine-900"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {t('adminNew.portal.documents.viewInvoice')}
+                      </Link>
+                    ) : null}
                     <a
-                      href={doc.pdf_url}
+                      href={doc.pdfUrl}
                       target="_blank"
                       rel="noreferrer"
                       onClick={(e) => e.stopPropagation()}
@@ -113,7 +199,7 @@ export default function PortalDocumentsPage() {
                   </div>
                 }
                 onClick={() => {
-                  if (doc.pdf_url) window.open(doc.pdf_url, '_blank', 'noopener,noreferrer');
+                  if (doc.pdfUrl) window.open(doc.pdfUrl, '_blank', 'noopener,noreferrer');
                 }}
               />
             ))}

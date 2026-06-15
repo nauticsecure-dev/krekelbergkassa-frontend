@@ -21,6 +21,10 @@ export type PageHeaderStat = {
   icon?: LucideIcon;
   tone?: PageHeaderStatTone;
   href?: string;
+  /** Small shortcut icon in the card header (e.g. pencil → edit page). */
+  actionIcon?: LucideIcon;
+  actionHref?: string;
+  actionLabel?: string;
 };
 
 const toneStyles: Record<PageHeaderStatTone, string> = {
@@ -34,14 +38,27 @@ const toneStyles: Record<PageHeaderStatTone, string> = {
 
 function PageHeaderStatCard({ stat }: { stat: PageHeaderStat }) {
   const Icon = stat.icon;
+  const ActionIcon = stat.actionIcon;
   const tone = stat.tone ?? 'navy';
 
   const inner = (
     <>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-navy-400">
-            {stat.label}
+          <div className="flex items-center gap-1.5">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-navy-400">
+              {stat.label}
+            </div>
+            {ActionIcon && stat.actionHref ? (
+              <Link
+                href={stat.actionHref}
+                aria-label={stat.actionLabel ?? stat.label}
+                className="inline-flex rounded-md p-0.5 text-navy-400 transition hover:bg-sand-100 hover:text-marine-700"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ActionIcon className="h-3 w-3" />
+              </Link>
+            ) : null}
           </div>
           <div className="mt-1 text-2xl font-semibold tabular-nums text-navy-900">
             {stat.loading ? (

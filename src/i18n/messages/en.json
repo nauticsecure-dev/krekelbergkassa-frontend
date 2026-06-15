@@ -1445,7 +1445,10 @@
         "openBalance": "Open balance"
       },
       "topProductsTitle": "Top products",
-      "slowProductsTitle": "Slow products"
+      "slowProductsTitle": "Slow products",
+      "marginByGroupTitle": "Marge per productgroep",
+      "marginRevenue": "Omzet",
+      "marginCost": "Inkoop"
     },
     "cashClose": {
       "title": "Cash close",
@@ -1614,7 +1617,8 @@
         "cash": "Cash",
         "pin": "Card terminal",
         "invoice": "Invoice",
-        "creditcard": "Credit card"
+        "creditcard": "Credit card",
+        "banktransfer": "Bankoverschrijving"
       },
       "smartMatch": "Smart match",
       "products": "Products",
@@ -1750,7 +1754,13 @@
       "adjustNewTotal": "New total (incl. VAT)",
       "adjustReason": "Reason for adjustment",
       "adjustReasonPlaceholder": "e.g. Customer loyalty discount",
-      "adjustReasonRequired": "A reason is required to adjust the total"
+      "adjustReasonRequired": "A reason is required to adjust the total",
+      "keyboardHints": "Sneltoetsen: / zoeken · F2 klant · F4 afrekenen · F8 winkelwagen legen",
+      "viewAllSales": "Alle verkopen",
+      "searchAddress": "Adres zoeken",
+      "searchAddressPlaceholder": "Begin met typen voor Google Maps suggesties…",
+      "customerNotes": "Notities",
+      "customerNotesPlaceholder": "Interne opmerkingen over deze klant"
     },
     "stalling": {
       "title": "Storage",
@@ -1988,7 +1998,10 @@
         "invoicePdf": "Invoice PDF",
         "helpTitle": "Document not found?",
         "helpText": "Contact us if you are missing a document or need a copy.",
-        "contactSupport": "Contact support"
+        "contactSupport": "Contact support",
+        "creditNotePdf": "Creditnota PDF",
+        "metricCreditNotes": "Creditnota's",
+        "viewInvoice": "Bekijk factuur"
       },
       "messages": {
         "title": "Messages",
@@ -2368,7 +2381,8 @@
         "selectProduct": "Select product",
         "confirmDelete": "Delete this pricing rule?",
         "deleted": "Pricing rule deleted"
-      }
+      },
+      "manageServices": "Services beheren"
     },
     "settings": {
       "title": "Settings",
@@ -2768,12 +2782,29 @@
       },
       "confirmCredit": "Add {amount} to this customer's wallet balance?",
       "toasts": {
-        "credited": "Credit added"
+        "credited": "Credit added",
+        "statementGenerated": "Maandfactuur aangemaakt"
+      },
+      "monthlyStatement": "Maandfactuur",
+      "statementModal": {
+        "title": "Maandfactuur genereren",
+        "subtitle": "Bundel alle ongefactureerde op-rekening transacties voor de gekozen maand.",
+        "year": "Jaar",
+        "month": "Maand",
+        "generate": "Factuur genereren"
       }
     },
     "search": {
       "hint": "Type at least 2 characters to search customers, boats, invoices and more.",
-      "noResults": "No results found."
+      "noResults": "No results found.",
+      "sections": {
+        "customers": "Klanten",
+        "boats": "Boten",
+        "invoices": "Facturen",
+        "products": "Producten",
+        "stalling": "Stalling",
+        "calculator_records": "Calculator records"
+      }
     },
     "impersonation": {
       "banner": "You are signed in as {name}",
@@ -2824,7 +2855,8 @@
         "workbon": "Workbon created",
         "bulkApproved": "Selected imports approved",
         "bulkRejected": "Selected imports rejected",
-        "batchUploaded": "{count} files uploaded"
+        "batchUploaded": "{count} files uploaded",
+        "bulkRetried": "OCR opnieuw gestart voor geselecteerde imports"
       },
       "review": "Review",
       "batchUpload": "Batch upload",
@@ -2849,8 +2881,16 @@
         "qty": "Qty",
         "unitPrice": "Unit price",
         "lineTotal": "Line total",
-        "tagFields": "Tag fields"
-      }
+        "tagFields": "Tag fields",
+        "zoomIn": "Inzoomen",
+        "zoomOut": "Uitzoomen",
+        "rotate": "Draaien",
+        "previous": "Vorige",
+        "next": "Volgende"
+      },
+      "dropzoneTitle": "Sleep bestanden hierheen",
+      "dropzoneHint": "PDF of afbeelding — tot 50 bestanden tegelijk",
+      "retryOcr": "OCR opnieuw"
     },
     "templates": {
       "title": "Extraction templates",

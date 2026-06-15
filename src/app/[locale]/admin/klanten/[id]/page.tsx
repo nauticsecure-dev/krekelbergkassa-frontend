@@ -53,6 +53,9 @@ export default function CustomerDetailPage() {
   const [confirmWalletCredit, setConfirmWalletCredit] = React.useState(false);
   const [walletAmount, setWalletAmount] = React.useState('');
   const [walletDescription, setWalletDescription] = React.useState('');
+  const [showMonthlyStatement, setShowMonthlyStatement] = React.useState(false);
+  const [statementYear, setStatementYear] = React.useState(String(new Date().getFullYear()));
+  const [statementMonth, setStatementMonth] = React.useState(String(new Date().getMonth() + 1));
 
   const data = useQuery([customerId], async () => {
     if (!customerId) throw new Error('Missing customer id');
@@ -101,6 +104,13 @@ export default function CustomerDetailPage() {
   );
   const creditWallet = useMutation((payload: { amount_cents: number; description: string }) =>
     walletsService.credit(customerId!, payload)
+  );
+  const monthlyStatement = useMutation(() =>
+    walletsService.generateMonthlyStatement(customerId!, {
+      year: Number(statementYear),
+      month: Number(statementMonth),
+      locale: locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL',
+    })
   );
 
   const [editForm, setEditForm] = React.useState({
@@ -417,9 +427,14 @@ export default function CustomerDetailPage() {
                 description={t('adminNew.wallet.balanceHint')}
                 icon={Wallet}
                 action={
-                  <Button size="sm" variant="outline" onClick={() => setShowWalletCredit(true)}>
-                    {t('adminNew.wallet.credit')}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setShowMonthlyStatement(true)}>
+                      {t('adminNew.wallet.monthlyStatement')}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setShowWalletCredit(true)}>
+                      {t('adminNew.wallet.credit')}
+                    </Button>
+                  </div>
                 }
               >
                 <div className="text-2xl font-semibold text-navy-900">
@@ -844,6 +859,65 @@ export default function CustomerDetailPage() {
             </Button>
             <Button type="submit" variant="gold" disabled={creditWallet.loading}>
               {creditWallet.loading ? t('adminNew.common.saving') : t('adminNew.wallet.credit')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal open={showMonthlyStatement} onClose={() => setShowMonthlyStatement(false)} size="md">
+        <form
+          className="p-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void (async () => {
+              try {
+                const result = await monthlyStatement.mutate();
+                push({ tone: 'success', title: t('adminNew.wallet.toasts.statementGenerated') });
+                setShowMonthlyStatement(false);
+                await data.refetch();
+                if (result?.invoice_id) {
+                  window.location.href = `/${locale}/admin/facturen/${result.invoice_id}`;
+                }
+              } catch (err) {
+                push({
+                  tone: 'error',
+                  title: t('adminNew.common.operationFailed'),
+                  message: getApiErrorMessage(err),
+                });
+              }
+            })();
+          }}
+        >
+          <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.wallet.statementModal.title')}</h2>
+          <p className="mt-1 text-sm text-navy-500">{t('adminNew.wallet.statementModal.subtitle')}</p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <Input
+              label={t('adminNew.wallet.statementModal.year')}
+              type="number"
+              min={2020}
+              max={2100}
+              value={statementYear}
+              onChange={(e) => setStatementYear(e.target.value)}
+              required
+            />
+            <Input
+              label={t('adminNew.wallet.statementModal.month')}
+              type="number"
+              min={1}
+              max={12}
+              value={statementMonth}
+              onChange={(e) => setStatementMonth(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setShowMonthlyStatement(false)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button type="submit" variant="gold" disabled={monthlyStatement.loading}>
+              {monthlyStatement.loading
+                ? t('adminNew.common.saving')
+                : t('adminNew.wallet.statementModal.generate')}
             </Button>
           </div>
         </form>
