@@ -1340,11 +1340,15 @@
         "markedDuplicate": "Gemarkeerd als duplicaat",
         "workbon": "Werkbon aangemaakt",
         "bulkApproved": "Geselecteerde imports goedgekeurd",
+        "bulkRetried": "OCR opnieuw gestart voor geselecteerde imports",
         "bulkRejected": "Geselecteerde imports afgewezen",
         "batchUploaded": "{count} bestanden geüpload"
       },
       "review": "Beoordelen",
       "batchUpload": "Batch uploaden",
+      "dropzoneTitle": "Sleep bestanden hierheen",
+      "dropzoneHint": "PDF of afbeelding — tot 50 bestanden tegelijk",
+      "retryOcr": "OCR opnieuw",
       "selectAll": "Alles selecteren",
       "selectRow": "Rij selecteren",
       "selectedCount": "{count} geselecteerd",
@@ -1366,7 +1370,12 @@
         "qty": "Aantal",
         "unitPrice": "Stuksprijs",
         "lineTotal": "Regeltotaal",
-        "tagFields": "Velden taggen"
+        "tagFields": "Velden taggen",
+        "zoomIn": "Inzoomen",
+        "zoomOut": "Uitzoomen",
+        "rotate": "Draaien",
+        "previous": "Vorige",
+        "next": "Volgende"
       }
     },
     "templates": {
@@ -1763,7 +1772,10 @@
         "openBalance": "Open saldo"
       },
       "topProductsTitle": "Topproducten",
-      "slowProductsTitle": "Trage producten"
+      "slowProductsTitle": "Trage producten",
+      "marginByGroupTitle": "Marge per productgroep",
+      "marginRevenue": "Omzet",
+      "marginCost": "Inkoop"
     },
     "cashClose": {
       "title": "Dagafsluiting",
@@ -1932,7 +1944,8 @@
         "cash": "Contant",
         "pin": "PIN",
         "invoice": "Op factuur",
-        "creditcard": "Creditcard"
+        "creditcard": "Creditcard",
+        "banktransfer": "Bankoverschrijving"
       },
       "smartMatch": "Slimme match",
       "products": "Producten",
@@ -2068,7 +2081,13 @@
       "adjustNewTotal": "Nieuw totaal (incl. btw)",
       "adjustReason": "Reden voor aanpassing",
       "adjustReasonPlaceholder": "bijv. Klantloyaliteitskorting",
-      "adjustReasonRequired": "Een reden is verplicht om het totaal aan te passen"
+      "adjustReasonRequired": "Een reden is verplicht om het totaal aan te passen",
+      "keyboardHints": "Sneltoetsen: / zoeken · F2 klant · F4 afrekenen · F8 winkelwagen legen",
+      "viewAllSales": "Alle verkopen",
+      "searchAddress": "Adres zoeken",
+      "searchAddressPlaceholder": "Begin met typen voor Google Maps suggesties…",
+      "customerNotes": "Notities",
+      "customerNotesPlaceholder": "Interne opmerkingen over deze klant"
     },
     "stalling": {
       "title": "Stalling",
@@ -2304,6 +2323,9 @@
         "metricLatest": "Laatste document",
         "metricFormats": "Formaten",
         "invoicePdf": "Factuur PDF",
+        "creditNotePdf": "Creditnota PDF",
+        "metricCreditNotes": "Creditnota's",
+        "viewInvoice": "Bekijk factuur",
         "helpTitle": "Document niet gevonden?",
         "helpText": "Neem contact op als u een document mist of een kopie nodig heeft.",
         "contactSupport": "Contact opnemen"
@@ -3079,7 +3101,15 @@
       "title": "Portemonnee",
       "balanceHint": "Beschikbaar tegoed voor deze klant",
       "credit": "Crediteren",
+      "monthlyStatement": "Maandfactuur",
       "defaultCreditDescription": "Handmatige credit",
+      "statementModal": {
+        "title": "Maandfactuur genereren",
+        "subtitle": "Bundel alle ongefactureerde op-rekening transacties voor de gekozen maand.",
+        "year": "Jaar",
+        "month": "Maand",
+        "generate": "Factuur genereren"
+      },
       "creditModal": {
         "title": "Tegoed toevoegen",
         "amount": "Bedrag (EUR)",
@@ -3087,7 +3117,8 @@
       },
       "confirmCredit": "{amount} toevoegen aan het tegoed van deze klant?",
       "toasts": {
-        "credited": "Tegoed toegevoegd"
+        "credited": "Tegoed toegevoegd",
+        "statementGenerated": "Maandfactuur aangemaakt"
       }
     },
     "suppliers": {

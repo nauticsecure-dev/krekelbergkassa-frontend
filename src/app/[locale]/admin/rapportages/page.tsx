@@ -107,6 +107,7 @@ export default function ReportsPage() {
   const byGroup = arr(data.revenue_by_group);
   const methods = arr(data.payment_methods);
   const margin = obj(data.margin);
+  const marginByGroup = arr(margin.by_group);
   const storage = obj(data.storage);
   const occupancy = obj(data.occupancy);
   const customerAnalytics = obj(data.customer_analytics);
@@ -470,12 +471,34 @@ export default function ReportsPage() {
                 {t('adminNew.reports.marginMissing', { count: n(margin.missing_cost_line_count) })}
               </p>
             ) : (
-              <div className="mt-3">
+              <div className="mt-3 space-y-3">
                 <Badge tone="success">
                   {t('adminNew.reports.marginValue', {
                     pct: n(margin.gross_margin_pct ?? margin.margin_pct),
                   })}
                 </Badge>
+                {marginByGroup.length ? (
+                  <AdminSectionCard title={t('adminNew.reports.marginByGroupTitle')} icon={Layers}>
+                    <div className="space-y-1.5">
+                      {marginByGroup.map((g, i) => (
+                        <div key={i} className="flex flex-wrap items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm">
+                          <span className="font-medium text-navy-800">{str(g.group_name ?? g.group_code) || '—'}</span>
+                          <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+                            <span className="text-navy-500">
+                              {t('adminNew.reports.marginRevenue')}: {money(n(g.revenue_cents ?? g.total_incl_vat))}
+                            </span>
+                            <span className="text-navy-500">
+                              {t('adminNew.reports.marginCost')}: {money(n(g.cost_cents ?? g.purchase_cost_cents))}
+                            </span>
+                            <span className="font-semibold text-emerald-700">
+                              {n(g.gross_margin_percent ?? g.gross_margin_pct).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </AdminSectionCard>
+                ) : null}
               </div>
             )}
           </>

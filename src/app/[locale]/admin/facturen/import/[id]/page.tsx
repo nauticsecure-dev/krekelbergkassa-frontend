@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, FileText, ScanText, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, FileText, RotateCw, ScanText, XCircle, ZoomIn, ZoomOut } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -57,8 +57,11 @@ export default function InvoiceImportReviewPage() {
 
   const [approveOpen, setApproveOpen] = React.useState(false);
   const [rejectOpen, setRejectOpen] = React.useState(false);
+  const [zoom, setZoom] = React.useState(100);
+  const [rotation, setRotation] = React.useState(0);
 
   const imp = useQuery([id], () => invoiceImportsService.get(id));
+  const queue = useQuery(['import-queue-nav'], () => invoiceImportsService.list({ per_page: 100 }));
   const pdf = useQuery([id, 'pdf'], () => invoiceImportsService.sourcePdf(id).catch(() => null));
   const matches = useQuery([id, 'matches'], () => invoiceImportsService.proposeMatches(id).catch(() => null));
   const approveM = useMutation(() => invoiceImportsService.approve(id));
@@ -96,6 +99,11 @@ export default function InvoiceImportReviewPage() {
 
   const st = str(data, 'status') || 'uploaded';
   const open = !/approv|reject/i.test(st);
+
+  const queueIds = ((queue.data?.data ?? []) as Rec[]).map((r) => String(r.id));
+  const currentIdx = queueIds.indexOf(id);
+  const prevId = currentIdx > 0 ? queueIds[currentIdx - 1] : null;
+  const nextId = currentIdx >= 0 && currentIdx < queueIds.length - 1 ? queueIds[currentIdx + 1] : null;
 
   return (
     <>
@@ -141,13 +149,55 @@ export default function InvoiceImportReviewPage() {
 
         <div className="grid gap-5 lg:grid-cols-2">
           <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.document')} icon={FileText}>
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <Button variant="outline" size="sm" leftIcon={<ZoomOut className="h-3.5 w-3.5" />} onClick={() => setZoom((z) => Math.max(50, z - 15))}>
+                {t('adminNew.invoiceImports.reviewScreen.zoomOut')}
+              </Button>
+              <Button variant="outline" size="sm" leftIcon={<ZoomIn className="h-3.5 w-3.5" />} onClick={() => setZoom((z) => Math.min(200, z + 15))}>
+                {t('adminNew.invoiceImports.reviewScreen.zoomIn')}
+              </Button>
+              <Button variant="outline" size="sm" leftIcon={<RotateCw className="h-3.5 w-3.5" />} onClick={() => setRotation((r) => (r + 90) % 360)}>
+                {t('adminNew.invoiceImports.reviewScreen.rotate')}
+              </Button>
+              <span className="ml-auto text-xs font-semibold text-navy-500">{zoom}%</span>
+            </div>
             {pdf.loading ? (
               <LoadingState label={t('adminNew.common.loading')} variant="detail" />
             ) : pdfUrl ? (
-              <iframe title="source-pdf" src={pdfUrl} className="h-[600px] w-full rounded-lg border border-navy-100" />
+              <div className="overflow-auto rounded-lg border border-navy-100 bg-sand-50" style={{ maxHeight: 600 }}>
+                <iframe
+                  title="source-pdf"
+                  src={pdfUrl}
+                  className="origin-top-left border-0"
+                  style={{
+                    width: `${zoom}%`,
+                    height: `${(600 * zoom) / 100}px`,
+                    transform: `rotate(${rotation}deg)`,
+                    transformOrigin: 'center center',
+                  }}
+                />
+              </div>
             ) : (
               <p className="text-sm text-navy-500">{t('adminNew.invoiceImports.reviewScreen.noDocument')}</p>
             )}
+            <div className="mt-3 flex justify-between gap-2">
+              {prevId ? (
+                <Link href={`/${locale}/admin/facturen/import/${prevId}`}>
+                  <Button variant="ghost" size="sm" leftIcon={<ChevronLeft className="h-4 w-4" />}>
+                    {t('adminNew.invoiceImports.reviewScreen.previous')}
+                  </Button>
+                </Link>
+              ) : (
+                <span />
+              )}
+              {nextId ? (
+                <Link href={`/${locale}/admin/facturen/import/${nextId}`}>
+                  <Button variant="ghost" size="sm" rightIcon={<ChevronRight className="h-4 w-4" />}>
+                    {t('adminNew.invoiceImports.reviewScreen.next')}
+                  </Button>
+                </Link>
+              ) : null}
+            </div>
           </AdminSectionCard>
 
           <div className="space-y-5">

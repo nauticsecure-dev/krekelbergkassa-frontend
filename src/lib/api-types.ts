@@ -421,6 +421,22 @@ export interface PortalInvoice {
   pdf_url: string;
   lines?: InvoiceLine[];
   payments?: Payment[];
+  credited_invoice?: { id?: string; invoice_number?: string; pdf_url?: string } | null;
+  credit_notes?: Array<{ id?: string; invoice_number?: string; pdf_url?: string; status?: string }>;
+  documents?: Array<{
+    type?: string;
+    label?: string;
+    invoice_id?: string;
+    invoice_number?: string;
+    pdf_url?: string;
+    open_url?: string;
+    download_url?: string;
+  }>;
+  pdf?: {
+    status?: string;
+    open_url?: string;
+    download_url?: string;
+  };
 }
 
 export interface PortalMe {

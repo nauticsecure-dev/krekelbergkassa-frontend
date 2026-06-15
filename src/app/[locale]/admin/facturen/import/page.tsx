@@ -73,6 +73,7 @@ export default function InvoiceImportsPage() {
   const [workbonTarget, setWorkbonTarget] = React.useState<string | null>(null);
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const batchRef = React.useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = React.useState(false);
 
   const imports = useQuery([search, status, source], () =>
     invoiceImportsService.list({
@@ -226,6 +227,34 @@ export default function InvoiceImportsPage() {
         }
       />
       <AdminContent>
+        <div
+          className={`mb-5 rounded-2xl border-2 border-dashed p-8 text-center transition ${
+            dragOver ? 'border-marine-400 bg-marine-50/50' : 'border-navy-200 bg-white/80'
+          }`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            if (e.dataTransfer.files?.length) void onBatchUpload(e.dataTransfer.files);
+          }}
+        >
+          <Upload className="mx-auto h-8 w-8 text-marine-500" />
+          <p className="mt-2 text-sm font-semibold text-navy-800">{t('adminNew.invoiceImports.dropzoneTitle')}</p>
+          <p className="mt-1 text-xs text-navy-500">{t('adminNew.invoiceImports.dropzoneHint')}</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+              {t('adminNew.invoiceImports.upload')}
+            </Button>
+            <Button variant="gold" size="sm" onClick={() => batchRef.current?.click()}>
+              {t('adminNew.invoiceImports.batchUpload')}
+            </Button>
+          </div>
+        </div>
+
         <AdminSectionCard title={t('adminNew.invoiceImports.queue')} icon={FileUp}>
           <div className="mb-4 flex flex-wrap items-end gap-2">
             <AdminSearchInput
@@ -273,6 +302,15 @@ export default function InvoiceImportsPage() {
                   onClick={() => void runBulk('reject', t('adminNew.invoiceImports.toasts.bulkRejected'))}
                 >
                   {t('adminNew.invoiceImports.reject')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<ScanText className="h-3.5 w-3.5" />}
+                  disabled={bulkM.loading}
+                  onClick={() => void runBulk('retry', t('adminNew.invoiceImports.toasts.bulkRetried'))}
+                >
+                  {t('adminNew.invoiceImports.retryOcr')}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
                   {t('adminNew.common.clear')}

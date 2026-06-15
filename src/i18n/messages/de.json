@@ -1445,7 +1445,10 @@
         "openBalance": "Offener Saldo"
       },
       "topProductsTitle": "Top-Produkte",
-      "slowProductsTitle": "Langsame Produkte"
+      "slowProductsTitle": "Langsame Produkte",
+      "marginByGroupTitle": "Marge per productgroep",
+      "marginRevenue": "Omzet",
+      "marginCost": "Inkoop"
     },
     "cashClose": {
       "title": "Tagesabschluss",
@@ -1614,7 +1617,8 @@
         "cash": "Bar",
         "pin": "EC-Karte",
         "invoice": "Rechnung",
-        "creditcard": "Kreditkarte"
+        "creditcard": "Kreditkarte",
+        "banktransfer": "Bankoverschrijving"
       },
       "smartMatch": "Intelligente Übereinstimmung",
       "products": "Produkte",
@@ -1750,7 +1754,13 @@
       "adjustNewTotal": "Neue Summe (inkl. MwSt.)",
       "adjustReason": "Grund für die Anpassung",
       "adjustReasonPlaceholder": "z. B. Kundenrabatt",
-      "adjustReasonRequired": "Ein Grund ist für die Anpassung erforderlich"
+      "adjustReasonRequired": "Ein Grund ist für die Anpassung erforderlich",
+      "keyboardHints": "Sneltoetsen: / zoeken · F2 klant · F4 afrekenen · F8 winkelwagen legen",
+      "viewAllSales": "Alle verkopen",
+      "searchAddress": "Adres zoeken",
+      "searchAddressPlaceholder": "Begin met typen voor Google Maps suggesties…",
+      "customerNotes": "Notities",
+      "customerNotesPlaceholder": "Interne opmerkingen over deze klant"
     },
     "stalling": {
       "title": "Lagerung",
@@ -1988,7 +1998,10 @@
         "invoicePdf": "Rechnungs-PDF",
         "helpTitle": "Dokument nicht gefunden?",
         "helpText": "Kontaktieren Sie uns, wenn ein Dokument fehlt oder Sie eine Kopie benötigen.",
-        "contactSupport": "Support kontaktieren"
+        "contactSupport": "Support kontaktieren",
+        "creditNotePdf": "Creditnota PDF",
+        "metricCreditNotes": "Creditnota's",
+        "viewInvoice": "Bekijk factuur"
       },
       "messages": {
         "title": "Nachrichten",
@@ -2368,7 +2381,8 @@
         "selectProduct": "Produkt auswählen",
         "confirmDelete": "Diese Preisregel löschen?",
         "deleted": "Preisregel gelöscht"
-      }
+      },
+      "manageServices": "Services beheren"
     },
     "settings": {
       "title": "Einstellungen",
@@ -2768,12 +2782,29 @@
       },
       "confirmCredit": "{amount} zum Guthaben dieses Kunden hinzufügen?",
       "toasts": {
-        "credited": "Guthaben hinzugefügt"
+        "credited": "Guthaben hinzugefügt",
+        "statementGenerated": "Maandfactuur aangemaakt"
+      },
+      "monthlyStatement": "Maandfactuur",
+      "statementModal": {
+        "title": "Maandfactuur genereren",
+        "subtitle": "Bundel alle ongefactureerde op-rekening transacties voor de gekozen maand.",
+        "year": "Jaar",
+        "month": "Maand",
+        "generate": "Factuur genereren"
       }
     },
     "search": {
       "hint": "Geben Sie mindestens 2 Zeichen ein, um Kunden, Boote, Rechnungen und mehr zu suchen.",
-      "noResults": "Keine Ergebnisse gefunden."
+      "noResults": "Keine Ergebnisse gefunden.",
+      "sections": {
+        "customers": "Klanten",
+        "boats": "Boten",
+        "invoices": "Facturen",
+        "products": "Producten",
+        "stalling": "Stalling",
+        "calculator_records": "Calculator records"
+      }
     },
     "impersonation": {
       "banner": "Sie sind angemeldet als {name}",
@@ -2824,7 +2855,8 @@
         "workbon": "Werkbon erstellt",
         "bulkApproved": "Ausgewählte Importe genehmigt",
         "bulkRejected": "Ausgewählte Importe abgelehnt",
-        "batchUploaded": "{count} Dateien hochgeladen"
+        "batchUploaded": "{count} Dateien hochgeladen",
+        "bulkRetried": "OCR opnieuw gestart voor geselecteerde imports"
       },
       "review": "Prüfen",
       "batchUpload": "Stapel-Upload",
@@ -2849,8 +2881,16 @@
         "qty": "Menge",
         "unitPrice": "Stückpreis",
         "lineTotal": "Positionssumme",
-        "tagFields": "Felder markieren"
-      }
+        "tagFields": "Felder markieren",
+        "zoomIn": "Inzoomen",
+        "zoomOut": "Uitzoomen",
+        "rotate": "Draaien",
+        "previous": "Vorige",
+        "next": "Volgende"
+      },
+      "dropzoneTitle": "Sleep bestanden hierheen",
+      "dropzoneHint": "PDF of afbeelding — tot 50 bestanden tegelijk",
+      "retryOcr": "OCR opnieuw"
     },
     "templates": {
       "title": "Extraktionsvorlagen",

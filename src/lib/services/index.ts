@@ -167,6 +167,16 @@ export const customersService = {
     preferred_locale?: string | null;
     vat_number?: string | null;
     notes?: string | null;
+    address?: {
+      street?: string | null;
+      house_number?: string | null;
+      postal_code?: string | null;
+      city?: string | null;
+      country?: string | null;
+      google_place_id?: string | null;
+      latitude?: number | null;
+      longitude?: number | null;
+    };
   }) {
     return api<Customer>('/v1/customers', { method: 'POST', body: payload, queueWhenOffline: true });
   },
@@ -1955,6 +1965,19 @@ export const walletsService = {
       body: payload,
       queueWhenOffline: true,
     });
+  },
+  generateMonthlyStatement(
+    customerId: string,
+    payload: { year: number; month: number; locale?: string }
+  ) {
+    return api<{ invoice_id?: string; invoice_number?: string }>(
+      `/v1/admin/wallets/${customerId}/generate-monthly-statement`,
+      {
+        method: 'POST',
+        body: payload,
+        queueWhenOffline: true,
+      }
+    );
   },
 };
 
