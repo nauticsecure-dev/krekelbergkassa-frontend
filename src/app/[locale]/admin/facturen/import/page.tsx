@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, FileUp, ScanText, Upload, XCircle } from 'lucide-react';
+import { ArrowLeft, Camera, CheckCircle2, Download, FileUp, ScanText, Upload, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -73,7 +73,9 @@ export default function InvoiceImportsPage() {
   const [workbonTarget, setWorkbonTarget] = React.useState<string | null>(null);
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const batchRef = React.useRef<HTMLInputElement>(null);
+  const cameraRef = React.useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = React.useState(false);
+  const [exporting, setExporting] = React.useState(false);
 
   const imports = useQuery([search, status, source], () =>
     invoiceImportsService.list({
@@ -86,8 +88,10 @@ export default function InvoiceImportsPage() {
   const approve = useMutation((id: string) => invoiceImportsService.approve(id));
   const processM = useMutation((id: string) => invoiceImportsService.process(id));
   const rejectM = useMutation((id: string) => invoiceImportsService.reject(id));
-  const dupM = useMutation((id: string) => invoiceImportsService.markDuplicate(id));
+  const dupM = useMutation(({ id, duplicateId }: { id: string; duplicateId?: string }) =>
+    invoiceImportsService.markDuplicate(id, duplicateId));
   const workbonM = useMutation((id: string) => invoiceImportsService.markWorkbon(id));
+  const retryM = useMutation((id: string) => invoiceImportsService.retry(id));
   const bulkM = useMutation((p: { ids: string[]; action: string }) => invoiceImportsService.bulkAction(p));
 
   const rows = (imports.data?.data ?? []) as Rec[];
@@ -121,6 +125,39 @@ export default function InvoiceImportsPage() {
       const fd = new FormData();
       Array.from(files).forEach((f) => fd.append('files[]', f));
       fd.append('source', 'upload');
+      await invoiceImportsService.batch(fd);
+      await imports.refetch();
+      push({ tone: 'success', title: t('adminNew.invoiceImports.toasts.batchUploaded', { count: files.length }) });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const blob = await invoiceImportsService.export({ status: status || undefined });
+      const url = URL.createObjectURL(blob as Blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `factuurimport-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const onCameraCapture = async (files: FileList) => {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      Array.from(files).forEach((f) => fd.append('files[]', f));
+      fd.append('source', 'photo');
       await invoiceImportsService.batch(fd);
       await imports.refetch();
       push({ tone: 'success', title: t('adminNew.invoiceImports.toasts.batchUploaded', { count: files.length }) });
@@ -252,7 +289,20 @@ export default function InvoiceImportsPage() {
             <Button variant="gold" size="sm" onClick={() => batchRef.current?.click()}>
               {t('adminNew.invoiceImports.batchUpload')}
             </Button>
+            <Button variant="outline" size="sm" leftIcon={<Camera className="h-4 w-4" />} onClick={() => cameraRef.current?.click()}>
+              {t('adminNew.invoiceImports.cameraUpload', { defaultValue: "Foto's" })}
+            </Button>
           </div>
+          {/* Camera/photo input — capture="environment" triggers the rear camera on mobile */}
+          <input
+            ref={cameraRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            multiple
+            className="hidden"
+            onChange={(e) => { if (e.target.files?.length) void onCameraCapture(e.target.files); }}
+          />
         </div>
 
         <AdminSectionCard title={t('adminNew.invoiceImports.queue')} icon={FileUp}>
@@ -275,7 +325,18 @@ export default function InvoiceImportsPage() {
               <option value="">{t('adminNew.invoiceImports.allSources')}</option>
               <option value="upload">{t('adminNew.invoiceImports.sourceUpload')}</option>
               <option value="email">{t('adminNew.invoiceImports.sourceEmail')}</option>
+              <option value="photo">{t('adminNew.invoiceImports.sourcePhoto', { defaultValue: "Foto's" })}</option>
+              <option value="legacy">{t('adminNew.invoiceImports.sourceLegacy', { defaultValue: 'Historisch' })}</option>
             </AdminSelect>
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Download className="h-4 w-4" />}
+              disabled={exporting}
+              onClick={() => void handleExport()}
+            >
+              {t('adminNew.invoiceImports.export', { defaultValue: 'Exporteer CSV' })}
+            </Button>
           </div>
 
           {selected.size > 0 ? (
@@ -429,11 +490,24 @@ export default function InvoiceImportsPage() {
                                 disabled={dupM.loading}
                                 onClick={() =>
                                   void runAction(t('adminNew.invoiceImports.toasts.markedDuplicate'), () =>
-                                    dupM.mutate(id)
+                                    dupM.mutate({ id, duplicateId: row.duplicate_import_id as string | undefined })
                                   )
                                 }
                               >
                                 {t('adminNew.invoiceImports.markDuplicate')}
+                              </Button>
+                            ) : null}
+                            {open ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                leftIcon={<ScanText className="h-3.5 w-3.5" />}
+                                disabled={retryM.loading}
+                                onClick={() =>
+                                  void runAction(t('adminNew.invoiceImports.toasts.bulkRetried'), () => retryM.mutate(id))
+                                }
+                              >
+                                {t('adminNew.invoiceImports.retryOcr')}
                               </Button>
                             ) : null}
                             {open ? (

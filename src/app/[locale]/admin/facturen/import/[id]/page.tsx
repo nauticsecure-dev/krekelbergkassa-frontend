@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, FileText, RotateCw, ScanText, XCircle, ZoomIn, ZoomOut } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, FileText, RotateCw, ScanText, XCircle, ZoomIn, ZoomOut } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -85,6 +85,7 @@ export default function InvoiceImportReviewPage() {
   ];
 
   const fieldConf = (data.field_confidence ?? extracted.field_confidence ?? {}) as Rec;
+  const validationWarnings = (Array.isArray(data.validation_warnings) ? data.validation_warnings : []) as Array<{ code: string; message: string; severity?: string }>;
 
   const act = async (label: string, fn: () => Promise<unknown>, after: () => void) => {
     try {
@@ -235,6 +236,27 @@ export default function InvoiceImportReviewPage() {
             ) : null}
           </div>
         </div>
+
+        {validationWarnings.length > 0 ? (
+          <div className="mt-5 space-y-2">
+            {validationWarnings.map((w, i) => (
+              <div
+                key={i}
+                className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${
+                  w.severity === 'error'
+                    ? 'border-rose-200 bg-rose-50 text-rose-800'
+                    : 'border-amber-200 bg-amber-50 text-amber-800'
+                }`}
+              >
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <span className="font-semibold uppercase tracking-wide text-[10px]">{w.code?.replace(/_/g, ' ')}</span>
+                  <p>{w.message}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.lineItems')} icon={FileText} className="mt-5">
           <AdminTableCard>

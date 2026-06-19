@@ -1723,9 +1723,10 @@ export const invoiceImportsService = {
       queueWhenOffline: true,
     });
   },
-  markDuplicate(id: string) {
+  markDuplicate(id: string, duplicateImportId?: string) {
     return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/mark-duplicate`, {
       method: 'POST',
+      body: duplicateImportId ? { duplicate_import_id: duplicateImportId } : {},
       queueWhenOffline: true,
     });
   },
@@ -1761,6 +1762,19 @@ export const invoiceImportsService = {
     return api<{ file_id?: string; filename?: string; mime_type?: string; signed_url?: string }>(
       `/v1/invoice-imports/${id}/source-pdf`
     );
+  },
+  /**
+   * Export approved imports as CSV (with ledger_account, cost_center, vat_rate columns).
+   * Returns a Blob for download.
+   */
+  export(filters?: { status?: string; document_type?: string; date_from?: string; date_to?: string }) {
+    const params = new URLSearchParams();
+    if (filters?.status) params.set('status', filters.status);
+    if (filters?.document_type) params.set('document_type', filters.document_type);
+    if (filters?.date_from) params.set('date_from', filters.date_from);
+    if (filters?.date_to) params.set('date_to', filters.date_to);
+    const query = params.toString();
+    return api<Blob>(`/v1/invoice-imports/export${query ? `?${query}` : ''}`);
   },
 };
 
