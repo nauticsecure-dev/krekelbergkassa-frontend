@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, FileUp, ScanText, Upload, XCircle } from 'lucide-react';
+import { ArrowLeft, Camera, CheckCircle2, Download, FileUp, RotateCw, ScanText, Upload, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -18,6 +18,7 @@ import {
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/Modal';
 import { filesService, invoiceImportsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
@@ -64,31 +65,46 @@ export default function InvoiceImportsPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const fileRef = React.useRef<HTMLInputElement>(null);
+  const photoRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
+  const [exporting, setExporting] = React.useState(false);
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
   const [source, setSource] = React.useState('');
   const [approveTarget, setApproveTarget] = React.useState<string | null>(null);
   const [rejectTarget, setRejectTarget] = React.useState<string | null>(null);
   const [workbonTarget, setWorkbonTarget] = React.useState<string | null>(null);
+  // Trello #81: duplicate-resolution side-by-side comparison.
+  const [dupResolve, setDupResolve] = React.useState<{ id: string; otherId: string } | null>(null);
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const batchRef = React.useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = React.useState(false);
 
-  const imports = useQuery([search, status, source], () =>
-    invoiceImportsService.list({
-      per_page: 50,
+  const query = React.useMemo(
+    () => ({
       search: search || undefined,
       status: status || undefined,
       source: source || undefined,
-    })
+    }),
+    [search, status, source]
+  );
+
+  const imports = useQuery([search, status, source], () =>
+    invoiceImportsService.list({ per_page: 50, ...query })
   );
   const approve = useMutation((id: string) => invoiceImportsService.approve(id));
   const processM = useMutation((id: string) => invoiceImportsService.process(id));
   const rejectM = useMutation((id: string) => invoiceImportsService.reject(id));
-  const dupM = useMutation((id: string) => invoiceImportsService.markDuplicate(id));
+  const retryM = useMutation((id: string) => invoiceImportsService.retry(id));
+  const dupM = useMutation((p: { id: string; duplicateImportId?: string }) =>
+    invoiceImportsService.markDuplicate(p.id, p.duplicateImportId)
+  );
   const workbonM = useMutation((id: string) => invoiceImportsService.markWorkbon(id));
   const bulkM = useMutation((p: { ids: string[]; action: string }) => invoiceImportsService.bulkAction(p));
+  // Trello #81: fetch the matched import when resolving a duplicate.
+  const dupOther = useQuery([dupResolve?.otherId ?? 'no-dup'], () =>
+    dupResolve?.otherId ? invoiceImportsService.get(dupResolve.otherId) : Promise.resolve(null)
+  );
 
   const rows = (imports.data?.data ?? []) as Rec[];
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
@@ -115,20 +131,54 @@ export default function InvoiceImportsPage() {
     }
   };
 
-  const onBatchUpload = async (files: FileList) => {
+  const onBatchUpload = async (files: FileList, importSource = 'upload') => {
     setUploading(true);
     try {
       const fd = new FormData();
       Array.from(files).forEach((f) => fd.append('files[]', f));
-      fd.append('source', 'upload');
+      fd.append('source', importSource);
       await invoiceImportsService.batch(fd);
       await imports.refetch();
-      push({ tone: 'success', title: t('adminNew.invoiceImports.toasts.batchUploaded', { count: files.length }) });
+      const key = importSource === 'photo' ? 'photoUploaded' : 'batchUploaded';
+      push({ tone: 'success', title: t(`adminNew.invoiceImports.toasts.${key}`, { count: files.length }) });
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
     } finally {
       setUploading(false);
     }
+  };
+
+  // Trello #81: export the (filtered) import queue to CSV.
+  const onExport = async () => {
+    setExporting(true);
+    try {
+      const blob = await invoiceImportsService.export(query);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `factuur-imports-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Trello #81: a row is a potential duplicate when the backend matched it.
+  const duplicateMatchId = (row: Rec): string | null => {
+    const direct = row.duplicate_import_id ?? row.duplicate_of_id;
+    if (direct != null && direct !== '') return String(direct);
+    const list = (row.duplicate_matches ?? []) as Rec[];
+    if (Array.isArray(list) && list.length > 0) {
+      const first = list[0] ?? {};
+      const mid = first.import_id ?? first.id ?? first.matched_import_id;
+      if (mid != null && mid !== '') return String(mid);
+    }
+    return null;
   };
 
   const runAction = async (label: string, fn: () => Promise<unknown>) => {
@@ -186,6 +236,24 @@ export default function InvoiceImportsPage() {
             <Button
               variant="outline"
               size="sm"
+              leftIcon={<Download className="h-4 w-4" />}
+              disabled={exporting}
+              onClick={() => void onExport()}
+            >
+              {t('adminNew.invoiceImports.exportCsv')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Camera className="h-4 w-4" />}
+              disabled={uploading}
+              onClick={() => photoRef.current?.click()}
+            >
+              {t('adminNew.invoiceImports.photoCapture')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               leftIcon={<Upload className="h-4 w-4" />}
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
@@ -209,6 +277,18 @@ export default function InvoiceImportsPage() {
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) void onUpload(file);
+                e.target.value = '';
+              }}
+            />
+            <input
+              ref={photoRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length) void onBatchUpload(e.target.files, 'photo');
                 e.target.value = '';
               }}
             />
@@ -275,6 +355,7 @@ export default function InvoiceImportsPage() {
               <option value="">{t('adminNew.invoiceImports.allSources')}</option>
               <option value="upload">{t('adminNew.invoiceImports.sourceUpload')}</option>
               <option value="email">{t('adminNew.invoiceImports.sourceEmail')}</option>
+              <option value="photo">{t('adminNew.invoiceImports.sourcePhoto')}</option>
             </AdminSelect>
           </div>
 
@@ -412,6 +493,21 @@ export default function InvoiceImportsPage() {
                                 {t('adminNew.invoiceImports.process')}
                               </Button>
                             ) : null}
+                            {open ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                leftIcon={<RotateCw className="h-3.5 w-3.5" />}
+                                disabled={retryM.loading}
+                                onClick={() =>
+                                  void runAction(t('adminNew.invoiceImports.toasts.retried'), () =>
+                                    retryM.mutate(id)
+                                  )
+                                }
+                              >
+                                {t('adminNew.invoiceImports.retryOcr')}
+                              </Button>
+                            ) : null}
                             {isDeliveryNote(row) && open ? (
                               <Button variant="outline" size="sm" onClick={() => setWorkbonTarget(id)}>
                                 {t('adminNew.invoiceImports.markWorkbon')}
@@ -427,11 +523,17 @@ export default function InvoiceImportsPage() {
                                 variant="ghost"
                                 size="sm"
                                 disabled={dupM.loading}
-                                onClick={() =>
-                                  void runAction(t('adminNew.invoiceImports.toasts.markedDuplicate'), () =>
-                                    dupM.mutate(id)
-                                  )
-                                }
+                                onClick={() => {
+                                  const otherId = duplicateMatchId(row);
+                                  if (otherId) {
+                                    // Open side-by-side comparison before confirming.
+                                    setDupResolve({ id, otherId });
+                                  } else {
+                                    void runAction(t('adminNew.invoiceImports.toasts.markedDuplicate'), () =>
+                                      dupM.mutate({ id })
+                                    );
+                                  }
+                                }}
                               >
                                 {t('adminNew.invoiceImports.markDuplicate')}
                               </Button>
@@ -507,6 +609,86 @@ export default function InvoiceImportsPage() {
         icon={FileUp}
         loading={workbonM.loading}
       />
+
+      <Modal open={!!dupResolve} onClose={() => setDupResolve(null)} size="xl">
+        {(() => {
+          if (!dupResolve) return null;
+          const thisRow = (rows.find((r) => String(r.id) === dupResolve.id) ?? {}) as Rec;
+          const otherRow = (dupOther.data ?? {}) as Rec;
+          const fieldRows: Array<{ label: string; key: string }> = [
+            { label: t('adminNew.invoiceImports.columns.file'), key: 'original_filename' },
+            { label: t('adminNew.invoiceImports.columns.supplier'), key: 'supplier_name' },
+            { label: t('adminNew.invoiceImports.reviewScreen.documentNumber'), key: 'supplier_document_number' },
+            { label: t('adminNew.invoiceImports.reviewScreen.total'), key: 'total_amount' },
+            { label: t('adminNew.invoiceImports.columns.status'), key: 'status' },
+            { label: t('adminNew.invoiceImports.columns.date'), key: 'created_at' },
+          ];
+          const cell = (r: Rec, key: string) => {
+            const v = r[key];
+            if (v == null || v === '') return '—';
+            if (key === 'created_at') return formatDate(String(v), dateLocale);
+            return String(v);
+          };
+          return (
+            <div className="p-6">
+              <h2 className="text-lg font-bold text-navy-900">
+                {t('adminNew.invoiceImports.duplicate.title')}
+              </h2>
+              <p className="mt-1 text-sm text-navy-500">{t('adminNew.invoiceImports.duplicate.subtitle')}</p>
+              {dupOther.loading ? (
+                <div className="mt-4">
+                  <LoadingState label={t('adminNew.common.loading')} />
+                </div>
+              ) : (
+                <div className="mt-4 overflow-x-auto rounded-xl border border-navy-100">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-navy-50 text-left text-[11px] uppercase tracking-widest text-navy-400">
+                        <th className="px-3 py-2 font-semibold">{t('adminNew.invoiceImports.duplicate.field')}</th>
+                        <th className="px-3 py-2 font-semibold">{t('adminNew.invoiceImports.duplicate.thisImport')}</th>
+                        <th className="px-3 py-2 font-semibold">{t('adminNew.invoiceImports.duplicate.matchedImport')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fieldRows.map(({ label, key }) => {
+                        const a = cell(thisRow, key);
+                        const b = cell(otherRow, key);
+                        const diff = a !== b;
+                        return (
+                          <tr key={key} className="border-t border-navy-50">
+                            <td className="px-3 py-2 font-medium text-navy-500">{label}</td>
+                            <td className={`px-3 py-2 ${diff ? 'font-semibold text-navy-900' : 'text-navy-700'}`}>{a}</td>
+                            <td className={`px-3 py-2 ${diff ? 'bg-amber-50/60 font-semibold text-navy-900' : 'text-navy-700'}`}>
+                              {b}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <div className="mt-5 flex justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setDupResolve(null)}>
+                  {t('adminNew.common.cancel')}
+                </Button>
+                <Button
+                  variant="gold"
+                  size="sm"
+                  disabled={dupM.loading}
+                  onClick={async () => {
+                    const payload = { id: dupResolve.id, duplicateImportId: dupResolve.otherId };
+                    setDupResolve(null);
+                    await runAction(t('adminNew.invoiceImports.toasts.markedDuplicate'), () => dupM.mutate(payload));
+                  }}
+                >
+                  {t('adminNew.invoiceImports.duplicate.confirm')}
+                </Button>
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
     </>
   );
 }

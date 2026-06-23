@@ -101,6 +101,12 @@ export interface StallingContract {
   payment_status: 'open' | 'expiring' | 'overdue' | 'paid' | 'cancelled' | string;
   open_balance_cents: number;
   notes: string | null;
+  bok_number?: string | null;
+  location_code?: string | null;
+  // Trello #107: deposit/brokerage payment automation.
+  deposit_invoice_id?: string | null;
+  deposit_percentage?: number | null;
+  payment_route?: string | null;
   customer?: Customer;
   boat?: Boat;
   created_at: string;
@@ -182,6 +188,10 @@ export interface Invoice {
   lines?: InvoiceLine[];
   payments?: Payment[];
   stalling_contract?: StallingContract | null;
+  // Trello #107: link back from an invoice to its originating stalling contract,
+  // and label deposit/final/brokerage invoices.
+  stalling_contract_id?: string | null;
+  invoice_label?: 'deposit' | 'final' | 'brokerage' | string | null;
   created_at: string;
   updated_at: string;
 }
@@ -313,9 +323,12 @@ export interface KassaQrSession {
   session_id: string;
   status: string;
   amount_cents?: number;
+  amount_euros?: number;
   currency?: string;
   checkout_url?: string | null;
   qr_payload?: string | null;
+  // Trello #72: server-rendered QR image URL (preferred over client-built one).
+  qr_code_url?: string | null;
   poll_url?: string | null;
   invoice_id?: string | null;
   invoice_number?: string | null;
@@ -500,6 +513,14 @@ export interface Appointment {
   created_at: string | null;
   updated_at: string | null;
   boat?: PortalBoat | Boat;
+  // Trello #99: employee assignment, coarse status bucket + portal flags.
+  assigned_to_user_id?: string | null;
+  assigned_to?: { id: string; name: string } | null;
+  status_generic?: 'pending' | 'approved' | 'in_progress' | 'completed' | 'cancelled' | string | null;
+  status_label?: string | null;
+  next_status?: string | null;
+  can_cancel?: boolean;
+  customer?: { id: string; name: string; email?: string } | null;
 }
 
 export interface PortalTimelineItem {
@@ -514,6 +535,9 @@ export interface PortalTimelineItem {
   related_id?: string | null;
   read_at?: string | null;
   created_at?: string;
+  // Trello #89: call-to-action deep link on action-required items.
+  cta_url?: string | null;
+  cta_label?: string | null;
 }
 
 export interface PortalTimelinePagination {

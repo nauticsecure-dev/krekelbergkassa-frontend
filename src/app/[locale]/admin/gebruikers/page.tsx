@@ -9,7 +9,9 @@ import {
   AdminModalBody,
   AdminModalFooter,
   AdminModalHeader,
+  AdminSearchInput,
   AdminSectionCard,
+  AdminSelect,
   AdminTable,
   AdminTableCard,
   AdminTableCell,
@@ -35,12 +37,18 @@ export default function UsersPage() {
   const { t, locale } = useIntl();
   const { push } = useToast();
   const [page, setPage] = React.useState(1);
+  const [search, setSearch] = React.useState('');
+  const [roleFilter, setRoleFilter] = React.useState('');
+  const [statusFilter, setStatusFilter] = React.useState('');
+  const [localeFilter, setLocaleFilter] = React.useState('');
   const [showCreate, setShowCreate] = React.useState(false);
   const [form, setForm] = React.useState({
     name: '',
     email: '',
     password: '',
     role: 'staff',
+    gender: '',
+    locale: '',
   });
   const [deactivateTarget, setDeactivateTarget] = React.useState<{ id: string; name: string } | null>(
     null
@@ -49,7 +57,16 @@ export default function UsersPage() {
     null
   );
 
-  const users = useQuery([page], () => usersService.list({ page, per_page: 20 }));
+  const users = useQuery([page, search, roleFilter, statusFilter, localeFilter], () =>
+    usersService.list({
+      search: search || undefined,
+      role: roleFilter || undefined,
+      status: statusFilter || undefined,
+      locale: localeFilter || undefined,
+      page,
+      per_page: 20,
+    })
+  );
   const register = useMutation(usersService.register);
   const activate = useMutation(usersService.activate);
   const deactivate = useMutation(usersService.deactivate);
@@ -63,9 +80,17 @@ export default function UsersPage() {
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await register.mutate(form);
+      await register.mutate({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+        // `gender` / `locale` are accepted by the API but not yet in the register payload type.
+        ...(form.gender ? { gender: form.gender } : {}),
+        ...(form.locale ? { locale: form.locale } : {}),
+      });
       setShowCreate(false);
-      setForm({ name: '', email: '', password: '', role: 'staff' });
+      setForm({ name: '', email: '', password: '', role: 'staff', gender: '', locale: '' });
       await users.refetch();
       push({ tone: 'success', title: t('adminNew.users.toasts.created') });
     } catch (err) {
@@ -127,6 +152,56 @@ export default function UsersPage() {
             </Button>
           }
         >
+        <div className="mb-4 flex flex-wrap items-end gap-2">
+          <AdminSearchInput
+            value={search}
+            onChange={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
+            placeholder={t('adminNew.users.searchPlaceholder')}
+            className="flex-1"
+          />
+          <AdminSelect
+            value={roleFilter}
+            onChange={(value) => {
+              setRoleFilter(value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.users.allRoles')}</option>
+            <option value="admin">admin</option>
+            <option value="manager">manager</option>
+            <option value="staff">staff</option>
+            <option value="employee">employee</option>
+            <option value="finance">finance</option>
+          </AdminSelect>
+          <AdminSelect
+            value={statusFilter}
+            onChange={(value) => {
+              setStatusFilter(value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.users.allStatuses')}</option>
+            <option value="active">{t('adminNew.users.statusActive')}</option>
+            <option value="blocked">{t('adminNew.users.statusBlocked')}</option>
+            <option value="never_logged_in">{t('adminNew.users.statusNeverLoggedIn')}</option>
+          </AdminSelect>
+          <AdminSelect
+            value={localeFilter}
+            onChange={(value) => {
+              setLocaleFilter(value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.users.allLanguages')}</option>
+            <option value="nl">NL</option>
+            <option value="en">EN</option>
+            <option value="de">DE</option>
+          </AdminSelect>
+        </div>
+
         <AdminTableCard>
           {users.loading ? (
             <LoadingState label={t('adminNew.users.loading')} />
@@ -147,7 +222,9 @@ export default function UsersPage() {
                   </AdminTableRow>
                 </AdminTableHead>
                 <tbody>
-                  {rows.map((row) => (
+                  {rows.map((row) => {
+                    const lastLogin = row.last_login_at;
+                    return (
                     <AdminTableRow key={row.id}>
                       <AdminTableCell>
                         <div className="flex items-center gap-2">
@@ -165,12 +242,26 @@ export default function UsersPage() {
                         </Badge>
                       </AdminTableCell>
                       <AdminTableCell>
-                        <Badge tone={row.active ? 'success' : 'danger'}>
-                          {row.active ? t('adminNew.users.active') : t('adminNew.users.inactive')}
-                        </Badge>
+                        <div className="flex flex-col items-start gap-1">
+                          <Badge tone={row.active ? 'success' : 'danger'}>
+                            {row.active ? t('adminNew.users.active') : t('adminNew.users.inactive')}
+                          </Badge>
+                          {!lastLogin ? (
+                            <Badge tone="warning">{t('adminNew.users.neverLoggedIn')}</Badge>
+                          ) : null}
+                        </div>
                       </AdminTableCell>
                       <AdminTableCell>
-                        {row.last_login_at ? formatDate(row.last_login_at, dateLocale) : '—'}
+                        {lastLogin ? (
+                          <div className="flex flex-col">
+                            <span>{formatDate(lastLogin, dateLocale)}</span>
+                            {row.last_login_ip ? (
+                              <span className="text-xs text-navy-400">{row.last_login_ip}</span>
+                            ) : null}
+                          </div>
+                        ) : (
+                          '—'
+                        )}
                       </AdminTableCell>
                       <AdminTableCell>
                         <div className="flex flex-wrap justify-end gap-1">
@@ -212,7 +303,8 @@ export default function UsersPage() {
                         </div>
                       </AdminTableCell>
                     </AdminTableRow>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </AdminTable>
               <AdminTableFooter
@@ -242,8 +334,30 @@ export default function UsersPage() {
                 <option value="staff">staff</option>
                 <option value="manager">manager</option>
                 <option value="admin">admin</option>
+                <option value="employee">employee</option>
+                <option value="finance">finance</option>
               </select>
             </label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block text-sm">
+                <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.gender')}</span>
+                <select className="input-base w-full" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}>
+                  <option value="">{t('adminNew.users.gender.unspecified')}</option>
+                  <option value="male">{t('adminNew.users.gender.male')}</option>
+                  <option value="female">{t('adminNew.users.gender.female')}</option>
+                  <option value="other">{t('adminNew.users.gender.other')}</option>
+                </select>
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.language')}</span>
+                <select className="input-base w-full" value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })}>
+                  <option value="">{t('adminNew.users.localeDefault')}</option>
+                  <option value="nl">NL</option>
+                  <option value="en">EN</option>
+                  <option value="de">DE</option>
+                </select>
+              </label>
+            </div>
             </div>
           </AdminModalBody>
           <AdminModalFooter>

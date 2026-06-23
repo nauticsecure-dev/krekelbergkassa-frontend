@@ -40,6 +40,36 @@ import { useToast } from '@/components/ui/ToastProvider';
 
 type Row = Record<string, unknown>;
 
+// Trello #88: snake_case work-order type → human label (mirrors the list page).
+const TYPE_LABELS: Record<string, string> = {
+  maintenance: 'Onderhoud',
+  repair: 'Reparatie',
+  inspection: 'Inspectie',
+  winterizing: 'Winterklaar maken',
+  cleaning: 'Reiniging',
+  antifouling: 'Antifouling',
+  engine: 'Motor',
+  electrical: 'Elektra',
+  rigging: 'Tuigage',
+  hull: 'Romp',
+  warranty: 'Garantie',
+  other: 'Overig',
+};
+
+function workOrderTypeLabel(
+  type: string | undefined | null,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+  metaTypes?: Array<{ value: string; label: string }>
+): string {
+  if (!type) return '—';
+  const fromMeta = metaTypes?.find((o) => o.value === type)?.label;
+  if (fromMeta) return fromMeta;
+  const key = `adminNew.workOrders.types.${type}`;
+  const translated = t(key);
+  if (translated !== key) return translated;
+  return TYPE_LABELS[type] ?? type;
+}
+
 const str = (row: Row | undefined, ...keys: string[]): string => {
   if (!row) return '';
   for (const k of keys) {
@@ -81,6 +111,8 @@ export default function WorkOrderDetailPage() {
   const [photoFolder, setPhotoFolder] = React.useState('before');
   const photoInputRef = React.useRef<HTMLInputElement | null>(null);
   const docInputRef = React.useRef<HTMLInputElement | null>(null);
+  // Trello #88: activity panel tab (timeline vs. audit log).
+  const [activityTab, setActivityTab] = React.useState<'timeline' | 'audit'>('timeline');
 
   const data = useQuery([id], async () => {
     if (!id) throw new Error('Missing work order id');
@@ -92,6 +124,10 @@ export default function WorkOrderDetailPage() {
   });
   const audit = useQuery([id, 'audit'], () =>
     id ? workOrdersService.auditLog(id, { per_page: 25 }).catch(() => null) : Promise.resolve(null)
+  );
+  // Trello #88: dedicated activity timeline endpoint.
+  const timeline = useQuery([id, 'timeline'], () =>
+    id ? workOrdersService.timeline(id).catch(() => null) : Promise.resolve(null)
   );
 
   const assignM = useMutation(() => workOrdersService.assign(id, { assignee_id: assignee || null }));
@@ -113,7 +149,7 @@ export default function WorkOrderDetailPage() {
   const delDoc = useMutation((fileId: string) => workOrdersService.deleteDocument(id, fileId));
 
   const refetchAll = async () => {
-    await Promise.all([data.refetch(), audit.refetch()]);
+    await Promise.all([data.refetch(), audit.refetch(), timeline.refetch()]);
   };
 
   const onAddTime = async (e: React.FormEvent) => {
@@ -168,6 +204,11 @@ export default function WorkOrderDetailPage() {
   const timeEntries = arr(order, 'time_entries');
   const materials = arr(order, 'materials');
   const auditRows = (audit.data?.data ?? []) as unknown as Row[];
+  const timelineData = timeline.data as { data?: Row[] } | Row[] | null | undefined;
+  const timelineRows: Row[] = Array.isArray(timelineData)
+    ? timelineData
+    : (timelineData?.data ?? []);
+  const types = data.data?.metadata?.types ?? [];
   const boatId = str(order, 'boat_id');
   const assigneeName = str(order, 'assignee_name', 'technician_name');
   const totals = (order?.totals ?? {}) as Record<string, unknown>;
@@ -178,7 +219,7 @@ export default function WorkOrderDetailPage() {
     <>
       <AdminPageHeader
         title={`${t('adminNew.workOrders.title')} ${str(order, 'number') || id}`}
-        subtitle={str(order, 'type') || t('adminNew.workOrders.subtitle')}
+        subtitle={str(order, 'type') ? workOrderTypeLabel(str(order, 'type'), t, types) : t('adminNew.workOrders.subtitle')}
         rightSlot={
           order ? (
             <div className="flex flex-wrap gap-2">
@@ -268,7 +309,7 @@ export default function WorkOrderDetailPage() {
                 <div className="space-y-5">
                   <AdminDetailGrid
                     items={[
-                      { label: t('adminNew.workOrders.columns.type'), value: str(order, 'type') || '—' },
+                      { label: t('adminNew.workOrders.columns.type'), value: workOrderTypeLabel(str(order, 'type'), t, types) },
                       { label: t('adminNew.workOrders.columns.priority'), value: str(order, 'priority') || 'normal' },
                       {
                         label: t('adminNew.workOrders.columns.due'),
@@ -573,22 +614,99 @@ export default function WorkOrderDetailPage() {
               </AdminSectionCard>
             </div>
 
-            {/* Trello #88: activity / audit timeline */}
-            <AdminSectionCard title={t('adminNew.workOrders.detail.activity')} icon={History}>
-              {auditRows.length ? (
-                <ol className="space-y-2">
-                  {auditRows.map((a, i) => (
-                    <li key={str(a, 'id') || i} className="flex items-start gap-3 text-sm">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marine-400" />
-                      <div>
-                        <div className="text-navy-800">{str(a, 'action') || '—'}</div>
-                        <div className="text-xs text-navy-400">
-                          {(a.user as { name?: string } | undefined)?.name ?? ''}
-                          {str(a, 'created_at') ? ` · ${formatDate(str(a, 'created_at'), dateLocale)}` : ''}
-                        </div>
-                      </div>
-                    </li>
+            {/* Trello #88: activity panel — Timeline | Audit log tabs */}
+            <AdminSectionCard
+              title={t('adminNew.workOrders.detail.activity')}
+              icon={History}
+              action={
+                <div className="inline-flex rounded-lg border border-navy-100 bg-sand-50/60 p-0.5 text-xs font-semibold">
+                  {(['timeline', 'audit'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActivityTab(tab)}
+                      className={
+                        activityTab === tab
+                          ? 'rounded-md bg-white px-3 py-1.5 text-navy-900 shadow-sm'
+                          : 'rounded-md px-3 py-1.5 text-navy-500 hover:text-navy-800'
+                      }
+                    >
+                      {t(`adminNew.workOrders.detail.${tab === 'timeline' ? 'tabTimeline' : 'tabAudit'}`)}
+                    </button>
                   ))}
+                </div>
+              }
+            >
+              {activityTab === 'timeline' ? (
+                timeline.loading ? (
+                  <p className="py-4 text-sm text-navy-500">{t('adminNew.common.loading')}</p>
+                ) : timelineRows.length ? (
+                  <ol className="space-y-2">
+                    {timelineRows.map((a, i) => (
+                      <li key={str(a, 'id') || i} className="flex items-start gap-3 text-sm">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marine-400" />
+                        <div>
+                          <div className="text-navy-800">
+                            {str(a, 'title', 'action', 'description', 'event') || '—'}
+                          </div>
+                          {str(a, 'description') && str(a, 'description') !== str(a, 'title') ? (
+                            <div className="text-xs text-navy-500">{str(a, 'description')}</div>
+                          ) : null}
+                          <div className="text-xs text-navy-400">
+                            {(a.user as { name?: string } | undefined)?.name ?? str(a, 'user_name') ?? ''}
+                            {str(a, 'created_at', 'occurred_at')
+                              ? ` · ${formatDate(str(a, 'created_at', 'occurred_at'), dateLocale)}`
+                              : ''}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="py-4 text-sm text-navy-500">{t('adminNew.workOrders.detail.noActivity')}</p>
+                )
+              ) : audit.loading ? (
+                <p className="py-4 text-sm text-navy-500">{t('adminNew.common.loading')}</p>
+              ) : auditRows.length ? (
+                <ol className="space-y-2">
+                  {auditRows.map((a, i) => {
+                    const before = (a.before_data ?? null) as Record<string, unknown> | null;
+                    const after = (a.after_data ?? null) as Record<string, unknown> | null;
+                    const changedKeys = Array.from(
+                      new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})])
+                    ).filter((k) => JSON.stringify(before?.[k]) !== JSON.stringify(after?.[k]));
+                    const fmt = (v: unknown) =>
+                      v == null || v === '' ? '—' : typeof v === 'object' ? JSON.stringify(v) : String(v);
+                    return (
+                      <li key={str(a, 'id') || i} className="flex items-start gap-3 text-sm">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marine-400" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-navy-800">{str(a, 'action') || '—'}</div>
+                          <div className="text-xs text-navy-400">
+                            {(a.user as { name?: string } | undefined)?.name ?? ''}
+                            {str(a, 'created_at') ? ` · ${formatDate(str(a, 'created_at'), dateLocale)}` : ''}
+                          </div>
+                          {changedKeys.length ? (
+                            <details className="mt-1.5 rounded-lg border border-navy-100/70 bg-sand-50/40">
+                              <summary className="cursor-pointer select-none px-3 py-1.5 text-xs font-semibold text-marine-700">
+                                {t('adminNew.workOrders.detail.changes', { count: changedKeys.length })}
+                              </summary>
+                              <div className="divide-y divide-navy-100/70 px-3 pb-2 text-xs">
+                                {changedKeys.map((k) => (
+                                  <div key={k} className="flex flex-wrap items-baseline gap-x-2 py-1.5">
+                                    <span className="font-semibold text-navy-700">{k}</span>
+                                    <span className="text-rose-600 line-through">{fmt(before?.[k])}</span>
+                                    <span className="text-navy-300">→</span>
+                                    <span className="text-emerald-700">{fmt(after?.[k])}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ol>
               ) : (
                 <p className="py-4 text-sm text-navy-500">{t('adminNew.workOrders.detail.noActivity')}</p>

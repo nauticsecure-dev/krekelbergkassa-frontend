@@ -29,6 +29,7 @@ import { useShellDropdowns } from '@/components/shell/useShellDropdowns';
 import { PageHeaderStatsGrid, type PageHeaderStat } from '@/components/shell/PageHeaderStats';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { adminService, invoicesService, stallingService } from '@/lib/services';
+import { trackEvent } from '@/lib/track-event';
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
@@ -39,6 +40,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   useGlobalSearchShortcut(() => setSearchOpen(true));
 
   React.useEffect(() => setOpen(false), [pathname]);
+  // Trello #104 (Pillar 8): track admin navigation as journey events.
+  React.useEffect(() => {
+    trackEvent('page_changed', { metadata: { to: pathname } });
+  }, [pathname]);
   React.useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;

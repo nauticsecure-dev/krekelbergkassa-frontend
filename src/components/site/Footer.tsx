@@ -6,17 +6,24 @@ import { useIntl } from '@/i18n/IntlProvider';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { companyInfo } from '@/lib/company';
+import { useCms } from '@/components/cms/CmsProvider';
 
 export function Footer({ className }: { className?: string }) {
   const { t, locale } = useIntl();
+  const { getGlobal } = useCms();
   const year = new Date().getFullYear();
+
+  // Trello #112: global settings flow through here read-only. Editing happens
+  // via the CMS toolbar's Global modal; fall back to the existing values.
+  const tagline = getGlobal('footer.tagline', `${t('brand.tagline')}. Vakmanschap, planning en stalling sinds 1972.`);
+  const phone = getGlobal('company.phone', t('footer.phone'));
   return (
     <footer className={cn('mt-24 bg-navy-900 text-sand-100', className)}>
       <div className="container-wide grid gap-10 py-14 md:grid-cols-4">
         <div>
           <Logo variant="light" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-sand-100/80">
-            {t('brand.tagline')}. Vakmanschap, planning en stalling sinds 1972.
+            {tagline}
           </p>
         </div>
         <div>
@@ -55,7 +62,7 @@ export function Footer({ className }: { className?: string }) {
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-sand-100/70" />
               <a href={companyInfo.phoneHref} className="hover:text-white">
-                {t('footer.phone')}
+                {phone}
               </a>
             </li>
             <li className="flex items-center gap-2">

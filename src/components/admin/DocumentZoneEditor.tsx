@@ -17,6 +17,13 @@ export const ZONE_FIELDS = [
   'total',
   'iban',
   'line_items',
+  // Trello #81: additional extractable fields.
+  'payment_reference',
+  'currency',
+  'vat_number',
+  'cost_center',
+  'bank_account',
+  'document_number',
 ] as const;
 
 const ZONE_COLORS: Record<string, string> = {
@@ -29,6 +36,12 @@ const ZONE_COLORS: Record<string, string> = {
   total: '#059669',
   iban: '#475569',
   line_items: '#db2777',
+  payment_reference: '#0891b2',
+  currency: '#65a30d',
+  vat_number: '#ea580c',
+  cost_center: '#9333ea',
+  bank_account: '#0d9488',
+  document_number: '#4f46e5',
 };
 
 async function renderPdfFirstPage(file: File): Promise<string> {

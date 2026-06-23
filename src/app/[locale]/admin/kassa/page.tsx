@@ -33,6 +33,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import {
   AdminContent,
@@ -51,6 +52,7 @@ import {
   customersService,
   kassaService,
   pricingService,
+  productGroupsService,
   productsService,
 } from "@/lib/services";
 import { useMutation, useQuery } from "@/lib/hooks/useAsync";
@@ -86,6 +88,25 @@ const CATEGORY_PALETTE = [
   "#e11d48",
 ];
 
+// Trello #80: resolve a DB-provided Lucide icon name (e.g. "Anchor") to its
+// component. Returns null when the name is empty or unknown so callers can fall
+// back to the keyword-derived categoryMeta() icon.
+function resolveLucideIcon(icon?: string | null): LucideIcon | null {
+  if (!icon) return null;
+  const map = LucideIcons as unknown as Record<string, LucideIcon>;
+  // Accept both "Anchor" and "anchor"/"anchor-icon" style strings.
+  const pascal = icon
+    .replace(/[-_\s]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join("");
+  const candidate = map[icon] ?? map[pascal];
+  return typeof candidate === "function" || (candidate && "render" in (candidate as object))
+    ? (candidate as LucideIcon)
+    : null;
+}
+
 function categoryMeta(
   name: string,
   index: number,
@@ -115,6 +136,8 @@ export default function KassaPage() {
     locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
 
   const [query, setQuery] = React.useState("");
+  // Trello #80: fast-scan mode (skip confirmation/sound; sent to scan API).
+  const [fastScan, setFastScan] = React.useState(false);
   const [activeCategory, setActiveCategory] = React.useState("");
   const [sortBy, setSortBy] = React.useState<SortKey>("recommended");
   const [customerId, setCustomerId] = React.useState("");
@@ -236,6 +259,18 @@ export default function KassaPage() {
   const bundlesQuery = useQuery(["kassa-bundles"], () =>
     productsService.bundles().catch(() => []),
   );
+  // Trello #80: product groups → category chip color + DB icon.
+  const groupsQuery = useQuery(["kassa-product-groups"], () =>
+    productGroupsService.list().catch(() => []),
+  );
+  // Trello #86: bulk product heatmap (times sold today/week) for tile badges.
+  const productStatsQuery = useQuery(["kassa-product-stats"], () =>
+    productsService.statsBulk().catch(() => []),
+  );
+  // Trello #80: recently-used seeded from the backend.
+  const recentQuery = useQuery(["kassa-recent-products"], () =>
+    productsService.recent({ per_page: 20 }).catch(() => []),
+  );
   const [favoriteIds, setFavoriteIds] = React.useState<Set<string>>(new Set());
   const [recentIds, setRecentIds] = React.useState<string[]>([]);
 
@@ -247,7 +282,8 @@ export default function KassaPage() {
     if (favs && favs.length) setFavoriteIds(new Set(favs));
   }, [productsQuery.data?.data]);
 
-  // Recently-used is tracked per device in localStorage (no extra endpoint).
+  // Recently-used is tracked per device in localStorage (offline-friendly) and
+  // seeded from the backend (Trello #80: GET /products/recent) on mount.
   React.useEffect(() => {
     try {
       const raw = localStorage.getItem("kassa-recent-products");
@@ -256,6 +292,42 @@ export default function KassaPage() {
       /* ignore */
     }
   }, []);
+  // Merge backend recent ids in front of the local list once they load.
+  React.useEffect(() => {
+    const recentList = (recentQuery.data ?? []) as Product[];
+    const backend = recentList.map((p) => p.id).filter(Boolean);
+    if (!backend.length) return;
+    setRecentIds((prev) => {
+      const merged = [...backend, ...prev.filter((id) => !backend.includes(id))].slice(0, 12);
+      try {
+        localStorage.setItem("kassa-recent-products", JSON.stringify(merged));
+      } catch {
+        /* ignore */
+      }
+      return merged;
+    });
+  }, [recentQuery.data]);
+
+  // Trello #80: fast-scan toggle persisted in localStorage.
+  React.useEffect(() => {
+    try {
+      setFastScan(localStorage.getItem("kassa_fast_scan") === "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const toggleFastScan = () => {
+    setFastScan((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("kassa_fast_scan", next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
+
   const pushRecent = React.useCallback((productId?: string) => {
     if (!productId) return;
     setRecentIds((prev) => {
@@ -270,6 +342,8 @@ export default function KassaPage() {
       }
       return next;
     });
+    // Trello #80: record server-side too (best effort).
+    void productsService.recordRecent(productId).catch(() => {});
   }, []);
 
   const toggleFavorite = (productId: string) => {
@@ -302,11 +376,75 @@ export default function KassaPage() {
     () => pricingQuery.data?.data ?? [],
     [pricingQuery.data?.data],
   );
+
+  // Trello #80: lookup product groups by name/code → resolve chip color + icon.
+  const groupByName = React.useMemo(() => {
+    const map = new Map<string, { color?: string | null; icon?: string | null }>();
+    ((groupsQuery.data ?? []) as Array<Record<string, unknown>>).forEach((g) => {
+      const color = (g.color ?? g.display_color) as string | null | undefined;
+      const icon = (g.icon ?? g.display_icon) as string | null | undefined;
+      const entry = { color, icon };
+      const name = g.name ? String(g.name).toLowerCase() : "";
+      const code = g.code ? String(g.code).toLowerCase() : "";
+      if (name) map.set(name, entry);
+      if (code) map.set(code, entry);
+    });
+    return map;
+  }, [groupsQuery.data]);
+
+  // Trello #86: product_id → times sold (today/week) for the heatmap badge.
+  const heatmap = React.useMemo(() => {
+    const map = new Map<string, { today: number; week: number }>();
+    const rows = (productStatsQuery.data ?? []) as Array<Record<string, unknown>>;
+    rows.forEach((row) => {
+      const id = String(row.product_id ?? row.id ?? "");
+      if (!id) return;
+      const today = Number(
+        row.times_sold_today ?? row.sold_today ?? row.today ?? 0,
+      );
+      const week = Number(
+        row.times_sold_week ?? row.sold_week ?? row.week ?? row.times_sold ?? 0,
+      );
+      map.set(id, {
+        today: Number.isFinite(today) ? today : 0,
+        week: Number.isFinite(week) ? week : 0,
+      });
+    });
+    return map;
+  }, [productStatsQuery.data]);
+  const HEAT_THRESHOLD = 3;
   // Trello #62: currently-selected customer for the picker display.
   const selectedCustomer = React.useMemo(
     () => (customersQuery.data?.data ?? []).find((c) => c.id === customerId) ?? null,
     [customersQuery.data, customerId],
   );
+
+  // Trello #107: when opened from a stalling contract's "pay at register" route,
+  // pre-fill the cart with the locked deposit line and lock the customer.
+  const [prefillLocked, setPrefillLocked] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const p = new URLSearchParams(window.location.search);
+    const amount = p.get("prefill_amount");
+    if (!amount) return;
+    const cents = Math.round(Number(amount));
+    if (!Number.isFinite(cents) || cents <= 0) return;
+    const description =
+      p.get("description") || t("adminNew.stalling.invoiceLabels.deposit");
+    const contractId = p.get("contract_id") ?? "";
+    if (p.get("customer_id")) setCustomerId(p.get("customer_id") as string);
+    setCart([
+      {
+        id: `prefill-${contractId || "deposit"}`,
+        description,
+        quantity: 1,
+        unit_price_cents: cents,
+        vat_rate: 21,
+      },
+    ]);
+    setPrefillLocked(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const categories = React.useMemo(() => {
     const set = new Map<
@@ -317,10 +455,20 @@ export default function KassaPage() {
       const key = (p.category ?? p.group?.name ?? "").trim();
       if (!key || set.has(key.toLowerCase())) return;
       const meta = categoryMeta(key, set.size);
-      set.set(key.toLowerCase(), { label: key, ...meta });
+      // Trello #80: prefer the matching product group's color + DB icon.
+      const group = groupByName.get(key.toLowerCase());
+      const dbIcon = resolveLucideIcon(
+        group?.icon ?? (p.group as { icon?: string } | null | undefined)?.icon,
+      );
+      const groupColor = group?.color ?? p.group?.color ?? p.color ?? null;
+      set.set(key.toLowerCase(), {
+        label: key,
+        icon: dbIcon ?? meta.icon,
+        accent: groupColor || meta.accent,
+      });
     });
     return Array.from(set.values());
-  }, [allProducts]);
+  }, [allProducts, groupByName]);
 
   const matchingRule = React.useMemo(() => {
     if (!numericInput) return null;
@@ -503,7 +651,11 @@ export default function KassaPage() {
     if (!code) return;
     setScanning(true);
     try {
-      const res = await productsService.scan({ barcode: code, source });
+      const res = await productsService.scan({
+        barcode: code,
+        source,
+        fast_scan: fastScan,
+      });
       if (res.matched && res.product) {
         addProduct(res.product as Product);
         if (source !== "camera") setQuery("");
@@ -985,9 +1137,37 @@ export default function KassaPage() {
               </Button>
             </div>
           </div>
-          <p className="text-xs text-navy-400">
-            {t("adminNew.kassa.keyboardHints")}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-navy-400">
+              {t("adminNew.kassa.keyboardHints")}
+            </p>
+            {/* Trello #80: fast-scan toggle (persisted; sent to scan API). */}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={fastScan}
+              onClick={toggleFastScan}
+              className="inline-flex items-center gap-2 text-xs font-semibold text-navy-600"
+            >
+              <span
+                className={cn(
+                  "relative inline-flex h-5 w-9 items-center rounded-full transition",
+                  fastScan ? "bg-marine-500" : "bg-navy-200",
+                )}
+              >
+                <span
+                  className={cn(
+                    "inline-block h-4 w-4 transform rounded-full bg-white shadow transition",
+                    fastScan ? "translate-x-4" : "translate-x-0.5",
+                  )}
+                />
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Zap className="h-3.5 w-3.5 text-gold-500" />
+                {t("adminNew.kassa.fastScan")}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* ----------------------------- LEFT: catalog ---------------------------- */}
@@ -1218,8 +1398,35 @@ export default function KassaPage() {
                       ? matchingRule
                       : null;
                   const fav = favoriteIds.has(product.id);
+                  // Trello #86: heatmap badge for hot products.
+                  const heat = heatmap.get(product.id);
+                  const heatCount = heat ? heat.today || heat.week : 0;
+                  const isHot = heatCount >= HEAT_THRESHOLD;
+                  // Trello #80: small meta line (VAT % + group name).
+                  const metaBits = [
+                    product.vat_rate ? `${product.vat_rate}%` : null,
+                    product.group?.name ?? null,
+                  ].filter(Boolean) as string[];
                   return (
                     <div key={product.id} className="relative h-full">
+                      {isHot ? (
+                        <span
+                          className="absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow"
+                          title={t("adminNew.kassa.hotProduct", { count: heatCount })}
+                        >
+                          <Zap className="h-2.5 w-2.5" />
+                          {heatCount}
+                        </span>
+                      ) : null}
+                      {/* Trello #80: quick edit pencil → product detail */}
+                      <Link
+                        href={`/${locale}/admin/producten/${product.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={t("adminNew.kassa.editProduct")}
+                        className="absolute right-1.5 top-1.5 z-10 rounded-full bg-white/80 p-1 text-navy-400 transition hover:scale-110 hover:text-marine-600"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Link>
                       <button
                         type="button"
                         aria-pressed={fav}
@@ -1239,6 +1446,7 @@ export default function KassaPage() {
                       <CatalogTile
                         title={product.name}
                         subtitle={product.code}
+                        meta={metaBits.length ? metaBits.join(" · ") : undefined}
                         price={formatCurrency(
                           ruleMatch
                             ? ruleMatch.price_incl_vat_euros
@@ -1410,6 +1618,11 @@ export default function KassaPage() {
               </div>
             </div>
 
+            {prefillLocked ? (
+              <div className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-800">
+                {t("adminNew.stalling.invoiceLabels.deposit")} · {t("adminNew.stalling.toasts.kassaOpened")}
+              </div>
+            ) : null}
             <div className="max-h-[340px] space-y-2 overflow-y-auto scrollbar-thin p-3">
               {cart.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-3 py-8 text-center text-sm text-navy-500">
@@ -1818,6 +2031,12 @@ export default function KassaPage() {
             ).toLowerCase();
             const payUrl =
               qrSession?.checkout_url ?? qrSession?.qr_payload ?? null;
+            // Trello #72: prefer the server-rendered QR image when present.
+            const qrImg =
+              qrSession?.qr_code_url ??
+              (payUrl
+                ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(payUrl)}`
+                : null);
             const paid = status === "paid" || status === "completed";
             const expired = status === "expired";
             const failed =
@@ -1850,6 +2069,16 @@ export default function KassaPage() {
               if (!qrSession?.session_id) return;
               try {
                 await kassaService.sendPaymentLink(qrSession.session_id);
+                push({ tone: "success", title: t("adminNew.kassa.qrLinkSent") });
+              } catch (err) {
+                push({ tone: "error", title: t("adminNew.common.operationFailed"), message: getApiErrorMessage(err) });
+              }
+            };
+            // Trello #72: send the payment link to the customer over WhatsApp.
+            const sendWhatsApp = async () => {
+              if (!qrSession?.session_id) return;
+              try {
+                await kassaService.sendPaymentLinkWhatsapp(qrSession.session_id);
                 push({ tone: "success", title: t("adminNew.kassa.qrLinkSent") });
               } catch (err) {
                 push({ tone: "error", title: t("adminNew.common.operationFailed"), message: getApiErrorMessage(err) });
@@ -1906,7 +2135,7 @@ export default function KassaPage() {
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(payUrl)}`}
+                      src={qrImg ?? ''}
                       alt="Mollie QR"
                       className="mx-auto rounded-lg border border-navy-100"
                     />
@@ -1941,21 +2170,14 @@ export default function KassaPage() {
                           {t("adminNew.kassa.qrOpen")}
                         </Button>
                       </a>
-                      <a
-                        href={`https://wa.me/?text=${encodeURIComponent(
-                          `${t("adminNew.kassa.qrWhatsappText")} ${payUrl}`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        leftIcon={<MessageCircle className="h-3.5 w-3.5" />}
+                        onClick={() => void sendWhatsApp()}
                       >
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          leftIcon={<MessageCircle className="h-3.5 w-3.5" />}
-                        >
-                          {t("adminNew.kassa.qrWhatsapp")}
-                        </Button>
-                      </a>
+                        {t("adminNew.kassa.qrWhatsapp")}
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
@@ -2289,6 +2511,7 @@ function CategoryTab({
 function CatalogTile({
   title,
   subtitle,
+  meta,
   price,
   accent,
   selected,
@@ -2298,6 +2521,7 @@ function CatalogTile({
 }: {
   title: string;
   subtitle?: string;
+  meta?: string;
   price: string;
   accent: string;
   selected?: boolean;
@@ -2359,13 +2583,25 @@ function CatalogTile({
           />
         )}
       </div>
-      <div
-        className={cn(
-          "text-base font-bold",
-          selected ? "text-white" : "text-marine-700",
-        )}
-      >
-        {price}
+      <div>
+        {meta ? (
+          <div
+            className={cn(
+              "mb-0.5 truncate text-[11px]",
+              selected ? "text-white/80" : "text-navy-400",
+            )}
+          >
+            {meta}
+          </div>
+        ) : null}
+        <div
+          className={cn(
+            "text-base font-bold",
+            selected ? "text-white" : "text-marine-700",
+          )}
+        >
+          {price}
+        </div>
       </div>
     </button>
   );

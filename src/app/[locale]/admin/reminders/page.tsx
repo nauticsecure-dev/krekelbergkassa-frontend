@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Plus,
   PlayCircle,
+  Send,
   Sparkles,
   XCircle,
 } from 'lucide-react';
@@ -37,6 +38,7 @@ import { formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { useAuth } from '@/lib/auth-context';
 
 // Trello #90: the summary endpoint now nests counts, e.g.
 // { today: { invoice_due, reminders_due }, upcoming: {...}, ... }.
@@ -50,6 +52,20 @@ const bucket = (v: unknown): number => {
     );
   }
   return 0;
+};
+
+// Trello #90: the rule list previously rendered raw `entity_type` / `trigger_type`
+// strings (e.g. "stalling_contract"). Map them to localized labels via the
+// `adminNew.reminders.entityLabels.{type}` / `triggerLabels.{type}` i18n keys.
+// Both stalling_contract and storage_contract collapse to one label.
+const ENTITY_LABEL_KEYS: Record<string, string> = {
+  stalling_contract: 'storage_contract',
+  storage_contract: 'storage_contract',
+  contract: 'storage_contract',
+  invoice: 'invoice',
+  work_order: 'work_order',
+  insurance: 'insurance',
+  planning: 'planning',
 };
 
 const emptyRule = {
@@ -67,11 +83,31 @@ const emptyRule = {
 export default function RemindersPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
+  const { user } = useAuth();
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
 
   const [showRule, setShowRule] = React.useState(false);
   const [rule, setRule] = React.useState(emptyRule);
   const [statusFilter, setStatusFilter] = React.useState('');
+
+  // Test-send modal state (Trello #90).
+  const [testRuleId, setTestRuleId] = React.useState<string | null>(null);
+  const [testEmail, setTestEmail] = React.useState('');
+  const [testEntityId, setTestEntityId] = React.useState('');
+
+  // Localize raw entity_type / trigger_type strings for the rule list. Falls back
+  // to a humanized version of the raw value when no i18n key matches.
+  const humanize = (raw: string) =>
+    raw ? raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : '';
+  const entityLabel = (raw: string) => {
+    const key = ENTITY_LABEL_KEYS[raw];
+    const label = key ? t(`adminNew.reminders.entityLabels.${key}`) : '';
+    return label && !label.startsWith('adminNew.') ? label : humanize(raw);
+  };
+  const triggerLabel = (raw: string) => {
+    const label = raw ? t(`adminNew.reminders.triggerLabels.${raw}`) : '';
+    return label && !label.startsWith('adminNew.') ? label : humanize(raw);
+  };
 
   const summary = useQuery(['reminders-summary'], () => adminService.remindersSummary());
   const reminders = useQuery(['reminders-list', statusFilter], () =>
@@ -90,6 +126,10 @@ export default function RemindersPage() {
   );
   const deleteRule = useMutation((id: string) => adminService.deleteReminderRule(id));
   const previewRule = useMutation((id: string) => adminService.previewReminderRule(id));
+  const testSendRule = useMutation(
+    (args: { id: string; payload: { recipient_email: string; entity_id?: string } }) =>
+      adminService.testSendReminderRule(args.id, args.payload)
+  );
 
   const refetchAll = async () => {
     await Promise.all([summary.refetch(), reminders.refetch()]);
@@ -138,6 +178,41 @@ export default function RemindersPage() {
       const subject = (res as { subject?: string; title?: string }).subject ?? (res as { title?: string }).title;
       const body = (res as { body?: string; message?: string }).body ?? (res as { message?: string }).message;
       push({ tone: 'info', title: subject || t('adminNew.reminders.previewTitle'), message: body });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
+  const openTestSend = (id: string) => {
+    setTestRuleId(id);
+    setTestEmail(user?.email ?? '');
+    setTestEntityId('');
+  };
+
+  const onTestSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testRuleId) return;
+    try {
+      const res = await testSendRule.mutate({
+        id: testRuleId,
+        payload: {
+          recipient_email: testEmail.trim(),
+          entity_id: testEntityId.trim() || undefined,
+        },
+      });
+      const data = res as {
+        subject?: string;
+        channel_used?: string;
+        recipient?: string;
+        status?: string;
+        note?: string;
+      };
+      push({
+        tone: 'success',
+        title: t('adminNew.reminders.testSend.sent'),
+        message: data.subject || data.note,
+      });
+      setTestRuleId(null);
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
     }
@@ -330,7 +405,7 @@ export default function RemindersPage() {
                       {String(rl.title_template ?? rl.reminder_type ?? rl.entity_type ?? '—')}
                     </div>
                     <div className="text-xs text-navy-500">
-                      {String(rl.entity_type ?? '')} · {String(rl.trigger_type ?? '')}
+                      {entityLabel(String(rl.entity_type ?? ''))} · {triggerLabel(String(rl.trigger_type ?? ''))}
                       {rl.days_before != null ? ` · ${rl.days_before}d before` : ''}
                       {rl.days_after != null ? ` · ${rl.days_after}d after` : ''} · {String(rl.channel ?? '')}
                     </div>
@@ -348,6 +423,14 @@ export default function RemindersPage() {
                       onClick={() => void onPreviewRule(String(rl.id))}
                     >
                       {t('adminNew.reminders.preview')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Send className="h-3.5 w-3.5" />}
+                      onClick={() => openTestSend(String(rl.id))}
+                    >
+                      {t('adminNew.reminders.testSend.button')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -484,6 +567,43 @@ export default function RemindersPage() {
             </Button>
             <Button type="submit" variant="gold" disabled={createRule.loading}>
               {t('adminNew.common.save')}
+            </Button>
+          </AdminModalFooter>
+        </form>
+      </Modal>
+
+      <Modal open={testRuleId !== null} onClose={() => setTestRuleId(null)} size="sm">
+        <form onSubmit={onTestSend}>
+          <AdminModalHeader
+            title={t('adminNew.reminders.testSend.title')}
+            subtitle={t('adminNew.reminders.testSend.subtitle')}
+          />
+          <AdminModalBody>
+            <Input
+              label={t('adminNew.reminders.testSend.email')}
+              type="email"
+              required
+              value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+            />
+            <Input
+              label={t('adminNew.reminders.testSend.entityId')}
+              value={testEntityId}
+              onChange={(e) => setTestEntityId(e.target.value)}
+              placeholder={t('adminNew.reminders.testSend.entityIdHint')}
+            />
+          </AdminModalBody>
+          <AdminModalFooter>
+            <Button type="button" variant="ghost" onClick={() => setTestRuleId(null)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="gold"
+              leftIcon={<Send className="h-4 w-4" />}
+              disabled={testSendRule.loading || !testEmail.trim()}
+            >
+              {t('adminNew.reminders.testSend.submit')}
             </Button>
           </AdminModalFooter>
         </form>

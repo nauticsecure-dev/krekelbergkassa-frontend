@@ -299,25 +299,28 @@ export function PortalModalFooter({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function AppointmentStatusBadge({ status }: { status: string }) {
+export function AppointmentStatusBadge({ status, statusGeneric, tooltip }: { status: string; statusGeneric?: string | null; tooltip?: string }) {
   const { t } = useIntl();
-  const normalized = status.toLowerCase();
+  // Trello #99: prefer the coarse status_generic bucket for colour when present;
+  // the raw status string is exposed as a tooltip for yard staff who need detail.
+  const normalized = (statusGeneric || status || '').toLowerCase();
+  const title = tooltip ?? status;
   if (normalized.includes('confirm') || normalized.includes('approved')) {
-    return <Badge tone="success" dot>{t('adminNew.portal.appointments.statusConfirmed')}</Badge>;
+    return <Badge tone="success" dot><span title={title}>{t('adminNew.portal.appointments.statusConfirmed')}</span></Badge>;
   }
   if (normalized.includes('complete') || normalized.includes('done')) {
-    return <Badge tone="marine" dot>{t('adminNew.portal.appointments.statusCompleted')}</Badge>;
+    return <Badge tone="marine" dot><span title={title}>{t('adminNew.portal.appointments.statusCompleted')}</span></Badge>;
   }
-  if (normalized.includes('cancel')) {
-    return <Badge tone="sand">{t('adminNew.portal.appointments.statusCancelled')}</Badge>;
+  if (normalized.includes('cancel') || normalized.includes('no_show')) {
+    return <Badge tone="sand"><span title={title}>{t('adminNew.portal.appointments.statusCancelled')}</span></Badge>;
   }
-  if (normalized.includes('progress') || normalized.includes('started')) {
-    return <Badge tone="gold" dot>{t('adminNew.portal.appointments.statusInProgress')}</Badge>;
+  if (normalized.includes('progress') || normalized.includes('started') || normalized.includes('water') || normalized.includes('wash')) {
+    return <Badge tone="gold" dot><span title={title}>{t('adminNew.portal.appointments.statusInProgress')}</span></Badge>;
   }
-  if (normalized.includes('pending') || normalized.includes('request')) {
-    return <Badge tone="warning" dot>{t('adminNew.portal.appointments.statusPending')}</Badge>;
+  if (normalized.includes('pending') || normalized.includes('request') || normalized.includes('review')) {
+    return <Badge tone="warning" dot><span title={title}>{t('adminNew.portal.appointments.statusPending')}</span></Badge>;
   }
-  return <Badge tone="navy">{status}</Badge>;
+  return <Badge tone="navy"><span title={title}>{status}</span></Badge>;
 }
 
 export function ContractStatusBadge({ status }: { status: string }) {

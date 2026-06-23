@@ -508,7 +508,9 @@
     "ctaContact": "Kontakt",
     "editService": "Service bearbeiten",
     "onRequest": "Auf Anfrage",
-    "from": "ab"
+    "from": "ab",
+    "overviewTitle": "Unsere Leistungen und Preise",
+    "overviewSubtitle": "Aktuelle Preise pro Längenklasse, direkt aus unserem System."
   },
   "verify": {
     "verifying": "Sie werden angemeldet…",
@@ -1154,7 +1156,9 @@
       "deleted": "Entfernt",
       "open": "Öffnen",
       "clear": "Löschen",
-      "all": "Alle"
+      "all": "Alle",
+      "yes": "Ja",
+      "no": "Nein"
     },
     "dashboard": {
       "title": "Betrieb",
@@ -1198,6 +1202,20 @@
         "title": "Rechner",
         "subtitle": "Schnelle Preisberechnung für Marina-Dienstleistungen",
         "selectService": "Dienst auswählen"
+      },
+      "recentActivity": {
+        "title": "Letzte Aktivität",
+        "subtitle": "Die neuesten Ereignisse im System.",
+        "justNow": "Gerade eben",
+        "minutesAgo": "vor {count} Min.",
+        "hoursAgo": "vor {count} Std.",
+        "daysAgo": "vor {count} Tagen"
+      },
+      "cashDifference": {
+        "title": "Kassendifferenz heute",
+        "subtitle": "Differenz aus dem letzten Kassenabschluss.",
+        "none": "Heute noch kein Kassenabschluss.",
+        "openClosure": "Zum Kassenabschluss"
       }
     },
     "customers": {
@@ -1238,10 +1256,41 @@
         "created": "Kunde erstellt",
         "createFailed": "Erstellung fehlgeschlagen",
         "blocked": "Kunde gesperrt",
-        "unblocked": "Kunde entsperrt"
+        "unblocked": "Kunde entsperrt",
+        "magicLinkSent": "Login-Link gesendet",
+        "magicLinkFailed": "Login-Link konnte nicht gesendet werden"
       },
       "blockReason": "Grund (optional)",
-      "blockReasonPlaceholder": "Warum wird dieser Kunde gesperrt?"
+      "blockReasonPlaceholder": "Warum wird dieser Kunde gesperrt?",
+      "sendLoginLink": "Login-Link senden",
+      "neverLoggedIn": "Nie angemeldet",
+      "blockedOn": "Gesperrt am {date}",
+      "cityPlaceholder": "Stadt",
+      "countryPlaceholder": "Land",
+      "lastLoginAny": "Alle Anmeldungen",
+      "lastLoginRecent": "Kürzlich angemeldet",
+      "lastLoginNever": "Nie angemeldet",
+      "localeDefault": "Standard",
+      "fields": {
+        "gender": "Geschlecht",
+        "preferredLocale": "Bevorzugte Sprache"
+      },
+      "gender": {
+        "unspecified": "Keine Angabe",
+        "male": "Männlich",
+        "female": "Weiblich",
+        "other": "Divers"
+      },
+      "address": {
+        "title": "Adresse",
+        "search": "Adresse suchen",
+        "searchPlaceholder": "Tippen, um eine Adresse zu suchen",
+        "street": "Straße",
+        "houseNumber": "Hausnummer",
+        "postalCode": "Postleitzahl",
+        "city": "Stadt",
+        "country": "Land"
+      }
     },
     "auth": {
       "portalSessionActive": "Portal-Sitzung aktiv",
@@ -1253,7 +1302,12 @@
       "togglePassword": "Passwortsichtbarkeit umschalten",
       "passwordPlaceholder": "••••••••",
       "sendMagicLink": "Magic-Link senden",
-      "accountCreatedByAdmin": "Konten werden durch einen Administrator erstellt."
+      "accountCreatedByAdmin": "Konten werden durch einen Administrator erstellt.",
+      "mfaTitle": "Zwei-Faktor-Verifizierung",
+      "mfaSubtitle": "Geben Sie den Code aus Ihrer Authenticator-App oder einen Wiederherstellungscode ein.",
+      "mfaCode": "Verifizierungscode",
+      "mfaVerify": "Verifizieren",
+      "mfaFailed": "Code ungültig oder abgelaufen"
     },
     "sidebar": {
       "calculator": "Rechner",
@@ -1266,7 +1320,11 @@
       "timeline": "Zeitleiste",
       "sales": "Verkäufe",
       "suppliers": "Lieferanten",
-      "accounting": "Buchhaltung"
+      "accounting": "Buchhaltung",
+      "bundles": "Bundles",
+      "security": "Sicherheit",
+      "apiCredentials": "API-Zugangsdaten",
+      "incidents": "Vorfälle"
     },
     "sales": {
       "title": "Verkäufe",
@@ -1311,6 +1369,13 @@
         "supplier_ocr": "Lieferant / OCR",
         "accounting": "Buchhaltung",
         "system": "System"
+      },
+      "presets": {
+        "all": "Alle",
+        "myTasks": "Meine Aufgaben",
+        "finance": "Finanzen",
+        "storage": "Lager",
+        "planning": "Planung"
       }
     },
     "productGroups": {
@@ -1342,7 +1407,13 @@
         "active": "Aktiv",
         "revenueAccount": "Erlöskonto",
         "costCenter": "Kostenstelle",
-        "profitCenter": "Profitcenter"
+        "profitCenter": "Profitcenter",
+        "iconNone": "Kein Symbol",
+        "publicSection": "Öffentlich",
+        "isPublic": "Auf Website anzeigen",
+        "slug": "URL-Name (Slug)",
+        "publicDescription": "Öffentliche Beschreibung",
+        "publicDescriptionPlaceholder": "Text, der auf der Website angezeigt wird"
       },
       "toasts": {
         "created": "Gruppe erstellt",
@@ -1442,13 +1513,33 @@
         "activeContracts": "Aktive Verträge",
         "boatsInStorage": "Boote im Lager",
         "expiring30": "Läuft in 30 Tagen ab",
-        "openBalance": "Offener Saldo"
+        "openBalance": "Offener Saldo",
+        "avgDuration": "Durchschn. Dauer",
+        "days": "{count} Tage",
+        "byContractType": "Umsatz nach Vertragstyp"
       },
       "topProductsTitle": "Top-Produkte",
       "slowProductsTitle": "Langsame Produkte",
       "marginByGroupTitle": "Marge per productgroep",
       "marginRevenue": "Omzet",
-      "marginCost": "Inkoop"
+      "marginCost": "Inkoop",
+      "revenueOverTimeTitle": "Umsatz im Zeitverlauf",
+      "agingOverdueTitle": "Überfällige Rechnungen",
+      "agingReminder": "Erinnerung",
+      "agingReminderSent": "Erinnerung gesendet",
+      "agingMarkPaid": "Bezahlt",
+      "agingMarkedPaid": "Als bezahlt markiert",
+      "customersByOpen": "Kunden nach offenem Saldo",
+      "customersOverdue": "Überfällige Kunden",
+      "workOrders": {
+        "title": "Arbeitsaufträge",
+        "period": "Zeitraum",
+        "open": "Offen",
+        "overdue": "Überfällig",
+        "completed": "Abgeschlossen",
+        "laborHours": "Arbeitsstunden",
+        "materials": "Materialumsatz"
+      }
     },
     "cashClose": {
       "title": "Tagesabschluss",
@@ -1487,7 +1578,8 @@
       "draft": "Entwurf",
       "open": "Offen",
       "failed": "Fehlgeschlagen",
-      "expiring": "Läuft ab"
+      "expiring": "Läuft ab",
+      "checkedOut": "Ausgecheckt"
     },
     "audit": {
       "title": "Audit",
@@ -1525,7 +1617,9 @@
         "type": "Typ",
         "length": "Länge",
         "location": "Standort",
-        "status": "Status"
+        "status": "Status",
+        "lastActivity": "Letzte Aktivität",
+        "currentStorageLocation": "Aktueller Lagerort"
       },
       "fields": {
         "lengthCm": "Länge (cm)",
@@ -1537,7 +1631,17 @@
         "engineBrand": "Motormarke",
         "engineType": "Motortyp",
         "mmsi": "MMSI",
-        "insuranceNumber": "Versicherungsnr."
+        "insuranceNumber": "Versicherungsnr.",
+        "hullMaterial": "Rumpfmaterial",
+        "draftCm": "Tiefgang (cm)",
+        "weightKg": "Gewicht (kg)",
+        "fuelType": "Kraftstoffart",
+        "enginePower": "Motorleistung",
+        "serialNumbers": "Seriennummern",
+        "callSign": "Rufzeichen",
+        "insuranceCompany": "Versicherungsgesellschaft",
+        "insuranceExpiry": "Versicherung läuft ab am",
+        "registrationNumber": "Registrierungsnummer"
       },
       "type": {
         "motor": "Motor",
@@ -1573,7 +1677,11 @@
       },
       "stats": {
         "daysInStorage": "Tage im Lager",
-        "revenue": "Umsatz"
+        "revenue": "Umsatz",
+        "totalBoats": "Boote gesamt",
+        "boatsInStorage": "Eingelagert",
+        "activeWorkOrders": "Aktive Arbeitsaufträge",
+        "openBalance": "Offener Saldo"
       },
       "photoFolders": {
         "arrival": "Ankunft",
@@ -1606,7 +1714,9 @@
       "statusAll": "Alle Status",
       "statusInStorage": "Im Lager",
       "statusWorkInProgress": "In Arbeit",
-      "statusRegistered": "Registriert"
+      "statusRegistered": "Registriert",
+      "insuranceExpired": "Versicherung abgelaufen",
+      "insuranceExpiringSoon": "Versicherung läuft in {days} Tagen ab"
     },
     "kassa": {
       "title": "Kasse",
@@ -1760,7 +1870,9 @@
       "searchAddress": "Adres zoeken",
       "searchAddressPlaceholder": "Begin met typen voor Google Maps suggesties…",
       "customerNotes": "Notities",
-      "customerNotesPlaceholder": "Interne opmerkingen over deze klant"
+      "customerNotesPlaceholder": "Interne opmerkingen over deze klant",
+      "editProduct": "Produkt bearbeiten",
+      "hotProduct": "{count}× verkauft"
     },
     "stalling": {
       "title": "Lagerung",
@@ -1785,7 +1897,8 @@
         "paidUntil": "Bezahlt bis",
         "openBalance": "Offener Saldo",
         "location": "Standort",
-        "status": "Status"
+        "status": "Status",
+        "bok": "Box"
       },
       "invoice": "Rechnung",
       "cancel": "Stornieren",
@@ -1819,7 +1932,21 @@
         "depositPct": "Anzahlung (%)",
         "sendContractEmail": "Vertrag an den Kunden senden",
         "bokNumber": "Bock-/Liegeplatznummer",
-        "bokNumberPlaceholder": "z. B. BOK-12"
+        "bokNumberPlaceholder": "z. B. BOK-12",
+        "notes": "Notizen",
+        "changeNote": "Grund der Änderung",
+        "changeNotePlaceholder": "Z. B. Kunde wünschte Änderung",
+        "billingType": "Abrechnung",
+        "priceTotal": "Gesamtpreis (€)",
+        "widthCm": "Breite (cm)",
+        "draftCm": "Tiefgang (cm)",
+        "buildYear": "Baujahr",
+        "registration": "Registrierung",
+        "street": "Straße",
+        "houseNumber": "Hausnummer",
+        "postalCode": "Postleitzahl",
+        "city": "Stadt",
+        "companyName": "Firmenname (optional)"
       },
       "quickEdit": {
         "title": "Vertrag aktualisieren",
@@ -1829,7 +1956,9 @@
         "locationPlaceholder": "z. B. Halle A · Reihe 3",
         "locationEmpty": "Kein Standort festgelegt",
         "editAria": "Status und Standort bearbeiten",
-        "lifecycleLabel": "Vertragsstatus"
+        "lifecycleLabel": "Vertragsstatus",
+        "noteLabel": "Warum wurde der Status geändert?",
+        "notePlaceholder": "Optionale Erläuterung"
       },
       "brokerage": {
         "toggle": "Makler (makelaardij)",
@@ -1842,16 +1971,46 @@
       "toasts": {
         "created": "Vertrag erstellt",
         "statusUpdated": "Status aktualisiert",
-        "locationUpdated": "Standort aktualisiert"
+        "locationUpdated": "Standort aktualisiert",
+        "contractUpdated": "Vertrag aktualisiert",
+        "depositInvoiceSent": "Vertrag erstellt — Anzahlungsrechnung gesendet",
+        "kassaOpened": "Kasse mit Anzahlung geöffnet"
       },
       "lifecycle": {
         "active": "Aktiv",
         "ended": "Beendet",
         "checkedOut": "Ausgecheckt",
-        "cancelled": "Storniert"
+        "cancelled": "Storniert",
+        "draft": "Entwurf"
       },
       "tabs": {
         "overview": "Übersicht"
+      },
+      "filterPaymentGroup": "Zahlungsstatus",
+      "filterLifecycleGroup": "Vertragsstatus",
+      "editContract": "Bearbeiten",
+      "editFull": {
+        "title": "Vertrag bearbeiten",
+        "subtitle": "Kunde, Boot, Zeitraum oder Zahlung ändern."
+      },
+      "billing": {
+        "oneTime": "Einmalig",
+        "monthly": "Monatlich",
+        "yearly": "Jährlich"
+      },
+      "inline": {
+        "save": "Speichern",
+        "editPaidUntil": "Bezahlt bis ändern",
+        "editBok": "Boxnummer ändern"
+      },
+      "pricePreview": {
+        "deposit": "Anzahlung"
+      },
+      "invoiceLabels": {
+        "deposit": "10% Anzahlung",
+        "final": "Restrechnung",
+        "brokerage": "Maklergebühr",
+        "invoice": "Rechnung"
       }
     },
     "sync": {
@@ -1912,7 +2071,21 @@
         "statusCompleted": "Abgeschlossen",
         "statusCancelled": "Storniert",
         "statusInProgress": "In Bearbeitung",
-        "statusPending": "Ausstehend"
+        "statusPending": "Ausstehend",
+        "cancelAppointment": "Termin stornieren",
+        "cancelConfirm": "Möchten Sie diesen Termin wirklich stornieren?",
+        "cancelReasonLabel": "Grund (optional)",
+        "cancelReasonPlaceholder": "Geben Sie optional einen Grund an…",
+        "cancelledToast": "Termin storniert",
+        "requestReschedule": "Verschiebung anfragen",
+        "rescheduleHint": "Teilen Sie uns Ihr Wunschdatum und Ihre Wunschzeit mit. Die Werft meldet sich bei Ihnen.",
+        "preferredDate": "Wunschdatum",
+        "preferredTime": "Wunschzeit",
+        "rescheduleReason": "Grund",
+        "rescheduleReasonPlaceholder": "Warum möchten Sie verschieben?",
+        "sendRequest": "Anfrage senden",
+        "rescheduleRequestedToast": "Verschiebungsanfrage gesendet",
+        "actionFailed": "Aktion fehlgeschlagen"
       },
       "updates": {
         "title": "Meine Updates",
@@ -1982,7 +2155,8 @@
         "metricAvgLength": "Durchschn. Länge",
         "noLocation": "Kein Standort",
         "noRegistration": "Keine Registrierungsnummer",
-        "planService": "Service planen"
+        "planService": "Service planen",
+        "viewDossier": "Dossier ansehen"
       },
       "documents": {
         "title": "Dokumente",
@@ -2025,7 +2199,9 @@
         "priorityNormal": "Normal",
         "unknownDate": "Unbekanntes Datum",
         "priorityLabel": "Priorität",
-        "statusLabel": "Status"
+        "statusLabel": "Status",
+        "loadMore": "Mehr laden",
+        "openItem": "Öffnen"
       },
       "settings": {
         "title": "Portal-Einstellungen",
@@ -2048,6 +2224,33 @@
         "securitySupport": "Hilfe benötigt? Rufen Sie Krekelberg für Kontofragen an",
         "quickLinks": "Schnelllinks",
         "quickLinksHint": "Gehen Sie direkt zu häufig genutzten Portal-Seiten."
+      },
+      "boatDossier": {
+        "subtitle": "Vollständige Übersicht Ihres Bootes",
+        "boatInfo": "Bootsdaten",
+        "boatInfoDesc": "Spezifikationen und Kerndaten",
+        "storage": "Einlagerung",
+        "noStorage": "Keine Einlagerung",
+        "noStorageMessage": "Für dieses Boot gibt es keine Lagerverträge.",
+        "noWorkOrders": "Keine Arbeitsaufträge",
+        "noWorkOrdersMessage": "Für dieses Boot gibt es noch keine Arbeitsaufträge.",
+        "noInvoices": "Keine Rechnungen",
+        "noInvoicesMessage": "Für dieses Boot gibt es noch keine Rechnungen.",
+        "noTimeline": "Keine Chronik",
+        "noTimelineMessage": "Für dieses Boot gibt es noch keine Ereignisse."
+      },
+      "workOrders": {
+        "title": "Arbeitsaufträge",
+        "subtitle": "Verfolgen Sie den Status der Wartung Ihres Boots",
+        "listOverview": "Eine Übersicht Ihrer Arbeitsaufträge",
+        "loading": "Arbeitsaufträge werden geladen…",
+        "empty": "Keine Arbeitsaufträge",
+        "emptyMessage": "Für Ihre Boote gibt es noch keine Arbeitsaufträge.",
+        "metricTotal": "Gesamt",
+        "metricOpen": "Offen",
+        "metricDone": "Abgeschlossen",
+        "dueLabel": "Fällig am {date}",
+        "viewInvoice": "Rechnung ansehen"
       }
     },
     "shell": {
@@ -2214,7 +2417,8 @@
       "confirmSend": "Diese Rechnung per E-Mail an den Kunden senden?",
       "confirmMarkPaid": "Diese Rechnung manuell als bezahlt markieren? Betrag und Zahlungsmethode prüfen.",
       "creditedFor": "Gutschrift für",
-      "creditNotes": "Gutschriften"
+      "creditNotes": "Gutschriften",
+      "backToContract": "Zurück zum Lagervertrag"
     },
     "customerDetail": {
       "fallbackTitle": "Kunde",
@@ -2283,7 +2487,28 @@
       "street": "Straße & Nr.",
       "postalCode": "PLZ",
       "city": "Stadt",
-      "country": "Land"
+      "country": "Land",
+      "timeline": "Zeitleiste",
+      "viewTimeline": "Vollständige Zeitleiste ansehen",
+      "internalNote": "Intern",
+      "health": {
+        "title": "Kundengesundheit",
+        "subtitle": "Eine Bewertung auf Basis von Zahlungen, Verträgen und Aufträgen.",
+        "recompute": "Neu berechnen",
+        "recomputed": "Gesundheitswert neu berechnet",
+        "recentPaid": "Letzte Zahlungen",
+        "overdue": "Überfällig",
+        "activeContract": "Aktiver Vertrag",
+        "openOrders": "Offene Aufträge",
+        "labels": {
+          "excellent": "Ausgezeichnet",
+          "good": "Gut",
+          "fair": "Mittel",
+          "poor": "Schwach",
+          "at_risk": "Risiko",
+          "critical": "Kritisch"
+        }
+      }
     },
     "calculator": {
       "title": "Rechner",
@@ -2370,7 +2595,31 @@
         "statusInvoice": "In Rechnung umgewandelt",
         "statusPaid": "Bezahlt",
         "statusCancelled": "Storniert",
-        "statusArchived": "Archiviert"
+        "statusArchived": "Archiviert",
+        "exportCsv": "CSV exportieren",
+        "exporting": "Exportieren…",
+        "quoteAny": "Angebot: alle",
+        "quoteYes": "Mit Angebot",
+        "quoteNo": "Ohne Angebot",
+        "invoiceAny": "Rechnung: alle",
+        "invoiceYes": "Mit Rechnung",
+        "invoiceNo": "Ohne Rechnung",
+        "createdRange": "Erstellt (von/bis)",
+        "updatedRange": "Aktualisiert (von/bis)",
+        "updatedFrom": "Aktualisiert ab",
+        "updatedTo": "Aktualisiert bis",
+        "totalRange": "Gesamtbetrag (€)",
+        "totalMin": "Min",
+        "totalMax": "Max",
+        "selectAll": "Alle auswählen",
+        "selectRow": "Zeile auswählen",
+        "selectedCount": "{count} ausgewählt",
+        "clearSelection": "Auswahl aufheben",
+        "bulkArchived": "Ausgewählte Datensätze archiviert",
+        "bulkDuplicated": "Ausgewählte Datensätze dupliziert",
+        "confirmBulkArchive": "{count} Datensatz/Datensätze archivieren?",
+        "editingRecord": "Datensatz bearbeiten",
+        "newRecord": "Neu"
       },
       "pricing": {
         "title": "Preise verwalten",
@@ -2392,7 +2641,8 @@
         "company": "Unternehmen",
         "invoicing": "Rechnungsstellung",
         "payments": "Zahlungen",
-        "locales": "Sprachen"
+        "locales": "Sprachen",
+        "emailOcr": "E-Mail & OCR"
       },
       "company": {
         "title": "Unternehmensdaten",
@@ -2436,6 +2686,21 @@
         "mollieTestSuccess": "Mollie-Test erfolgreich",
         "paymentsSaved": "Zahlungseinstellungen gespeichert",
         "localesSaved": "Spracheinstellungen gespeichert"
+      },
+      "emailOcr": {
+        "title": "E-Mail & OCR",
+        "subtitle": "Eingangs-Mailbox für Rechnungen, OCR-Modell und WhatsApp-Anbindung",
+        "inboundMailbox": "Eingehende Mailbox-Adresse",
+        "inboundHint": "Leiten Sie Lieferantenrechnungen an diese Adresse weiter; sie werden automatisch zu Importen.",
+        "copy": "Kopieren",
+        "copied": "Kopiert",
+        "ocrModel": "OCR-Modell",
+        "ocrModelHint": "Das Modell, das Dokumente ausliest.",
+        "whatsapp": "WhatsApp (Twilio)",
+        "whatsappHint": "Rechnungen per WhatsApp empfangen. Secrets bleiben backend-only.",
+        "configured": "Konfiguriert",
+        "notConfigured": "Nicht konfiguriert",
+        "secretsBackendOnly": "Secrets bleiben backend-only"
       }
     },
     "appointments": {
@@ -2487,7 +2752,8 @@
         "revenue": "Umsatz (inkl. MwSt.)",
         "lastSale": "Letzter Verkauf",
         "empty": "Noch keine Verkäufe erfasst.",
-        "margin": "Marge"
+        "margin": "Marge",
+        "lowStock": "Niedriger Bestand"
       },
       "ai": {
         "imageTitle": "Produktbild",
@@ -2536,7 +2802,14 @@
         "aliases": "Aliase",
         "aliasesPlaceholder": "Alternative Suchnamen",
         "created": "Erstellt",
-        "updated": "Aktualisiert"
+        "updated": "Aktualisiert",
+        "costPrice": "Einkaufspreis (€)",
+        "stockQuantity": "Bestand",
+        "stockMinimum": "Mindestbestand",
+        "scanBarcode": "Scannen",
+        "barcodeScanned": "Barcode gescannt: {code}",
+        "uploadImage": "Foto hochladen",
+        "uploadHint": "Speichern Sie das Produkt zuerst, um ein Foto hochzuladen."
       },
       "sections": {
         "identity": "Identität",
@@ -2604,7 +2877,9 @@
         "lastLogin": "Letzter Login"
       },
       "fields": {
-        "password": "Passwort"
+        "password": "Passwort",
+        "gender": "Geschlecht",
+        "language": "Sprache"
       },
       "modal": {
         "title": "Neuer Benutzer",
@@ -2616,7 +2891,22 @@
         "activated": "Benutzer aktiviert",
         "deactivated": "Benutzer deaktiviert"
       },
-      "confirmDeactivate": "Möchten Sie {name} wirklich deaktivieren? Dieser Benutzer kann sich danach nicht mehr anmelden."
+      "confirmDeactivate": "Möchten Sie {name} wirklich deaktivieren? Dieser Benutzer kann sich danach nicht mehr anmelden.",
+      "searchPlaceholder": "Nach Name oder E-Mail suchen",
+      "allRoles": "Alle Rollen",
+      "allStatuses": "Alle Status",
+      "allLanguages": "Alle Sprachen",
+      "statusActive": "Aktiv",
+      "statusBlocked": "Gesperrt",
+      "statusNeverLoggedIn": "Nie angemeldet",
+      "neverLoggedIn": "Nie angemeldet",
+      "localeDefault": "Standard",
+      "gender": {
+        "unspecified": "Keine Angabe",
+        "male": "Männlich",
+        "female": "Weiblich",
+        "other": "Divers"
+      }
     },
     "calendar": {
       "title": "Kalender",
@@ -2663,7 +2953,9 @@
         "closedDay": "An diesem Tag geschlossen",
         "date": "Datum",
         "label": "Bezeichnung",
-        "notes": "Notizen"
+        "notes": "Notizen",
+        "capacityBoats": "Kapazität (Boote)",
+        "capacityArea": "Kapazität (m²)"
       },
       "locationModal": {
         "title": "Neuer Bootstandort",
@@ -2856,7 +3148,9 @@
         "bulkApproved": "Ausgewählte Importe genehmigt",
         "bulkRejected": "Ausgewählte Importe abgelehnt",
         "batchUploaded": "{count} Dateien hochgeladen",
-        "bulkRetried": "OCR opnieuw gestart voor geselecteerde imports"
+        "bulkRetried": "OCR opnieuw gestart voor geselecteerde imports",
+        "retried": "OCR neu gestartet",
+        "photoUploaded": "{count} Fotos hochgeladen"
       },
       "review": "Prüfen",
       "batchUpload": "Stapel-Upload",
@@ -2886,11 +3180,30 @@
         "zoomOut": "Uitzoomen",
         "rotate": "Draaien",
         "previous": "Vorige",
-        "next": "Volgende"
+        "next": "Volgende",
+        "corrections": "Korrekturen",
+        "noSupplierLinked": "Kein Lieferant mit diesem Import verknüpft.",
+        "createSupplier": "Lieferant anlegen",
+        "createSupplierHint": "Neuen Lieferanten anlegen und mit diesem Import verknüpfen.",
+        "supplierCreated": "Lieferant angelegt",
+        "supplierNameRequired": "Geben Sie einen Namen für den Lieferanten ein",
+        "iban": "IBAN",
+        "paymentTermsDays": "Zahlungsziel (Tage)"
       },
       "dropzoneTitle": "Sleep bestanden hierheen",
       "dropzoneHint": "PDF of afbeelding — tot 50 bestanden tegelijk",
-      "retryOcr": "OCR opnieuw"
+      "retryOcr": "OCR opnieuw",
+      "exportCsv": "CSV exportieren",
+      "photoCapture": "Foto aufnehmen",
+      "sourcePhoto": "Fotos",
+      "duplicate": {
+        "title": "Mögliches Duplikat",
+        "subtitle": "Vergleichen Sie diesen Import mit dem gefundenen, bevor Sie ihn markieren.",
+        "field": "Feld",
+        "thisImport": "Dieser Import",
+        "matchedImport": "Gefundener Import",
+        "confirm": "Als Duplikat markieren"
+      }
     },
     "templates": {
       "title": "Extraktionsvorlagen",
@@ -2952,6 +3265,15 @@
         "total": "Gesamt",
         "iban": "IBAN",
         "line_items": "Positionen"
+      },
+      "history": {
+        "title": "Versionsverlauf",
+        "subtitle": "OCR-Leistung dieser Vorlage",
+        "version": "Version",
+        "usedCount": "Verwendet",
+        "successCount": "Erfolgreich",
+        "correctionCount": "Korrekturen",
+        "averageConfidence": "Durchschn. Konfidenz"
       }
     },
     "workOrders": {
@@ -3022,7 +3344,10 @@
         "unitPrice": "Stück €",
         "activity": "Aktivität",
         "noActivity": "Noch keine Aktivität.",
-        "estimatedHours": "Geschätzte Stunden"
+        "estimatedHours": "Geschätzte Stunden",
+        "tabTimeline": "Zeitleiste",
+        "tabAudit": "Audit-Log",
+        "changes": "{count} Änderung(en)"
       },
       "forbiddenTitle": "Kein Zugriff auf Arbeitsaufträge",
       "forbiddenMessage": "Ihr Konto hat keine Berechtigung für /v1/work-orders. Der Admin-Rolle müssen in der API die work-orders-Rechte zugewiesen werden (Spatie), wie bei Staff/Manager.",
@@ -3032,6 +3357,29 @@
         "after": "Nachher",
         "damage": "Schaden",
         "inspection": "Inspektion"
+      },
+      "selectType": "Typ auswählen",
+      "types": {
+        "maintenance": "Wartung",
+        "repair": "Reparatur",
+        "inspection": "Inspektion",
+        "winterizing": "Winterfest machen",
+        "cleaning": "Reinigung",
+        "antifouling": "Antifouling",
+        "engine": "Motor",
+        "electrical": "Elektrik",
+        "rigging": "Takelage",
+        "hull": "Rumpf",
+        "warranty": "Garantie",
+        "other": "Sonstiges"
+      },
+      "overlay": {
+        "title": "Arbeitsaufträge",
+        "description": "Arbeitsaufträge mit Fälligkeit in diesem Monat",
+        "toggle": "Arbeitsaufträge anzeigen",
+        "hidden": "Aktivieren, um Arbeitsaufträge im Kalender anzuzeigen.",
+        "emptyTitle": "Keine Arbeitsaufträge",
+        "emptyMessage": "In diesem Zeitraum sind keine Arbeitsaufträge fällig."
       }
     },
     "reminders": {
@@ -3119,7 +3467,30 @@
       "statusCompleted": "Abgeschlossen",
       "statusDismissed": "Verworfen",
       "preview": "Vorschau",
-      "previewTitle": "Erinnerungs-Vorschau"
+      "previewTitle": "Erinnerungs-Vorschau",
+      "entityLabels": {
+        "storage_contract": "Lagervertrag",
+        "invoice": "Rechnung",
+        "work_order": "Arbeitsauftrag",
+        "insurance": "Versicherung",
+        "planning": "Planung"
+      },
+      "triggerLabels": {
+        "overdue_after": "Überfällig nach",
+        "due_before": "Fällig vor",
+        "expires_before": "Läuft ab vor",
+        "inactive_after": "Inaktiv nach"
+      },
+      "testSend": {
+        "button": "Test senden",
+        "title": "Test-Erinnerung senden",
+        "subtitle": "Senden Sie eine einmalige Test-Erinnerung, um die Regel zu prüfen.",
+        "email": "Empfänger-E-Mail",
+        "entityId": "Entitäts-ID (optional)",
+        "entityIdHint": "z. B. eine Rechnungs- oder Vertrags-ID",
+        "submit": "Senden",
+        "sent": "Test-Erinnerung gesendet"
+      }
     },
     "suppliers": {
       "title": "Lieferanten",
@@ -3190,6 +3561,225 @@
       "toasts": {
         "markedPaid": "Als bezahlt markiert"
       }
+    },
+    "bundles": {
+      "title": "Bundles",
+      "subtitle": "Produktpakete für den schnellen Verkauf zusammenstellen",
+      "new": "Neues Bundle",
+      "editTitle": "Bundle bearbeiten",
+      "formSubtitle": "Benennen Sie das Bundle und wählen Sie die Produkte",
+      "emptyTitle": "Noch keine Bundles",
+      "emptyMessage": "Erstellen Sie ein Bundle, um mehrere Produkte mit einem Klick hinzuzufügen.",
+      "confirmDelete": "Möchten Sie dieses Bundle wirklich löschen?",
+      "addItem": "Produkt hinzufügen",
+      "noItems": "Noch keine Produkte in diesem Bundle.",
+      "columns": {
+        "name": "Bundle",
+        "items": "Produkte"
+      },
+      "fields": {
+        "name": "Name",
+        "color": "Farbe",
+        "description": "Beschreibung",
+        "items": "Produkte"
+      },
+      "toasts": {
+        "created": "Bundle erstellt",
+        "updated": "Bundle aktualisiert",
+        "deleted": "Bundle gelöscht"
+      }
+    },
+    "security": {
+      "title": "Sicherheit",
+      "subtitle": "Sicherheitslage und verdächtige Aktivitäten auf einen Blick.",
+      "refresh": "Aktualisieren",
+      "loading": "Sicherheitsdaten werden geladen…",
+      "statusTitle": "Gesamtstatus",
+      "statusSubtitle": "Zusammengefasster Sicherheitsstatus der Plattform.",
+      "checkedAt": "Zuletzt geprüft: {time}",
+      "status": {
+        "ok": "In Ordnung",
+        "warning": "Warnung",
+        "critical": "Kritisch"
+      },
+      "panels": {
+        "failedLogins24h": "Fehlgeschlagene Logins (24 Std.)",
+        "failedLogins1h": "Fehlgeschlagene Logins (1 Std.)",
+        "lockedUsers": "Gesperrte Benutzer",
+        "suspiciousIps": "Verdächtige IPs",
+        "apiActionFailures1h": "API-Aktionsfehler (1 Std.)",
+        "criticalQueueFailures24h": "Kritische Warteschlangenfehler (24 Std.)",
+        "adminsWithoutMfa": "Admins ohne MFA",
+        "credentialsExpiring7d": "Ablaufende Zugangsdaten (7 T.)"
+      },
+      "suspiciousTitle": "Verdächtige IP-Adressen",
+      "suspiciousSubtitle": "IP-Adressen mit auffälligem Verhalten.",
+      "noSuspicious": "Keine verdächtigen IP-Adressen gefunden.",
+      "attempts": "{count} Versuche"
+    },
+    "credentials": {
+      "title": "API-Zugangsdaten",
+      "subtitle": "API-Schlüssel externer Dienste verwalten und anzeigen.",
+      "loading": "Zugangsdaten werden geladen…",
+      "empty": "Keine Zugangsdaten gefunden.",
+      "count": "{count} Zugangsdaten",
+      "allServices": "Alle Dienste",
+      "allEnvironments": "Alle Umgebungen",
+      "environments": {
+        "production": "Produktion",
+        "staging": "Staging",
+        "development": "Entwicklung"
+      },
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv",
+        "expired": "Abgelaufen"
+      },
+      "columns": {
+        "name": "Name",
+        "service": "Dienst",
+        "environment": "Umgebung",
+        "status": "Status",
+        "expires": "Läuft ab",
+        "lastUsed": "Zuletzt verwendet",
+        "createdBy": "Erstellt von",
+        "actions": "Aktionen"
+      },
+      "actions": {
+        "new": "Neue Zugangsdaten",
+        "reveal": "Anzeigen"
+      },
+      "fields": {
+        "name": "Name",
+        "service": "Dienst",
+        "environment": "Umgebung",
+        "keyValue": "Schlüsselwert",
+        "description": "Beschreibung"
+      },
+      "modal": {
+        "title": "Neue Zugangsdaten"
+      },
+      "reveal": {
+        "title": "Schlüsselwert",
+        "auditNote": "Hinweis: Das Anzeigen dieses Schlüssels wird im Audit-Log erfasst.",
+        "copy": "Kopieren",
+        "copied": "Kopiert",
+        "revealedAt": "Angezeigt am {time}"
+      },
+      "delete": {
+        "title": "Zugangsdaten löschen",
+        "message": "Möchten Sie '{name}' wirklich löschen?"
+      },
+      "toasts": {
+        "created": "Zugangsdaten erstellt",
+        "deleted": "Zugangsdaten gelöscht"
+      }
+    },
+    "incidents": {
+      "title": "Vorfälle",
+      "subtitle": "Sicherheits- und Betriebsvorfälle erfassen und verfolgen.",
+      "loading": "Vorfälle werden geladen…",
+      "empty": "Keine Vorfälle gefunden.",
+      "count": "{count} Vorfälle",
+      "allStatuses": "Alle Status",
+      "allSeverities": "Alle Schweregrade",
+      "unassigned": "Nicht zugewiesen",
+      "severities": {
+        "low": "Niedrig",
+        "medium": "Mittel",
+        "high": "Hoch",
+        "critical": "Kritisch"
+      },
+      "statuses": {
+        "open": "Offen",
+        "investigating": "In Untersuchung",
+        "identified": "Identifiziert",
+        "monitoring": "Überwachung",
+        "resolved": "Behoben"
+      },
+      "columns": {
+        "title": "Titel",
+        "severity": "Schweregrad",
+        "status": "Status",
+        "category": "Kategorie",
+        "created": "Erstellt"
+      },
+      "actions": {
+        "new": "Neuer Vorfall"
+      },
+      "fields": {
+        "title": "Titel",
+        "severity": "Schweregrad",
+        "category": "Kategorie",
+        "affectedServices": "Betroffene Dienste",
+        "affectedServicesHint": "Durch Kommas getrennt",
+        "description": "Beschreibung",
+        "detectedAt": "Erkannt am",
+        "status": "Status",
+        "assignedTo": "Zugewiesen an",
+        "note": "Notiz"
+      },
+      "modal": {
+        "title": "Neuer Vorfall"
+      },
+      "detail": {
+        "title": "Vorfalldetails",
+        "timeline": "Zeitleiste",
+        "noTimeline": "Noch keine Zeitleisteneinträge.",
+        "updateTitle": "Status aktualisieren",
+        "update": "Aktualisieren",
+        "resolve": "Beheben"
+      },
+      "toasts": {
+        "created": "Vorfall erstellt",
+        "updated": "Vorfall aktualisiert",
+        "resolved": "Vorfall behoben"
+      }
+    },
+    "gdpr": {
+      "title": "DSGVO / Datenschutz",
+      "subtitle": "Personenbezogene Daten dieses Kunden exportieren oder anonymisieren.",
+      "export": "Daten exportieren",
+      "anonymize": "Anonymisieren",
+      "hint": "Der Export erzeugt eine JSON-Datei mit allen verknüpften Daten. Die Anonymisierung ist unumkehrbar.",
+      "anonymizeModal": {
+        "title": "Kunde anonymisieren",
+        "message": "Dies entfernt unumkehrbar alle personenbezogenen Daten. Geben Sie ANONYMIZE ein, um zu bestätigen.",
+        "confirmLabel": "ANONYMIZE eingeben",
+        "reasonLabel": "Grund"
+      },
+      "toasts": {
+        "exported": "Export gestartet",
+        "anonymized": "Kunde anonymisiert"
+      }
+    },
+    "backups": {
+      "title": "Backups",
+      "subtitle": "Aktuelle Backup-Läufe und manuelle Backups.",
+      "runNow": "Jetzt Backup erstellen",
+      "empty": "Noch keine Backups durchgeführt.",
+      "size": "{mb} MB",
+      "duration": "{seconds}s",
+      "triggeredBy": "Von {by}",
+      "status": {
+        "completed": "Abgeschlossen",
+        "success": "Abgeschlossen",
+        "running": "Läuft",
+        "failed": "Fehlgeschlagen",
+        "pending": "In Warteschlange",
+        "unknown": "Unbekannt"
+      },
+      "types": {
+        "database": "Datenbank",
+        "full": "Vollständig"
+      },
+      "fields": {
+        "type": "Typ",
+        "notes": "Notizen"
+      },
+      "toasts": {
+        "started": "Backup gestartet"
+      }
     }
   },
   "planning": {
@@ -3218,6 +3808,91 @@
     "completed": "Termin abgeschlossen",
     "cancelled": "Termin storniert",
     "actionFailed": "Aktion fehlgeschlagen",
-    "customerHint": "Kontaktieren Sie die Werft, um diesen Termin zu ändern oder zu stornieren."
+    "customerHint": "Kontaktieren Sie die Werft, um diesen Termin zu ändern oder zu stornieren.",
+    "statToday": "Heute",
+    "statTomorrow": "Morgen",
+    "statPending": "Offene Anfragen",
+    "statCompletedWeek": "Diese Woche abgeschlossen",
+    "filterAllEmployees": "Alle Mitarbeiter",
+    "filterAllServices": "Alle Leistungen",
+    "serviceCrane": "Kran",
+    "serviceWash": "Abspritzen",
+    "serviceStorage": "Lagerung",
+    "serviceWinter": "Winterlager",
+    "viewWeek": "Woche",
+    "viewMonth": "Monat",
+    "viewDay": "Tag",
+    "viewAgenda": "Agenda",
+    "agendaEmpty": "Keine Termine in diesem Zeitraum.",
+    "createAppointment": "Termin erstellen",
+    "createTitle": "Neuer Termin",
+    "createSubtitle": "Planen Sie einen Termin für einen Kunden und ein Boot.",
+    "createConfirm": "Termin erstellen",
+    "created": "Termin erstellt",
+    "checking": "Prüfen…",
+    "fieldCustomer": "Kunde",
+    "fieldBoat": "Boot",
+    "fieldService": "Leistung",
+    "fieldLocation": "Standort / Kran",
+    "fieldDate": "Datum",
+    "fieldStartTime": "Startzeit",
+    "fieldDuration": "Dauer (Min.)",
+    "fieldAssignee": "Mitarbeiter",
+    "unassigned": "Nicht zugewiesen",
+    "selectPlaceholder": "Auswählen…",
+    "conflictTitle": "Mögliche Konflikte gefunden",
+    "conflictConfirmAnyway": "Trotzdem fortfahren und diesen Termin planen",
+    "selectMode": "Auswählen",
+    "exitSelect": "Auswahl beenden",
+    "export": "Exportieren",
+    "bulkSelected": "{count} ausgewählt",
+    "bulkAssign": "Zuweisen",
+    "bulkAssignPlaceholder": "Mitarbeiter…",
+    "bulkSetStatus": "Status setzen",
+    "bulkStatusPlaceholder": "Status…",
+    "bulkCancel": "Stornieren",
+    "bulkClear": "Auswahl löschen",
+    "bulkDone": "Massenaktion ausgeführt",
+    "statusConfirmed": "Bestätigt",
+    "statusCompleted": "Abgeschlossen"
+  },
+  "cms": {
+    "edit": "Bearbeiten",
+    "enterEdit": "Bearbeitungsmodus aktivieren",
+    "exitEdit": "Bearbeitungsmodus beenden",
+    "editingOn": "Bearbeiten an",
+    "toolbarLabel": "CMS-Leiste",
+    "editText": "Text bearbeiten",
+    "editImage": "Bild bearbeiten",
+    "openingHours": "Öffnungszeiten",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "saved": "Gespeichert",
+    "saveError": "Speichern fehlgeschlagen",
+    "uploadError": "Upload fehlgeschlagen",
+    "imageUploaded": "Bild hochgeladen",
+    "uploadImage": "Bild hochladen",
+    "localeHint": "Nur geänderte Sprachen werden gespeichert.",
+    "textPlaceholder": "Text eingeben…",
+    "focalPoint": "Fokuspunkt",
+    "focalHint": "Klicken Sie auf das Bild, um den Fokuspunkt zu setzen.",
+    "overlay": "Dunkle Überlagerung",
+    "altText": "Alt-Text",
+    "altPlaceholder": "Bild beschreiben…",
+    "seoTitle": "SEO",
+    "noPage": "Keine Seite registriert",
+    "noPageHint": "Öffnen Sie eine öffentliche Seite, um die SEO zu bearbeiten.",
+    "metaTitle": "Seitentitel",
+    "metaDescription": "Meta-Beschreibung",
+    "robots": "Robots",
+    "globalTitle": "Globale Einstellungen",
+    "globalDesc": "Änderungen gelten für die gesamte Website.",
+    "global": {
+      "phone": "Telefonnummer",
+      "city": "Ort",
+      "tagline": "Footer-Slogan",
+      "facebook": "Facebook-URL",
+      "instagram": "Instagram-URL"
+    }
   }
 }

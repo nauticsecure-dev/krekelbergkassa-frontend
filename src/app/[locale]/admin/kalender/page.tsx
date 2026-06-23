@@ -1,12 +1,14 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import {
   CalendarClock,
   CalendarDays,
   MapPin,
   Plus,
   UtensilsCrossed,
+  Wrench,
 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
@@ -25,7 +27,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import { calendarService } from '@/lib/services';
+import { calendarService, workOrdersService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -33,8 +35,29 @@ import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import type { BoatLocation } from '@/lib/api-types';
 import { formatTimeRange, toTimeInputValue } from '@/lib/time';
+import { formatDate } from '@/lib/format';
 
 type ModalKind = 'regular' | 'exception' | 'lunch' | 'location' | 'editLocation' | null;
+
+// Trello #88: priority → calendar event colour for the work-orders overlay.
+const WORK_ORDER_PRIORITY_STYLES: Record<string, string> = {
+  urgent: 'border-rose-200 bg-rose-50 text-rose-700',
+  high: 'border-amber-200 bg-amber-50 text-amber-700',
+  normal: 'border-marine-200 bg-marine-50 text-marine-700',
+};
+
+function workOrderPriorityStyle(priority: unknown): string {
+  return WORK_ORDER_PRIORITY_STYLES[String(priority ?? 'normal')] ?? WORK_ORDER_PRIORITY_STYLES.normal;
+}
+
+// First/last day of the month containing `ref`, as YYYY-MM-DD.
+function monthRange(ref: Date): { from: string; to: string } {
+  const from = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  const to = new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
+  const iso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return { from: iso(from), to: iso(to) };
+}
 
 export default function CalendarAdminPage() {
   const { t, locale } = useIntl();
@@ -67,10 +90,27 @@ export default function CalendarAdminPage() {
     difficulty: 'easy',
     is_blocked: false,
     notes: '',
+    // Trello #85: capacity drives the occupancy % in the reports page.
+    capacity_boats: '',
+    capacity_area_m2: '',
   });
 
   const calendar = useQuery([], () => calendarService.get());
   const locations = useQuery(['calendar-locations'], () => calendarService.locations());
+
+  // Trello #88: toggleable work-orders overlay for the visible month.
+  const [showWorkOrders, setShowWorkOrders] = React.useState(false);
+  const [workOrderRange] = React.useState(() => monthRange(new Date()));
+  const workOrders = useQuery(
+    ['calendar-work-orders', showWorkOrders, workOrderRange.from, workOrderRange.to],
+    () =>
+      showWorkOrders
+        ? workOrdersService
+            .list({ due_from: workOrderRange.from, due_to: workOrderRange.to, per_page: 100 })
+            .catch(() => null)
+        : Promise.resolve(null)
+  );
+  const workOrderRows = (workOrders.data?.data ?? []) as Array<Record<string, unknown>>;
 
   const setRegular = useMutation(calendarService.setRegular);
   const setException = useMutation(calendarService.setException);
@@ -185,6 +225,8 @@ export default function CalendarAdminPage() {
       difficulty: row.difficulty,
       is_blocked: row.is_blocked,
       notes: row.notes ?? '',
+      capacity_boats: (row as unknown as { capacity_boats?: number }).capacity_boats != null ? String((row as unknown as { capacity_boats?: number }).capacity_boats) : '',
+      capacity_area_m2: (row as unknown as { capacity_area_m2?: number }).capacity_area_m2 != null ? String((row as unknown as { capacity_area_m2?: number }).capacity_area_m2) : '',
     });
     setModal('editLocation');
   };
@@ -199,6 +241,8 @@ export default function CalendarAdminPage() {
           difficulty: editForm.difficulty,
           is_blocked: editForm.is_blocked,
           notes: editForm.notes || null,
+          capacity_boats: editForm.capacity_boats ? Number(editForm.capacity_boats) : null,
+          capacity_area_m2: editForm.capacity_area_m2 ? Number(editForm.capacity_area_m2) : null,
         },
       });
       setModal(null);
@@ -407,6 +451,61 @@ export default function CalendarAdminPage() {
                   blockedLabel={t('adminNew.calendar.blocked')}
                   openLabel={t('adminNew.calendar.open')}
                 />
+              )}
+            </AdminSectionCard>
+
+            {/* Trello #88: work-orders overlay for the visible month */}
+            <AdminSectionCard
+              title={t('adminNew.workOrders.overlay.title')}
+              description={t('adminNew.workOrders.overlay.description')}
+              icon={Wrench}
+              action={
+                <label className="flex items-center gap-2 text-sm font-medium text-navy-700">
+                  <input
+                    type="checkbox"
+                    checked={showWorkOrders}
+                    onChange={(e) => setShowWorkOrders(e.target.checked)}
+                  />
+                  {t('adminNew.workOrders.overlay.toggle')}
+                </label>
+              }
+            >
+              {!showWorkOrders ? (
+                <p className="py-4 text-sm text-navy-500">{t('adminNew.workOrders.overlay.hidden')}</p>
+              ) : workOrders.loading ? (
+                <LoadingState label={t('adminNew.common.loading')} />
+              ) : workOrderRows.length === 0 ? (
+                <EmptyState
+                  title={t('adminNew.workOrders.overlay.emptyTitle')}
+                  message={t('adminNew.workOrders.overlay.emptyMessage')}
+                />
+              ) : (
+                <ul className="space-y-2">
+                  {workOrderRows
+                    .filter((wo) => wo.due_date)
+                    .sort((a, b) => String(a.due_date).localeCompare(String(b.due_date)))
+                    .map((wo) => (
+                      <li key={String(wo.id)}>
+                        <Link
+                          href={`/${locale}/admin/werkorders/${wo.id}`}
+                          className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm transition hover:brightness-95 ${workOrderPriorityStyle(wo.priority)}`}
+                        >
+                          <span className="min-w-0 truncate font-medium">
+                            #{String(wo.number ?? wo.id)} ·{' '}
+                            {String(
+                              wo.boat_name ??
+                                (wo.boat as { name?: string } | undefined)?.name ??
+                                wo.type ??
+                                '—'
+                            )}
+                          </span>
+                          <span className="shrink-0 text-xs font-semibold">
+                            {formatDate(String(wo.due_date), dateLocale)}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                </ul>
               )}
             </AdminSectionCard>
           </div>
@@ -675,6 +774,23 @@ export default function CalendarAdminPage() {
                 value={editForm.notes}
                 onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
               />
+              {/* Trello #85: capacity feeds the occupancy % on the reports page. */}
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  label={t('adminNew.calendar.fields.capacityBoats')}
+                  type="number"
+                  min={0}
+                  value={editForm.capacity_boats}
+                  onChange={(e) => setEditForm({ ...editForm, capacity_boats: e.target.value })}
+                />
+                <Input
+                  label={t('adminNew.calendar.fields.capacityArea')}
+                  type="number"
+                  min={0}
+                  value={editForm.capacity_area_m2}
+                  onChange={(e) => setEditForm({ ...editForm, capacity_area_m2: e.target.value })}
+                />
+              </div>
             </div>
           </AdminModalBody>
           <AdminModalFooter>

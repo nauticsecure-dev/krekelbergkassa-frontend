@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Globe2, Save, ShieldCheck, Sliders, TestTube2 } from 'lucide-react';
+import { Copy, Globe2, Mail, Save, ShieldCheck, Sliders, TestTube2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminContent, AdminSectionCard, AdminTabBar } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
@@ -19,8 +19,19 @@ export default function SettingsPage() {
   const { t } = useIntl();
 
   const [activeTab, setActiveTab] = React.useState<
-    'company' | 'invoicing' | 'payments' | 'locales'
+    'company' | 'invoicing' | 'payments' | 'locales' | 'email_ocr'
   >('company');
+  const [copied, setCopied] = React.useState(false);
+
+  const copyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed') });
+    }
+  };
 
   const settings = useQuery(['settings'], () => settingsService.get());
   const updateCompany = useMutation(settingsService.updateCompany);
@@ -114,6 +125,26 @@ export default function SettingsPage() {
     }
   };
 
+  // Trello #81 / #90: inbound mailbox, OCR model, Twilio/WhatsApp status.
+  // These may not be strongly typed on AppSettings yet — read defensively.
+  const raw = (settings.data ?? {}) as Record<string, unknown>;
+  const emailOcr = (raw.email_ocr ?? raw.integrations ?? raw.ocr ?? {}) as Record<string, unknown>;
+  const pick = (...keys: string[]): string => {
+    for (const k of keys) {
+      const v = emailOcr[k] ?? raw[k];
+      if (v != null && v !== '') return String(v);
+    }
+    return '';
+  };
+  const inboundAddress = pick('inbound_email', 'inbound_mailbox', 'mailbox_address', 'import_email') ||
+    'facturen@import.krekelbergnautic.nl';
+  const ocrModel = pick('ocr_model', 'model', 'ocr_provider') || 'Mistral OCR';
+  const twilioConfigured = (() => {
+    const v = emailOcr.twilio_configured ?? emailOcr.whatsapp_configured ?? raw.twilio_configured ?? raw.whatsapp_configured;
+    if (v != null) return Boolean(v) && v !== 'false';
+    return Boolean(pick('twilio_account_sid', 'whatsapp_number', 'twilio_from'));
+  })();
+
   return (
     <>
       <AdminPageHeader
@@ -168,6 +199,7 @@ export default function SettingsPage() {
                 { id: 'invoicing' as const, label: t('adminNew.settings.tabs.invoicing'), icon: Sliders },
                 { id: 'payments' as const, label: t('adminNew.settings.tabs.payments'), icon: TestTube2 },
                 { id: 'locales' as const, label: t('adminNew.settings.tabs.locales'), icon: Globe2 },
+                { id: 'email_ocr' as const, label: t('adminNew.settings.tabs.emailOcr'), icon: Mail },
               ]}
             />
 
@@ -491,6 +523,63 @@ export default function SettingsPage() {
                   >
                     {t('adminNew.common.save')}
                   </Button>
+                </div>
+              </AdminSectionCard>
+            ) : null}
+
+            {activeTab === 'email_ocr' ? (
+              <AdminSectionCard
+                title={t('adminNew.settings.emailOcr.title')}
+                description={t('adminNew.settings.emailOcr.subtitle')}
+                icon={Mail}
+              >
+                <div className="space-y-5">
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                      {t('adminNew.settings.emailOcr.inboundMailbox')}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        readOnly
+                        value={inboundAddress}
+                        className="input-base flex-1 bg-navy-50 text-navy-700"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        leftIcon={<Copy className="h-4 w-4" />}
+                        onClick={() => void copyText(inboundAddress)}
+                      >
+                        {copied ? t('adminNew.settings.emailOcr.copied') : t('adminNew.settings.emailOcr.copy')}
+                      </Button>
+                    </div>
+                    <p className="mt-1 text-xs text-navy-400">{t('adminNew.settings.emailOcr.inboundHint')}</p>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                      {t('adminNew.settings.emailOcr.ocrModel')}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Badge tone="marine">{ocrModel}</Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-navy-400">{t('adminNew.settings.emailOcr.ocrModelHint')}</p>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                      {t('adminNew.settings.emailOcr.whatsapp')}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Badge tone={twilioConfigured ? 'success' : 'danger'} dot>
+                        {twilioConfigured
+                          ? t('adminNew.settings.emailOcr.configured')
+                          : t('adminNew.settings.emailOcr.notConfigured')}
+                      </Badge>
+                      <Badge tone="navy">{t('adminNew.settings.emailOcr.secretsBackendOnly')}</Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-navy-400">{t('adminNew.settings.emailOcr.whatsappHint')}</p>
+                  </div>
                 </div>
               </AdminSectionCard>
             ) : null}

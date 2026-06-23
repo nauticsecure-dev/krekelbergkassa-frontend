@@ -15,12 +15,23 @@ export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'guest';
 
 export type User = SessionUser;
 
+// Trello #104: thrown by signIn when the account requires a second factor.
+export class MfaRequiredError extends Error {
+  mfaToken: string;
+  constructor(mfaToken: string) {
+    super('MFA required');
+    this.name = 'MfaRequiredError';
+    this.mfaToken = mfaToken;
+  }
+}
+
 interface AuthState {
   user: User | null;
   loading: boolean;
   isDemo: boolean;
   isPortalSession: boolean;
   signIn: (email: string, password: string, remember?: boolean) => Promise<User>;
+  verifyMfa: (mfaToken: string, code: string, remember?: boolean) => Promise<User>;
   signInDemo: (role?: Role) => Promise<User>;
   requestCustomerMagicLink: (email: string, locale?: string) => Promise<{ success: boolean; message: string }>;
   verifyCustomerMagicLink: (token: string, remember?: boolean) => Promise<User>;
@@ -212,9 +223,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void refresh();
   }, [refresh]);
 
-  const signIn = React.useCallback(
-    async (email: string, password: string, remember = true) => {
-      const res = await authService.login(email, password);
+  // Trello #104: complete a staff session from a login/mfa-verify response.
+  const completeStaffLogin = React.useCallback(
+    (res: Awaited<ReturnType<typeof authService.login>>, remember: boolean) => {
       const sessionToken = extractLoginToken(res);
       if (!sessionToken) {
         throw new Error('Login succeeded but no session token was returned.');
@@ -233,6 +244,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return next;
     },
     []
+  );
+
+  const signIn = React.useCallback(
+    async (email: string, password: string, remember = true) => {
+      const res = await authService.login(email, password);
+      // Trello #104: MFA-enabled accounts get a challenge instead of a token.
+      if (res.mfa_required && res.mfa_token) {
+        throw new MfaRequiredError(res.mfa_token);
+      }
+      return completeStaffLogin(res, remember);
+    },
+    [completeStaffLogin]
+  );
+
+  // Trello #104: submit the second factor and complete the session.
+  const verifyMfa = React.useCallback(
+    async (mfaToken: string, code: string, remember = true) => {
+      const res = await authService.mfaVerify(mfaToken, code);
+      return completeStaffLogin(res, remember);
+    },
+    [completeStaffLogin]
   );
 
   const requestCustomerMagicLink = React.useCallback(async (email: string, locale?: string) => {
@@ -309,6 +341,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isDemo,
         isPortalSession,
         signIn,
+        verifyMfa,
         signInDemo,
         requestCustomerMagicLink,
         verifyCustomerMagicLink,

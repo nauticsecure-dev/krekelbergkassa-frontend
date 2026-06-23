@@ -185,6 +185,9 @@ export default function PortalBoatsPage() {
               <Button variant="outline" onClick={() => setSelected(null)}>
                 {t('adminNew.common.cancel')}
               </Button>
+              <Link href={`/${locale}/dashboard/boten/${selected.id}`}>
+                <Button variant="outline">{t('adminNew.portal.boats.viewDossier')}</Button>
+              </Link>
               <Link href={`/${locale}/kraanafspraak`}>
                 <Button variant="gold">{t('adminNew.portal.boats.planService')}</Button>
               </Link>

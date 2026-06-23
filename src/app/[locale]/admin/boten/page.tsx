@@ -30,27 +30,43 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
+import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
 
 export default function BoatsPage() {
   const { locale, t } = useIntl();
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   const { push } = useToast();
   const [query, setQuery] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
-  const [form, setForm] = React.useState({
+  const emptyCreateForm = {
     customer_id: '',
     name: '',
     type: 'motor',
     length_cm: '',
     width_cm: '',
     location_code: '',
-  });
+    brand: '',
+    model: '',
+    build_year: '',
+    hull_material: '',
+    draft_cm: '',
+    weight_kg: '',
+    fuel_type: '',
+    engine_type: '',
+    engine_brand: '',
+    engine_power: '',
+    mmsi_number: '',
+    insurance_number: '',
+  };
+  const [form, setForm] = React.useState(emptyCreateForm);
 
   const boats = useQuery([query, statusFilter, page], () =>
     boatsService.list({ search: query || undefined, status: statusFilter || undefined, page, per_page: 20 })
   );
+  const stats = useQuery(['boats-stats'], () => boatsService.aggregateStats());
   const customers = useQuery(['boats-customers'], () => customersService.list({ per_page: 100 }));
 
   const createBoat = useMutation(boatsService.create);
@@ -68,10 +84,23 @@ export default function BoatsPage() {
         length_cm: form.length_cm ? Number(form.length_cm) : null,
         width_cm: form.width_cm ? Number(form.width_cm) : null,
         location_code: form.location_code || null,
+        brand: form.brand || null,
+        model: form.model || null,
+        build_year: form.build_year ? Number(form.build_year) : null,
+        hull_material: form.hull_material || null,
+        draft_cm: form.draft_cm ? Number(form.draft_cm) : null,
+        weight_kg: form.weight_kg ? Number(form.weight_kg) : null,
+        fuel_type: form.fuel_type || null,
+        engine_type: form.engine_type || null,
+        engine_brand: form.engine_brand || null,
+        engine_power: form.engine_power || null,
+        mmsi_number: form.mmsi_number || null,
+        insurance_number: form.insurance_number || null,
       });
       setShowCreate(false);
-      setForm({ customer_id: '', name: '', type: 'motor', length_cm: '', width_cm: '', location_code: '' });
+      setForm(emptyCreateForm);
       await boats.refetch();
+      await stats.refetch();
       push({ tone: 'success', title: t('adminNew.boats.toasts.created') });
     } catch (err) {
       push({
@@ -86,6 +115,7 @@ export default function BoatsPage() {
     try {
       await deleteBoat.mutate(id);
       await boats.refetch();
+      await stats.refetch();
       push({ tone: 'success', title: t('adminNew.boats.toasts.deleted') });
     } catch (err) {
       push({
@@ -103,33 +133,32 @@ export default function BoatsPage() {
         subtitle={t('adminNew.boats.subtitle')}
         stats={[
           {
-            label: t('adminNew.boats.total', { count: boats.data?.meta?.total ?? rows.length }),
-            value: boats.data?.meta?.total ?? rows.length,
+            label: t('adminNew.boats.stats.totalBoats'),
+            value: Number(stats.data?.total_boats ?? boats.data?.meta?.total ?? rows.length),
             icon: Ship,
             tone: 'marine',
-            loading: boats.loading,
+            loading: stats.loading,
           },
           {
-            label: t('adminNew.boats.columns.location'),
-            value: rows.filter((b) => b.location_code).length,
+            label: t('adminNew.boats.stats.boatsInStorage'),
+            value: Number(stats.data?.boats_in_storage ?? 0),
             icon: MapPin,
             tone: 'gold',
-            loading: boats.loading,
+            loading: stats.loading,
           },
           {
-            label: t('adminNew.boats.columns.type'),
-            value: new Set(rows.map((b) => b.type)).size,
+            label: t('adminNew.boats.stats.activeWorkOrders'),
+            value: Number(stats.data?.active_work_orders ?? 0),
             icon: Anchor,
             tone: 'navy',
-            loading: boats.loading,
+            loading: stats.loading,
           },
           {
-            label: t('adminNew.boats.columns.length'),
-            value: rows.length
-              ? `${Math.round(rows.reduce((s, b) => s + Number(b.length_cm || 0), 0) / rows.length)} cm`
-              : '—',
+            label: t('adminNew.boats.stats.openBalance'),
+            value: formatCurrency(centsToEuro(Number(stats.data?.open_balance_cents ?? 0)), dateLocale),
+            icon: Anchor,
             tone: 'success',
-            loading: boats.loading,
+            loading: stats.loading,
           },
         ]}
       />
@@ -191,7 +220,7 @@ export default function BoatsPage() {
           ) : null}
 
           {!boats.loading && !boats.error && rows.length > 0 ? (
-            <AdminTable minWidth={880}>
+            <AdminTable minWidth={1040}>
               <AdminTableHead>
                 <tr>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.boat')}</AdminTableHeaderCell>
@@ -199,7 +228,8 @@ export default function BoatsPage() {
                   <AdminTableHeaderCell>{t('adminNew.boats.fields.brand')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.type')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.status')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.boats.columns.location')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.boats.columns.currentStorageLocation')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.boats.columns.lastActivity')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
@@ -237,20 +267,48 @@ export default function BoatsPage() {
                       })()}
                     </AdminTableCell>
                     <AdminTableCell>{boat.location_code ?? '—'}</AdminTableCell>
+                    <AdminTableCell className="text-sm text-navy-600">
+                      {(() => {
+                        const la = (boat as unknown as Record<string, unknown>).last_activity_at;
+                        return la ? formatDate(String(la), dateLocale) : '—';
+                      })()}
+                    </AdminTableCell>
                     <AdminTableCell className="text-right">
-                      <Link href={`/${locale}/admin/boten/${boat.id}`}>
-                        <Button variant="ghost" size="sm">
-                          {t('adminNew.common.edit')}
+                      <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5 text-xs">
+                        <Link
+                          href={`/${locale}/admin/boten/${boat.id}?tab=storage`}
+                          className="font-semibold text-marine-700 hover:text-marine-900"
+                        >
+                          {t('adminNew.boats.tabs.storage')}
+                        </Link>
+                        <Link
+                          href={`/${locale}/admin/boten/${boat.id}?tab=financial`}
+                          className="font-semibold text-marine-700 hover:text-marine-900"
+                        >
+                          {t('adminNew.boats.tabs.financial')}
+                        </Link>
+                        <Link
+                          href={`/${locale}/admin/boten/${boat.id}?tab=workOrders`}
+                          className="font-semibold text-marine-700 hover:text-marine-900"
+                        >
+                          {t('adminNew.boats.tabs.workOrders')}
+                        </Link>
+                      </div>
+                      <div className="mt-1 flex items-center justify-end">
+                        <Link href={`/${locale}/admin/boten/${boat.id}`}>
+                          <Button variant="ghost" size="sm">
+                            {t('adminNew.common.edit')}
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                          onClick={() => setDeleteTarget(boat.id)}
+                        >
+                          {t('adminNew.common.delete')}
                         </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-                        onClick={() => setDeleteTarget(boat.id)}
-                      >
-                        {t('adminNew.common.delete')}
-                      </Button>
+                      </div>
                     </AdminTableCell>
                   </AdminTableRow>
                 ))}
@@ -261,7 +319,7 @@ export default function BoatsPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} size="lg">
         <form onSubmit={onCreate}>
           <AdminModalHeader title={t('adminNew.boats.new')} />
           <AdminModalBody>
@@ -305,21 +363,88 @@ export default function BoatsPage() {
                 <option value="other">{t('adminNew.boats.type.other')}</option>
               </select>
             </div>
-            <Input
-              label={t('adminNew.boats.fields.lengthCm')}
-              value={form.length_cm}
-              onChange={(e) => setForm((prev) => ({ ...prev, length_cm: e.target.value }))}
-            />
-            <Input
-              label={t('adminNew.boats.fields.widthCm')}
-              value={form.width_cm}
-              onChange={(e) => setForm((prev) => ({ ...prev, width_cm: e.target.value }))}
-            />
-            <Input
-              label={t('adminNew.boats.fields.locationCode')}
-              value={form.location_code}
-              onChange={(e) => setForm((prev) => ({ ...prev, location_code: e.target.value }))}
-            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input
+                label={t('adminNew.boats.fields.lengthCm')}
+                type="number"
+                value={form.length_cm}
+                onChange={(e) => setForm((prev) => ({ ...prev, length_cm: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.widthCm')}
+                type="number"
+                value={form.width_cm}
+                onChange={(e) => setForm((prev) => ({ ...prev, width_cm: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.locationCode')}
+                value={form.location_code}
+                onChange={(e) => setForm((prev) => ({ ...prev, location_code: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.brand')}
+                value={form.brand}
+                onChange={(e) => setForm((prev) => ({ ...prev, brand: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.model')}
+                value={form.model}
+                onChange={(e) => setForm((prev) => ({ ...prev, model: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.buildYear')}
+                type="number"
+                value={form.build_year}
+                onChange={(e) => setForm((prev) => ({ ...prev, build_year: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.hullMaterial')}
+                value={form.hull_material}
+                onChange={(e) => setForm((prev) => ({ ...prev, hull_material: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.draftCm')}
+                type="number"
+                value={form.draft_cm}
+                onChange={(e) => setForm((prev) => ({ ...prev, draft_cm: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.weightKg')}
+                type="number"
+                value={form.weight_kg}
+                onChange={(e) => setForm((prev) => ({ ...prev, weight_kg: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.fuelType')}
+                value={form.fuel_type}
+                onChange={(e) => setForm((prev) => ({ ...prev, fuel_type: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.engineBrand')}
+                value={form.engine_brand}
+                onChange={(e) => setForm((prev) => ({ ...prev, engine_brand: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.engineType')}
+                value={form.engine_type}
+                onChange={(e) => setForm((prev) => ({ ...prev, engine_type: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.enginePower')}
+                value={form.engine_power}
+                onChange={(e) => setForm((prev) => ({ ...prev, engine_power: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.mmsi')}
+                value={form.mmsi_number}
+                onChange={(e) => setForm((prev) => ({ ...prev, mmsi_number: e.target.value }))}
+              />
+              <Input
+                label={t('adminNew.boats.fields.insuranceNumber')}
+                value={form.insurance_number}
+                onChange={(e) => setForm((prev) => ({ ...prev, insurance_number: e.target.value }))}
+              />
+            </div>
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>

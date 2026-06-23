@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { CreditCard, Download, FileText, Mail, Printer, Receipt, RefreshCw, Send, User, Users, XCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, Download, FileText, Mail, Printer, Receipt, RefreshCw, Send, User, Users, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -636,12 +636,24 @@ export default function InvoiceDetailPage() {
               </AdminSectionCard>
             </div>
 
-            <Link
-              href={`/${locale}/admin/facturen`}
-              className="inline-flex text-sm font-semibold text-marine-700 hover:text-marine-800"
-            >
-              {t('adminNew.invoiceDetail.back')}
-            </Link>
+            <div className="flex flex-wrap items-center gap-4">
+              <Link
+                href={`/${locale}/admin/facturen`}
+                className="inline-flex text-sm font-semibold text-marine-700 hover:text-marine-800"
+              >
+                {t('adminNew.invoiceDetail.back')}
+              </Link>
+              {/* Trello #107: back-link to the originating stalling contract. */}
+              {(invoice.stalling_contract_id ?? invoice.stalling_contract?.id) ? (
+                <Link
+                  href={`/${locale}/admin/stalling/${invoice.stalling_contract_id ?? invoice.stalling_contract?.id}`}
+                  className="inline-flex items-center gap-1 text-sm font-semibold text-marine-700 hover:text-marine-800"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  {t('adminNew.invoiceDetail.backToContract')}
+                </Link>
+              ) : null}
+            </div>
           </>
         ) : null}
       </AdminContent>

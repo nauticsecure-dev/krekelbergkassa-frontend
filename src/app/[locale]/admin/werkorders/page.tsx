@@ -30,6 +30,37 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { useIntl } from '@/i18n/IntlProvider';
 import { formatDate } from '@/lib/format';
 
+// Trello #88: snake_case work-order type → human label fallback (used when
+// metadata.types has no matching entry and no i18n key is provided).
+const TYPE_LABELS: Record<string, string> = {
+  maintenance: 'Onderhoud',
+  repair: 'Reparatie',
+  inspection: 'Inspectie',
+  winterizing: 'Winterklaar maken',
+  cleaning: 'Reiniging',
+  antifouling: 'Antifouling',
+  engine: 'Motor',
+  electrical: 'Elektra',
+  rigging: 'Tuigage',
+  hull: 'Romp',
+  warranty: 'Garantie',
+  other: 'Overig',
+};
+
+function workOrderTypeLabel(
+  type: string | undefined | null,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+  metaTypes?: Array<{ value: string; label: string }>
+): string {
+  if (!type) return '—';
+  const fromMeta = metaTypes?.find((o) => o.value === type)?.label;
+  if (fromMeta) return fromMeta;
+  const key = `adminNew.workOrders.types.${type}`;
+  const translated = t(key);
+  if (translated !== key) return translated;
+  return TYPE_LABELS[type] ?? type;
+}
+
 export default function WorkOrdersPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
@@ -49,6 +80,7 @@ export default function WorkOrdersPage() {
   const boats = useQuery(['wo-boats'], () => boatsService.list({ per_page: 100 }));
   const metadata = useQuery(['wo-metadata'], () => workOrdersService.metadata().catch(() => null));
   const technicians = metadata.data?.technicians ?? [];
+  const types = metadata.data?.types ?? [];
   const createOrder = useMutation(workOrdersService.create);
   const updateOrder = useMutation((payload: { id: string; data: Record<string, unknown> }) =>
     workOrdersService.update(payload.id, payload.data)
@@ -156,7 +188,7 @@ export default function WorkOrdersPage() {
                           <div className="text-xs text-navy-400">{String(row.customer_name)}</div>
                         ) : null}
                       </AdminTableCell>
-                      <AdminTableCell>{String(row.type ?? '—')}</AdminTableCell>
+                      <AdminTableCell>{workOrderTypeLabel(row.type as string | undefined, t, types)}</AdminTableCell>
                       <AdminTableCell className="text-sm">
                         {String(
                           (row.assigned_to as { name?: string } | undefined)?.name ??
@@ -227,7 +259,15 @@ export default function WorkOrdersPage() {
                 ))}
               </select>
             </div>
-            <Input label={t('adminNew.workOrders.columns.type')} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} required />
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.type')}</label>
+              <select className="input-base w-full" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} required>
+                <option value="">{t('adminNew.workOrders.selectType')}</option>
+                {(types.length ? types : Object.keys(TYPE_LABELS).map((value) => ({ value, label: workOrderTypeLabel(value, t) }))).map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.assignee')}</label>

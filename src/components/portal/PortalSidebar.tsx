@@ -15,6 +15,7 @@ import {
   Ship,
   Sparkles,
   Warehouse,
+  Wrench,
 } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -45,6 +46,7 @@ export function PortalSidebar({ variant = 'desktop' }: Props) {
     { href: `/${locale}/dashboard/afspraken`, icon: Calendar, label: t('login.yourAppointments') },
     { href: `/${locale}/dashboard/stalling`, icon: Warehouse, label: t('services.storage.title') },
     { href: `/${locale}/dashboard/boten`, icon: Ship, label: t('login.yourBoats') },
+    { href: `/${locale}/dashboard/werkorders`, icon: Wrench, label: t('adminNew.portal.workOrders.title') },
     { href: `/${locale}/dashboard/facturen`, icon: FileText, label: t('login.invoices') },
     { href: `/${locale}/dashboard/documenten`, icon: Anchor, label: t('portalSidebar.documents') },
     { href: `/${locale}/dashboard/berichten`, icon: MessageCircle, label: t('feed.messages') },

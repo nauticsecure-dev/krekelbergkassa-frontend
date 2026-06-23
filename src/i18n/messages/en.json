@@ -508,7 +508,9 @@
     "ctaContact": "Contact",
     "editService": "Edit service",
     "onRequest": "On request",
-    "from": "from"
+    "from": "from",
+    "overviewTitle": "Our services and rates",
+    "overviewSubtitle": "Live rates per length class, straight from our system."
   },
   "verify": {
     "verifying": "Signing you in…",
@@ -1154,7 +1156,9 @@
       "deleted": "Removed",
       "open": "Open",
       "clear": "Clear",
-      "all": "All"
+      "all": "All",
+      "yes": "Yes",
+      "no": "No"
     },
     "dashboard": {
       "title": "Operations",
@@ -1198,6 +1202,20 @@
         "title": "Calculator",
         "subtitle": "Quick price calculation for marina services",
         "selectService": "Select service"
+      },
+      "recentActivity": {
+        "title": "Recent activity",
+        "subtitle": "The latest events in the system.",
+        "justNow": "Just now",
+        "minutesAgo": "{count} min ago",
+        "hoursAgo": "{count} h ago",
+        "daysAgo": "{count} days ago"
+      },
+      "cashDifference": {
+        "title": "Cash difference today",
+        "subtitle": "Difference from the latest cash closure.",
+        "none": "No cash closure yet today.",
+        "openClosure": "Go to cash closure"
       }
     },
     "customers": {
@@ -1238,10 +1256,41 @@
         "created": "Customer created",
         "createFailed": "Create failed",
         "blocked": "Customer blocked",
-        "unblocked": "Customer unblocked"
+        "unblocked": "Customer unblocked",
+        "magicLinkSent": "Login link sent",
+        "magicLinkFailed": "Failed to send login link"
       },
       "blockReason": "Reason (optional)",
-      "blockReasonPlaceholder": "Why is this customer being blocked?"
+      "blockReasonPlaceholder": "Why is this customer being blocked?",
+      "sendLoginLink": "Send login link",
+      "neverLoggedIn": "Never logged in",
+      "blockedOn": "Blocked on {date}",
+      "cityPlaceholder": "City",
+      "countryPlaceholder": "Country",
+      "lastLoginAny": "Any login",
+      "lastLoginRecent": "Logged in recently",
+      "lastLoginNever": "Never logged in",
+      "localeDefault": "Default",
+      "fields": {
+        "gender": "Gender",
+        "preferredLocale": "Preferred language"
+      },
+      "gender": {
+        "unspecified": "Unspecified",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
+      "address": {
+        "title": "Address",
+        "search": "Search address",
+        "searchPlaceholder": "Start typing to search an address",
+        "street": "Street",
+        "houseNumber": "House number",
+        "postalCode": "Postal code",
+        "city": "City",
+        "country": "Country"
+      }
     },
     "auth": {
       "portalSessionActive": "Portal session active",
@@ -1253,7 +1302,12 @@
       "togglePassword": "Toggle password visibility",
       "passwordPlaceholder": "••••••••",
       "sendMagicLink": "Send magic link",
-      "accountCreatedByAdmin": "Accounts are created by an administrator."
+      "accountCreatedByAdmin": "Accounts are created by an administrator.",
+      "mfaTitle": "Two-step verification",
+      "mfaSubtitle": "Enter the code from your authenticator app or a recovery code.",
+      "mfaCode": "Verification code",
+      "mfaVerify": "Verify",
+      "mfaFailed": "Code invalid or expired"
     },
     "sidebar": {
       "calculator": "Calculator",
@@ -1266,7 +1320,11 @@
       "timeline": "Timeline",
       "sales": "Sales",
       "suppliers": "Suppliers",
-      "accounting": "Accounting"
+      "accounting": "Accounting",
+      "bundles": "Bundles",
+      "security": "Security",
+      "apiCredentials": "API credentials",
+      "incidents": "Incidents"
     },
     "sales": {
       "title": "Sales",
@@ -1311,6 +1369,13 @@
         "supplier_ocr": "Supplier / OCR",
         "accounting": "Accounting",
         "system": "System"
+      },
+      "presets": {
+        "all": "All",
+        "myTasks": "My tasks",
+        "finance": "Finance",
+        "storage": "Storage",
+        "planning": "Planning"
       }
     },
     "productGroups": {
@@ -1342,7 +1407,13 @@
         "active": "Active",
         "revenueAccount": "Revenue account",
         "costCenter": "Cost center",
-        "profitCenter": "Profit center"
+        "profitCenter": "Profit center",
+        "iconNone": "No icon",
+        "publicSection": "Public",
+        "isPublic": "Show on website",
+        "slug": "URL name (slug)",
+        "publicDescription": "Public description",
+        "publicDescriptionPlaceholder": "Text shown on the website"
       },
       "toasts": {
         "created": "Group created",
@@ -1442,13 +1513,33 @@
         "activeContracts": "Active contracts",
         "boatsInStorage": "Boats in storage",
         "expiring30": "Expiring in 30 days",
-        "openBalance": "Open balance"
+        "openBalance": "Open balance",
+        "avgDuration": "Avg. duration",
+        "days": "{count} days",
+        "byContractType": "Revenue by contract type"
       },
       "topProductsTitle": "Top products",
       "slowProductsTitle": "Slow products",
       "marginByGroupTitle": "Marge per productgroep",
       "marginRevenue": "Omzet",
-      "marginCost": "Inkoop"
+      "marginCost": "Inkoop",
+      "revenueOverTimeTitle": "Revenue over time",
+      "agingOverdueTitle": "Overdue invoices",
+      "agingReminder": "Reminder",
+      "agingReminderSent": "Reminder sent",
+      "agingMarkPaid": "Paid",
+      "agingMarkedPaid": "Marked as paid",
+      "customersByOpen": "Customers by open balance",
+      "customersOverdue": "Overdue customers",
+      "workOrders": {
+        "title": "Work orders",
+        "period": "Period",
+        "open": "Open",
+        "overdue": "Overdue",
+        "completed": "Completed",
+        "laborHours": "Labor hours",
+        "materials": "Materials revenue"
+      }
     },
     "cashClose": {
       "title": "Cash close",
@@ -1487,7 +1578,8 @@
       "draft": "Draft",
       "open": "Open",
       "failed": "Failed",
-      "expiring": "Expiring"
+      "expiring": "Expiring",
+      "checkedOut": "Checked out"
     },
     "audit": {
       "title": "Audit",
@@ -1525,7 +1617,9 @@
         "type": "Type",
         "length": "Length",
         "location": "Location",
-        "status": "Status"
+        "status": "Status",
+        "lastActivity": "Last activity",
+        "currentStorageLocation": "Current storage location"
       },
       "fields": {
         "lengthCm": "Length (cm)",
@@ -1537,7 +1631,17 @@
         "engineBrand": "Engine brand",
         "engineType": "Engine type",
         "mmsi": "MMSI",
-        "insuranceNumber": "Insurance no."
+        "insuranceNumber": "Insurance no.",
+        "hullMaterial": "Hull material",
+        "draftCm": "Draft (cm)",
+        "weightKg": "Weight (kg)",
+        "fuelType": "Fuel type",
+        "enginePower": "Engine power",
+        "serialNumbers": "Serial numbers",
+        "callSign": "Call sign",
+        "insuranceCompany": "Insurance company",
+        "insuranceExpiry": "Insurance expiry date",
+        "registrationNumber": "Registration number"
       },
       "type": {
         "motor": "Motor",
@@ -1573,7 +1677,11 @@
       },
       "stats": {
         "daysInStorage": "Days in storage",
-        "revenue": "Revenue"
+        "revenue": "Revenue",
+        "totalBoats": "Total boats",
+        "boatsInStorage": "In storage",
+        "activeWorkOrders": "Active work orders",
+        "openBalance": "Open balance"
       },
       "photoFolders": {
         "arrival": "Arrival",
@@ -1606,7 +1714,9 @@
       "statusAll": "All statuses",
       "statusInStorage": "In storage",
       "statusWorkInProgress": "Work in progress",
-      "statusRegistered": "Registered"
+      "statusRegistered": "Registered",
+      "insuranceExpired": "Insurance expired",
+      "insuranceExpiringSoon": "Insurance expires in {days} days"
     },
     "kassa": {
       "title": "Cash Desk",
@@ -1760,7 +1870,9 @@
       "searchAddress": "Adres zoeken",
       "searchAddressPlaceholder": "Begin met typen voor Google Maps suggesties…",
       "customerNotes": "Notities",
-      "customerNotesPlaceholder": "Interne opmerkingen over deze klant"
+      "customerNotesPlaceholder": "Interne opmerkingen over deze klant",
+      "editProduct": "Edit product",
+      "hotProduct": "{count} sold"
     },
     "stalling": {
       "title": "Storage",
@@ -1785,7 +1897,8 @@
         "paidUntil": "Paid until",
         "openBalance": "Open balance",
         "location": "Location",
-        "status": "Status"
+        "status": "Status",
+        "bok": "Berth"
       },
       "invoice": "Invoice",
       "cancel": "Cancel",
@@ -1819,7 +1932,21 @@
         "depositPct": "Deposit (%)",
         "sendContractEmail": "Email the contract to the customer",
         "bokNumber": "Bok / berth number",
-        "bokNumberPlaceholder": "e.g. BOK-12"
+        "bokNumberPlaceholder": "e.g. BOK-12",
+        "notes": "Notes",
+        "changeNote": "Reason for change",
+        "changeNotePlaceholder": "E.g. customer requested change",
+        "billingType": "Billing",
+        "priceTotal": "Total price (€)",
+        "widthCm": "Width (cm)",
+        "draftCm": "Draft (cm)",
+        "buildYear": "Build year",
+        "registration": "Registration",
+        "street": "Street",
+        "houseNumber": "House number",
+        "postalCode": "Postal code",
+        "city": "City",
+        "companyName": "Company name (optional)"
       },
       "quickEdit": {
         "title": "Update contract",
@@ -1829,7 +1956,9 @@
         "locationPlaceholder": "e.g. Hall A · row 3",
         "locationEmpty": "No location set",
         "editAria": "Edit status and location",
-        "lifecycleLabel": "Contract status"
+        "lifecycleLabel": "Contract status",
+        "noteLabel": "Why was the status changed?",
+        "notePlaceholder": "Optional explanation"
       },
       "brokerage": {
         "toggle": "Brokerage (makelaardij)",
@@ -1842,16 +1971,46 @@
       "toasts": {
         "created": "Contract created",
         "statusUpdated": "Status updated",
-        "locationUpdated": "Location updated"
+        "locationUpdated": "Location updated",
+        "contractUpdated": "Contract updated",
+        "depositInvoiceSent": "Contract created — deposit invoice sent",
+        "kassaOpened": "Register opened with deposit"
       },
       "lifecycle": {
         "active": "Active",
         "ended": "Ended",
         "checkedOut": "Checked out",
-        "cancelled": "Cancelled"
+        "cancelled": "Cancelled",
+        "draft": "Draft"
       },
       "tabs": {
         "overview": "Overview"
+      },
+      "filterPaymentGroup": "Payment status",
+      "filterLifecycleGroup": "Contract status",
+      "editContract": "Edit",
+      "editFull": {
+        "title": "Edit contract",
+        "subtitle": "Change customer, boat, period or payment."
+      },
+      "billing": {
+        "oneTime": "One-time",
+        "monthly": "Monthly",
+        "yearly": "Yearly"
+      },
+      "inline": {
+        "save": "Save",
+        "editPaidUntil": "Edit paid until",
+        "editBok": "Edit berth number"
+      },
+      "pricePreview": {
+        "deposit": "Deposit"
+      },
+      "invoiceLabels": {
+        "deposit": "10% Deposit",
+        "final": "Final invoice",
+        "brokerage": "Brokerage",
+        "invoice": "Invoice"
       }
     },
     "sync": {
@@ -1912,7 +2071,21 @@
         "statusCompleted": "Completed",
         "statusCancelled": "Cancelled",
         "statusInProgress": "In progress",
-        "statusPending": "Pending"
+        "statusPending": "Pending",
+        "cancelAppointment": "Cancel appointment",
+        "cancelConfirm": "Are you sure you want to cancel this appointment?",
+        "cancelReasonLabel": "Reason (optional)",
+        "cancelReasonPlaceholder": "Optionally provide a reason…",
+        "cancelledToast": "Appointment cancelled",
+        "requestReschedule": "Request reschedule",
+        "rescheduleHint": "Tell us your preferred date and time. The yard will get in touch.",
+        "preferredDate": "Preferred date",
+        "preferredTime": "Preferred time",
+        "rescheduleReason": "Reason",
+        "rescheduleReasonPlaceholder": "Why do you want to reschedule?",
+        "sendRequest": "Send request",
+        "rescheduleRequestedToast": "Reschedule request sent",
+        "actionFailed": "Action failed"
       },
       "updates": {
         "title": "My updates",
@@ -1982,7 +2155,8 @@
         "metricAvgLength": "Avg. length",
         "noLocation": "No location",
         "noRegistration": "No registration number",
-        "planService": "Plan service"
+        "planService": "Plan service",
+        "viewDossier": "View dossier"
       },
       "documents": {
         "title": "Documents",
@@ -2025,7 +2199,9 @@
         "priorityNormal": "Normal",
         "unknownDate": "Unknown date",
         "priorityLabel": "Priority",
-        "statusLabel": "Status"
+        "statusLabel": "Status",
+        "loadMore": "Load more",
+        "openItem": "Open"
       },
       "settings": {
         "title": "Portal settings",
@@ -2048,6 +2224,33 @@
         "securitySupport": "Need help? Call Krekelberg for account questions",
         "quickLinks": "Quick links",
         "quickLinksHint": "Go directly to frequently used portal pages."
+      },
+      "boatDossier": {
+        "subtitle": "Complete overview of your boat",
+        "boatInfo": "Boat details",
+        "boatInfoDesc": "Specifications and key data",
+        "storage": "Storage",
+        "noStorage": "No storage",
+        "noStorageMessage": "There are no storage contracts for this boat.",
+        "noWorkOrders": "No work orders",
+        "noWorkOrdersMessage": "There are no work orders for this boat yet.",
+        "noInvoices": "No invoices",
+        "noInvoicesMessage": "There are no invoices for this boat yet.",
+        "noTimeline": "No timeline",
+        "noTimelineMessage": "There are no events for this boat yet."
+      },
+      "workOrders": {
+        "title": "Work orders",
+        "subtitle": "Track the status of maintenance on your boat",
+        "listOverview": "An overview of your work orders",
+        "loading": "Loading work orders…",
+        "empty": "No work orders",
+        "emptyMessage": "There are no work orders for your boats yet.",
+        "metricTotal": "Total",
+        "metricOpen": "Open",
+        "metricDone": "Completed",
+        "dueLabel": "Due {date}",
+        "viewInvoice": "View invoice"
       }
     },
     "shell": {
@@ -2214,7 +2417,8 @@
       "confirmSend": "Send this invoice to the customer by email?",
       "confirmMarkPaid": "Mark this invoice as paid manually? Verify the amount and payment method.",
       "creditedFor": "Credit note for",
-      "creditNotes": "Credit notes"
+      "creditNotes": "Credit notes",
+      "backToContract": "Back to storage contract"
     },
     "customerDetail": {
       "fallbackTitle": "Customer",
@@ -2283,7 +2487,28 @@
       "street": "Street & number",
       "postalCode": "Postal code",
       "city": "City",
-      "country": "Country"
+      "country": "Country",
+      "timeline": "Timeline",
+      "viewTimeline": "View full timeline",
+      "internalNote": "Internal",
+      "health": {
+        "title": "Customer health",
+        "subtitle": "A score based on payments, contracts and orders.",
+        "recompute": "Recompute",
+        "recomputed": "Health score recomputed",
+        "recentPaid": "Recent payments",
+        "overdue": "Overdue",
+        "activeContract": "Active contract",
+        "openOrders": "Open orders",
+        "labels": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "fair": "Fair",
+          "poor": "Poor",
+          "at_risk": "At risk",
+          "critical": "Critical"
+        }
+      }
     },
     "calculator": {
       "title": "Calculator",
@@ -2370,7 +2595,31 @@
         "statusInvoice": "Converted to invoice",
         "statusPaid": "Paid",
         "statusCancelled": "Cancelled",
-        "statusArchived": "Archived"
+        "statusArchived": "Archived",
+        "exportCsv": "Export CSV",
+        "exporting": "Exporting…",
+        "quoteAny": "Quote: any",
+        "quoteYes": "Has quote",
+        "quoteNo": "No quote",
+        "invoiceAny": "Invoice: any",
+        "invoiceYes": "Has invoice",
+        "invoiceNo": "No invoice",
+        "createdRange": "Created (from/to)",
+        "updatedRange": "Updated (from/to)",
+        "updatedFrom": "Updated from",
+        "updatedTo": "Updated to",
+        "totalRange": "Total amount (€)",
+        "totalMin": "Min",
+        "totalMax": "Max",
+        "selectAll": "Select all",
+        "selectRow": "Select row",
+        "selectedCount": "{count} selected",
+        "clearSelection": "Clear selection",
+        "bulkArchived": "Selected records archived",
+        "bulkDuplicated": "Selected records duplicated",
+        "confirmBulkArchive": "Archive {count} record(s)?",
+        "editingRecord": "Editing record",
+        "newRecord": "New"
       },
       "pricing": {
         "title": "Manage pricing",
@@ -2392,7 +2641,8 @@
         "company": "Company",
         "invoicing": "Invoicing",
         "payments": "Payments",
-        "locales": "Languages"
+        "locales": "Languages",
+        "emailOcr": "Email & OCR"
       },
       "company": {
         "title": "Company details",
@@ -2436,6 +2686,21 @@
         "mollieTestSuccess": "Mollie test successful",
         "paymentsSaved": "Payment settings saved",
         "localesSaved": "Locale settings saved"
+      },
+      "emailOcr": {
+        "title": "Email & OCR",
+        "subtitle": "Inbound invoice mailbox, OCR model and WhatsApp integration",
+        "inboundMailbox": "Inbound mailbox address",
+        "inboundHint": "Forward supplier invoices to this address; they become imports automatically.",
+        "copy": "Copy",
+        "copied": "Copied",
+        "ocrModel": "OCR model",
+        "ocrModelHint": "The model that reads documents.",
+        "whatsapp": "WhatsApp (Twilio)",
+        "whatsappHint": "Receive invoices via WhatsApp. Secrets stay backend-only.",
+        "configured": "Configured",
+        "notConfigured": "Not configured",
+        "secretsBackendOnly": "Secrets stay backend-only"
       }
     },
     "appointments": {
@@ -2487,7 +2752,8 @@
         "revenue": "Revenue (incl. VAT)",
         "lastSale": "Last sale",
         "empty": "No sales recorded yet.",
-        "margin": "Margin"
+        "margin": "Margin",
+        "lowStock": "Low stock"
       },
       "ai": {
         "imageTitle": "Product image",
@@ -2536,7 +2802,14 @@
         "aliases": "Aliases",
         "aliasesPlaceholder": "Alternative search names",
         "created": "Created",
-        "updated": "Updated"
+        "updated": "Updated",
+        "costPrice": "Cost price (€)",
+        "stockQuantity": "Stock",
+        "stockMinimum": "Minimum stock",
+        "scanBarcode": "Scan",
+        "barcodeScanned": "Barcode scanned: {code}",
+        "uploadImage": "Upload photo",
+        "uploadHint": "Save the product first to upload a photo."
       },
       "sections": {
         "identity": "Identity",
@@ -2604,7 +2877,9 @@
         "lastLogin": "Last login"
       },
       "fields": {
-        "password": "Password"
+        "password": "Password",
+        "gender": "Gender",
+        "language": "Language"
       },
       "modal": {
         "title": "New user",
@@ -2616,7 +2891,22 @@
         "activated": "User activated",
         "deactivated": "User deactivated"
       },
-      "confirmDeactivate": "Are you sure you want to deactivate {name}? They will no longer be able to sign in."
+      "confirmDeactivate": "Are you sure you want to deactivate {name}? They will no longer be able to sign in.",
+      "searchPlaceholder": "Search by name or email",
+      "allRoles": "All roles",
+      "allStatuses": "All statuses",
+      "allLanguages": "All languages",
+      "statusActive": "Active",
+      "statusBlocked": "Blocked",
+      "statusNeverLoggedIn": "Never logged in",
+      "neverLoggedIn": "Never logged in",
+      "localeDefault": "Default",
+      "gender": {
+        "unspecified": "Unspecified",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      }
     },
     "calendar": {
       "title": "Calendar",
@@ -2663,7 +2953,9 @@
         "closedDay": "Closed on this day",
         "date": "Date",
         "label": "Label",
-        "notes": "Notes"
+        "notes": "Notes",
+        "capacityBoats": "Capacity (boats)",
+        "capacityArea": "Capacity (m²)"
       },
       "locationModal": {
         "title": "New boat location",
@@ -2856,7 +3148,9 @@
         "bulkApproved": "Selected imports approved",
         "bulkRejected": "Selected imports rejected",
         "batchUploaded": "{count} files uploaded",
-        "bulkRetried": "OCR opnieuw gestart voor geselecteerde imports"
+        "bulkRetried": "OCR opnieuw gestart voor geselecteerde imports",
+        "retried": "OCR restarted",
+        "photoUploaded": "{count} photos uploaded"
       },
       "review": "Review",
       "batchUpload": "Batch upload",
@@ -2886,11 +3180,30 @@
         "zoomOut": "Uitzoomen",
         "rotate": "Draaien",
         "previous": "Vorige",
-        "next": "Volgende"
+        "next": "Volgende",
+        "corrections": "Corrections",
+        "noSupplierLinked": "No supplier linked to this import.",
+        "createSupplier": "Create supplier",
+        "createSupplierHint": "Create a new supplier and link it to this import.",
+        "supplierCreated": "Supplier created",
+        "supplierNameRequired": "Enter a name for the supplier",
+        "iban": "IBAN",
+        "paymentTermsDays": "Payment terms (days)"
       },
       "dropzoneTitle": "Sleep bestanden hierheen",
       "dropzoneHint": "PDF of afbeelding — tot 50 bestanden tegelijk",
-      "retryOcr": "OCR opnieuw"
+      "retryOcr": "OCR opnieuw",
+      "exportCsv": "Export CSV",
+      "photoCapture": "Take photo",
+      "sourcePhoto": "Photos",
+      "duplicate": {
+        "title": "Possible duplicate",
+        "subtitle": "Compare this import with the matched one before marking it.",
+        "field": "Field",
+        "thisImport": "This import",
+        "matchedImport": "Matched import",
+        "confirm": "Mark as duplicate"
+      }
     },
     "templates": {
       "title": "Extraction templates",
@@ -2952,6 +3265,15 @@
         "total": "Total",
         "iban": "IBAN",
         "line_items": "Line items"
+      },
+      "history": {
+        "title": "Version history",
+        "subtitle": "OCR performance of this template",
+        "version": "Version",
+        "usedCount": "Used",
+        "successCount": "Succeeded",
+        "correctionCount": "Corrections",
+        "averageConfidence": "Avg. confidence"
       }
     },
     "workOrders": {
@@ -3022,7 +3344,10 @@
         "unitPrice": "Unit €",
         "activity": "Activity",
         "noActivity": "No activity yet.",
-        "estimatedHours": "Estimated hours"
+        "estimatedHours": "Estimated hours",
+        "tabTimeline": "Timeline",
+        "tabAudit": "Audit log",
+        "changes": "{count} change(s)"
       },
       "forbiddenTitle": "No access to work orders",
       "forbiddenMessage": "Your account does not have permission for /v1/work-orders. The admin role needs work-orders permissions granted in the API (Spatie), same as staff/manager.",
@@ -3032,6 +3357,29 @@
         "after": "After",
         "damage": "Damage",
         "inspection": "Inspection"
+      },
+      "selectType": "Select type",
+      "types": {
+        "maintenance": "Maintenance",
+        "repair": "Repair",
+        "inspection": "Inspection",
+        "winterizing": "Winterizing",
+        "cleaning": "Cleaning",
+        "antifouling": "Antifouling",
+        "engine": "Engine",
+        "electrical": "Electrical",
+        "rigging": "Rigging",
+        "hull": "Hull",
+        "warranty": "Warranty",
+        "other": "Other"
+      },
+      "overlay": {
+        "title": "Work orders",
+        "description": "Work orders due this month",
+        "toggle": "Show work orders",
+        "hidden": "Enable to show work orders on the calendar.",
+        "emptyTitle": "No work orders",
+        "emptyMessage": "There are no work orders due in this period."
       }
     },
     "reminders": {
@@ -3119,7 +3467,30 @@
       "statusCompleted": "Completed",
       "statusDismissed": "Dismissed",
       "preview": "Preview",
-      "previewTitle": "Reminder preview"
+      "previewTitle": "Reminder preview",
+      "entityLabels": {
+        "storage_contract": "Storage contract",
+        "invoice": "Invoice",
+        "work_order": "Work order",
+        "insurance": "Insurance",
+        "planning": "Planning"
+      },
+      "triggerLabels": {
+        "overdue_after": "Overdue after",
+        "due_before": "Due before",
+        "expires_before": "Expires before",
+        "inactive_after": "Inactive after"
+      },
+      "testSend": {
+        "button": "Test send",
+        "title": "Send test reminder",
+        "subtitle": "Send a one-off test reminder to verify the rule.",
+        "email": "Recipient email",
+        "entityId": "Entity ID (optional)",
+        "entityIdHint": "e.g. an invoice or contract ID",
+        "submit": "Send",
+        "sent": "Test reminder sent"
+      }
     },
     "suppliers": {
       "title": "Suppliers",
@@ -3190,6 +3561,225 @@
       "toasts": {
         "markedPaid": "Marked as paid"
       }
+    },
+    "bundles": {
+      "title": "Bundles",
+      "subtitle": "Compose product packages for fast checkout",
+      "new": "New bundle",
+      "editTitle": "Edit bundle",
+      "formSubtitle": "Name the bundle and pick its products",
+      "emptyTitle": "No bundles yet",
+      "emptyMessage": "Create a bundle to add several products in one click.",
+      "confirmDelete": "Are you sure you want to delete this bundle?",
+      "addItem": "Add product",
+      "noItems": "No products in this bundle yet.",
+      "columns": {
+        "name": "Bundle",
+        "items": "Products"
+      },
+      "fields": {
+        "name": "Name",
+        "color": "Color",
+        "description": "Description",
+        "items": "Products"
+      },
+      "toasts": {
+        "created": "Bundle created",
+        "updated": "Bundle updated",
+        "deleted": "Bundle deleted"
+      }
+    },
+    "security": {
+      "title": "Security",
+      "subtitle": "Security posture and suspicious activity at a glance.",
+      "refresh": "Refresh",
+      "loading": "Loading security data…",
+      "statusTitle": "Overall status",
+      "statusSubtitle": "Summarised platform security status.",
+      "checkedAt": "Last checked: {time}",
+      "status": {
+        "ok": "OK",
+        "warning": "Warning",
+        "critical": "Critical"
+      },
+      "panels": {
+        "failedLogins24h": "Failed logins (24h)",
+        "failedLogins1h": "Failed logins (1h)",
+        "lockedUsers": "Locked users",
+        "suspiciousIps": "Suspicious IPs",
+        "apiActionFailures1h": "API action failures (1h)",
+        "criticalQueueFailures24h": "Critical queue failures (24h)",
+        "adminsWithoutMfa": "Admins without MFA",
+        "credentialsExpiring7d": "Credentials expiring (7d)"
+      },
+      "suspiciousTitle": "Suspicious IP addresses",
+      "suspiciousSubtitle": "IP addresses showing abnormal behaviour.",
+      "noSuspicious": "No suspicious IP addresses found.",
+      "attempts": "{count} attempts"
+    },
+    "credentials": {
+      "title": "API credentials",
+      "subtitle": "Manage and reveal API keys for external services.",
+      "loading": "Loading credentials…",
+      "empty": "No credentials found.",
+      "count": "{count} credentials",
+      "allServices": "All services",
+      "allEnvironments": "All environments",
+      "environments": {
+        "production": "Production",
+        "staging": "Staging",
+        "development": "Development"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "expired": "Expired"
+      },
+      "columns": {
+        "name": "Name",
+        "service": "Service",
+        "environment": "Environment",
+        "status": "Status",
+        "expires": "Expires",
+        "lastUsed": "Last used",
+        "createdBy": "Created by",
+        "actions": "Actions"
+      },
+      "actions": {
+        "new": "New credential",
+        "reveal": "Reveal"
+      },
+      "fields": {
+        "name": "Name",
+        "service": "Service",
+        "environment": "Environment",
+        "keyValue": "Key value",
+        "description": "Description"
+      },
+      "modal": {
+        "title": "New credential"
+      },
+      "reveal": {
+        "title": "Key value",
+        "auditNote": "Note: revealing this key is recorded in the audit log.",
+        "copy": "Copy",
+        "copied": "Copied",
+        "revealedAt": "Revealed at {time}"
+      },
+      "delete": {
+        "title": "Delete credential",
+        "message": "Are you sure you want to delete '{name}'?"
+      },
+      "toasts": {
+        "created": "Credential created",
+        "deleted": "Credential deleted"
+      }
+    },
+    "incidents": {
+      "title": "Incidents",
+      "subtitle": "Log and track security and operational incidents.",
+      "loading": "Loading incidents…",
+      "empty": "No incidents found.",
+      "count": "{count} incidents",
+      "allStatuses": "All statuses",
+      "allSeverities": "All severities",
+      "unassigned": "Unassigned",
+      "severities": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+      },
+      "statuses": {
+        "open": "Open",
+        "investigating": "Investigating",
+        "identified": "Identified",
+        "monitoring": "Monitoring",
+        "resolved": "Resolved"
+      },
+      "columns": {
+        "title": "Title",
+        "severity": "Severity",
+        "status": "Status",
+        "category": "Category",
+        "created": "Created"
+      },
+      "actions": {
+        "new": "New incident"
+      },
+      "fields": {
+        "title": "Title",
+        "severity": "Severity",
+        "category": "Category",
+        "affectedServices": "Affected services",
+        "affectedServicesHint": "Comma-separated",
+        "description": "Description",
+        "detectedAt": "Detected at",
+        "status": "Status",
+        "assignedTo": "Assigned to",
+        "note": "Note"
+      },
+      "modal": {
+        "title": "New incident"
+      },
+      "detail": {
+        "title": "Incident details",
+        "timeline": "Timeline",
+        "noTimeline": "No timeline entries yet.",
+        "updateTitle": "Update status",
+        "update": "Update",
+        "resolve": "Resolve"
+      },
+      "toasts": {
+        "created": "Incident created",
+        "updated": "Incident updated",
+        "resolved": "Incident resolved"
+      }
+    },
+    "gdpr": {
+      "title": "GDPR / privacy",
+      "subtitle": "Export or anonymise this customer's personal data.",
+      "export": "Export data",
+      "anonymize": "Anonymise",
+      "hint": "Export produces a JSON file with all linked data. Anonymisation is irreversible.",
+      "anonymizeModal": {
+        "title": "Anonymise customer",
+        "message": "This irreversibly removes all personal data. Type ANONYMIZE to confirm.",
+        "confirmLabel": "Type ANONYMIZE",
+        "reasonLabel": "Reason"
+      },
+      "toasts": {
+        "exported": "Export started",
+        "anonymized": "Customer anonymised"
+      }
+    },
+    "backups": {
+      "title": "Backups",
+      "subtitle": "Recent backup runs and manual backups.",
+      "runNow": "Run backup now",
+      "empty": "No backups run yet.",
+      "size": "{mb} MB",
+      "duration": "{seconds}s",
+      "triggeredBy": "By {by}",
+      "status": {
+        "completed": "Completed",
+        "success": "Completed",
+        "running": "Running",
+        "failed": "Failed",
+        "pending": "Queued",
+        "unknown": "Unknown"
+      },
+      "types": {
+        "database": "Database",
+        "full": "Full"
+      },
+      "fields": {
+        "type": "Type",
+        "notes": "Notes"
+      },
+      "toasts": {
+        "started": "Backup started"
+      }
     }
   },
   "planning": {
@@ -3218,6 +3808,91 @@
     "completed": "Appointment completed",
     "cancelled": "Appointment cancelled",
     "actionFailed": "Action failed",
-    "customerHint": "Contact the yard to change or cancel this appointment."
+    "customerHint": "Contact the yard to change or cancel this appointment.",
+    "statToday": "Today",
+    "statTomorrow": "Tomorrow",
+    "statPending": "Pending requests",
+    "statCompletedWeek": "Completed this week",
+    "filterAllEmployees": "All employees",
+    "filterAllServices": "All services",
+    "serviceCrane": "Crane",
+    "serviceWash": "Hull wash",
+    "serviceStorage": "Storage",
+    "serviceWinter": "Winter storage",
+    "viewWeek": "Week",
+    "viewMonth": "Month",
+    "viewDay": "Day",
+    "viewAgenda": "Agenda",
+    "agendaEmpty": "No appointments in this range.",
+    "createAppointment": "Create appointment",
+    "createTitle": "New appointment",
+    "createSubtitle": "Schedule an appointment for a customer and boat.",
+    "createConfirm": "Create appointment",
+    "created": "Appointment created",
+    "checking": "Checking…",
+    "fieldCustomer": "Customer",
+    "fieldBoat": "Boat",
+    "fieldService": "Service",
+    "fieldLocation": "Location / crane",
+    "fieldDate": "Date",
+    "fieldStartTime": "Start time",
+    "fieldDuration": "Duration (min)",
+    "fieldAssignee": "Employee",
+    "unassigned": "Unassigned",
+    "selectPlaceholder": "Select…",
+    "conflictTitle": "Possible conflicts found",
+    "conflictConfirmAnyway": "Continue and schedule this appointment anyway",
+    "selectMode": "Select",
+    "exitSelect": "Exit selection",
+    "export": "Export",
+    "bulkSelected": "{count} selected",
+    "bulkAssign": "Assign",
+    "bulkAssignPlaceholder": "Employee…",
+    "bulkSetStatus": "Set status",
+    "bulkStatusPlaceholder": "Status…",
+    "bulkCancel": "Cancel",
+    "bulkClear": "Clear selection",
+    "bulkDone": "Bulk action completed",
+    "statusConfirmed": "Confirmed",
+    "statusCompleted": "Completed"
+  },
+  "cms": {
+    "edit": "Edit",
+    "enterEdit": "Enable edit mode",
+    "exitEdit": "Exit edit mode",
+    "editingOn": "Editing on",
+    "toolbarLabel": "CMS toolbar",
+    "editText": "Edit text",
+    "editImage": "Edit image",
+    "openingHours": "Opening hours",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saved": "Saved",
+    "saveError": "Could not save",
+    "uploadError": "Upload failed",
+    "imageUploaded": "Image uploaded",
+    "uploadImage": "Upload image",
+    "localeHint": "Only changed languages are saved.",
+    "textPlaceholder": "Enter text…",
+    "focalPoint": "Focal point",
+    "focalHint": "Click the image to set the focal point.",
+    "overlay": "Dark overlay",
+    "altText": "Alt text",
+    "altPlaceholder": "Describe the image…",
+    "seoTitle": "SEO",
+    "noPage": "No page registered",
+    "noPageHint": "Open a public page to edit its SEO.",
+    "metaTitle": "Page title",
+    "metaDescription": "Meta description",
+    "robots": "Robots",
+    "globalTitle": "Global settings",
+    "globalDesc": "Changes apply across the whole site.",
+    "global": {
+      "phone": "Phone number",
+      "city": "City",
+      "tagline": "Footer tagline",
+      "facebook": "Facebook URL",
+      "instagram": "Instagram URL"
+    }
   }
 }

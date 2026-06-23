@@ -16,7 +16,10 @@ import {
 import {
   Bar,
   BarChart,
+  CartesianGrid,
   Cell,
+  Line,
+  LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -39,8 +42,8 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
-import { kassaService } from '@/lib/services';
-import { useQuery } from '@/lib/hooks/useAsync';
+import { kassaService, invoicesService, workOrdersService } from '@/lib/services';
+import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatCurrency } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -79,6 +82,27 @@ export default function ReportsPage() {
   const report = useQuery([period], () => kassaService.analytics({ period }));
   const money = (cents: unknown) => formatCurrency(n(cents) / 100, dateLocale);
 
+  // Trello #88: work-order stats card with a month selector.
+  const [woMonth, setWoMonth] = React.useState('');
+  const workOrderStats = useQuery([woMonth], () =>
+    workOrdersService.stats(woMonth ? { period: woMonth } : undefined).catch(() => null)
+  );
+  // Trello #85: overdue invoices for the aging action list.
+  const overdueInvoices = useQuery(['overdue-invoices'], () =>
+    invoicesService.list({ status: 'overdue', per_page: 20 }).catch(() => ({ data: [] }))
+  );
+  const sendReminder = useMutation((id: string) => invoicesService.sendReminder(id, { channel: 'email' }));
+  const markPaid = useMutation((id: string) => invoicesService.markPaid(id, { method: 'bank_transfer' }));
+  const agingAction = async (label: string, fn: () => Promise<unknown>) => {
+    try {
+      await fn();
+      push({ tone: 'success', title: label });
+      await overdueInvoices.refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
   const onExport = async () => {
     setExporting(true);
     try {
@@ -112,6 +136,20 @@ export default function ReportsPage() {
   const occupancy = obj(data.occupancy);
   const customerAnalytics = obj(data.customer_analytics);
   const topCustomers = arr(customerAnalytics.top_customers_by_revenue);
+  // Trello #85: top customers by open balance + overdue customers.
+  const topByOpen = arr(customerAnalytics.top_customers_by_open_balance);
+  const overdueCustomers = arr(customerAnalytics.overdue_customers);
+  // Trello #85: storage avg duration + revenue by contract type.
+  const avgDuration = n(storage.avg_duration_days);
+  const byContractType = arr(storage.by_contract_type);
+  // Trello #85: revenue over time (line for daily/weekly, bar for monthly).
+  const revenueSeries = obj(data.revenue_time_series);
+  const revenuePoints = arr(revenueSeries.points).map((p) => ({
+    name: str(p.label ?? p.bucket) || '—',
+    value: n(p.turnover_cents) / 100,
+    count: n(p.invoice_count),
+  }));
+  const seriesIsMonthly = str(revenueSeries.granularity) === 'monthly';
   const forecast = obj(data.forecast);
   // Trello #86: per-product revenue breakdown (top / slow products).
   const products = obj(data.products);
@@ -135,10 +173,17 @@ export default function ReportsPage() {
     value: n(m.total) / 100,
     fill: PIE_COLORS[i % PIE_COLORS.length],
   }));
+  // Trello #80/#86: use the product group's own colour for chart segments + swatches.
+  const groupColor = (g: Rec, i: number) =>
+    str(g.color ?? g.group_color ?? g.display_color) || PIE_COLORS[i % PIE_COLORS.length];
   const groupBars = byGroup
     .slice()
     .sort((a, b) => n(b.total_incl_vat) - n(a.total_incl_vat))
-    .map((g) => ({ name: str(g.group_name ?? g.group_code) || '—', value: n(g.total_incl_vat) / 100 }));
+    .map((g, i) => ({
+      name: str(g.group_name ?? g.group_code) || '—',
+      value: n(g.total_incl_vat) / 100,
+      fill: groupColor(g, i),
+    }));
   const agingBars = aging.map((a) => ({
     name: str(a.label ?? a.range ?? a.bucket) || '—',
     value: n(a.amount_cents ?? a.total_cents ?? a.amount) / (a.amount != null ? 1 : 100),
@@ -229,7 +274,11 @@ export default function ReportsPage() {
                       <XAxis type="number" hide />
                       <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12 }} />
                       <Tooltip formatter={(v: number) => formatCurrency(v, dateLocale)} />
-                      <Bar dataKey="value" radius={[0, 4, 4, 0]} fill="#1f93b8" />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                        {groupBars.map((g, i) => (
+                          <Cell key={i} fill={g.fill} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -243,7 +292,10 @@ export default function ReportsPage() {
                         href={groupDrillHref(str(g.group_code ?? g.group_name))}
                         className="flex items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-sand-50"
                       >
-                        <span className="font-medium text-navy-800">{str(g.group_name ?? g.group_code) || '—'}</span>
+                        <span className="flex items-center gap-2 font-medium text-navy-800">
+                          <span className="inline-block h-3 w-3 rounded-full" style={{ background: groupColor(g, i) }} />
+                          {str(g.group_name ?? g.group_code) || '—'}
+                        </span>
                         <span className="font-semibold text-marine-700">{money(g.total_incl_vat)} →</span>
                       </Link>
                     ))}
@@ -283,6 +335,31 @@ export default function ReportsPage() {
                 )}
               </AdminSectionCard>
             </div>
+
+            {/* Trello #85: revenue over time */}
+            {revenuePoints.length ? (
+              <AdminSectionCard title={t('adminNew.reports.revenueOverTimeTitle')} icon={BarChart3} className="mt-5">
+                <ResponsiveContainer width="100%" height={260}>
+                  {seriesIsMonthly ? (
+                    <BarChart data={revenuePoints} margin={{ left: 8, right: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eef2f6" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} width={70} tickFormatter={(v: number) => formatCurrency(v, dateLocale)} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v, dateLocale)} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="#1f93b8" />
+                    </BarChart>
+                  ) : (
+                    <LineChart data={revenuePoints} margin={{ left: 8, right: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eef2f6" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} width={70} tickFormatter={(v: number) => formatCurrency(v, dateLocale)} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v, dateLocale)} />
+                      <Line type="monotone" dataKey="value" stroke="#1f93b8" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  )}
+                </ResponsiveContainer>
+              </AdminSectionCard>
+            ) : null}
 
             {/* VAT + aging */}
             <div className="bento-grid mt-5 lg:grid-cols-2">
@@ -326,6 +403,31 @@ export default function ReportsPage() {
                 ) : (
                   <p className="text-sm text-navy-500">{t('adminNew.reports.noAging')}</p>
                 )}
+                {/* Trello #85: per-invoice aging actions (reminder / mark paid / open). */}
+                {(overdueInvoices.data?.data ?? []).length ? (
+                  <div className="mt-4 space-y-1.5 border-t border-navy-50 pt-3">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">
+                      {t('adminNew.reports.agingOverdueTitle')}
+                    </p>
+                    {(overdueInvoices.data?.data ?? []).slice(0, 10).map((inv) => (
+                      <div key={inv.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sand-50">
+                        <span className="font-medium text-navy-800">{inv.invoice_number}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-amber-700">{money(inv.outstanding_cents ?? inv.total_amount_cents)}</span>
+                          <Button size="sm" variant="ghost" disabled={sendReminder.loading} onClick={() => void agingAction(t('adminNew.reports.agingReminderSent'), () => sendReminder.mutate(inv.id))}>
+                            {t('adminNew.reports.agingReminder')}
+                          </Button>
+                          <Button size="sm" variant="ghost" disabled={markPaid.loading} onClick={() => void agingAction(t('adminNew.reports.agingMarkedPaid'), () => markPaid.mutate(inv.id))}>
+                            {t('adminNew.reports.agingMarkPaid')}
+                          </Button>
+                          <Link href={`/${locale}/admin/facturen/${inv.id}`} className="text-marine-700 hover:text-marine-900">
+                            {t('adminNew.common.open')} →
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </AdminSectionCard>
             </div>
 
@@ -353,7 +455,28 @@ export default function ReportsPage() {
                     value={money(storage.open_balance_cents ?? storage.open_balance)}
                     tone="warning"
                   />
+                  {avgDuration > 0 ? (
+                    <AdminStatusStrip
+                      label={t('adminNew.reports.storage.avgDuration')}
+                      value={t('adminNew.reports.storage.days', { count: avgDuration })}
+                      tone="marine"
+                    />
+                  ) : null}
                 </div>
+                {/* Trello #85: revenue by contract type */}
+                {byContractType.length ? (
+                  <div className="mt-3 space-y-1 border-t border-navy-50 pt-3">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">
+                      {t('adminNew.reports.storage.byContractType')}
+                    </p>
+                    {byContractType.map((ct, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <span className="capitalize text-navy-700">{str(ct.type ?? ct.contract_type) || '—'} ({n(ct.count)})</span>
+                        <span className="font-semibold text-navy-900">{money(ct.value_cents ?? ct.revenue_cents)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </AdminSectionCard>
 
               <AdminSectionCard title={t('adminNew.reports.occupancyTitle')} icon={Ship}>
@@ -417,6 +540,29 @@ export default function ReportsPage() {
                 ) : (
                   <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
                 )}
+                {/* Trello #85: top customers by open balance + overdue customers */}
+                {topByOpen.length ? (
+                  <div className="mt-3 space-y-1 border-t border-navy-50 pt-3">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">{t('adminNew.reports.customersByOpen')}</p>
+                    {topByOpen.slice(0, 5).map((c, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <span className="text-navy-800">{str(c.name ?? c.customer_name) || '—'}</span>
+                        <span className="font-semibold text-amber-700">{money(c.open_balance_cents ?? c.open_cents ?? c.open_balance)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                {overdueCustomers.length ? (
+                  <div className="mt-3 space-y-1 border-t border-navy-50 pt-3">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">{t('adminNew.reports.customersOverdue')}</p>
+                    {overdueCustomers.slice(0, 5).map((c, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <span className="text-navy-800">{str(c.name ?? c.customer_name) || '—'}</span>
+                        <span className="font-semibold text-rose-700">{money(c.overdue_cents ?? c.open_balance_cents ?? c.amount_cents)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </AdminSectionCard>
 
               <AdminSectionCard title={t('adminNew.reports.forecastTitle')} icon={BarChart3}>
@@ -501,6 +647,35 @@ export default function ReportsPage() {
                 ) : null}
               </div>
             )}
+
+            {/* Trello #88: work order statistics with a month selector */}
+            <AdminSectionCard
+              title={t('adminNew.reports.workOrders.title')}
+              icon={BarChart3}
+              className="mt-5"
+              action={
+                <input
+                  type="month"
+                  value={woMonth}
+                  onChange={(e) => setWoMonth(e.target.value)}
+                  className="input-base h-9 w-40 text-sm"
+                  aria-label={t('adminNew.reports.workOrders.period')}
+                />
+              }
+            >
+              {(() => {
+                const wo = obj(workOrderStats.data);
+                return (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    <AdminStatusStrip label={t('adminNew.reports.workOrders.open')} value={String(n(wo.open))} tone="marine" />
+                    <AdminStatusStrip label={t('adminNew.reports.workOrders.overdue')} value={String(n(wo.overdue))} tone={n(wo.overdue) > 0 ? 'danger' : 'navy'} />
+                    <AdminStatusStrip label={t('adminNew.reports.workOrders.completed')} value={String(n(wo.completed_this_period ?? wo.completed))} tone="success" />
+                    <AdminStatusStrip label={t('adminNew.reports.workOrders.laborHours')} value={String(n(wo.labor_hours))} tone="gold" />
+                    <AdminStatusStrip label={t('adminNew.reports.workOrders.materials')} value={money(wo.materials_revenue_cents)} tone="marine" />
+                  </div>
+                );
+              })()}
+            </AdminSectionCard>
           </>
         ) : null}
       </AdminContent>

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Ban, LogIn, Plus, ShieldCheck, Users } from 'lucide-react';
+import { Ban, KeyRound, LogIn, Plus, ShieldCheck, Users } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -27,7 +27,8 @@ import { Input } from '@/components/ui/Input';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { customersService } from '@/lib/services';
+import { adminService, customersService } from '@/lib/services';
+import { AddressAutocomplete, type AddressSelection } from '@/components/ui/AddressAutocomplete';
 import { impersonateCustomer, ImpersonationError } from '@/lib/impersonate';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -40,27 +41,45 @@ export default function CustomersPage() {
   const [query, setQuery] = React.useState('');
   const [language, setLanguage] = React.useState('');
   const [status, setStatus] = React.useState('');
+  const [city, setCity] = React.useState('');
+  const [country, setCountry] = React.useState('');
+  const [lastLogin, setLastLogin] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
-  const [form, setForm] = React.useState({ name: '', email: '', phone: '' });
+  const [form, setForm] = React.useState({
+    name: '',
+    email: '',
+    phone: '',
+    gender: '',
+    preferred_locale: '',
+    street: '',
+    house_number: '',
+    postal_code: '',
+    city: '',
+    country: '',
+  });
   const [blockTarget, setBlockTarget] = React.useState<{ id: string; name: string } | null>(null);
   const [blockReason, setBlockReason] = React.useState('');
   const [impersonateTarget, setImpersonateTarget] = React.useState<{ id: string; name: string } | null>(
     null
   );
 
-  const customers = useQuery([query, language, status, page], () =>
+  const customers = useQuery([query, language, status, city, country, lastLogin, page], () =>
     customersService.list({
       search: query || undefined,
       language: language || undefined,
       status: status || undefined,
       blocked: status === 'blocked' ? true : undefined,
+      city: city || undefined,
+      country: country || undefined,
+      last_login: lastLogin || undefined,
       page,
       per_page: 20,
     })
   );
 
   const createCustomer = useMutation(customersService.create);
+  const sendMagicLink = useMutation((id: string) => adminService.sendCustomerMagicLink(id));
   const blockCustomer = useMutation((p: { id: string; reason?: string }) =>
     customersService.block(p.id, p.reason)
   );
@@ -73,6 +92,19 @@ export default function CustomersPage() {
       await customers.refetch();
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
+  const onSendMagicLink = async (id: string) => {
+    try {
+      await sendMagicLink.mutate(id);
+      push({ tone: 'success', title: t('adminNew.customers.toasts.magicLinkSent') });
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.customers.toasts.magicLinkFailed'),
+        message: getApiErrorMessage(err),
+      });
     }
   };
 
@@ -92,14 +124,39 @@ export default function CustomersPage() {
     e.preventDefault();
     if (!form.name.trim()) return;
     try {
+      const hasAddress =
+        form.street || form.house_number || form.postal_code || form.city || form.country;
       await createCustomer.mutate({
         name: form.name,
         email: form.email || undefined,
         phone: form.phone || undefined,
+        preferred_locale: form.preferred_locale || undefined,
+        // `gender` is accepted by the API but not yet in the create payload type.
+        ...(form.gender ? { gender: form.gender } : {}),
+        address: hasAddress
+          ? {
+              street: form.street || undefined,
+              house_number: form.house_number || undefined,
+              postal_code: form.postal_code || undefined,
+              city: form.city || undefined,
+              country: form.country || undefined,
+            }
+          : undefined,
       });
       push({ tone: 'success', title: t('adminNew.customers.toasts.created') });
       setShowCreate(false);
-      setForm({ name: '', email: '', phone: '' });
+      setForm({
+        name: '',
+        email: '',
+        phone: '',
+        gender: '',
+        preferred_locale: '',
+        street: '',
+        house_number: '',
+        postal_code: '',
+        city: '',
+        country: '',
+      });
       await customers.refetch();
     } catch (err) {
       push({
@@ -194,6 +251,39 @@ export default function CustomersPage() {
             <option value="active">{t('adminNew.customers.statusActive')}</option>
             <option value="blocked">{t('adminNew.customers.statusBlocked')}</option>
           </AdminSelect>
+          <div className="w-full lg:w-[160px]">
+            <Input
+              value={city}
+              onChange={(e) => {
+                setCity(e.target.value);
+                setPage(1);
+              }}
+              placeholder={t('adminNew.customers.cityPlaceholder')}
+              aria-label={t('adminNew.customers.cityPlaceholder')}
+            />
+          </div>
+          <div className="w-full lg:w-[160px]">
+            <Input
+              value={country}
+              onChange={(e) => {
+                setCountry(e.target.value);
+                setPage(1);
+              }}
+              placeholder={t('adminNew.customers.countryPlaceholder')}
+              aria-label={t('adminNew.customers.countryPlaceholder')}
+            />
+          </div>
+          <AdminSelect
+            value={lastLogin}
+            onChange={(value) => {
+              setLastLogin(value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t('adminNew.customers.lastLoginAny')}</option>
+            <option value="recent">{t('adminNew.customers.lastLoginRecent')}</option>
+            <option value="never">{t('adminNew.customers.lastLoginNever')}</option>
+          </AdminSelect>
         </div>
 
         <AdminTableCard
@@ -255,17 +345,39 @@ export default function CustomersPage() {
                     </AdminTableCell>
                     <AdminTableCell className="uppercase">{customer.preferred_locale || '—'}</AdminTableCell>
                     <AdminTableCell>
-                      <Badge tone={blocked ? 'danger' : 'success'}>
-                        {blocked
-                          ? t('adminNew.customers.statusBlocked')
-                          : t('adminNew.customers.statusActive')}
-                      </Badge>
+                      <div className="flex flex-col items-start gap-1">
+                        <Badge tone={blocked ? 'danger' : 'success'}>
+                          {blocked
+                            ? t('adminNew.customers.statusBlocked')
+                            : t('adminNew.customers.statusActive')}
+                        </Badge>
+                        {blocked && customer.blocked_at ? (
+                          <span className="text-xs text-navy-400">
+                            {t('adminNew.customers.blockedOn', {
+                              date: new Date(customer.blocked_at).toLocaleDateString(dateLocale),
+                            })}
+                          </span>
+                        ) : null}
+                      </div>
                     </AdminTableCell>
                     <AdminTableCell className="whitespace-nowrap text-sm text-navy-600">
-                      {lastLogin ? new Date(lastLogin).toLocaleDateString(dateLocale) : '—'}
+                      {lastLogin ? (
+                        new Date(lastLogin).toLocaleDateString(dateLocale)
+                      ) : (
+                        <Badge tone="warning">{t('adminNew.customers.neverLoggedIn')}</Badge>
+                      )}
                     </AdminTableCell>
                     <AdminTableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          leftIcon={<KeyRound className="h-3.5 w-3.5" />}
+                          disabled={sendMagicLink.loading}
+                          onClick={() => void onSendMagicLink(customer.id)}
+                        >
+                          {t('adminNew.customers.sendLoginLink')}
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -333,6 +445,90 @@ export default function CustomersPage() {
               value={form.phone}
               onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
             />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block text-sm">
+                <span className="mb-1.5 block font-medium text-navy-800">
+                  {t('adminNew.customers.fields.gender')}
+                </span>
+                <select
+                  className="input-base w-full"
+                  value={form.gender}
+                  onChange={(e) => setForm((prev) => ({ ...prev, gender: e.target.value }))}
+                >
+                  <option value="">{t('adminNew.customers.gender.unspecified')}</option>
+                  <option value="male">{t('adminNew.customers.gender.male')}</option>
+                  <option value="female">{t('adminNew.customers.gender.female')}</option>
+                  <option value="other">{t('adminNew.customers.gender.other')}</option>
+                </select>
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1.5 block font-medium text-navy-800">
+                  {t('adminNew.customers.fields.preferredLocale')}
+                </span>
+                <select
+                  className="input-base w-full"
+                  value={form.preferred_locale}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, preferred_locale: e.target.value }))
+                  }
+                >
+                  <option value="">{t('adminNew.customers.localeDefault')}</option>
+                  <option value="nl">NL</option>
+                  <option value="en">EN</option>
+                  <option value="de">DE</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="border-t border-navy-100 pt-4">
+              <h3 className="mb-3 text-sm font-semibold text-navy-800">
+                {t('adminNew.customers.address.title')}
+              </h3>
+              <AddressAutocomplete
+                label={t('adminNew.customers.address.search')}
+                placeholder={t('adminNew.customers.address.searchPlaceholder')}
+                className="mb-3"
+                onSelect={(addr: AddressSelection) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    street: addr.street,
+                    house_number: addr.house_number,
+                    postal_code: addr.postal_code,
+                    city: addr.city,
+                    country: addr.country,
+                  }))
+                }
+              />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="sm:col-span-2">
+                  <Input
+                    label={t('adminNew.customers.address.street')}
+                    value={form.street}
+                    onChange={(e) => setForm((prev) => ({ ...prev, street: e.target.value }))}
+                  />
+                </div>
+                <Input
+                  label={t('adminNew.customers.address.houseNumber')}
+                  value={form.house_number}
+                  onChange={(e) => setForm((prev) => ({ ...prev, house_number: e.target.value }))}
+                />
+                <Input
+                  label={t('adminNew.customers.address.postalCode')}
+                  value={form.postal_code}
+                  onChange={(e) => setForm((prev) => ({ ...prev, postal_code: e.target.value }))}
+                />
+                <Input
+                  label={t('adminNew.customers.address.city')}
+                  value={form.city}
+                  onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
+                />
+                <Input
+                  label={t('adminNew.customers.address.country')}
+                  value={form.country}
+                  onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
+                />
+              </div>
+            </div>
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>

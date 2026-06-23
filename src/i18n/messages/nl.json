@@ -508,7 +508,9 @@
     "ctaContact": "Contact",
     "editService": "Bewerk service",
     "onRequest": "Op aanvraag",
-    "from": "vanaf"
+    "from": "vanaf",
+    "overviewTitle": "Onze diensten en tarieven",
+    "overviewSubtitle": "Live tarieven per lengteklasse, rechtstreeks uit onze administratie."
   },
   "verify": {
     "verifying": "Je wordt aangemeld…",
@@ -1154,7 +1156,9 @@
       "deleted": "Verwijderd",
       "open": "Openen",
       "clear": "Wissen",
-      "all": "Alle"
+      "all": "Alle",
+      "yes": "Ja",
+      "no": "Nee"
     },
     "dashboard": {
       "title": "Operatie",
@@ -1198,6 +1202,20 @@
         "title": "Calculator",
         "subtitle": "Snel prijs berekenen voor jachthaven diensten",
         "selectService": "Selecteer dienst"
+      },
+      "recentActivity": {
+        "title": "Recente activiteit",
+        "subtitle": "De laatste gebeurtenissen in het systeem.",
+        "justNow": "Zojuist",
+        "minutesAgo": "{count} min geleden",
+        "hoursAgo": "{count} uur geleden",
+        "daysAgo": "{count} dagen geleden"
+      },
+      "cashDifference": {
+        "title": "Kasverschil vandaag",
+        "subtitle": "Verschil uit de laatste dagafsluiting.",
+        "none": "Nog geen dagafsluiting vandaag.",
+        "openClosure": "Naar dagafsluiting"
       }
     },
     "search": {
@@ -1292,7 +1310,10 @@
         "unitPrice": "Stuk €",
         "activity": "Activiteit",
         "noActivity": "Nog geen activiteit.",
-        "estimatedHours": "Geschatte uren"
+        "estimatedHours": "Geschatte uren",
+        "tabTimeline": "Tijdlijn",
+        "tabAudit": "Auditlog",
+        "changes": "{count} wijziging(en)"
       },
       "forbiddenTitle": "Geen toegang tot werkorders",
       "forbiddenMessage": "Je account heeft geen permissie voor /v1/work-orders. De admin-rol moet in de API de work-orders rechten krijgen (Spatie-permissie), net als staff/manager.",
@@ -1302,6 +1323,29 @@
         "after": "Na",
         "damage": "Schade",
         "inspection": "Inspectie"
+      },
+      "selectType": "Selecteer type",
+      "types": {
+        "maintenance": "Onderhoud",
+        "repair": "Reparatie",
+        "inspection": "Inspectie",
+        "winterizing": "Winterklaar maken",
+        "cleaning": "Reiniging",
+        "antifouling": "Antifouling",
+        "engine": "Motor",
+        "electrical": "Elektra",
+        "rigging": "Tuigage",
+        "hull": "Romp",
+        "warranty": "Garantie",
+        "other": "Overig"
+      },
+      "overlay": {
+        "title": "Werkorders",
+        "description": "Werkorders met een einddatum in deze maand",
+        "toggle": "Werkorders tonen",
+        "hidden": "Schakel in om werkorders op de kalender te tonen.",
+        "emptyTitle": "Geen werkorders",
+        "emptyMessage": "Er zijn geen werkorders met een einddatum in deze periode."
       }
     },
     "invoiceImports": {
@@ -1342,7 +1386,9 @@
         "bulkApproved": "Geselecteerde imports goedgekeurd",
         "bulkRetried": "OCR opnieuw gestart voor geselecteerde imports",
         "bulkRejected": "Geselecteerde imports afgewezen",
-        "batchUploaded": "{count} bestanden geüpload"
+        "batchUploaded": "{count} bestanden geüpload",
+        "retried": "OCR opnieuw gestart",
+        "photoUploaded": "{count} foto's geüpload"
       },
       "review": "Beoordelen",
       "batchUpload": "Batch uploaden",
@@ -1375,7 +1421,26 @@
         "zoomOut": "Uitzoomen",
         "rotate": "Draaien",
         "previous": "Vorige",
-        "next": "Volgende"
+        "next": "Volgende",
+        "corrections": "Correcties",
+        "noSupplierLinked": "Geen leverancier gekoppeld aan deze import.",
+        "createSupplier": "Leverancier aanmaken",
+        "createSupplierHint": "Maak een nieuwe leverancier en koppel deze aan de import.",
+        "supplierCreated": "Leverancier aangemaakt",
+        "supplierNameRequired": "Vul een naam in voor de leverancier",
+        "iban": "IBAN",
+        "paymentTermsDays": "Betaaltermijn (dagen)"
+      },
+      "exportCsv": "Exporteer CSV",
+      "photoCapture": "Foto maken",
+      "sourcePhoto": "Foto's",
+      "duplicate": {
+        "title": "Mogelijk duplicaat",
+        "subtitle": "Vergelijk deze import met de gevonden overeenkomst voordat je markeert.",
+        "field": "Veld",
+        "thisImport": "Deze import",
+        "matchedImport": "Gevonden import",
+        "confirm": "Markeer als duplicaat"
       }
     },
     "templates": {
@@ -1438,6 +1503,15 @@
         "total": "Totaal",
         "iban": "IBAN",
         "line_items": "Regels"
+      },
+      "history": {
+        "title": "Versiegeschiedenis",
+        "subtitle": "OCR-prestaties van dit sjabloon",
+        "version": "Versie",
+        "usedCount": "Gebruikt",
+        "successCount": "Geslaagd",
+        "correctionCount": "Correcties",
+        "averageConfidence": "Gem. vertrouwen"
       }
     },
     "reminders": {
@@ -1525,7 +1599,30 @@
       "statusCompleted": "Afgerond",
       "statusDismissed": "Afgewezen",
       "preview": "Voorbeeld",
-      "previewTitle": "Voorbeeld herinnering"
+      "previewTitle": "Voorbeeld herinnering",
+      "entityLabels": {
+        "storage_contract": "Stallingscontract",
+        "invoice": "Factuur",
+        "work_order": "Werkopdracht",
+        "insurance": "Verzekering",
+        "planning": "Planning"
+      },
+      "triggerLabels": {
+        "overdue_after": "Te laat na",
+        "due_before": "Vervalt vóór",
+        "expires_before": "Verloopt vóór",
+        "inactive_after": "Inactief na"
+      },
+      "testSend": {
+        "button": "Test versturen",
+        "title": "Testherinnering versturen",
+        "subtitle": "Verstuur een eenmalige testherinnering om de regel te controleren.",
+        "email": "Ontvanger e-mail",
+        "entityId": "Entiteit-ID (optioneel)",
+        "entityIdHint": "Bijv. een factuur- of contract-ID",
+        "submit": "Versturen",
+        "sent": "Testherinnering verstuurd"
+      }
     },
     "customers": {
       "title": "Klanten",
@@ -1565,10 +1662,41 @@
         "created": "Klant aangemaakt",
         "createFailed": "Aanmaken mislukt",
         "blocked": "Klant geblokkeerd",
-        "unblocked": "Klant gedeblokkeerd"
+        "unblocked": "Klant gedeblokkeerd",
+        "magicLinkSent": "Inloglink verzonden",
+        "magicLinkFailed": "Inloglink versturen mislukt"
       },
       "blockReason": "Reden (optioneel)",
-      "blockReasonPlaceholder": "Waarom wordt deze klant geblokkeerd?"
+      "blockReasonPlaceholder": "Waarom wordt deze klant geblokkeerd?",
+      "sendLoginLink": "Inloglink sturen",
+      "neverLoggedIn": "Nooit ingelogd",
+      "blockedOn": "Geblokkeerd op {date}",
+      "cityPlaceholder": "Plaats",
+      "countryPlaceholder": "Land",
+      "lastLoginAny": "Alle aanmeldingen",
+      "lastLoginRecent": "Recent ingelogd",
+      "lastLoginNever": "Nooit ingelogd",
+      "localeDefault": "Standaard",
+      "fields": {
+        "gender": "Geslacht",
+        "preferredLocale": "Voorkeurstaal"
+      },
+      "gender": {
+        "unspecified": "Niet opgegeven",
+        "male": "Man",
+        "female": "Vrouw",
+        "other": "Anders"
+      },
+      "address": {
+        "title": "Adres",
+        "search": "Adres zoeken",
+        "searchPlaceholder": "Begin met typen om een adres te zoeken",
+        "street": "Straat",
+        "houseNumber": "Huisnummer",
+        "postalCode": "Postcode",
+        "city": "Plaats",
+        "country": "Land"
+      }
     },
     "auth": {
       "portalSessionActive": "Portal sessie actief",
@@ -1580,7 +1708,12 @@
       "togglePassword": "Wachtwoord zichtbaarheid wisselen",
       "passwordPlaceholder": "••••••••",
       "sendMagicLink": "Stuur magic link",
-      "accountCreatedByAdmin": "Accounts worden door een beheerder aangemaakt."
+      "accountCreatedByAdmin": "Accounts worden door een beheerder aangemaakt.",
+      "mfaTitle": "Verificatie in twee stappen",
+      "mfaSubtitle": "Voer de code in uit uw authenticator-app of een herstelcode.",
+      "mfaCode": "Verificatiecode",
+      "mfaVerify": "Verifiëren",
+      "mfaFailed": "Code ongeldig of verlopen"
     },
     "sidebar": {
       "calculator": "Calculator",
@@ -1593,7 +1726,11 @@
       "timeline": "Tijdlijn",
       "sales": "Verkopen",
       "suppliers": "Leveranciers",
-      "accounting": "Boekhouding"
+      "accounting": "Boekhouding",
+      "bundles": "Bundels",
+      "security": "Beveiliging",
+      "apiCredentials": "API-credentials",
+      "incidents": "Incidenten"
     },
     "sales": {
       "title": "Verkopen",
@@ -1638,6 +1775,13 @@
         "supplier_ocr": "Leverancier / OCR",
         "accounting": "Boekhouding",
         "system": "Systeem"
+      },
+      "presets": {
+        "all": "Alles",
+        "myTasks": "Mijn taken",
+        "finance": "Financiën",
+        "storage": "Stalling",
+        "planning": "Planning"
       }
     },
     "productGroups": {
@@ -1669,7 +1813,13 @@
         "active": "Actief",
         "revenueAccount": "Grootboek omzet",
         "costCenter": "Kostenplaats",
-        "profitCenter": "Winstcentrum"
+        "profitCenter": "Winstcentrum",
+        "iconNone": "Geen pictogram",
+        "publicSection": "Openbaar",
+        "isPublic": "Tonen op website",
+        "slug": "URL-naam (slug)",
+        "publicDescription": "Openbare omschrijving",
+        "publicDescriptionPlaceholder": "Tekst die op de website wordt getoond"
       },
       "toasts": {
         "created": "Groep aangemaakt",
@@ -1769,13 +1919,33 @@
         "activeContracts": "Actieve contracten",
         "boatsInStorage": "Boten in stalling",
         "expiring30": "Verloopt in 30 dagen",
-        "openBalance": "Open saldo"
+        "openBalance": "Open saldo",
+        "avgDuration": "Gem. duur",
+        "days": "{count} dagen",
+        "byContractType": "Omzet per contracttype"
       },
       "topProductsTitle": "Topproducten",
       "slowProductsTitle": "Trage producten",
       "marginByGroupTitle": "Marge per productgroep",
       "marginRevenue": "Omzet",
-      "marginCost": "Inkoop"
+      "marginCost": "Inkoop",
+      "revenueOverTimeTitle": "Omzet in de tijd",
+      "agingOverdueTitle": "Achterstallige facturen",
+      "agingReminder": "Herinnering",
+      "agingReminderSent": "Herinnering verstuurd",
+      "agingMarkPaid": "Betaald",
+      "agingMarkedPaid": "Gemarkeerd als betaald",
+      "customersByOpen": "Klanten met openstaand saldo",
+      "customersOverdue": "Achterstallige klanten",
+      "workOrders": {
+        "title": "Werkorders",
+        "period": "Periode",
+        "open": "Open",
+        "overdue": "Te laat",
+        "completed": "Afgerond",
+        "laborHours": "Arbeidsuren",
+        "materials": "Materiaalomzet"
+      }
     },
     "cashClose": {
       "title": "Dagafsluiting",
@@ -1814,7 +1984,8 @@
       "draft": "Concept",
       "open": "Open",
       "failed": "Mislukt",
-      "expiring": "Verloopt"
+      "expiring": "Verloopt",
+      "checkedOut": "Uitgecheckt"
     },
     "audit": {
       "title": "Audit",
@@ -1852,7 +2023,9 @@
         "type": "Type",
         "length": "Lengte",
         "location": "Locatie",
-        "status": "Status"
+        "status": "Status",
+        "lastActivity": "Laatste activiteit",
+        "currentStorageLocation": "Huidige stallingslocatie"
       },
       "fields": {
         "lengthCm": "Lengte (cm)",
@@ -1864,7 +2037,17 @@
         "engineBrand": "Motormerk",
         "engineType": "Motortype",
         "mmsi": "MMSI",
-        "insuranceNumber": "Verzekeringsnr."
+        "insuranceNumber": "Verzekeringsnr.",
+        "hullMaterial": "Rompmateriaal",
+        "draftCm": "Diepgang (cm)",
+        "weightKg": "Gewicht (kg)",
+        "fuelType": "Brandstoftype",
+        "enginePower": "Motorvermogen",
+        "serialNumbers": "Serienummers",
+        "callSign": "Roepnaam",
+        "insuranceCompany": "Verzekeringsmaatschappij",
+        "insuranceExpiry": "Verzekering verloopt op",
+        "registrationNumber": "Registratienummer"
       },
       "type": {
         "motor": "Motor",
@@ -1900,7 +2083,11 @@
       },
       "stats": {
         "daysInStorage": "Dagen in stalling",
-        "revenue": "Omzet"
+        "revenue": "Omzet",
+        "totalBoats": "Totaal boten",
+        "boatsInStorage": "In stalling",
+        "activeWorkOrders": "Actieve werkorders",
+        "openBalance": "Openstaand saldo"
       },
       "photoFolders": {
         "arrival": "Aankomst",
@@ -1933,7 +2120,9 @@
       "statusAll": "Alle statussen",
       "statusInStorage": "In stalling",
       "statusWorkInProgress": "Werk in uitvoering",
-      "statusRegistered": "Geregistreerd"
+      "statusRegistered": "Geregistreerd",
+      "insuranceExpired": "Verzekering verlopen",
+      "insuranceExpiringSoon": "Verzekering verloopt over {days} dagen"
     },
     "kassa": {
       "title": "Kassa",
@@ -2087,7 +2276,9 @@
       "searchAddress": "Adres zoeken",
       "searchAddressPlaceholder": "Begin met typen voor Google Maps suggesties…",
       "customerNotes": "Notities",
-      "customerNotesPlaceholder": "Interne opmerkingen over deze klant"
+      "customerNotesPlaceholder": "Interne opmerkingen over deze klant",
+      "editProduct": "Product bewerken",
+      "hotProduct": "{count}× verkocht"
     },
     "stalling": {
       "title": "Stalling",
@@ -2112,7 +2303,8 @@
         "paidUntil": "Paid until",
         "openBalance": "Open saldo",
         "location": "Locatie",
-        "status": "Status"
+        "status": "Status",
+        "bok": "Bok"
       },
       "invoice": "Factuur",
       "cancel": "Annuleer",
@@ -2146,7 +2338,21 @@
         "depositPct": "Aanbetaling (%)",
         "sendContractEmail": "Contract naar klant e-mailen",
         "bokNumber": "Boknummer",
-        "bokNumberPlaceholder": "bijv. BOK-12"
+        "bokNumberPlaceholder": "bijv. BOK-12",
+        "notes": "Notities",
+        "changeNote": "Reden van wijziging",
+        "changeNotePlaceholder": "Bijv. klant verzocht wijziging",
+        "billingType": "Facturatie",
+        "priceTotal": "Totaalprijs (€)",
+        "widthCm": "Breedte (cm)",
+        "draftCm": "Diepgang (cm)",
+        "buildYear": "Bouwjaar",
+        "registration": "Registratie",
+        "street": "Straat",
+        "houseNumber": "Huisnummer",
+        "postalCode": "Postcode",
+        "city": "Stad",
+        "companyName": "Bedrijfsnaam (optioneel)"
       },
       "quickEdit": {
         "title": "Contract bijwerken",
@@ -2156,7 +2362,9 @@
         "locationPlaceholder": "bijv. Loods A · rij 3",
         "locationEmpty": "Geen locatie ingesteld",
         "editAria": "Status en locatie bewerken",
-        "lifecycleLabel": "Contractstatus"
+        "lifecycleLabel": "Contractstatus",
+        "noteLabel": "Waarom is de status gewijzigd?",
+        "notePlaceholder": "Optionele toelichting"
       },
       "brokerage": {
         "toggle": "Makelaardij",
@@ -2169,16 +2377,46 @@
       "toasts": {
         "created": "Contract aangemaakt",
         "statusUpdated": "Status bijgewerkt",
-        "locationUpdated": "Locatie bijgewerkt"
+        "locationUpdated": "Locatie bijgewerkt",
+        "contractUpdated": "Contract bijgewerkt",
+        "depositInvoiceSent": "Contract aangemaakt — aanbetalingsfactuur verstuurd",
+        "kassaOpened": "Kassa geopend met aanbetaling"
       },
       "lifecycle": {
         "active": "Actief",
         "ended": "Beëindigd",
         "checkedOut": "Uitgecheckt",
-        "cancelled": "Geannuleerd"
+        "cancelled": "Geannuleerd",
+        "draft": "Concept"
       },
       "tabs": {
         "overview": "Overzicht"
+      },
+      "filterPaymentGroup": "Betaalstatus",
+      "filterLifecycleGroup": "Contractstatus",
+      "editContract": "Bewerken",
+      "editFull": {
+        "title": "Contract bewerken",
+        "subtitle": "Pas klant, boot, periode of betaling aan."
+      },
+      "billing": {
+        "oneTime": "Eenmalig",
+        "monthly": "Maandelijks",
+        "yearly": "Jaarlijks"
+      },
+      "inline": {
+        "save": "Opslaan",
+        "editPaidUntil": "Betaald tot wijzigen",
+        "editBok": "Boknummer wijzigen"
+      },
+      "pricePreview": {
+        "deposit": "Aanbetaling"
+      },
+      "invoiceLabels": {
+        "deposit": "10% Aanbetaling",
+        "final": "Restfactuur",
+        "brokerage": "Makelaardij",
+        "invoice": "Factuur"
       }
     },
     "sync": {
@@ -2239,7 +2477,21 @@
         "statusCompleted": "Afgerond",
         "statusCancelled": "Geannuleerd",
         "statusInProgress": "Bezig",
-        "statusPending": "In afwachting"
+        "statusPending": "In afwachting",
+        "cancelAppointment": "Afspraak annuleren",
+        "cancelConfirm": "Weet u zeker dat u deze afspraak wilt annuleren?",
+        "cancelReasonLabel": "Reden (optioneel)",
+        "cancelReasonPlaceholder": "Geef eventueel een reden op…",
+        "cancelledToast": "Afspraak geannuleerd",
+        "requestReschedule": "Verzetten aanvragen",
+        "rescheduleHint": "Geef uw voorkeursdatum en -tijd door. De werf neemt contact met u op.",
+        "preferredDate": "Voorkeursdatum",
+        "preferredTime": "Voorkeurstijd",
+        "rescheduleReason": "Reden",
+        "rescheduleReasonPlaceholder": "Waarom wilt u verzetten?",
+        "sendRequest": "Aanvraag versturen",
+        "rescheduleRequestedToast": "Verzoek tot verzetten verstuurd",
+        "actionFailed": "Actie mislukt"
       },
       "updates": {
         "title": "Mijn updates",
@@ -2309,7 +2561,8 @@
         "metricAvgLength": "Gem. lengte",
         "noLocation": "Geen locatie",
         "noRegistration": "Geen registratienummer",
-        "planService": "Service plannen"
+        "planService": "Service plannen",
+        "viewDossier": "Dossier bekijken"
       },
       "documents": {
         "title": "Documenten",
@@ -2352,7 +2605,9 @@
         "priorityNormal": "Normaal",
         "unknownDate": "Onbekende datum",
         "priorityLabel": "Prioriteit",
-        "statusLabel": "Status"
+        "statusLabel": "Status",
+        "loadMore": "Meer laden",
+        "openItem": "Openen"
       },
       "settings": {
         "title": "Portal instellingen",
@@ -2375,6 +2630,33 @@
         "securitySupport": "Hulp nodig? Bel Krekelberg voor accountvragen",
         "quickLinks": "Snelle links",
         "quickLinksHint": "Ga direct naar veelgebruikte portaalpagina's."
+      },
+      "boatDossier": {
+        "subtitle": "Volledig overzicht van uw boot",
+        "boatInfo": "Bootgegevens",
+        "boatInfoDesc": "Specificaties en kerngegevens",
+        "storage": "Stalling",
+        "noStorage": "Geen stalling",
+        "noStorageMessage": "Er zijn geen stallingscontracten voor deze boot.",
+        "noWorkOrders": "Geen werkorders",
+        "noWorkOrdersMessage": "Er zijn nog geen werkorders voor deze boot.",
+        "noInvoices": "Geen facturen",
+        "noInvoicesMessage": "Er zijn nog geen facturen voor deze boot.",
+        "noTimeline": "Geen tijdlijn",
+        "noTimelineMessage": "Er zijn nog geen gebeurtenissen voor deze boot."
+      },
+      "workOrders": {
+        "title": "Werkorders",
+        "subtitle": "Volg de status van het onderhoud aan uw boot",
+        "listOverview": "Een overzicht van uw werkorders",
+        "loading": "Werkorders laden…",
+        "empty": "Geen werkorders",
+        "emptyMessage": "Er zijn nog geen werkorders voor uw boten.",
+        "metricTotal": "Totaal",
+        "metricOpen": "Openstaand",
+        "metricDone": "Afgerond",
+        "dueLabel": "Gereed op {date}",
+        "viewInvoice": "Bekijk factuur"
       }
     },
     "shell": {
@@ -2541,7 +2823,8 @@
       "confirmSend": "Deze factuur per e-mail naar de klant versturen?",
       "confirmMarkPaid": "Deze factuur handmatig als betaald markeren? Controleer het bedrag en de betaalmethode.",
       "creditedFor": "Creditnota voor",
-      "creditNotes": "Creditnota's"
+      "creditNotes": "Creditnota's",
+      "backToContract": "Terug naar stallingscontract"
     },
     "customerDetail": {
       "fallbackTitle": "Klant",
@@ -2610,7 +2893,28 @@
       "street": "Straat & nummer",
       "postalCode": "Postcode",
       "city": "Plaats",
-      "country": "Land"
+      "country": "Land",
+      "timeline": "Tijdlijn",
+      "viewTimeline": "Volledige tijdlijn bekijken",
+      "internalNote": "Intern",
+      "health": {
+        "title": "Klantgezondheid",
+        "subtitle": "Een score op basis van betalingen, contracten en orders.",
+        "recompute": "Herberekenen",
+        "recomputed": "Gezondheidsscore opnieuw berekend",
+        "recentPaid": "Recente betalingen",
+        "overdue": "Achterstallig",
+        "activeContract": "Actief contract",
+        "openOrders": "Open orders",
+        "labels": {
+          "excellent": "Uitstekend",
+          "good": "Goed",
+          "fair": "Matig",
+          "poor": "Zwak",
+          "at_risk": "Risico",
+          "critical": "Kritiek"
+        }
+      }
     },
     "calculator": {
       "title": "Calculator",
@@ -2691,7 +2995,31 @@
         "statusInvoice": "Omgezet naar factuur",
         "statusPaid": "Betaald",
         "statusCancelled": "Geannuleerd",
-        "statusArchived": "Gearchiveerd"
+        "statusArchived": "Gearchiveerd",
+        "exportCsv": "Exporteer CSV",
+        "exporting": "Exporteren…",
+        "quoteAny": "Offerte: alle",
+        "quoteYes": "Heeft offerte",
+        "quoteNo": "Geen offerte",
+        "invoiceAny": "Factuur: alle",
+        "invoiceYes": "Heeft factuur",
+        "invoiceNo": "Geen factuur",
+        "createdRange": "Aangemaakt (van/tot)",
+        "updatedRange": "Bijgewerkt (van/tot)",
+        "updatedFrom": "Bijgewerkt vanaf",
+        "updatedTo": "Bijgewerkt tot",
+        "totalRange": "Totaalbedrag (€)",
+        "totalMin": "Min",
+        "totalMax": "Max",
+        "selectAll": "Alles selecteren",
+        "selectRow": "Rij selecteren",
+        "selectedCount": "{count} geselecteerd",
+        "clearSelection": "Selectie wissen",
+        "bulkArchived": "Geselecteerde records gearchiveerd",
+        "bulkDuplicated": "Geselecteerde records gedupliceerd",
+        "confirmBulkArchive": "{count} record(s) archiveren?",
+        "editingRecord": "Record bewerken",
+        "newRecord": "Nieuw"
       },
       "pricing": {
         "title": "Prijzen beheren",
@@ -2719,7 +3047,8 @@
         "company": "Bedrijf",
         "invoicing": "Facturatie",
         "payments": "Betalingen",
-        "locales": "Talen"
+        "locales": "Talen",
+        "emailOcr": "E-mail & OCR"
       },
       "company": {
         "title": "Bedrijfsgegevens",
@@ -2763,6 +3092,21 @@
         "mollieTestSuccess": "Mollie test succesvol uitgevoerd",
         "paymentsSaved": "Betalingsinstellingen opgeslagen",
         "localesSaved": "Taalinstellingen opgeslagen"
+      },
+      "emailOcr": {
+        "title": "E-mail & OCR",
+        "subtitle": "Inkomende factuur-mailbox, OCR-model en WhatsApp-koppeling",
+        "inboundMailbox": "Inkomend mailadres",
+        "inboundHint": "Stuur leveranciersfacturen naar dit adres; ze worden automatisch imports.",
+        "copy": "Kopiëren",
+        "copied": "Gekopieerd",
+        "ocrModel": "OCR-model",
+        "ocrModelHint": "Het model dat documenten uitleest.",
+        "whatsapp": "WhatsApp (Twilio)",
+        "whatsappHint": "Facturen ontvangen via WhatsApp. Secrets blijven backend-only.",
+        "configured": "Geconfigureerd",
+        "notConfigured": "Niet geconfigureerd",
+        "secretsBackendOnly": "Secrets blijven backend-only"
       }
     },
     "appointments": {
@@ -2814,7 +3158,8 @@
         "revenue": "Omzet (incl. BTW)",
         "lastSale": "Laatste verkoop",
         "empty": "Nog geen verkopen geregistreerd.",
-        "margin": "Marge"
+        "margin": "Marge",
+        "lowStock": "Lage voorraad"
       },
       "ai": {
         "imageTitle": "Productafbeelding",
@@ -2863,7 +3208,14 @@
         "aliases": "Aliassen",
         "aliasesPlaceholder": "Alternatieve zoeknamen",
         "created": "Aangemaakt",
-        "updated": "Bijgewerkt"
+        "updated": "Bijgewerkt",
+        "costPrice": "Inkoopprijs (€)",
+        "stockQuantity": "Voorraad",
+        "stockMinimum": "Minimale voorraad",
+        "scanBarcode": "Scan",
+        "barcodeScanned": "Barcode gescand: {code}",
+        "uploadImage": "Foto uploaden",
+        "uploadHint": "Sla het product eerst op om een foto te kunnen uploaden."
       },
       "sections": {
         "identity": "Identiteit",
@@ -2931,7 +3283,9 @@
         "lastLogin": "Laatste login"
       },
       "fields": {
-        "password": "Wachtwoord"
+        "password": "Wachtwoord",
+        "gender": "Geslacht",
+        "language": "Taal"
       },
       "modal": {
         "title": "Nieuwe gebruiker",
@@ -2943,7 +3297,22 @@
         "activated": "Gebruiker geactiveerd",
         "deactivated": "Gebruiker gedeactiveerd"
       },
-      "confirmDeactivate": "Weet je zeker dat je {name} wilt deactiveren? Deze gebruiker kan daarna niet meer inloggen."
+      "confirmDeactivate": "Weet je zeker dat je {name} wilt deactiveren? Deze gebruiker kan daarna niet meer inloggen.",
+      "searchPlaceholder": "Zoek op naam of e-mail",
+      "allRoles": "Alle rollen",
+      "allStatuses": "Alle statussen",
+      "allLanguages": "Alle talen",
+      "statusActive": "Actief",
+      "statusBlocked": "Geblokkeerd",
+      "statusNeverLoggedIn": "Nooit ingelogd",
+      "neverLoggedIn": "Nooit ingelogd",
+      "localeDefault": "Standaard",
+      "gender": {
+        "unspecified": "Niet opgegeven",
+        "male": "Man",
+        "female": "Vrouw",
+        "other": "Anders"
+      }
     },
     "calendar": {
       "title": "Kalender",
@@ -2990,7 +3359,9 @@
         "closedDay": "Gesloten op deze dag",
         "date": "Datum",
         "label": "Label",
-        "notes": "Notities"
+        "notes": "Notities",
+        "capacityBoats": "Capaciteit (boten)",
+        "capacityArea": "Capaciteit (m²)"
       },
       "locationModal": {
         "title": "Nieuwe bootlocatie",
@@ -3190,6 +3561,225 @@
       "toasts": {
         "markedPaid": "Gemarkeerd als betaald"
       }
+    },
+    "bundles": {
+      "title": "Bundels",
+      "subtitle": "Stel productpakketten samen voor snelle verkoop",
+      "new": "Nieuwe bundel",
+      "editTitle": "Bundel bewerken",
+      "formSubtitle": "Geef de bundel een naam en kies de producten",
+      "emptyTitle": "Nog geen bundels",
+      "emptyMessage": "Maak een bundel om meerdere producten in één klik toe te voegen.",
+      "confirmDelete": "Weet je zeker dat je deze bundel wilt verwijderen?",
+      "addItem": "Product toevoegen",
+      "noItems": "Nog geen producten in deze bundel.",
+      "columns": {
+        "name": "Bundel",
+        "items": "Producten"
+      },
+      "fields": {
+        "name": "Naam",
+        "color": "Kleur",
+        "description": "Omschrijving",
+        "items": "Producten"
+      },
+      "toasts": {
+        "created": "Bundel aangemaakt",
+        "updated": "Bundel bijgewerkt",
+        "deleted": "Bundel verwijderd"
+      }
+    },
+    "security": {
+      "title": "Beveiliging",
+      "subtitle": "Beveiligingsstatus en verdachte activiteit in één oogopslag.",
+      "refresh": "Vernieuwen",
+      "loading": "Beveiligingsgegevens laden…",
+      "statusTitle": "Algehele status",
+      "statusSubtitle": "Samengevatte beveiligingsstatus van het platform.",
+      "checkedAt": "Laatst gecontroleerd: {time}",
+      "status": {
+        "ok": "In orde",
+        "warning": "Waarschuwing",
+        "critical": "Kritiek"
+      },
+      "panels": {
+        "failedLogins24h": "Mislukte logins (24u)",
+        "failedLogins1h": "Mislukte logins (1u)",
+        "lockedUsers": "Geblokkeerde gebruikers",
+        "suspiciousIps": "Verdachte IP's",
+        "apiActionFailures1h": "API-actiefouten (1u)",
+        "criticalQueueFailures24h": "Kritieke wachtrijfouten (24u)",
+        "adminsWithoutMfa": "Admins zonder MFA",
+        "credentialsExpiring7d": "Credentials verlopen (7d)"
+      },
+      "suspiciousTitle": "Verdachte IP-adressen",
+      "suspiciousSubtitle": "IP-adressen met afwijkend gedrag.",
+      "noSuspicious": "Geen verdachte IP-adressen gevonden.",
+      "attempts": "{count} pogingen"
+    },
+    "credentials": {
+      "title": "API-credentials",
+      "subtitle": "Beheer en bekijk API-sleutels van externe diensten.",
+      "loading": "Credentials laden…",
+      "empty": "Geen credentials gevonden.",
+      "count": "{count} credentials",
+      "allServices": "Alle diensten",
+      "allEnvironments": "Alle omgevingen",
+      "environments": {
+        "production": "Productie",
+        "staging": "Staging",
+        "development": "Ontwikkeling"
+      },
+      "status": {
+        "active": "Actief",
+        "inactive": "Inactief",
+        "expired": "Verlopen"
+      },
+      "columns": {
+        "name": "Naam",
+        "service": "Dienst",
+        "environment": "Omgeving",
+        "status": "Status",
+        "expires": "Verloopt",
+        "lastUsed": "Laatst gebruikt",
+        "createdBy": "Aangemaakt door",
+        "actions": "Acties"
+      },
+      "actions": {
+        "new": "Nieuwe credential",
+        "reveal": "Tonen"
+      },
+      "fields": {
+        "name": "Naam",
+        "service": "Dienst",
+        "environment": "Omgeving",
+        "keyValue": "Sleutelwaarde",
+        "description": "Omschrijving"
+      },
+      "modal": {
+        "title": "Nieuwe credential"
+      },
+      "reveal": {
+        "title": "Sleutelwaarde",
+        "auditNote": "Let op: het tonen van deze sleutel wordt geregistreerd in het auditlogboek.",
+        "copy": "Kopiëren",
+        "copied": "Gekopieerd",
+        "revealedAt": "Getoond op {time}"
+      },
+      "delete": {
+        "title": "Credential verwijderen",
+        "message": "Weet je zeker dat je '{name}' wilt verwijderen?"
+      },
+      "toasts": {
+        "created": "Credential aangemaakt",
+        "deleted": "Credential verwijderd"
+      }
+    },
+    "incidents": {
+      "title": "Incidenten",
+      "subtitle": "Registreer en volg beveiligings- en operationele incidenten.",
+      "loading": "Incidenten laden…",
+      "empty": "Geen incidenten gevonden.",
+      "count": "{count} incidenten",
+      "allStatuses": "Alle statussen",
+      "allSeverities": "Alle ernstniveaus",
+      "unassigned": "Niet toegewezen",
+      "severities": {
+        "low": "Laag",
+        "medium": "Gemiddeld",
+        "high": "Hoog",
+        "critical": "Kritiek"
+      },
+      "statuses": {
+        "open": "Open",
+        "investigating": "Onderzoek",
+        "identified": "Geïdentificeerd",
+        "monitoring": "Monitoren",
+        "resolved": "Opgelost"
+      },
+      "columns": {
+        "title": "Titel",
+        "severity": "Ernst",
+        "status": "Status",
+        "category": "Categorie",
+        "created": "Aangemaakt"
+      },
+      "actions": {
+        "new": "Nieuw incident"
+      },
+      "fields": {
+        "title": "Titel",
+        "severity": "Ernst",
+        "category": "Categorie",
+        "affectedServices": "Getroffen diensten",
+        "affectedServicesHint": "Gescheiden door komma's",
+        "description": "Omschrijving",
+        "detectedAt": "Gedetecteerd op",
+        "status": "Status",
+        "assignedTo": "Toegewezen aan",
+        "note": "Notitie"
+      },
+      "modal": {
+        "title": "Nieuw incident"
+      },
+      "detail": {
+        "title": "Incidentdetails",
+        "timeline": "Tijdlijn",
+        "noTimeline": "Nog geen tijdlijnvermeldingen.",
+        "updateTitle": "Status bijwerken",
+        "update": "Bijwerken",
+        "resolve": "Oplossen"
+      },
+      "toasts": {
+        "created": "Incident aangemaakt",
+        "updated": "Incident bijgewerkt",
+        "resolved": "Incident opgelost"
+      }
+    },
+    "gdpr": {
+      "title": "AVG / GDPR",
+      "subtitle": "Exporteer of anonimiseer de persoonsgegevens van deze klant.",
+      "export": "Gegevens exporteren",
+      "anonymize": "Anonimiseren",
+      "hint": "Exporteren levert een JSON-bestand met alle gekoppelde gegevens. Anonimiseren is onomkeerbaar.",
+      "anonymizeModal": {
+        "title": "Klant anonimiseren",
+        "message": "Dit verwijdert onomkeerbaar alle persoonsgegevens. Typ ANONYMIZE om te bevestigen.",
+        "confirmLabel": "Typ ANONYMIZE",
+        "reasonLabel": "Reden"
+      },
+      "toasts": {
+        "exported": "Export gestart",
+        "anonymized": "Klant geanonimiseerd"
+      }
+    },
+    "backups": {
+      "title": "Back-ups",
+      "subtitle": "Recente back-uptaken en handmatige back-ups.",
+      "runNow": "Nu back-up maken",
+      "empty": "Nog geen back-ups uitgevoerd.",
+      "size": "{mb} MB",
+      "duration": "{seconds}s",
+      "triggeredBy": "Door {by}",
+      "status": {
+        "completed": "Voltooid",
+        "success": "Voltooid",
+        "running": "Bezig",
+        "failed": "Mislukt",
+        "pending": "In wachtrij",
+        "unknown": "Onbekend"
+      },
+      "types": {
+        "database": "Database",
+        "full": "Volledig"
+      },
+      "fields": {
+        "type": "Type",
+        "notes": "Notities"
+      },
+      "toasts": {
+        "started": "Back-up gestart"
+      }
     }
   },
   "planning": {
@@ -3218,6 +3808,91 @@
     "completed": "Afspraak voltooid",
     "cancelled": "Afspraak geannuleerd",
     "actionFailed": "Actie mislukt",
-    "customerHint": "Neem contact op met de werf om deze afspraak te wijzigen of te annuleren."
+    "customerHint": "Neem contact op met de werf om deze afspraak te wijzigen of te annuleren.",
+    "statToday": "Vandaag",
+    "statTomorrow": "Morgen",
+    "statPending": "Openstaande aanvragen",
+    "statCompletedWeek": "Voltooid deze week",
+    "filterAllEmployees": "Alle medewerkers",
+    "filterAllServices": "Alle diensten",
+    "serviceCrane": "Kraan",
+    "serviceWash": "Afspuiten",
+    "serviceStorage": "Stalling",
+    "serviceWinter": "Winterberging",
+    "viewWeek": "Week",
+    "viewMonth": "Maand",
+    "viewDay": "Dag",
+    "viewAgenda": "Agenda",
+    "agendaEmpty": "Geen afspraken in deze periode.",
+    "createAppointment": "Afspraak aanmaken",
+    "createTitle": "Nieuwe afspraak",
+    "createSubtitle": "Plan een afspraak in voor een klant en boot.",
+    "createConfirm": "Afspraak aanmaken",
+    "created": "Afspraak aangemaakt",
+    "checking": "Controleren…",
+    "fieldCustomer": "Klant",
+    "fieldBoat": "Boot",
+    "fieldService": "Dienst",
+    "fieldLocation": "Locatie / kraan",
+    "fieldDate": "Datum",
+    "fieldStartTime": "Starttijd",
+    "fieldDuration": "Duur (min)",
+    "fieldAssignee": "Medewerker",
+    "unassigned": "Niet toegewezen",
+    "selectPlaceholder": "Selecteer…",
+    "conflictTitle": "Mogelijke conflicten gevonden",
+    "conflictConfirmAnyway": "Toch doorgaan en deze afspraak inplannen",
+    "selectMode": "Selecteren",
+    "exitSelect": "Selectie sluiten",
+    "export": "Exporteren",
+    "bulkSelected": "{count} geselecteerd",
+    "bulkAssign": "Toewijzen",
+    "bulkAssignPlaceholder": "Medewerker…",
+    "bulkSetStatus": "Status instellen",
+    "bulkStatusPlaceholder": "Status…",
+    "bulkCancel": "Annuleren",
+    "bulkClear": "Selectie wissen",
+    "bulkDone": "Bulkactie uitgevoerd",
+    "statusConfirmed": "Goedgekeurd",
+    "statusCompleted": "Voltooid"
+  },
+  "cms": {
+    "edit": "Bewerken",
+    "enterEdit": "Bewerkmodus inschakelen",
+    "exitEdit": "Bewerkmodus afsluiten",
+    "editingOn": "Bewerken aan",
+    "toolbarLabel": "CMS-werkbalk",
+    "editText": "Tekst bewerken",
+    "editImage": "Afbeelding bewerken",
+    "openingHours": "Openingstijden",
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "saved": "Opgeslagen",
+    "saveError": "Opslaan mislukt",
+    "uploadError": "Uploaden mislukt",
+    "imageUploaded": "Afbeelding geüpload",
+    "uploadImage": "Afbeelding uploaden",
+    "localeHint": "Alleen gewijzigde talen worden opgeslagen.",
+    "textPlaceholder": "Voer tekst in…",
+    "focalPoint": "Focuspunt",
+    "focalHint": "Klik op de afbeelding om het focuspunt te bepalen.",
+    "overlay": "Donkere overlay",
+    "altText": "Alt-tekst",
+    "altPlaceholder": "Beschrijf de afbeelding…",
+    "seoTitle": "SEO",
+    "noPage": "Geen pagina geregistreerd",
+    "noPageHint": "Open een publieke pagina om de SEO te bewerken.",
+    "metaTitle": "Paginatitel",
+    "metaDescription": "Meta-omschrijving",
+    "robots": "Robots",
+    "globalTitle": "Algemene instellingen",
+    "globalDesc": "Wijzigingen gelden op de hele site.",
+    "global": {
+      "phone": "Telefoonnummer",
+      "city": "Plaats",
+      "tagline": "Footer-slogan",
+      "facebook": "Facebook-URL",
+      "instagram": "Instagram-URL"
+    }
   }
 }

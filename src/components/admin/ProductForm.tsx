@@ -1,9 +1,15 @@
 'use client';
 
 import * as React from 'react';
+import { ImagePlus, ScanLine } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import { AdminSelect } from '@/components/admin/AdminUi';
+import { BarcodeScannerModal } from '@/components/admin/BarcodeScannerModal';
 import { useIntl } from '@/i18n/IntlProvider';
+import { useToast } from '@/components/ui/ToastProvider';
+import { productsService } from '@/lib/services';
+import { getApiErrorMessage } from '@/lib/api-error';
 import {
   EMPTY_PRODUCT_FORM,
   PRODUCT_CATEGORIES,
@@ -20,12 +26,16 @@ export function ProductForm({
   form,
   onChange,
   isEdit,
+  productId,
 }: {
   form: ProductFormState;
   onChange: (next: ProductFormState) => void;
   isEdit?: boolean;
+  /** Existing product id — enables image upload (needs an id to POST to). */
+  productId?: string;
 }) {
   const { t, locale } = useIntl();
+  const { push } = useToast();
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
 
   const priceExclCents = eurosToCents(form.price_excl_vat);
@@ -33,6 +43,27 @@ export function ProductForm({
   const priceInclCents = calcPriceInclCents(priceExclCents, vatRate);
 
   const set = (patch: Partial<ProductFormState>) => onChange({ ...form, ...patch });
+
+  const [showScanner, setShowScanner] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const onUploadFile = async (file: File | undefined) => {
+    if (!file || !productId) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await productsService.uploadImage(productId, fd);
+      const url = res.image_url ?? res.product?.image_url;
+      if (url) set({ image_url: url });
+      push({ tone: 'success', title: t('adminNew.products.ai.uploaded') });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -142,6 +173,30 @@ export function ProductForm({
             </div>
           </div>
         </div>
+        {/* Trello #86: purchase cost + stock tracking */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <Input
+            label={t('adminNew.products.fields.costPrice')}
+            inputMode="decimal"
+            value={form.cost_price}
+            onChange={(e) => set({ cost_price: e.target.value })}
+            placeholder="0,00"
+          />
+          <Input
+            label={t('adminNew.products.fields.stockQuantity')}
+            inputMode="numeric"
+            value={form.stock_quantity}
+            onChange={(e) => set({ stock_quantity: e.target.value })}
+            placeholder="0"
+          />
+          <Input
+            label={t('adminNew.products.fields.stockMinimum')}
+            inputMode="numeric"
+            value={form.stock_minimum}
+            onChange={(e) => set({ stock_minimum: e.target.value })}
+            placeholder="0"
+          />
+        </div>
       </section>
 
       <section>
@@ -149,11 +204,29 @@ export function ProductForm({
           {t('adminNew.products.sections.pos')}
         </h3>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Input
-            label={t('adminNew.products.fields.barcode')}
-            value={form.barcode}
-            onChange={(e) => set({ barcode: e.target.value })}
-          />
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-navy-800">
+              {t('adminNew.products.fields.barcode')}
+            </label>
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <Input
+                  value={form.barcode}
+                  onChange={(e) => set({ barcode: e.target.value })}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                leftIcon={<ScanLine className="h-4 w-4" />}
+                onClick={() => setShowScanner(true)}
+              >
+                {t('adminNew.products.fields.scanBarcode')}
+              </Button>
+            </div>
+          </div>
           <Input
             label={t('adminNew.products.fields.searchCode')}
             value={form.search_code}
@@ -183,12 +256,49 @@ export function ProductForm({
               <Input value={form.color} onChange={(e) => set({ color: e.target.value })} />
             </div>
           </div>
-          <Input
-            label={t('adminNew.products.fields.imageUrl')}
-            value={form.image_url}
-            onChange={(e) => set({ image_url: e.target.value })}
-            placeholder="https://"
-          />
+          <div className="sm:col-span-2">
+            <label className="mb-1.5 block text-sm font-medium text-navy-800">
+              {t('adminNew.products.fields.imageUrl')}
+            </label>
+            <div className="flex items-start gap-3">
+              {form.image_url ? (
+                <span className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-navy-100 bg-sand-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={form.image_url} alt="" className="h-full w-full object-cover" />
+                </span>
+              ) : null}
+              <div className="flex-1 space-y-2">
+                <Input
+                  value={form.image_url}
+                  onChange={(e) => set({ image_url: e.target.value })}
+                  placeholder="https://"
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    void onUploadFile(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<ImagePlus className="h-4 w-4" />}
+                  disabled={!productId || uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {uploading ? t('adminNew.products.ai.uploading') : t('adminNew.products.fields.uploadImage')}
+                </Button>
+                {!productId ? (
+                  <p className="text-xs text-navy-400">{t('adminNew.products.fields.uploadHint')}</p>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -196,6 +306,16 @@ export function ProductForm({
         <input type="checkbox" checked={form.active} onChange={(e) => set({ active: e.target.checked })} />
         {t('adminNew.products.active')}
       </label>
+
+      <BarcodeScannerModal
+        open={showScanner}
+        onClose={() => setShowScanner(false)}
+        onDetected={(code) => {
+          set({ barcode: code });
+          setShowScanner(false);
+          push({ tone: 'success', title: t('adminNew.products.fields.barcodeScanned', { code }) });
+        }}
+      />
     </div>
   );
 }

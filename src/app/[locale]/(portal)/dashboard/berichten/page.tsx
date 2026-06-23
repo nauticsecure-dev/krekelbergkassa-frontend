@@ -55,11 +55,13 @@ export default function PortalMessagesPage() {
   const [readFilter, setReadFilter] = React.useState<ReadFilter>('');
   const [selected, setSelected] = React.useState<PortalTimelineItem | null>(null);
   const [confirmMarkAll, setConfirmMarkAll] = React.useState(false);
+  // Trello #89: paginate beyond the first 50 items.
+  const [perPage, setPerPage] = React.useState(50);
 
-  const timeline = useQuery([readFilter], () =>
+  const timeline = useQuery([readFilter, perPage], () =>
     portalService.timeline({
       status: readFilter || undefined,
-      per_page: 50,
+      per_page: perPage,
     })
   );
 
@@ -233,6 +235,15 @@ export default function PortalMessagesPage() {
             ))}
           </div>
         ) : null}
+
+        {/* Trello #89: load more beyond the first 50 */}
+        {!timeline.loading && timeline.data?.pagination?.has_more ? (
+          <div className="mt-4 flex justify-center">
+            <Button variant="outline" size="sm" onClick={() => setPerPage((p) => p + 50)}>
+              {t('adminNew.portal.messages.loadMore')}
+            </Button>
+          </div>
+        ) : null}
         </PortalSectionCard>
       </PortalContent>
 
@@ -267,6 +278,14 @@ export default function PortalMessagesPage() {
               <Button variant="outline" onClick={() => setSelected(null)}>
                 {t('adminNew.common.cancel')}
               </Button>
+              {/* Trello #89: navigate to the item's source record when a CTA url is present. */}
+              {selected.cta_url ? (
+                <a href={selected.cta_url.startsWith('http') ? selected.cta_url : `/${locale}${selected.cta_url}`}>
+                  <Button variant="gold">
+                    {selected.cta_label ?? t('adminNew.portal.messages.openItem')}
+                  </Button>
+                </a>
+              ) : null}
             </PortalModalFooter>
           </>
         ) : null}

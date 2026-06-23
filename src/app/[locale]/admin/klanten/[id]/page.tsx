@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { FilePlus2, Save, Ship, Users, Warehouse, CreditCard, Wallet, FileText, UserRound, Clock } from 'lucide-react';
+import { Activity, FilePlus2, Save, Ship, Users, Warehouse, CreditCard, Wallet, FileText, UserRound, Clock, ShieldCheck, Download, UserX } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -31,6 +31,7 @@ import {
   stallingService,
   walletsService,
   adminService,
+  governanceService,
 } from '@/lib/services';
 import { findUserIdByEmail, impersonateUser, ImpersonationError } from '@/lib/impersonate';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
@@ -82,6 +83,21 @@ export default function CustomerDetailPage() {
     };
   });
 
+  // Trello #90: customer health score widget.
+  const health = useQuery([customerId, 'health'], () =>
+    customerId ? adminService.customerHealth(customerId).catch(() => null) : Promise.resolve(null)
+  );
+  const recomputeHealth = useMutation(() => adminService.recomputeCustomerHealth(customerId!));
+  const onRecomputeHealth = async () => {
+    try {
+      await recomputeHealth.mutate();
+      await health.refetch();
+      push({ tone: 'success', title: t('adminNew.customerDetail.health.recomputed') });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
   const updateCustomer = useMutation((payload: Record<string, unknown>) =>
     customersService.update(customerId, payload)
   );
@@ -112,6 +128,56 @@ export default function CustomerDetailPage() {
       locale: locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL',
     })
   );
+
+  // Trello #104 (Pillar 20): GDPR data export + anonymisation.
+  const [showAnonymize, setShowAnonymize] = React.useState(false);
+  const [anonymizeConfirm, setAnonymizeConfirm] = React.useState('');
+  const [anonymizeReason, setAnonymizeReason] = React.useState('');
+  const gdprExport = useMutation(() => governanceService.gdprExport(customerId!));
+  const gdprAnonymize = useMutation((reason: string) =>
+    governanceService.gdprAnonymize(customerId!, { confirm: 'ANONYMIZE', reason })
+  );
+
+  const onGdprExport = async () => {
+    if (!customerId) return;
+    try {
+      const data = await gdprExport.mutate();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `gdpr-${customerId}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      push({ tone: 'success', title: t('adminNew.gdpr.toasts.exported') });
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.common.operationFailed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
+
+  const onAnonymize = async () => {
+    if (!customerId) return;
+    try {
+      await gdprAnonymize.mutate(anonymizeReason);
+      push({ tone: 'success', title: t('adminNew.gdpr.toasts.anonymized') });
+      setShowAnonymize(false);
+      setAnonymizeConfirm('');
+      setAnonymizeReason('');
+      await data.refetch();
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.common.operationFailed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
 
   const [editForm, setEditForm] = React.useState({
     name: '',
@@ -420,7 +486,51 @@ export default function CustomerDetailPage() {
                     tone={openBalance > 0 ? 'warning' : 'success'}
                   />
                 </div>
+                <Link
+                  href={`/${locale}/admin/klanten/${customerId}/timeline`}
+                  className="mt-3 inline-flex text-sm font-semibold text-marine-700 hover:text-marine-900"
+                >
+                  {t('adminNew.customerDetail.viewTimeline')} →
+                </Link>
               </AdminSectionCard>
+
+              {/* Trello #90: customer health score */}
+              {(() => {
+                const h = health.data as Record<string, unknown> | null;
+                if (!h || h.score == null) return null;
+                const label = String(h.label ?? 'good');
+                const tone =
+                  label === 'excellent' ? 'success'
+                  : label === 'good' ? 'marine'
+                  : label === 'fair' ? 'gold'
+                  : 'danger';
+                const breakdown = (h.breakdown ?? {}) as Record<string, unknown>;
+                return (
+                  <AdminSectionCard
+                    title={t('adminNew.customerDetail.health.title')}
+                    description={t('adminNew.customerDetail.health.subtitle')}
+                    icon={Activity}
+                    action={
+                      <Button size="sm" variant="ghost" onClick={() => void onRecomputeHealth()} disabled={recomputeHealth.loading}>
+                        {t('adminNew.customerDetail.health.recompute')}
+                      </Button>
+                    }
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`text-4xl font-bold ${tone === 'danger' ? 'text-rose-600' : tone === 'gold' ? 'text-amber-600' : 'text-marine-700'}`}>
+                        {String(h.score)}
+                      </div>
+                      <Badge tone={tone}>{t(`adminNew.customerDetail.health.labels.${label}`)}</Badge>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-navy-600">
+                      <span>{t('adminNew.customerDetail.health.recentPaid')}: <strong>{String(breakdown.recent_paid_invoices ?? 0)}</strong></span>
+                      <span>{t('adminNew.customerDetail.health.overdue')}: <strong>{String(breakdown.overdue_invoices ?? 0)}</strong></span>
+                      <span>{t('adminNew.customerDetail.health.activeContract')}: <strong>{breakdown.active_contract ? t('adminNew.common.yes') : t('adminNew.common.no')}</strong></span>
+                      <span>{t('adminNew.customerDetail.health.openOrders')}: <strong>{String(breakdown.open_work_orders ?? 0)}</strong></span>
+                    </div>
+                  </AdminSectionCard>
+                );
+              })()}
 
               <AdminSectionCard
                 title={t('adminNew.wallet.title')}
@@ -678,6 +788,38 @@ export default function CustomerDetailPage() {
               ) : (
                 <div className="text-sm text-navy-500">{t('adminNew.customerDetail.noFiles')}</div>
               )}
+            </AdminSectionCard>
+
+            {/* Trello #104 (Pillar 20): AVG / GDPR */}
+            <AdminSectionCard
+              title={t('adminNew.gdpr.title')}
+              description={t('adminNew.gdpr.subtitle')}
+              icon={ShieldCheck}
+            >
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Download className="h-4 w-4" />}
+                  disabled={gdprExport.loading}
+                  onClick={() => void onGdprExport()}
+                >
+                  {gdprExport.loading ? t('adminNew.common.loading') : t('adminNew.gdpr.export')}
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  leftIcon={<UserX className="h-4 w-4" />}
+                  onClick={() => {
+                    setAnonymizeConfirm('');
+                    setAnonymizeReason('');
+                    setShowAnonymize(true);
+                  }}
+                >
+                  {t('adminNew.gdpr.anonymize')}
+                </Button>
+              </div>
+              <p className="mt-3 text-xs text-navy-500">{t('adminNew.gdpr.hint')}</p>
             </AdminSectionCard>
           </>
         ) : null}
@@ -995,6 +1137,58 @@ export default function CustomerDetailPage() {
         icon={Wallet}
         loading={creditWallet.loading}
       />
+
+      {/* Trello #104 (Pillar 20): anonymise — requires typing ANONYMIZE + a reason. */}
+      <Modal open={showAnonymize} onClose={() => setShowAnonymize(false)} size="md">
+        <form
+          className="p-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void onAnonymize();
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+              <UserX className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.gdpr.anonymizeModal.title')}</h2>
+              <p className="mt-1 text-sm text-navy-500">{t('adminNew.gdpr.anonymizeModal.message')}</p>
+            </div>
+          </div>
+          <div className="mt-4 space-y-3">
+            <Input
+              label={t('adminNew.gdpr.anonymizeModal.confirmLabel')}
+              placeholder="ANONYMIZE"
+              value={anonymizeConfirm}
+              onChange={(e) => setAnonymizeConfirm(e.target.value)}
+              required
+            />
+            <Input
+              label={t('adminNew.gdpr.anonymizeModal.reasonLabel')}
+              value={anonymizeReason}
+              onChange={(e) => setAnonymizeReason(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setShowAnonymize(false)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="danger"
+              disabled={
+                gdprAnonymize.loading ||
+                anonymizeConfirm.trim() !== 'ANONYMIZE' ||
+                anonymizeReason.trim().length < 5
+              }
+            >
+              {gdprAnonymize.loading ? t('adminNew.common.saving') : t('adminNew.gdpr.anonymize')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </>
   );
 }

@@ -75,14 +75,52 @@ export default function TimelinePage() {
 
   const [search, setSearch] = React.useState('');
   const [category, setCategory] = React.useState('');
+  const [priority, setPriority] = React.useState('');
   const [from, setFrom] = React.useState('');
   const [to, setTo] = React.useState('');
   const [page, setPage] = React.useState(1);
+  // Trello #109: saved filter presets, persisted per-device.
+  const [activePreset, setActivePreset] = React.useState('all');
 
-  const feed = useQuery([search, category, from, to, page], () =>
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = window.localStorage.getItem('timeline_preset');
+    if (saved) applyPreset(saved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const applyPreset = (id: string) => {
+    setActivePreset(id);
+    if (typeof window !== 'undefined') window.localStorage.setItem('timeline_preset', id);
+    setPage(1);
+    switch (id) {
+      case 'myTasks':
+        setCategory('');
+        setPriority('high');
+        break;
+      case 'finance':
+        setCategory('finance');
+        setPriority('');
+        break;
+      case 'storage':
+        setCategory('storage');
+        setPriority('');
+        break;
+      case 'planning':
+        setCategory('planning');
+        setPriority('');
+        break;
+      default:
+        setCategory('');
+        setPriority('');
+    }
+  };
+
+  const feed = useQuery([search, category, priority, from, to, page], () =>
     adminService.timelineFeed({
       search: search || undefined,
       category: category || undefined,
+      priority: priority || undefined,
       from: from || undefined,
       to: to || undefined,
       page,
@@ -116,6 +154,23 @@ export default function TimelinePage() {
           description={t('adminNew.timeline.feedSubtitle')}
           icon={Activity}
         >
+          {/* Trello #109: saved filter presets */}
+          <div className="mb-3 flex flex-wrap gap-2">
+            {(['all', 'myTasks', 'finance', 'storage', 'planning'] as const).map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => applyPreset(id)}
+                className={
+                  activePreset === id
+                    ? 'rounded-full bg-marine-600 px-3 py-1 text-xs font-semibold text-white'
+                    : 'rounded-full border border-navy-200 px-3 py-1 text-xs font-medium text-navy-600 hover:bg-sand-50'
+                }
+              >
+                {t(`adminNew.timeline.presets.${id}`)}
+              </button>
+            ))}
+          </div>
           <div className="mb-4 flex flex-wrap items-end gap-2">
             <AdminSearchInput
               value={search}
@@ -130,6 +185,7 @@ export default function TimelinePage() {
               value={category}
               onChange={(v) => {
                 setCategory(v);
+                setActivePreset('all');
                 setPage(1);
               }}
             >

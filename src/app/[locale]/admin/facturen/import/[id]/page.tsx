@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, FileText, RotateCw, ScanText, XCircle, ZoomIn, ZoomOut } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, FileText, History, RotateCw, ScanText, UserPlus, XCircle, ZoomIn, ZoomOut } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -17,14 +17,16 @@ import {
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { invoiceImportsService } from '@/lib/services';
+import { invoiceImportsService, suppliersService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatDate } from '@/lib/format';
 
 type Rec = Record<string, unknown>;
 const str = (r: Rec, ...keys: string[]): string => {
@@ -57,8 +59,15 @@ export default function InvoiceImportReviewPage() {
 
   const [approveOpen, setApproveOpen] = React.useState(false);
   const [rejectOpen, setRejectOpen] = React.useState(false);
+  const [supplierOpen, setSupplierOpen] = React.useState(false);
   const [zoom, setZoom] = React.useState(100);
   const [rotation, setRotation] = React.useState(0);
+  const [supplierForm, setSupplierForm] = React.useState({
+    name: '',
+    email: '',
+    iban: '',
+    payment_terms_days: '14',
+  });
 
   const imp = useQuery([id], () => invoiceImportsService.get(id));
   const queue = useQuery(['import-queue-nav'], () => invoiceImportsService.list({ per_page: 100 }));
@@ -66,6 +75,7 @@ export default function InvoiceImportReviewPage() {
   const matches = useQuery([id, 'matches'], () => invoiceImportsService.proposeMatches(id).catch(() => null));
   const approveM = useMutation(() => invoiceImportsService.approve(id));
   const rejectM = useMutation(() => invoiceImportsService.reject(id));
+  const createSupplierM = useMutation((payload: Record<string, unknown>) => suppliersService.create(payload));
 
   const data = (imp.data ?? {}) as Rec;
   const extracted = ((data.extracted_data ?? data.extracted ?? data.fields ?? {}) as Rec);
@@ -73,6 +83,21 @@ export default function InvoiceImportReviewPage() {
   const proposals = ((matches.data?.matches ?? matches.data?.proposals ?? matches.data?.data ?? []) as Rec[]) ?? [];
   const pdfUrl = str((pdf.data ?? {}) as Rec, 'signed_url', 'url');
   const overallConf = confPct(data.ocr_confidence ?? data.confidence ?? data.average_confidence);
+
+  // Trello #81: validation warnings, correction history, supplier linkage.
+  const warnings = ((data.validation_warnings ?? data.warnings ?? []) as unknown[]).filter(Boolean);
+  const corrections = ((data.corrections ?? []) as Rec[]) ?? [];
+  const hasSupplier = data.supplier_id != null && data.supplier_id !== '';
+
+  const warningText = (w: unknown): { message: string; severity: string } => {
+    if (typeof w === 'string') return { message: w, severity: 'warning' };
+    const r = (w ?? {}) as Rec;
+    return {
+      message: str(r, 'message', 'text', 'warning', 'description') || JSON.stringify(r),
+      severity: str(r, 'severity', 'level') || 'warning',
+    };
+  };
+  const isError = (sev: string) => /error|danger|critical|high/i.test(sev);
 
   const money = (cents: number) => formatCurrency(cents / 100, dateLocale);
 
@@ -91,6 +116,34 @@ export default function InvoiceImportReviewPage() {
       await fn();
       push({ tone: 'success', title: label });
       after();
+      await imp.refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
+  const onCreateSupplier = async () => {
+    if (!supplierForm.name.trim()) {
+      push({ tone: 'error', title: t('adminNew.invoiceImports.reviewScreen.supplierNameRequired') });
+      return;
+    }
+    try {
+      const created = (await createSupplierM.mutate({
+        name: supplierForm.name.trim(),
+        email: supplierForm.email.trim() || undefined,
+        iban: supplierForm.iban.trim() || undefined,
+        payment_terms_days: supplierForm.payment_terms_days
+          ? Number(supplierForm.payment_terms_days)
+          : undefined,
+      })) as Rec;
+      // Best-effort link the freshly created supplier to this import.
+      const newId = str(created, 'id');
+      if (newId) {
+        await invoiceImportsService.approve(id, { supplier_id: newId }).catch(() => undefined);
+      }
+      push({ tone: 'success', title: t('adminNew.invoiceImports.reviewScreen.supplierCreated') });
+      setSupplierOpen(false);
+      setSupplierForm({ name: '', email: '', iban: '', payment_terms_days: '14' });
       await imp.refetch();
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
@@ -146,6 +199,28 @@ export default function InvoiceImportReviewPage() {
       />
       <AdminContent>
         {imp.error ? <ErrorState message={imp.error} onRetry={() => void imp.refetch()} /> : null}
+
+        {warnings.length > 0 ? (
+          <div className="mb-5 space-y-2">
+            {warnings.map((w, i) => {
+              const { message, severity } = warningText(w);
+              const danger = isError(severity);
+              return (
+                <div
+                  key={i}
+                  className={`flex items-start gap-2.5 rounded-xl border px-4 py-3 text-sm ${
+                    danger
+                      ? 'border-rose-200 bg-rose-50 text-rose-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-800'
+                  }`}
+                >
+                  <AlertTriangle className={`mt-0.5 h-4 w-4 shrink-0 ${danger ? 'text-rose-500' : 'text-amber-500'}`} />
+                  <span className="font-medium">{message}</span>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
 
         <div className="grid gap-5 lg:grid-cols-2">
           <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.document')} icon={FileText}>
@@ -217,7 +292,58 @@ export default function InvoiceImportReviewPage() {
                   );
                 })}
               </div>
+              {!hasSupplier ? (
+                <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-marine-200 bg-marine-50/60 px-3 py-2.5">
+                  <span className="text-sm text-navy-700">
+                    {t('adminNew.invoiceImports.reviewScreen.noSupplierLinked')}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<UserPlus className="h-3.5 w-3.5" />}
+                    onClick={() => {
+                      setSupplierForm({
+                        name: str(extracted, 'supplier_name') || str(data, 'supplier_name'),
+                        email: str(extracted, 'supplier_email') || str(data, 'sender_email'),
+                        iban: str(extracted, 'iban'),
+                        payment_terms_days: '14',
+                      });
+                      setSupplierOpen(true);
+                    }}
+                  >
+                    {t('adminNew.invoiceImports.reviewScreen.createSupplier')}
+                  </Button>
+                </div>
+              ) : null}
             </AdminSectionCard>
+
+            {corrections.length > 0 ? (
+              <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.corrections')} icon={History}>
+                <ul className="space-y-2">
+                  {corrections.map((c, i) => (
+                    <li key={i} className="rounded-lg border border-navy-100 px-3 py-2 text-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-navy-800">{str(c, 'field', 'field_name') || '—'}</span>
+                        {str(c, 'corrected_at', 'created_at') ? (
+                          <span className="text-xs text-navy-400">
+                            {formatDate(str(c, 'corrected_at', 'created_at'), dateLocale)}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                        <span className="rounded bg-rose-50 px-1.5 py-0.5 text-rose-700 line-through">
+                          {str(c, 'old_value', 'from', 'previous_value') || '—'}
+                        </span>
+                        <ChevronRight className="h-3 w-3 text-navy-400" />
+                        <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-emerald-700">
+                          {str(c, 'new_value', 'to', 'corrected_value') || '—'}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </AdminSectionCard>
+            ) : null}
 
             {proposals.length > 0 ? (
               <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.matches')} description={t('adminNew.invoiceImports.reviewScreen.matchesSubtitle')} icon={CheckCircle2}>
@@ -289,6 +415,56 @@ export default function InvoiceImportReviewPage() {
         variant="danger"
         loading={rejectM.loading}
       />
+
+      <Modal open={supplierOpen} onClose={() => setSupplierOpen(false)} size="md">
+        <div className="p-6">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-navy-900">
+            <UserPlus className="h-5 w-5 text-marine-600" />
+            {t('adminNew.invoiceImports.reviewScreen.createSupplier')}
+          </h2>
+          <p className="mt-1 text-sm text-navy-500">
+            {t('adminNew.invoiceImports.reviewScreen.createSupplierHint')}
+          </p>
+          <div className="mt-4 grid gap-3">
+            <Input
+              label={t('adminNew.common.name')}
+              value={supplierForm.name}
+              onChange={(e) => setSupplierForm((p) => ({ ...p, name: e.target.value }))}
+              required
+            />
+            <Input
+              label={t('adminNew.common.email')}
+              type="email"
+              value={supplierForm.email}
+              onChange={(e) => setSupplierForm((p) => ({ ...p, email: e.target.value }))}
+            />
+            <Input
+              label={t('adminNew.invoiceImports.reviewScreen.iban')}
+              value={supplierForm.iban}
+              onChange={(e) => setSupplierForm((p) => ({ ...p, iban: e.target.value }))}
+            />
+            <Input
+              label={t('adminNew.invoiceImports.reviewScreen.paymentTermsDays')}
+              type="number"
+              value={supplierForm.payment_terms_days}
+              onChange={(e) => setSupplierForm((p) => ({ ...p, payment_terms_days: e.target.value }))}
+            />
+          </div>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setSupplierOpen(false)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button
+              variant="gold"
+              size="sm"
+              disabled={createSupplierM.loading}
+              onClick={() => void onCreateSupplier()}
+            >
+              {t('adminNew.common.save')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }

@@ -131,12 +131,20 @@ export async function api<T = unknown>(
 
     const contentType = res.headers.get('content-type')?.toLowerCase() ?? '';
     const isJson = contentType.includes('application/json');
-    const isPdf = contentType.includes('application/pdf');
+    // Binary downloads (PDF, CSV, Excel, generic octet-stream) must be returned
+    // as a Blob so callers can trigger a file download — Trello #68 CSV export et al.
+    const isBinary =
+      contentType.includes('application/pdf') ||
+      contentType.includes('text/csv') ||
+      contentType.includes('application/octet-stream') ||
+      contentType.includes('spreadsheet') ||
+      contentType.includes('application/vnd.ms-excel') ||
+      (res.headers.get('content-disposition')?.toLowerCase().includes('attachment') ?? false);
 
     let payload: unknown = null;
     if (isJson) {
       payload = await res.json().catch(() => null);
-    } else if (isPdf) {
+    } else if (isBinary) {
       payload = await res.blob();
     } else if (res.status !== 204) {
       payload = await res.text().catch(() => null);
