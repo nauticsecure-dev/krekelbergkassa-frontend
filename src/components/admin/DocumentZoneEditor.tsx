@@ -6,42 +6,62 @@ import { Button } from '@/components/ui/Button';
 import { useIntl } from '@/i18n/IntlProvider';
 import type { ExtractionZone } from '@/lib/services';
 
-/** Fields that can be tagged on a document. */
+/** Fields that can be tagged on a document — kept in sync with InvoiceExtractionTemplate::FIELD_TYPES. */
 export const ZONE_FIELDS = [
+  // Core identifiers
   'invoice_number',
+  'document_number',
   'invoice_date',
   'due_date',
+  // Supplier
   'supplier',
+  'supplier_name',
+  'supplier_address',
+  'supplier_vat_number',
+  // Customer
+  'customer_name',
+  // Amounts
   'subtotal',
   'vat',
+  'vat_amount',
+  'vat_rate',
   'total',
+  // Payment
   'iban',
-  'line_items',
-  // Trello #81: additional extractable fields.
+  'bank_account',
   'payment_reference',
   'currency',
+  // Classification
   'vat_number',
   'cost_center',
-  'bank_account',
-  'document_number',
+  'notes',
+  // Multi-value
+  'line_items',
 ] as const;
 
 const ZONE_COLORS: Record<string, string> = {
   invoice_number: '#2563eb',
+  document_number: '#3b82f6',
   invoice_date: '#0ea5e9',
   due_date: '#06b6d4',
   supplier: '#7c3aed',
+  supplier_name: '#7c3aed',
+  supplier_address: '#8b5cf6',
+  supplier_vat_number: '#a78bfa',
+  customer_name: '#6366f1',
   subtotal: '#d97706',
   vat: '#dc2626',
+  vat_amount: '#dc2626',
+  vat_rate: '#ef4444',
   total: '#059669',
   iban: '#475569',
-  line_items: '#db2777',
+  bank_account: '#64748b',
   payment_reference: '#0891b2',
-  currency: '#65a30d',
-  vat_number: '#ea580c',
-  cost_center: '#9333ea',
-  bank_account: '#0d9488',
-  document_number: '#4f46e5',
+  currency: '#0369a1',
+  vat_number: '#b45309',
+  cost_center: '#92400e',
+  notes: '#6b7280',
+  line_items: '#db2777',
 };
 
 async function renderPdfFirstPage(file: File): Promise<string> {
