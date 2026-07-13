@@ -7,6 +7,7 @@ import {
   Database,
   FileText,
   GitMerge,
+  HardDriveDownload,
   KeyRound,
   Mail,
   RefreshCw,
@@ -27,9 +28,13 @@ import {
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/Modal';
 import { HealthStatusBadge, healthStatusMeta } from '@/components/admin/HealthStatus';
-import { adminHealthService, repairService } from '@/lib/services';
-import { useQuery } from '@/lib/hooks/useAsync';
+import { adminHealthService, governanceService, repairService } from '@/lib/services';
+import { useMutation, useQuery } from '@/lib/hooks/useAsync';
+import { formatDateTime } from '@/lib/format';
+import { trackEvent } from '@/lib/track-event';
 import { ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -37,9 +42,13 @@ import { useIntl } from '@/i18n/IntlProvider';
 import type { HealthCheckResult, Payment } from '@/lib/api-types';
 
 export default function SystemPage() {
-  const { t } = useIntl();
+  const { t, locale } = useIntl();
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   const { push } = useToast();
   const [running, setRunning] = React.useState<string | null>(null);
+  const [showBackup, setShowBackup] = React.useState(false);
+  const [backupType, setBackupType] = React.useState('database');
+  const [backupNotes, setBackupNotes] = React.useState('');
   const [invoiceId, setInvoiceId] = React.useState('');
   const [paymentId, setPaymentId] = React.useState('');
   const [mainCustomerId, setMainCustomerId] = React.useState('');
@@ -76,6 +85,32 @@ export default function SystemPage() {
     ]);
     return { mismatched, failedWebhooks, syncConflicts };
   });
+
+  // Trello #104 (Pillar 21): recent backup runs.
+  const backups = useQuery(['backup-runs'], () =>
+    governanceService.backupRuns({ per_page: 10 }).catch(() => ({ data: [] }))
+  );
+  const createBackup = useMutation(() =>
+    governanceService.createBackupRun({ type: backupType, notes: backupNotes || undefined })
+  );
+
+  const onRunBackup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    trackEvent('button_clicked', { metadata: { action: 'run_backup', type: backupType } });
+    try {
+      await createBackup.mutate();
+      push({ tone: 'success', title: t('adminNew.backups.toasts.started') });
+      setShowBackup(false);
+      setBackupNotes('');
+      await backups.refetch();
+    } catch (err) {
+      push({
+        tone: 'error',
+        title: t('adminNew.common.operationFailed'),
+        message: getApiErrorMessage(err),
+      });
+    }
+  };
 
   const runRepair = async (key: string, fn: () => Promise<unknown>, successKey?: string) => {
     setRunning(key);
@@ -421,6 +456,80 @@ export default function SystemPage() {
                 ) : null}
               </AdminSectionCard>
             </div>
+
+            {/* Trello #104 (Pillar 21): backup runs */}
+            <AdminSectionCard
+              title={t('adminNew.backups.title')}
+              description={t('adminNew.backups.subtitle')}
+              icon={HardDriveDownload}
+              action={
+                <Button
+                  size="sm"
+                  variant="gold"
+                  leftIcon={<HardDriveDownload className="h-3.5 w-3.5" />}
+                  onClick={() => setShowBackup(true)}
+                >
+                  {t('adminNew.backups.runNow')}
+                </Button>
+              }
+            >
+              {backups.loading ? (
+                <div className="text-sm text-navy-500">{t('adminNew.common.loading')}</div>
+              ) : (backups.data?.data ?? []).length ? (
+                <div className="space-y-2">
+                  {(backups.data?.data ?? []).map((raw) => {
+                    const run = raw as Record<string, unknown>;
+                    const status = String(run.status ?? 'unknown');
+                    const tone =
+                      status === 'completed' || status === 'success'
+                        ? 'success'
+                        : status === 'failed'
+                          ? 'danger'
+                          : status === 'running'
+                            ? 'marine'
+                            : 'navy';
+                    const sizeMb = run.size_mb ?? (run.size_bytes != null ? Number(run.size_bytes) / (1024 * 1024) : null);
+                    const duration = run.duration_seconds;
+                    return (
+                      <AdminListItem
+                        key={String(run.id)}
+                        title={
+                          <span className="flex items-center gap-2">
+                            <span className="capitalize">{String(run.type ?? 'backup')}</span>
+                            <Badge tone={tone}>{t(`adminNew.backups.status.${status}`)}</Badge>
+                          </span>
+                        }
+                        subtitle={
+                          <span className="flex flex-wrap gap-3">
+                            {sizeMb != null ? (
+                              <span>{t('adminNew.backups.size', { mb: Number(sizeMb).toFixed(1) })}</span>
+                            ) : null}
+                            {duration != null ? (
+                              <span>{t('adminNew.backups.duration', { seconds: String(duration) })}</span>
+                            ) : null}
+                            {run.triggered_by ? (
+                              <span>{t('adminNew.backups.triggeredBy', { by: String(run.triggered_by) })}</span>
+                            ) : null}
+                          </span>
+                        }
+                        meta={
+                          <span className="text-xs">
+                            <div>{run.started_at ? formatDateTime(String(run.started_at), dateLocale) : '—'}</div>
+                            {run.completed_at ? (
+                              <div className="text-navy-400">
+                                {formatDateTime(String(run.completed_at), dateLocale)}
+                              </div>
+                            ) : null}
+                          </span>
+                        }
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-sm text-navy-500">{t('adminNew.backups.empty')}</div>
+              )}
+            </AdminSectionCard>
           </>
         ) : null}
       </AdminContent>
@@ -482,6 +591,45 @@ export default function SystemPage() {
         icon={Mail}
         loading={running === 'resend-email'}
       />
+
+      <Modal open={showBackup} onClose={() => setShowBackup(false)} size="md">
+        <form onSubmit={onRunBackup} className="p-6">
+          <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.backups.runNow')}</h2>
+          <div className="mt-4 space-y-3">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.backups.fields.type')}
+              </label>
+              <select
+                className="input-base w-full"
+                value={backupType}
+                onChange={(e) => setBackupType(e.target.value)}
+              >
+                <option value="database">{t('adminNew.backups.types.database')}</option>
+                <option value="full">{t('adminNew.backups.types.full')}</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.backups.fields.notes')}
+              </label>
+              <textarea
+                className="input-base min-h-20 w-full"
+                value={backupNotes}
+                onChange={(e) => setBackupNotes(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setShowBackup(false)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button type="submit" variant="gold" disabled={createBackup.loading}>
+              {createBackup.loading ? t('adminNew.common.saving') : t('adminNew.backups.runNow')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </>
   );
 }

@@ -35,6 +35,14 @@ const PRESET_COLORS = [
   '#dc2626', '#7c3aed', '#475569', '#0f172a',
 ];
 
+// Trello #80/#86: pick the group icon from a known Lucide set (resolved in the
+// kassa via `import * as LucideIcons`), instead of free-text.
+const ICON_OPTIONS = [
+  'Anchor', 'Ship', 'Wrench', 'Package', 'Fuel', 'ShoppingCart', 'Star', 'Zap',
+  'Droplet', 'Droplets', 'Warehouse', 'Waves', 'LifeBuoy', 'Sailboat', 'Container',
+  'Wind', 'Sparkles', 'Tag', 'Box', 'Hammer', 'Cog', 'PaintRoller',
+];
+
 const emptyForm = {
   code: '',
   name: '',
@@ -48,6 +56,10 @@ const emptyForm = {
   profit_center: '',
   sort_order: '0',
   active: true,
+  // Trello #100: public-facing group fields
+  slug: '',
+  public_description: '',
+  is_public: false,
 };
 
 export default function ProductGroupsPage() {
@@ -93,6 +105,9 @@ export default function ProductGroupsPage() {
       profit_center: str(g, 'profit_center'),
       sort_order: str(g, 'sort_order') || '0',
       active: g.active !== false,
+      slug: str(g, 'slug'),
+      public_description: str(g, 'public_description'),
+      is_public: g.is_public === true,
     });
     setShowForm(true);
   };
@@ -112,6 +127,10 @@ export default function ProductGroupsPage() {
       profit_center: form.profit_center || null,
       sort_order: form.sort_order ? Number(form.sort_order) : 0,
       active: form.active,
+      // Trello #100: public-facing fields
+      slug: form.slug.trim() || null,
+      public_description: form.public_description.trim() || null,
+      is_public: form.is_public,
     };
     try {
       if (editId) {
@@ -311,12 +330,23 @@ export default function ProductGroupsPage() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input
-                label={t('adminNew.productGroups.fields.icon')}
-                value={form.icon}
-                onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                placeholder="paintbrush"
-              />
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                  {t('adminNew.productGroups.fields.icon')}
+                </label>
+                <select
+                  className="input-base w-full"
+                  value={form.icon}
+                  onChange={(e) => setForm({ ...form, icon: e.target.value })}
+                >
+                  <option value="">{t('adminNew.productGroups.fields.iconNone')}</option>
+                  {ICON_OPTIONS.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Input
                 label={t('adminNew.productGroups.fields.sortOrder')}
                 type="number"
@@ -369,6 +399,39 @@ export default function ProductGroupsPage() {
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
+            </div>
+
+            {/* Trello #100: public-facing settings */}
+            <div className="rounded-xl border border-navy-100 bg-sand-50/40 p-3">
+              <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-navy-400">
+                {t('adminNew.productGroups.fields.publicSection')}
+              </h4>
+              <label className="mb-3 flex items-center gap-2 text-sm text-navy-800">
+                <input
+                  type="checkbox"
+                  checked={form.is_public}
+                  onChange={(e) => setForm({ ...form, is_public: e.target.checked })}
+                  className="h-4 w-4 rounded border-navy-300"
+                />
+                {t('adminNew.productGroups.fields.isPublic')}
+              </label>
+              <Input
+                label={t('adminNew.productGroups.fields.slug')}
+                value={form.slug}
+                onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                placeholder="winterstalling"
+              />
+              <div className="mt-3">
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                  {t('adminNew.productGroups.fields.publicDescription')}
+                </label>
+                <textarea
+                  className="input-base min-h-20 w-full"
+                  value={form.public_description}
+                  onChange={(e) => setForm({ ...form, public_description: e.target.value })}
+                  placeholder={t('adminNew.productGroups.fields.publicDescriptionPlaceholder')}
+                />
+              </div>
             </div>
 
             <label className="flex items-center gap-2 text-sm text-navy-800">

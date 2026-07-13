@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useIntl } from "@/i18n/IntlProvider";
 import { Button } from "@/components/ui/Button";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth, MfaRequiredError } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/ToastProvider";
 import { getApiErrorMessage } from "@/lib/api-error";
 import {
@@ -27,7 +27,7 @@ function LoginPageContent() {
   const { t, locale } = useIntl();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, requestCustomerMagicLink, verifyCustomerMagicLink } =
+  const { signIn, verifyMfa, requestCustomerMagicLink, verifyCustomerMagicLink } =
     useAuth();
   const { push } = useToast();
 
@@ -38,6 +38,9 @@ function LoginPageContent() {
   const [showPass, setShowPass] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  // Trello #104: MFA challenge step.
+  const [mfaToken, setMfaToken] = React.useState<string | null>(null);
+  const [mfaCode, setMfaCode] = React.useState("");
 
   const dest =
     searchParams.get('returnTo')?.startsWith('/') && !searchParams.get('returnTo')?.includes('://')
@@ -82,11 +85,84 @@ function LoginPageContent() {
       await signIn(email, password, remember);
       router.push(dest);
     } catch (err) {
-      setError(getApiErrorMessage(err, t("common.loginFailed")));
+      // Trello #104: MFA-enabled accounts require a second factor.
+      if (err instanceof MfaRequiredError) {
+        setMfaToken(err.mfaToken);
+        setMfaCode("");
+        setError(null);
+      } else {
+        setError(getApiErrorMessage(err, t("common.loginFailed")));
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const submitMfa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfaToken) return;
+    setError(null);
+    setLoading(true);
+    try {
+      await verifyMfa(mfaToken, mfaCode.trim(), remember);
+      router.push(dest);
+    } catch (err) {
+      setError(getApiErrorMessage(err, t("adminNew.auth.mfaFailed")));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Trello #104: MFA challenge screen (TOTP / recovery code).
+  if (mfaToken) {
+    return (
+      <div>
+        <h2 className="heading-display text-3xl text-navy-900 sm:text-[34px]">
+          {t("adminNew.auth.mfaTitle")}.
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-navy-500">
+          {t("adminNew.auth.mfaSubtitle")}
+        </p>
+        <form onSubmit={submitMfa} className="mt-6 space-y-4">
+          <Field id="mfa-code" label={t("adminNew.auth.mfaCode")} icon={<Lock className="h-4 w-4" />}>
+            <input
+              id="mfa-code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
+              value={mfaCode}
+              onChange={(e) => setMfaCode(e.target.value)}
+              placeholder="123456"
+              className="auth-input tracking-[0.4em]"
+              required
+            />
+          </Field>
+          {error ? (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              {error}
+            </div>
+          ) : null}
+          <Button
+            type="submit"
+            size="lg"
+            fullWidth
+            disabled={loading || mfaCode.trim().length < 6}
+            rightIcon={<ArrowRight className="h-4 w-4" />}
+            className="bg-navy-900 text-white hover:bg-navy-800"
+          >
+            {loading ? t("common.loggingIn") : t("adminNew.auth.mfaVerify")}
+          </Button>
+          <button
+            type="button"
+            onClick={() => { setMfaToken(null); setMfaCode(""); setError(null); }}
+            className="block w-full pt-1 text-center text-sm font-semibold text-navy-500 hover:text-navy-800"
+          >
+            {t("adminNew.common.back")}
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div>

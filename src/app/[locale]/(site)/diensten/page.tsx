@@ -17,9 +17,15 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { useIntl } from '@/i18n/IntlProvider';
 import { companyInfo } from '@/lib/company';
 import { cn } from '@/lib/cn';
+import { useQuery } from '@/lib/hooks/useAsync';
+import {
+  serviceCatalogService,
+  type ServiceCatalogService,
+} from '@/lib/services';
 
 interface ServiceSection {
   key: string;
@@ -40,9 +46,59 @@ const SECTIONS: ServiceSection[] = [
 
 const FAQS = ['faq1', 'faq2', 'faq3', 'faq4', 'faq5'] as const;
 
+/** A service-catalog group with its public, visible services (Trello #100). */
+interface LiveGroup {
+  key: string;
+  name: string;
+  services: ServiceCatalogService[];
+}
+
+/**
+ * Group the flat list of catalog services by their `group`, keeping only
+ * publicly visible entries. Returns `null` when there is nothing renderable
+ * so the page can fall back to the static {@link SECTIONS} content.
+ */
+function groupLiveServices(services: ServiceCatalogService[] | undefined): LiveGroup[] | null {
+  if (!services?.length) return null;
+  const order: string[] = [];
+  const byKey = new Map<string, LiveGroup>();
+
+  for (const svc of services) {
+    // Respect the public visibility flag when present; otherwise assume public.
+    if (svc.visibility?.public === false) continue;
+    const groupName = svc.group?.name?.trim();
+    const key = svc.group?.code?.trim() || groupName || 'overig';
+    let group = byKey.get(key);
+    if (!group) {
+      group = { key, name: groupName || svc.name || key, services: [] };
+      byKey.set(key, group);
+      order.push(key);
+    }
+    group.services.push(svc);
+  }
+
+  const groups = order
+    .map((key) => byKey.get(key)!)
+    .filter((g) => g.services.length > 0);
+  return groups.length ? groups : null;
+}
+
 export default function DienstenPage() {
   const { t, locale } = useIntl();
   const [openFaq, setOpenFaq] = React.useState<string | null>('faq1');
+
+  // Trello #100: drive the service overview from the shared product DB, falling
+  // back to the static SECTIONS content when the API is empty or unreachable.
+  const catalogQuery = useQuery([], () =>
+    serviceCatalogService
+      .services()
+      .then((res) => res.services)
+      .catch(() => null),
+  );
+  const liveGroups = React.useMemo(
+    () => groupLiveServices(catalogQuery.data ?? undefined),
+    [catalogQuery.data],
+  );
 
   return (
     <>
@@ -92,15 +148,34 @@ export default function DienstenPage() {
       {/* ───────── Sections (alternating photo/text) ───────── */}
       <section className="bg-white py-6">
         <div className="container-wide space-y-20">
-          {SECTIONS.map((s, i) => (
-            <ServiceBlock
-              key={s.key}
-              flip={i % 2 === 1}
-              section={s}
-              locale={locale}
-              t={t}
-            />
-          ))}
+          {liveGroups ? (
+            <div className="space-y-14">
+              <div className="mx-auto max-w-2xl text-center">
+                <Badge tone="gold" className="mb-3">
+                  {t('servicePage.pricesBadge')}
+                </Badge>
+                <h2 className="heading-display text-3xl text-navy-900">
+                  {t('servicePage.overviewTitle')}
+                </h2>
+                <p className="mt-2 text-sm text-navy-500">
+                  {t('servicePage.overviewSubtitle')}
+                </p>
+              </div>
+              {liveGroups.map((group) => (
+                <LiveServiceGroup key={group.key} group={group} locale={locale} t={t} />
+              ))}
+            </div>
+          ) : (
+            SECTIONS.map((s, i) => (
+              <ServiceBlock
+                key={s.key}
+                flip={i % 2 === 1}
+                section={s}
+                locale={locale}
+                t={t}
+              />
+            ))
+          )}
         </div>
       </section>
 
@@ -287,6 +362,67 @@ function ServiceBlock({
             <Button variant="outline">{t('werf.more')}</Button>
           </Link>
         </div>
+      </div>
+    </article>
+  );
+}
+
+function LiveServiceGroup({
+  group,
+  locale,
+  t,
+}: {
+  group: LiveGroup;
+  locale: string;
+  t: (key: string) => string;
+}) {
+  return (
+    <article className="scroll-mt-24">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <h3 className="heading-display text-2xl text-navy-900 sm:text-3xl">{group.name}</h3>
+        <Link
+          href={`/${locale}/kraanafspraak`}
+          className="inline-flex items-center gap-1 text-sm font-semibold text-navy-900 hover:text-marine-700"
+        >
+          {t('werf.ctaPlan')} <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+      <div className="grid gap-5 md:grid-cols-2">
+        {group.services.map((svc) => {
+          const tariffs = (svc.tariffs ?? [])
+            .slice()
+            .sort((a, b) => a.range_from_cm - b.range_from_cm);
+          return (
+            <Card key={svc.code} className="flex flex-col p-6">
+              <h4 className="text-base font-semibold text-navy-900">
+                {svc.name ?? svc.code}
+              </h4>
+              {svc.description ? (
+                <p className="mt-1.5 text-sm leading-relaxed text-navy-500">
+                  {svc.description}
+                </p>
+              ) : null}
+              {tariffs.length ? (
+                <ul className="mt-4 space-y-1.5 border-t border-navy-100 pt-4">
+                  {tariffs.map((tf) => (
+                    <li
+                      key={`${tf.range_from_cm}-${tf.range_to_cm}`}
+                      className="flex items-center justify-between gap-4 text-sm"
+                    >
+                      <span className="text-navy-600">
+                        {tf.range_from_cm === 0 ? `${t('servicePage.from')} ` : ''}
+                        {tf.range_label}
+                      </span>
+                      <span className="font-semibold text-navy-900">
+                        {tf.is_on_request ? t('servicePage.onRequest') : tf.display_price}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </Card>
+          );
+        })}
       </div>
     </article>
   );

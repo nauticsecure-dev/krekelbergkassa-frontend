@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, ScanText } from 'lucide-react';
+import { ArrowLeft, History, ScanText } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminContent, AdminSectionCard } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
@@ -40,6 +40,31 @@ function EditorInner() {
     importId ? invoiceImportsService.sourcePdf(importId).catch(() => null) : Promise.resolve(null)
   );
   const sourceUrl = sourcePdf.data?.signed_url ?? null;
+
+  // Trello #81: version history / OCR metrics for an existing template.
+  const metrics = useQuery([id ?? 'no-metrics', 'metrics'], () =>
+    id ? extractionTemplatesService.metrics(id).catch(() => null) : Promise.resolve(null)
+  );
+  const m = (metrics.data ?? null) as Record<string, unknown> | null;
+  const metricNum = (...keys: string[]): string => {
+    if (!m) return '—';
+    for (const k of keys) {
+      const v = m[k];
+      if (v != null && v !== '') return String(v);
+    }
+    return '—';
+  };
+  const metricPct = (...keys: string[]): string => {
+    if (!m) return '—';
+    for (const k of keys) {
+      const v = m[k];
+      if (v == null || v === '') continue;
+      const n = Number(v);
+      if (Number.isNaN(n)) continue;
+      return `${n <= 1 ? Math.round(n * 100) : Math.round(n)}%`;
+    }
+    return '—';
+  };
 
   React.useEffect(() => {
     const tpl = existing.data;
@@ -151,6 +176,39 @@ function EditorInner() {
         >
           <DocumentZoneEditor zones={zones} onChange={setZones} sourceUrl={sourceUrl} />
         </AdminSectionCard>
+
+        {id ? (
+          <AdminSectionCard
+            title={t('adminNew.templates.history.title')}
+            description={t('adminNew.templates.history.subtitle')}
+            icon={History}
+            className="mt-5"
+          >
+            {metrics.loading ? (
+              <LoadingState label={t('adminNew.common.loading')} />
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {[
+                  { label: t('adminNew.templates.history.version'), value: metricNum('version', 'current_version') },
+                  { label: t('adminNew.templates.history.usedCount'), value: metricNum('used_count', 'usage_count') },
+                  { label: t('adminNew.templates.history.successCount'), value: metricNum('success_count') },
+                  { label: t('adminNew.templates.history.correctionCount'), value: metricNum('correction_count') },
+                  {
+                    label: t('adminNew.templates.history.averageConfidence'),
+                    value: metricPct('average_confidence', 'avg_confidence'),
+                  },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-xl border border-navy-100 bg-white px-4 py-3">
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
+                      {stat.label}
+                    </div>
+                    <div className="mt-1 text-xl font-bold text-navy-900">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </AdminSectionCard>
+        ) : null}
       </AdminContent>
     </>
   );

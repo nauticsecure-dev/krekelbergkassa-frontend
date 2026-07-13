@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import {
+  Activity,
   AlertTriangle,
   Bell,
   Calculator,
@@ -55,12 +56,16 @@ export default function AdminDashboardPage() {
   const calculate = useMutation(pricingService.calculate);
 
   const { data, loading } = useQuery([locale], async () => {
-    const [invoices, stalling, sales, analytics, reminders] = await Promise.all([
+    const [invoices, stalling, sales, analytics, reminders, activity, closures] = await Promise.all([
       invoicesService.list({ per_page: 100 }),
       stallingService.list({ per_page: 100 }),
       kassaService.recentSales().catch(() => []),
       kassaService.analytics().catch(() => null),
       adminService.remindersSummary().catch(() => null),
+      // Trello #109: recent-activity feed for the dashboard.
+      adminService.timelineFeed({ per_page: 10 }).catch(() => null),
+      // Trello #85: today's cash difference from the latest cash closure.
+      kassaService.cashClosures({ per_page: 1 }).catch(() => null),
     ]);
 
     const overdueInvoices = invoices.data.filter((x) => x.is_overdue).length;
@@ -77,6 +82,12 @@ export default function AdminDashboardPage() {
     const analyticsTotals = analytics?.totals as Record<string, number> | undefined;
     const reminderCounts = normalizeRemindersSummary(reminders);
 
+    const activityItems = ((activity as { data?: Record<string, unknown>[] } | null)?.data ?? []).slice(0, 10);
+    const closureRows = ((closures as { data?: Record<string, unknown>[] } | null)?.data ?? []);
+    const cashDifference = closureRows.length
+      ? Number(closureRows[0].difference_cents ?? 0)
+      : null;
+
     return {
       overdueInvoices,
       openInvoices,
@@ -84,8 +95,25 @@ export default function AdminDashboardPage() {
       todayRevenue,
       analyticsTurnover: analyticsTotals?.turnover_cents ?? todayRevenue,
       reminderCounts,
+      activityItems,
+      cashDifference,
     };
   });
+
+  // Trello #109: short relative-time label for the activity feed.
+  const timeAgo = React.useCallback(
+    (iso: string): string => {
+      const d = new Date(iso).getTime();
+      if (!Number.isFinite(d)) return '';
+      const mins = Math.round((Date.now() - d) / 60000);
+      if (mins < 1) return t('adminNew.dashboard.recentActivity.justNow');
+      if (mins < 60) return t('adminNew.dashboard.recentActivity.minutesAgo', { count: mins });
+      const hours = Math.round(mins / 60);
+      if (hours < 24) return t('adminNew.dashboard.recentActivity.hoursAgo', { count: hours });
+      return t('adminNew.dashboard.recentActivity.daysAgo', { count: Math.round(hours / 24) });
+    },
+    [t]
+  );
 
   const runQuickCalc = async () => {
     try {
@@ -278,6 +306,61 @@ export default function AdminDashboardPage() {
             ) : null}
           </div>
         </AdminSectionCard>
+
+        <div className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+          {/* Trello #109: live recent-activity feed */}
+          <AdminSectionCard
+            title={t('adminNew.dashboard.recentActivity.title')}
+            description={t('adminNew.dashboard.recentActivity.subtitle')}
+            icon={Activity}
+            action={
+              <Link href={`/${locale}/admin/timeline`}>
+                <Button variant="ghost" size="sm">
+                  {t('adminNew.timeline.open')} →
+                </Button>
+              </Link>
+            }
+          >
+            {loading ? (
+              <p className="text-sm text-navy-500">{t('adminNew.common.loading')}</p>
+            ) : (data?.activityItems ?? []).length === 0 ? (
+              <p className="text-sm text-navy-500">{t('adminNew.timeline.emptyMessage')}</p>
+            ) : (
+              <ol className="space-y-2">
+                {(data?.activityItems ?? []).map((item, i) => {
+                  const title = String(item.title ?? item.type ?? '—');
+                  const created = String(item.created_at ?? '');
+                  return (
+                    <li key={String(item.id ?? i)} className="flex items-start justify-between gap-3 border-b border-navy-50 pb-2 last:border-0">
+                      <span className="text-sm text-navy-800">{title}</span>
+                      <span className="shrink-0 text-xs text-navy-400">{created ? timeAgo(created) : ''}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </AdminSectionCard>
+
+          {/* Trello #85: cash difference today */}
+          <AdminSectionCard
+            title={t('adminNew.dashboard.cashDifference.title')}
+            description={t('adminNew.dashboard.cashDifference.subtitle')}
+            icon={Receipt}
+          >
+            {data?.cashDifference == null ? (
+              <p className="text-sm text-navy-500">{t('adminNew.dashboard.cashDifference.none')}</p>
+            ) : (
+              <AdminStatusStrip
+                label={t('adminNew.dashboard.cashDifference.title')}
+                value={formatCurrency(centsToEuro(data.cashDifference), dateLocale)}
+                tone={data.cashDifference === 0 ? 'success' : Math.abs(data.cashDifference) < 500 ? 'warning' : 'danger'}
+              />
+            )}
+            <Link href={`/${locale}/admin/kassa/dagafsluiting`} className="mt-3 inline-flex text-sm font-semibold text-marine-700 hover:text-marine-900">
+              {t('adminNew.dashboard.cashDifference.openClosure')} →
+            </Link>
+          </AdminSectionCard>
+        </div>
       </AdminContent>
     </>
   );

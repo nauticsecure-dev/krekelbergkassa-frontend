@@ -340,6 +340,22 @@ export default function ProductDetailPage() {
               </AdminSectionCard>
 
               <AdminSectionCard title={t('adminNew.products.statsTitle')} icon={BarChart3}>
+                {(() => {
+                  // Trello #86: low-stock warning badge.
+                  const sd = (stats.data ?? {}) as Record<string, unknown>;
+                  const pr = (p ?? {}) as unknown as Record<string, unknown>;
+                  const qty = Number(sd.stock_quantity ?? pr.stock_quantity);
+                  const min = Number(sd.stock_minimum ?? pr.stock_minimum);
+                  const lowStock =
+                    sd.stock_low === true ||
+                    pr.stock_low === true ||
+                    (Number.isFinite(qty) && Number.isFinite(min) && min > 0 && qty <= min);
+                  return lowStock ? (
+                    <div className="mb-3">
+                      <Badge tone="danger">{t('adminNew.products.stats.lowStock')}</Badge>
+                    </div>
+                  ) : null;
+                })()}
                 {stats.data ? (
                   <div className="space-y-3">
                     <AdminStatusStrip
@@ -409,7 +425,7 @@ export default function ProductDetailPage() {
         {p && editing && form ? (
           <form onSubmit={onSave}>
             <AdminSectionCard title={t('adminNew.products.modal.editTitle')} icon={Package}>
-              <ProductForm form={form} onChange={setForm} isEdit />
+              <ProductForm form={form} onChange={setForm} isEdit productId={id} />
               <div className="mt-6 flex justify-end gap-2 border-t border-navy-100 pt-4">
                 <Button
                   type="button"

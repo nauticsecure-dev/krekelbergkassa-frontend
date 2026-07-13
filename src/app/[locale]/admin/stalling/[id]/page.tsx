@@ -159,16 +159,27 @@ export default function StallingDetailPage() {
                 <p className="text-sm text-navy-500">{t('adminNew.invoices.emptyMessage')}</p>
               ) : (
                 <div className="space-y-2">
-                  {invoices.map((inv, i) => (
+                  {invoices.map((inv, i) => {
+                    const label = str(inv, 'invoice_label');
+                    const labelKey = label === 'deposit' || label === 'final' || label === 'brokerage' ? label : null;
+                    return (
                     <Link
                       key={str(inv, 'id') || i}
                       href={`/${locale}/admin/facturen/${inv.id}`}
                       className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2 text-sm hover:bg-sand-50"
                     >
-                      <span className="font-semibold text-navy-900">{str(inv, 'invoice_number') || str(inv, 'id')}</span>
+                      <span className="flex items-center gap-2">
+                        {labelKey ? (
+                          <span className="rounded-full bg-marine-50 px-2 py-0.5 text-[11px] font-semibold text-marine-700">
+                            {t(`adminNew.stalling.invoiceLabels.${labelKey}`)}
+                          </span>
+                        ) : null}
+                        <span className="font-semibold text-navy-900">{str(inv, 'invoice_number') || str(inv, 'id')}</span>
+                      </span>
                       <span>{formatCurrency(Number(inv.total_amount ?? inv.total_amount_cents ?? 0) / 100, dateLocale)}</span>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </AdminSectionCard>

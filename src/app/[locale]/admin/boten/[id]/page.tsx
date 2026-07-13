@@ -2,9 +2,10 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import {
   Anchor,
+  AlertTriangle,
   ArrowLeft,
   Camera,
   FileText,
@@ -39,8 +40,9 @@ export default function BoatDossierPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = String(params.id);
-  const dateLocale = locale === 'en' ? 'en-GB' : 'nl-NL';
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
 
   const [showEdit, setShowEdit] = React.useState(false);
   const [showTransfer, setShowTransfer] = React.useState(false);
@@ -54,9 +56,18 @@ export default function BoatDossierPage() {
     brand: '',
     model: '',
     build_year: '',
+    hull_material: '',
+    draft_cm: '',
+    weight_kg: '',
+    fuel_type: '',
     engine_brand: '',
     engine_type: '',
+    engine_power: '',
+    serial_numbers: '',
+    call_sign: '',
     insurance_number: '',
+    insurance_company: '',
+    insurance_expiry_date: '',
     mmsi_number: '',
   };
   const [form, setForm] = React.useState(emptyForm);
@@ -91,9 +102,18 @@ export default function BoatDossierPage() {
       brand: String(b.brand ?? ''),
       model: String(b.model ?? ''),
       build_year: b.build_year != null ? String(b.build_year) : '',
+      hull_material: String(b.hull_material ?? ''),
+      draft_cm: b.draft_cm != null ? String(b.draft_cm) : '',
+      weight_kg: b.weight_kg != null ? String(b.weight_kg) : '',
+      fuel_type: String(b.fuel_type ?? ''),
       engine_brand: String(b.engine_brand ?? ''),
       engine_type: String(b.engine_type ?? ''),
+      engine_power: String(b.engine_power ?? ''),
+      serial_numbers: String(b.serial_numbers ?? ''),
+      call_sign: String(b.call_sign ?? ''),
       insurance_number: String(b.insurance_number ?? ''),
+      insurance_company: String(b.insurance_company ?? ''),
+      insurance_expiry_date: b.insurance_expiry_date ? String(b.insurance_expiry_date).slice(0, 10) : '',
       mmsi_number: String(b.mmsi_number ?? ''),
     });
   }, [dossier.data]);
@@ -114,9 +134,41 @@ export default function BoatDossierPage() {
   const auditRows = ((audit.data as unknown as { data?: Array<Record<string, unknown>> } | undefined)?.data ??
     []) as Array<Record<string, unknown>>;
 
-  const [tab, setTab] = React.useState<
-    'overview' | 'ownership' | 'storage' | 'financial' | 'workOrders' | 'photos' | 'documents' | 'timeline' | 'history'
-  >('overview');
+  // Card #90: insurance expiry warning — flag when expiry is within 30 days (or already past).
+  const insuranceExpiryRaw = boat.insurance_expiry_date ? String(boat.insurance_expiry_date) : '';
+  const insuranceExpiry = insuranceExpiryRaw ? new Date(insuranceExpiryRaw) : null;
+  const insuranceDaysLeft =
+    insuranceExpiry && !Number.isNaN(insuranceExpiry.getTime())
+      ? Math.ceil((insuranceExpiry.getTime() - Date.now()) / 86_400_000)
+      : null;
+  const insuranceExpiringSoon = insuranceDaysLeft != null && insuranceDaysLeft <= 30;
+
+  type BoatTab =
+    | 'overview'
+    | 'ownership'
+    | 'storage'
+    | 'financial'
+    | 'workOrders'
+    | 'photos'
+    | 'documents'
+    | 'timeline'
+    | 'history';
+  const validTabs: BoatTab[] = [
+    'overview',
+    'ownership',
+    'storage',
+    'financial',
+    'workOrders',
+    'photos',
+    'documents',
+    'timeline',
+    'history',
+  ];
+  const initialTab = (() => {
+    const q = searchParams?.get('tab') ?? '';
+    return (validTabs as string[]).includes(q) ? (q as BoatTab) : 'overview';
+  })();
+  const [tab, setTab] = React.useState<BoatTab>(initialTab);
   const tabs = [
     { id: 'overview' as const, label: t('adminNew.boats.tabs.overview') },
     { id: 'ownership' as const, label: t('adminNew.boats.tabs.ownership'), count: ownershipHistory.length },
@@ -141,9 +193,18 @@ export default function BoatDossierPage() {
         brand: form.brand || null,
         model: form.model || null,
         build_year: form.build_year ? Number(form.build_year) : null,
+        hull_material: form.hull_material || null,
+        draft_cm: form.draft_cm ? Number(form.draft_cm) : null,
+        weight_kg: form.weight_kg ? Number(form.weight_kg) : null,
+        fuel_type: form.fuel_type || null,
         engine_brand: form.engine_brand || null,
         engine_type: form.engine_type || null,
+        engine_power: form.engine_power || null,
+        serial_numbers: form.serial_numbers || null,
+        call_sign: form.call_sign || null,
         insurance_number: form.insurance_number || null,
+        insurance_company: form.insurance_company || null,
+        insurance_expiry_date: form.insurance_expiry_date || null,
         mmsi_number: form.mmsi_number || null,
       });
       setShowEdit(false);
@@ -197,7 +258,15 @@ export default function BoatDossierPage() {
         title={String(boat.name ?? t('adminNew.boats.title'))}
         subtitle={t('adminNew.boats.dossierSubtitle')}
         rightSlot={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {insuranceExpiringSoon ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 ring-1 ring-inset ring-rose-200">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                {insuranceDaysLeft != null && insuranceDaysLeft < 0
+                  ? t('adminNew.boats.insuranceExpired')
+                  : t('adminNew.boats.insuranceExpiringSoon', { days: insuranceDaysLeft ?? 0 })}
+              </span>
+            ) : null}
             <Link href={`/${locale}/admin/boten`}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
                 {t('adminNew.common.back')}
@@ -299,10 +368,22 @@ export default function BoatDossierPage() {
                     <Field label={t('adminNew.boats.fields.buildYear')} value={String(boat.build_year ?? '—')} />
                     <Field label={t('adminNew.boats.columns.length')} value={boat.length_cm ? `${boat.length_cm} cm` : '—'} />
                     <Field label={t('adminNew.boats.fields.widthCm')} value={boat.width_cm ? `${boat.width_cm} cm` : '—'} />
+                    <Field label={t('adminNew.boats.fields.draftCm')} value={boat.draft_cm ? `${boat.draft_cm} cm` : '—'} />
+                    <Field label={t('adminNew.boats.fields.weightKg')} value={boat.weight_kg ? `${boat.weight_kg} kg` : '—'} />
+                    <Field label={t('adminNew.boats.fields.hullMaterial')} value={String(boat.hull_material ?? '—')} />
+                    <Field label={t('adminNew.boats.fields.fuelType')} value={String(boat.fuel_type ?? '—')} />
                     <Field label={t('adminNew.boats.fields.engineBrand')} value={String(boat.engine_brand ?? '—')} />
                     <Field label={t('adminNew.boats.fields.engineType')} value={String(boat.engine_type ?? '—')} />
+                    <Field label={t('adminNew.boats.fields.enginePower')} value={String(boat.engine_power ?? '—')} />
+                    <Field label={t('adminNew.boats.fields.serialNumbers')} value={String(boat.serial_numbers ?? '—')} />
+                    <Field label={t('adminNew.boats.fields.callSign')} value={String(boat.call_sign ?? '—')} />
                     <Field label={t('adminNew.boats.fields.mmsi')} value={String(boat.mmsi_number ?? '—')} />
                     <Field label={t('adminNew.boats.fields.insuranceNumber')} value={String(boat.insurance_number ?? '—')} />
+                    <Field label={t('adminNew.boats.fields.insuranceCompany')} value={String(boat.insurance_company ?? '—')} />
+                    <Field
+                      label={t('adminNew.boats.fields.insuranceExpiry')}
+                      value={boat.insurance_expiry_date ? formatDate(String(boat.insurance_expiry_date), dateLocale) : '—'}
+                    />
                     <Field label={t('adminNew.boats.columns.location')} value={String(boat.location_code ?? '—')} />
                   </div>
                 </AdminSectionCard>
@@ -524,14 +605,23 @@ export default function BoatDossierPage() {
                     <p className="text-sm text-navy-500">{t('adminNew.stalling.auditEmptyMessage')}</p>
                   ) : (
                     auditRows.slice(0, 25).map((log, i) => {
-                      const changes = (log.changes as Array<{ field_name?: string; old_value?: unknown; new_value?: unknown }> | undefined) ?? [];
+                      const explicitChanges =
+                        (log.changes as Array<{ field_name?: string; old_value?: unknown; new_value?: unknown }> | undefined) ?? [];
+                      // Trello #87: fall back to a before/after diff when `changes` is absent.
+                      const changes =
+                        explicitChanges.length > 0
+                          ? explicitChanges
+                          : diffData(
+                              log.before_data as Record<string, unknown> | undefined,
+                              log.after_data as Record<string, unknown> | undefined
+                            );
                       return (
                         <div key={String(log.id ?? i)} className="rounded-lg border border-navy-100 px-3 py-2 text-sm">
                           <div className="font-medium text-navy-900">{String(log.action ?? '—')}</div>
                           {changes.map((c, j) => (
                             <div key={j} className="text-xs text-navy-600">
-                              {c.field_name}: <span className="text-rose-600">{String(c.old_value ?? '—')}</span> →{' '}
-                              <span className="text-emerald-700">{String(c.new_value ?? '—')}</span>
+                              {c.field_name}: <span className="text-rose-600">{formatAuditValue(c.old_value)}</span> →{' '}
+                              <span className="text-emerald-700">{formatAuditValue(c.new_value)}</span>
                             </div>
                           ))}
                           <div className="text-xs text-navy-400">
@@ -549,7 +639,7 @@ export default function BoatDossierPage() {
         ) : null}
       </AdminContent>
 
-      <Modal open={showEdit} onClose={() => setShowEdit(false)} size="md">
+      <Modal open={showEdit} onClose={() => setShowEdit(false)} size="lg">
         <form onSubmit={onSave}>
           <AdminModalHeader title={t('adminNew.boats.editTitle')} subtitle={t('adminNew.boats.editSubtitle')} />
           <AdminModalBody>
@@ -560,11 +650,20 @@ export default function BoatDossierPage() {
               <Input label={t('adminNew.boats.fields.buildYear')} type="number" value={form.build_year} onChange={(e) => setForm({ ...form, build_year: e.target.value })} />
               <Input label={t('adminNew.boats.columns.length')} value={form.length_cm} onChange={(e) => setForm({ ...form, length_cm: e.target.value })} type="number" />
               <Input label={t('adminNew.boats.fields.widthCm')} value={form.width_cm} onChange={(e) => setForm({ ...form, width_cm: e.target.value })} type="number" />
+              <Input label={t('adminNew.boats.fields.draftCm')} value={form.draft_cm} onChange={(e) => setForm({ ...form, draft_cm: e.target.value })} type="number" />
+              <Input label={t('adminNew.boats.fields.weightKg')} value={form.weight_kg} onChange={(e) => setForm({ ...form, weight_kg: e.target.value })} type="number" />
+              <Input label={t('adminNew.boats.fields.hullMaterial')} value={form.hull_material} onChange={(e) => setForm({ ...form, hull_material: e.target.value })} />
+              <Input label={t('adminNew.boats.fields.fuelType')} value={form.fuel_type} onChange={(e) => setForm({ ...form, fuel_type: e.target.value })} />
               <Input label={t('adminNew.boats.columns.location')} value={form.location_code} onChange={(e) => setForm({ ...form, location_code: e.target.value })} />
               <Input label={t('adminNew.boats.fields.engineBrand')} value={form.engine_brand} onChange={(e) => setForm({ ...form, engine_brand: e.target.value })} />
               <Input label={t('adminNew.boats.fields.engineType')} value={form.engine_type} onChange={(e) => setForm({ ...form, engine_type: e.target.value })} />
+              <Input label={t('adminNew.boats.fields.enginePower')} value={form.engine_power} onChange={(e) => setForm({ ...form, engine_power: e.target.value })} />
+              <Input label={t('adminNew.boats.fields.serialNumbers')} value={form.serial_numbers} onChange={(e) => setForm({ ...form, serial_numbers: e.target.value })} />
+              <Input label={t('adminNew.boats.fields.callSign')} value={form.call_sign} onChange={(e) => setForm({ ...form, call_sign: e.target.value })} />
               <Input label={t('adminNew.boats.fields.mmsi')} value={form.mmsi_number} onChange={(e) => setForm({ ...form, mmsi_number: e.target.value })} />
               <Input label={t('adminNew.boats.fields.insuranceNumber')} value={form.insurance_number} onChange={(e) => setForm({ ...form, insurance_number: e.target.value })} />
+              <Input label={t('adminNew.boats.fields.insuranceCompany')} value={form.insurance_company} onChange={(e) => setForm({ ...form, insurance_company: e.target.value })} />
+              <Input label={t('adminNew.boats.fields.insuranceExpiry')} type="date" value={form.insurance_expiry_date} onChange={(e) => setForm({ ...form, insurance_expiry_date: e.target.value })} />
             </div>
           </AdminModalBody>
           <AdminModalFooter>
@@ -601,6 +700,33 @@ export default function BoatDossierPage() {
       </Modal>
     </>
   );
+}
+
+// Trello #87: compute a field-by-field diff from before_data vs after_data when `changes` is absent.
+function diffData(
+  before?: Record<string, unknown>,
+  after?: Record<string, unknown>
+): Array<{ field_name: string; old_value?: unknown; new_value?: unknown }> {
+  if (!before && !after) return [];
+  const keys = new Set<string>([
+    ...Object.keys(before ?? {}),
+    ...Object.keys(after ?? {}),
+  ]);
+  const result: Array<{ field_name: string; old_value?: unknown; new_value?: unknown }> = [];
+  for (const key of keys) {
+    const oldValue = before?.[key];
+    const newValue = after?.[key];
+    if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+      result.push({ field_name: key, old_value: oldValue, new_value: newValue });
+    }
+  }
+  return result;
+}
+
+function formatAuditValue(value: unknown): string {
+  if (value == null || value === '') return '—';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
 }
 
 function Field({ label, value }: { label: string; value: string }) {

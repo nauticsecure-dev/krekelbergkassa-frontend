@@ -1,9 +1,41 @@
 import { ServicePage } from '@/components/site/ServicePage';
+import { EditableText } from '@/components/cms/EditableText';
+import { EditableImage } from '@/components/cms/EditableImage';
 import { tariffRanges } from '@/lib/pricing-table';
+
+const CMS_PAGE = 'diensten/winterstalling';
 
 export default function WinterstallingPage() {
   return (
     <ServicePage
+      cmsPage={CMS_PAGE}
+      editableTitle={
+        <EditableText
+          blockKey="diensten.winterstalling.hero.title"
+          page={CMS_PAGE}
+          section="hero"
+        >
+          Veilige winterstalling
+        </EditableText>
+      }
+      editableDescription={
+        <EditableText
+          blockKey="diensten.winterstalling.hero.subtitle"
+          page={CMS_PAGE}
+          section="hero"
+          type="long_text"
+        >
+          Binnen- en buitenstalling op een verzekerd werfterrein, ruim 10.000 m² in Roermond. Wij behandelen uw schip alsof het ons eigen schip is.
+        </EditableText>
+      }
+      editableHeroImage={
+        <EditableImage
+          blockKey="diensten.winterstalling.hero.image"
+          page={CMS_PAGE}
+          fallbackSrc="/img/krek/winterstalling.webp"
+          alt="Winterstalling op het werfterrein van Krekelberg Nautic"
+        />
+      }
       adminProductSlug="STALL-WINTER"
       catalogSlug="winterstalling"
       priceFootnote="Winterberging-tarief per lengteklasse, inclusief BTW (incl. 2× kranen en afspuiten). De definitieve prijs volgt uit de exacte lengte van uw boot."

@@ -4,6 +4,8 @@ import { getMessages, isLocale } from '@/i18n/getMessages';
 import { locales } from '@/i18n/config';
 import { AuthProvider } from '@/lib/auth-context';
 import { ToastProvider } from '@/components/ui/ToastProvider';
+import { CmsProvider } from '@/components/cms/CmsProvider';
+import { CmsToolbar } from '@/components/cms/CmsToolbar';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -23,7 +25,12 @@ export default async function LocaleLayout({
   return (
     <IntlProvider locale={locale} messages={messages}>
       <ToastProvider>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <CmsProvider>
+            <CmsToolbar />
+            {children}
+          </CmsProvider>
+        </AuthProvider>
       </ToastProvider>
     </IntlProvider>
   );

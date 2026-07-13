@@ -11,6 +11,7 @@ import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin } from '@/lib/auth-routes';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { serviceCatalogService } from '@/lib/services';
+import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
 
 export interface ServicePageProps {
   badge: string;
@@ -33,6 +34,20 @@ export interface ServicePageProps {
    * `priceRanges` prop remains the fallback if the API is unavailable/empty.
    */
   catalogSlug?: string;
+  /**
+   * CMS page slug (e.g. `diensten/winterstalling`). When set, the page is
+   * registered with the inline CMS so its content/SEO can be edited in place.
+   */
+  cmsPage?: string;
+  /**
+   * Inline-CMS overrides for the hero. When provided these editable nodes
+   * replace the plain `title` / `description` / hero background respectively.
+   * They render their own hardcoded fallbacks, so the public output is
+   * identical when no CMS data exists.
+   */
+  editableTitle?: React.ReactNode;
+  editableDescription?: React.ReactNode;
+  editableHeroImage?: React.ReactNode;
 }
 
 export function ServicePage({
@@ -49,10 +64,19 @@ export function ServicePage({
   adminProductSlug,
   priceFootnote,
   catalogSlug,
+  cmsPage,
+  editableTitle,
+  editableDescription,
+  editableHeroImage,
 }: ServicePageProps) {
   const { t, locale } = useIntl();
   const { user, isDemo } = useAuth();
   const isAdmin = canAccessAdmin(user?.role, isDemo);
+
+  // Trello #112: declare this page's slug so the CMS provider fetches its
+  // editable blocks. Passing an empty string keeps the hook order stable while
+  // doing nothing when the page opts out of the CMS.
+  useRegisterCmsPage(cmsPage ?? '');
   const cta = primaryCta ?? { label: t('nav.bookCrane'), href: `/${locale}/kraanafspraak` };
 
   // Trello #98/#100: prefer live tariffs from the shared product DB, fall back
@@ -78,20 +102,26 @@ export function ServicePage({
     <>
       {/* Hero with real photo */}
       <section className="relative isolate overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroImage})` }}
-          aria-hidden
-        />
+        {editableHeroImage ? (
+          <div className="absolute inset-0 [&>span]:block [&>span]:h-full [&>span]:w-full">
+            {editableHeroImage}
+          </div>
+        ) : (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${heroImage})` }}
+            aria-hidden
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/30" aria-hidden />
         <div className="container-wide relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
           <Badge tone="sand" className="mb-4" dot>
             {badge}
           </Badge>
           <h1 className="heading-display max-w-2xl text-4xl text-white sm:text-5xl lg:text-[56px]">
-            {title}
+            {editableTitle ?? title}
           </h1>
-          <p className="mt-5 max-w-xl text-sand-100/85">{subtitle}</p>
+          <p className="mt-5 max-w-xl text-sand-100/85">{editableDescription ?? subtitle}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={cta.href}>
               <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>

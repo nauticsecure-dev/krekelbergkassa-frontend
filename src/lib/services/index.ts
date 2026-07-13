@@ -49,6 +49,9 @@ export interface LoginResponse {
     expires_at: string;
     token?: string;
   };
+  // Trello #104: MFA challenge — when enabled the login returns these instead of a token.
+  mfa_required?: boolean;
+  mfa_token?: string;
 }
 
 export function extractLoginToken(res: LoginResponse): string | undefined {
@@ -86,6 +89,14 @@ export const authService = {
     return api<LoginResponse>('/v1/auth/login', {
       method: 'POST',
       body: { email, password, device_id },
+      auth: false,
+    });
+  },
+  // Trello #104: second factor — submit the TOTP / recovery code with the mfa_token.
+  mfaVerify(mfa_token: string, code: string, device_id = getDeviceId()) {
+    return api<LoginResponse>('/v1/auth/mfa-verify', {
+      method: 'POST',
+      body: { mfa_token, code, device_id },
       auth: false,
     });
   },
@@ -326,19 +337,31 @@ export const stallingService = {
     });
   },
   // Trello #73: lifecycle status quick-edit (active/ended/cancelled/checked_out).
-  setLifecycle(id: string, status: string) {
+  // Accepts an optional change note ("Waarom is de status gewijzigd?").
+  setLifecycle(id: string, status: string, note?: string) {
     return api<StallingContract>(`/v1/stalling/${id}/status`, {
       method: 'PATCH',
-      body: { status },
+      body: { status, note: note || undefined },
       queueWhenOffline: true,
     });
   },
-  setLocation(id: string, location_code: string | null) {
+  setLocation(id: string, location_code: string | null, bok_number?: string | null) {
     return api<StallingContract>(`/v1/stalling/${id}/location`, {
       method: 'PATCH',
-      body: { location_code },
+      body: { location_code, bok_number: bok_number ?? undefined },
       queueWhenOffline: true,
     });
+  },
+  // Trello #107: deposit-invoice + kassa-prefill payment routes after create.
+  async generateDepositInvoice(id: string) {
+    const res = await api<unknown>(`/v1/stalling/${id}/generate-deposit-invoice`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+    return maybeResource<Invoice>(res, 'data');
+  },
+  kassaPrefill(id: string) {
+    return api<Record<string, unknown>>(`/v1/stalling/${id}/kassa-prefill`);
   },
   async logs(id: string, query?: Record<string, string | number | undefined>) {
     const res = await api<unknown>(`/v1/stalling/${id}/logs`, { query });
@@ -584,6 +607,14 @@ export const kassaService = {
       queueWhenOffline: true,
     });
   },
+  // Trello #72: send the payment link to the customer over WhatsApp.
+  sendPaymentLinkWhatsapp(id: string, payload?: { phone?: string }) {
+    return api<{ message?: string }>(`/v1/kassa/qr-sessions/${id}/send-link-whatsapp`, {
+      method: 'POST',
+      body: payload ?? {},
+      queueWhenOffline: true,
+    });
+  },
   quote(payload: { customer_id?: string; locale?: string; items: Array<Record<string, unknown>> }) {
     return api<Record<string, unknown>>('/v1/kassa/quote', {
       method: 'POST',
@@ -649,6 +680,7 @@ function buildCalculatePayload(payload: {
   channel?: string;
   persist?: boolean | null;
   status?: string | null;
+  calculator_record_id?: string | null;
 }) {
   const serviceCodes = pricingServiceCodes(payload);
   const service_code = serviceCodes[0];
@@ -666,6 +698,8 @@ function buildCalculatePayload(payload: {
     boat_id: payload.boat_id ?? null,
     ...(payload.persist != null ? { persist: payload.persist } : {}),
     ...(payload.status ? { status: payload.status } : {}),
+    // Trello #68: update an existing record in place when an id is supplied.
+    ...(payload.calculator_record_id ? { calculator_record_id: payload.calculator_record_id } : {}),
   };
 }
 
@@ -712,6 +746,7 @@ export const pricingService = {
     channel?: string;
     persist?: boolean | null;
     status?: string | null;
+    calculator_record_id?: string | null;
   }) {
     return api<Record<string, unknown>>('/v1/pricing/calculate', {
       method: 'POST',
@@ -733,6 +768,16 @@ export const pricingService = {
     return api<Record<string, unknown>>('/v1/pricing/preview', {
       method: 'POST',
       body: buildPreviewPayload(payload),
+    });
+  },
+  // Trello #107: lightweight product-code price preview for the contract modal.
+  previewProduct(params: { product_code: string; entity_id?: string; entity_type?: string }) {
+    return api<Record<string, unknown>>('/v1/pricing/preview', {
+      query: {
+        product_code: params.product_code,
+        entity_id: params.entity_id,
+        entity_type: params.entity_type,
+      },
     });
   },
   async rules(query?: Record<string, string | number | boolean | undefined>) {
@@ -781,6 +826,18 @@ export const pricingService = {
       method: 'POST',
       queueWhenOffline: true,
     });
+  },
+  // Trello #68: bulk row actions on the calculator records list.
+  bulkCalculatorRecords(payload: { ids: string[]; action: 'archive' | 'duplicate' }) {
+    return api<Record<string, unknown>>('/v1/pricing/calculator-records/bulk', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  // Trello #68: export the (filtered) calculator records as CSV.
+  exportCalculatorRecords(query?: Record<string, string | number | boolean | undefined>) {
+    return api<Blob>('/v1/pricing/calculator-records/export', { query: { ...query, format: 'csv' } });
   },
   // Trello #107: makelaardij (brokerage) tariff table + preview.
   async brokerageTariffs() {
@@ -856,10 +913,33 @@ export const productsService = {
   remove(id: string) {
     return api<{ message: string }>(`/v1/products/${id}`, { method: 'DELETE', queueWhenOffline: true });
   },
-  // Trello #86: product sales stats + AI image generation.
+  // Trello #86: product sales stats for one product.
   async stats(id: string) {
     const res = await api<unknown>(`/v1/products/${id}/stats`);
     return maybeResource<Record<string, unknown>>(res, 'data');
+  },
+  // Trello #80: bulk product stats for the kassa heatmap (GET /products/stats).
+  async statsBulk() {
+    const res = await api<unknown>('/v1/products/stats');
+    return asArray<Record<string, unknown>>(res);
+  },
+  // Trello #80: recently-used products for the kassa (backend-backed).
+  async recent(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/products/recent', { query });
+    return asArray<Product>(res);
+  },
+  recordRecent(id: string) {
+    return api<{ message?: string }>(`/v1/products/${id}/recent`, { method: 'POST', queueWhenOffline: true });
+  },
+  // Trello #80: bundle CRUD.
+  createBundle(data: Record<string, unknown>) {
+    return api<ProductBundle>('/v1/products/bundles', { method: 'POST', body: data, queueWhenOffline: true });
+  },
+  updateBundle(id: string, data: Record<string, unknown>) {
+    return api<ProductBundle>(`/v1/products/bundles/${id}`, { method: 'PATCH', body: data, queueWhenOffline: true });
+  },
+  deleteBundle(id: string) {
+    return api<{ message?: string }>(`/v1/products/bundles/${id}`, { method: 'DELETE', queueWhenOffline: true });
   },
   async generateImage(id: string, payload: { prompt: string; quality?: string }) {
     const res = await api<unknown>(`/v1/products/${id}/generate-image`, {
@@ -1229,9 +1309,24 @@ export const adminService = {
       body: payload ?? {},
     });
   },
+  // Trello #90: send a one-off test reminder for a rule.
+  testSendReminderRule(id: string, payload: { recipient_email: string; entity_id?: string }) {
+    return api<{ channel_used?: string; recipient?: string; subject?: string; status?: string; note?: string }>(
+      `/v1/admin/reminder-rules/${id}/test-send`,
+      { method: 'POST', body: payload }
+    );
+  },
   // Trello #90: customer health score.
   customerHealth(customerId: string) {
     return api<Record<string, unknown>>(`/v1/customers/${customerId}/health`);
+  },
+  // Trello #90: force-recompute the customer health score.
+  recomputeCustomerHealth(customerId: string) {
+    return api<Record<string, unknown>>(`/v1/customers/${customerId}/health/recompute`, { method: 'POST' });
+  },
+  // Trello #76: admin-triggered customer magic-link (login link).
+  sendCustomerMagicLink(customerId: string) {
+    return api<{ message?: string }>(`/v1/customers/${customerId}/send-magic-link`, { method: 'POST' });
   },
 };
 
@@ -1278,6 +1373,30 @@ export const portalService = {
     });
     return asArray<PortalBoat>(res);
   },
+  // Trello #87/#90: customer-facing boat dossier (portal).
+  boatDossier(id: string) {
+    return api<Record<string, unknown>>(`/v1/portal/boats/${id}/dossier`, { portalAuth: true, auth: false });
+  },
+  async boatWorkOrders(id: string) {
+    const res = await api<unknown>(`/v1/portal/boats/${id}/work-orders`, { portalAuth: true, auth: false });
+    return asArray<Record<string, unknown>>(res);
+  },
+  async boatInvoices(id: string) {
+    const res = await api<unknown>(`/v1/portal/boats/${id}/invoices`, { portalAuth: true, auth: false });
+    return asArray<Record<string, unknown>>(res);
+  },
+  async boatTimeline(id: string) {
+    const res = await api<unknown>(`/v1/portal/boats/${id}/timeline`, { portalAuth: true, auth: false });
+    return asArray<Record<string, unknown>>(res);
+  },
+  // Trello #88: customer-facing work orders (portal).
+  async workOrders(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/portal/work-orders', { query, portalAuth: true, auth: false });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  workOrder(id: string) {
+    return api<Record<string, unknown>>(`/v1/portal/work-orders/${id}`, { portalAuth: true, auth: false });
+  },
   async timeline(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/portal/timeline', {
       query,
@@ -1317,6 +1436,24 @@ export const portalService = {
       total: toNumber(obj.total, page.data.length),
       has_more: toBoolean(obj.has_more),
     } satisfies PortalAppointmentsResponse;
+  },
+  // Trello #99: customer cancels their own appointment.
+  cancelAppointment(id: string, reason?: string) {
+    return api<Appointment>(`/v1/portal/appointments/${id}/cancel`, {
+      method: 'POST',
+      body: { reason },
+      portalAuth: true,
+      auth: false,
+    });
+  },
+  // Trello #99: customer requests a reschedule (staff approves the actual move).
+  requestReschedule(id: string, payload: { preferred_date?: string; preferred_time?: string; reason?: string }) {
+    return api<Record<string, unknown>>(`/v1/portal/appointments/${id}/reschedule-request`, {
+      method: 'POST',
+      body: payload,
+      portalAuth: true,
+      auth: false,
+    });
   },
   wallet() {
     return api<PortalWallet | string>('/v1/portal/wallet', {
@@ -1389,6 +1526,29 @@ export const appointmentsService = {
       body: payload,
       queueWhenOffline: true,
     });
+  },
+  // Trello #99: admin-created appointment.
+  create(payload: Record<string, unknown>) {
+    return api<Appointment>('/v1/appointments', { method: 'POST', body: payload, queueWhenOffline: true });
+  },
+  // Trello #99: planning dashboard counters (today / tomorrow / pending / completed-this-week).
+  stats(query?: Record<string, string | number | boolean | undefined>) {
+    return api<Record<string, unknown>>('/v1/appointments/stats', { query });
+  },
+  // Trello #99: conflict detection before scheduling/creating.
+  checkConflicts(payload: { date: string; start_time: string; duration_minutes?: number; location_id?: string | null }) {
+    return api<{ has_conflicts: boolean; conflicts: Array<Record<string, unknown>> }>(
+      '/v1/appointments/check-conflicts',
+      { method: 'POST', body: payload }
+    );
+  },
+  // Trello #99: bulk cancel / assign / status.
+  bulk(payload: { action: 'cancel' | 'assign' | 'status'; appointment_ids: string[]; reason?: string; assigned_to_user_id?: string; status?: string }) {
+    return api<Record<string, unknown>>('/v1/appointments/bulk', { method: 'POST', body: payload, queueWhenOffline: true });
+  },
+  // Trello #99: CSV export of the visible period.
+  export(query?: Record<string, string | number | boolean | undefined>) {
+    return api<Blob>('/v1/appointments/export', { query });
   },
 };
 
@@ -1672,6 +1832,11 @@ export const workOrdersService = {
     const res = await api<unknown>(`/v1/work-orders/${id}/audit-log`, { query });
     return asPaginated<AuditLog>(res);
   },
+  // Trello #88: semantic timeline events for a work order (separate from audit log).
+  async timeline(id: string, query?: Record<string, string | number | undefined>) {
+    const res = await api<unknown>(`/v1/work-orders/${id}/timeline`, { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
 };
 
 export interface WorkOrderMetadata {
@@ -1723,12 +1888,17 @@ export const invoiceImportsService = {
       queueWhenOffline: true,
     });
   },
+  // Trello #81: optionally pass the matched import id for duplicate resolution.
   markDuplicate(id: string, duplicateImportId?: string) {
     return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/mark-duplicate`, {
       method: 'POST',
       body: duplicateImportId ? { duplicate_import_id: duplicateImportId } : {},
       queueWhenOffline: true,
     });
+  },
+  // Trello #81: export the (filtered) invoice imports as CSV.
+  export(query?: Record<string, string | number | boolean | undefined>) {
+    return api<Blob>('/v1/invoice-imports/export', { query: { ...query, format: 'csv' } });
   },
   // Trello #108: supplier delivery-note → waiting workbon.
   markWorkbon(id: string) {
@@ -1762,19 +1932,6 @@ export const invoiceImportsService = {
     return api<{ file_id?: string; filename?: string; mime_type?: string; signed_url?: string }>(
       `/v1/invoice-imports/${id}/source-pdf`
     );
-  },
-  /**
-   * Export approved imports as CSV (with ledger_account, cost_center, vat_rate columns).
-   * Returns a Blob for download.
-   */
-  export(filters?: { status?: string; document_type?: string; date_from?: string; date_to?: string }) {
-    const params = new URLSearchParams();
-    if (filters?.status) params.set('status', filters.status);
-    if (filters?.document_type) params.set('document_type', filters.document_type);
-    if (filters?.date_from) params.set('date_from', filters.date_from);
-    if (filters?.date_to) params.set('date_to', filters.date_to);
-    const query = params.toString();
-    return api<Blob>(`/v1/invoice-imports/export${query ? `?${query}` : ''}`);
   },
 };
 
@@ -2017,6 +2174,68 @@ export const adminHealthService = {
   webhooks() {
     return api<HealthCheckResult>('/v1/admin/health/webhooks');
   },
+  // Trello #104: security dashboard panels (failed logins, locked users, suspicious IPs…).
+  security() {
+    return api<Record<string, unknown>>('/v1/admin/health/security');
+  },
+};
+
+// Trello #104: Security / Observability / Governance platform — frontend surfaces.
+export const governanceService = {
+  // Pillar 8 — frontend journey tracking (batched).
+  trackEvent(events: Array<Record<string, unknown>>) {
+    return api<{ tracked: number }>('/v1/track-event', {
+      method: 'POST',
+      body: { events },
+      queueWhenOffline: true,
+    }).catch(() => ({ tracked: 0 }));
+  },
+  // Pillar 15 — API credential vault.
+  async apiCredentials(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/admin/api-credentials', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  createApiCredential(payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/admin/api-credentials', { method: 'POST', body: payload });
+  },
+  revealApiCredential(id: string) {
+    return api<Record<string, unknown>>(`/v1/admin/api-credentials/${id}/reveal`, { method: 'POST' });
+  },
+  deleteApiCredential(id: string) {
+    return api<{ message?: string }>(`/v1/admin/api-credentials/${id}`, { method: 'DELETE' });
+  },
+  // Pillar 20 — GDPR data export + anonymisation.
+  gdprExport(customerId: string) {
+    return api<Record<string, unknown>>(`/v1/admin/gdpr/customers/${customerId}/export`);
+  },
+  gdprAnonymize(customerId: string, payload: { confirm: string; reason: string }) {
+    return api<Record<string, unknown>>(`/v1/admin/gdpr/customers/${customerId}/anonymize`, {
+      method: 'POST',
+      body: payload,
+    });
+  },
+  // Pillar 21 — backup runs.
+  async backupRuns(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/admin/backup-runs', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  createBackupRun(payload: { type: string; notes?: string }) {
+    return api<Record<string, unknown>>('/v1/admin/backup-runs', { method: 'POST', body: payload });
+  },
+  // Pillar 22 — incident response.
+  async incidents(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/admin/incidents', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  incident(id: string) {
+    return api<Record<string, unknown>>(`/v1/admin/incidents/${id}`);
+  },
+  createIncident(payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/admin/incidents', { method: 'POST', body: payload });
+  },
+  updateIncident(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/admin/incidents/${id}`, { method: 'PATCH', body: payload });
+  },
 };
 
 export const repairService = {
@@ -2150,6 +2369,51 @@ export interface OpeningHoursResponse {
   };
   hours: OpeningHoursDay[];
 }
+
+// Trello #112: Inline CMS / Visual Editor — public read + admin upsert endpoints.
+export const cmsService = {
+  // Public: fetch all editable content/media/seo/global blocks for a page.
+  pageContent(page: string, locale?: string) {
+    return api<Record<string, unknown>>('/v1/cms/page-content', {
+      auth: false,
+      query: { page, locale },
+    });
+  },
+  // Admin upserts (key-addressed; partial value_by_locale merges server-side).
+  saveContentBlock(key: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/admin/cms/content-blocks/${encodeURIComponent(key)}`, {
+      method: 'PATCH',
+      body: payload,
+    });
+  },
+  uploadMediaBlock(key: string, formData: FormData) {
+    return api<Record<string, unknown>>(`/admin/cms/media-blocks/${encodeURIComponent(key)}/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+  saveMediaBlock(key: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/admin/cms/media-blocks/${encodeURIComponent(key)}`, {
+      method: 'PATCH',
+      body: payload,
+    });
+  },
+  saveSeo(slug: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/admin/cms/seo/${encodeURIComponent(slug)}`, {
+      method: 'PATCH',
+      body: payload,
+    });
+  },
+  globalSettings() {
+    return api<Record<string, unknown>>('/admin/cms/global-settings');
+  },
+  saveGlobalSetting(key: string, payload: { value: unknown }) {
+    return api<Record<string, unknown>>(`/admin/cms/global-settings/${encodeURIComponent(key)}`, {
+      method: 'PATCH',
+      body: payload,
+    });
+  },
+};
 
 export const contentService = {
   faq(locale?: string) {

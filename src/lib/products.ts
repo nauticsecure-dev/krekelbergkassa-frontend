@@ -67,6 +67,10 @@ export interface ProductFormState {
   tags: string;
   aliases: string;
   product_group_id: string;
+  // Trello #86: purchase cost + stock tracking
+  cost_price: string;
+  stock_quantity: string;
+  stock_minimum: string;
 }
 
 export const EMPTY_PRODUCT_FORM: ProductFormState = {
@@ -87,9 +91,27 @@ export const EMPTY_PRODUCT_FORM: ProductFormState = {
   tags: '',
   aliases: '',
   product_group_id: '',
+  cost_price: '',
+  stock_quantity: '',
+  stock_minimum: '',
 };
 
+export function productCostEuros(product: Product): number {
+  const raw = product as unknown as Record<string, unknown>;
+  const euros = raw.cost_price_euros;
+  if (typeof euros === 'number' && euros > 0) return euros;
+  if (typeof euros === 'string' && Number(euros) > 0) return Number(euros);
+  const cents = raw.cost_price;
+  if (typeof cents === 'number' && cents > 0) return cents / 100;
+  if (typeof cents === 'string' && Number(cents) > 0) return Number(cents) / 100;
+  return 0;
+}
+
 export function productToForm(product: Product): ProductFormState {
+  const raw = product as unknown as Record<string, unknown>;
+  const cost = productCostEuros(product);
+  const stockQty = raw.stock_quantity;
+  const stockMin = raw.stock_minimum;
   return {
     code: product.code,
     name: product.name,
@@ -108,6 +130,9 @@ export function productToForm(product: Product): ProductFormState {
     tags: tagsToInput(product.tags),
     aliases: tagsToInput(product.aliases),
     product_group_id: product.product_group_id ?? '',
+    cost_price: cost ? String(cost) : '',
+    stock_quantity: stockQty == null ? '' : String(stockQty),
+    stock_minimum: stockMin == null ? '' : String(stockMin),
   };
 }
 
@@ -134,5 +159,9 @@ export function formToPayload(form: ProductFormState): Record<string, unknown> {
     tags: parseTagsInput(form.tags),
     aliases: parseTagsInput(form.aliases),
     product_group_id: form.product_group_id.trim() || null,
+    // Trello #86: cost price sent in cents (mirrors price_excl_vat); stock as ints.
+    cost_price: form.cost_price.trim() === '' ? null : eurosToCents(form.cost_price),
+    stock_quantity: form.stock_quantity.trim() === '' ? null : Math.round(Number(form.stock_quantity.replace(',', '.'))),
+    stock_minimum: form.stock_minimum.trim() === '' ? null : Math.round(Number(form.stock_minimum.replace(',', '.'))),
   };
 }
