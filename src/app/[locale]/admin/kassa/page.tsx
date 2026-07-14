@@ -158,6 +158,11 @@ export default function KassaPage() {
   const [qrSession, setQrSession] = React.useState<KassaQrSession | null>(null);
   const [qrStarting, setQrStarting] = React.useState(false);
   const [qrCopied, setQrCopied] = React.useState(false);
+  const [qrSecondsLeft, setQrSecondsLeft] = React.useState<number | null>(null);
+  const [qrEmailInput, setQrEmailInput] = React.useState('');
+  const [qrPhoneInput, setQrPhoneInput] = React.useState('');
+  const [showQrEmailInput, setShowQrEmailInput] = React.useState(false);
+  const [showQrPhoneInput, setShowQrPhoneInput] = React.useState(false);
   const [splitPayments, setSplitPayments] = React.useState([
     { method: "pin", amount: "" },
     { method: "cash", amount: "" },
@@ -909,10 +914,37 @@ export default function KassaPage() {
     return () => clearTimeout(timer);
   }, [showQrModal, qrSession, recentSales, todayQuery, push, t]);
 
+  // Countdown ticker for QR session expiry
+  React.useEffect(() => {
+    if (!showQrModal || !qrSession?.expires_at) {
+      setQrSecondsLeft(null);
+      return;
+    }
+    const tick = () => {
+      const diff = Math.floor((new Date(qrSession.expires_at!).getTime() - Date.now()) / 1000);
+      setQrSecondsLeft(Math.max(0, diff));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [showQrModal, qrSession?.expires_at]);
+
+  // Pre-fill email/phone inputs when guest session is loaded
+  React.useEffect(() => {
+    if (qrSession?.guest_email && !qrEmailInput) setQrEmailInput(qrSession.guest_email);
+    if (qrSession?.guest_phone && !qrPhoneInput) setQrPhoneInput(qrSession.guest_phone);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qrSession?.session_id]);
+
   const closeQrModal = () => {
     setShowQrModal(false);
     qrSettled.current = false;
     setQrSession(null);
+    setQrSecondsLeft(null);
+    setQrEmailInput('');
+    setQrPhoneInput('');
+    setShowQrEmailInput(false);
+    setShowQrPhoneInput(false);
   };
 
   const handleCheckout = async (
@@ -2140,23 +2172,34 @@ export default function KassaPage() {
                 push({ tone: "error", title: t("adminNew.common.operationFailed"), message: getApiErrorMessage(err) });
               }
             };
-            const sendEmail = async () => {
+            const sendEmail = async (email?: string) => {
               if (!qrSession?.session_id) return;
               try {
-                await kassaService.sendPaymentLink(qrSession.session_id);
+                await kassaService.sendPaymentLink(qrSession.session_id, email ? { email } : undefined);
                 push({ tone: "success", title: t("adminNew.kassa.qrLinkSent") });
+                setShowQrEmailInput(false);
               } catch (err) {
-                push({ tone: "error", title: t("adminNew.common.operationFailed"), message: getApiErrorMessage(err) });
+                const msg = getApiErrorMessage(err);
+                if (msg?.toLowerCase().includes('email') || String(err).includes('422')) {
+                  setShowQrEmailInput(true);
+                } else {
+                  push({ tone: "error", title: t("adminNew.common.operationFailed"), message: msg });
+                }
               }
             };
-            // Trello #72: send the payment link to the customer over WhatsApp.
-            const sendWhatsApp = async () => {
+            const sendWhatsApp = async (phone?: string) => {
               if (!qrSession?.session_id) return;
               try {
-                await kassaService.sendPaymentLinkWhatsapp(qrSession.session_id);
+                await kassaService.sendPaymentLinkWhatsapp(qrSession.session_id, phone ? { phone } : undefined);
                 push({ tone: "success", title: t("adminNew.kassa.qrLinkSent") });
+                setShowQrPhoneInput(false);
               } catch (err) {
-                push({ tone: "error", title: t("adminNew.common.operationFailed"), message: getApiErrorMessage(err) });
+                const msg = getApiErrorMessage(err);
+                if (msg?.toLowerCase().includes('phone') || String(err).includes('422')) {
+                  setShowQrPhoneInput(true);
+                } else {
+                  push({ tone: "error", title: t("adminNew.common.operationFailed"), message: msg });
+                }
               }
             };
             return (
@@ -2214,10 +2257,67 @@ export default function KassaPage() {
                       alt="Mollie QR"
                       className="mx-auto rounded-lg border border-navy-100"
                     />
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-marine-50 px-3 py-1 text-xs font-semibold text-marine-700">
-                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-marine-500" />
-                      {t(`adminNew.kassa.${statusKey}`)}
+                    <div className="mt-3 flex items-center justify-center gap-3">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-marine-50 px-3 py-1 text-xs font-semibold text-marine-700">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-marine-500" />
+                        {t(`adminNew.kassa.${statusKey}`)}
+                      </div>
+                      {qrSecondsLeft !== null && qrSecondsLeft > 0 ? (
+                        <div className={`text-xs font-mono font-semibold tabular-nums ${qrSecondsLeft < 60 ? 'text-rose-600' : 'text-navy-400'}`}>
+                          {Math.floor(qrSecondsLeft / 60)}:{String(qrSecondsLeft % 60).padStart(2, '0')}
+                        </div>
+                      ) : null}
                     </div>
+
+                    {/* Guest email auto-offer */}
+                    {qrSession?.guest_email && !showQrEmailInput ? (
+                      <div className="mt-3 flex items-center justify-center gap-2 rounded-lg bg-marine-50 px-3 py-2 text-xs text-marine-800">
+                        <Mail className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{qrSession.guest_email}</span>
+                        <Button size="sm" variant="outline" className="ml-1 h-6 px-2 text-[11px]" onClick={() => void sendEmail(qrEmailInput || qrSession.guest_email!)}>
+                          Verstuur
+                        </Button>
+                      </div>
+                    ) : null}
+
+                    {/* Inline email input (shown on 422 or when no guest email) */}
+                    {showQrEmailInput ? (
+                      <div className="mt-3 flex items-center gap-2">
+                        <input
+                          type="email"
+                          className="flex-1 rounded border border-navy-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-marine-500"
+                          placeholder="E-mailadres"
+                          value={qrEmailInput}
+                          onChange={(e) => setQrEmailInput(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') void sendEmail(qrEmailInput); }}
+                          autoFocus
+                        />
+                        <Button size="sm" variant="gold" onClick={() => void sendEmail(qrEmailInput)} disabled={!qrEmailInput.trim()}>
+                          Stuur
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowQrEmailInput(false)}>✕</Button>
+                      </div>
+                    ) : null}
+
+                    {/* Inline phone input (shown on 422 or when no guest phone) */}
+                    {showQrPhoneInput ? (
+                      <div className="mt-3 flex items-center gap-2">
+                        <input
+                          type="tel"
+                          className="flex-1 rounded border border-navy-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-marine-500"
+                          placeholder="Telefoonnummer"
+                          value={qrPhoneInput}
+                          onChange={(e) => setQrPhoneInput(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') void sendWhatsApp(qrPhoneInput); }}
+                          autoFocus
+                        />
+                        <Button size="sm" variant="gold" onClick={() => void sendWhatsApp(qrPhoneInput)} disabled={!qrPhoneInput.trim()}>
+                          Stuur
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowQrPhoneInput(false)}>✕</Button>
+                      </div>
+                    ) : null}
+
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
                       <Button
                         size="sm"
@@ -2249,7 +2349,7 @@ export default function KassaPage() {
                         size="sm"
                         variant="outline"
                         leftIcon={<MessageCircle className="h-3.5 w-3.5" />}
-                        onClick={() => void sendWhatsApp()}
+                        onClick={() => showQrPhoneInput ? void sendWhatsApp(qrPhoneInput) : void sendWhatsApp()}
                       >
                         {t("adminNew.kassa.qrWhatsapp")}
                       </Button>
@@ -2257,7 +2357,7 @@ export default function KassaPage() {
                         size="sm"
                         variant="outline"
                         leftIcon={<Mail className="h-3.5 w-3.5" />}
-                        onClick={() => void sendEmail()}
+                        onClick={() => showQrEmailInput ? void sendEmail(qrEmailInput) : void sendEmail()}
                       >
                         {t("adminNew.kassa.qrSendEmail")}
                       </Button>

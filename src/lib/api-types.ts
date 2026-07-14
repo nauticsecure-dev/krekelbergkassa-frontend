@@ -336,6 +336,8 @@ export interface KassaQrSession {
   expires_at?: string | null;
   paid_at?: string | null;
   completed_at?: string | null;
+  guest_email?: string | null;
+  guest_phone?: string | null;
 }
 
 export interface AuditLog {
