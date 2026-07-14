@@ -5,6 +5,7 @@ import { AlertTriangle, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useIntl } from '@/i18n/IntlProvider';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { usersService } from '@/lib/services';
 
 const IMPERSONATION_KEY = 'krekelberg_impersonation';
 
@@ -54,6 +55,7 @@ export function ImpersonationBanner() {
         onConfirm={async () => {
           setStopping(true);
           try {
+            await usersService.stopImpersonation().catch(() => null);
             clearImpersonationMeta();
             await signOut();
             setConfirmStop(false);

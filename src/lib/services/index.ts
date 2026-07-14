@@ -187,6 +187,7 @@ export const customersService = {
       google_place_id?: string | null;
       latitude?: number | null;
       longitude?: number | null;
+      formatted_address?: string | null;
     };
   }) {
     return api<Customer>('/v1/customers', { method: 'POST', body: payload, queueWhenOffline: true });
@@ -1772,6 +1773,20 @@ export const usersService = {
       expires_at: string;
       user: AdminUser;
     }>(`/v1/admin/users/${id}/impersonate`, { method: 'POST' });
+  },
+  stopImpersonation() {
+    return api<{ message: string }>('/v1/admin/users/impersonate/stop', { method: 'POST' });
+  },
+  block(id: string, reason?: string) {
+    return api<{ message: string; user: AdminUser }>(`/v1/admin/users/${id}/block`, {
+      method: 'POST',
+      body: { reason },
+    });
+  },
+  unblock(id: string) {
+    return api<{ message: string; user: AdminUser }>(`/v1/admin/users/${id}/unblock`, {
+      method: 'POST',
+    });
   },
 };
 

@@ -34,6 +34,7 @@ import {
   governanceService,
 } from '@/lib/services';
 import { findUserIdByEmail, impersonateUser, ImpersonationError } from '@/lib/impersonate';
+import { AddressAutocomplete, type AddressSelection } from '@/components/ui/AddressAutocomplete';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatCurrency, formatDate, centsToEuro } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -190,6 +191,10 @@ export default function CustomerDetailPage() {
     city: '',
     country: '',
     notes: '',
+    google_place_id: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
+    formatted_address: '',
   });
 
   const [boatForm, setBoatForm] = React.useState({
@@ -263,34 +268,50 @@ export default function CustomerDetailPage() {
     if (!data.data?.customer) return;
     const c = data.data.customer as unknown as Record<string, unknown>;
     const s = (k: string) => (typeof c[k] === 'string' ? (c[k] as string) : '');
+    // Address data lives in the addresses relation, not on the customer root object.
+    const addr = (Array.isArray(c.addresses) ? c.addresses[0] : null) as Record<string, unknown> | null;
+    const a = (k: string) => (addr && typeof addr[k] === 'string' ? (addr[k] as string) : '');
     setEditForm({
       name: data.data.customer.name,
       email: data.data.customer.email ?? '',
       phone: data.data.customer.phone ?? '',
       preferred_locale: data.data.customer.preferred_locale || 'nl-NL',
       gender: s('gender'),
-      street: s('street') || s('address'),
-      postal_code: s('postal_code') || s('zip'),
-      city: s('city'),
-      country: s('country'),
+      street: a('street') || a('address_line_1'),
+      postal_code: a('postal_code') || a('zip'),
+      city: a('city'),
+      country: a('country'),
       notes: data.data.customer.notes ?? '',
+      google_place_id: a('google_place_id'),
+      latitude: addr?.latitude as number | null ?? null,
+      longitude: addr?.longitude as number | null ?? null,
+      formatted_address: a('formatted_address'),
     });
   }, [data.data?.customer]);
 
   const handleSaveCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const hasAddress = editForm.street || editForm.postal_code || editForm.city || editForm.country;
       await updateCustomer.mutate({
         name: editForm.name,
         email: editForm.email || null,
         phone: editForm.phone || null,
         preferred_locale: editForm.preferred_locale,
         gender: editForm.gender || null,
-        street: editForm.street || null,
-        postal_code: editForm.postal_code || null,
-        city: editForm.city || null,
-        country: editForm.country || null,
         notes: editForm.notes || null,
+        ...(hasAddress ? {
+          address: {
+            street: editForm.street || null,
+            postal_code: editForm.postal_code || null,
+            city: editForm.city || null,
+            country: editForm.country || null,
+            google_place_id: editForm.google_place_id || null,
+            latitude: editForm.latitude ?? null,
+            longitude: editForm.longitude ?? null,
+            formatted_address: editForm.formatted_address || null,
+          },
+        } : {}),
       });
       push({ tone: 'success', title: t('adminNew.customerDetail.toasts.customerUpdated') });
       setShowEdit(false);
@@ -1014,10 +1035,22 @@ export default function CustomerDetailPage() {
                 <option value="other">{t('adminNew.customerDetail.genderOther')}</option>
               </select>
             </div>
-            <Input
+            <AddressAutocomplete
               label={t('adminNew.customerDetail.street')}
-              value={editForm.street}
-              onChange={(e) => setEditForm((p) => ({ ...p, street: e.target.value }))}
+              placeholder={editForm.street || t('adminNew.customers.modal.addressPlaceholder', { defaultValue: 'Zoek adres…' })}
+              onSelect={(sel: AddressSelection) =>
+                setEditForm((p) => ({
+                  ...p,
+                  street: `${sel.street}${sel.house_number ? ' ' + sel.house_number : ''}`,
+                  postal_code: sel.postal_code ?? p.postal_code,
+                  city: sel.city ?? p.city,
+                  country: sel.country ?? p.country,
+                  google_place_id: sel.google_place_id ?? p.google_place_id,
+                  latitude: sel.latitude ?? p.latitude,
+                  longitude: sel.longitude ?? p.longitude,
+                  formatted_address: sel.formatted_address ?? p.formatted_address,
+                }))
+              }
             />
             <div className="grid grid-cols-2 gap-3">
               <Input

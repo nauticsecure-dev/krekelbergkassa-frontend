@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { Ban, KeyRound, LogIn, Plus, ShieldCheck, Users } from 'lucide-react';
+import Link from 'next/link';
+import { Ban, KeyRound, LogIn, Plus, ShieldCheck, UserCog, Users } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -57,6 +58,10 @@ export default function CustomersPage() {
     postal_code: '',
     city: '',
     country: '',
+    google_place_id: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
+    formatted_address: '',
   });
   const [blockTarget, setBlockTarget] = React.useState<{ id: string; name: string } | null>(null);
   const [blockReason, setBlockReason] = React.useState('');
@@ -140,6 +145,10 @@ export default function CustomersPage() {
               postal_code: form.postal_code || undefined,
               city: form.city || undefined,
               country: form.country || undefined,
+              google_place_id: form.google_place_id || undefined,
+              latitude: form.latitude ?? undefined,
+              longitude: form.longitude ?? undefined,
+              formatted_address: form.formatted_address || undefined,
             }
           : undefined,
       });
@@ -156,6 +165,10 @@ export default function CustomersPage() {
         postal_code: '',
         city: '',
         country: '',
+        google_place_id: '',
+        latitude: null,
+        longitude: null,
+        formatted_address: '',
       });
       await customers.refetch();
     } catch (err) {
@@ -179,6 +192,13 @@ export default function CustomersPage() {
         eyebrow={t('admin.sidebar.customers')}
         title={t('adminNew.customers.title')}
         subtitle={t('adminNew.customers.subtitle')}
+        rightSlot={
+          <Link href={`/${locale}/admin/gebruikers`}>
+            <Button variant="outline" size="sm" leftIcon={<UserCog className="h-4 w-4" />}>
+              {t('adminNew.users.title', { defaultValue: 'Gebruikers' })}
+            </Button>
+          </Link>
+        }
         stats={[
           {
             label: t('adminNew.customers.total', { count: total }),
@@ -250,6 +270,7 @@ export default function CustomersPage() {
             <option value="">{t('adminNew.customers.allStatuses')}</option>
             <option value="active">{t('adminNew.customers.statusActive')}</option>
             <option value="blocked">{t('adminNew.customers.statusBlocked')}</option>
+            <option value="never_logged_in">{t('adminNew.customers.neverLoggedIn', { defaultValue: 'Nooit ingelogd' })}</option>
           </AdminSelect>
           <div className="w-full lg:w-[160px]">
             <Input
@@ -324,6 +345,7 @@ export default function CustomersPage() {
                   <AdminTableHeaderCell>{t('adminNew.customers.columns.customer')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.customers.columns.contact')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.customers.columns.locale')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.customers.columns.city', { defaultValue: 'Stad / Land' })}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.customers.columns.status')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.customers.columns.lastLogin')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
@@ -343,7 +365,22 @@ export default function CustomersPage() {
                       <div>{customer.email ?? '—'}</div>
                       <div className="text-xs text-navy-500">{customer.phone ?? '—'}</div>
                     </AdminTableCell>
-                    <AdminTableCell className="uppercase">{customer.preferred_locale || '—'}</AdminTableCell>
+                    <AdminTableCell className="font-semibold uppercase tracking-wider text-xs text-navy-600">
+                      {customer.preferred_locale
+                        ? ({ 'nl-NL': 'NL', 'en-GB': 'EN', 'de-DE': 'DE', 'fr-FR': 'FR' } as Record<string, string>)[customer.preferred_locale] ?? customer.preferred_locale.slice(0, 2).toUpperCase()
+                        : '—'}
+                    </AdminTableCell>
+                    <AdminTableCell>
+                      {(() => {
+                        const addr = (customer as unknown as Record<string, unknown>).addresses;
+                        const first = Array.isArray(addr) ? (addr[0] as Record<string, unknown>) : null;
+                        const cityVal = first?.city ?? (customer as unknown as Record<string, unknown>).city;
+                        const countryVal = first?.country ?? (customer as unknown as Record<string, unknown>).country;
+                        return cityVal || countryVal
+                          ? <><div className="text-sm text-navy-800">{cityVal as string || ''}</div><div className="text-xs text-navy-400">{countryVal as string || ''}</div></>
+                          : <span className="text-navy-300">—</span>;
+                      })()}
+                    </AdminTableCell>
                     <AdminTableCell>
                       <div className="flex flex-col items-start gap-1">
                         <Badge tone={blocked ? 'danger' : 'success'}>
@@ -362,7 +399,12 @@ export default function CustomersPage() {
                     </AdminTableCell>
                     <AdminTableCell className="whitespace-nowrap text-sm text-navy-600">
                       {lastLogin ? (
-                        new Date(lastLogin).toLocaleDateString(dateLocale)
+                        <div className="flex flex-col">
+                          <span>{new Date(lastLogin).toLocaleDateString(dateLocale)}</span>
+                          {(customer as unknown as Record<string, unknown>).last_login_ip ? (
+                            <span className="text-xs text-navy-400">{String((customer as unknown as Record<string, unknown>).last_login_ip)}</span>
+                          ) : null}
+                        </div>
                       ) : (
                         <Badge tone="warning">{t('adminNew.customers.neverLoggedIn')}</Badge>
                       )}
@@ -496,6 +538,10 @@ export default function CustomersPage() {
                     postal_code: addr.postal_code,
                     city: addr.city,
                     country: addr.country,
+                    google_place_id: addr.google_place_id ?? '',
+                    latitude: addr.latitude ?? null,
+                    longitude: addr.longitude ?? null,
+                    formatted_address: addr.formatted_address ?? '',
                   }))
                 }
               />

@@ -13,6 +13,7 @@ export type AddressSelection = {
   google_place_id: string;
   latitude: number | null;
   longitude: number | null;
+  formatted_address: string;
 };
 
 type Props = {
@@ -24,6 +25,7 @@ type Props = {
 
 type GooglePlaceResult = {
   place_id?: string;
+  formatted_address?: string;
   geometry?: { location?: { lat: () => number; lng: () => number } };
   address_components?: Array<{
     long_name: string;
@@ -107,6 +109,7 @@ function parsePlace(place: GooglePlaceResult): AddressSelection {
     google_place_id: place.place_id ?? '',
     latitude: place.geometry?.location?.lat() ?? null,
     longitude: place.geometry?.location?.lng() ?? null,
+    formatted_address: place.formatted_address ?? '',
   };
 }
 
