@@ -539,6 +539,7 @@ export interface Appointment {
   invoice_id: string | null;
   customer_notes: string | null;
   staff_notes: string | null;
+  public_notes: string | null;
   photo_ids: unknown[] | null;
   confirmed_at: string | null;
   started_at: string | null;
@@ -546,6 +547,7 @@ export interface Appointment {
   created_at: string | null;
   updated_at: string | null;
   boat?: PortalBoat | Boat;
+  location?: { id?: string; code?: string; name?: string } | null;
   // Trello #99: employee assignment, coarse status bucket + portal flags.
   assigned_to_user_id?: string | null;
   assigned_to?: { id: string; name: string } | null;

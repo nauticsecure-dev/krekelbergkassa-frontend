@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import Link from 'next/link';
 import {
   Anchor,
   ArrowRight,
@@ -234,6 +235,38 @@ export default function KraanAfspraakPage() {
     const key = d.toISOString().slice(0, 10);
     return key in openDays && !openDays[key];
   };
+
+  if (submitted) {
+    return (
+      <div className="bg-sand-50/80">
+        <div className="container-wide flex min-h-[60vh] items-center justify-center py-24">
+          <Card className="mx-auto max-w-lg p-8 text-center">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
+              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+            </div>
+            <Badge tone="gold" className="mb-4">Aanvraag ontvangen</Badge>
+            <h2 className="font-display text-2xl font-bold text-navy-900">
+              Uw aanvraag is verzonden
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-navy-500">
+              Wij bekijken uw aanvraag zo snel mogelijk en bevestigen de afspraak per e-mail.
+              U kunt de status volgen via het klantportaal.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Link href={`/${locale}/dashboard/afspraken`}>
+                <Button variant="gold" rightIcon={<ArrowRight className="h-4 w-4" />}>
+                  Bekijk uw afspraken
+                </Button>
+              </Link>
+              <Button variant="outline" onClick={() => setSubmitted(false)}>
+                Nieuwe aanvraag
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-sand-50/80">

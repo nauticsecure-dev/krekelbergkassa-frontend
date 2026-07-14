@@ -1527,6 +1527,9 @@ export const portalService = {
       has_more: toBoolean(obj.has_more),
     } satisfies PortalAppointmentsResponse;
   },
+  appointmentConfirmationPdf(id: string) {
+    return api<Blob>(`/v1/portal/appointments/${id}/confirmation`, { portalAuth: true, auth: false });
+  },
   // Trello #99: customer cancels their own appointment.
   cancelAppointment(id: string, reason?: string) {
     return api<Appointment>(`/v1/portal/appointments/${id}/cancel`, {
@@ -1617,7 +1620,7 @@ export const appointmentsService = {
   },
   updateStatus(
     id: string,
-    payload: { status: string; staff_note?: string | null; photo_id?: string | null }
+    payload: { status: string; staff_note?: string | null; public_note?: string | null; photo_id?: string | null }
   ) {
     return api<Appointment>(`/v1/appointments/${id}/status`, {
       method: 'POST',

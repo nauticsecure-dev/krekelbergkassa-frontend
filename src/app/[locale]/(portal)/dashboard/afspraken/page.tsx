@@ -7,6 +7,7 @@ import {
   Calendar,
   CalendarClock,
   Clock,
+  Download,
   MapPin,
   Plus,
   Ship,
@@ -42,12 +43,26 @@ import { getApiErrorMessage } from '@/lib/api-error';
 
 type StatusFilter = '' | 'upcoming' | 'completed' | 'cancelled';
 
+function isUpcoming(a: Appointment): boolean {
+  const s = a.status.toLowerCase();
+  if (s.includes('complete') || s.includes('cancel') || s.includes('no_show')) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(`${(a.appointment_date || '').slice(0, 10)}T00:00:00`);
+  return d >= today;
+}
+
+function isPast(a: Appointment): boolean {
+  return !isUpcoming(a);
+}
+
 export default function PortalAppointmentsPage() {
   const { t, locale } = useIntl();
   const { push } = useToast();
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('');
   const [selected, setSelected] = React.useState<Appointment | null>(null);
+  const [downloadingId, setDownloadingId] = React.useState<string | null>(null);
 
   // Cancel + reschedule flows (Trello #99).
   const [cancelFor, setCancelFor] = React.useState<Appointment | null>(null);
@@ -118,13 +133,32 @@ export default function PortalAppointmentsPage() {
     }
   };
 
+  const downloadConfirmation = async (appt: Appointment) => {
+    setDownloadingId(appt.id);
+    try {
+      const blob = await portalService.appointmentConfirmationPdf(appt.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bevestiging-afspraak-${(appt.appointment_date || '').slice(0, 10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      push({ tone: 'error', title: 'Download mislukt', message: getApiErrorMessage(err) });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   const items = appointments.data?.data ?? [];
-  const upcoming = items.filter((a) => {
-    const s = a.status.toLowerCase();
-    return !s.includes('complete') && !s.includes('cancel');
-  }).length;
+  const upcomingItems = items.filter(isUpcoming);
+  const pastItems = items.filter(isPast);
+  const upcomingCount = upcomingItems.length;
   const completed = items.filter((a) => a.status.toLowerCase().includes('complete')).length;
-  const grouped = groupByDateKey(items, 'appointment_date');
+  const upcomingGrouped = groupByDateKey(upcomingItems, 'appointment_date');
+  const pastGrouped = groupByDateKey(pastItems, 'appointment_date');
 
   return (
     <>
@@ -141,7 +175,7 @@ export default function PortalAppointmentsPage() {
           },
           {
             label: t('adminNew.portal.appointments.metricUpcoming'),
-            value: upcoming,
+            value: upcomingCount,
             icon: Clock,
             tone: 'gold',
             loading: appointments.loading,
@@ -219,42 +253,87 @@ export default function PortalAppointmentsPage() {
         ) : null}
 
         {!appointments.loading && !appointments.error && items.length > 0 ? (
-          <div className="space-y-5">
-            {grouped.map(([dateKey, dayItems]) => (
-              <div key={dateKey}>
-                <PortalSectionLabel>
-                  {dateKey === 'unknown'
-                    ? t('adminNew.portal.appointments.unknownDate')
-                    : formatDate(dateKey, dateLocale)}
-                </PortalSectionLabel>
-                <div className="space-y-2.5">
-                  {dayItems.map((item) => {
-                    const appt = item as Appointment;
-                    const services = appt.service_codes?.join(', ') || t('adminNew.portal.appointments.service');
-                    return (
-                      <PortalInteractiveRow
-                        key={appt.id}
-                        icon={Calendar}
-                        tone={
-                          appt.status.toLowerCase().includes('cancel')
-                            ? 'sand'
-                            : appt.status.toLowerCase().includes('complete')
-                              ? 'success'
-                              : 'marine'
-                        }
-                        title={`${appt.start_time} – ${appt.end_time}`}
-                        subtitle={services}
-                        meta={t('adminNew.portal.appointments.duration', {
-                          minutes: String(appt.duration_minutes),
+          <div className="space-y-8">
+            {/* Upcoming appointments */}
+            {upcomingGrouped.length > 0 ? (
+              <div>
+                <div className="mb-3 text-sm font-semibold text-navy-700">Aankomende afspraken</div>
+                <div className="space-y-5">
+                  {upcomingGrouped.map(([dateKey, dayItems]) => (
+                    <div key={dateKey}>
+                      <PortalSectionLabel>
+                        {dateKey === 'unknown'
+                          ? t('adminNew.portal.appointments.unknownDate')
+                          : formatDate(dateKey, dateLocale)}
+                      </PortalSectionLabel>
+                      <div className="space-y-2.5">
+                        {dayItems.map((item) => {
+                          const appt = item as Appointment;
+                          const services = appt.service_codes?.join(', ') || t('adminNew.portal.appointments.service');
+                          const loc = appt.location;
+                          return (
+                            <PortalInteractiveRow
+                              key={appt.id}
+                              icon={Calendar}
+                              tone="marine"
+                              title={`${(appt.start_time || '').slice(0, 5)} – ${(appt.end_time || '').slice(0, 5)}`}
+                              subtitle={services}
+                              meta={loc?.code ? `Dok: ${loc.code}` : t('adminNew.portal.appointments.duration', { minutes: String(appt.duration_minutes) })}
+                              trailing={<AppointmentStatusBadge status={appt.status} statusGeneric={appt.status_generic} />}
+                              onClick={() => setSelected(appt)}
+                            />
+                          );
                         })}
-                        trailing={<AppointmentStatusBadge status={appt.status} />}
-                        onClick={() => setSelected(appt)}
-                      />
-                    );
-                  })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            ) : (
+              <div className="rounded-lg border border-dashed border-navy-100 px-4 py-6 text-center text-sm text-navy-400">
+                Geen aankomende afspraken
+              </div>
+            )}
+
+            {/* Past appointments */}
+            {pastGrouped.length > 0 ? (
+              <div>
+                <div className="mb-3 text-sm font-semibold text-navy-500">Afgelopen afspraken</div>
+                <div className="space-y-5">
+                  {pastGrouped.map(([dateKey, dayItems]) => (
+                    <div key={dateKey}>
+                      <PortalSectionLabel>
+                        {dateKey === 'unknown'
+                          ? t('adminNew.portal.appointments.unknownDate')
+                          : formatDate(dateKey, dateLocale)}
+                      </PortalSectionLabel>
+                      <div className="space-y-2.5">
+                        {dayItems.map((item) => {
+                          const appt = item as Appointment;
+                          const services = appt.service_codes?.join(', ') || t('adminNew.portal.appointments.service');
+                          return (
+                            <PortalInteractiveRow
+                              key={appt.id}
+                              icon={Calendar}
+                              tone={
+                                appt.status.toLowerCase().includes('cancel') ? 'sand'
+                                : appt.status.toLowerCase().includes('complete') ? 'success'
+                                : 'sand'
+                              }
+                              title={`${(appt.start_time || '').slice(0, 5)} – ${(appt.end_time || '').slice(0, 5)}`}
+                              subtitle={services}
+                              meta={t('adminNew.portal.appointments.duration', { minutes: String(appt.duration_minutes) })}
+                              trailing={<AppointmentStatusBadge status={appt.status} statusGeneric={appt.status_generic} />}
+                              onClick={() => setSelected(appt)}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
         </PortalSectionCard>
@@ -270,10 +349,12 @@ export default function PortalAppointmentsPage() {
             />
             <PortalModalBody>
               <div className="flex flex-wrap items-center gap-2">
-                <AppointmentStatusBadge status={selected.status} />
-                <span className="text-xs text-navy-500">
-                  {t('adminNew.portal.appointments.approval')}: {selected.approval_type}
-                </span>
+                <AppointmentStatusBadge status={selected.status} statusGeneric={selected.status_generic} />
+                {selected.approval_type ? (
+                  <span className="text-xs text-navy-500">
+                    {t('adminNew.portal.appointments.approval')}: {selected.approval_type}
+                  </span>
+                ) : null}
               </div>
               <PortalDetailGrid
                 items={[
@@ -289,7 +370,9 @@ export default function PortalAppointmentsPage() {
                   },
                   {
                     label: t('adminNew.portal.appointments.location'),
-                    value: selected.location_id || '—',
+                    value: selected.location?.code
+                      ? `${selected.location.code}${selected.location.name ? ` – ${selected.location.name}` : ''}`
+                      : (selected.location_id || '—'),
                   },
                   {
                     label: t('adminNew.portal.appointments.confirmedAt'),
@@ -307,11 +390,30 @@ export default function PortalAppointmentsPage() {
                   <p className="mt-2 text-sm text-navy-700">{selected.customer_notes}</p>
                 </div>
               ) : null}
+              {selected.public_notes ? (
+                <div className="rounded-xl border border-marine-200 bg-marine-50/40 p-4">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-marine-600">
+                    Instructies
+                  </div>
+                  <p className="mt-2 text-sm text-marine-800">{selected.public_notes}</p>
+                </div>
+              ) : null}
             </PortalModalBody>
             <PortalModalFooter>
               <Button variant="outline" onClick={() => setSelected(null)}>
                 {t('adminNew.common.cancel')}
               </Button>
+              {/* Download confirmation PDF */}
+              {!selected.status.toLowerCase().includes('cancel') ? (
+                <Button
+                  variant="outline"
+                  leftIcon={<Download className="h-4 w-4" />}
+                  disabled={downloadingId === selected.id}
+                  onClick={() => void downloadConfirmation(selected)}
+                >
+                  {downloadingId === selected.id ? 'Downloaden…' : 'Bevestiging downloaden'}
+                </Button>
+              ) : null}
               {selected.can_cancel ? (
                 <>
                   <Button
