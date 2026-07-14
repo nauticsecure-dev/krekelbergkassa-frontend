@@ -220,7 +220,7 @@ export default function BoatsPage() {
           ) : null}
 
           {!boats.loading && !boats.error && rows.length > 0 ? (
-            <AdminTable minWidth={1040}>
+            <AdminTable minWidth={1160}>
               <AdminTableHead>
                 <tr>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.boat')}</AdminTableHeaderCell>
@@ -228,6 +228,7 @@ export default function BoatsPage() {
                   <AdminTableHeaderCell>{t('adminNew.boats.fields.brand')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.type')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.status')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.boats.columns.length', { defaultValue: 'Lengte' })}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.currentStorageLocation')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.boats.columns.lastActivity')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
@@ -265,6 +266,11 @@ export default function BoatsPage() {
                         const key = `adminNew.boats.status${cs === 'in_storage' ? 'InStorage' : cs === 'work_in_progress' ? 'WorkInProgress' : cs === 'registered' ? 'Registered' : ''}`;
                         return cs ? t(key) : '—';
                       })()}
+                    </AdminTableCell>
+                    <AdminTableCell className="whitespace-nowrap text-sm">
+                      {(boat as unknown as Record<string, unknown>).length_cm
+                        ? `${String((boat as unknown as Record<string, unknown>).length_cm)} cm`
+                        : '—'}
                     </AdminTableCell>
                     <AdminTableCell>{boat.location_code ?? '—'}</AdminTableCell>
                     <AdminTableCell className="text-sm text-navy-600">

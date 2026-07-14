@@ -12,11 +12,14 @@ import {
   History,
   QrCode,
   Ship,
+  Trash2,
   Upload,
   UserCog,
   Warehouse,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
   AdminContent,
   AdminModalBody,
@@ -89,6 +92,10 @@ export default function BoatDossierPage() {
   );
   const uploadPhoto = useMutation((fd: FormData) => boatsService.uploadPhoto(id, fd));
   const uploadDoc = useMutation((fd: FormData) => boatsService.uploadDocument(id, fd));
+  const deletePhotoM = useMutation((fileId: string) => boatsService.deletePhoto(id, fileId));
+  const deleteDocM = useMutation((fileId: string) => boatsService.deleteDocument(id, fileId));
+  const [photoDeleteTarget, setPhotoDeleteTarget] = React.useState<string | null>(null);
+  const [docDeleteTarget, setDocDeleteTarget] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const b = dossier.data?.boat as Record<string, unknown> | undefined;
@@ -389,24 +396,50 @@ export default function BoatDossierPage() {
                 </AdminSectionCard>
 
                 {qr.payload || boat.qr_code ? (
-                  <AdminSectionCard title={t('adminNew.boats.qrTitle')} icon={QrCode}>
-                    <div className="flex flex-col items-center gap-3 text-center">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                          String(qr.dossier_url ?? qr.payload ?? boat.qr_code ?? '')
-                        )}`}
-                        alt="Boat QR"
-                        className="rounded-lg border border-navy-100"
-                      />
-                      <div className="font-mono text-sm text-navy-700">
-                        {String(qr.payload ?? boat.qr_code ?? '')}
+                  <>
+                    <style>{`
+                      @media print {
+                        body > * { display: none !important; }
+                        #boat-qr-label { display: flex !important; }
+                      }
+                    `}</style>
+                    <AdminSectionCard title={t('adminNew.boats.qrTitle')} icon={QrCode}>
+                      <div className="flex flex-col items-center gap-3 text-center">
+                        <div
+                          id="boat-qr-label"
+                          className="hidden flex-col items-center gap-2 rounded-xl border-2 border-navy-200 bg-white p-5 text-center print:flex"
+                        >
+                          <div className="text-base font-bold text-navy-900">{String(boat.name ?? '')}</div>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                              String(qr.scan_url ?? qr.dossier_url ?? qr.payload ?? boat.qr_code ?? '')
+                            )}`}
+                            alt="Boat QR"
+                            className="h-40 w-40"
+                          />
+                          <div className="font-mono text-xs text-navy-600">{String(qr.payload ?? boat.qr_code ?? '')}</div>
+                          {boat.location_code ? (
+                            <div className="text-sm font-semibold text-navy-700">{String(boat.location_code)}</div>
+                          ) : null}
+                        </div>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                            String(qr.scan_url ?? qr.dossier_url ?? qr.payload ?? boat.qr_code ?? '')
+                          )}`}
+                          alt="Boat QR"
+                          className="rounded-lg border border-navy-100 print:hidden"
+                        />
+                        <div className="font-mono text-sm text-navy-700 print:hidden">
+                          {String(qr.payload ?? boat.qr_code ?? '')}
+                        </div>
+                        <Button size="sm" variant="outline" className="print:hidden" onClick={() => window.print()}>
+                          {t('adminNew.boats.printLabel')}
+                        </Button>
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => window.print()}>
-                        {t('adminNew.boats.printLabel')}
-                      </Button>
-                    </div>
-                  </AdminSectionCard>
+                    </AdminSectionCard>
+                  </>
                 ) : null}
               </div>
             ) : null}
@@ -462,17 +495,57 @@ export default function BoatDossierPage() {
                 {photos.length === 0 ? (
                   <p className="text-sm text-navy-500">{t('adminNew.boats.noPhotos')}</p>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                    {photos.map((p, i) => {
-                      const url = String(p.signed_url ?? p.url ?? '');
-                      return (
-                        <a key={String(p.file_id ?? p.id ?? i)} href={url} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg border border-navy-100 bg-sand-50">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={url} alt="" className="h-full w-full object-cover" />
-                        </a>
-                      );
-                    })}
-                  </div>
+                  (() => {
+                    const FOLDERS = ['arrival', 'inspection', 'maintenance', 'damage', 'departure'];
+                    const grouped = FOLDERS.reduce<Record<string, Array<Record<string, unknown>>>>((acc, f) => {
+                      acc[f] = photos.filter((p) => String(p.category ?? p.folder ?? '') === f);
+                      return acc;
+                    }, {});
+                    const ungrouped = photos.filter((p) => {
+                      const cat = String(p.category ?? p.folder ?? '');
+                      return !FOLDERS.includes(cat);
+                    });
+                    if (ungrouped.length) grouped['other'] = ungrouped;
+                    return Object.entries(grouped)
+                      .filter(([, items]) => items.length > 0)
+                      .map(([folder, items]) => {
+                        const earliest = items.reduce((min, p) => {
+                          const d = String(p.created_at ?? '');
+                          return d && (!min || d < min) ? d : min;
+                        }, '');
+                        return (
+                          <details key={folder} open className="mb-4">
+                            <summary className="mb-2 flex cursor-pointer items-center gap-2 text-sm font-semibold text-navy-700 hover:text-navy-900">
+                              <span>{t(`adminNew.boats.photoFolders.${folder}`, { defaultValue: folder })}</span>
+                              <span className="rounded-full bg-navy-100 px-1.5 py-0.5 text-[10px] font-semibold text-navy-500">{items.length}</span>
+                              {earliest ? <span className="ml-auto text-xs font-normal text-navy-400">{new Date(earliest).toLocaleDateString(dateLocale)}</span> : null}
+                            </summary>
+                            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                              {items.map((p, i) => {
+                                const url = String(p.signed_url ?? p.url ?? '');
+                                const fileId = String(p.file_id ?? p.id ?? i);
+                                return (
+                                  <div key={fileId} className="group relative aspect-square overflow-hidden rounded-lg border border-navy-100 bg-sand-50">
+                                    <a href={url} target="_blank" rel="noreferrer" className="block h-full w-full">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img src={url} alt="" className="h-full w-full object-cover" />
+                                    </a>
+                                    <button
+                                      type="button"
+                                      onClick={() => setPhotoDeleteTarget(fileId)}
+                                      className="absolute right-1 top-1 hidden rounded-full bg-white/90 p-1 text-rose-600 shadow hover:bg-rose-50 group-hover:flex"
+                                      aria-label={t('adminNew.common.delete')}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </details>
+                        );
+                      });
+                  })()
                 )}
               </AdminSectionCard>
             ) : null}
@@ -499,18 +572,31 @@ export default function BoatDossierPage() {
                   <p className="text-sm text-navy-500">{t('adminNew.boats.noDocuments')}</p>
                 ) : (
                   <ul className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
-                    {documents.map((d, i) => (
-                      <li key={String(d.file_id ?? d.id ?? i)} className="flex items-center justify-between px-4 py-3 text-sm">
-                        <span className="text-navy-800">
-                          {String(d.filename ?? d.name ?? `#${i + 1}`)}
-                          {d.category ? <span className="ml-2 text-xs text-navy-400">{t(`adminNew.boats.docCategories.${String(d.category)}`)}</span> : null}
-                          {d.version ? <span className="ml-2 text-xs text-navy-400">v{String(d.version)}</span> : null}
-                        </span>
-                        <a href={String(d.signed_url ?? d.url ?? '')} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 hover:text-marine-900">
-                          {t('adminNew.invoiceDetail.actions.openPdf')}
-                        </a>
-                      </li>
-                    ))}
+                    {documents.map((d, i) => {
+                      const fileId = String(d.file_id ?? d.id ?? i);
+                      return (
+                        <li key={fileId} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                          <span className="min-w-0 flex-1 truncate text-navy-800">
+                            {String(d.filename ?? d.name ?? `#${i + 1}`)}
+                            {d.category ? <span className="ml-2 text-xs text-navy-400">{t(`adminNew.boats.docCategories.${String(d.category)}`)}</span> : null}
+                            {d.version ? <span className="ml-2 text-xs text-navy-400">v{String(d.version)}</span> : null}
+                          </span>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <a href={String(d.signed_url ?? d.url ?? '')} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 hover:text-marine-900">
+                              {t('adminNew.invoiceDetail.actions.openPdf')}
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => setDocDeleteTarget(fileId)}
+                              className="rounded p-1 text-navy-400 hover:bg-rose-50 hover:text-rose-600"
+                              aria-label={t('adminNew.common.delete')}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </AdminSectionCard>
@@ -542,12 +628,47 @@ export default function BoatDossierPage() {
                   {storage.length === 0 ? (
                     <p className="text-sm text-navy-500">{t('adminNew.stalling.emptyMessage')}</p>
                   ) : (
-                    storage.map((c) => (
-                      <div key={String(c.id)} className="rounded-lg border border-navy-100 px-3 py-2 text-sm">
-                        <div className="font-semibold text-navy-900">{String(c.contract_number ?? '—')}</div>
-                        <div className="text-navy-500">{String(c.status ?? '')}</div>
-                      </div>
-                    ))
+                    storage.map((c) => {
+                      const startDate = c.start_date ? new Date(String(c.start_date)) : null;
+                      const endDate = c.end_date ? new Date(String(c.end_date)) : null;
+                      const daysStored = startDate
+                        ? Math.max(0, Math.ceil(((endDate ?? new Date()).getTime() - startDate.getTime()) / 86_400_000))
+                        : null;
+                      const statusTone = String(c.status) === 'active' ? 'success' as const
+                        : String(c.status) === 'completed' ? 'navy' as const
+                        : String(c.status) === 'cancelled' ? 'danger' as const
+                        : 'sand' as const;
+                      return (
+                        <div key={String(c.id)} className="rounded-lg border border-navy-100 p-4 text-sm">
+                          <div className="mb-3 flex items-center justify-between gap-2">
+                            <span className="font-semibold text-navy-900">{String(c.contract_number ?? '—')}</span>
+                            <Badge tone={statusTone}>{String(c.status ?? '—')}</Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+                            {c.location_code ? (
+                              <Field label={t('adminNew.stalling.fields.hall', { defaultValue: 'Hal' })} value={String(c.location_code)} />
+                            ) : null}
+                            {c.bok_number ? (
+                              <Field label={t('adminNew.stalling.fields.bok', { defaultValue: 'Bok' })} value={String(c.bok_number)} />
+                            ) : null}
+                            {startDate ? (
+                              <Field label={t('adminNew.stalling.fields.arrivalDate', { defaultValue: 'Aankomst' })} value={startDate.toLocaleDateString(dateLocale)} />
+                            ) : null}
+                            {endDate ? (
+                              <Field label={t('adminNew.stalling.fields.pickupDate', { defaultValue: 'Ophalen' })} value={endDate.toLocaleDateString(dateLocale)} />
+                            ) : null}
+                            {daysStored != null ? (
+                              <Field label={t('adminNew.stalling.fields.daysStored', { defaultValue: 'Dagen opgeslagen' })} value={String(daysStored)} />
+                            ) : null}
+                          </div>
+                          <div className="mt-3">
+                            <Link href={`/${locale}/admin/stalling/${String(c.id)}`} className="text-xs font-semibold text-marine-700 hover:text-marine-900">
+                              {t('adminNew.boats.openContract', { defaultValue: 'Open contract →' })}
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </AdminSectionCard>
@@ -555,6 +676,20 @@ export default function BoatDossierPage() {
 
             {tab === 'financial' ? (
               <AdminSectionCard title={t('admin.sidebar.invoices')} icon={FileText}>
+                <div className="mb-5 grid grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-navy-100 bg-gradient-to-r from-white to-sand-50/40 px-4 py-3 text-sm">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-navy-400">{t('adminNew.boats.stats.revenue', { defaultValue: 'Totale omzet' })}</div>
+                    <div className="mt-1 text-lg font-semibold text-navy-900">{formatCurrency(Number(stats.revenue_cents ?? 0) / 100, dateLocale)}</div>
+                  </div>
+                  <div className="rounded-xl border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white px-4 py-3 text-sm">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-emerald-600">{t('adminNew.boats.stats.paid', { defaultValue: 'Betaald' })}</div>
+                    <div className="mt-1 text-lg font-semibold text-emerald-700">{formatCurrency(Number(stats.paid_cents ?? 0) / 100, dateLocale)}</div>
+                  </div>
+                  <div className="rounded-xl border border-rose-100 bg-gradient-to-r from-rose-50 to-white px-4 py-3 text-sm">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-rose-600">{t('adminNew.boats.stats.openBalance', { defaultValue: 'Open saldo' })}</div>
+                    <div className="mt-1 text-lg font-semibold text-rose-700">{formatCurrency(Number(stats.open_balance_cents ?? 0) / 100, dateLocale)}</div>
+                  </div>
+                </div>
                 <div className="space-y-2">
                   {invoices.length === 0 ? (
                     <p className="text-sm text-navy-500">{t('adminNew.invoices.emptyMessage')}</p>
@@ -672,6 +807,52 @@ export default function BoatDossierPage() {
           </AdminModalFooter>
         </form>
       </Modal>
+
+      <AdminConfirmModal
+        open={!!photoDeleteTarget}
+        onClose={() => setPhotoDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!photoDeleteTarget) return;
+          try {
+            await deletePhotoM.mutate(photoDeleteTarget);
+            await dossier.refetch();
+            push({ tone: 'success', title: t('adminNew.boats.toasts.photoDeleted', { defaultValue: 'Foto verwijderd' }) });
+          } catch (err) {
+            push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+          }
+          setPhotoDeleteTarget(null);
+        }}
+        title={t('adminNew.common.delete')}
+        message={t('adminNew.boats.confirmDeletePhoto', { defaultValue: 'Foto definitief verwijderen?' })}
+        confirmLabel={t('adminNew.common.delete')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={Trash2}
+        loading={deletePhotoM.loading}
+      />
+
+      <AdminConfirmModal
+        open={!!docDeleteTarget}
+        onClose={() => setDocDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!docDeleteTarget) return;
+          try {
+            await deleteDocM.mutate(docDeleteTarget);
+            await dossier.refetch();
+            push({ tone: 'success', title: t('adminNew.boats.toasts.docDeleted', { defaultValue: 'Document verwijderd' }) });
+          } catch (err) {
+            push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+          }
+          setDocDeleteTarget(null);
+        }}
+        title={t('adminNew.common.delete')}
+        message={t('adminNew.boats.confirmDeleteDoc', { defaultValue: 'Document definitief verwijderen?' })}
+        confirmLabel={t('adminNew.common.delete')}
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={Trash2}
+        loading={deleteDocM.loading}
+      />
 
       <Modal open={showTransfer} onClose={() => setShowTransfer(false)} size="md">
         <form onSubmit={onTransfer}>
