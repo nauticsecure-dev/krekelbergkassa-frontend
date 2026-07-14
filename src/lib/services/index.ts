@@ -1506,6 +1506,29 @@ export const portalService = {
   },
 };
 
+export const tasksService = {
+  async list(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/admin/tasks', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  get(id: string) {
+    return api<Record<string, unknown>>(`/v1/admin/tasks/${id}`);
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/admin/tasks/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  complete(id: string) {
+    return api<Record<string, unknown>>(`/v1/admin/tasks/${id}/complete`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+};
+
 export const appointmentsService = {
   async list(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/appointments', { query });

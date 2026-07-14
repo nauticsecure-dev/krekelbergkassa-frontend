@@ -5,6 +5,8 @@ import {
   AlarmClock,
   BellRing,
   CheckCircle2,
+  Calendar,
+  Pencil,
   Plus,
   PlayCircle,
   Send,
@@ -32,7 +34,7 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { Trash2 } from 'lucide-react';
-import { adminService } from '@/lib/services';
+import { adminService, appointmentsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -88,6 +90,7 @@ export default function RemindersPage() {
 
   const [showRule, setShowRule] = React.useState(false);
   const [rule, setRule] = React.useState(emptyRule);
+  const [editingRuleId, setEditingRuleId] = React.useState<string | null>(null);
   const [statusFilter, setStatusFilter] = React.useState('');
 
   // Test-send modal state (Trello #90).
@@ -109,7 +112,12 @@ export default function RemindersPage() {
     return label && !label.startsWith('adminNew.') ? label : humanize(raw);
   };
 
+  const today = new Date().toISOString().slice(0, 10);
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
   const summary = useQuery(['reminders-summary'], () => adminService.remindersSummary());
+  const todayAppointments = useQuery(['reminders-appointments-today'], () =>
+    appointmentsService.list({ date_from: today, date_to: tomorrow, per_page: 1 }).catch(() => ({ meta: { total: 0 } }))
+  );
   const reminders = useQuery(['reminders-list', statusFilter], () =>
     adminService.reminders({ per_page: 50, status: statusFilter || undefined })
   );
@@ -123,6 +131,9 @@ export default function RemindersPage() {
   const dismissR = useMutation((id: string) => adminService.dismissReminder(id));
   const createRule = useMutation((payload: Record<string, unknown>) =>
     adminService.createReminderRule(payload)
+  );
+  const updateRule = useMutation((args: { id: string; payload: Record<string, unknown> }) =>
+    adminService.updateReminderRule(args.id, args.payload)
   );
   const deleteRule = useMutation((id: string) => adminService.deleteReminderRule(id));
   const previewRule = useMutation((id: string) => adminService.previewReminderRule(id));
@@ -147,29 +158,60 @@ export default function RemindersPage() {
   };
 
   // days_before fires for due/expiry triggers, days_after for overdue/inactive triggers.
-  const usesDaysBefore = rule.trigger_type === 'due_before' || rule.trigger_type === 'expires_before';
+  const usesDaysBefore = rule.trigger_type === 'due_before' || rule.trigger_type === 'expiring_before';
+
+  const openEditRule = (rl: Record<string, unknown>) => {
+    setRule({
+      entity_type: String(rl.entity_type ?? 'invoice'),
+      trigger_type: String(rl.trigger_type ?? 'overdue_after'),
+      reminder_type: String(rl.reminder_type ?? ''),
+      days_before: rl.days_before != null ? String(rl.days_before) : '7',
+      days_after: rl.days_after != null ? String(rl.days_after) : '14',
+      channel: String(rl.channel ?? 'manual'),
+      title_template: String(rl.title_template ?? ''),
+      body_template: String(rl.body_template ?? ''),
+      enabled: rl.enabled !== false,
+    });
+    setEditingRuleId(String(rl.id));
+    setShowRule(true);
+  };
+
+  const payload = {
+    entity_type: rule.entity_type,
+    trigger_type: rule.trigger_type,
+    reminder_type: rule.reminder_type || undefined,
+    days_before: usesDaysBefore && rule.days_before ? Number(rule.days_before) : undefined,
+    days_after: !usesDaysBefore && rule.days_after ? Number(rule.days_after) : undefined,
+    channel: rule.channel,
+    title_template: rule.title_template || undefined,
+    body_template: rule.body_template || undefined,
+    enabled: rule.enabled,
+  };
 
   const onCreateRule = async (e: React.FormEvent) => {
     e.preventDefault();
-    await action(
-      t('adminNew.reminders.toasts.ruleCreated'),
-      async () => {
-        await createRule.mutate({
-          entity_type: rule.entity_type,
-          trigger_type: rule.trigger_type,
-          reminder_type: rule.reminder_type || undefined,
-          days_before: usesDaysBefore && rule.days_before ? Number(rule.days_before) : undefined,
-          days_after: !usesDaysBefore && rule.days_after ? Number(rule.days_after) : undefined,
-          channel: rule.channel,
-          title_template: rule.title_template || undefined,
-          body_template: rule.body_template || undefined,
-          enabled: rule.enabled,
-        });
-        setShowRule(false);
-        setRule(emptyRule);
-      },
-      true
-    );
+    if (editingRuleId) {
+      await action(
+        t('adminNew.reminders.toasts.ruleUpdated', { defaultValue: 'Regel bijgewerkt' }),
+        async () => {
+          await updateRule.mutate({ id: editingRuleId, payload });
+          setShowRule(false);
+          setEditingRuleId(null);
+          setRule(emptyRule);
+        },
+        true
+      );
+    } else {
+      await action(
+        t('adminNew.reminders.toasts.ruleCreated'),
+        async () => {
+          await createRule.mutate(payload);
+          setShowRule(false);
+          setRule(emptyRule);
+        },
+        true
+      );
+    }
   };
 
   const onPreviewRule = async (id: string) => {
@@ -277,6 +319,30 @@ export default function RemindersPage() {
       />
 
       <AdminContent>
+        <AdminSectionCard
+          title={t('adminNew.reminders.briefingTitle', { defaultValue: 'Vandaag — overzicht' })}
+          icon={Calendar}
+          className="mb-5"
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {([
+              { label: t('adminNew.reminders.briefing.invoiceDue', { defaultValue: 'Facturen vervallen' }), value: (summary.data?.today as Record<string,unknown>)?.invoice_due ?? 0, tone: 'marine' },
+              { label: t('adminNew.reminders.briefing.invoicesOverdue', { defaultValue: 'Facturen achterstallig' }), value: (summary.data?.overdue as Record<string,unknown>)?.invoices ?? 0, tone: 'danger' },
+              { label: t('adminNew.reminders.briefing.contractsExpiring', { defaultValue: 'Contracten verlopen binnenkort' }), value: (summary.data?.upcoming as Record<string,unknown>)?.contracts_expiring ?? 0, tone: 'warning' },
+              { label: t('adminNew.reminders.briefing.insuranceExpiring', { defaultValue: 'Verzekering verloopt' }), value: (summary.data?.upcoming as Record<string,unknown>)?.insurance_expiring ?? 0, tone: 'warning' },
+              { label: t('adminNew.reminders.briefing.workOrdersOverdue', { defaultValue: 'Werkorders achterstallig' }), value: (summary.data?.overdue as Record<string,unknown>)?.work_orders ?? 0, tone: 'danger' },
+              { label: t('adminNew.reminders.briefing.appointmentsToday', { defaultValue: 'Afspraken vandaag' }), value: (todayAppointments.data?.meta as Record<string,unknown>)?.total ?? 0, tone: 'navy' },
+            ] as Array<{ label: string; value: unknown; tone: string }>).map((item) => (
+              <div key={item.label} className="rounded-xl border border-navy-100 bg-gradient-to-r from-white to-sand-50/40 px-3 py-2.5 text-sm">
+                <div className="text-xs font-semibold uppercase tracking-wider text-navy-400">{item.label}</div>
+                <div className={`mt-1 text-2xl font-bold ${Number(item.value) > 0 && (item.tone === 'danger' || item.tone === 'warning') ? 'text-rose-600' : 'text-navy-900'}`}>
+                  {String(item.value ?? 0)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </AdminSectionCard>
+
         <AdminSectionCard
           title={t('adminNew.reminders.listTitle')}
           description={t('adminNew.reminders.listSubtitle')}
@@ -419,6 +485,14 @@ export default function RemindersPage() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      leftIcon={<Pencil className="h-3.5 w-3.5" />}
+                      onClick={() => openEditRule(rl)}
+                    >
+                      {t('adminNew.common.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       disabled={previewRule.loading}
                       onClick={() => void onPreviewRule(String(rl.id))}
                     >
@@ -451,10 +525,10 @@ export default function RemindersPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showRule} onClose={() => setShowRule(false)} size="md">
+      <Modal open={showRule} onClose={() => { setShowRule(false); setEditingRuleId(null); setRule(emptyRule); }} size="md">
         <form onSubmit={onCreateRule}>
           <AdminModalHeader
-            title={t('adminNew.reminders.newRule')}
+            title={editingRuleId ? t('adminNew.reminders.editRule', { defaultValue: 'Regel bewerken' }) : t('adminNew.reminders.newRule')}
             subtitle={t('adminNew.reminders.ruleSubtitle')}
           />
           <AdminModalBody>
@@ -486,7 +560,7 @@ export default function RemindersPage() {
                 >
                   <option value="overdue_after">{t('adminNew.reminders.triggers.overdueAfter')}</option>
                   <option value="due_before">{t('adminNew.reminders.triggers.dueBefore')}</option>
-                  <option value="expires_before">{t('adminNew.reminders.triggers.expiresBefore')}</option>
+                  <option value="expiring_before">{t('adminNew.reminders.triggers.expiresBefore')}</option>
                   <option value="inactive_after">{t('adminNew.reminders.triggers.inactiveAfter')}</option>
                 </select>
               </div>
@@ -513,7 +587,6 @@ export default function RemindersPage() {
                   <option value="email">{t('adminNew.reminders.channels.email')}</option>
                   <option value="portal">{t('adminNew.reminders.channels.portal')}</option>
                   <option value="whatsapp">{t('adminNew.reminders.channels.whatsapp')}</option>
-                  <option value="push">{t('adminNew.reminders.channels.push')}</option>
                 </select>
               </div>
             </div>
@@ -565,7 +638,7 @@ export default function RemindersPage() {
             <Button type="button" variant="ghost" onClick={() => setShowRule(false)}>
               {t('adminNew.common.cancel')}
             </Button>
-            <Button type="submit" variant="gold" disabled={createRule.loading}>
+            <Button type="submit" variant="gold" disabled={createRule.loading || updateRule.loading}>
               {t('adminNew.common.save')}
             </Button>
           </AdminModalFooter>
