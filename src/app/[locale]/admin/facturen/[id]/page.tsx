@@ -42,6 +42,9 @@ export default function InvoiceDetailPage() {
   const [creditMode, setCreditMode] = React.useState<'full' | 'partial'>('full');
   const [creditAmount, setCreditAmount] = React.useState('');
   const [creditReason, setCreditReason] = React.useState('');
+  const [sendEmailCredit, setSendEmailCredit] = React.useState(true);
+  const [creditResult, setCreditResult] = React.useState<{ id: string; invoice_number?: string; pdf_url?: string | null } | null>(null);
+  const [pdfGenerating, setPdfGenerating] = React.useState(false);
   const [confirmSend, setConfirmSend] = React.useState(false);
   const [confirmMarkPaid, setConfirmMarkPaid] = React.useState(false);
   const [reminderSubject, setReminderSubject] = React.useState(
@@ -79,7 +82,7 @@ export default function InvoiceDetailPage() {
     })
   );
   const creditInvoice = useMutation(
-    (payload: { mode: 'full' | 'partial'; amount_cents?: number; reason: string }) =>
+    (payload: { mode: 'full' | 'partial'; amount_cents?: number; reason: string; send_email?: boolean }) =>
       invoicesService.credit(invoiceId, payload)
   );
   const emailInvoice = useMutation(() =>
@@ -95,6 +98,16 @@ export default function InvoiceDetailPage() {
     })
   );
   const generatePdf = useMutation(() => invoicesService.generatePdf(invoiceId, true));
+
+  const pdfUrl = data.data?.invoice?.pdf_url ?? null;
+  React.useEffect(() => {
+    if (!pdfGenerating || pdfUrl) {
+      if (pdfUrl) setPdfGenerating(false);
+      return;
+    }
+    const timer = setInterval(() => void data.refetch(), 2000);
+    return () => clearInterval(timer);
+  }, [pdfGenerating, pdfUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refetch = async () => {
     await data.refetch();
@@ -132,10 +145,15 @@ export default function InvoiceDetailPage() {
         mode: creditMode,
         amount_cents,
         reason: creditReason.trim(),
+        send_email: sendEmailCredit,
       });
       setShowCredit(false);
       if (creditNote?.id) {
-        window.location.href = `/${locale}/admin/facturen/${creditNote.id}`;
+        setCreditResult({
+          id: creditNote.id,
+          invoice_number: (creditNote as unknown as Record<string, unknown>).invoice_number as string | undefined,
+          pdf_url: creditNote.pdf_url,
+        });
       }
     });
   };
@@ -295,6 +313,67 @@ export default function InvoiceDetailPage() {
               );
             })()}
 
+            {creditResult ? (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                <p className="mb-3 text-sm font-semibold text-emerald-800">
+                  {t('adminNew.invoiceDetail.creditSuccess')}
+                  {creditResult.invoice_number ? ` — ${creditResult.invoice_number}` : ''}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/${locale}/admin/facturen/${creditResult.id}`}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 text-sm font-medium text-navy-800 transition hover:bg-navy-50"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {t('adminNew.invoiceDetail.actions.openCreditNote')}
+                  </Link>
+                  {creditResult.pdf_url ? (
+                    <>
+                      <a
+                        href={creditResult.pdf_url}
+                        download
+                        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 text-sm font-medium text-navy-800 transition hover:bg-navy-50"
+                      >
+                        <Download className="h-4 w-4" />
+                        {t('adminNew.invoiceDetail.actions.downloadPdf')}
+                      </a>
+                      <button
+                        type="button"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 text-sm font-medium text-navy-800 transition hover:bg-navy-50"
+                        onClick={() => {
+                          const win = window.open(creditResult.pdf_url!, '_blank', 'noopener,noreferrer');
+                          if (win) win.addEventListener('load', () => win.print());
+                        }}
+                      >
+                        <Printer className="h-4 w-4" />
+                        {t('adminNew.invoiceDetail.actions.printPdf')}
+                      </button>
+                    </>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 text-sm font-medium text-navy-800 transition hover:bg-navy-50"
+                    onClick={() =>
+                      void action(
+                        t('adminNew.invoiceDetail.toasts.emailed'),
+                        () => invoicesService.email(creditResult.id, { locale: locale === 'en' ? 'en-GB' : 'nl-NL' })
+                      )
+                    }
+                  >
+                    <Mail className="h-4 w-4" />
+                    {t('adminNew.invoiceDetail.actions.emailPdf')}
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-navy-600 transition hover:bg-navy-50"
+                    onClick={() => setCreditResult(null)}
+                  >
+                    {t('adminNew.common.dismiss')}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
             <div className="bento-grid lg:grid-cols-3">
               <AdminSectionCard
                 className="lg:col-span-2"
@@ -424,8 +503,28 @@ export default function InvoiceDetailPage() {
                       <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-widest text-navy-400">
                         {t('adminNew.invoiceDetail.pdfActions')}
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {invoice.pdf_url ? (
+                      {pdfGenerating && !invoice.pdf_url ? (
+                        <div className="flex items-center justify-center gap-2 py-3 text-sm text-navy-500">
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          {t('adminNew.invoiceDetail.pdfGenerating')}
+                        </div>
+                      ) : !invoice.pdf_url ? (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          fullWidth
+                          leftIcon={<FileText className="h-4 w-4" />}
+                          onClick={() =>
+                            void action(t('adminNew.invoiceDetail.toasts.pdfRegenerated'), async () => {
+                              await generatePdf.mutate();
+                              setPdfGenerating(true);
+                            })
+                          }
+                        >
+                          {t('adminNew.invoiceDetail.actions.generatePdf')}
+                        </Button>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-2">
                           <a
                             href={invoice.pdf_url}
                             target="_blank"
@@ -435,44 +534,38 @@ export default function InvoiceDetailPage() {
                             <FileText className="h-4 w-4" />
                             {t('adminNew.invoiceDetail.actions.openPdf')}
                           </a>
-                        ) : (
-                          <span className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-navy-100 bg-sand-50/50 px-3 py-2 text-sm font-medium text-navy-300">
-                            <FileText className="h-4 w-4" />
-                            {t('adminNew.invoiceDetail.actions.openPdf')}
-                          </span>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          leftIcon={<Download className="h-4 w-4" />}
-                          onClick={() => void downloadPdf()}
-                        >
-                          {t('adminNew.invoiceDetail.actions.downloadPdf')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          leftIcon={<Printer className="h-4 w-4" />}
-                          disabled={!invoice.pdf_url}
-                          onClick={printPdf}
-                        >
-                          {t('adminNew.invoiceDetail.actions.printPdf')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          leftIcon={<Mail className="h-4 w-4" />}
-                          disabled={emailInvoice.loading}
-                          onClick={() =>
-                            void action(
-                              t('adminNew.invoiceDetail.toasts.emailed'),
-                              () => emailInvoice.mutate()
-                            )
-                          }
-                        >
-                          {t('adminNew.invoiceDetail.actions.emailPdf')}
-                        </Button>
-                      </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            leftIcon={<Download className="h-4 w-4" />}
+                            onClick={() => void downloadPdf()}
+                          >
+                            {t('adminNew.invoiceDetail.actions.downloadPdf')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            leftIcon={<Printer className="h-4 w-4" />}
+                            onClick={printPdf}
+                          >
+                            {t('adminNew.invoiceDetail.actions.printPdf')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            leftIcon={<Mail className="h-4 w-4" />}
+                            disabled={emailInvoice.loading}
+                            onClick={() =>
+                              void action(
+                                t('adminNew.invoiceDetail.toasts.emailed'),
+                                () => emailInvoice.mutate()
+                              )
+                            }
+                          >
+                            {t('adminNew.invoiceDetail.actions.emailPdf')}
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     <Button
                       variant="ghost"
@@ -482,7 +575,10 @@ export default function InvoiceDetailPage() {
                       onClick={() =>
                         void action(
                           t('adminNew.invoiceDetail.toasts.pdfRegenerated'),
-                          () => generatePdf.mutate()
+                          async () => {
+                            await generatePdf.mutate();
+                            setPdfGenerating(true);
+                          }
                         )
                       }
                     >
@@ -823,6 +919,17 @@ export default function InvoiceDetailPage() {
                 required
               />
             </div>
+            <label className="flex cursor-pointer items-center gap-3">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-navy-300 text-marine-600 focus:ring-marine-500"
+                checked={sendEmailCredit}
+                onChange={(e) => setSendEmailCredit(e.target.checked)}
+              />
+              <span className="text-sm text-navy-700">
+                {t('adminNew.invoiceDetail.creditModal.sendEmail')}
+              </span>
+            </label>
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowCredit(false)}>

@@ -263,6 +263,14 @@ export default function KassaPage() {
   const createCustomer = useMutation(customersService.create);
   const checkout = useMutation(kassaService.checkout);
   const quote = useMutation(kassaService.quote);
+  const refundSaleMutation = useMutation(
+    ({ id, reason }: { id: string; reason: string; method: string }) =>
+      kassaService.refund(id, { reason, amount: undefined })
+  );
+
+  const [refundSaleId, setRefundSaleId] = React.useState<string | null>(null);
+  const [refundReason, setRefundReason] = React.useState('');
+  const [refundMethod, setRefundMethod] = React.useState('pin');
 
   // Trello #80/#86: favourites, recently-used and bundles for fast checkout.
   const bundlesQuery = useQuery(["kassa-bundles"], () =>
@@ -1669,30 +1677,41 @@ export default function KassaPage() {
                     (sale.invoice_id
                       ? `/${locale}/admin/facturen/${sale.invoice_id}`
                       : undefined);
+                  const saleKey = sale.id ?? sale.invoice_id ?? String((sale as { sale_id?: string }).sale_id ?? i);
                   return (
-                    <li key={sale.id ?? sale.invoice_id ?? String((sale as { sale_id?: string }).sale_id ?? i)}>
-                      {href ? (
-                        <Link
-                          href={href}
-                          className="flex items-center justify-between py-2 text-sm hover:text-marine-700"
-                        >
-                          <span className="font-medium text-navy-800">
+                    <li key={saleKey} className="space-y-0.5">
+                      <div className="flex items-center justify-between py-1 text-sm">
+                        {href ? (
+                          <Link
+                            href={href}
+                            className="font-medium text-navy-800 hover:text-marine-700"
+                          >
                             {sale.invoice_number ?? sale.customer_name ?? "—"}
-                          </span>
-                          <span className="font-semibold tabular-nums text-navy-900">
-                            {formatCurrency(euros, localeTag)}
-                          </span>
-                        </Link>
-                      ) : (
-                        <div className="flex items-center justify-between py-2 text-sm">
+                          </Link>
+                        ) : (
                           <span className="font-medium text-navy-800">
                             {sale.invoice_number ?? "—"}
                           </span>
+                        )}
+                        <div className="flex items-center gap-2">
                           <span className="font-semibold tabular-nums text-navy-900">
                             {formatCurrency(euros, localeTag)}
                           </span>
+                          {sale.id ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRefundSaleId(sale.id);
+                                setRefundReason('');
+                                setRefundMethod('pin');
+                              }}
+                              className="rounded px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                            >
+                              {t("adminNew.kassa.refund")}
+                            </button>
+                          ) : null}
                         </div>
-                      )}
+                      </div>
                     </li>
                   );
                 })}
@@ -2639,6 +2658,77 @@ export default function KassaPage() {
         icon={CreditCard}
         loading={checkout.loading}
       />
+
+      <Modal open={!!refundSaleId} onClose={() => setRefundSaleId(null)} size="sm">
+        <form
+          className="p-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!refundSaleId) return;
+            void (async () => {
+              try {
+                await refundSaleMutation.mutate({ id: refundSaleId, reason: refundReason, method: refundMethod });
+                push({ tone: 'success', title: t('adminNew.kassa.refundSuccess') });
+                setRefundSaleId(null);
+                void recentSales.refetch();
+              } catch (err) {
+                push({ tone: 'error', title: getApiErrorMessage(err) ?? t('adminNew.common.operationFailed') });
+              }
+            })();
+          }}
+        >
+          <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.kassa.refundTitle')}</h2>
+          <p className="mt-1 text-sm text-navy-500">{t('adminNew.kassa.refundSubtitle')}</p>
+          <div className="mt-4 space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.kassa.refundMethod')}
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['pin', 'cash', 'banktransfer'] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setRefundMethod(m)}
+                    className={
+                      'rounded-lg border px-3 py-2 text-sm font-medium transition ' +
+                      (refundMethod === m
+                        ? 'border-marine-500 bg-marine-50 text-marine-800'
+                        : 'border-navy-200 bg-white text-navy-700 hover:bg-sand-50')
+                    }
+                  >
+                    {t(`adminNew.invoiceDetail.paymentMethods.${m}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">
+                {t('adminNew.kassa.refundReason')}
+              </label>
+              <textarea
+                className="input-base min-h-24"
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+                placeholder={t('adminNew.kassa.refundReasonPlaceholder')}
+                required
+              />
+            </div>
+          </div>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setRefundSaleId(null)}>
+              {t('adminNew.common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={refundSaleMutation.loading || !refundReason.trim()}
+            >
+              {t('adminNew.kassa.refundConfirm')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </>
   );
 }

@@ -254,15 +254,26 @@ function InvoicesPage() {
               ].map((pill) => (
                 <AdminFilterPill
                   key={pill.value || 'all'}
-                  active={paymentStatus === pill.value}
+                  active={paymentStatus === pill.value && paymentMethod !== 'on_account'}
                   onClick={() => {
                     setPaymentStatus(pill.value);
+                    setPaymentMethod('');
                     setPage(1);
                   }}
                 >
                   {pill.label}
                 </AdminFilterPill>
               ))}
+              <AdminFilterPill
+                active={paymentMethod === 'on_account'}
+                onClick={() => {
+                  setPaymentMethod(paymentMethod === 'on_account' ? '' : 'on_account');
+                  setPaymentStatus('');
+                  setPage(1);
+                }}
+              >
+                {t('adminNew.invoices.onAccount')}
+              </AdminFilterPill>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">

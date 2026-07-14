@@ -487,7 +487,7 @@ export const invoicesService = {
   },
   credit(
     id: string,
-    payload?: { mode?: 'full' | 'partial'; amount_cents?: number; reason?: string }
+    payload?: { mode?: 'full' | 'partial'; amount_cents?: number; reason?: string; send_email?: boolean }
   ) {
     return api<Invoice>(`/v1/invoices/${id}/credit`, {
       method: 'POST',
