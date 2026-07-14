@@ -531,13 +531,15 @@ export interface PortalTimelineItem {
   message?: string;
   priority?: string;
   status?: string;
+  category?: string | null;
   related_type?: string | null;
   related_id?: string | null;
   read_at?: string | null;
   created_at?: string;
-  // Trello #89: call-to-action deep link on action-required items.
   cta_url?: string | null;
   cta_label?: string | null;
+  boat?: { id: string; name: string } | null;
+  comments?: Array<{ id: string; actor_type: string; message: string; customer?: { id: string; name: string } | null; created_at?: string }>;
 }
 
 export interface PortalTimelinePagination {
