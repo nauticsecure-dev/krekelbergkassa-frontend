@@ -827,6 +827,13 @@ export const pricingService = {
       queueWhenOffline: true,
     });
   },
+  patchCalculatorRecord(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/pricing/calculator-records/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
   // Trello #68: bulk row actions on the calculator records list.
   bulkCalculatorRecords(payload: { ids: string[]; action: 'archive' | 'duplicate' }) {
     return api<Record<string, unknown>>('/v1/pricing/calculator-records/bulk', {

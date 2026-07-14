@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Archive, Calculator, Copy, Download, FilePlus2, Pencil, Receipt, Settings, UserPlus, X } from 'lucide-react';
+import { Archive, Calculator, ChevronDown, ChevronUp, ChevronsUpDown, Copy, Download, FilePlus2, Pencil, Receipt, Settings, UserPlus, X } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { AdminContent, AdminSectionCard, AdminTable, AdminTableCard, AdminTableCell, AdminTableHead, AdminTableHeaderCell, AdminTableRow } from '@/components/admin/AdminUi';
+import { AdminContent, AdminSectionCard, AdminTable, AdminTableCard, AdminTableCell, AdminTableFooter, AdminTableHead, AdminTableHeaderCell, AdminTableRow } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { customersService, invoicesService, pricingService } from '@/lib/services';
+import { customersService, invoicesService, pricingService, usersService } from '@/lib/services';
 import { formatCurrency } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -47,6 +47,10 @@ export default function CalculatorPage() {
   const [recTotalMin, setRecTotalMin] = React.useState(''); // euros
   const [recTotalMax, setRecTotalMax] = React.useState(''); // euros
   const [archiveTarget, setArchiveTarget] = React.useState<string | null>(null);
+  const [recPage, setRecPage] = React.useState(1);
+  const [recSort, setRecSort] = React.useState('');
+  const [recSortDir, setRecSortDir] = React.useState<'asc' | 'desc'>('desc');
+  const [recCreatedBy, setRecCreatedBy] = React.useState('');
 
   // Trello #68: bulk selection + export
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
@@ -55,6 +59,9 @@ export default function CalculatorPage() {
 
   const customers = useQuery(['calculator-customers'], () =>
     customersService.list({ per_page: 100 })
+  );
+  const adminUsers = useQuery(['calculator-admin-users'], () =>
+    usersService.list({ per_page: 200 })
   );
   // Trello #68: shared filter query — drives both the list fetch and CSV export.
   const recordsQuery = React.useMemo(() => {
@@ -75,6 +82,9 @@ export default function CalculatorPage() {
       updated_to: recUpdatedTo || undefined,
       total_min: toCents(recTotalMin),
       total_max: toCents(recTotalMax),
+      created_by_user_id: recCreatedBy || undefined,
+      sort_by: recSort || undefined,
+      sort_dir: recSort ? recSortDir : undefined,
     } as Record<string, string | number | boolean | undefined>;
   }, [
     recSearch,
@@ -89,6 +99,9 @@ export default function CalculatorPage() {
     recUpdatedTo,
     recTotalMin,
     recTotalMax,
+    recCreatedBy,
+    recSort,
+    recSortDir,
   ]);
 
   const records = useQuery(
@@ -106,8 +119,12 @@ export default function CalculatorPage() {
       recUpdatedTo,
       recTotalMin,
       recTotalMax,
+      recCreatedBy,
+      recSort,
+      recSortDir,
+      recPage,
     ],
-    () => pricingService.calculatorRecords({ per_page: 50, ...recordsQuery })
+    () => pricingService.calculatorRecords({ per_page: 50, page: recPage, ...recordsQuery })
   );
   const calculate = useMutation(pricingService.calculate);
   const preview = useMutation(pricingService.preview);
@@ -123,6 +140,15 @@ export default function CalculatorPage() {
   const bulkRecords = useMutation((args: { ids: string[]; action: 'archive' | 'duplicate' }) =>
     pricingService.bulkCalculatorRecords(args)
   );
+  const patchRecord = useMutation((args: { id: string; payload: Record<string, unknown> }) =>
+    pricingService.patchCalculatorRecord(args.id, args.payload)
+  );
+
+  // Reset to page 1 whenever filters or sort change.
+  React.useEffect(() => {
+    setRecPage(1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recSearch, recStatus, recService, recCustomer, recHasQuote, recHasInvoice, recFrom, recTo, recUpdatedFrom, recUpdatedTo, recTotalMin, recTotalMax, recCreatedBy, recSort, recSortDir]);
 
   const loadRecord = async (id: string) => {
     try {
@@ -177,6 +203,11 @@ export default function CalculatorPage() {
         calculator_record_id: id,
         calculator_mode: mode,
       });
+      // Update the record's status to reflect the created document.
+      await patchRecord.mutate({
+        id,
+        payload: { status: mode === 'invoice' ? 'converted_to_invoice' : 'converted_to_quote' },
+      }).catch(() => undefined);
       push({ tone: 'success', title: t('adminNew.calculator.records.created') });
       window.location.href = `/${locale}/admin/facturen/${invoice.id}`;
     } catch (err) {
@@ -302,6 +333,42 @@ export default function CalculatorPage() {
     }
   };
 
+  const statusTone = (status: string) => {
+    switch (status) {
+      case 'draft': return 'warning' as const;
+      case 'saved': return 'marine' as const;
+      case 'paid': return 'success' as const;
+      case 'converted_to_quote': return 'navy' as const;
+      case 'converted_to_invoice': return 'gold' as const;
+      case 'cancelled': return 'danger' as const;
+      case 'archived': return 'sand' as const;
+      default: return 'neutral' as const;
+    }
+  };
+
+  const toggleSort = (col: string) => {
+    if (recSort === col) {
+      setRecSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setRecSort(col);
+      setRecSortDir('desc');
+    }
+  };
+
+  const sortIcon = (col: string) => {
+    if (recSort !== col) return <ChevronsUpDown className="inline h-3.5 w-3.5 opacity-40" />;
+    return recSortDir === 'asc'
+      ? <ChevronUp className="inline h-3.5 w-3.5 text-marine-700" />
+      : <ChevronDown className="inline h-3.5 w-3.5 text-marine-700" />;
+  };
+
+  const dynamicServiceTypes = React.useMemo(() => {
+    const fromRecords = (records.data?.data ?? [])
+      .map((r) => String(r.service_type ?? ''))
+      .filter(Boolean);
+    return [...new Set([...SERVICE_IDS, ...fromRecords])].sort();
+  }, [records.data?.data]);
+
   const resolveTotal = React.useMemo(() => {
     if (!result) return 0;
     return calculatorResultTotalEuros(result);
@@ -398,11 +465,6 @@ export default function CalculatorPage() {
             <Link href={`/${locale}/admin/calculator/pricing`}>
               <Button variant="outline" size="sm" leftIcon={<Settings className="h-4 w-4" />}>
                 {t('adminNew.calculator.editPricing')}
-              </Button>
-            </Link>
-            <Link href={`/${locale}/admin/calculator/history`}>
-              <Button variant="outline" size="sm">
-                {t('adminNew.calculator.history.title')}
               </Button>
             </Link>
           </div>
@@ -624,9 +686,19 @@ export default function CalculatorPage() {
             </select>
             <select className="input-base" value={recService} onChange={(e) => setRecService(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allServices')}</option>
-              {SERVICE_IDS.map((s) => (
+              {dynamicServiceTypes.map((s) => (
                 <option key={s} value={s}>
-                  {t(`adminNew.calculator.servicesMap.${s}`)}
+                  {SERVICE_IDS.includes(s)
+                    ? t(`adminNew.calculator.servicesMap.${s}`)
+                    : s}
+                </option>
+              ))}
+            </select>
+            <select className="input-base" value={recCreatedBy} onChange={(e) => setRecCreatedBy(e.target.value)}>
+              <option value="">{t('adminNew.calculator.records.allUsers', { defaultValue: 'Alle gebruikers' })}</option>
+              {(adminUsers.data?.data ?? []).map((u) => (
+                <option key={String(u.id)} value={String(u.id)}>
+                  {String(u.name ?? u.email ?? u.id)}
                 </option>
               ))}
             </select>
@@ -758,8 +830,16 @@ export default function CalculatorPage() {
           {(records.data?.data ?? []).length === 0 ? (
             <div className="text-sm text-navy-500">{t('adminNew.calculator.records.empty')}</div>
           ) : (
-            <AdminTableCard>
-              <AdminTable minWidth={1100}>
+            <AdminTableCard
+              footer={
+                <AdminTableFooter
+                  summary={`${t('adminNew.calculator.records.title')} (${records.data?.meta?.total ?? rows.length})`}
+                  meta={records.data?.meta}
+                  onPageChange={setRecPage}
+                />
+              }
+            >
+              <AdminTable minWidth={1300}>
                 <AdminTableHead>
                   <tr>
                     <AdminTableHeaderCell className="w-10">
@@ -771,14 +851,35 @@ export default function CalculatorPage() {
                         onChange={toggleSelectAll}
                       />
                     </AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.calculator.records.number')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.calculator.records.date')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>
+                      <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('number')}>
+                        {t('adminNew.calculator.records.number')} {sortIcon('number')}
+                      </button>
+                    </AdminTableHeaderCell>
+                    <AdminTableHeaderCell>
+                      <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('created_at')}>
+                        {t('adminNew.calculator.records.date')} {sortIcon('created_at')}
+                      </button>
+                    </AdminTableHeaderCell>
+                    <AdminTableHeaderCell>
+                      <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('updated_at')}>
+                        {t('adminNew.calculator.records.updatedAt', { defaultValue: 'Bijgewerkt' })} {sortIcon('updated_at')}
+                      </button>
+                    </AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.calculator.records.customer')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.calculator.records.service')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.calculator.records.status')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>
+                      <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('status')}>
+                        {t('adminNew.calculator.records.status')} {sortIcon('status')}
+                      </button>
+                    </AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.calculator.records.documents')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.calculator.records.createdBy')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.calculator.records.total')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>
+                      <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('total_amount')}>
+                        {t('adminNew.calculator.records.total')} {sortIcon('total_amount')}
+                      </button>
+                    </AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -809,7 +910,10 @@ export default function CalculatorPage() {
                           {String(rec.calculator_number ?? rec.number ?? rec.id)}
                         </AdminTableCell>
                         <AdminTableCell className="whitespace-nowrap">
-                          {String(rec.created_date ?? (rec.created_at ? new Date(String(rec.created_at)).toLocaleDateString() : '—'))}
+                          {String(rec.created_date ?? (rec.created_at ? new Date(String(rec.created_at)).toLocaleDateString(locale === 'en' ? 'en-GB' : 'nl-NL') : '—'))}
+                        </AdminTableCell>
+                        <AdminTableCell className="whitespace-nowrap text-sm text-navy-600">
+                          {rec.updated_at ? new Date(String(rec.updated_at)).toLocaleDateString(locale === 'en' ? 'en-GB' : 'nl-NL') : '—'}
                         </AdminTableCell>
                         <AdminTableCell>
                           <div>{String(rec.customer_name ?? '—')}</div>
@@ -819,7 +923,7 @@ export default function CalculatorPage() {
                         </AdminTableCell>
                         <AdminTableCell className="capitalize">{String(rec.service_type ?? '—')}</AdminTableCell>
                         <AdminTableCell>
-                          <Badge tone={String(rec.status) === 'archived' ? 'sand' : 'marine'}>
+                          <Badge tone={statusTone(String(rec.status ?? 'saved'))}>
                             {String(rec.status ?? 'saved')}
                           </Badge>
                         </AdminTableCell>
@@ -844,8 +948,8 @@ export default function CalculatorPage() {
                         </AdminTableCell>
                         <AdminTableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex flex-wrap justify-end gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => void loadRecord(id)}>
-                              {t('adminNew.calculator.records.open')}
+                            <Button variant="ghost" size="sm" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void loadRecord(id)}>
+                              {t('adminNew.calculator.records.edit', { defaultValue: 'Bewerken' })}
                             </Button>
                             {actions.create_quote !== false && !rec.has_quote ? (
                               <Button
