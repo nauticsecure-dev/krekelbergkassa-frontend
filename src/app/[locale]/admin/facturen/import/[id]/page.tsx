@@ -366,7 +366,7 @@ export default function InvoiceImportReviewPage() {
                       if (!name) return;
                       try {
                         const created = await createCustomerM.mutate({ name });
-                        await invoiceImportsService.approve(id, { customer_id: String((created as Rec).id ?? '') }).catch(() => undefined);
+                        await invoiceImportsService.approve(id, { customer_id: String((created as unknown as Rec).id ?? '') }).catch(() => undefined);
                         push({ tone: 'success', title: t('adminNew.invoiceImports.reviewScreen.customerCreated', { defaultValue: 'Klant aangemaakt' }) });
                         await imp.refetch();
                       } catch (err) {
