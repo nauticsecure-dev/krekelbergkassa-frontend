@@ -2552,6 +2552,170 @@ export const serviceCatalogService = {
   },
 };
 
+// ── Dynamic Form Builder ─────────────────────────────────────────────────────
+
+export interface FormTemplate {
+  id: string;
+  name_json: Record<string, string>;
+  description_json?: Record<string, string> | null;
+  category: string;
+  version: number;
+  status: 'draft' | 'active' | 'archived';
+  offline_enabled: boolean;
+  i18n_enabled: boolean;
+  allowed_roles_json?: string[] | null;
+  questions_count?: number | null;
+  responses_count?: number | null;
+  questions?: FormQuestion[];
+  logic_rules?: FormLogicRule[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface FormQuestion {
+  id: string;
+  form_template_id: string;
+  question_key: string;
+  type: string;
+  label_json: Record<string, string>;
+  help_text_json?: Record<string, string> | null;
+  placeholder_json?: Record<string, string> | null;
+  sort_order: number;
+  required: boolean;
+  validation_json?: Record<string, unknown> | null;
+  options_json?: Array<{ value: string; label_json: Record<string, string> }> | null;
+  visible_by_default: boolean;
+  unit?: string | null;
+}
+
+export interface FormLogicRule {
+  id: string;
+  source_question_id?: string | null;
+  source_question_key?: string | null;
+  operator: string;
+  value_json?: unknown;
+  action: string;
+  target_question_id?: string | null;
+  target_question_key?: string | null;
+  make_required: boolean;
+  sort_order: number;
+}
+
+export interface FormResponse {
+  id: string;
+  form_template_id: string;
+  form_version: number;
+  template_name?: string | null;
+  customer_id?: string | null;
+  customer_name?: string | null;
+  boat_id?: string | null;
+  stalling_id?: string | null;
+  status: string;
+  sent_channel?: string | null;
+  sent_at?: string | null;
+  submitted_at?: string | null;
+  offline_created: boolean;
+  answers_count?: number | null;
+  answers?: FormAnswer[];
+  template?: FormTemplate | null;
+  created_at?: string;
+}
+
+export interface FormAnswer {
+  id: string;
+  question_id?: string | null;
+  question_key: string;
+  answer_value_json?: unknown;
+  answer_text?: string | null;
+  answered_at?: string | null;
+}
+
+async function asPaginatedForms<T>(res: unknown) {
+  const r = res as {
+    data: T[];
+    meta: { current_page: number; per_page: number; total: number; last_page: number; from: number | null; to: number | null };
+  };
+  // Ensure from/to always exist (backend may omit them on empty pages)
+  if (r.meta.from === undefined) r.meta.from = null;
+  if (r.meta.to === undefined) r.meta.to = null;
+  return r;
+}
+
+export const formsService = {
+  async list(query?: Record<string, string | number | undefined>) {
+    const res = await api<unknown>('/v1/forms', { query: query as Record<string, string> });
+    return asPaginatedForms<FormTemplate>(res);
+  },
+
+  get(id: string) {
+    return api<FormTemplate>(`/v1/forms/${id}`);
+  },
+
+  create(payload: Partial<FormTemplate>) {
+    return api<FormTemplate>('/v1/forms', { method: 'POST', body: payload });
+  },
+
+  update(id: string, payload: Partial<FormTemplate>) {
+    return api<FormTemplate>(`/v1/forms/${id}`, { method: 'PATCH', body: payload });
+  },
+
+  destroy(id: string) {
+    return api<{ deleted: boolean }>(`/v1/forms/${id}`, { method: 'DELETE' });
+  },
+
+  // Questions
+  addQuestion(templateId: string, payload: Partial<FormQuestion>) {
+    return api<FormQuestion>(`/v1/forms/${templateId}/questions`, { method: 'POST', body: payload });
+  },
+
+  updateQuestion(templateId: string, questionId: string, payload: Partial<FormQuestion>) {
+    return api<FormQuestion>(`/v1/forms/${templateId}/questions/${questionId}`, { method: 'PATCH', body: payload });
+  },
+
+  deleteQuestion(templateId: string, questionId: string) {
+    return api<{ deleted: boolean }>(`/v1/forms/${templateId}/questions/${questionId}`, { method: 'DELETE' });
+  },
+
+  reorderQuestions(templateId: string, order: string[]) {
+    return api<{ reordered: boolean }>(`/v1/forms/${templateId}/questions/reorder`, { method: 'PATCH', body: { order } });
+  },
+
+  // Responses
+  async responses(templateId: string, query?: Record<string, string | undefined>) {
+    const res = await api<unknown>(`/v1/forms/${templateId}/responses`, { query: query as Record<string, string> });
+    return asPaginatedForms<FormResponse>(res);
+  },
+
+  createResponse(templateId: string, payload: Record<string, unknown>) {
+    return api<FormResponse>(`/v1/forms/${templateId}/responses`, { method: 'POST', body: payload });
+  },
+
+  getResponse(responseId: string) {
+    return api<FormResponse>(`/v1/form-responses/${responseId}`);
+  },
+
+  updateResponse(responseId: string, payload: Record<string, unknown>) {
+    return api<FormResponse>(`/v1/form-responses/${responseId}`, { method: 'PATCH', body: payload });
+  },
+
+  submitResponse(responseId: string) {
+    return api<FormResponse>(`/v1/form-responses/${responseId}/submit`, { method: 'POST' });
+  },
+
+  // Stalling helpers
+  async stallingForms(stallingId: string) {
+    const res = await api<unknown>(`/v1/stalling/${stallingId}/forms`);
+    return (res as { data: FormResponse[] }).data;
+  },
+
+  sendToStalling(stallingId: string, templateId: string, payload?: Record<string, string>) {
+    return api<FormResponse>(`/v1/stalling/${stallingId}/forms/${templateId}/send`, {
+      method: 'POST',
+      body: payload ?? {},
+    });
+  },
+};
+
 export function unwrapData<T>(payload: unknown, key: string): T {
   return maybeResource<T>(payload, key);
 }
