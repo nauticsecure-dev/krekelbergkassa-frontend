@@ -1,9 +1,41 @@
 import { ServicePage } from '@/components/site/ServicePage';
+import { EditableText } from '@/components/cms/EditableText';
+import { EditableImage } from '@/components/cms/EditableImage';
 import { tariffRanges } from '@/lib/pricing-table';
+
+const CMS_PAGE = 'diensten/afspuiten';
 
 export default function AfspuitenPage() {
   return (
     <ServicePage
+      cmsPage={CMS_PAGE}
+      editableTitle={
+        <EditableText
+          blockKey="diensten.afspuiten.hero.title"
+          page={CMS_PAGE}
+          section="hero"
+        >
+          Romp professioneel afspuiten
+        </EditableText>
+      }
+      editableDescription={
+        <EditableText
+          blockKey="diensten.afspuiten.hero.subtitle"
+          page={CMS_PAGE}
+          section="hero"
+          type="long_text"
+        >
+          Direct na het kranen reinigen wij uw romp met hogedruk. Een propere romp betekent minder weerstand, langere antifouling-werking en een betere staat van uw schip.
+        </EditableText>
+      }
+      editableHeroImage={
+        <EditableImage
+          blockKey="diensten.afspuiten.hero.image"
+          page={CMS_PAGE}
+          fallbackSrc="/img/krek/boot-kranen.webp"
+          alt="Romp afspuiten bij Krekelberg Nautic"
+        />
+      }
       adminProductSlug="afspuiten"
       catalogSlug="afspuiten"
       priceFootnote="Prijzen per lengteklasse, inclusief BTW. De definitieve prijs volgt uit de exacte lengte van uw boot."

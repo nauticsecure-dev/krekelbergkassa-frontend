@@ -90,6 +90,12 @@ export function ProductForm({
             onChange={(e) => set({ name: e.target.value })}
             required
           />
+          <Input
+            label={t('adminNew.products.fields.slug', { defaultValue: 'Slug (service-pagina)' })}
+            value={form.slug}
+            onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+            placeholder="bijv. afspuiten"
+          />
           <div className="sm:col-span-2">
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
               {t('adminNew.products.fields.description')}

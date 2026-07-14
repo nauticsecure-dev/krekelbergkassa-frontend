@@ -230,7 +230,9 @@ export interface Product {
 export interface PricingRule {
   id: string;
   product_id: string;
+  product_name?: string | null;
   service_code: string | null;
+  price_type?: string | null;
   range_from_cm: number;
   range_to_cm: number;
   range_label: string;

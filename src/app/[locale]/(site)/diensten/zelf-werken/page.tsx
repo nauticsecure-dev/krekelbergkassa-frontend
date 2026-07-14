@@ -1,8 +1,40 @@
 import { ServicePage } from '@/components/site/ServicePage';
+import { EditableText } from '@/components/cms/EditableText';
+import { EditableImage } from '@/components/cms/EditableImage';
+
+const CMS_PAGE = 'diensten/zelf-werken';
 
 export default function ZelfWerkenPage() {
   return (
     <ServicePage
+      cmsPage={CMS_PAGE}
+      editableTitle={
+        <EditableText
+          blockKey="diensten.zelf-werken.hero.title"
+          page={CMS_PAGE}
+          section="hero"
+        >
+          Werk zelf op de werf
+        </EditableText>
+      }
+      editableDescription={
+        <EditableText
+          blockKey="diensten.zelf-werken.hero.subtitle"
+          page={CMS_PAGE}
+          section="hero"
+          type="long_text"
+        >
+          Combineer onze faciliteiten met uw eigen vakmanschap. Onze werf is uitgerust voor zelf-doe schippers met werkruimtes, gereedschap en advies.
+        </EditableText>
+      }
+      editableHeroImage={
+        <EditableImage
+          blockKey="diensten.zelf-werken.hero.image"
+          page={CMS_PAGE}
+          fallbackSrc="/img/krek/werf-hero.webp"
+          alt="Zelf werken op de werf bij Krekelberg Nautic"
+        />
+      }
       adminProductSlug="zelf-werken"
       catalogSlug="zelf-werken"
       badge="Zelf werken aan uw boot"
@@ -18,14 +50,6 @@ export default function ZelfWerkenPage() {
         { title: 'Externe monteurs welkom', desc: 'Met geldige WA-verzekering en VCA.' },
         { title: 'Materiaal-shop', desc: 'Schroeven, verf, lijmen en olie ter plekke.' },
         { title: 'Toiletten & koffie', desc: 'Voorzieningen voor lange werkdagen.' },
-      ]}
-      priceRanges={[
-        { label: 'Dagticket', price: '€ 15', note: 'Per persoon per dag' },
-        { label: 'Weekticket', price: '€ 60', note: '7 aaneengesloten dagen' },
-        { label: 'Maandticket', price: '€ 195', note: 'Voor uitgebreide refits' },
-        { label: 'Werkbank huur', price: '€ 25', note: 'Per dag, incl. licht' },
-        { label: 'Kraan op afspraak', price: '€ 95', note: 'Per beurt, max 20 min' },
-        { label: 'Externe monteur', price: '€ 35', note: 'Aanmelddag, eenmalig' },
       ]}
       faqs={[
         { q: 'Welke werkzaamheden mag ik zelf uitvoeren?', a: 'Onderhoud, schilderen, polijsten en kleine reparaties. Voor laswerk en accu/gas-installaties geldt aanmelding vooraf.' },

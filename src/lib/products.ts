@@ -51,6 +51,7 @@ export function tagsToInput(tags?: string[] | null) {
 
 export interface ProductFormState {
   code: string;
+  slug: string;
   name: string;
   description: string;
   category: string;
@@ -80,6 +81,7 @@ export interface ProductFormState {
 
 export const EMPTY_PRODUCT_FORM: ProductFormState = {
   code: '',
+  slug: '',
   name: '',
   description: '',
   category: '',
@@ -123,6 +125,7 @@ export function productToForm(product: Product): ProductFormState {
   const stockMin = raw.stock_minimum;
   return {
     code: product.code,
+    slug: String(raw.slug ?? ''),
     name: product.name,
     description: product.description ?? '',
     category: product.category ?? '',
@@ -155,6 +158,7 @@ export function formToPayload(form: ProductFormState): Record<string, unknown> {
 
   return {
     code: form.code.trim(),
+    slug: form.slug.trim() || null,
     name: form.name.trim(),
     description: form.description.trim() || null,
     category: form.category.trim() || null,

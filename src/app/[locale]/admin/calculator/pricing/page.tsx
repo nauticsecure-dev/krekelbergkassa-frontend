@@ -38,6 +38,10 @@ export default function CalculatorPricingPage() {
     range_from_cm: '0',
     range_to_cm: '900',
     price_incl_vat: '',
+    vat_rate: '21',
+    channel: 'all',
+    price_type: 'fixed',
+    active: true,
   });
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
 
@@ -49,16 +53,18 @@ export default function CalculatorPricingPage() {
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const vatRate = Number(form.vat_rate) || 21;
       const price = Math.round(Number(form.price_incl_vat) * 100);
       await createRule.mutate({
         product_id: form.product_id,
         range_from_cm: Number(form.range_from_cm),
         range_to_cm: Number(form.range_to_cm),
-        price_excl_vat: Math.round(price / 1.21),
+        price_excl_vat: Math.round(price / (1 + vatRate / 100)),
         price_incl_vat: price,
-        price_type: 'fixed',
-        channel: 'all',
-        active: true,
+        vat_rate: vatRate,
+        price_type: form.price_type,
+        channel: form.channel,
+        active: form.active,
       });
       setShowCreate(false);
       await rules.refetch();
@@ -112,15 +118,28 @@ export default function CalculatorPricingPage() {
                     <AdminTableHeaderCell>Product</AdminTableHeaderCell>
                     <AdminTableHeaderCell>Range (cm)</AdminTableHeaderCell>
                     <AdminTableHeaderCell>Prijs incl. BTW</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>Type</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>Kanaal</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>Actief</AdminTableHeaderCell>
                     <AdminTableHeaderCell>&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
                 <tbody>
                   {rows.map((rule) => (
                     <AdminTableRow key={rule.id}>
-                      <AdminTableCell>{rule.service_code ?? rule.product_id}</AdminTableCell>
-                      <AdminTableCell>{rule.range_from_cm} – {rule.range_to_cm}</AdminTableCell>
+                      <AdminTableCell>
+                        <span className="text-sm font-medium text-navy-800">{rule.product_name ?? rule.service_code ?? rule.product_id}</span>
+                        {rule.service_code ? <span className="ml-1 text-xs text-navy-400">({rule.service_code})</span> : null}
+                      </AdminTableCell>
+                      <AdminTableCell className="tabular-nums">{rule.range_from_cm} – {rule.range_to_cm} cm</AdminTableCell>
                       <AdminTableCell>{formatCurrency(rule.price_incl_vat_euros, 'nl-NL')}</AdminTableCell>
+                      <AdminTableCell><span className="text-xs text-navy-500">{rule.price_type ?? '—'}</span></AdminTableCell>
+                      <AdminTableCell><span className="text-xs text-navy-500">{rule.channel ?? 'all'}</span></AdminTableCell>
+                      <AdminTableCell>
+                        <span className={`text-xs font-semibold ${rule.active ? 'text-emerald-600' : 'text-navy-300'}`}>
+                          {rule.active ? 'Ja' : 'Nee'}
+                        </span>
+                      </AdminTableCell>
                       <AdminTableCell className="text-right">
                         <button
                           type="button"
@@ -143,15 +162,50 @@ export default function CalculatorPricingPage() {
         <form onSubmit={onCreate}>
           <AdminModalHeader title={t('adminNew.calculator.pricing.newRule')} />
           <AdminModalBody>
-            <select className="input-base w-full" value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} required>
-              <option value="">{t('adminNew.calculator.pricing.selectProduct')}</option>
-              {(products.data?.data ?? []).map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-            <Input label="Van (cm)" value={form.range_from_cm} onChange={(e) => setForm({ ...form, range_from_cm: e.target.value })} type="number" />
-            <Input label="Tot (cm)" value={form.range_to_cm} onChange={(e) => setForm({ ...form, range_to_cm: e.target.value })} type="number" />
-            <Input label="Prijs incl. BTW (€)" value={form.price_incl_vat} onChange={(e) => setForm({ ...form, price_incl_vat: e.target.value })} type="number" step="0.01" required />
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Product *</label>
+                <select className="input-base w-full" value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} required>
+                  <option value="">{t('adminNew.calculator.pricing.selectProduct')}</option>
+                  {(products.data?.data ?? []).map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} {p.code ? `(${p.code})` : ''}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Van (cm)" value={form.range_from_cm} onChange={(e) => setForm({ ...form, range_from_cm: e.target.value })} type="number" />
+                <Input label="Tot (cm)" value={form.range_to_cm} onChange={(e) => setForm({ ...form, range_to_cm: e.target.value })} type="number" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Prijs incl. BTW (€)" value={form.price_incl_vat} onChange={(e) => setForm({ ...form, price_incl_vat: e.target.value })} type="number" step="0.01" required />
+                <Input label="BTW-tarief (%)" value={form.vat_rate} onChange={(e) => setForm({ ...form, vat_rate: e.target.value })} type="number" step="1" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Type</label>
+                  <select className="input-base w-full" value={form.price_type} onChange={(e) => setForm({ ...form, price_type: e.target.value })}>
+                    <option value="fixed">Vast bedrag</option>
+                    <option value="per_meter">Per meter</option>
+                    <option value="on_request">Op aanvraag</option>
+                    <option value="manual">Handmatig</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Kanaal</label>
+                  <select className="input-base w-full" value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })}>
+                    <option value="all">Alle kanalen</option>
+                    <option value="kassa">Kassa</option>
+                    <option value="public">Website</option>
+                    <option value="portal">Klantportaal</option>
+                    <option value="stalling">Stalling</option>
+                  </select>
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
+                Actief
+              </label>
+            </div>
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>

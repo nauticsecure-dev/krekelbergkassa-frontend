@@ -19,7 +19,7 @@ export interface ServicePageProps {
   subtitle: string;
   description: string;
   features: { title: string; desc: string }[];
-  priceRanges: { label: string; price: string; note?: string }[];
+  priceRanges?: { label: string; price: string; note?: string }[];
   faqs: { q: string; a: string }[];
   heroImage?: string;
   inlineImage?: string;
@@ -97,7 +97,7 @@ export function ServicePage({
         note: tf.range_from_cm === 0 ? t('servicePage.from') : undefined,
       }));
   }, [catalogQuery.data, t]);
-  const ranges = liveRanges ?? priceRanges;
+  const ranges = liveRanges ?? priceRanges ?? [];
   return (
     <>
       {/* Hero with real photo */}
