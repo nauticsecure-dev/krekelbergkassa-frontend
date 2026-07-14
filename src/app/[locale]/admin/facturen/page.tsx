@@ -137,9 +137,40 @@ function InvoicesPage() {
     }
   };
 
+  const openStats = useQuery(
+    ['invoice-stats-open', search, dateFrom, dateTo, productGroup, source],
+    () =>
+      invoicesService
+        .list({
+          search: search || undefined,
+          payment_status: 'open',
+          date_from: dateFrom || undefined,
+          date_to: dateTo || undefined,
+          product_group: productGroup || undefined,
+          source: source || undefined,
+          per_page: 1,
+        })
+        .catch(() => null)
+  );
+  const overdueStats = useQuery(
+    ['invoice-stats-overdue', search, dateFrom, dateTo, productGroup, source],
+    () =>
+      invoicesService
+        .list({
+          search: search || undefined,
+          payment_status: 'overdue',
+          date_from: dateFrom || undefined,
+          date_to: dateTo || undefined,
+          product_group: productGroup || undefined,
+          source: source || undefined,
+          per_page: 1,
+        })
+        .catch(() => null)
+  );
+
   const rows = invoices.data?.data ?? [];
-  const openCount = rows.filter((invoice) => invoice.status === 'open').length;
-  const overdueCount = rows.filter((invoice) => invoice.is_overdue).length;
+  const openCount = openStats.data?.meta?.total ?? rows.filter((invoice) => invoice.status === 'open').length;
+  const overdueCount = overdueStats.data?.meta?.total ?? rows.filter((invoice) => invoice.is_overdue).length;
   const paidCount = rows.filter((invoice) => invoice.is_fully_paid).length;
   const openBalance = rows.reduce((sum, invoice) => sum + centsToEuro(invoice.outstanding_cents), 0);
 
@@ -153,14 +184,14 @@ function InvoicesPage() {
             label: t('adminNew.invoices.metrics.open'),
             value: openCount,
             tone: 'marine',
-            loading: invoices.loading,
+            loading: invoices.loading || openStats.loading,
             href: `/${locale}/admin/facturen?payment_status=open`,
           },
           {
             label: t('adminNew.invoices.metrics.overdue'),
             value: overdueCount,
             tone: 'danger',
-            loading: invoices.loading,
+            loading: invoices.loading || overdueStats.loading,
             href: `/${locale}/admin/facturen?payment_status=overdue`,
           },
           {

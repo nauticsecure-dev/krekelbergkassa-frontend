@@ -40,6 +40,15 @@ export default function CashClosePage() {
     note: '',
   });
 
+  const todayAnalytics = useQuery(['dagafsluiting-today'], () =>
+    kassaService.analytics({ period: 'today' }).catch(() => null)
+  );
+  const cashReceivedCents = React.useMemo(() => {
+    const methods = ((todayAnalytics.data?.payment_methods ?? []) as Array<Record<string, unknown>>);
+    const cashEntry = methods.find((m) => String(m.method).toLowerCase() === 'cash');
+    return cashEntry != null ? Number(cashEntry.total ?? cashEntry.total_cents ?? 0) : null;
+  }, [todayAnalytics.data]);
+
   const closures = useQuery(['cash-closures'], () => kassaService.cashClosures().catch(() => []));
   const createClosure = useMutation((payload: Parameters<typeof kassaService.createCashClosure>[0]) =>
     kassaService.createCashClosure(payload)
@@ -82,6 +91,19 @@ export default function CashClosePage() {
       />
       <AdminContent className="grid gap-5 lg:grid-cols-[24rem_1fr]">
         <AdminSectionCard title={t('adminNew.cashClose.formTitle')} icon={Wallet} className="self-start">
+          {cashReceivedCents != null ? (
+            <div className="mb-4 rounded-lg bg-sand-50 px-4 py-3">
+              <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
+                {t('adminNew.cashClose.cashReceivedToday', { defaultValue: 'Contante ontvangsten vandaag' })}
+              </div>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-xl font-bold text-navy-900">{money(cashReceivedCents)}</span>
+                <span className="text-xs text-navy-400">
+                  {t('adminNew.cashClose.cashReceivedNote', { defaultValue: 'automatisch berekend uit kassabetalingen' })}
+                </span>
+              </div>
+            </div>
+          ) : null}
           <form onSubmit={onSubmit} className="space-y-3">
             <Input
               label={t('adminNew.cashClose.fields.opening')}

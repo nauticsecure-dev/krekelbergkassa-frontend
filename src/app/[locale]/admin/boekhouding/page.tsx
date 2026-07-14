@@ -48,7 +48,12 @@ export default function AccountingPage() {
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   const [payStatus, setPayStatus] = React.useState('');
 
-  const dash = useQuery(['accounting-dash'], () => accountingService.dashboard());
+  const [dateFrom, setDateFrom] = React.useState('');
+  const [dateTo, setDateTo] = React.useState('');
+
+  const dash = useQuery(['accounting-dash', dateFrom, dateTo], () =>
+    accountingService.dashboard(dateFrom && dateTo ? { date_from: dateFrom, date_to: dateTo } : undefined)
+  );
   const payables = useQuery(['payables', payStatus], () =>
     supplierPayablesService.list({ status: payStatus || undefined, per_page: 50 })
   );
@@ -76,11 +81,28 @@ export default function AccountingPage() {
         title={t('adminNew.accounting.title')}
         subtitle={t('adminNew.accounting.subtitle')}
         rightSlot={
-          <Link href={`/${locale}/admin/leveranciers`}>
-            <Button variant="outline" size="sm" leftIcon={<Building2 className="h-4 w-4" />}>
-              {t('adminNew.suppliers.title')}
-            </Button>
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="input-base h-9 w-36 text-sm"
+              aria-label="Van datum"
+            />
+            <span className="text-navy-400">–</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="input-base h-9 w-36 text-sm"
+              aria-label="Tot datum"
+            />
+            <Link href={`/${locale}/admin/leveranciers`}>
+              <Button variant="outline" size="sm" leftIcon={<Building2 className="h-4 w-4" />}>
+                {t('adminNew.suppliers.title')}
+              </Button>
+            </Link>
+          </div>
         }
         stats={[
           {
@@ -203,10 +225,13 @@ function LedgerBreakdown({
   money: (c: number) => string;
   t: (k: string) => string;
 }) {
-  const rows = ((data.ledger_accounts ?? data.accounts ?? data.breakdown ?? []) as Rec[]) ?? [];
-  if (!Array.isArray(rows) || rows.length === 0) {
+  const revenueRows = (Array.isArray(data.revenue_by_ledger) ? data.revenue_by_ledger : []) as Rec[];
+  const costRows = (Array.isArray(data.costs_by_ledger) ? data.costs_by_ledger : []) as Rec[];
+
+  if (revenueRows.length === 0 && costRows.length === 0) {
     return <p className="text-sm text-navy-500">{t('adminNew.accounting.ledgerEmpty')}</p>;
   }
+
   const num = (r: Rec, ...keys: string[]) => {
     for (const k of keys) {
       const v = r[k];
@@ -215,16 +240,27 @@ function LedgerBreakdown({
     }
     return 0;
   };
+
+  const renderSection = (rows: Rec[], label: string) => (
+    <div>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-navy-400">{label}</p>
+      <ul className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
+        {rows.map((r, i) => (
+          <li key={i} className="flex items-center justify-between px-4 py-2.5 text-sm">
+            <span className="text-navy-800">
+              {String(r.ledger_code ?? r.code ?? r.account_code ?? '')} {String(r.ledger_name ?? r.name ?? r.account_name ?? r.label ?? '')}
+            </span>
+            <span className="font-semibold text-navy-900">{money(num(r, 'total_cents', 'amount_cents', 'balance_cents', 'amount'))}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
   return (
-    <ul className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
-      {rows.map((r, i) => (
-        <li key={i} className="flex items-center justify-between px-4 py-2.5 text-sm">
-          <span className="text-navy-800">
-            {String(r.code ?? r.account_code ?? '')} {String(r.name ?? r.account_name ?? r.label ?? '')}
-          </span>
-          <span className="font-semibold text-navy-900">{money(num(r, 'total_cents', 'amount_cents', 'balance_cents', 'amount'))}</span>
-        </li>
-      ))}
-    </ul>
+    <div className="space-y-4">
+      {revenueRows.length > 0 ? renderSection(revenueRows, t('adminNew.accounting.ledgerRevenue')) : null}
+      {costRows.length > 0 ? renderSection(costRows, t('adminNew.accounting.ledgerCosts')) : null}
+    </div>
   );
 }

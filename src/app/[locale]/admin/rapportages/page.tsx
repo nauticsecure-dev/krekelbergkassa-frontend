@@ -56,15 +56,31 @@ const PRESETS = [
   'last_30_days',
   'this_month',
   'previous_month',
-  'q1',
-  'q2',
-  'q3',
-  'q4',
+  'this_quarter',
+  'previous_quarter',
   'this_year',
   'previous_year',
 ];
 
 const PIE_COLORS = ['#1f93b8', '#0ea5e9', '#bd8528', '#7c3aed', '#059669', '#e11d48', '#475569'];
+const AGING_COLORS = ['#059669', '#d97706', '#ea580c', '#e11d48'];
+const METHOD_LABELS: Record<string, string> = {
+  bank_transfer: 'Overboeking',
+  banktransfer: 'Overboeking',
+  cash: 'Contant',
+  ideal: 'iDEAL',
+  creditcard: 'Creditcard',
+  paypal: 'PayPal',
+  klarna: 'Klarna',
+  applepay: 'Apple Pay',
+  googlepay: 'Google Pay',
+  sofort: 'SOFORT',
+  bancontact: 'Bancontact',
+  directdebit: 'Incasso',
+  invoice: 'Op factuur',
+  manual: 'Handmatig',
+};
+const methodLabel = (key: string) => METHOD_LABELS[key.toLowerCase()] ?? key;
 
 type Rec = Record<string, unknown>;
 const obj = (v: unknown): Rec => (v && typeof v === 'object' ? (v as Rec) : {});
@@ -78,8 +94,12 @@ export default function ReportsPage() {
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   const [period, setPeriod] = React.useState('this_month');
   const [exporting, setExporting] = React.useState(false);
+  const [dateFrom, setDateFrom] = React.useState('');
+  const [dateTo, setDateTo] = React.useState('');
 
-  const report = useQuery([period], () => kassaService.analytics({ period }));
+  const report = useQuery([period, dateFrom, dateTo], () =>
+    kassaService.analytics(dateFrom && dateTo ? { date_from: dateFrom, date_to: dateTo } : { period })
+  );
   const money = (cents: unknown) => formatCurrency(n(cents) / 100, dateLocale);
 
   // Trello #88: work-order stats card with a month selector.
@@ -169,7 +189,7 @@ export default function ReportsPage() {
   };
 
   const methodPie = methods.map((m, i) => ({
-    name: str(m.method) || '—',
+    name: methodLabel(str(m.method) || '—'),
     value: n(m.total) / 100,
     fill: PIE_COLORS[i % PIE_COLORS.length],
   }));
@@ -196,13 +216,28 @@ export default function ReportsPage() {
         subtitle={t('adminNew.reports.subtitle')}
         rightSlot={
           <div className="flex flex-wrap items-center gap-2">
-            <AdminSelect value={period} onChange={setPeriod}>
+            <AdminSelect value={period} onChange={(v) => { setPeriod(v); setDateFrom(''); setDateTo(''); }}>
               {PRESETS.map((p) => (
                 <option key={p} value={p}>
                   {t(`adminNew.reports.presets.${p}`)}
                 </option>
               ))}
             </AdminSelect>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="input-base h-9 w-36 text-sm"
+              aria-label="Van datum"
+            />
+            <span className="text-navy-400">–</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="input-base h-9 w-36 text-sm"
+              aria-label="Tot datum"
+            />
             <Link href={`/${locale}/admin/kassa/dagafsluiting`}>
               <Button variant="outline" size="sm" leftIcon={<Wallet className="h-4 w-4" />}>
                 {t('adminNew.reports.cashClose')}
@@ -365,24 +400,32 @@ export default function ReportsPage() {
             <div className="bento-grid mt-5 lg:grid-cols-2">
               <AdminSectionCard title={t('adminNew.reports.vatTitle')} icon={Receipt}>
                 {vat.length ? (
-                  <AdminTable minWidth={420}>
+                  <AdminTable minWidth={520}>
                     <AdminTableHead>
                       <tr>
                         <AdminTableHeaderCell>{t('adminNew.reports.vat.rate')}</AdminTableHeaderCell>
+                        <AdminTableHeaderCell>Excl. BTW</AdminTableHeaderCell>
+                        <AdminTableHeaderCell>BTW bedrag</AdminTableHeaderCell>
                         <AdminTableHeaderCell>{t('adminNew.reports.vat.total')}</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>{t('adminNew.reports.vat.paid')}</AdminTableHeaderCell>
                         <AdminTableHeaderCell>{t('adminNew.reports.vat.outstanding')}</AdminTableHeaderCell>
                       </tr>
                     </AdminTableHead>
                     <tbody>
-                      {vat.map((v, i) => (
-                        <AdminTableRow key={i}>
-                          <AdminTableCell className="font-semibold">{n(v.vat_rate)}%</AdminTableCell>
-                          <AdminTableCell>{money(v.total_incl_vat)}</AdminTableCell>
-                          <AdminTableCell className="text-emerald-700">{money(v.paid_incl_vat)}</AdminTableCell>
-                          <AdminTableCell className="text-amber-700">{money(v.outstanding_incl_vat)}</AdminTableCell>
-                        </AdminTableRow>
-                      ))}
+                      {vat.map((v, i) => {
+                        const rate = n(v.vat_rate);
+                        const inclCents = n(v.total_incl_vat);
+                        const exclCents = n(v.total_excl_vat ?? (inclCents / (1 + rate / 100)));
+                        const vatCents = n(v.vat_amount ?? (inclCents - exclCents));
+                        return (
+                          <AdminTableRow key={i}>
+                            <AdminTableCell className="font-semibold">{rate}%</AdminTableCell>
+                            <AdminTableCell className="tabular-nums">{money(exclCents)}</AdminTableCell>
+                            <AdminTableCell className="tabular-nums text-navy-600">{money(vatCents)}</AdminTableCell>
+                            <AdminTableCell className="tabular-nums">{money(inclCents)}</AdminTableCell>
+                            <AdminTableCell className="tabular-nums text-amber-700">{money(v.outstanding_incl_vat)}</AdminTableCell>
+                          </AdminTableRow>
+                        );
+                      })}
                     </tbody>
                   </AdminTable>
                 ) : (
@@ -397,7 +440,11 @@ export default function ReportsPage() {
                       <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                       <YAxis hide />
                       <Tooltip formatter={(v: number) => formatCurrency(v, dateLocale)} />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="#e11d48" />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {agingBars.map((_, i) => (
+                          <Cell key={i} fill={AGING_COLORS[Math.min(i, AGING_COLORS.length - 1)]} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -451,6 +498,16 @@ export default function ReportsPage() {
                     tone="gold"
                   />
                   <AdminStatusStrip
+                    label={t('adminNew.reports.storage.expiring60', { defaultValue: 'Vervalt 60 dgn' })}
+                    value={String(n(storage.expiring_60_days ?? storage.expiring_in_60_days))}
+                    tone="warning"
+                  />
+                  <AdminStatusStrip
+                    label={t('adminNew.reports.storage.expiring90', { defaultValue: 'Vervalt 90 dgn' })}
+                    value={String(n(storage.expiring_90_days ?? storage.expiring_in_90_days))}
+                    tone="danger"
+                  />
+                  <AdminStatusStrip
                     label={t('adminNew.reports.storage.openBalance')}
                     value={money(storage.open_balance_cents ?? storage.open_balance)}
                     tone="warning"
@@ -497,7 +554,7 @@ export default function ReportsPage() {
                           </div>
                           <div className="h-2 overflow-hidden rounded-full bg-navy-100">
                             <div
-                              className="h-full rounded-full bg-marine-500"
+                              className={`h-full rounded-full ${pct != null && pct > 95 ? 'bg-rose-500' : pct != null && pct > 80 ? 'bg-amber-400' : 'bg-marine-500'}`}
                               style={{ width: `${pct ?? Math.min(100, occ)}%` }}
                             />
                           </div>
@@ -519,16 +576,24 @@ export default function ReportsPage() {
               <AdminSectionCard title={t('adminNew.reports.customersTitle')} icon={Users}>
                 {topCustomers.length ? (
                   <div className="space-y-1.5">
-                    {topCustomers.slice(0, 10).map((c, i) => (
-                      <div key={i} className="flex items-center justify-between rounded-md px-2 py-1 text-sm">
-                        <span className="text-navy-800">
-                          {str(c.name ?? c.customer_name) || '—'}
-                        </span>
-                        <span className="font-semibold text-navy-900">
-                          {money(c.revenue_cents ?? c.total_incl_vat ?? c.revenue)}
-                        </span>
-                      </div>
-                    ))}
+                    {topCustomers.slice(0, 10).map((c, i) => {
+                      const custId = str(c.customer_id ?? c.id);
+                      const custName = str(c.name ?? c.customer_name) || '—';
+                      return (
+                        <div key={i} className="flex items-center justify-between rounded-md px-2 py-1 text-sm">
+                          {custId ? (
+                            <Link href={`/${locale}/admin/klanten/${custId}`} className="text-navy-800 hover:text-marine-700 hover:underline">
+                              {custName}
+                            </Link>
+                          ) : (
+                            <span className="text-navy-800">{custName}</span>
+                          )}
+                          <span className="font-semibold text-navy-900">
+                            {money(c.revenue_cents ?? c.total_incl_vat ?? c.revenue)}
+                          </span>
+                        </div>
+                      );
+                    })}
                     {customerAnalytics.concentration_pct != null ? (
                       <p className="pt-1 text-xs text-navy-400">
                         {t('adminNew.reports.concentration', {
@@ -572,10 +637,15 @@ export default function ReportsPage() {
                     value={money(forecast.total_cents)}
                     tone="gold"
                   />
-                  {arr(forecast.streams).map((s, i) => (
+                  {[
+                    { label: 'Open facturen pipeline', cents: forecast.open_invoice_pipeline_cents },
+                    { label: 'Stalling verlengingen (90 dgn)', cents: forecast.expected_storage_renewals_90_days_cents },
+                    { label: 'Geplande auto-facturen (30 dgn)', cents: forecast.scheduled_auto_invoice_30_days_cents },
+                    { label: 'Actieve stallingcontracten', cents: forecast.active_storage_contract_value_cents },
+                  ].filter((s) => n(s.cents) > 0).map((s, i) => (
                     <div key={i} className="flex items-center justify-between text-sm">
-                      <span className="text-navy-600">{str(s.label ?? s.type) || '—'}</span>
-                      <span className="font-semibold text-navy-900">{money(s.total_cents ?? s.amount_cents)}</span>
+                      <span className="text-navy-600">{s.label}</span>
+                      <span className="font-semibold text-navy-900">{money(s.cents)}</span>
                     </div>
                   ))}
                 </div>
@@ -620,7 +690,7 @@ export default function ReportsPage() {
               <div className="mt-3 space-y-3">
                 <Badge tone="success">
                   {t('adminNew.reports.marginValue', {
-                    pct: n(margin.gross_margin_pct ?? margin.margin_pct),
+                    pct: n(margin.gross_margin_percent ?? margin.gross_margin_pct),
                   })}
                 </Badge>
                 {marginByGroup.length ? (
