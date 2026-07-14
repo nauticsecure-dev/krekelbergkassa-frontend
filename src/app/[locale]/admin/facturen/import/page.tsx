@@ -29,14 +29,14 @@ import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { formatDate } from '@/lib/format';
 
 type Rec = Record<string, unknown>;
-const STATUSES = ['uploaded', 'review_required', 'approved', 'rejected', 'duplicate', 'waiting_for_supplier_invoice'];
+const STATUSES = ['uploaded', 'ocr_processing', 'review_required', 'failed', 'approved', 'rejected', 'duplicate', 'waiting_for_supplier_invoice'];
 
 function statusTone(status: string): React.ComponentProps<typeof Badge>['tone'] {
   const s = status.toLowerCase();
   if (s.includes('approv')) return 'success';
-  if (s.includes('reject')) return 'danger';
+  if (s.includes('reject') || s === 'failed') return 'danger';
   if (s.includes('duplicate')) return 'warning';
-  if (s.includes('review')) return 'marine';
+  if (s.includes('review') || s.includes('processing')) return 'marine';
   if (s.includes('workbon') || s.includes('waiting')) return 'gold';
   return 'neutral';
 }
@@ -194,8 +194,6 @@ export default function InvoiceImportsPage() {
   const onUpload = async (file: File) => {
     setUploading(true);
     try {
-      // Create the import first so the uploaded file can be bound to it
-      // (the files endpoint requires entity_type / entity_id / file_type).
       const created = await invoiceImportsService.create({
         source: 'upload',
         original_filename: file.name,
@@ -207,6 +205,8 @@ export default function InvoiceImportsPage() {
       fd.append('entity_id', importId);
       fd.append('file_type', 'document');
       await filesService.upload(fd);
+      // Auto-dispatch OCR so single-file upload behaves the same as batch/email.
+      await invoiceImportsService.process(importId).catch(() => undefined);
       await imports.refetch();
       push({ tone: 'success', title: t('adminNew.invoiceImports.toasts.uploaded') });
     } catch (err) {
@@ -411,7 +411,7 @@ export default function InvoiceImportsPage() {
                 message={t('adminNew.invoiceImports.emptyMessage')}
               />
             ) : (
-              <AdminTable minWidth={980}>
+              <AdminTable minWidth={1200}>
                 <AdminTableHead>
                   <tr>
                     <AdminTableHeaderCell className="w-10">
@@ -423,7 +423,10 @@ export default function InvoiceImportsPage() {
                       />
                     </AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.file')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.invoiceNumber', { defaultValue: 'Factuurnr.' })}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.supplier')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.customer', { defaultValue: 'Klant' })}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.total', { defaultValue: 'Totaal' })}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.source')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.confidence')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.status')}</AdminTableHeaderCell>
@@ -451,12 +454,20 @@ export default function InvoiceImportsPage() {
                           <Link href={`/${locale}/admin/facturen/import/${id}`} className="hover:text-marine-700">
                             {String(row.original_filename ?? row.id)}
                           </Link>
-                          {row.supplier_document_number ? (
-                            <div className="text-xs text-navy-400">#{String(row.supplier_document_number)}</div>
-                          ) : null}
+                        </AdminTableCell>
+                        <AdminTableCell className="text-sm text-navy-600">
+                          {row.supplier_document_number ? `#${String(row.supplier_document_number)}` : <span className="text-navy-400">—</span>}
                         </AdminTableCell>
                         <AdminTableCell className="text-sm text-navy-600">
                           {String(row.supplier_name ?? row.sender_email ?? '—')}
+                        </AdminTableCell>
+                        <AdminTableCell className="text-sm text-navy-600">
+                          {String(row.customer_name ?? (row.customer as Rec | undefined)?.name ?? '—')}
+                        </AdminTableCell>
+                        <AdminTableCell className="text-sm text-navy-600 tabular-nums">
+                          {row.total_amount_cents ?? row.total_amount
+                            ? `€${(Number(row.total_amount_cents ?? row.total_amount) / 100).toFixed(2)}`
+                            : <span className="text-navy-400">—</span>}
                         </AdminTableCell>
                         <AdminTableCell className="capitalize">{String(row.source ?? '—')}</AdminTableCell>
                         <AdminTableCell>

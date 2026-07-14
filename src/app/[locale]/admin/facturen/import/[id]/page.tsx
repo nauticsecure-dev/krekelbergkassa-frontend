@@ -22,7 +22,7 @@ import { Modal } from '@/components/ui/Modal';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { invoiceImportsService, suppliersService } from '@/lib/services';
+import { customersService, invoiceImportsService, suppliersService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -68,18 +68,33 @@ export default function InvoiceImportReviewPage() {
     iban: '',
     payment_terms_days: '14',
   });
+  // Editable extracted fields
+  const [editedFields, setEditedFields] = React.useState<Record<string, string>>({});
+  const [editedLines, setEditedLines] = React.useState<Rec[] | null>(null);
 
   const imp = useQuery([id], () => invoiceImportsService.get(id));
   const queue = useQuery(['import-queue-nav'], () => invoiceImportsService.list({ per_page: 100 }));
   const pdf = useQuery([id, 'pdf'], () => invoiceImportsService.sourcePdf(id).catch(() => null));
   const matches = useQuery([id, 'matches'], () => invoiceImportsService.proposeMatches(id).catch(() => null));
-  const approveM = useMutation(() => invoiceImportsService.approve(id));
+  const approveM = useMutation((payload?: Record<string, unknown>) => invoiceImportsService.approve(id, payload));
   const rejectM = useMutation(() => invoiceImportsService.reject(id));
+  const updateM = useMutation((payload: Record<string, unknown>) =>
+    invoiceImportsService.approve(id, { extracted_data_override: payload })
+  );
   const createSupplierM = useMutation((payload: Record<string, unknown>) => suppliersService.create(payload));
+  const createCustomerM = useMutation((payload: Record<string, unknown>) => customersService.create(payload));
 
   const data = (imp.data ?? {}) as Rec;
   const extracted = ((data.extracted_data ?? data.extracted ?? data.fields ?? {}) as Rec);
-  const lineItems = ((data.line_items ?? data.lines ?? extracted.line_items ?? []) as Rec[]) ?? [];
+  const rawLineItems = ((data.line_items ?? data.lines ?? extracted.line_items ?? []) as Rec[]) ?? [];
+  const lineItems = editedLines ?? rawLineItems;
+
+  // Seed editable state when import data first loads.
+  React.useEffect(() => {
+    if (!imp.data) return;
+    setEditedFields({});
+    setEditedLines(null);
+  }, [id]); // reset on navigation
   const proposals = ((matches.data?.matches ?? matches.data?.proposals ?? matches.data?.data ?? []) as Rec[]) ?? [];
   const pdfUrl = str((pdf.data ?? {}) as Rec, 'signed_url', 'url');
   const overallConf = confPct(data.ocr_confidence ?? data.confidence ?? data.average_confidence);
@@ -279,19 +294,43 @@ export default function InvoiceImportReviewPage() {
             <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.extracted')} icon={ScanText}>
               <div className="space-y-2.5">
                 {fieldRows.map(({ key, label }) => {
-                  const value = str(extracted, key) || str(data, key);
+                  const original = str(extracted, key) || str(data, key);
+                  const edited = editedFields[key];
+                  const displayValue = edited !== undefined ? edited : original;
                   const c = confPct((fieldConf as Rec)[key]);
                   return (
-                    <div key={key} className="flex items-center justify-between gap-3 border-b border-navy-50 pb-2 last:border-0">
-                      <div>
+                    <div key={key} className="border-b border-navy-50 pb-2 last:border-0">
+                      <div className="mb-1 flex items-center justify-between gap-2">
                         <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">{label}</div>
-                        <div className="font-medium text-navy-900">{value || '—'}</div>
+                        {c != null ? <Badge tone={confTone(c)}>{c}%</Badge> : null}
                       </div>
-                      {c != null ? <Badge tone={confTone(c)}>{c}%</Badge> : null}
+                      <input
+                        className="input-base w-full py-1.5 text-sm"
+                        value={displayValue}
+                        onChange={(e) => setEditedFields((prev) => ({ ...prev, [key]: e.target.value }))}
+                        placeholder={label}
+                      />
+                      {edited !== undefined && edited !== original ? (
+                        <p className="mt-0.5 text-xs text-amber-600">
+                          {t('adminNew.invoiceImports.reviewScreen.corrected', { defaultValue: 'Gecorrigeerd' })} — origineel: <span className="line-through">{original || '—'}</span>
+                        </p>
+                      ) : null}
                     </div>
                   );
                 })}
               </div>
+              {Object.keys(editedFields).some((k) => editedFields[k] !== (str(extracted, k) || str(data, k))) ? (
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={updateM.loading}
+                    onClick={() => void updateM.mutate(editedFields).then(() => imp.refetch())}
+                  >
+                    {t('adminNew.invoiceImports.reviewScreen.saveCorrections', { defaultValue: 'Correcties opslaan' })}
+                  </Button>
+                </div>
+              ) : null}
               {!hasSupplier ? (
                 <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-marine-200 bg-marine-50/60 px-3 py-2.5">
                   <span className="text-sm text-navy-700">
@@ -312,6 +351,33 @@ export default function InvoiceImportReviewPage() {
                     }}
                   >
                     {t('adminNew.invoiceImports.reviewScreen.createSupplier')}
+                  </Button>
+                </div>
+              ) : null}
+              {/* Suggest create customer when AI found no match */}
+              {!data.customer_id ? (
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/60 px-3 py-2.5">
+                  <span className="text-sm text-navy-700">
+                    {t('adminNew.invoiceImports.reviewScreen.noCustomerLinked', { defaultValue: 'Geen klant gekoppeld' })}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<UserPlus className="h-3.5 w-3.5" />}
+                    onClick={() => void (async () => {
+                      const name = str(extracted, 'customer_name') || str(data, 'customer_name');
+                      if (!name) return;
+                      try {
+                        const created = await createCustomerM.mutate({ name, source: 'invoice_import' });
+                        await invoiceImportsService.approve(id, { customer_id: String((created as Rec).id ?? '') }).catch(() => undefined);
+                        push({ tone: 'success', title: t('adminNew.invoiceImports.reviewScreen.customerCreated', { defaultValue: 'Klant aangemaakt' }) });
+                        await imp.refetch();
+                      } catch (err) {
+                        push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+                      }
+                    })()}
+                  >
+                    {t('adminNew.invoiceImports.reviewScreen.createCustomer', { defaultValue: 'Klant aanmaken' })}
                   </Button>
                 </div>
               ) : null}
@@ -379,10 +445,45 @@ export default function InvoiceImportReviewPage() {
                 <tbody>
                   {lineItems.map((li, i) => (
                     <AdminTableRow key={i}>
-                      <AdminTableCell className="text-sm text-navy-800">{str(li, 'description', 'name') || '—'}</AdminTableCell>
-                      <AdminTableCell className="text-sm">{str(li, 'quantity', 'qty') || '—'}</AdminTableCell>
-                      <AdminTableCell className="text-sm">{money(Number(li.unit_price_cents ?? li.unit_price ?? 0))}</AdminTableCell>
-                      <AdminTableCell className="text-sm font-semibold">{money(Number(li.total_cents ?? li.line_total_cents ?? li.total ?? 0))}</AdminTableCell>
+                      <AdminTableCell>
+                        <input
+                          className="input-base w-full py-1 text-sm"
+                          value={str(li, 'description', 'name')}
+                          onChange={(e) => setEditedLines((prev) => {
+                            const lines = prev ?? rawLineItems;
+                            return lines.map((l, idx) => idx === i ? { ...l, description: e.target.value } : l);
+                          })}
+                        />
+                      </AdminTableCell>
+                      <AdminTableCell>
+                        <input
+                          className="input-base w-20 py-1 text-sm"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={str(li, 'quantity', 'qty')}
+                          onChange={(e) => setEditedLines((prev) => {
+                            const lines = prev ?? rawLineItems;
+                            return lines.map((l, idx) => idx === i ? { ...l, quantity: e.target.value } : l);
+                          })}
+                        />
+                      </AdminTableCell>
+                      <AdminTableCell>
+                        <input
+                          className="input-base w-28 py-1 text-sm"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={Number(li.unit_price_cents ?? li.unit_price ?? 0) / 100}
+                          onChange={(e) => setEditedLines((prev) => {
+                            const lines = prev ?? rawLineItems;
+                            return lines.map((l, idx) => idx === i ? { ...l, unit_price_cents: Math.round(Number(e.target.value) * 100) } : l);
+                          })}
+                        />
+                      </AdminTableCell>
+                      <AdminTableCell className="text-sm font-semibold">
+                        {money(Number(li.total_cents ?? li.line_total_cents ?? li.total ?? 0))}
+                      </AdminTableCell>
                     </AdminTableRow>
                   ))}
                 </tbody>
@@ -390,12 +491,32 @@ export default function InvoiceImportReviewPage() {
             )}
           </AdminTableCard>
         </AdminSectionCard>
+
+        {/* Processing log / audit trail */}
+        {Array.isArray(data.processing_log) && (data.processing_log as Rec[]).length > 0 ? (
+          <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.processingLog', { defaultValue: 'Verwerkingslog' })} icon={History} className="mt-5">
+            <ol className="relative space-y-2 border-l border-navy-100 pl-4">
+              {(data.processing_log as Rec[]).map((entry, i) => (
+                <li key={i} className="relative text-sm">
+                  <span className="absolute -left-[17px] mt-1 h-2.5 w-2.5 rounded-full bg-navy-200 ring-2 ring-white" />
+                  <span className="text-xs text-navy-400">
+                    {entry.at ? formatDate(String(entry.at), dateLocale) : ''}
+                  </span>
+                  <p className="text-navy-700">{String(entry.message ?? '')}</p>
+                </li>
+              ))}
+            </ol>
+          </AdminSectionCard>
+        ) : null}
       </AdminContent>
 
       <AdminConfirmModal
         open={approveOpen}
         onClose={() => setApproveOpen(false)}
-        onConfirm={() => act(t('adminNew.invoiceImports.toasts.approved'), () => approveM.mutate(), () => setApproveOpen(false))}
+        onConfirm={() => act(t('adminNew.invoiceImports.toasts.approved'), () => approveM.mutate({
+          corrections: Object.keys(editedFields).length > 0 ? editedFields : undefined,
+          line_items: editedLines ?? undefined,
+        }), () => setApproveOpen(false))}
         title={t('adminNew.invoiceImports.approve')}
         message={t('adminNew.invoiceImports.confirmApprove')}
         confirmLabel={t('adminNew.invoiceImports.approve')}

@@ -20,6 +20,11 @@ export const ZONE_FIELDS = [
   'supplier_vat_number',
   // Customer
   'customer_name',
+  'customer_address',
+  // Line item fields
+  'description',
+  'quantity',
+  'unit_price',
   // Amounts
   'subtotal',
   'vat',
@@ -49,6 +54,10 @@ const ZONE_COLORS: Record<string, string> = {
   supplier_address: '#8b5cf6',
   supplier_vat_number: '#a78bfa',
   customer_name: '#6366f1',
+  customer_address: '#818cf8',
+  description: '#f59e0b',
+  quantity: '#f97316',
+  unit_price: '#fb923c',
   subtotal: '#d97706',
   vat: '#dc2626',
   vat_amount: '#dc2626',
