@@ -82,19 +82,16 @@ export default function InvoiceImportReviewPage() {
     invoiceImportsService.approve(id, { extracted_data_override: payload })
   );
   const createSupplierM = useMutation((payload: Record<string, unknown>) => suppliersService.create(payload));
-  const createCustomerM = useMutation((payload: Record<string, unknown>) => customersService.create(payload));
+  const createCustomerM = useMutation((payload: { name: string; source?: string }) => customersService.create(payload));
 
   const data = (imp.data ?? {}) as Rec;
   const extracted = ((data.extracted_data ?? data.extracted ?? data.fields ?? {}) as Rec);
   const rawLineItems = ((data.line_items ?? data.lines ?? extracted.line_items ?? []) as Rec[]) ?? [];
   const lineItems = editedLines ?? rawLineItems;
 
-  // Seed editable state when import data first loads.
-  React.useEffect(() => {
-    if (!imp.data) return;
-    setEditedFields({});
-    setEditedLines(null);
-  }, [id]); // reset on navigation
+  // Reset editable state whenever the import id changes (navigation between imports).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => { setEditedFields({}); setEditedLines(null); }, [id]);
   const proposals = ((matches.data?.matches ?? matches.data?.proposals ?? matches.data?.data ?? []) as Rec[]) ?? [];
   const pdfUrl = str((pdf.data ?? {}) as Rec, 'signed_url', 'url');
   const overallConf = confPct(data.ocr_confidence ?? data.confidence ?? data.average_confidence);
@@ -368,7 +365,7 @@ export default function InvoiceImportReviewPage() {
                       const name = str(extracted, 'customer_name') || str(data, 'customer_name');
                       if (!name) return;
                       try {
-                        const created = await createCustomerM.mutate({ name, source: 'invoice_import' });
+                        const created = await createCustomerM.mutate({ name });
                         await invoiceImportsService.approve(id, { customer_id: String((created as Rec).id ?? '') }).catch(() => undefined);
                         push({ tone: 'success', title: t('adminNew.invoiceImports.reviewScreen.customerCreated', { defaultValue: 'Klant aangemaakt' }) });
                         await imp.refetch();
