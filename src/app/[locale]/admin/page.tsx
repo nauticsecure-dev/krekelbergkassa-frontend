@@ -8,6 +8,7 @@ import {
   Bell,
   Calculator,
   CreditCard,
+  Package,
   Receipt,
   Sparkles,
   Warehouse,
@@ -28,6 +29,7 @@ import {
   invoicesService,
   kassaService,
   pricingService,
+  productsService,
   stallingService,
   adminService,
 } from '@/lib/services';
@@ -56,7 +58,7 @@ export default function AdminDashboardPage() {
   const calculate = useMutation(pricingService.calculate);
 
   const { data, loading } = useQuery([locale], async () => {
-    const [invoices, stalling, sales, analytics, reminders, activity, closures] = await Promise.all([
+    const [invoices, stalling, sales, analytics, reminders, activity, closures, lowStock] = await Promise.all([
       invoicesService.list({ per_page: 100 }),
       stallingService.list({ per_page: 100 }),
       kassaService.recentSales().catch(() => []),
@@ -66,6 +68,7 @@ export default function AdminDashboardPage() {
       adminService.timelineFeed({ per_page: 10 }).catch(() => null),
       // Trello #85: today's cash difference from the latest cash closure.
       kassaService.cashClosures({ per_page: 1 }).catch(() => null),
+      productsService.list({ low_stock: true, per_page: 1 }).catch(() => null),
     ]);
 
     const overdueInvoices = invoices.data.filter((x) => x.is_overdue).length;
@@ -88,6 +91,8 @@ export default function AdminDashboardPage() {
       ? Number(closureRows[0].difference_cents ?? 0)
       : null;
 
+    const lowStockCount = (lowStock as { meta?: { total?: number } } | null)?.meta?.total ?? 0;
+
     return {
       overdueInvoices,
       openInvoices,
@@ -97,6 +102,7 @@ export default function AdminDashboardPage() {
       reminderCounts,
       activityItems,
       cashDifference,
+      lowStockCount,
     };
   });
 
@@ -181,6 +187,15 @@ export default function AdminDashboardPage() {
             tone: 'success',
             loading,
             href: `/${locale}/admin/kassa`,
+          },
+          {
+            label: t('adminNew.dashboard.cards.lowStock.title', { defaultValue: 'Lage voorraad' }),
+            value: data?.lowStockCount ?? 0,
+            hint: t('adminNew.dashboard.cards.lowStock.subtitle', { defaultValue: 'producten onder minimum' }),
+            icon: Package,
+            tone: (data?.lowStockCount ?? 0) > 0 ? 'warning' : 'success',
+            loading,
+            href: `/${locale}/admin/product-stats`,
           },
           {
             label: t('adminNew.dashboard.cards.syncStatus.title'),

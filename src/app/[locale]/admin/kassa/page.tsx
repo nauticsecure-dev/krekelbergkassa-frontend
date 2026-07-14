@@ -662,7 +662,10 @@ export default function KassaPage() {
       });
       if (res.matched && res.product) {
         addProduct(res.product as Product);
-        if (source !== "camera") setQuery("");
+        if (source !== "camera") {
+          setQuery("");
+          searchRef.current?.focus();
+        }
       } else {
         push({
           tone: "error",
