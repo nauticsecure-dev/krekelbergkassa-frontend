@@ -274,35 +274,12 @@ export default function PlanningPage() {
   );
   const bulk = useMutation(appointmentsService.bulk);
 
-  // Drag state — used by both week-day drag and time-grid drag
+  // Drag state — shared across views so the drop handler can look up the appointment
   const [draggingId, setDraggingId] = React.useState<string | null>(null);
-  const [dragOverKey, setDragOverKey] = React.useState<string | null>(null);
-
-  // Drop handler: used by old day-column week view (non-time-grid)
-  const onDropDay = async (dayKey: string) => {
-    const appt = appointments.find((a) => a.id === draggingId);
-    setDragOverKey(null);
-    setDraggingId(null);
-    if (!appt || !isStaff) return;
-    if ((appt.appointment_date || '').slice(0, 10) === dayKey) return;
-    try {
-      await reschedule.mutate({
-        id: appt.id,
-        date: dayKey,
-        start_time: (appt.start_time || '09:00').slice(0, 5),
-        duration_minutes: appt.duration_minutes ?? undefined,
-      });
-      push({ tone: 'success', title: t('planning.rescheduled') });
-      await refetch();
-    } catch (err) {
-      push({ tone: 'error', title: t('planning.actionFailed'), message: getApiErrorMessage(err) });
-    }
-  };
 
   // Time-grid drop handler: called with date + new start_time
   const onDropTimeSlot = async (dayKey: string, startTime: string) => {
     const appt = appointments.find((a) => a.id === draggingId);
-    setDragOverKey(null);
     setDraggingId(null);
     if (!appt || !isStaff) return;
     const sameDay = (appt.appointment_date || '').slice(0, 10) === dayKey;
@@ -579,7 +556,6 @@ export default function PlanningPage() {
               selectMode={selectMode}
               picked={picked}
               onTogglePick={togglePick}
-              draggingId={draggingId}
               setDraggingId={setDraggingId}
               onDropTimeSlot={onDropTimeSlot}
               onResize={onResizeDuration}
@@ -921,7 +897,6 @@ function TimeGridWeekView({
   selectMode,
   picked,
   onTogglePick,
-  draggingId,
   setDraggingId,
   onDropTimeSlot,
   onResize,
@@ -933,7 +908,6 @@ function TimeGridWeekView({
   selectMode: boolean;
   picked: Set<string>;
   onTogglePick: (id: string) => void;
-  draggingId: string | null;
   setDraggingId: (id: string | null) => void;
   onDropTimeSlot: (dayKey: string, startTime: string) => void;
   onResize: (appt: Appointment, newDurationMinutes: number) => void;
@@ -978,7 +952,7 @@ function TimeGridWeekView({
     return map;
   }, [appointments]);
 
-  const getDropTime = (e: React.DragEvent, dayKey: string): string => {
+  const getDropTime = (e: React.DragEvent): string => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const y = e.clientY - rect.top;
     const mins = Math.round((y / HOUR_HEIGHT_PX) * 60 / 15) * 15 + GRID_START_HOUR * 60;
@@ -1029,14 +1003,14 @@ function TimeGridWeekView({
                 style={{ height: gridHeight }}
                 onDragOver={dragEnabled ? (e) => {
                   e.preventDefault();
-                  const t = getDropTime(e, dayKey);
+                  const t = getDropTime(e);
                   if (!dragOverSlot || dragOverSlot.dayKey !== dayKey || dragOverSlot.time !== t) {
                     setDragOverSlot({ dayKey, time: t });
                   }
                 } : undefined}
                 onDragLeave={dragEnabled ? () => setDragOverSlot(null) : undefined}
                 onDrop={dragEnabled ? (e) => {
-                  const t = getDropTime(e, dayKey);
+                  const t = getDropTime(e);
                   setDragOverSlot(null);
                   void onDropTimeSlot(dayKey, t);
                 } : undefined}
