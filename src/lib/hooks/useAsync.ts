@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { getApiErrorMessage, getApiErrorStatus } from '@/lib/api-error';
+import { trackEvent } from '@/lib/track-event';
 
 export function useQuery<T>(
   deps: React.DependencyList,
@@ -55,20 +56,37 @@ export function useMutation<TArgs extends unknown[], TResult>(
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  // Pillar 8: derive a stable action name from the function for journey tracking.
+  const actionName = fn.name || 'mutation';
+
   const mutate = React.useCallback(
     async (...args: TArgs) => {
       setLoading(true);
       setError(null);
+      const startedAt = Date.now();
+      trackEvent('request_started', { metadata: { action: actionName } });
       try {
-        return await fn(...args);
+        const result = await fn(...args);
+        trackEvent('request_finished', {
+          metadata: { action: actionName, duration_ms: Date.now() - startedAt, success: true },
+        });
+        return result;
       } catch (err) {
         setError(getApiErrorMessage(err));
+        trackEvent('request_finished', {
+          metadata: {
+            action: actionName,
+            duration_ms: Date.now() - startedAt,
+            success: false,
+            error: getApiErrorMessage(err),
+          },
+        });
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [fn]
+    [fn, actionName]
   );
 
   return { mutate, loading, error, setError };

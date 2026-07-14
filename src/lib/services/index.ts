@@ -1476,6 +1476,17 @@ export const portalService = {
   workOrder(id: string) {
     return api<Record<string, unknown>>(`/v1/portal/work-orders/${id}`, { portalAuth: true, auth: false });
   },
+  workOrderTimeline(id: string) {
+    return api<{ data: Record<string, unknown>[] }>(`/v1/portal/work-orders/${id}/timeline`, { portalAuth: true, auth: false });
+  },
+  workOrderAccept(id: string, payload?: { signature?: string; note?: string }) {
+    return api<Record<string, unknown>>(`/v1/portal/work-orders/${id}/accept`, {
+      method: 'POST',
+      body: payload ?? {},
+      portalAuth: true,
+      auth: false,
+    });
+  },
   async timeline(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/portal/timeline', {
       query,

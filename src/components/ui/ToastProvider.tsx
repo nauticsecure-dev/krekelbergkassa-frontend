@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { cn } from '@/lib/cn';
+import { trackEvent } from '@/lib/track-event';
 
 type ToastTone = 'success' | 'error' | 'info';
 
@@ -74,6 +75,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const push = React.useCallback(({ title, message, tone = 'info', duration }: ToastInput) => {
     const resolvedDuration =
       duration ?? (tone === 'error' ? 6500 : tone === 'success' ? 4500 : 4000);
+
+    // Pillar 8: auto-track every success/error toast as a journey event.
+    if (tone === 'success') {
+      trackEvent('success_toast', { metadata: { title, message } });
+    } else if (tone === 'error') {
+      trackEvent('error_toast', { metadata: { title, message } });
+    }
 
     toast.custom(
       (t) => (
