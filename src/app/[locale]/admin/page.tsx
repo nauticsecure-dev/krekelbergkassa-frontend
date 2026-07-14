@@ -61,7 +61,7 @@ export default function AdminDashboardPage() {
     const [invoices, stalling, sales, analytics, reminders, activity, closures, lowStock] = await Promise.all([
       invoicesService.list({ per_page: 100 }),
       stallingService.list({ per_page: 100 }),
-      kassaService.recentSales().catch(() => []),
+      kassaService.recentSales().catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
       kassaService.analytics().catch(() => null),
       adminService.remindersSummary().catch(() => null),
       // Trello #109: recent-activity feed for the dashboard.
@@ -74,7 +74,7 @@ export default function AdminDashboardPage() {
     const overdueInvoices = invoices.data.filter((x) => x.is_overdue).length;
     const openInvoices = invoices.data.filter((x) => !x.is_fully_paid).length;
     const overdueStalling = stalling.data.filter((x) => x.payment_status === 'overdue').length;
-    const todayRevenue = sales.reduce((sum, sale) => {
+    const todayRevenue = sales.data.reduce((sum, sale) => {
       const raw =
         typeof sale.total_amount_cents === 'string'
           ? Number(sale.total_amount_cents)

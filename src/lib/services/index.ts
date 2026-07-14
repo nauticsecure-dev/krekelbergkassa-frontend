@@ -670,7 +670,13 @@ export const kassaService = {
   },
   async recentSales(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/kassa/recent-sales', { query });
-    return asArray<Sale>(res);
+    const raw = res as Record<string, unknown> | null;
+    const data = asArray<Sale>(res);
+    const emptyMessage: string =
+      raw && typeof raw.empty_state === 'object' && raw.empty_state
+        ? ((raw.empty_state as Record<string, unknown>).message as string) ?? ''
+        : '';
+    return { data, emptyMessage };
   },
   sale(id: string) {
     return api<Sale>(`/v1/kassa/sales/${id}`);

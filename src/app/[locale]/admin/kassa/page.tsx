@@ -172,6 +172,23 @@ export default function KassaPage() {
   // Trello #62: searchable customer picker
   const [showCustomerPicker, setShowCustomerPicker] = React.useState(false);
   const [customerPickerSearch, setCustomerPickerSearch] = React.useState("");
+  const [pickerSearchDebounced, setPickerSearchDebounced] = React.useState("");
+  const [editingCustomerId, setEditingCustomerId] = React.useState<string | null>(null);
+  const [editCustomer, setEditCustomer] = React.useState({
+    name: "",
+    email: "",
+    phone: "",
+    company_name: "",
+    street: "",
+    house_number: "",
+    postal_code: "",
+    city: "",
+    country: "",
+    google_place_id: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
+    notes: "",
+  });
   const [newCustomer, setNewCustomer] = React.useState({
     name: "",
     email: "",
@@ -246,23 +263,45 @@ export default function KassaPage() {
     customersService.list({ per_page: 100 }),
   );
   const recentSales = useQuery(["kassa-recent"], () =>
-    kassaService.recentSales({}).catch(() => []),
+    kassaService.recentSales({}).catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
   );
   const todayQuery = useQuery(["kassa-today"], async () => {
-    const [analytics, sales] = await Promise.all([
+    const [analyticsRaw, salesResult] = await Promise.all([
       kassaService.analytics({ period: "today" }).catch(() => null),
-      kassaService.recentSales({ period: "today" }).catch(() => []),
+      kassaService.recentSales({ period: "today" }).catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
     ]);
-    return normalizeKassaAnalytics(
-      analytics as Record<string, unknown> | null,
-      sales,
+    const view = normalizeKassaAnalytics(
+      analyticsRaw as Record<string, unknown> | null,
+      salesResult.data,
       localeTag,
     );
+    const dashboardCards = (
+      (analyticsRaw as Record<string, unknown> | null)?.dashboard_cards ?? []
+    ) as Array<{ key: string; label: string; value: number; deeplink?: string; empty_state?: { message?: string } }>;
+    return { ...view, dashboardCards };
   });
 
   const createCustomer = useMutation(customersService.create);
+  const updateCustomer = useMutation(
+    ({ id, ...payload }: Record<string, unknown> & { id: string }) =>
+      customersService.update(id, payload)
+  );
   const checkout = useMutation(kassaService.checkout);
   const quote = useMutation(kassaService.quote);
+
+  // Debounce picker search so we don't fire on every keystroke.
+  React.useEffect(() => {
+    const timer = setTimeout(() => setPickerSearchDebounced(customerPickerSearch), 280);
+    return () => clearTimeout(timer);
+  }, [customerPickerSearch]);
+
+  const pickerResultsQuery = useQuery(
+    ["customers-picker", pickerSearchDebounced, showCustomerPicker],
+    () =>
+      showCustomerPicker
+        ? customersService.list({ search: pickerSearchDebounced || undefined, per_page: 10 })
+        : Promise.resolve(null),
+  );
   const refundSaleMutation = useMutation(
     ({ id, reason }: { id: string; reason: string; method: string }) =>
       kassaService.refund(id, { reason, amount: undefined })
@@ -577,7 +616,7 @@ export default function KassaPage() {
     // Aggregate the most frequent line descriptions across recent sales, then
     // resolve them back to products for quick re-adding.
     const counts = new Map<string, number>();
-    (recentSales.data ?? []).forEach((sale) => {
+    (recentSales.data?.data ?? []).forEach((sale) => {
       (sale.lines ?? []).forEach((line) => {
         const key = (line.description ?? "").toLowerCase();
         if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
@@ -1073,7 +1112,7 @@ export default function KassaPage() {
     }
   };
 
-  const lastSale = recentSales.data?.[0];
+  const lastSale = recentSales.data?.data?.[0];
   // Trello #62: safe total (never NaN) + deep link to the real invoice.
   const lastSaleEuros = lastSale
     ? Number(
@@ -1090,6 +1129,8 @@ export default function KassaPage() {
       : undefined);
   const todayTurnover = todayQuery.data?.totals.turnover_cents ?? 0;
   const todayTransactions = todayQuery.data?.totals.transaction_count ?? 0;
+  const dashCard = (key: string) =>
+    (todayQuery.data?.dashboardCards ?? []).find((c) => c.key === key);
 
   return (
     <>
@@ -1112,25 +1153,26 @@ export default function KassaPage() {
             href: `#cart`,
           },
           {
-            label: t("adminNew.kassa.products"),
+            label: dashCard("products")?.label ?? t("adminNew.kassa.products"),
             value:
+              dashCard("products")?.value ??
               productsQuery.data?.meta?.total ??
               productsQuery.data?.data.length ??
               0,
             icon: Warehouse,
             tone: "navy",
-            href: `/${locale}/admin/producten`,
+            href: dashCard("products")?.deeplink ?? `/${locale}/admin/producten`,
             actionIcon: Pencil,
             actionHref: `/${locale}/admin/producten`,
             actionLabel: t("adminNew.kassa.editProducts"),
             loading: productsQuery.loading,
           },
           {
-            label: t("adminNew.kassa.recentSales"),
-            value: recentSales.data?.length ?? 0,
+            label: dashCard("recent_sales")?.label ?? t("adminNew.kassa.recentSales"),
+            value: dashCard("recent_sales")?.value ?? recentSales.data?.data?.length ?? 0,
             icon: Receipt,
             tone: "marine",
-            href: `/${locale}/admin/verkopen`,
+            href: dashCard("recent_sales")?.deeplink ?? `/${locale}/admin/verkopen`,
             loading: recentSales.loading,
           },
         ]}
@@ -1569,9 +1611,11 @@ export default function KassaPage() {
                           localeTag,
                         )}
                         accent={
-                          product.color ?? product.group?.color ?? "#1f93b8"
+                          product.display_color ?? product.color ?? product.group?.color ?? "#1f93b8"
                         }
                         image={product.image_url}
+                        displayIcon={product.display_icon}
+                        displayColor={product.display_color ?? product.color ?? null}
                         selected={cartHas(product.id)}
                         highlighted={!!ruleMatch}
                         onClick={() => addProduct(product, ruleMatch)}
@@ -1658,13 +1702,13 @@ export default function KassaPage() {
             </div>
             {recentSales.loading ? (
               <LoadingState label={t("adminNew.common.loading")} variant="list" />
-            ) : recentSales.error ? (
-              <p className="text-sm text-navy-500">{t("adminNew.kassa.noRecentSales")}</p>
-            ) : !recentSales.data?.length ? (
-              <p className="text-sm text-navy-500">{t("adminNew.kassa.noRecentSales")}</p>
+            ) : !recentSales.data?.data?.length ? (
+              <p className="text-sm text-navy-500">
+                {recentSales.data?.emptyMessage || t("adminNew.kassa.noRecentSales")}
+              </p>
             ) : (
               <ul className="divide-y divide-navy-50">
-                {(recentSales.data ?? []).slice(0, 5).map((sale, i) => {
+                {(recentSales.data.data).slice(0, 5).map((sale, i) => {
                   const euros =
                     Number(
                       sale.total_euros ??
@@ -2561,81 +2605,187 @@ export default function KassaPage() {
       </Modal>
 
       {/* Trello #62: searchable customer picker */}
-      <Modal open={showCustomerPicker} onClose={() => setShowCustomerPicker(false)} size="md">
-        <AdminModalHeader
-          title={t("adminNew.kassa.pickCustomer")}
-          subtitle={t("adminNew.kassa.pickCustomerHint")}
-        />
-        <AdminModalBody>
-          <Input
-            autoFocus
-            placeholder={t("adminNew.kassa.customerSearch")}
-            value={customerPickerSearch}
-            onChange={(e) => setCustomerPickerSearch(e.target.value)}
-            leftIcon={<UserPlus className="h-4 w-4" />}
-          />
-          <div className="mt-2 max-h-72 divide-y divide-navy-100 overflow-y-auto rounded-lg border border-navy-100">
-            <button
-              type="button"
-              onClick={() => {
-                setCustomerId("");
-                setShowCustomerPicker(false);
-              }}
-              className="flex w-full items-center px-3 py-2 text-left text-sm text-navy-500 hover:bg-sand-50"
-            >
-              {t("adminNew.kassa.noCustomer")}
-            </button>
-            {(customersQuery.data?.data ?? [])
-              .filter((c) => {
-                const q = customerPickerSearch.trim().toLowerCase();
-                if (!q) return true;
-                return (
-                  c.name.toLowerCase().includes(q) ||
-                  (c.email ?? "").toLowerCase().includes(q) ||
-                  (c.phone ?? "").toLowerCase().includes(q)
-                );
-              })
-              .slice(0, 50)
-              .map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => {
-                    setCustomerId(c.id);
-                    setShowCustomerPicker(false);
-                  }}
-                  className={cn(
-                    "flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-sand-50",
-                    c.id === customerId && "bg-marine-50",
-                  )}
-                >
-                  <span className="font-medium text-navy-900">{c.name}</span>
-                  <span className="text-xs text-navy-500">
-                    {c.email ?? t("adminNew.common.noEmail")}
-                    {c.phone ? ` · ${c.phone}` : ""}
-                  </span>
-                </button>
-              ))}
-          </div>
-        </AdminModalBody>
-        <AdminModalFooter>
-          <Link href={`/${locale}/admin/klanten`} className="mr-auto">
-            <Button type="button" variant="ghost">
-              {t("adminNew.kassa.allCustomers")}
-            </Button>
-          </Link>
-          <Button
-            type="button"
-            variant="outline"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={() => {
-              setShowCustomerPicker(false);
-              setShowCustomerModal(true);
+      <Modal
+        open={showCustomerPicker}
+        onClose={() => {
+          setShowCustomerPicker(false);
+          setCustomerPickerSearch("");
+          setEditingCustomerId(null);
+        }}
+        size="md"
+      >
+        {editingCustomerId ? (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                const updated = await updateCustomer.mutate({
+                  id: editingCustomerId,
+                  name: editCustomer.name,
+                  email: editCustomer.email || null,
+                  phone: editCustomer.phone || null,
+                  company_name: editCustomer.company_name || null,
+                  notes: editCustomer.notes || null,
+                  address: editCustomer.street
+                    ? {
+                        street: editCustomer.street,
+                        house_number: editCustomer.house_number || null,
+                        postal_code: editCustomer.postal_code || null,
+                        city: editCustomer.city || null,
+                        country: editCustomer.country || null,
+                        google_place_id: editCustomer.google_place_id || null,
+                        latitude: editCustomer.latitude,
+                        longitude: editCustomer.longitude,
+                      }
+                    : undefined,
+                });
+                setCustomerId(updated.id);
+                setEditingCustomerId(null);
+                void pickerResultsQuery.refetch();
+                push({ tone: "success", title: t("adminNew.kassa.toasts.customerCreated") });
+              } catch (err) {
+                push({ tone: "error", title: getApiErrorMessage(err) ?? t("adminNew.common.operationFailed") });
+              }
             }}
           >
-            {t("adminNew.kassa.newCustomer")}
-          </Button>
-        </AdminModalFooter>
+            <AdminModalHeader
+              title={t("adminNew.kassa.editCustomer")}
+              subtitle={editCustomer.name}
+            />
+            <AdminModalBody>
+              <Input label={t("adminNew.common.name")} value={editCustomer.name} required
+                onChange={(e) => setEditCustomer((p) => ({ ...p, name: e.target.value }))} />
+              <Input label={t("adminNew.common.email")} type="email" value={editCustomer.email}
+                onChange={(e) => setEditCustomer((p) => ({ ...p, email: e.target.value }))} />
+              <Input label={t("adminNew.common.phone")} value={editCustomer.phone}
+                onChange={(e) => setEditCustomer((p) => ({ ...p, phone: e.target.value }))} />
+              <Input label={t("adminNew.kassa.companyName")} value={editCustomer.company_name}
+                onChange={(e) => setEditCustomer((p) => ({ ...p, company_name: e.target.value }))} />
+              <AddressAutocomplete
+                label={t("adminNew.kassa.searchAddress")}
+                placeholder={t("adminNew.kassa.searchAddressPlaceholder")}
+                onSelect={(addr) =>
+                  setEditCustomer((p) => ({
+                    ...p,
+                    street: addr.street,
+                    house_number: addr.house_number,
+                    postal_code: addr.postal_code,
+                    city: addr.city,
+                    country: addr.country,
+                    google_place_id: addr.google_place_id,
+                    latitude: addr.latitude,
+                    longitude: addr.longitude,
+                  }))
+                }
+              />
+            </AdminModalBody>
+            <AdminModalFooter>
+              <Button type="button" variant="ghost" onClick={() => setEditingCustomerId(null)}>
+                {t("adminNew.common.cancel")}
+              </Button>
+              <Button type="submit" variant="primary" disabled={updateCustomer.loading}>
+                {t("adminNew.common.save")}
+              </Button>
+            </AdminModalFooter>
+          </form>
+        ) : (
+          <>
+            <AdminModalHeader
+              title={t("adminNew.kassa.pickCustomer")}
+              subtitle={t("adminNew.kassa.pickCustomerHint")}
+            />
+            <AdminModalBody>
+              <Input
+                autoFocus
+                placeholder={t("adminNew.kassa.customerSearch")}
+                value={customerPickerSearch}
+                onChange={(e) => setCustomerPickerSearch(e.target.value)}
+                leftIcon={<UserPlus className="h-4 w-4" />}
+              />
+              <div className="mt-2 max-h-72 divide-y divide-navy-100 overflow-y-auto rounded-lg border border-navy-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomerId("");
+                    setShowCustomerPicker(false);
+                    setCustomerPickerSearch("");
+                  }}
+                  className="flex w-full items-center px-3 py-2 text-left text-sm text-navy-500 hover:bg-sand-50"
+                >
+                  {t("adminNew.kassa.noCustomer")}
+                </button>
+                {pickerResultsQuery.loading ? (
+                  <div className="px-3 py-4 text-center text-sm text-navy-400">
+                    {t("adminNew.common.loading")}…
+                  </div>
+                ) : (pickerResultsQuery.data?.data ?? []).map((c) => (
+                  <div key={c.id} className={cn("flex items-center", c.id === customerId && "bg-marine-50")}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomerId(c.id);
+                        setShowCustomerPicker(false);
+                        setCustomerPickerSearch("");
+                      }}
+                      className="flex min-w-0 flex-1 flex-col px-3 py-2 text-left text-sm hover:bg-sand-50"
+                    >
+                      <span className="font-medium text-navy-900">{c.name}</span>
+                      <span className="text-xs text-navy-500">
+                        {c.email ?? t("adminNew.common.noEmail")}
+                        {c.phone ? ` · ${c.phone}` : ""}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      title={t("adminNew.common.edit")}
+                      onClick={() => {
+                        setEditingCustomerId(c.id);
+                        const cr = c as unknown as Record<string, unknown>;
+                        const addr = (cr.address ?? {}) as Record<string, unknown>;
+                        setEditCustomer({
+                          name: c.name ?? "",
+                          email: c.email ?? "",
+                          phone: c.phone ?? "",
+                          company_name: c.company_name ?? "",
+                          street: addr.street as string ?? "",
+                          house_number: addr.house_number as string ?? "",
+                          postal_code: addr.postal_code as string ?? "",
+                          city: addr.city as string ?? "",
+                          country: addr.country as string ?? "",
+                          google_place_id: addr.google_place_id as string ?? "",
+                          latitude: addr.latitude as number ?? null,
+                          longitude: addr.longitude as number ?? null,
+                          notes: c.notes ?? "",
+                        });
+                      }}
+                      className="mr-2 shrink-0 rounded p-1.5 text-navy-400 hover:bg-sand-100 hover:text-marine-600"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </AdminModalBody>
+            <AdminModalFooter>
+              <Link href={`/${locale}/admin/klanten`} className="mr-auto">
+                <Button type="button" variant="ghost">
+                  {t("adminNew.kassa.allCustomers")}
+                </Button>
+              </Link>
+              <Button
+                type="button"
+                variant="outline"
+                leftIcon={<Plus className="h-4 w-4" />}
+                onClick={() => {
+                  setShowCustomerPicker(false);
+                  setShowCustomerModal(true);
+                }}
+              >
+                {t("adminNew.kassa.newCustomer")}
+              </Button>
+            </AdminModalFooter>
+          </>
+        )}
       </Modal>
 
       <AdminConfirmModal
@@ -2782,6 +2932,8 @@ function CatalogTile({
   selected,
   highlighted,
   image,
+  displayIcon,
+  displayColor,
   onClick,
 }: {
   title: string;
@@ -2792,13 +2944,16 @@ function CatalogTile({
   selected?: boolean;
   highlighted?: boolean;
   image?: string | null;
+  displayIcon?: string | null;
+  displayColor?: string | null;
   onClick: () => void;
 }) {
+  const tileAccent = displayColor || accent;
   return (
     <button
       type="button"
       onClick={onClick}
-      style={!selected ? { borderLeftColor: accent } : undefined}
+      style={!selected ? { borderLeftColor: tileAccent } : undefined}
       className={cn(
         "group relative flex h-full flex-col justify-between gap-2 rounded-xl border p-3 text-left transition w-full",
         selected
@@ -2839,13 +2994,22 @@ function CatalogTile({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={image} alt="" className="h-full w-full object-cover" />
           </span>
+        ) : displayIcon ? (
+          <span
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-lg ring-1 ring-navy-100"
+            style={{ backgroundColor: displayColor ? `${displayColor}22` : undefined }}
+          >
+            {displayIcon}
+          </span>
         ) : (
-          <Ship
-            className={cn(
-              "h-4 w-4 shrink-0 transition",
-              "text-navy-300 group-hover:text-marine-400",
-            )}
-          />
+          <span
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md ring-1 ring-navy-100"
+            style={{ backgroundColor: tileAccent ? `${tileAccent}22` : '#e8edf3' }}
+          >
+            <Ship
+              className="h-4 w-4 shrink-0 transition text-navy-300 group-hover:text-marine-400"
+            />
+          </span>
         )}
       </div>
       <div>
