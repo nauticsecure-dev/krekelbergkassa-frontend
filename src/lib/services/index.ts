@@ -1962,12 +1962,31 @@ export const workOrdersService = {
     const res = await api<unknown>(`/v1/work-orders/${id}/timeline`, { query });
     return asPaginated<Record<string, unknown>>(res);
   },
+  qr(id: string) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}/qr`);
+  },
+  waiting(id: string, payload: { status: string; note?: string }) {
+    return api<Record<string, unknown>>(`/v1/work-orders/${id}/waiting`, {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  bulkAction(payload: { action: string; ids: string[]; status?: string; assigned_to_user_id?: string }) {
+    return api<{ processed: number; total: number }>('/v1/work-orders/bulk-action', {
+      method: 'POST',
+      body: payload,
+    });
+  },
 };
 
 export interface WorkOrderMetadata {
-  statuses?: Array<{ value: string; label: string }>;
+  statuses?: string[];
+  status_transitions?: Record<string, string[]>;
   types?: Array<{ value: string; label: string }>;
-  priorities?: Array<{ value: string; label: string }>;
+  priorities?: string[];
+  photo_folders?: string[];
+  document_folders?: string[];
   technicians?: Array<{ id: string; name: string }>;
 }
 
