@@ -65,8 +65,12 @@ export default function PortalMessagesPage() {
     })
   );
 
+  const [replyBody, setReplyBody] = React.useState('');
   const markRead = useMutation(portalService.markRead);
   const markAllRead = useMutation(portalService.markAllRead);
+  const postComment = useMutation(
+    ({ id, message }: { id: string; message: string }) => portalService.timelineComment(id, message)
+  );
 
   const items = timeline.data?.items ?? [];
   const unreadCount = timeline.data?.pagination.unread_count ?? items.filter(isUnread).length;
@@ -74,6 +78,7 @@ export default function PortalMessagesPage() {
 
   const openItem = async (item: PortalTimelineItem) => {
     setSelected(item);
+    setReplyBody('');
     if (isUnread(item)) {
       try {
         await markRead.mutate(item.id);
@@ -271,21 +276,74 @@ export default function PortalMessagesPage() {
                       ? t('adminNew.portal.messages.filterUnread')
                       : t('adminNew.portal.messages.filterRead'),
                   },
+                  ...(selected.boat ? [{ label: t('adminNew.portal.messages.boatLabel', { defaultValue: 'Boot' }), value: String((selected.boat as Record<string, unknown>).name ?? '') }] : []),
+                  ...(selected.category ? [{ label: t('adminNew.portal.messages.categoryLabel', { defaultValue: 'Categorie' }), value: selected.category }] : []),
                 ]}
               />
+              {/* Existing comments */}
+              {Array.isArray(selected.comments) && (selected.comments as Record<string, unknown>[]).length > 0 ? (
+                <div className="mt-4 space-y-2 border-t border-navy-100 pt-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-navy-400">
+                    {t('adminNew.portal.messages.replies', { defaultValue: 'Reacties' })}
+                  </p>
+                  {(selected.comments as Record<string, unknown>[]).map((c, ci) => {
+                    const isCustomer = String(c.actor_type ?? '') === 'customer';
+                    return (
+                      <div key={String(c.id ?? ci)} className={`rounded-lg px-3 py-2 text-sm ${isCustomer ? 'bg-marine-50 text-marine-900' : 'bg-sand-50 text-navy-700'}`}>
+                        <span className="font-semibold">
+                          {isCustomer
+                            ? t('adminNew.portal.messages.you', { defaultValue: 'Jij' })
+                            : t('adminNew.portal.messages.marina', { defaultValue: 'Krekelberg' })}:
+                        </span>{' '}
+                        {String(c.message ?? '')}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+              {/* Reply textarea */}
+              <div className="mt-4 border-t border-navy-100 pt-3">
+                <textarea
+                  className="input-base min-h-20 w-full text-sm"
+                  placeholder={t('adminNew.portal.messages.replyPlaceholder', { defaultValue: 'Typ uw reactie...' })}
+                  value={replyBody}
+                  onChange={(e) => setReplyBody(e.target.value)}
+                />
+              </div>
             </PortalModalBody>
             <PortalModalFooter>
               <Button variant="outline" onClick={() => setSelected(null)}>
                 {t('adminNew.common.cancel')}
               </Button>
-              {/* Trello #89: navigate to the item's source record when a CTA url is present. */}
+              {/* CTA button when present */}
               {selected.cta_url ? (
                 <a href={selected.cta_url.startsWith('http') ? selected.cta_url : `/${locale}${selected.cta_url}`}>
-                  <Button variant="gold">
+                  <Button variant="outline">
                     {selected.cta_label ?? t('adminNew.portal.messages.openItem')}
                   </Button>
                 </a>
               ) : null}
+              {/* Reply send button */}
+              <Button
+                variant="gold"
+                disabled={!replyBody.trim() || postComment.loading}
+                onClick={async () => {
+                  if (!replyBody.trim() || !selected) return;
+                  try {
+                    await postComment.mutate({ id: selected.id, message: replyBody.trim() });
+                    setReplyBody('');
+                    push({ tone: 'success', title: t('adminNew.portal.messages.replySent', { defaultValue: 'Reactie verstuurd' }) });
+                    await timeline.refetch();
+                    setSelected(null);
+                  } catch (err) {
+                    push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+                  }
+                }}
+              >
+                {postComment.loading
+                  ? t('adminNew.common.saving')
+                  : t('adminNew.portal.messages.reply', { defaultValue: 'Reageer' })}
+              </Button>
             </PortalModalFooter>
           </>
         ) : null}

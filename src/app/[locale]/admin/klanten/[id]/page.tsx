@@ -199,22 +199,41 @@ export default function CustomerDetailPage() {
     location_code: '',
   });
 
-  // Trello #89: post a timeline message (internal note or customer-visible).
+  // Timeline composer state.
+  const [tlTitle, setTlTitle] = React.useState('');
   const [tlBody, setTlBody] = React.useState('');
   const [tlVisibility, setTlVisibility] = React.useState<'internal' | 'customer'>('internal');
-  const postTimeline = useMutation((payload: { title: string; body: string; visibility: 'internal' | 'customer' }) =>
-    adminService.timelineMessage({ customer_id: customerId!, ...payload })
+  const [tlPriority, setTlPriority] = React.useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
+  const [tlBoatId, setTlBoatId] = React.useState('');
+  const [tlShowCta, setTlShowCta] = React.useState(false);
+  const [tlCtaLabel, setTlCtaLabel] = React.useState('');
+  const [tlCtaUrl, setTlCtaUrl] = React.useState('');
+  // Per-item comment state: { [itemId]: { open: boolean; body: string; loading: boolean } }
+  const [commentState, setCommentState] = React.useState<Record<string, { open: boolean; body: string; loading: boolean }>>({});
+
+  const postTimeline = useMutation((payload: Parameters<typeof adminService.timelineMessage>[0]) =>
+    adminService.timelineMessage(payload)
   );
 
   const handlePostTimeline = async () => {
-    if (!tlBody.trim() || !customerId) return;
+    if (!tlTitle.trim() || !tlBody.trim() || !customerId) return;
     try {
       await postTimeline.mutate({
-        title: tlBody.trim().slice(0, 60),
-        body: tlBody.trim(),
+        customer_id: customerId,
+        title: tlTitle.trim(),
+        message: tlBody.trim(),
         visibility: tlVisibility,
+        priority: tlPriority,
+        boat_id: tlBoatId || undefined,
+        cta_label: tlCtaLabel || undefined,
+        cta_url: tlCtaUrl || undefined,
       });
+      setTlTitle('');
       setTlBody('');
+      setTlBoatId('');
+      setTlCtaLabel('');
+      setTlCtaUrl('');
+      setTlShowCta(false);
       push({ tone: 'success', title: t('adminNew.customerDetail.timelinePosted') });
       await data.refetch();
     } catch (err) {
@@ -223,6 +242,20 @@ export default function CustomerDetailPage() {
         title: t('adminNew.common.operationFailed'),
         message: getApiErrorMessage(err),
       });
+    }
+  };
+
+  const handlePostComment = async (itemId: string) => {
+    const cs = commentState[itemId];
+    if (!cs?.body.trim()) return;
+    setCommentState((prev) => ({ ...prev, [itemId]: { ...prev[itemId], loading: true } }));
+    try {
+      await adminService.timelineComment(itemId, { message: cs.body.trim() });
+      setCommentState((prev) => ({ ...prev, [itemId]: { open: false, body: '', loading: false } }));
+      await data.refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+      setCommentState((prev) => ({ ...prev, [itemId]: { ...prev[itemId], loading: false } }));
     }
   };
 
@@ -694,15 +727,21 @@ export default function CustomerDetailPage() {
               description={t('adminNew.customerDetail.timelineSubtitle')}
               icon={Clock}
             >
-              {/* Trello #89: composer for internal notes / customer-visible messages */}
-              <div className="mb-4 rounded-xl border border-navy-100 bg-sand-50/40 p-3">
+              {/* Timeline composer */}
+              <div className="mb-4 rounded-xl border border-navy-100 bg-sand-50/40 p-3 space-y-2">
+                <Input
+                  placeholder={t('adminNew.customerDetail.timelineTitlePlaceholder', { defaultValue: 'Onderwerp / titel' })}
+                  value={tlTitle}
+                  onChange={(e) => setTlTitle(e.target.value)}
+                />
                 <textarea
                   className="input-base min-h-16 w-full"
                   placeholder={t('adminNew.customerDetail.timelinePlaceholder')}
                   value={tlBody}
                   onChange={(e) => setTlBody(e.target.value)}
                 />
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Visibility toggle */}
                   <div className="inline-flex overflow-hidden rounded-lg border border-navy-200">
                     {(['internal', 'customer'] as const).map((v) => (
                       <button
@@ -722,34 +761,132 @@ export default function CustomerDetailPage() {
                       </button>
                     ))}
                   </div>
-                  <Button
-                    size="sm"
-                    variant="gold"
-                    disabled={!tlBody.trim() || postTimeline.loading}
-                    onClick={() => void handlePostTimeline()}
+                  {/* Priority */}
+                  <select
+                    className="input-base py-1.5 text-xs"
+                    value={tlPriority}
+                    onChange={(e) => setTlPriority(e.target.value as typeof tlPriority)}
                   >
-                    {t('adminNew.customerDetail.timelinePost')}
-                  </Button>
+                    {(['low', 'normal', 'high', 'urgent'] as const).map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                  {/* Boat selector */}
+                  {(data.data?.boats?.length ?? 0) > 0 ? (
+                    <select
+                      className="input-base py-1.5 text-xs"
+                      value={tlBoatId}
+                      onChange={(e) => setTlBoatId(e.target.value)}
+                    >
+                      <option value="">{t('adminNew.customerDetail.timelineNoBoat', { defaultValue: 'Geen boot' })}</option>
+                      {data.data!.boats.map((b) => (
+                        <option key={String(b.id)} value={String(b.id)}>{b.name}</option>
+                      ))}
+                    </select>
+                  ) : null}
+                  {/* CTA toggle */}
+                  <button
+                    type="button"
+                    className="text-xs text-marine-700 underline hover:text-marine-900"
+                    onClick={() => setTlShowCta((v) => !v)}
+                  >
+                    {tlShowCta
+                      ? t('adminNew.customerDetail.timelineHideCta', { defaultValue: 'Verberg knop' })
+                      : t('adminNew.customerDetail.timelineAddCta', { defaultValue: '+ CTA knop' })}
+                  </button>
+                  <div className="ml-auto">
+                    <Button
+                      size="sm"
+                      variant="gold"
+                      disabled={!tlTitle.trim() || !tlBody.trim() || postTimeline.loading}
+                      onClick={() => void handlePostTimeline()}
+                    >
+                      {t('adminNew.customerDetail.timelinePost')}
+                    </Button>
+                  </div>
                 </div>
+                {tlShowCta ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder={t('adminNew.customerDetail.timelineCtaLabel', { defaultValue: 'Knoptekst (bijv. Betaal nu)' })}
+                      value={tlCtaLabel}
+                      onChange={(e) => setTlCtaLabel(e.target.value)}
+                    />
+                    <Input
+                      placeholder={t('adminNew.customerDetail.timelineCtaUrl', { defaultValue: 'Link URL' })}
+                      value={tlCtaUrl}
+                      onChange={(e) => setTlCtaUrl(e.target.value)}
+                    />
+                  </div>
+                ) : null}
               </div>
 
               {data.data.timeline.length ? (
                 <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {data.data.timeline.map((item, idx) => {
+                    const itemId = String(item.id ?? idx);
                     const internal = String(item.visibility ?? '') === 'internal';
+                    const comments = Array.isArray(item.comments) ? item.comments as Record<string, unknown>[] : [];
+                    const cs = commentState[itemId] ?? { open: false, body: '', loading: false };
                     return (
-                    <div key={String(item.id ?? idx)} className="px-4 py-3">
+                    <div key={itemId} className="px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-medium text-navy-900">{String(item.title ?? item.type ?? '—')}</span>
                             {internal ? (
                               <Badge tone="sand">{t('adminNew.customerDetail.timelineInternal')}</Badge>
                             ) : null}
+                            {String(item.priority ?? '') === 'high' || String(item.priority ?? '') === 'urgent' ? (
+                              <Badge tone="danger">{String(item.priority)}</Badge>
+                            ) : null}
+                            {item.boat ? (
+                              <span className="text-xs text-navy-400">{String((item.boat as Record<string, unknown>).name ?? '')}</span>
+                            ) : null}
                           </div>
-                          {item.body ? (
-                            <div className="mt-1 text-sm text-navy-600">{String(item.body)}</div>
+                          {item.message ?? item.body ? (
+                            <div className="mt-1 text-sm text-navy-600">{String(item.message ?? item.body)}</div>
                           ) : null}
+                          {/* Comments */}
+                          {comments.length > 0 ? (
+                            <div className="mt-2 space-y-1 border-l-2 border-navy-100 pl-3">
+                              {comments.map((c, ci) => (
+                                <div key={String(c.id ?? ci)} className="text-xs text-navy-600">
+                                  <span className="font-semibold">
+                                    {String((c.created_by as Record<string, unknown> | undefined)?.name ?? c.actor_type ?? 'Staff')}:
+                                  </span>{' '}
+                                  {String(c.message ?? '')}
+                                  <span className="ml-1 text-navy-400">{c.created_at ? formatDate(String(c.created_at)) : ''}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
+                          {/* Inline comment form */}
+                          {cs.open ? (
+                            <div className="mt-2 flex gap-2">
+                              <input
+                                className="input-base flex-1 py-1 text-sm"
+                                placeholder={t('adminNew.customerDetail.commentPlaceholder', { defaultValue: 'Reageer...' })}
+                                value={cs.body}
+                                onChange={(e) => setCommentState((prev) => ({ ...prev, [itemId]: { ...prev[itemId], body: e.target.value } }))}
+                                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handlePostComment(itemId); } }}
+                              />
+                              <Button size="sm" variant="outline" disabled={cs.loading || !cs.body.trim()} onClick={() => void handlePostComment(itemId)}>
+                                {t('adminNew.customerDetail.commentSend', { defaultValue: 'Stuur' })}
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => setCommentState((prev) => ({ ...prev, [itemId]: { open: false, body: '', loading: false } }))}>
+                                {t('adminNew.common.cancel')}
+                              </Button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              className="mt-1.5 text-xs text-marine-700 hover:text-marine-900 underline"
+                              onClick={() => setCommentState((prev) => ({ ...prev, [itemId]: { open: true, body: '', loading: false } }))}
+                            >
+                              {t('adminNew.customerDetail.addComment', { defaultValue: '+ Opmerking' })}
+                            </button>
+                          )}
                         </div>
                         <div className="shrink-0 text-xs text-navy-500">
                           {item.created_at ? formatDate(String(item.created_at)) : '—'}

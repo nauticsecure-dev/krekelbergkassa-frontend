@@ -1216,11 +1216,22 @@ export const adminService = {
   timelineMessage(payload: {
     customer_id: string;
     title: string;
-    body: string;
+    message: string;
     type?: string;
     visibility?: 'internal' | 'customer';
+    priority?: 'low' | 'normal' | 'high' | 'urgent';
+    boat_id?: string;
+    cta_label?: string;
+    cta_url?: string;
   }) {
     return api<Record<string, unknown>>('/v1/admin/timeline/message', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  timelineComment(id: string, payload: { message: string; visibility?: 'internal' | 'customer' }) {
+    return api<Record<string, unknown>>(`/v1/admin/timeline/${id}/comment`, {
       method: 'POST',
       body: payload,
       queueWhenOffline: true,
@@ -1472,6 +1483,15 @@ export const portalService = {
   markRead(id: string) {
     return api<Record<string, unknown>>(`/v1/portal/timeline/${id}/read`, {
       method: 'POST',
+      portalAuth: true,
+      auth: false,
+      queueWhenOffline: true,
+    });
+  },
+  timelineComment(id: string, message: string) {
+    return api<Record<string, unknown>>(`/v1/portal/timeline/${id}/comment`, {
+      method: 'POST',
+      body: { message },
       portalAuth: true,
       auth: false,
       queueWhenOffline: true,

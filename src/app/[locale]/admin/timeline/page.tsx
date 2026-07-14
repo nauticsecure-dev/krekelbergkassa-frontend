@@ -37,32 +37,35 @@ const str = (r: Rec, ...keys: string[]): string => {
   return '';
 };
 
-// Trello #109: must match UnifiedTimelineService categories exactly.
+// Must match TimelineItem::CATEGORIES on the backend exactly.
 const CATEGORIES = [
-  'finance',
   'storage',
+  'work_orders',
+  'invoices',
+  'payments',
   'planning',
-  'crm',
-  'boats',
-  'supplier_ocr',
-  'accounting',
+  'photos',
+  'documents',
+  'contracts',
+  'notifications',
   'system',
 ];
 
 function categoryMeta(category: string): { icon: LucideIcon; tone: React.ComponentProps<typeof Badge>['tone'] } {
   switch (category) {
-    case 'finance':
-    case 'accounting':
+    case 'invoices':
+    case 'payments':
       return { icon: CreditCard, tone: 'gold' };
     case 'storage':
       return { icon: Warehouse, tone: 'marine' };
-    case 'boats':
+    case 'work_orders':
       return { icon: Ship, tone: 'marine' };
-    case 'crm':
+    case 'contracts':
       return { icon: User, tone: 'success' };
     case 'planning':
       return { icon: CalendarClock, tone: 'marine' };
-    case 'supplier_ocr':
+    case 'documents':
+    case 'photos':
       return { icon: FileText, tone: 'navy' };
     default:
       return { icon: Activity, tone: 'neutral' };
@@ -76,10 +79,11 @@ export default function TimelinePage() {
   const [search, setSearch] = React.useState('');
   const [category, setCategory] = React.useState('');
   const [priority, setPriority] = React.useState('');
+  const [visibility, setVisibility] = React.useState('');
   const [from, setFrom] = React.useState('');
   const [to, setTo] = React.useState('');
   const [page, setPage] = React.useState(1);
-  // Trello #109: saved filter presets, persisted per-device.
+  // Saved filter presets, persisted per-device.
   const [activePreset, setActivePreset] = React.useState('all');
 
   React.useEffect(() => {
@@ -97,30 +101,41 @@ export default function TimelinePage() {
       case 'myTasks':
         setCategory('');
         setPriority('high');
+        setVisibility('');
         break;
-      case 'finance':
-        setCategory('finance');
+      case 'invoices':
+        setCategory('invoices');
         setPriority('');
+        setVisibility('');
         break;
       case 'storage':
         setCategory('storage');
         setPriority('');
+        setVisibility('');
         break;
       case 'planning':
         setCategory('planning');
         setPriority('');
+        setVisibility('');
+        break;
+      case 'internal':
+        setCategory('');
+        setPriority('');
+        setVisibility('internal');
         break;
       default:
         setCategory('');
         setPriority('');
+        setVisibility('');
     }
   };
 
-  const feed = useQuery([search, category, priority, from, to, page], () =>
+  const feed = useQuery([search, category, priority, visibility, from, to, page], () =>
     adminService.timelineFeed({
       search: search || undefined,
       category: category || undefined,
       priority: priority || undefined,
+      visibility: visibility || undefined,
       from: from || undefined,
       to: to || undefined,
       page,
@@ -156,7 +171,7 @@ export default function TimelinePage() {
         >
           {/* Trello #109: saved filter presets */}
           <div className="mb-3 flex flex-wrap gap-2">
-            {(['all', 'myTasks', 'finance', 'storage', 'planning'] as const).map((id) => (
+            {(['all', 'myTasks', 'invoices', 'storage', 'planning', 'internal'] as const).map((id) => (
               <button
                 key={id}
                 type="button"
@@ -192,9 +207,21 @@ export default function TimelinePage() {
               <option value="">{t('adminNew.timeline.allCategories')}</option>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
-                  {t(`adminNew.timeline.categories.${c}`)}
+                  {t(`adminNew.timeline.categories.${c}`, { defaultValue: c })}
                 </option>
               ))}
+            </AdminSelect>
+            <AdminSelect
+              value={visibility}
+              onChange={(v) => {
+                setVisibility(v);
+                setActivePreset('all');
+                setPage(1);
+              }}
+            >
+              <option value="">{t('adminNew.timeline.allVisibility', { defaultValue: 'Alle zichtbaarheid' })}</option>
+              <option value="customer">{t('adminNew.customerDetail.timelineCustomer', { defaultValue: 'Klant' })}</option>
+              <option value="internal">{t('adminNew.customerDetail.timelineInternal', { defaultValue: 'Intern' })}</option>
             </AdminSelect>
             <Input
               type="date"
@@ -245,7 +272,7 @@ export default function TimelinePage() {
                             {str(item, 'title', 'type') || '—'}
                           </span>
                           <Badge tone={meta.tone}>
-                            {CATEGORIES.includes(cat) ? t(`adminNew.timeline.categories.${cat}`) : cat}
+                            {t(`adminNew.timeline.categories.${cat}`, { defaultValue: cat })}
                           </Badge>
                           {priority === 'high' || priority === 'urgent' ? (
                             <Badge tone="danger">{priority}</Badge>
