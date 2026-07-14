@@ -209,6 +209,7 @@ export default function ProductGroupsPage() {
                     <AdminTableHeaderCell>{t('adminNew.productGroups.columns.group')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.productGroups.columns.code')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.productGroups.columns.vat')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.productGroups.columns.products', { defaultValue: 'Producten' })}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.productGroups.columns.status')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
@@ -240,6 +241,9 @@ export default function ProductGroupsPage() {
                         <AdminTableCell className="text-sm text-navy-600">
                           {str(g, 'vat_code') ||
                             (str(g, 'default_vat_rate') ? `${str(g, 'default_vat_rate')}%` : '—')}
+                        </AdminTableCell>
+                        <AdminTableCell className="text-sm tabular-nums text-navy-700">
+                          {g.products_count != null ? String(g.products_count) : '—'}
                         </AdminTableCell>
                         <AdminTableCell>
                           <Badge tone={g.active === false ? 'neutral' : 'success'}>

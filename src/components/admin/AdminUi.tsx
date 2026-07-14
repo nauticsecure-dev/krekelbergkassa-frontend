@@ -215,13 +215,15 @@ export function AdminTableRow({
   children,
   className,
   onClick,
+  style,
 }: {
   children: React.ReactNode;
   className?: string;
   onClick?: React.MouseEventHandler<HTMLTableRowElement>;
+  style?: React.CSSProperties;
 }) {
   return (
-    <tr className={cn('transition hover:bg-sand-50/80', className)} onClick={onClick}>
+    <tr className={cn('transition hover:bg-sand-50/80', className)} onClick={onClick} style={style}>
       {children}
     </tr>
   );

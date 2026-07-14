@@ -8,7 +8,8 @@ import { AdminSelect } from '@/components/admin/AdminUi';
 import { BarcodeScannerModal } from '@/components/admin/BarcodeScannerModal';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
-import { productsService } from '@/lib/services';
+import { productsService, productGroupsService } from '@/lib/services';
+import { useQuery } from '@/lib/hooks/useAsync';
 import { getApiErrorMessage } from '@/lib/api-error';
 import {
   EMPTY_PRODUCT_FORM,
@@ -43,6 +44,10 @@ export function ProductForm({
   const priceInclCents = calcPriceInclCents(priceExclCents, vatRate);
 
   const set = (patch: Partial<ProductFormState>) => onChange({ ...form, ...patch });
+
+  const groups = useQuery(['product-groups-form'], () => productGroupsService.list({ per_page: 100 }));
+  const groupRows = (groups.data as { data?: Array<Record<string, unknown>> })?.data
+    ?? (Array.isArray(groups.data) ? (groups.data as Array<Record<string, unknown>>) : []);
 
   const [showScanner, setShowScanner] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
@@ -126,6 +131,19 @@ export function ProductForm({
               {SERVICE_CODES.map((code) => (
                 <option key={code} value={code}>
                   {code}
+                </option>
+              ))}
+            </AdminSelect>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-navy-800">
+              {t('adminNew.products.fields.productGroup', { defaultValue: 'Productgroep' })}
+            </label>
+            <AdminSelect value={form.product_group_id} onChange={(v) => set({ product_group_id: v })}>
+              <option value="">{t('adminNew.products.fields.productGroupNone', { defaultValue: 'Geen groep' })}</option>
+              {groupRows.map((g) => (
+                <option key={String(g.id)} value={String(g.id)}>
+                  {String(g.name)} {g.code ? `(${String(g.code)})` : ''}
                 </option>
               ))}
             </AdminSelect>
@@ -299,6 +317,29 @@ export function ProductForm({
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-navy-400">
+          {t('adminNew.products.sections.visibility', { defaultValue: 'Zichtbaarheid' })}
+        </h3>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {([
+            ['show_in_kassa', 'adminNew.products.fields.showInKassa', 'Tonen in kassa'],
+            ['show_in_public', 'adminNew.products.fields.showInPublic', 'Tonen op website'],
+            ['show_in_calculator', 'adminNew.products.fields.showInCalculator', 'Tonen in calculator'],
+            ['show_in_booking', 'adminNew.products.fields.showInBooking', 'Tonen bij boekingen'],
+          ] as [keyof typeof form, string, string][]).map(([field, key, fallback]) => (
+            <label key={field} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form[field] as boolean}
+                onChange={(e) => set({ [field]: e.target.checked })}
+              />
+              {t(key, { defaultValue: fallback })}
+            </label>
+          ))}
         </div>
       </section>
 

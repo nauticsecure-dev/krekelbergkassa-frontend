@@ -61,7 +61,7 @@ export default function TakenPage() {
   );
   const completeTask = useMutation((id: string) => tasksService.complete(id));
 
-  const rows = tasks.data?.data ?? [];
+  const rows = React.useMemo(() => tasks.data?.data ?? [], [tasks.data]);
 
   const onComplete = async (id: string) => {
     try {

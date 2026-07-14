@@ -6,7 +6,11 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   BarChart3,
+  Eye,
+  EyeOff,
+  History,
   Image as ImageIcon,
+
   Package,
   Pencil,
   ShoppingCart,
@@ -25,6 +29,13 @@ import {
   AdminModalHeader,
   AdminSectionCard,
   AdminStatusStrip,
+  AdminTable,
+  AdminTableCard,
+  AdminTableCell,
+  AdminTableFooter,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableRow,
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -70,8 +81,11 @@ export default function ProductDetailPage() {
   const [aiPrompt, setAiPrompt] = React.useState('');
 
   const product = useQuery([id], () => productsService.get(id));
-  // Trello #86: sales stats + AI image generation
   const stats = useQuery([id, 'stats'], () => productsService.stats(id).catch(() => null));
+  const [auditPage, setAuditPage] = React.useState(1);
+  const auditLog = useQuery([id, 'audit', auditPage], () =>
+    productsService.auditLog(id, { page: auditPage, per_page: 15 }).catch(() => null)
+  );
   const updateProduct = useMutation((payload: Record<string, unknown>) =>
     productsService.update(id, payload)
   );
@@ -224,11 +238,57 @@ export default function ProductDetailPage() {
                 </div>
 
                 <dl>
+                  {p.group ? (
+                    <DetailRow
+                      label={t('adminNew.products.fields.productGroup', { defaultValue: 'Productgroep' })}
+                      value={
+                        <span className="inline-flex items-center gap-2">
+                          {p.group.color ? (
+                            <span
+                              className="h-3.5 w-3.5 shrink-0 rounded-md ring-1 ring-navy-100"
+                              style={{ backgroundColor: String(p.group.color) }}
+                            />
+                          ) : null}
+                          <Link
+                            href={`/${locale}/admin/product-groepen`}
+                            className="font-semibold text-marine-700 hover:text-marine-900"
+                          >
+                            {String(p.group.name ?? '')}
+                          </Link>
+                          {p.group.code ? (
+                            <span className="font-mono text-xs text-navy-400">{String(p.group.code)}</span>
+                          ) : null}
+                        </span>
+                      }
+                    />
+                  ) : null}
                   <DetailRow
                     label={t('adminNew.products.columns.category')}
                     value={categoryLabel(p.category)}
                   />
                   <DetailRow label={t('adminNew.products.fields.serviceCode')} value={p.service_code} />
+                  <DetailRow
+                    label={t('adminNew.products.sections.visibility', { defaultValue: 'Zichtbaarheid' })}
+                    value={
+                      <span className="flex flex-wrap justify-end gap-1">
+                        {([
+                          ['show_in_kassa', 'Kassa'],
+                          ['show_in_public', 'Website'],
+                          ['show_in_calculator', 'Calculator'],
+                          ['show_in_booking', 'Boekingen'],
+                        ] as [string, string][]).map(([field, label]) => {
+                          const raw = p as unknown as Record<string, unknown>;
+                          const on = raw[field] !== false;
+                          return (
+                            <span key={field} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${on ? 'bg-success-50 text-success-700' : 'bg-navy-100 text-navy-400'}`}>
+                              {on ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                              {label}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    }
+                  />
                   <DetailRow
                     label={t('adminNew.products.fields.tags')}
                     value={
@@ -420,6 +480,69 @@ export default function ProductDetailPage() {
               </AdminSectionCard>
             </div>
           </div>
+        ) : null}
+
+        {p && !editing && auditLog.data && auditLog.data.data.length > 0 ? (
+          <AdminSectionCard
+            title={t('adminNew.products.auditLog', { defaultValue: 'Wijzigingslog' })}
+            icon={History}
+          >
+            <AdminTableCard footer={
+              <AdminTableFooter
+                summary={`${auditLog.data.meta?.total ?? auditLog.data.data.length} wijzigingen`}
+                meta={auditLog.data.meta}
+                onPageChange={setAuditPage}
+              />
+            }>
+              <AdminTable minWidth={600}>
+                <AdminTableHead>
+                  <tr>
+                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.field', { defaultValue: 'Veld' })}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.oldValue', { defaultValue: 'Oud' })}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.newValue', { defaultValue: 'Nieuw' })}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.user', { defaultValue: 'Door' })}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.at', { defaultValue: 'Datum' })}</AdminTableHeaderCell>
+                  </tr>
+                </AdminTableHead>
+                <tbody>
+                  {auditLog.data.data.map((entry) => {
+                    const changes = (entry.changes ?? entry.new_values ?? {}) as Record<string, unknown>;
+                    const oldValues = (entry.old_values ?? {}) as Record<string, unknown>;
+                    const changedFields = Object.keys(changes);
+                    if (changedFields.length === 0) {
+                      return (
+                        <AdminTableRow key={String(entry.id)}>
+                          <AdminTableCell className="font-mono text-xs text-navy-500">{String(entry.action ?? entry.event ?? 'update')}</AdminTableCell>
+                          <AdminTableCell>—</AdminTableCell>
+                          <AdminTableCell>—</AdminTableCell>
+                          <AdminTableCell className="text-xs">{String((entry.user as Record<string, unknown>)?.name ?? entry.user_id ?? '—')}</AdminTableCell>
+                          <AdminTableCell className="whitespace-nowrap text-xs text-navy-500">{formatDateTime(String(entry.created_at ?? ''), dateLocale)}</AdminTableCell>
+                        </AdminTableRow>
+                      );
+                    }
+                    return changedFields.map((field, i) => (
+                      <AdminTableRow key={`${String(entry.id)}-${field}`}>
+                        <AdminTableCell className="font-mono text-xs">{field}</AdminTableCell>
+                        <AdminTableCell className="max-w-[160px] truncate text-xs text-navy-500">{oldValues[field] == null ? '—' : String(oldValues[field])}</AdminTableCell>
+                        <AdminTableCell className="max-w-[160px] truncate text-xs text-navy-900">{changes[field] == null ? '—' : String(changes[field])}</AdminTableCell>
+                        {i === 0 ? (
+                          <>
+                            <AdminTableCell className="text-xs">{String((entry.user as Record<string, unknown>)?.name ?? entry.user_id ?? '—')}</AdminTableCell>
+                            <AdminTableCell className="whitespace-nowrap text-xs text-navy-500">{formatDateTime(String(entry.created_at ?? ''), dateLocale)}</AdminTableCell>
+                          </>
+                        ) : (
+                          <>
+                            <AdminTableCell>{''}</AdminTableCell>
+                            <AdminTableCell>{''}</AdminTableCell>
+                          </>
+                        )}
+                      </AdminTableRow>
+                    ));
+                  })}
+                </tbody>
+              </AdminTable>
+            </AdminTableCard>
+          </AdminSectionCard>
         ) : null}
 
         {p && editing && form ? (

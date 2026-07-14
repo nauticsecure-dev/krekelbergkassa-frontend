@@ -71,6 +71,11 @@ export interface ProductFormState {
   cost_price: string;
   stock_quantity: string;
   stock_minimum: string;
+  // Visibility flags
+  show_in_kassa: boolean;
+  show_in_public: boolean;
+  show_in_calculator: boolean;
+  show_in_booking: boolean;
 }
 
 export const EMPTY_PRODUCT_FORM: ProductFormState = {
@@ -94,6 +99,10 @@ export const EMPTY_PRODUCT_FORM: ProductFormState = {
   cost_price: '',
   stock_quantity: '',
   stock_minimum: '',
+  show_in_kassa: true,
+  show_in_public: false,
+  show_in_calculator: false,
+  show_in_booking: false,
 };
 
 export function productCostEuros(product: Product): number {
@@ -133,6 +142,10 @@ export function productToForm(product: Product): ProductFormState {
     cost_price: cost ? String(cost) : '',
     stock_quantity: stockQty == null ? '' : String(stockQty),
     stock_minimum: stockMin == null ? '' : String(stockMin),
+    show_in_kassa: (raw.show_in_kassa as boolean) ?? true,
+    show_in_public: (raw.show_in_public as boolean) ?? false,
+    show_in_calculator: (raw.show_in_calculator as boolean) ?? false,
+    show_in_booking: (raw.show_in_booking as boolean) ?? false,
   };
 }
 
@@ -159,6 +172,10 @@ export function formToPayload(form: ProductFormState): Record<string, unknown> {
     tags: parseTagsInput(form.tags),
     aliases: parseTagsInput(form.aliases),
     product_group_id: form.product_group_id.trim() || null,
+    show_in_kassa: form.show_in_kassa,
+    show_in_public: form.show_in_public,
+    show_in_calculator: form.show_in_calculator,
+    show_in_booking: form.show_in_booking,
     // Trello #86: cost price sent in cents (mirrors price_excl_vat); stock as ints.
     cost_price: form.cost_price.trim() === '' ? null : eurosToCents(form.cost_price),
     stock_quantity: form.stock_quantity.trim() === '' ? null : Math.round(Number(form.stock_quantity.replace(',', '.'))),

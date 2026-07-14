@@ -980,6 +980,20 @@ export const productsService = {
       { method: 'POST', body: formData, queueWhenOffline: true }
     );
   },
+  aiSearch(query: string) {
+    return api<{ answer: string; products: Product[] }>('/v1/products/ai-search', {
+      method: 'POST',
+      body: { query },
+    });
+  },
+  async auditLog(id: string, query?: Record<string, string | number | undefined>) {
+    const res = await api<unknown>(`/v1/products/${id}/audit-log`, { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
+  async scanLogs(query?: Record<string, string | number | boolean | undefined>) {
+    const res = await api<unknown>('/v1/products/scan-logs', { query });
+    return asPaginated<Record<string, unknown>>(res);
+  },
 };
 
 export interface ProductBundle {

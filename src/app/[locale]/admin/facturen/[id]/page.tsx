@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/Input';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { InvoiceStatusBadge, PaymentStatusBadge } from '@/components/admin/StatusBadge';
-import { invoicesService } from '@/lib/services';
+import { invoicesService, productGroupsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { centsToEuro, formatCurrency, formatDate, formatDateTime } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -60,6 +60,12 @@ export default function InvoiceDetailPage() {
     ]);
     return { invoice, reminders };
   });
+  const groups = useQuery(['invoice-groups'], () => productGroupsService.list({ per_page: 100 }));
+  const groupColorMap = React.useMemo(() => {
+    const g = (groups.data as { data?: Array<Record<string, unknown>> })?.data
+      ?? (Array.isArray(groups.data) ? (groups.data as Array<Record<string, unknown>>) : []);
+    return Object.fromEntries(g.map((gr) => [String(gr.id), String(gr.color ?? '')]));
+  }, [groups.data]);
 
   const sendInvoice = useMutation(() => invoicesService.send(invoiceId));
   const markPaid = useMutation((method: string) =>
@@ -337,8 +343,12 @@ export default function InvoiceDetailPage() {
                         </tr>
                       </AdminTableHead>
                       <tbody>
-                        {(invoice.lines ?? []).map((line) => (
-                          <AdminTableRow key={line.id}>
+                        {(invoice.lines ?? []).map((line) => {
+                          const rawLine = line as unknown as Record<string, unknown>;
+                          const groupId = String(rawLine.product_group_id ?? '');
+                          const lineColor = groupColorMap[groupId] || String(rawLine.color ?? '');
+                          return (
+                          <AdminTableRow key={line.id} style={lineColor ? { borderLeft: `3px solid ${lineColor}` } : undefined}>
                             <AdminTableCell>{line.description}</AdminTableCell>
                             <AdminTableCell>{line.quantity}</AdminTableCell>
                             <AdminTableCell>
@@ -355,7 +365,8 @@ export default function InvoiceDetailPage() {
                               )}
                             </AdminTableCell>
                           </AdminTableRow>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </AdminTable>
                   </AdminTableCard>

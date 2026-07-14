@@ -136,6 +136,10 @@ export default function KassaPage() {
     locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
 
   const [query, setQuery] = React.useState("");
+  const [aiQuery, setAiQuery] = React.useState("");
+  const [showAiSearch, setShowAiSearch] = React.useState(false);
+  const [aiResults, setAiResults] = React.useState<{ answer: string; products: import('@/lib/api-types').Product[] } | null>(null);
+  const aiSearch = useMutation((q: string) => productsService.aiSearch(q));
   // Trello #80: fast-scan mode (skip confirmation/sound; sent to scan API).
   const [fastScan, setFastScan] = React.useState(false);
   const [activeCategory, setActiveCategory] = React.useState("");
@@ -1141,6 +1145,15 @@ export default function KassaPage() {
             <p className="text-xs text-navy-400">
               {t("adminNew.kassa.keyboardHints")}
             </p>
+            <div className="flex items-center gap-3">
+              {/* AI Natural Language Search */}
+              <button
+                type="button"
+                onClick={() => { setShowAiSearch(!showAiSearch); if (showAiSearch) setAiResults(null); }}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition ${showAiSearch ? 'bg-marine-600 text-white' : 'border border-marine-200 text-marine-600 hover:bg-marine-50'}`}
+              >
+                ✨ AI Zoeken
+              </button>
             {/* Trello #80: fast-scan toggle (persisted; sent to scan API). */}
             <button
               type="button"
@@ -1167,7 +1180,66 @@ export default function KassaPage() {
                 {t("adminNew.kassa.fastScan")}
               </span>
             </button>
+            </div>
           </div>
+
+          {/* AI Search panel */}
+          {showAiSearch ? (
+            <form
+              className="mt-3 border-t border-marine-100 pt-3"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!aiQuery.trim()) return;
+                try {
+                  const res = await aiSearch.mutate(aiQuery.trim());
+                  setAiResults(res ?? null);
+                } catch {
+                  setAiResults(null);
+                }
+              }}
+            >
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={aiQuery}
+                  onChange={(e) => setAiQuery(e.target.value)}
+                  placeholder='Bijv. "bootverf onder €30" of "onderhoud producten"'
+                  className="input-base flex-1 text-sm"
+                />
+                <Button type="submit" variant="outline" size="sm" disabled={aiSearch.loading}>
+                  {aiSearch.loading ? 'Zoeken…' : 'Zoek'}
+                </Button>
+              </div>
+              {aiResults ? (
+                <div className="mt-2 rounded-xl border border-marine-100 bg-marine-50/60 p-3">
+                  <p className="mb-2 text-sm font-medium text-marine-800">{aiResults.answer}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(aiResults.products ?? []).slice(0, 12).map((pr) => (
+                      <button
+                        key={pr.id}
+                        type="button"
+                        onClick={() => {
+                          const priceInclCents = Math.round(productPriceInclEuros(pr) * 100);
+                          setCart((prev) => {
+                            const existing = prev.find((c) => c.product_id === pr.id);
+                            if (existing) return prev.map((c) => c.product_id === pr.id ? { ...c, quantity: c.quantity + 1 } : c);
+                            return [...prev, { id: pr.id, product_id: pr.id, description: pr.name, quantity: 1, unit_price_cents: priceInclCents, vat_rate: Number(pr.vat_rate ?? 21), image_url: pr.image_url, color: pr.color ?? pr.group?.color }];
+                          });
+                          setShowAiSearch(false);
+                          setAiResults(null);
+                        }}
+                        className="flex items-center gap-1.5 rounded-lg border border-marine-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-marine-800 transition hover:bg-marine-50"
+                      >
+                        {pr.color ? <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: pr.color }} /> : null}
+                        {pr.name}
+                        <span className="text-navy-400">{formatCurrency(productPriceInclEuros(pr), localeTag)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </form>
+          ) : null}
         </div>
 
         {/* ----------------------------- LEFT: catalog ---------------------------- */}
