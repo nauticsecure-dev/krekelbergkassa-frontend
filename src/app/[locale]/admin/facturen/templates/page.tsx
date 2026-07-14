@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Plus, ScanText } from 'lucide-react';
+import { ArrowLeft, Mail, Plus, PowerOff, ScanText, Trash2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -17,21 +17,43 @@ import {
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { extractionTemplatesService, type ExtractionTemplate } from '@/lib/services';
 import { companyInfo } from '@/lib/company';
-import { useQuery } from '@/lib/hooks/useAsync';
+import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
+import { useToast } from '@/components/ui/ToastProvider';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function ExtractionTemplatesPage() {
   const { locale, t } = useIntl();
+  const { push } = useToast();
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const [deleteTarget, setDeleteTarget] = React.useState<ExtractionTemplate | null>(null);
 
   const templates = useQuery(['extraction-templates'], () =>
     extractionTemplatesService.list().catch(() => [])
   );
   const rows = (templates.data ?? []) as ExtractionTemplate[];
+
+  const toggleActiveM = useMutation(({ id, active }: { id: string; active: boolean }) =>
+    extractionTemplatesService.update(id, { active })
+  );
+  const deleteM = useMutation((id: string) =>
+    extractionTemplatesService.delete(id)
+  );
+
+  const act = async (label: string, fn: () => Promise<unknown>) => {
+    try {
+      await fn();
+      push({ tone: 'success', title: label });
+      await templates.refetch();
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
 
   // Email-import address: configurable convention based on the company domain.
   const importEmail = `facturen@${(companyInfo.email?.split('@')[1] ?? 'krekelbergnautic.nl')}`;
@@ -94,6 +116,7 @@ export default function ExtractionTemplatesPage() {
                   <tr>
                     <AdminTableHeaderCell>{t('adminNew.templates.columns.name')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.templates.columns.supplier')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>Status</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.templates.columns.zones')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.templates.columns.usage')}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{t('adminNew.templates.columns.confidence')}</AdminTableHeaderCell>
@@ -112,6 +135,11 @@ export default function ExtractionTemplatesPage() {
                       </AdminTableCell>
                       <AdminTableCell className="text-sm text-navy-600">
                         {tpl.supplier_email ?? '—'}
+                      </AdminTableCell>
+                      <AdminTableCell>
+                        <Badge tone={tpl.active !== false ? 'success' : 'neutral'}>
+                          {tpl.active !== false ? 'Actief' : 'Inactief'}
+                        </Badge>
                       </AdminTableCell>
                       <AdminTableCell>{tpl.field_zones?.length ?? 0}</AdminTableCell>
                       <AdminTableCell>
@@ -135,11 +163,36 @@ export default function ExtractionTemplatesPage() {
                         {tpl.last_used_at ? formatDate(tpl.last_used_at, dateLocale) : '—'}
                       </AdminTableCell>
                       <AdminTableCell className="text-right">
-                        <Link href={`/${locale}/admin/facturen/templates/editor?id=${tpl.id}`}>
-                          <Button variant="ghost" size="sm">
-                            {t('adminNew.common.edit')}
+                        <div className="flex flex-wrap justify-end gap-1">
+                          <Link href={`/${locale}/admin/facturen/templates/editor?id=${tpl.id}`}>
+                            <Button variant="ghost" size="sm">
+                              {t('adminNew.common.edit')}
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            leftIcon={<PowerOff className="h-3.5 w-3.5" />}
+                            disabled={toggleActiveM.loading}
+                            onClick={() => void act(
+                              tpl.active !== false ? 'Template gedeactiveerd' : 'Template geactiveerd',
+                              () => toggleActiveM.mutate({ id: tpl.id, active: tpl.active === false })
+                            )}
+                          >
+                            {tpl.active !== false ? 'Deactiveren' : 'Activeren'}
                           </Button>
-                        </Link>
+                          {tpl.active === false ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-rose-600"
+                              leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                              onClick={() => setDeleteTarget(tpl)}
+                            >
+                              Verwijderen
+                            </Button>
+                          ) : null}
+                        </div>
                       </AdminTableCell>
                     </AdminTableRow>
                   ))}
@@ -149,6 +202,23 @@ export default function ExtractionTemplatesPage() {
           </AdminTableCard>
         </AdminSectionCard>
       </AdminContent>
+
+      <AdminConfirmModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await act('Template verwijderd', () => deleteM.mutate(deleteTarget.id));
+          setDeleteTarget(null);
+        }}
+        title="Template verwijderen"
+        message={`Weet u zeker dat u template "${deleteTarget?.name ?? ''}" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.`}
+        confirmLabel="Verwijderen"
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="danger"
+        icon={Trash2}
+        loading={deleteM.loading}
+      />
     </>
   );
 }

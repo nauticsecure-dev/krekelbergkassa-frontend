@@ -25,6 +25,7 @@ function EditorInner() {
   const importId = params.get('importId');
 
   const [name, setName] = React.useState('');
+  const [vendorName, setVendorName] = React.useState('');
   const [documentType, setDocumentType] = React.useState('purchase_invoice');
   const [supplierEmail, setSupplierEmail] = React.useState('');
   const [keywords, setKeywords] = React.useState('');
@@ -70,9 +71,10 @@ function EditorInner() {
     const tpl = existing.data;
     if (!tpl) return;
     setName(tpl.name ?? '');
+    setVendorName(tpl.vendor_name ?? '');
     setDocumentType(tpl.document_type ?? 'purchase_invoice');
     setSupplierEmail(tpl.supplier_email ?? '');
-    setKeywords((tpl.match_keywords ?? []).join(', '));
+    setKeywords([...(tpl.match_rules?.keywords ?? tpl.match_keywords ?? [])].join(', '));
     setZones(tpl.field_zones ?? []);
   }, [existing.data]);
 
@@ -88,10 +90,11 @@ function EditorInner() {
     try {
       await save.mutate({
         name: name.trim(),
+        vendor_name: vendorName.trim() || undefined,
         document_type: documentType || undefined,
         supplier_email: supplierEmail || undefined,
-        match_keywords: keywords
-          ? keywords.split(',').map((k) => k.trim()).filter(Boolean)
+        match_rules: keywords
+          ? { keywords: keywords.split(',').map((k) => k.trim()).filter(Boolean) }
           : undefined,
         field_zones: zones,
       });
@@ -137,6 +140,12 @@ function EditorInner() {
               onChange={(e) => setName(e.target.value)}
               required
             />
+            <Input
+              label="Leveranciersnaam"
+              value={vendorName}
+              onChange={(e) => setVendorName(e.target.value)}
+              placeholder="bijv. Jansen Marine BV"
+            />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.templates.fieldsMeta.documentType')}
@@ -146,10 +155,16 @@ function EditorInner() {
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
               >
-                <option value="purchase_invoice">{t('adminNew.templates.docTypes.purchase_invoice')}</option>
-                <option value="delivery_note">{t('adminNew.templates.docTypes.delivery_note')}</option>
-                <option value="credit_note">{t('adminNew.templates.docTypes.credit_note')}</option>
-                <option value="quote">{t('adminNew.templates.docTypes.quote')}</option>
+                <option value="supplier_invoice">Leveranciersfactuur</option>
+                <option value="purchase_invoice">Inkoopfactuur</option>
+                <option value="sales_invoice">Verkoopfactuur</option>
+                <option value="delivery_note">Pakbon / leveringsbon</option>
+                <option value="workbon">Werkbon</option>
+                <option value="receipt">Bon / kassabon</option>
+                <option value="quote">Offerte</option>
+                <option value="contract">Contract</option>
+                <option value="document">Overig document</option>
+                <option value="unknown">Onbekend</option>
               </select>
             </div>
             <Input

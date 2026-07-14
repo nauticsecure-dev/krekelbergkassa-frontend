@@ -73,18 +73,12 @@ const ZONE_COLORS: Record<string, string> = {
   line_items: '#db2777',
 };
 
-async function renderPdfFirstPage(file: File): Promise<string> {
-  return renderPdfFromData(await file.arrayBuffer());
-}
-
-// Trello #70/#81: render a PDF supplied as raw bytes (used for both picked
-// files and a saved import's source PDF fetched from its signed URL).
-async function renderPdfFromData(data: ArrayBuffer): Promise<string> {
+async function renderPdfPage(data: ArrayBuffer, pageNum: number): Promise<{ url: string; totalPages: number }> {
   const pdfjs = await import('pdfjs-dist');
-  // Worker is copied to /public so it isn't run through the app's minifier.
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
   const doc = await pdfjs.getDocument({ data }).promise;
-  const page = await doc.getPage(1);
+  const totalPages = doc.numPages;
+  const page = await doc.getPage(Math.min(pageNum, totalPages));
   const viewport = page.getViewport({ scale: 1.5 });
   const canvas = document.createElement('canvas');
   canvas.width = viewport.width;
@@ -92,8 +86,11 @@ async function renderPdfFromData(data: ArrayBuffer): Promise<string> {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas not supported');
   await page.render({ canvasContext: ctx, viewport }).promise;
-  return canvas.toDataURL('image/png');
+  return { url: canvas.toDataURL('image/png'), totalPages };
 }
+
+// Keep raw ArrayBuffer for re-rendering on page change
+let _pdfBuffer: ArrayBuffer | null = null;
 
 export function DocumentZoneEditor({
   zones,
@@ -111,11 +108,29 @@ export function DocumentZoneEditor({
   const [docUrl, setDocUrl] = React.useState<string | null>(null);
   const [loadingDoc, setLoadingDoc] = React.useState(false);
   const [docError, setDocError] = React.useState<string | null>(null);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
+  const [selectedZone, setSelectedZone] = React.useState<number | null>(null);
+
+  const renderPage = async (buffer: ArrayBuffer, page: number, cancelled: { value: boolean }) => {
+    setLoadingDoc(true);
+    try {
+      const { url, totalPages: tp } = await renderPdfPage(buffer, page);
+      if (!cancelled.value) {
+        setDocUrl(url);
+        setTotalPages(tp);
+      }
+    } catch {
+      if (!cancelled.value) setDocError(t('adminNew.templates.renderError'));
+    } finally {
+      if (!cancelled.value) setLoadingDoc(false);
+    }
+  };
 
   // Load the supplied source document (image rendered directly, PDF rasterised).
   React.useEffect(() => {
     if (!sourceUrl) return;
-    let cancelled = false;
+    const cancelled = { value: false };
     (async () => {
       setDocError(null);
       setLoadingDoc(true);
@@ -123,24 +138,31 @@ export function DocumentZoneEditor({
         const res = await fetch(sourceUrl);
         const blob = await res.blob();
         if (blob.type.startsWith('image/')) {
-          if (!cancelled) setDocUrl(URL.createObjectURL(blob));
+          if (!cancelled.value) { setDocUrl(URL.createObjectURL(blob)); setLoadingDoc(false); }
         } else {
-          const png = await renderPdfFromData(await blob.arrayBuffer());
-          if (!cancelled) setDocUrl(png);
+          const buf = await blob.arrayBuffer();
+          _pdfBuffer = buf;
+          await renderPage(buf, 1, cancelled);
         }
       } catch {
-        if (!cancelled) setDocError(t('adminNew.templates.renderError'));
-      } finally {
-        if (!cancelled) setLoadingDoc(false);
+        if (!cancelled.value) { setDocError(t('adminNew.templates.renderError')); setLoadingDoc(false); }
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled.value = true; };
   }, [sourceUrl, t]);
+
+  // Re-render when page changes
+  const goToPage = async (page: number) => {
+    if (!_pdfBuffer || page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    const cancelled = { value: false };
+    await renderPage(_pdfBuffer, page, cancelled);
+  };
+
   const [field, setField] = React.useState<string>('total');
   const [draft, setDraft] = React.useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const dragRef = React.useRef<{ startX: number; startY: number } | null>(null);
+  const moveDragRef = React.useRef<{ zoneIdx: number; startX: number; startY: number; origX: number; origY: number } | null>(null);
 
   const fieldLabel = (f: string) => {
     const key = `adminNew.templates.fields.${f}`;
@@ -154,14 +176,22 @@ export function DocumentZoneEditor({
     try {
       if (file.type.startsWith('image/')) {
         setDocUrl(URL.createObjectURL(file));
+        setTotalPages(1);
+        setCurrentPage(1);
+        _pdfBuffer = null;
+        setLoadingDoc(false);
       } else if (file.type === 'application/pdf') {
-        setDocUrl(await renderPdfFirstPage(file));
+        const buf = await file.arrayBuffer();
+        _pdfBuffer = buf;
+        setCurrentPage(1);
+        const cancelled = { value: false };
+        await renderPage(buf, 1, cancelled);
       } else {
         setDocError(t('adminNew.templates.unsupported'));
+        setLoadingDoc(false);
       }
     } catch {
       setDocError(t('adminNew.templates.renderError'));
-    } finally {
       setLoadingDoc(false);
     }
   };
@@ -175,15 +205,33 @@ export function DocumentZoneEditor({
     };
   };
 
-  const onMouseDown = (e: React.MouseEvent) => {
+  const startDraw = (clientX: number, clientY: number) => {
     if (!docUrl) return;
-    const p = relPoint(e.clientX, e.clientY);
+    const p = relPoint(clientX, clientY);
     dragRef.current = { startX: p.x, startY: p.y };
+    moveDragRef.current = null;
+    setSelectedZone(null);
     setDraft({ x: p.x, y: p.y, w: 0, h: 0 });
   };
-  const onMouseMove = (e: React.MouseEvent) => {
+  const moveDraw = (clientX: number, clientY: number) => {
+    if (moveDragRef.current) {
+      // Moving a zone
+      const p = relPoint(clientX, clientY);
+      const { zoneIdx, startX, startY, origX, origY } = moveDragRef.current;
+      const dx = p.x - startX;
+      const dy = p.y - startY;
+      onChange(zones.map((z, i) => {
+        if (i !== zoneIdx) return z;
+        return {
+          ...z,
+          x: Math.min(1 - z.w, Math.max(0, origX + dx)),
+          y: Math.min(1 - z.h, Math.max(0, origY + dy)),
+        };
+      }));
+      return;
+    }
     if (!dragRef.current) return;
-    const p = relPoint(e.clientX, e.clientY);
+    const p = relPoint(clientX, clientY);
     const { startX, startY } = dragRef.current;
     setDraft({
       x: Math.min(startX, p.x),
@@ -192,15 +240,44 @@ export function DocumentZoneEditor({
       h: Math.abs(p.y - startY),
     });
   };
-  const onMouseUp = () => {
+  const endDraw = () => {
+    if (moveDragRef.current) { moveDragRef.current = null; return; }
     if (draft && dragRef.current && draft.w > 0.02 && draft.h > 0.01) {
-      onChange([...zones, { field, page: 1, ...draft }]);
+      onChange([...zones, { field, page: currentPage, ...draft }]);
     }
     dragRef.current = null;
     setDraft(null);
   };
 
-  const removeZone = (idx: number) => onChange(zones.filter((_, i) => i !== idx));
+  const onMouseDown = (e: React.MouseEvent) => startDraw(e.clientX, e.clientY);
+  const onMouseMove = (e: React.MouseEvent) => moveDraw(e.clientX, e.clientY);
+  const onMouseUp = () => endDraw();
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    if (t) startDraw(t.clientX, t.clientY);
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    if (t) moveDraw(t.clientX, t.clientY);
+  };
+  const onTouchEnd = () => endDraw();
+
+  const startZoneMove = (e: React.MouseEvent | React.TouchEvent, idx: number) => {
+    e.stopPropagation();
+    dragRef.current = null;
+    setDraft(null);
+    setSelectedZone(idx);
+    const zone = zones[idx];
+    if (!zone) return;
+    const clientX = 'touches' in e ? e.touches[0]?.clientX ?? 0 : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0]?.clientY ?? 0 : e.clientY;
+    const p = relPoint(clientX, clientY);
+    moveDragRef.current = { zoneIdx: idx, startX: p.x, startY: p.y, origX: zone.x, origY: zone.y };
+  };
+
+  const removeZone = (idx: number) => { onChange(zones.filter((_, i) => i !== idx)); setSelectedZone(null); };
   const setZoneField = (idx: number, f: string) =>
     onChange(zones.map((z, i) => (i === idx ? { ...z, field: f } : z)));
 
@@ -244,16 +321,24 @@ export function DocumentZoneEditor({
           </label>
         </div>
 
+        {totalPages > 1 ? (
+          <div className="mb-2 flex items-center gap-2">
+            <Button variant="outline" size="sm" disabled={currentPage <= 1 || loadingDoc} onClick={() => void goToPage(currentPage - 1)}>‹</Button>
+            <span className="text-xs text-navy-600">Pagina {currentPage} / {totalPages}</span>
+            <Button variant="outline" size="sm" disabled={currentPage >= totalPages || loadingDoc} onClick={() => void goToPage(currentPage + 1)}>›</Button>
+          </div>
+        ) : null}
+
         <div
           ref={surfaceRef}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
-          onMouseLeave={() => {
-            dragRef.current = null;
-            setDraft(null);
-          }}
-          className="relative select-none overflow-hidden rounded-xl border border-navy-100 bg-navy-50"
+          onMouseLeave={() => { dragRef.current = null; moveDragRef.current = null; setDraft(null); }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          className="relative select-none overflow-hidden rounded-xl border border-navy-100 bg-navy-50 touch-none"
           style={{ minHeight: 360, cursor: docUrl ? 'crosshair' : 'default' }}
         >
           {docUrl ? (
@@ -265,27 +350,35 @@ export function DocumentZoneEditor({
             </div>
           )}
 
-          {zones.map((z, idx) => (
-            <div
-              key={idx}
-              className="absolute flex items-start justify-between rounded-[3px] border-2"
-              style={{
-                left: `${z.x * 100}%`,
-                top: `${z.y * 100}%`,
-                width: `${z.w * 100}%`,
-                height: `${z.h * 100}%`,
-                borderColor: ZONE_COLORS[z.field] ?? '#1f93b8',
-                backgroundColor: `${ZONE_COLORS[z.field] ?? '#1f93b8'}22`,
-              }}
-            >
-              <span
-                className="pointer-events-none -mt-5 truncate rounded-t px-1 text-[10px] font-semibold text-white"
-                style={{ backgroundColor: ZONE_COLORS[z.field] ?? '#1f93b8' }}
+          {zones.map((z, idx) => {
+            const selected = selectedZone === idx;
+            const color = ZONE_COLORS[z.field] ?? '#1f93b8';
+            return (
+              <div
+                key={idx}
+                className="absolute flex items-start justify-between rounded-[3px] border-2"
+                style={{
+                  left: `${z.x * 100}%`,
+                  top: `${z.y * 100}%`,
+                  width: `${z.w * 100}%`,
+                  height: `${z.h * 100}%`,
+                  borderColor: color,
+                  backgroundColor: `${color}${selected ? '44' : '22'}`,
+                  cursor: 'move',
+                  boxShadow: selected ? `0 0 0 2px ${color}` : undefined,
+                }}
+                onMouseDown={(e) => startZoneMove(e, idx)}
+                onTouchStart={(e) => startZoneMove(e, idx)}
               >
-                {fieldLabel(z.field)}
-              </span>
-            </div>
-          ))}
+                <span
+                  className="pointer-events-none -mt-5 truncate rounded-t px-1 text-[10px] font-semibold text-white"
+                  style={{ backgroundColor: color }}
+                >
+                  {fieldLabel(z.field)}
+                </span>
+              </div>
+            );
+          })}
 
           {draft ? (
             <div

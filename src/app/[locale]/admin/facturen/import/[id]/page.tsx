@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, FileText, History, RotateCw, ScanText, UserPlus, XCircle, ZoomIn, ZoomOut } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BookOpen, CheckCircle2, ChevronLeft, ChevronRight, FileText, History, Link2, RotateCw, ScanText, ToggleLeft, ToggleRight, UserPlus, XCircle, ZoomIn, ZoomOut } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -60,6 +60,8 @@ export default function InvoiceImportReviewPage() {
   const [approveOpen, setApproveOpen] = React.useState(false);
   const [rejectOpen, setRejectOpen] = React.useState(false);
   const [supplierOpen, setSupplierOpen] = React.useState(false);
+  const [linkWorkbonOpen, setLinkWorkbonOpen] = React.useState(false);
+  const [linkWorkbonId, setLinkWorkbonId] = React.useState('');
   const [zoom, setZoom] = React.useState(100);
   const [rotation, setRotation] = React.useState(0);
   const [supplierForm, setSupplierForm] = React.useState({
@@ -76,10 +78,17 @@ export default function InvoiceImportReviewPage() {
   const queue = useQuery(['import-queue-nav'], () => invoiceImportsService.list({ per_page: 100 }));
   const pdf = useQuery([id, 'pdf'], () => invoiceImportsService.sourcePdf(id).catch(() => null));
   const matches = useQuery([id, 'matches'], () => invoiceImportsService.proposeMatches(id).catch(() => null));
+  const resolvedItems = useQuery([id, 'resolved-items'], () => invoiceImportsService.resolveLineItems(id).catch(() => null));
   const approveM = useMutation((payload?: Record<string, unknown>) => invoiceImportsService.approve(id, payload));
   const rejectM = useMutation(() => invoiceImportsService.reject(id));
   const updateM = useMutation((payload: Record<string, unknown>) =>
-    invoiceImportsService.approve(id, { extracted_data_override: payload })
+    invoiceImportsService.update(id, { extracted_data: payload })
+  );
+  const chargeToggleM = useMutation((val: boolean) =>
+    invoiceImportsService.update(id, { charge_to_customer: val })
+  );
+  const linkWorkbonM = useMutation((workOrderId: string) =>
+    invoiceImportsService.linkWorkbon(id, workOrderId)
   );
   const createSupplierM = useMutation((payload: Record<string, unknown>) => suppliersService.create(payload));
   const createCustomerM = useMutation((payload: { name: string; source?: string }) => customersService.create(payload));
@@ -411,12 +420,80 @@ export default function InvoiceImportReviewPage() {
             {proposals.length > 0 ? (
               <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.matches')} description={t('adminNew.invoiceImports.reviewScreen.matchesSubtitle')} icon={CheckCircle2}>
                 <ul className="space-y-2">
-                  {proposals.map((p, i) => (
-                    <li key={i} className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2 text-sm">
-                      <span className="text-navy-800">{str(p, 'label', 'name', 'product_name', 'description') || `#${i + 1}`}</span>
-                      {confPct(p.confidence ?? p.score) != null ? (
-                        <Badge tone={confTone(confPct(p.confidence ?? p.score)!)}>{confPct(p.confidence ?? p.score)}%</Badge>
-                      ) : null}
+                  {proposals.map((p, i) => {
+                    const woNum = str(p, 'work_order_number', 'number');
+                    const custName = str(p, 'customer_name');
+                    const boatName = str(p, 'boat_name');
+                    const label = [woNum, [custName, boatName].filter(Boolean).join(' / ')].filter(Boolean).join(' — ') || `#${i + 1}`;
+                    const conf = confPct(p.confidence ?? p.score);
+                    return (
+                      <li key={i} className="flex items-center justify-between rounded-lg border border-navy-100 px-3 py-2 text-sm">
+                        <span className="font-medium text-navy-800">{label}</span>
+                        <div className="flex items-center gap-2">
+                          {conf != null ? <Badge tone={confTone(conf)}>{conf}%</Badge> : null}
+                          {open ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              leftIcon={<Link2 className="h-3.5 w-3.5" />}
+                              disabled={linkWorkbonM.loading}
+                              onClick={() => {
+                                setLinkWorkbonId(str(p, 'work_order_id', 'id'));
+                                setLinkWorkbonOpen(true);
+                              }}
+                            >
+                              Koppelen
+                            </Button>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </AdminSectionCard>
+            ) : null}
+
+            {/* charge_to_customer toggle */}
+            {open ? (
+              <div className="flex items-center justify-between rounded-xl border border-navy-100 bg-white px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-navy-800">Doorbelasten aan klant</p>
+                  <p className="text-xs text-navy-400">Maakt een klantfactuur aan bij goedkeuring</p>
+                </div>
+                <button
+                  type="button"
+                  disabled={chargeToggleM.loading}
+                  onClick={() => void act(
+                    'Doorbelasting bijgewerkt',
+                    () => chargeToggleM.mutate(!data.charge_to_customer),
+                    () => undefined,
+                  )}
+                  className="text-marine-600 disabled:opacity-50"
+                >
+                  {data.charge_to_customer
+                    ? <ToggleRight className="h-8 w-8" />
+                    : <ToggleLeft className="h-8 w-8 text-navy-300" />}
+                </button>
+              </div>
+            ) : null}
+
+            {/* accounting suggestions */}
+            {Array.isArray(data.accounting_suggestions) && (data.accounting_suggestions as Rec[]).length > 0 ? (
+              <AdminSectionCard title="Boekhoudkundige suggesties" icon={BookOpen}>
+                <ul className="space-y-1.5">
+                  {(data.accounting_suggestions as Rec[]).map((s, i) => (
+                    <li key={i} className="rounded-lg border border-navy-50 bg-sand-50/40 px-3 py-2 text-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-navy-800">{str(s, 'description') || '—'}</span>
+                        {confPct(s.confidence) != null ? (
+                          <Badge tone={confTone(confPct(s.confidence)!)}>{confPct(s.confidence)}%</Badge>
+                        ) : null}
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-3 text-xs text-navy-500">
+                        {str(s, 'ledger_account') ? <span>Rekening: <span className="font-medium text-navy-700">{str(s, 'ledger_account')}</span></span> : null}
+                        {str(s, 'cost_center') ? <span>Kostenpost: <span className="font-medium text-navy-700">{str(s, 'cost_center')}</span></span> : null}
+                        {str(s, 'vat_code') ? <span>BTW: <span className="font-medium text-navy-700">{str(s, 'vat_code')}</span></span> : null}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -489,6 +566,47 @@ export default function InvoiceImportReviewPage() {
           </AdminTableCard>
         </AdminSectionCard>
 
+        {/* Resolved line items with product mapping */}
+        {(() => {
+          const items = ((resolvedItems.data as Rec | null)?.items ?? []) as Rec[];
+          if (items.length === 0) return null;
+          return (
+            <AdminSectionCard title="Gekoppelde producten" icon={ScanText} className="mt-5">
+              <AdminTableCard>
+                <AdminTable minWidth={680}>
+                  <AdminTableHead>
+                    <tr>
+                      <AdminTableHeaderCell>Omschrijving</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>Intern product</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>Productgroep</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>Match score</AdminTableHeaderCell>
+                    </tr>
+                  </AdminTableHead>
+                  <tbody>
+                    {items.map((item, i) => {
+                      const matchConf = confPct(item.match_confidence);
+                      return (
+                        <AdminTableRow key={i}>
+                          <AdminTableCell className="text-sm">{str(item, 'description', 'name') || '—'}</AdminTableCell>
+                          <AdminTableCell className="text-sm">
+                            {str(item, 'matched_product_name') || <span className="text-navy-400">—</span>}
+                          </AdminTableCell>
+                          <AdminTableCell className="text-sm">
+                            {str(item, 'matched_product_group') || <span className="text-navy-400">—</span>}
+                          </AdminTableCell>
+                          <AdminTableCell>
+                            {matchConf != null ? <Badge tone={confTone(matchConf)}>{matchConf}%</Badge> : <span className="text-navy-400 text-xs">—</span>}
+                          </AdminTableCell>
+                        </AdminTableRow>
+                      );
+                    })}
+                  </tbody>
+                </AdminTable>
+              </AdminTableCard>
+            </AdminSectionCard>
+          );
+        })()}
+
         {/* Processing log / audit trail */}
         {Array.isArray(data.processing_log) && (data.processing_log as Rec[]).length > 0 ? (
           <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.processingLog', { defaultValue: 'Verwerkingslog' })} icon={History} className="mt-5">
@@ -510,10 +628,22 @@ export default function InvoiceImportReviewPage() {
       <AdminConfirmModal
         open={approveOpen}
         onClose={() => setApproveOpen(false)}
-        onConfirm={() => act(t('adminNew.invoiceImports.toasts.approved'), () => approveM.mutate({
-          corrections: Object.keys(editedFields).length > 0 ? editedFields : undefined,
-          line_items: editedLines ?? undefined,
-        }), () => setApproveOpen(false))}
+        onConfirm={() => act(t('adminNew.invoiceImports.toasts.approved'), () => {
+          const correctionsList = Object.keys(editedFields)
+            .filter((k) => editedFields[k] !== (str(extracted, k) || str(data, k)))
+            .map((k) => ({
+              field: k,
+              old_value: str(extracted, k) || str(data, k) || null,
+              new_value: editedFields[k],
+            }));
+          const mergedExtracted = editedLines
+            ? { ...extracted, line_items: editedLines }
+            : undefined;
+          return approveM.mutate({
+            corrections: correctionsList.length > 0 ? correctionsList : undefined,
+            extracted_data: mergedExtracted,
+          });
+        }, () => setApproveOpen(false))}
         title={t('adminNew.invoiceImports.approve')}
         message={t('adminNew.invoiceImports.confirmApprove')}
         confirmLabel={t('adminNew.invoiceImports.approve')}
@@ -532,6 +662,24 @@ export default function InvoiceImportReviewPage() {
         cancelLabel={t('adminNew.common.cancel')}
         variant="danger"
         loading={rejectM.loading}
+      />
+
+      <AdminConfirmModal
+        open={linkWorkbonOpen}
+        onClose={() => setLinkWorkbonOpen(false)}
+        onConfirm={() => act('Werkbon gekoppeld', () => linkWorkbonM.mutate(linkWorkbonId), () => setLinkWorkbonOpen(false))}
+        title="Koppelen aan werkbon"
+        message={`Weet u zeker dat u dit document wilt koppelen aan werkbon ${
+          (() => {
+            const p = proposals.find((pr) => str(pr, 'work_order_id', 'id') === linkWorkbonId);
+            return p ? str(p, 'work_order_number', 'number') : linkWorkbonId;
+          })()
+        }?`}
+        confirmLabel="Koppelen"
+        cancelLabel={t('adminNew.common.cancel')}
+        variant="primary"
+        icon={Link2}
+        loading={linkWorkbonM.loading}
       />
 
       <Modal open={supplierOpen} onClose={() => setSupplierOpen(false)} size="md">

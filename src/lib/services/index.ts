@@ -2012,6 +2012,20 @@ export const invoiceImportsService = {
       `/v1/invoice-imports/${id}/source-pdf`
     );
   },
+  linkWorkbon(id: string, workOrderId: string, reviewNotes?: string) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}/link-workbon`, {
+      method: 'POST',
+      body: { work_order_id: workOrderId, review_notes: reviewNotes },
+      queueWhenOffline: true,
+    });
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>(`/v1/invoice-imports/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
 };
 
 // Trello #70: tagged-PDF extraction templates (OCR template dashboard).
@@ -2026,11 +2040,15 @@ export interface ExtractionZone {
 export interface ExtractionTemplate {
   id: string;
   name: string;
+  vendor_name?: string | null;
   document_type?: string | null;
   supplier_email?: string | null;
   match_keywords?: string[] | null;
+  match_rules?: { keywords?: string[]; sender_email_pattern?: string; filename_pattern?: string; exclude_keywords?: string[] } | null;
   field_zones?: ExtractionZone[];
   active?: boolean;
+  version?: number;
+  used_count?: number;
   usage_count?: number;
   success_count?: number;
   correction_count?: number;
@@ -2061,6 +2079,9 @@ export const extractionTemplatesService = {
   },
   metrics(id: string) {
     return api<Record<string, unknown>>(`/v1/invoice-extraction-templates/${id}/metrics`);
+  },
+  delete(id: string) {
+    return api<{ message: string }>(`/v1/invoice-extraction-templates/${id}`, { method: 'DELETE' });
   },
 };
 

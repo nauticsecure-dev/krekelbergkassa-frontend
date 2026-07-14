@@ -29,7 +29,16 @@ import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { formatDate } from '@/lib/format';
 
 type Rec = Record<string, unknown>;
-const STATUSES = ['uploaded', 'ocr_processing', 'review_required', 'failed', 'approved', 'rejected', 'duplicate', 'waiting_for_supplier_invoice'];
+const STATUSES = [
+  'uploaded', 'ocr_processing', 'needs_review', 'needs_customer_link',
+  'workbon', 'waiting_for_supplier_invoice', 'ready_to_approve', 'processing',
+  'review_required', 'imported_needs_review', 'duplicate_needs_review',
+  'approved', 'sent', 'paid', 'failed', 'duplicate', 'rejected', 'archived',
+];
+const DOCUMENT_TYPES = [
+  'supplier_invoice', 'purchase_invoice', 'sales_invoice', 'delivery_note',
+  'workbon', 'receipt', 'quote', 'contract', 'document', 'unknown',
+];
 
 function statusTone(status: string): React.ComponentProps<typeof Badge>['tone'] {
   const s = status.toLowerCase();
@@ -71,6 +80,8 @@ export default function InvoiceImportsPage() {
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
   const [source, setSource] = React.useState('');
+  const [docType, setDocType] = React.useState('');
+  const [page, setPage] = React.useState(1);
   const [approveTarget, setApproveTarget] = React.useState<string | null>(null);
   const [rejectTarget, setRejectTarget] = React.useState<string | null>(null);
   const [workbonTarget, setWorkbonTarget] = React.useState<string | null>(null);
@@ -85,12 +96,16 @@ export default function InvoiceImportsPage() {
       search: search || undefined,
       status: status || undefined,
       source: source || undefined,
+      document_type: docType || undefined,
     }),
-    [search, status, source]
+    [search, status, source, docType]
   );
 
-  const imports = useQuery([search, status, source], () =>
-    invoiceImportsService.list({ per_page: 50, ...query })
+  // Reset to page 1 when filters change
+  React.useEffect(() => { setPage(1); }, [search, status, source, docType]);
+
+  const imports = useQuery([search, status, source, docType, page], () =>
+    invoiceImportsService.list({ per_page: 25, page, ...query })
   );
   const approve = useMutation((id: string) => invoiceImportsService.approve(id));
   const processM = useMutation((id: string) => invoiceImportsService.process(id));
@@ -357,6 +372,12 @@ export default function InvoiceImportsPage() {
               <option value="email">{t('adminNew.invoiceImports.sourceEmail')}</option>
               <option value="photo">{t('adminNew.invoiceImports.sourcePhoto')}</option>
             </AdminSelect>
+            <AdminSelect value={docType} onChange={setDocType}>
+              <option value="">Alle types</option>
+              {DOCUMENT_TYPES.map((dt) => (
+                <option key={dt} value={dt}>{dt.replace(/_/g, ' ')}</option>
+              ))}
+            </AdminSelect>
           </div>
 
           {selected.size > 0 ? (
@@ -568,6 +589,26 @@ export default function InvoiceImportsPage() {
               </AdminTable>
             )}
           </AdminTableCard>
+          {(() => {
+            const meta = imports.data?.meta as Record<string, unknown> | undefined;
+            const lastPage = Number(meta?.last_page ?? 1);
+            const total = Number(meta?.total ?? 0);
+            if (lastPage <= 1) return null;
+            return (
+              <div className="mt-3 flex items-center justify-between gap-4">
+                <span className="text-xs text-navy-500">{total} resultaten</span>
+                <div className="flex gap-1">
+                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                    ‹ Vorige
+                  </Button>
+                  <span className="flex items-center px-3 text-xs text-navy-600">{page} / {lastPage}</span>
+                  <Button variant="outline" size="sm" disabled={page >= lastPage} onClick={() => setPage((p) => p + 1)}>
+                    Volgende ›
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
         </AdminSectionCard>
       </AdminContent>
 
