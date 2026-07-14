@@ -103,12 +103,41 @@ export interface StallingContract {
   notes: string | null;
   bok_number?: string | null;
   location_code?: string | null;
-  // Trello #107: deposit/brokerage payment automation.
+  // Deposit
   deposit_invoice_id?: string | null;
   deposit_percentage?: number | null;
+  deposit_amount?: number | null;
   payment_route?: string | null;
+  // Signing
+  signing_token?: string | null;
+  is_signed?: boolean;
+  signed_at?: string | null;
+  signed_by_name?: string | null;
+  signed_by_email?: string | null;
+  // Brokerage
+  brokerage_start_date?: string | null;
+  brokerage_free_until?: string | null;
+  brokerage_status?: 'none' | 'active' | 'paused' | 'ended' | string | null;
+  // Template & rest invoice
+  contract_template_id?: string | null;
+  rest_invoice_id?: string | null;
   customer?: Customer;
   boat?: Boat;
+  contractTemplate?: ContractTemplate;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContractTemplate {
+  id: string;
+  name: string;
+  type: 'stalling' | 'brokerage' | 'service' | string;
+  body_html?: string | null;
+  body_text?: string | null;
+  placeholders?: string[] | null;
+  active: boolean;
+  version: number;
+  locale: string;
   created_at: string;
   updated_at: string;
 }

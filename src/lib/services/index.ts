@@ -34,6 +34,7 @@ import type {
   Reminder,
   Sale,
   SessionUser,
+  ContractTemplate,
   StallingContract,
   SyncDevice,
   SyncStatus,
@@ -404,6 +405,51 @@ export const stallingService = {
     return api<{ message?: string }>(`/v1/stalling/${id}/documents/${fileId}`, {
       method: 'DELETE',
       queueWhenOffline: true,
+    });
+  },
+  sendContractEmail(id: string) {
+    return api<{ message: string }>(`/v1/stalling/${id}/send-contract-email`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+  generateRestInvoice(id: string) {
+    return api<Invoice>(`/v1/stalling/${id}/generate-rest-invoice`, {
+      method: 'POST',
+      queueWhenOffline: true,
+    });
+  },
+};
+
+export const contractTemplatesService = {
+  async list(query?: Record<string, string | number | undefined>) {
+    const res = await api<unknown>('/v1/contract-templates', { query });
+    return asArray<ContractTemplate>(res);
+  },
+  get(id: string) {
+    return api<ContractTemplate>(`/v1/contract-templates/${id}`);
+  },
+  create(payload: Record<string, unknown>) {
+    return api<ContractTemplate>('/v1/contract-templates', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<ContractTemplate>(`/v1/contract-templates/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  delete(id: string) {
+    return api<{ message: string }>(`/v1/contract-templates/${id}`, { method: 'DELETE' });
+  },
+  preview(id: string, data: Record<string, string>) {
+    return api<{ html: string }>(`/v1/contract-templates/${id}/preview`, {
+      method: 'POST',
+      body: { data },
     });
   },
 };

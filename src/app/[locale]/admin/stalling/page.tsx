@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Eye, FilePlus2, MapPin, Pencil, Plus, Receipt, Ship, ShieldCheck, Warehouse, XCircle } from 'lucide-react';
+import { Copy, Eye, FilePlus2, Link2, Mail, MapPin, Pencil, Plus, Receipt, Ship, ShieldCheck, Warehouse, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { PaymentStatusBadge } from '@/components/admin/StatusBadge';
 import type { StallingContract } from '@/lib/api-types';
@@ -33,6 +33,7 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import {
   auditService,
   boatsService,
+  contractTemplatesService,
   customersService,
   pricingService,
   stallingService,
@@ -89,6 +90,7 @@ export default function StallingPage() {
     deposit_pct: '',
     price_total_euros: '',
     notes: '',
+    contract_template_id: '',
   });
   // Trello #107: live price preview for the chosen contract type + boat.
   const [pricePreview, setPricePreview] = React.useState<{ total_incl_vat: number; range_label?: string } | null>(null);
@@ -119,6 +121,9 @@ export default function StallingPage() {
   );
   const boats = useQuery(['stalling-boats'], () => boatsService.list({ per_page: 200 }));
   const customers = useQuery(['stalling-customers'], () => customersService.list({ per_page: 200 }));
+  const contractTemplates = useQuery(['contract-templates'], () =>
+    contractTemplatesService.list().catch(() => [])
+  );
 
   const selectedBoatLength = React.useMemo(() => {
     const boat = (boats.data?.data ?? []).find((b) => b.id === createForm.boat_id);
@@ -273,6 +278,7 @@ export default function StallingPage() {
   const updateContract = useMutation((p: { id: string; payload: Record<string, unknown> }) =>
     stallingService.update(p.id, p.payload)
   );
+  const sendContractEmailM = useMutation((id: string) => stallingService.sendContractEmail(id));
 
   // Trello #73: quick-edit now changes ONLY the lifecycle status (payment status
   // is computed and cannot be set) and records an optional change note.
@@ -397,6 +403,12 @@ export default function StallingPage() {
           ? Math.round(parseFloat(createForm.price_total_euros) * 100)
           : undefined,
         notes: createForm.notes || undefined,
+        // Brokerage fields
+        brokerage_start_date: brokerage && brokerageStart ? brokerageStart : undefined,
+        brokerage_free_until: brokerage && brokeragePreview?.brokerage_free_until ? brokeragePreview.brokerage_free_until : undefined,
+        brokerage_status: brokerage ? 'none' : undefined,
+        // Contract template
+        contract_template_id: createForm.contract_template_id || undefined,
       });
       // Trello #107: after create, follow the chosen payment route.
       const newId = (created as { id?: string } | null)?.id;
@@ -437,6 +449,7 @@ export default function StallingPage() {
         deposit_pct: '',
         price_total_euros: '',
         notes: '',
+        contract_template_id: '',
       });
       setBrokerage(false);
       setBrokerageStart('');
@@ -713,6 +726,44 @@ export default function StallingPage() {
                         >
                           {t('adminNew.stalling.editContract')}
                         </Button>
+                        {/* Signing link actions */}
+                        {contract.signing_token ? (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              leftIcon={<Copy className="h-3.5 w-3.5" />}
+                              onClick={() => {
+                                const url = `${window.location.origin}/${locale}/contract/tekenen/${contract.signing_token}`;
+                                void navigator.clipboard.writeText(url).then(() =>
+                                  push({ tone: 'success', title: 'Link gekopieerd' })
+                                );
+                              }}
+                            >
+                              Link
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              leftIcon={<Mail className="h-3.5 w-3.5" />}
+                              disabled={sendContractEmailM.loading}
+                              onClick={() => void execute('Contract e-mail verzonden', () => sendContractEmailM.mutate(contract.id))}
+                            >
+                              Mail
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              leftIcon={<Link2 className="h-3.5 w-3.5" />}
+                              onClick={() => {
+                                const url = `${window.location.origin}/${locale}/contract/tekenen/${contract.signing_token}`;
+                                window.open(url, '_blank');
+                              }}
+                            >
+                              Open
+                            </Button>
+                          </>
+                        ) : null}
                         {/* Trello #107: deep link to the deposit (10%) invoice when present. */}
                         {contract.deposit_invoice_id ? (
                           <Link href={`/${locale}/admin/facturen/${contract.deposit_invoice_id}`}>
@@ -930,6 +981,21 @@ export default function StallingPage() {
                 onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
               />
             </div>
+            {(contractTemplates.data ?? []).length > 0 ? (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">Contracttemplate</label>
+                <select
+                  className="input-base w-full"
+                  value={createForm.contract_template_id}
+                  onChange={(e) => setCreateForm({ ...createForm, contract_template_id: e.target.value })}
+                >
+                  <option value="">Geen template</option>
+                  {(contractTemplates.data ?? []).map((tpl) => (
+                    <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
             <label className="flex items-center gap-2 text-sm font-medium text-navy-800">
               <input
                 type="checkbox"
