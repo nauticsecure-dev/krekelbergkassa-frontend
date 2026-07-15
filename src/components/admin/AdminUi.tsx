@@ -454,7 +454,7 @@ export function AdminModalHeader({
 }
 
 export function AdminModalBody({ children }: { children: React.ReactNode }) {
-  return <div className="space-y-4 px-6 py-5">{children}</div>;
+  return <div className="min-h-0 flex-1 overflow-y-auto space-y-4 px-6 py-5">{children}</div>;
 }
 
 export function AdminModalFooter({ children }: { children: React.ReactNode }) {
