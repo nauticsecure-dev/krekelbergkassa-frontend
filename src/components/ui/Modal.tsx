@@ -65,7 +65,7 @@ export function Modal({
       />
       <div
         className={cn(
-          'anim-zoom relative flex max-h-[min(90vh,800px)] w-full flex-col overflow-hidden rounded-2xl bg-white shadow-elev ring-1 ring-navy-100',
+          'anim-zoom relative flex max-h-[min(90vh,800px)] w-full flex-col overflow-hidden rounded-2xl bg-white shadow-elev ring-1 ring-navy-100 [&>form]:flex [&>form]:flex-col [&>form]:min-h-0 [&>form]:flex-1',
           sizes[size],
           className
         )}
