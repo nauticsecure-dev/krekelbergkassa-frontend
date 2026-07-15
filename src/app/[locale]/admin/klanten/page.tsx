@@ -57,7 +57,7 @@ export default function CustomersPage() {
     house_number: '',
     postal_code: '',
     city: '',
-    country: '',
+    country: 'NL',
     google_place_id: '',
     latitude: null as number | null,
     longitude: null as number | null,
@@ -164,7 +164,7 @@ export default function CustomersPage() {
         house_number: '',
         postal_code: '',
         city: '',
-        country: '',
+        country: 'NL',
         google_place_id: '',
         latitude: null,
         longitude: null,
@@ -568,11 +568,28 @@ export default function CustomersPage() {
                   value={form.city}
                   onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
                 />
-                <Input
-                  label={t('adminNew.customers.address.country')}
-                  value={form.country}
-                  onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
-                />
+                <label className="block text-sm">
+                  <span className="mb-1.5 block font-medium text-navy-800">
+                    {t('adminNew.customers.address.country')}
+                  </span>
+                  <select
+                    className="input-base w-full"
+                    value={form.country}
+                    onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
+                  >
+                    <option value="NL">Nederland</option>
+                    <option value="BE">België</option>
+                    <option value="DE">Deutschland</option>
+                    <option value="FR">France</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="LU">Luxembourg</option>
+                    <option value="DK">Denmark</option>
+                    <option value="NO">Norway</option>
+                    <option value="SE">Sweden</option>
+                    <option value="US">United States</option>
+                    <option value="">—</option>
+                  </select>
+                </label>
               </div>
             </div>
           </AdminModalBody>
