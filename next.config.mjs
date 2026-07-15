@@ -6,6 +6,13 @@ const nextConfig = {
       { protocol: 'https', hostname: '**' },
     ],
   },
+  redirects: async () => [
+    {
+      source: '/portal/verify',
+      destination: '/nl/portal/verify',
+      permanent: false,
+    },
+  ],
   headers: async () => [
     {
       source: '/sw.js',
