@@ -118,11 +118,11 @@ export default function AppointmentsPage() {
     }
   };
 
-  const onComplete = async (id: string) => {
+  const onAdvance = async (id: string, nextStatus: string) => {
     try {
-      await updateStatus.mutate({ id, next: 'completed' });
+      await updateStatus.mutate({ id, next: nextStatus });
       await appointments.refetch();
-      push({ tone: 'success', title: t('adminNew.appointments.toasts.completed') });
+      push({ tone: 'success', title: t('adminNew.appointments.toasts.advanced', { status: nextStatus }) || t('adminNew.appointments.toasts.completed') });
     } catch (err) {
       push({
         tone: 'error',
@@ -272,7 +272,7 @@ export default function AppointmentsPage() {
                       t={t}
                       onConfirm={onConfirm}
                       onCancel={setCancelTarget}
-                      onComplete={onComplete}
+                      onAdvance={onAdvance}
                     />
                   ))}
                 </tbody>
@@ -316,19 +316,17 @@ function AppointmentRow({
   t,
   onConfirm,
   onCancel,
-  onComplete,
+  onAdvance,
 }: {
   row: Appointment;
   dateLocale: string;
-  t: (key: string) => string;
+  t: (key: string, opts?: Record<string, string | number>) => string;
   onConfirm: (id: string) => void;
   onCancel: (id: string) => void;
-  onComplete: (id: string) => void;
+  onAdvance: (id: string, nextStatus: string) => void;
 }) {
-  const canConfirm = row.status === 'pending_manual_review';
-  const canComplete = ['confirmed', 'started', 'in_water', 'out_of_water', 'wash_started'].includes(
-    row.status
-  );
+  const isPending = ['pending_manual_review', 'requested'].includes(row.status);
+  const nextStep = row.next_status ?? null;
   const canCancel = !['completed', 'cancelled', 'no_show'].includes(row.status);
 
   return (
@@ -347,12 +345,12 @@ function AppointmentRow({
       <AdminTableCell>{row.service_codes?.join(', ') || '—'}</AdminTableCell>
       <AdminTableCell>
         <Badge tone={row.status === 'completed' ? 'success' : row.status === 'cancelled' ? 'danger' : 'neutral'}>
-          {row.status}
+          {row.status_label ?? row.status}
         </Badge>
       </AdminTableCell>
       <AdminTableCell>
         <div className="flex justify-end gap-2">
-          {canConfirm ? (
+          {isPending ? (
             <Button
               size="sm"
               variant="secondary"
@@ -361,15 +359,14 @@ function AppointmentRow({
             >
               {t('adminNew.appointments.confirm')}
             </Button>
-          ) : null}
-          {canComplete ? (
+          ) : nextStep ? (
             <Button
               size="sm"
               variant="secondary"
               leftIcon={<CircleCheck className="h-3.5 w-3.5" />}
-              onClick={() => onComplete(row.id)}
+              onClick={() => onAdvance(row.id, nextStep)}
             >
-              {t('adminNew.appointments.complete')}
+              {nextStep.replace(/_/g, ' ')}
             </Button>
           ) : null}
           {canCancel ? (

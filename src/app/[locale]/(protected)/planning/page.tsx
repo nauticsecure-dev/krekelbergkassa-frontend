@@ -917,7 +917,7 @@ function TimeGridWeekView({
   const gridHeight = (GRID_END_HOUR - GRID_START_HOUR) * HOUR_HEIGHT_PX;
 
   const [dragOverSlot, setDragOverSlot] = React.useState<{ dayKey: string; time: string } | null>(null);
-  const [resizing, setResizing] = React.useState<{ appt: Appointment; startY: number; startDuration: number } | null>(null);
+  const [resizing, setResizing] = React.useState<{ appt: Appointment; startY: number; startDuration: number; currentDuration: number } | null>(null);
 
   React.useEffect(() => {
     if (!resizing) return;
@@ -1036,7 +1036,7 @@ function TimeGridWeekView({
                 {slots.map((a) => {
                   const top = topPx((a.start_time || '09:00').slice(0, 5));
                   const currentDuration = resizing?.appt.id === a.id
-                    ? Math.max(15, resizing.startDuration + Math.round(((0) / HOUR_HEIGHT_PX) * 60))
+                    ? resizing.currentDuration
                     : a.duration_minutes;
                   const h = heightPx(currentDuration);
                   const type = slotTypeFor(a.service_codes);
@@ -1081,7 +1081,7 @@ function TimeGridWeekView({
                           onMouseDown={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            setResizing({ appt: a, startY: e.clientY, startDuration: a.duration_minutes });
+                            setResizing({ appt: a, startY: e.clientY, startDuration: a.duration_minutes, currentDuration: a.duration_minutes });
                           }}
                         />
                       ) : null}
