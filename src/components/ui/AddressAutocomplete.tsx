@@ -98,7 +98,7 @@ function parsePlace(place: GooglePlaceResult): AddressSelection {
     get('postal_town')?.long_name ??
     get('administrative_area_level_2')?.long_name ??
     '';
-  const country = get('country')?.long_name ?? '';
+  const country = get('country')?.short_name ?? '';
 
   return {
     street,

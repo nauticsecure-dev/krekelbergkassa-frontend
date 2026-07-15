@@ -2590,10 +2590,10 @@ export const cmsService = {
     });
   },
   globalSettings() {
-    return api<Record<string, unknown>>('/admin/cms/global-settings');
+    return api<Record<string, unknown>>('/v1/admin/cms/global-settings');
   },
   saveGlobalSetting(key: string, payload: { value: unknown }) {
-    return api<Record<string, unknown>>(`/admin/cms/global-settings/${encodeURIComponent(key)}`, {
+    return api<Record<string, unknown>>(`/v1/admin/cms/global-settings/${encodeURIComponent(key)}`, {
       method: 'PATCH',
       body: payload,
     });
