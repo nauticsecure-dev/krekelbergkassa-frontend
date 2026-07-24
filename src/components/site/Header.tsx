@@ -24,6 +24,7 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { InstallButton } from '@/components/pwa/InstallButton';
 import { cn } from '@/lib/cn';
 import { companyInfo } from '@/lib/company';
+import { useCms } from '@/components/cms/CmsProvider';
 
 interface MegaItem {
   href: string;
@@ -34,6 +35,8 @@ interface MegaItem {
 
 export function Header() {
   const { t, locale } = useIntl();
+  const { getGlobal } = useCms();
+  const phone = getGlobal('company.phone', t('footer.phone'));
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
@@ -91,7 +94,7 @@ export function Header() {
             </Link>
             <span className="opacity-30">·</span>
             <a href={companyInfo.phoneHref} className="inline-flex items-center gap-1.5 hover:text-white">
-              <Phone className="h-3 w-3" /> {t('footer.phone')}
+              <Phone className="h-3 w-3" /> {phone}
             </a>
             <span className="opacity-30">·</span>
             <a href="mailto:info@krekelberg-nautic.nl" className="hover:text-white">

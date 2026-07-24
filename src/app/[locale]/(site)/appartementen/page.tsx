@@ -17,29 +17,43 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useIntl } from '@/i18n/IntlProvider';
 import { companyInfo } from '@/lib/company';
+import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
+import { EditableText } from '@/components/cms/EditableText';
+import { EditableImage } from '@/components/cms/EditableImage';
+
+const CMS_PAGE = 'appartementen';
 
 export default function AppartementenPage() {
   const { t, locale } = useIntl();
+  useRegisterCmsPage(CMS_PAGE);
 
   return (
     <>
       {/* Hero with real photo */}
       <section className="relative isolate overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/img/krek/appartement.webp)' }}
-          aria-hidden
+        <EditableImage
+          blockKey="appartementen.hero.image"
+          page={CMS_PAGE}
+          fallbackSrc="/img/krek/appartement.webp"
+          alt="Appartementen hero"
+          className="absolute inset-0"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-navy-950/80 via-navy-950/55 to-navy-950/25" aria-hidden />
         <div className="container-wide relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
           <Badge tone="sand" dot className="mb-4">
-            {t('apartmentsPage.badge')}
+            <EditableText blockKey="appartementen.hero.badge" page={CMS_PAGE} section="hero">
+              {t('apartmentsPage.badge')}
+            </EditableText>
           </Badge>
           <h1 className="heading-display max-w-2xl text-4xl text-white sm:text-5xl lg:text-[56px]">
-            {t('apartmentsPage.title')}
+            <EditableText blockKey="appartementen.hero.title" page={CMS_PAGE} section="hero" type="heading">
+              {t('apartmentsPage.title')}
+            </EditableText>
           </h1>
           <p className="mt-5 max-w-xl text-sand-100/85">
-            {t('apartmentsPage.subtitle')}
+            <EditableText blockKey="appartementen.hero.subtitle" page={CMS_PAGE} section="hero" type="paragraph">
+              {t('apartmentsPage.subtitle')}
+            </EditableText>
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link href={`/${locale}/contact`}>
