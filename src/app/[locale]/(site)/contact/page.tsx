@@ -20,12 +20,17 @@ import { companyInfo, openingHoursRows } from "@/lib/company";
 import { contentService } from "@/lib/services";
 import { useQuery } from "@/lib/hooks/useAsync";
 import { cn } from "@/lib/cn";
+import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
+import { EditableText } from "@/components/cms/EditableText";
+import { EditableImage } from "@/components/cms/EditableImage";
 
+const CMS_PAGE = "contact";
 const MAPS_URL = companyInfo.mapsUrl;
 const MAPS_EMBED = companyInfo.mapsEmbed;
 
 export default function ContactPage() {
   const { t, locale } = useIntl();
+  useRegisterCmsPage(CMS_PAGE);
   const [sent, setSent] = React.useState(false);
 
   // Trello #59: live "Open now / Closed" status + today highlight from the API.
@@ -39,10 +44,12 @@ export default function ContactPage() {
   return (
     <>
       <section className="relative isolate overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/img/krek/werf-hero.webp)" }}
-          aria-hidden
+        <EditableImage
+          blockKey="contact.hero.image"
+          page={CMS_PAGE}
+          fallbackSrc="/img/krek/werf-hero.webp"
+          alt="Contact hero"
+          className="absolute inset-0"
         />
         <div
           className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/55 to-navy-950/15"
@@ -50,13 +57,19 @@ export default function ContactPage() {
         />
         <div className="container-wide relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
           <Badge tone="sand" dot className="mb-4">
-            {t("contactPage.badge")}
+            <EditableText blockKey="contact.hero.badge" page={CMS_PAGE} section="hero">
+              {t("contactPage.badge")}
+            </EditableText>
           </Badge>
           <h1 className="heading-display max-w-2xl whitespace-pre-line text-4xl text-white sm:text-5xl lg:text-[56px]">
-            {t("contactPage.title")}
+            <EditableText blockKey="contact.hero.title" page={CMS_PAGE} section="hero" type="heading">
+              {t("contactPage.title")}
+            </EditableText>
           </h1>
           <p className="mt-5 max-w-xl text-sand-100/85">
-            {t("contactPage.subtitle")}
+            <EditableText blockKey="contact.hero.subtitle" page={CMS_PAGE} section="hero" type="paragraph">
+              {t("contactPage.subtitle")}
+            </EditableText>
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a href={companyInfo.phoneHref}>

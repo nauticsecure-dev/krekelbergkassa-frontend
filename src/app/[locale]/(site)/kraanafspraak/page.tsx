@@ -7,6 +7,10 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
+import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
+import { EditableText } from '@/components/cms/EditableText';
+
+const CMS_PAGE = 'kraanafspraak';
 import {
   Anchor,
   ArrowRight,
@@ -88,6 +92,7 @@ function buildMonth(year: number, month: number) {
 export default function KraanAfspraakPage() {
   const { t, locale } = useIntl();
   const { push } = useToast();
+  useRegisterCmsPage(CMS_PAGE);
 
   const today = React.useMemo(() => {
     const d = new Date();
@@ -275,12 +280,20 @@ export default function KraanAfspraakPage() {
         <div>
           <div className="mb-6">
             <Badge tone="gold" className="mb-3">
-              Kraanafspraak maken
+              <EditableText blockKey="kraanafspraak.hero.badge" page={CMS_PAGE} section="hero">
+                Kraanafspraak maken
+              </EditableText>
             </Badge>
             <h1 className="heading-display text-3xl sm:text-4xl">
-              {t('crane.title')}
+              <EditableText blockKey="kraanafspraak.hero.title" page={CMS_PAGE} section="hero" type="heading">
+                {t('crane.title')}
+              </EditableText>
             </h1>
-            <p className="mt-2 max-w-2xl text-navy-500">{t('crane.subtitle')}</p>
+            <p className="mt-2 max-w-2xl text-navy-500">
+              <EditableText blockKey="kraanafspraak.hero.subtitle" page={CMS_PAGE} section="hero" type="paragraph">
+                {t('crane.subtitle')}
+              </EditableText>
+            </p>
           </div>
 
           <Card className="p-6 sm:p-8">

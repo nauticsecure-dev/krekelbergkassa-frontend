@@ -26,6 +26,11 @@ import {
   serviceCatalogService,
   type ServiceCatalogService,
 } from '@/lib/services';
+import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
+import { EditableText } from '@/components/cms/EditableText';
+import { EditableImage } from '@/components/cms/EditableImage';
+
+const CMS_PAGE = 'diensten';
 
 interface ServiceSection {
   key: string;
@@ -85,6 +90,7 @@ function groupLiveServices(services: ServiceCatalogService[] | undefined): LiveG
 
 export default function DienstenPage() {
   const { t, locale } = useIntl();
+  useRegisterCmsPage(CMS_PAGE);
   const [openFaq, setOpenFaq] = React.useState<string | null>('faq1');
 
   // Trello #100: drive the service overview from the shared product DB, falling
@@ -104,10 +110,12 @@ export default function DienstenPage() {
     <>
       {/* ───────── Hero ───────── */}
       <section className="relative isolate overflow-hidden bg-navy-950">
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/img/krek/boot-kranen.webp)' }}
+        <EditableImage
+          blockKey="diensten.hero.image"
+          page={CMS_PAGE}
+          fallbackSrc="/img/krek/boot-kranen.webp"
+          alt="Diensten hero"
+          className="absolute inset-0"
         />
         <div
           aria-hidden
@@ -115,12 +123,20 @@ export default function DienstenPage() {
         />
         <div className="container-wide relative pb-20 pt-16 text-white sm:pb-28 sm:pt-24 lg:pb-32 lg:pt-28">
           <Badge tone="sand" dot className="mb-4">
-            {t('werf.heroBadge')}
+            <EditableText blockKey="diensten.hero.badge" page={CMS_PAGE} section="hero">
+              {t('werf.heroBadge')}
+            </EditableText>
           </Badge>
           <h1 className="heading-display max-w-2xl text-4xl text-white sm:text-5xl">
-            {t('werf.heroTitle')}
+            <EditableText blockKey="diensten.hero.title" page={CMS_PAGE} section="hero" type="heading">
+              {t('werf.heroTitle')}
+            </EditableText>
           </h1>
-          <p className="mt-4 max-w-xl text-sand-100/85">{t('werf.heroSubtitle')}</p>
+          <p className="mt-4 max-w-xl text-sand-100/85">
+            <EditableText blockKey="diensten.hero.subtitle" page={CMS_PAGE} section="hero" type="paragraph">
+              {t('werf.heroSubtitle')}
+            </EditableText>
+          </p>
 
           {/* Anchor nav */}
           <div className="mt-8 flex flex-wrap gap-2">
