@@ -21,6 +21,11 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
 import { companyInfo } from "@/lib/company";
+import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
+import { EditableText } from "@/components/cms/EditableText";
+import { EditableImage } from "@/components/cms/EditableImage";
+
+const CMS_PAGE = "home";
 
 const SERVICES = [
   {
@@ -63,15 +68,18 @@ const SERVICES = [
 
 export default function HomePage() {
   const { t, locale } = useIntl();
+  useRegisterCmsPage(CMS_PAGE);
 
   return (
     <>
       {/* ---------- Hero ---------- */}
       <section className="relative isolate overflow-hidden bg-navy-950">
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/img/krek/werf-hero.webp)" }}
+        <EditableImage
+          blockKey="home.hero.image"
+          page={CMS_PAGE}
+          fallbackSrc="/img/krek/werf-hero.webp"
+          alt="Krekelberg Nautic jachtwerf"
+          className="absolute inset-0"
         />
         <div
           aria-hidden
@@ -79,13 +87,19 @@ export default function HomePage() {
         />
         <div className="container-wide relative pb-24 pt-20 text-white sm:pb-32 sm:pt-28 lg:pb-40 lg:pt-36">
           <Badge tone="sand" dot className="mb-5">
-            {t("home.heroBadge")}
+            <EditableText blockKey="home.hero.badge" page={CMS_PAGE} section="hero">
+              {t("home.heroBadge")}
+            </EditableText>
           </Badge>
           <h1 className="heading-display max-w-2xl text-4xl text-white sm:text-5xl lg:text-6xl">
-            {t("home.heroTitle")}
+            <EditableText blockKey="home.hero.title" page={CMS_PAGE} section="hero">
+              {t("home.heroTitle")}
+            </EditableText>
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-sand-100/85">
-            {t("home.heroSubtitle")}
+            <EditableText blockKey="home.hero.subtitle" page={CMS_PAGE} section="hero" type="long_text">
+              {t("home.heroSubtitle")}
+            </EditableText>
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={`/${locale}/kraanafspraak`}>
@@ -94,7 +108,9 @@ export default function HomePage() {
                 size="lg"
                 rightIcon={<ArrowRight className="h-4 w-4" />}
               >
-                {t("home.heroPrimary")}
+                <EditableText blockKey="home.hero.cta_primary" page={CMS_PAGE} section="hero">
+                  {t("home.heroPrimary")}
+                </EditableText>
               </Button>
             </Link>
             <Link href={`/${locale}/diensten`}>
@@ -103,16 +119,34 @@ export default function HomePage() {
                 size="lg"
                 className="border-white/30 bg-white/5 text-white hover:bg-white/10"
               >
-                {t("home.heroSecondary")}
+                <EditableText blockKey="home.hero.cta_secondary" page={CMS_PAGE} section="hero">
+                  {t("home.heroSecondary")}
+                </EditableText>
               </Button>
             </Link>
           </div>
 
           <div className="mt-12 flex max-w-3xl flex-wrap items-center gap-x-7 gap-y-3 text-sm text-sand-100/80">
-            <Trust icon={Award}>{t("home.trustExperience")}</Trust>
-            <Trust icon={Ship}>{t("home.trustCrane")}</Trust>
-            <Trust icon={Warehouse}>{t("home.trustStorage")}</Trust>
-            <Trust icon={Anchor}>{t("home.trustSale")}</Trust>
+            <Trust icon={Award}>
+              <EditableText blockKey="home.trust.experience" page={CMS_PAGE} section="trust">
+                {t("home.trustExperience")}
+              </EditableText>
+            </Trust>
+            <Trust icon={Ship}>
+              <EditableText blockKey="home.trust.crane" page={CMS_PAGE} section="trust">
+                {t("home.trustCrane")}
+              </EditableText>
+            </Trust>
+            <Trust icon={Warehouse}>
+              <EditableText blockKey="home.trust.storage" page={CMS_PAGE} section="trust">
+                {t("home.trustStorage")}
+              </EditableText>
+            </Trust>
+            <Trust icon={Anchor}>
+              <EditableText blockKey="home.trust.sale" page={CMS_PAGE} section="trust">
+                {t("home.trustSale")}
+              </EditableText>
+            </Trust>
           </div>
         </div>
       </section>
@@ -129,13 +163,19 @@ export default function HomePage() {
         <div className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <Badge tone="gold" className="mb-3">
-              {t("home.servicesBadge")}
+              <EditableText blockKey="home.services.badge" page={CMS_PAGE} section="services">
+                {t("home.servicesBadge")}
+              </EditableText>
             </Badge>
             <h2 className="heading-display text-3xl text-navy-900 sm:text-4xl">
-              {t("home.servicesTitle")}
+              <EditableText blockKey="home.services.title" page={CMS_PAGE} section="services">
+                {t("home.servicesTitle")}
+              </EditableText>
             </h2>
             <p className="mt-2 max-w-xl text-sm text-navy-500">
-              {t("home.servicesSubtitle")}
+              <EditableText blockKey="home.services.subtitle" page={CMS_PAGE} section="services" type="long_text">
+                {t("home.servicesSubtitle")}
+              </EditableText>
             </p>
           </div>
           <Link
@@ -190,10 +230,15 @@ export default function HomePage() {
       <section className="bg-white py-20">
         <div className="container-wide grid gap-10 lg:grid-cols-[1fr_1.05fr] lg:items-center">
           <div className="relative">
-            <div
-              className="aspect-[5/4] w-full overflow-hidden rounded-2xl bg-cover bg-center shadow-elev"
-              style={{ backgroundImage: "url(/img/krek/boot-kranen.webp)" }}
-            />
+            <div className="aspect-[5/4] w-full overflow-hidden rounded-2xl shadow-elev">
+              <EditableImage
+                blockKey="home.werf.image"
+                page={CMS_PAGE}
+                fallbackSrc="/img/krek/boot-kranen.webp"
+                alt="Boot kranen op de werf van Krekelberg Nautic"
+                className="h-full w-full"
+              />
+            </div>
             <div className="absolute -bottom-6 -right-6 hidden rounded-xl bg-white p-5 shadow-elev lg:block">
               <ShieldCheck className="h-6 w-6 text-gold-500" />
               <div className="mt-2 text-xs font-semibold uppercase tracking-widest text-navy-500">
@@ -206,16 +251,24 @@ export default function HomePage() {
           </div>
           <div>
             <Badge tone="marine" className="mb-3">
-              {t("home.werf.badge")}
+              <EditableText blockKey="home.werf.badge" page={CMS_PAGE} section="werf">
+                {t("home.werf.badge")}
+              </EditableText>
             </Badge>
             <h2 className="heading-display text-3xl text-navy-900 sm:text-4xl">
-              {t("home.werf.title")}
+              <EditableText blockKey="home.werf.title" page={CMS_PAGE} section="werf">
+                {t("home.werf.title")}
+              </EditableText>
             </h2>
             <p className="mt-4 text-base leading-relaxed text-navy-600">
-              {t("home.werf.p1")}
+              <EditableText blockKey="home.werf.p1" page={CMS_PAGE} section="werf" type="long_text">
+                {t("home.werf.p1")}
+              </EditableText>
             </p>
             <p className="mt-3 text-base leading-relaxed text-navy-600">
-              {t("home.werf.p2")}
+              <EditableText blockKey="home.werf.p2" page={CMS_PAGE} section="werf" type="long_text">
+                {t("home.werf.p2")}
+              </EditableText>
             </p>
             <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
               {(["lift", "wash", "storage", "diy"] as const).map((k) => (
@@ -261,21 +314,31 @@ export default function HomePage() {
       <section className="container-wide py-20">
         <div className="overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-card">
           <div className="grid gap-0 lg:grid-cols-[1.1fr_1fr]">
-            <div
-              className="relative aspect-[5/3] bg-cover bg-center lg:aspect-auto"
-              style={{ backgroundImage: "url(/img/krek/verkoop-schip.webp)" }}
-            >
+            <div className="relative aspect-[5/3] overflow-hidden lg:aspect-auto">
+              <EditableImage
+                blockKey="home.sale.image"
+                page={CMS_PAGE}
+                fallbackSrc="/img/krek/verkoop-schip.webp"
+                alt="Boot te koop via Krekelberg Nautic"
+                className="absolute inset-0"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-navy-950/65 via-navy-950/10 to-transparent" />
             </div>
             <div className="p-8 sm:p-12">
               <Badge tone="navy" className="mb-3">
-                {t("home.sale.badge")}
+                <EditableText blockKey="home.sale.badge" page={CMS_PAGE} section="sale">
+                  {t("home.sale.badge")}
+                </EditableText>
               </Badge>
               <h2 className="heading-display text-3xl text-navy-900 sm:text-4xl">
-                {t("home.sale.title")}
+                <EditableText blockKey="home.sale.title" page={CMS_PAGE} section="sale">
+                  {t("home.sale.title")}
+                </EditableText>
               </h2>
               <p className="mt-3 text-base leading-relaxed text-navy-600">
-                {t("home.sale.body")}
+                <EditableText blockKey="home.sale.body" page={CMS_PAGE} section="sale" type="long_text">
+                  {t("home.sale.body")}
+                </EditableText>
               </p>
               <div className="mt-6 grid grid-cols-3 gap-3">
                 <Mini big="60+" label={t("home.sale.statShips")} />
@@ -307,19 +370,30 @@ export default function HomePage() {
       {/* ---------- Appartementen + Contact split ---------- */}
       <section className="container-wide grid gap-6 pb-20 lg:grid-cols-2">
         <Card className="overflow-hidden p-0">
-          <div
-            className="aspect-[16/10] w-full bg-cover bg-center"
-            style={{ backgroundImage: "url(/img/krek/appartement.webp)" }}
-          />
+          <div className="aspect-[16/10] w-full overflow-hidden">
+            <EditableImage
+              blockKey="home.apartments.image"
+              page={CMS_PAGE}
+              fallbackSrc="/img/krek/appartement.webp"
+              alt="Appartementen bij Krekelberg Nautic"
+              className="h-full w-full"
+            />
+          </div>
           <div className="p-6">
             <Badge tone="gold" className="mb-3">
-              {t("home.apartments.badge")}
+              <EditableText blockKey="home.apartments.badge" page={CMS_PAGE} section="apartments">
+                {t("home.apartments.badge")}
+              </EditableText>
             </Badge>
             <h3 className="heading-display text-2xl text-navy-900">
-              {t("home.apartments.title")}
+              <EditableText blockKey="home.apartments.title" page={CMS_PAGE} section="apartments">
+                {t("home.apartments.title")}
+              </EditableText>
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-navy-600">
-              {t("home.apartments.body")}
+              <EditableText blockKey="home.apartments.body" page={CMS_PAGE} section="apartments" type="long_text">
+                {t("home.apartments.body")}
+              </EditableText>
             </p>
             <Link
               href={`/${locale}/appartementen`}
@@ -336,16 +410,25 @@ export default function HomePage() {
         </Card>
 
         <Card className="overflow-hidden p-0">
-          <div
-            className="aspect-[16/10] w-full bg-cover bg-center"
-            style={{ backgroundImage: "url(/img/krek/jachthaven.webp)" }}
-          />
+          <div className="aspect-[16/10] w-full overflow-hidden">
+            <EditableImage
+              blockKey="home.contact.image"
+              page={CMS_PAGE}
+              fallbackSrc="/img/krek/jachthaven.webp"
+              alt="Jachthaven Krekelberg Nautic Roermond"
+              className="h-full w-full"
+            />
+          </div>
           <div className="p-6">
             <Badge tone="marine" className="mb-3">
-              {t("home.contact.badge")}
+              <EditableText blockKey="home.contact.badge" page={CMS_PAGE} section="contact">
+                {t("home.contact.badge")}
+              </EditableText>
             </Badge>
             <h3 className="heading-display text-2xl text-navy-900">
-              {t("home.contact.title")}
+              <EditableText blockKey="home.contact.title" page={CMS_PAGE} section="contact">
+                {t("home.contact.title")}
+              </EditableText>
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm text-navy-700">
               <li className="flex items-center gap-2">
@@ -359,7 +442,9 @@ export default function HomePage() {
               </li>
               <li className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-marine-700" />{" "}
-                {t("home.contact.hours")}
+                <EditableText blockKey="home.contact.hours" page={CMS_PAGE} section="contact">
+                  {t("home.contact.hours")}
+                </EditableText>
               </li>
             </ul>
             <div className="mt-5 flex flex-wrap gap-3">
@@ -382,21 +467,31 @@ export default function HomePage() {
       {/* ---------- Final CTA strip ---------- */}
       <section className="container-wide pb-24">
         <div className="relative overflow-hidden rounded-2xl bg-navy-950 px-8 py-12 text-white sm:px-12">
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-cover bg-center opacity-25"
-            style={{ backgroundImage: "url(/img/krek/jachthaven.webp)" }}
-          />
+          <div aria-hidden className="absolute inset-0 opacity-25">
+            <EditableImage
+              blockKey="home.cta.image"
+              page={CMS_PAGE}
+              fallbackSrc="/img/krek/jachthaven.webp"
+              alt=""
+              className="h-full w-full"
+            />
+          </div>
           <div className="relative grid gap-6 lg:grid-cols-[2fr_1fr] lg:items-center">
             <div>
               <Badge tone="sand" dot className="mb-3">
-                {t("home.cta.badge")}
+                <EditableText blockKey="home.cta.badge" page={CMS_PAGE} section="cta">
+                  {t("home.cta.badge")}
+                </EditableText>
               </Badge>
               <h3 className="heading-display text-2xl text-white sm:text-3xl">
-                {t("home.cta.title")}
+                <EditableText blockKey="home.cta.title" page={CMS_PAGE} section="cta">
+                  {t("home.cta.title")}
+                </EditableText>
               </h3>
               <p className="mt-2 max-w-xl text-sm text-sand-100/80">
-                {t("home.cta.subtitle")}
+                <EditableText blockKey="home.cta.subtitle" page={CMS_PAGE} section="cta" type="long_text">
+                  {t("home.cta.subtitle")}
+                </EditableText>
               </p>
             </div>
             <div className="flex flex-wrap gap-3 lg:justify-end">
@@ -406,7 +501,9 @@ export default function HomePage() {
                   size="lg"
                   rightIcon={<ArrowRight className="h-4 w-4" />}
                 >
-                  {t("home.cta.primary")}
+                  <EditableText blockKey="home.cta.primary" page={CMS_PAGE} section="cta">
+                    {t("home.cta.primary")}
+                  </EditableText>
                 </Button>
               </Link>
               <Link href={`/${locale}/contact`}>
@@ -415,7 +512,9 @@ export default function HomePage() {
                   size="lg"
                   className="border-white/30 bg-white/5 text-white hover:bg-white/10"
                 >
-                  {t("home.cta.secondary")}
+                  <EditableText blockKey="home.cta.secondary" page={CMS_PAGE} section="cta">
+                    {t("home.cta.secondary")}
+                  </EditableText>
                 </Button>
               </Link>
             </div>

@@ -2566,25 +2566,25 @@ export const cmsService = {
   },
   // Admin upserts (key-addressed; partial value_by_locale merges server-side).
   saveContentBlock(key: string, payload: Record<string, unknown>) {
-    return api<Record<string, unknown>>(`/admin/cms/content-blocks/${encodeURIComponent(key)}`, {
+    return api<Record<string, unknown>>(`/v1/admin/cms/content-blocks/${encodeURIComponent(key)}`, {
       method: 'PATCH',
       body: payload,
     });
   },
   uploadMediaBlock(key: string, formData: FormData) {
-    return api<Record<string, unknown>>(`/admin/cms/media-blocks/${encodeURIComponent(key)}/upload`, {
+    return api<Record<string, unknown>>(`/v1/admin/cms/media-blocks/${encodeURIComponent(key)}/upload`, {
       method: 'POST',
       body: formData,
     });
   },
   saveMediaBlock(key: string, payload: Record<string, unknown>) {
-    return api<Record<string, unknown>>(`/admin/cms/media-blocks/${encodeURIComponent(key)}`, {
+    return api<Record<string, unknown>>(`/v1/admin/cms/media-blocks/${encodeURIComponent(key)}`, {
       method: 'PATCH',
       body: payload,
     });
   },
   saveSeo(slug: string, payload: Record<string, unknown>) {
-    return api<Record<string, unknown>>(`/admin/cms/seo/${encodeURIComponent(slug)}`, {
+    return api<Record<string, unknown>>(`/v1/admin/cms/seo/${encodeURIComponent(slug)}`, {
       method: 'PATCH',
       body: payload,
     });
