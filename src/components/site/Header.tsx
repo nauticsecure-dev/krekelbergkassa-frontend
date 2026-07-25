@@ -36,6 +36,8 @@ export function Header() {
   const { t, locale } = useIntl();
   const { getGlobal } = useCms();
   const phone = getGlobal('company.phone', t('footer.phone'));
+  const ctaLabel = getGlobal('header.cta.label', 'Stalling');
+  const ctaHref  = `/${locale}/${getGlobal('header.cta.path', 'diensten/winterstalling')}`;
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
@@ -164,9 +166,9 @@ export function Header() {
               {t('nav.login')}
             </Button>
           </Link>
-          <Link href={`/${locale}/kraanafspraak`} className="hidden md:inline-flex">
+          <Link href={ctaHref} className="hidden md:inline-flex">
             <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
-              {t('nav.bookCrane')}
+              {ctaLabel}
             </Button>
           </Link>
           <button
@@ -200,9 +202,9 @@ export function Header() {
                   {t('nav.login')}
                 </Button>
               </Link>
-              <Link href={`/${locale}/kraanafspraak`}>
+              <Link href={ctaHref}>
                 <Button variant="gold" fullWidth>
-                  {t('nav.bookCrane')}
+                  {ctaLabel}
                 </Button>
               </Link>
             </div>

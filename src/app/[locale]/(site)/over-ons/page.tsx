@@ -19,6 +19,11 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
 import { companyInfo } from "@/lib/company";
+import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
+import { EditableText } from "@/components/cms/EditableText";
+import { EditableImage } from "@/components/cms/EditableImage";
+
+const CMS_PAGE = "over-ons";
 
 const VALUES = [
   { key: "craft", icon: Wrench },
@@ -60,15 +65,18 @@ const TEAM = [
 
 export default function OverOnsPage() {
   const { t, locale } = useIntl();
+  useRegisterCmsPage(CMS_PAGE);
 
   return (
     <>
       {/* ───────── Hero ───────── */}
       <section className="relative isolate overflow-hidden bg-navy-950">
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/img/krek/jachthaven.webp)" }}
+        <EditableImage
+          blockKey="over-ons.hero.image"
+          page={CMS_PAGE}
+          fallbackSrc="/img/krek/jachthaven.webp"
+          alt="Over ons hero"
+          className="absolute inset-0 h-full w-full object-cover"
         />
         <div
           aria-hidden
@@ -76,13 +84,19 @@ export default function OverOnsPage() {
         />
         <div className="container-wide relative pb-20 pt-16 text-white sm:pb-28 sm:pt-24 lg:pb-32 lg:pt-28">
           <Badge tone="sand" dot className="mb-4">
-            {t("over.heroBadge")}
+            <EditableText blockKey="over-ons.hero.badge" page={CMS_PAGE} section="hero">
+              {t("over.heroBadge")}
+            </EditableText>
           </Badge>
           <h1 className="heading-display max-w-2xl text-4xl text-white sm:text-5xl">
-            {t("over.heroTitle")}
+            <EditableText blockKey="over-ons.hero.title" page={CMS_PAGE} section="hero" type="heading">
+              {t("over.heroTitle")}
+            </EditableText>
           </h1>
           <p className="mt-4 max-w-xl text-sand-100/85">
-            {t("over.heroSubtitle")}
+            <EditableText blockKey="over-ons.hero.subtitle" page={CMS_PAGE} section="hero" type="paragraph">
+              {t("over.heroSubtitle")}
+            </EditableText>
           </p>
         </div>
       </section>
@@ -107,22 +121,33 @@ export default function OverOnsPage() {
       {/* ───────── Story 1 (photo left / text right) ───────── */}
       <section className="bg-white py-20">
         <div className="container-wide grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:items-center">
-          <div
-            className="aspect-[5/4] w-full overflow-hidden rounded-2xl bg-cover bg-center shadow-card"
-            style={{ backgroundImage: "url(/img/krek/werf-hero.webp)" }}
+          <EditableImage
+            blockKey="over-ons.story.image"
+            page={CMS_PAGE}
+            fallbackSrc="/img/krek/werf-hero.webp"
+            alt="Krekelberg werf"
+            className="aspect-[5/4] w-full overflow-hidden rounded-2xl object-cover shadow-card"
           />
           <div>
             <Badge tone="navy" className="mb-3">
-              {t("over.storyBadge")}
+              <EditableText blockKey="over-ons.story.badge" page={CMS_PAGE} section="story">
+                {t("over.storyBadge")}
+              </EditableText>
             </Badge>
             <h2 className="heading-display text-3xl text-navy-900 sm:text-4xl">
-              {t("over.storyTitle")}
+              <EditableText blockKey="over-ons.story.title" page={CMS_PAGE} section="story" type="heading">
+                {t("over.storyTitle")}
+              </EditableText>
             </h2>
             <p className="mt-4 leading-relaxed text-navy-600">
-              {t("over.story1")}
+              <EditableText blockKey="over-ons.story.p1" page={CMS_PAGE} section="story" type="paragraph">
+                {t("over.story1")}
+              </EditableText>
             </p>
             <p className="mt-3 leading-relaxed text-navy-600">
-              {t("over.story2")}
+              <EditableText blockKey="over-ons.story.p2" page={CMS_PAGE} section="story" type="paragraph">
+                {t("over.story2")}
+              </EditableText>
             </p>
             <div className="mt-6 flex items-center gap-3 rounded-xl border border-navy-100 bg-sand-50/50 p-4">
               <Award className="h-5 w-5 shrink-0 text-gold-600" />
@@ -143,16 +168,24 @@ export default function OverOnsPage() {
       <section className="container-wide grid gap-10 py-20 lg:grid-cols-[1.15fr_1fr] lg:items-center">
         <div className="order-2 lg:order-1">
           <Badge tone="marine" className="mb-3">
-            {t("over.craftBadge")}
+            <EditableText blockKey="over-ons.craft.badge" page={CMS_PAGE} section="craft">
+              {t("over.craftBadge")}
+            </EditableText>
           </Badge>
           <h2 className="heading-display text-3xl text-navy-900 sm:text-4xl">
-            {t("over.craftTitle")}
+            <EditableText blockKey="over-ons.craft.title" page={CMS_PAGE} section="craft" type="heading">
+              {t("over.craftTitle")}
+            </EditableText>
           </h2>
           <p className="mt-4 leading-relaxed text-navy-600">
-            {t("over.craft1")}
+            <EditableText blockKey="over-ons.craft.p1" page={CMS_PAGE} section="craft" type="paragraph">
+              {t("over.craft1")}
+            </EditableText>
           </p>
           <p className="mt-3 leading-relaxed text-navy-600">
-            {t("over.craft2")}
+            <EditableText blockKey="over-ons.craft.p2" page={CMS_PAGE} section="craft" type="paragraph">
+              {t("over.craft2")}
+            </EditableText>
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href={`/${locale}/diensten`}>
@@ -168,9 +201,12 @@ export default function OverOnsPage() {
             </Link>
           </div>
         </div>
-        <div
-          className="order-1 aspect-[5/4] w-full overflow-hidden rounded-2xl bg-cover bg-center shadow-card lg:order-2"
-          style={{ backgroundImage: "url(/img/krek/boot-kranen.webp)" }}
+        <EditableImage
+          blockKey="over-ons.craft.image"
+          page={CMS_PAGE}
+          fallbackSrc="/img/krek/boot-kranen.webp"
+          alt="Krekelberg ambacht"
+          className="order-1 aspect-[5/4] w-full overflow-hidden rounded-2xl object-cover shadow-card lg:order-2"
         />
       </section>
 
