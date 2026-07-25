@@ -31,13 +31,17 @@ export const LENGTH_TARIFFS: LengthTariff[] = [
   { min_cm: 1050, max_cm: 1099, label: '1050–1099 cm', kranen: 115, afspuiten: 95, stalling_per_week: 90, week_arrangement: 395, winterberging: 1240 },
   { min_cm: 1100, max_cm: 1149, label: '1100–1149 cm', kranen: 125, afspuiten: 100, stalling_per_week: 100, week_arrangement: 425, winterberging: 1325 },
   { min_cm: 1150, max_cm: 1199, label: '1150–1199 cm', kranen: 150, afspuiten: 105, stalling_per_week: 105, week_arrangement: 475, winterberging: 1425 },
-  { min_cm: 1200, max_cm: 1249, label: '1200–1249 cm', kranen: 159, afspuiten: 110, stalling_per_week: 110, week_arrangement: 510, winterberging: 1525 },
+  { min_cm: 1200, max_cm: 1249, label: '1200–1249 cm', kranen: 160, afspuiten: 110, stalling_per_week: 110, week_arrangement: 510, winterberging: 1525 },
   { min_cm: 1250, max_cm: 1299, label: '1250–1299 cm', kranen: 165, afspuiten: 115, stalling_per_week: 115, week_arrangement: 530, winterberging: 1625 },
   { min_cm: 1300, max_cm: 1349, label: '1300–1349 cm', kranen: 175, afspuiten: 120, stalling_per_week: 120, week_arrangement: 560, winterberging: 1725 },
   { min_cm: 1350, max_cm: 1399, label: '1350–1399 cm', kranen: 180, afspuiten: 125, stalling_per_week: 125, week_arrangement: 580, winterberging: 1825 },
   { min_cm: 1400, max_cm: 1449, label: '1400–1449 cm', kranen: 190, afspuiten: 130, stalling_per_week: 130, week_arrangement: 610, winterberging: 1925 },
   { min_cm: 1450, max_cm: 1499, label: '1450–1499 cm', kranen: 215, afspuiten: 140, stalling_per_week: 140, week_arrangement: 675, winterberging: 2050 },
   { min_cm: 1500, max_cm: 1549, label: '1500–1549 cm', kranen: 225, afspuiten: 145, stalling_per_week: 150, week_arrangement: 710, winterberging: 2175 },
+  { min_cm: 1550, max_cm: 1599, label: '1550–1599 cm', kranen: 230, afspuiten: 145, stalling_per_week: 150, week_arrangement: 735, winterberging: 2350 },
+  { min_cm: 1600, max_cm: 1649, label: '1600–1649 cm', kranen: 290, afspuiten: 150, stalling_per_week: 160, week_arrangement: 800, winterberging: 2500 },
+  { min_cm: 1650, max_cm: 1699, label: '1650–1699 cm', kranen: 300, afspuiten: 150, stalling_per_week: 170, week_arrangement: 875, winterberging: 2675 },
+  { min_cm: 1700, max_cm: 99999, label: '≥ 1700 cm', kranen: 335, afspuiten: 165, stalling_per_week: 185, week_arrangement: 975, winterberging: 2810 },
 ];
 
 export type TariffColumn =

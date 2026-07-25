@@ -1701,7 +1701,8 @@ export const bookingService = {
     });
   },
   book(payload: {
-    name: string;
+    first_name: string;
+    last_name?: string | null;
     email: string;
     phone?: string | null;
     locale?: string | null;
@@ -1711,23 +1712,37 @@ export const bookingService = {
     notes?: string | null;
     address?: {
       street?: string | null;
+      house_number?: string | null;
       postal_code?: string | null;
       city?: string | null;
       country?: string | null;
     };
     boat: {
-      name: string;
+      name?: string | null;
+      brand?: string | null;
+      model?: string | null;
+      engine?: string | null;
+      build_year?: number | null;
       type?: string | null;
       length_m: number;
       width_m?: number | null;
+      draft_m?: number | null;
+      weight_kg?: number | null;
       registration_number?: string | null;
     };
     service_codes: string[];
   }) {
-    return api<unknown>('/v1/booking', {
+    return api<{ appointment_id: string; status: string }>('/v1/booking', {
       method: 'POST',
       auth: false,
       body: payload,
+    });
+  },
+  uploadBookingPhotos(appointmentId: string, formData: FormData) {
+    return api<unknown>(`/v1/booking/${appointmentId}/photos`, {
+      method: 'POST',
+      auth: false,
+      body: formData,
     });
   },
 };
