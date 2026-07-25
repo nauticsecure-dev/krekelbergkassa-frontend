@@ -20,8 +20,7 @@ import {
   Clock,
   Droplets,
   Hammer,
-  Home,
-  Image,
+  Image as ImageIcon,
   MapPin,
   Ship,
   Sparkles,
@@ -537,8 +536,8 @@ export default function KraanAfspraakPage() {
               </div>
 
               {/* Image upload */}
-              <SectionTitle icon={<Image className="h-4 w-4" />} className="mt-8">
-                Foto's van uw boot (optioneel)
+              <SectionTitle icon={<ImageIcon aria-hidden className="h-4 w-4" />} className="mt-8">
+                {"Foto's van uw boot (optioneel)"}
               </SectionTitle>
               <div className="mt-4">
                 <input
@@ -555,14 +554,15 @@ export default function KraanAfspraakPage() {
                     onClick={() => fileInputRef.current?.click()}
                     className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-navy-200 bg-sand-50 py-6 text-sm text-navy-500 transition hover:border-navy-400 hover:bg-sand-100"
                   >
-                    <Image className="h-5 w-5" />
-                    Foto's toevoegen ({images.length}/{MAX_IMAGES})
+                    <ImageIcon aria-hidden className="h-5 w-5" />
+                    {`Foto's toevoegen (${images.length}/${MAX_IMAGES})`}
                   </button>
                 )}
                 {images.length > 0 && (
                   <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {images.map((img, i) => (
                       <div key={i} className="group relative overflow-hidden rounded-lg border border-navy-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={URL.createObjectURL(img)}
                           alt={img.name}
