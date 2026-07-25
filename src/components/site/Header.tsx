@@ -9,7 +9,6 @@ import {
   ChevronDown,
   Droplets,
   Hammer,
-  Hotel,
   Menu,
   Phone,
   Ship,
@@ -57,8 +56,6 @@ export function Header() {
     { href: `/${locale}/diensten/afspuiten`, icon: Droplets, label: t('services.wash.title'), desc: t('services.wash.desc') },
     { href: `/${locale}/diensten/winterstalling`, icon: Warehouse, label: t('services.storage.title'), desc: t('services.storage.desc') },
     { href: `/${locale}/diensten/zelf-werken`, icon: Hammer, label: t('services.diy.title'), desc: t('services.diy.desc') },
-    { href: `/${locale}/planning`, icon: Calendar, label: t('nav.planning'), desc: 'Live overzicht werfplanning' },
-    { href: `/${locale}/appartementen`, icon: Hotel, label: t('services.apartments.title'), desc: t('services.apartments.desc') },
   ];
 
   const openMenu = (id: string) => {
@@ -122,8 +119,7 @@ export function Header() {
                 href={`/${locale}/diensten`}
                 active={
                   pathname.startsWith(`/${locale}/diensten`) ||
-                  pathname.startsWith(`/${locale}/kraanafspraak`) ||
-                  pathname.startsWith(`/${locale}/planning`)
+                  pathname.startsWith(`/${locale}/kraanafspraak`)
                 }
                 hasMenu
                 expanded={hoveredMenu === 'services'}
