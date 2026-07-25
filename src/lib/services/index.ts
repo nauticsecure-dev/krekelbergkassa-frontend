@@ -2613,6 +2613,12 @@ export const cmsService = {
       body: payload,
     });
   },
+  translate(payload: { text: string; source_locale: string; target_locales: string[] }) {
+    return api<{ translations: Record<string, string> }>('/v1/admin/cms/translate', {
+      method: 'POST',
+      body: payload,
+    });
+  },
 };
 
 export const contentService = {

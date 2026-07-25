@@ -1,12 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { Loader2, Upload } from 'lucide-react';
+import { Languages, Loader2, Upload } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { cn } from '@/lib/cn';
+import { cmsService } from '@/lib/services';
 import {
   EDITABLE_LOCALE_TAGS,
   useCms,
@@ -133,13 +134,13 @@ export function TextEditModal({
   const { push, pushError } = useToast();
   const { saveText, getContentBlock, localeTag } = useCms();
 
-  const [active, setActive] = React.useState<LocaleTag>(localeTag);
-  const [values, setValues] = React.useState<ByTag>({});
-  const [base, setBase] = React.useState<ByTag>({});
-  const [saving, setSaving] = React.useState(false);
+  const [active, setActive]           = React.useState<LocaleTag>(localeTag);
+  const [values, setValues]           = React.useState<ByTag>({});
+  const [base, setBase]               = React.useState<ByTag>({});
+  const [saving, setSaving]           = React.useState(false);
+  const [autoTranslate, setAutoTranslate] = React.useState(false);
+  const [translating, setTranslating] = React.useState(false);
 
-  // Seed the editor when it opens: the current locale's field is prefilled with
-  // the stored value, or the hardcoded fallback so editors start from defaults.
   React.useEffect(() => {
     if (!open) return;
     const stored = getContentBlock(blockKey)?.value ?? '';
@@ -147,12 +148,43 @@ export function TextEditModal({
     setValues(seeded);
     setBase(seeded);
     setActive(localeTag);
+    setAutoTranslate(false);
   }, [open, blockKey, fallbackText, localeTag, getContentBlock]);
 
   const isLong = type === 'rich_text' || type === 'long_text';
 
+  // All locale tabs except the one currently being edited
+  const otherLocales = EDITABLE_LOCALE_TAGS.filter((tag) => tag !== active);
+
   const onSave = async () => {
-    const value_by_locale = changedByLocale(values, base);
+    let currentValues = { ...values };
+
+    // Auto-translate: send the active locale text to all other locales
+    if (autoTranslate && currentValues[active]?.trim()) {
+      setTranslating(true);
+      try {
+        const res = await cmsService.translate({
+          text: currentValues[active]!,
+          source_locale: active,
+          target_locales: otherLocales,
+        });
+        // Merge translated values — don't overwrite locales the editor already filled in
+        for (const [locale, translated] of Object.entries(res.translations)) {
+          const tag = locale as LocaleTag;
+          if (!currentValues[tag]?.trim()) {
+            currentValues = { ...currentValues, [tag]: translated };
+          }
+        }
+        setValues(currentValues);
+        push({ tone: 'success', title: 'Vertaling gegenereerd' });
+      } catch {
+        push({ tone: 'info', title: 'Vertaling mislukt — tekst opgeslagen zonder vertaling' });
+      } finally {
+        setTranslating(false);
+      }
+    }
+
+    const value_by_locale = changedByLocale(currentValues, base);
     if (Object.keys(value_by_locale).length === 0) {
       onClose();
       return;
@@ -169,6 +201,8 @@ export function TextEditModal({
     }
   };
 
+  const busy = saving || translating;
+
   return (
     <Modal open={open} onClose={onClose} size="lg">
       <ModalHeader title={t('cms.editText')} desc={blockKey} />
@@ -183,9 +217,46 @@ export function TextEditModal({
           placeholder={t('cms.textPlaceholder')}
           aria-label={`${t('cms.editText')} ${TAG_LABEL[active]}`}
         />
+
+        {/* Auto-translate checkbox */}
+        <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-navy-100 bg-navy-50 px-3 py-2.5 text-sm text-navy-700 transition hover:bg-navy-100">
+          <input
+            type="checkbox"
+            checked={autoTranslate}
+            onChange={(e) => setAutoTranslate(e.target.checked)}
+            className="h-4 w-4 cursor-pointer accent-navy-900"
+          />
+          <Languages className="h-4 w-4 shrink-0 text-navy-500" />
+          <span>
+            Automatisch vertalen naar{' '}
+            <strong>{otherLocales.map((l) => TAG_LABEL[l]).join(', ')}</strong> via AI
+          </span>
+          {autoTranslate && (
+            <span className="ml-auto rounded bg-gold-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold-700">
+              AI
+            </span>
+          )}
+        </label>
+
         <p className="text-xs text-navy-400">{t('cms.localeHint')}</p>
       </div>
-      <ModalFooter onCancel={onClose} onSave={onSave} saving={saving} />
+
+      {/* Footer — shows spinner while translating */}
+      <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
+        <Button variant="ghost" onClick={onClose} disabled={busy}>
+          {t('cms.cancel')}
+        </Button>
+        <Button
+          variant="primary"
+          onClick={onSave}
+          disabled={busy}
+          leftIcon={
+            busy ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined
+          }
+        >
+          {translating ? 'Vertalen…' : t('cms.save')}
+        </Button>
+      </div>
     </Modal>
   );
 }
