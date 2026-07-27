@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   Award,
-  Calendar,
   Clock,
   Heart,
   Leaf,
@@ -356,14 +355,6 @@ export default function OverOnsPage() {
                 rightIcon={<ArrowRight className="h-4 w-4" />}
               >
                 {t("over.makeAppointment")}
-              </Button>
-            </Link>
-            <Link href={`/${locale}/planning`}>
-              <Button
-                variant="outline"
-                leftIcon={<Calendar className="h-4 w-4" />}
-              >
-                {t("over.viewPlanning")}
               </Button>
             </Link>
           </div>

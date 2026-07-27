@@ -8,7 +8,6 @@ import {
   Clock,
   Droplets,
   Hammer,
-  Hotel,
   MapPin,
   Phone,
   Ship,
@@ -57,12 +56,6 @@ const SERVICES = [
     href: "/verkoop",
     img: "/img/krek/verkoop-schip.webp",
     icon: Anchor,
-  },
-  {
-    key: "apartments",
-    href: "/appartementen",
-    img: "/img/krek/appartement.webp",
-    icon: Hotel,
   },
 ] as const;
 
@@ -367,48 +360,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ---------- Appartementen + Contact split ---------- */}
-      <section className="container-wide grid gap-6 pb-20 lg:grid-cols-2">
-        <Card className="overflow-hidden p-0">
-          <div className="aspect-[16/10] w-full overflow-hidden">
-            <EditableImage
-              blockKey="home.apartments.image"
-              page={CMS_PAGE}
-              fallbackSrc="/img/krek/appartement.webp"
-              alt="Appartementen bij Krekelberg Nautic"
-              className="h-full w-full"
-            />
-          </div>
-          <div className="p-6">
-            <Badge tone="gold" className="mb-3">
-              <EditableText blockKey="home.apartments.badge" page={CMS_PAGE} section="apartments">
-                {t("home.apartments.badge")}
-              </EditableText>
-            </Badge>
-            <h3 className="heading-display text-2xl text-navy-900">
-              <EditableText blockKey="home.apartments.title" page={CMS_PAGE} section="apartments">
-                {t("home.apartments.title")}
-              </EditableText>
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-navy-600">
-              <EditableText blockKey="home.apartments.body" page={CMS_PAGE} section="apartments" type="long_text">
-                {t("home.apartments.body")}
-              </EditableText>
-            </p>
-            <Link
-              href={`/${locale}/appartementen`}
-              className="mt-5 inline-block"
-            >
-              <Button
-                variant="primary"
-                rightIcon={<ArrowRight className="h-4 w-4" />}
-              >
-                {t("home.apartments.cta")}
-              </Button>
-            </Link>
-          </div>
-        </Card>
-
+      {/* ---------- Contact ---------- */}
+      <section className="container-wide pb-20">
         <Card className="overflow-hidden p-0">
           <div className="aspect-[16/10] w-full overflow-hidden">
             <EditableImage
@@ -455,9 +408,6 @@ export default function HomePage() {
                 >
                   {t("home.contact.cta")}
                 </Button>
-              </Link>
-              <Link href={`/${locale}/planning`}>
-                <Button variant="outline">{t("home.contact.planning")}</Button>
               </Link>
             </div>
           </div>

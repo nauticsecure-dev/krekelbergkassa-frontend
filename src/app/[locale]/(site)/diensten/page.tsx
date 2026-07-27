@@ -37,7 +37,7 @@ interface ServiceSection {
   href: string;
   image: string;
   icon: React.ComponentType<{ className?: string }>;
-  ctaPrimary: 'crane' | 'sale' | 'apartments' | 'detail';
+  ctaPrimary: 'crane' | 'sale' | 'detail';
 }
 
 const SECTIONS: ServiceSection[] = [
@@ -318,9 +318,7 @@ function ServiceBlock({
       ? `/${locale}/kraanafspraak`
       : section.ctaPrimary === 'sale'
         ? 'https://www.schepenkring.nl/aanbod-boten/?kantoor=Roermond'
-        : section.ctaPrimary === 'apartments'
-          ? `/${locale}/appartementen`
-          : `/${locale}${section.href}`;
+        : `/${locale}${section.href}`;
 
   const isExternal = primaryHref.startsWith('http');
 
