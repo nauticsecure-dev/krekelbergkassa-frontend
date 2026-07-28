@@ -49,7 +49,7 @@ export default function SalesPage() {
 
   const sales = useQuery(['kassa-sales'], () => kassaService.recentSales({ per_page: 100 }));
 
-  const rows = (sales.data ?? []) as Sale[];
+  const rows = (sales.data?.data ?? []) as Sale[];
   const filtered = search.trim()
     ? rows.filter((s) => {
         const q = search.trim().toLowerCase();
