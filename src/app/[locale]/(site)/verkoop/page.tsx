@@ -27,7 +27,7 @@ export default function VerkoopPage() {
 
   return (
     <>
-      {/* Hero with real photo */}
+      {/* Hero */}
       <section className="relative isolate overflow-hidden">
         <EditableImage
           blockKey="verkoop.hero.image"
@@ -57,17 +57,11 @@ export default function VerkoopPage() {
             </EditableText>
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a
-              href={SCHEPENKRING_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                variant="gold"
-                size="lg"
-                rightIcon={<ExternalLink className="h-4 w-4" />}
-              >
-                {t("verkoopPage.browseCta")}
+            <a href={SCHEPENKRING_URL} target="_blank" rel="noopener noreferrer">
+              <Button variant="gold" size="lg" rightIcon={<ExternalLink className="h-4 w-4" />}>
+                <EditableText blockKey="verkoop.hero.cta_browse" page={CMS_PAGE} section="hero">
+                  {t("verkoopPage.browseCta")}
+                </EditableText>
               </Button>
             </a>
             <Link href={`/${locale}/contact`}>
@@ -76,7 +70,9 @@ export default function VerkoopPage() {
                 size="lg"
                 className="border-white/30 bg-white/5 text-white hover:bg-white/10"
               >
-                {t("verkoopPage.sellCta")}
+                <EditableText blockKey="verkoop.hero.cta_sell" page={CMS_PAGE} section="hero">
+                  {t("verkoopPage.sellCta")}
+                </EditableText>
               </Button>
             </Link>
           </div>
@@ -86,21 +82,27 @@ export default function VerkoopPage() {
       {/* Stat strip */}
       <section className="container-wide mt-10 grid gap-3 sm:grid-cols-3">
         {[
-          { v: "60+", l: t("verkoopPage.stat1"), icon: Ship },
-          { v: "3-6", l: t("verkoopPage.stat2"), icon: CheckCircle2 },
-          { v: "52", l: t("verkoopPage.stat3"), icon: Award },
+          { v: "60+", l: t("verkoopPage.stat1"), icon: Ship, bk: "verkoop.stat.1" },
+          { v: "3-6", l: t("verkoopPage.stat2"), icon: CheckCircle2, bk: "verkoop.stat.2" },
+          { v: "52",  l: t("verkoopPage.stat3"), icon: Award, bk: "verkoop.stat.3" },
         ].map((s) => {
           const Icon = s.icon;
           return (
-            <Card key={s.l} className="flex items-center gap-4 p-5">
+            <Card key={s.bk} className="flex items-center gap-4 p-5">
               <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-sand-100 text-navy-700">
                 <Icon className="h-5 w-5" />
               </span>
               <div>
                 <div className="text-2xl font-semibold text-navy-900">
-                  {s.v}
+                  <EditableText blockKey={`${s.bk}.value`} page={CMS_PAGE} section="stats">
+                    {s.v}
+                  </EditableText>
                 </div>
-                <div className="text-xs text-navy-500">{s.l}</div>
+                <div className="text-xs text-navy-500">
+                  <EditableText blockKey={`${s.bk}.label`} page={CMS_PAGE} section="stats">
+                    {s.l}
+                  </EditableText>
+                </div>
               </div>
             </Card>
           );
@@ -113,41 +115,46 @@ export default function VerkoopPage() {
           <div className="grid gap-0 lg:grid-cols-[1.2fr_1fr]">
             <div className="p-8 lg:p-10">
               <Badge tone="navy" className="mb-3">
-                {t("verkoopPage.highlightTitle")}
+                <EditableText blockKey="verkoop.browse.badge" page={CMS_PAGE} section="browse">
+                  {t("verkoopPage.highlightTitle")}
+                </EditableText>
               </Badge>
               <h2 className="heading-display text-3xl sm:text-4xl">
-                {t("verkoopPage.browseTitle")}
+                <EditableText blockKey="verkoop.browse.title" page={CMS_PAGE} section="browse" type="heading">
+                  {t("verkoopPage.browseTitle")}
+                </EditableText>
               </h2>
               <p className="mt-3 max-w-md text-sm leading-relaxed text-navy-600">
-                {t("verkoopPage.browseDesc")}
+                <EditableText blockKey="verkoop.browse.desc" page={CMS_PAGE} section="browse" type="paragraph">
+                  {t("verkoopPage.browseDesc")}
+                </EditableText>
               </p>
               <p className="mt-3 text-sm leading-relaxed text-navy-600">
-                {t("verkoopPage.highlightDesc")}
+                <EditableText blockKey="verkoop.browse.body" page={CMS_PAGE} section="browse" type="paragraph">
+                  {t("verkoopPage.highlightDesc")}
+                </EditableText>
               </p>
-
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <a
-                  href={SCHEPENKRING_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    rightIcon={<ExternalLink className="h-4 w-4" />}
-                  >
-                    {t("verkoopPage.browseCta")}
+                <a href={SCHEPENKRING_URL} target="_blank" rel="noopener noreferrer">
+                  <Button variant="primary" size="lg" rightIcon={<ExternalLink className="h-4 w-4" />}>
+                    <EditableText blockKey="verkoop.browse.cta" page={CMS_PAGE} section="browse">
+                      {t("verkoopPage.browseCta")}
+                    </EditableText>
                   </Button>
                 </a>
                 <span className="text-xs text-navy-400">
-                  {t("verkoopPage.browseExternal")}
+                  <EditableText blockKey="verkoop.browse.external_note" page={CMS_PAGE} section="browse">
+                    {t("verkoopPage.browseExternal")}
+                  </EditableText>
                 </span>
               </div>
             </div>
-            <div
-              className="relative min-h-[260px] bg-cover bg-center lg:min-h-0"
-              style={{ backgroundImage: "url(/img/krek/jachtmakelaar.webp)" }}
-              aria-hidden
+            <EditableImage
+              blockKey="verkoop.browse.image"
+              page={CMS_PAGE}
+              fallbackSrc="/img/krek/jachtmakelaar.webp"
+              alt="Jachtmakelaar Krekelberg"
+              className="relative min-h-[260px] lg:min-h-0"
             />
           </div>
         </Card>
@@ -158,31 +165,35 @@ export default function VerkoopPage() {
         <Card className="overflow-hidden">
           <div className="grid gap-0 lg:grid-cols-[1.1fr_1fr]">
             <div className="relative isolate p-10 text-white">
-              <div
-                className="absolute inset-0 -z-10 bg-cover bg-center"
-                style={{ backgroundImage: "url(/img/krek/jachthaven.webp)" }}
-                aria-hidden
+              <EditableImage
+                blockKey="verkoop.sell.image"
+                page={CMS_PAGE}
+                fallbackSrc="/img/krek/jachthaven.webp"
+                alt="Uw boot verkopen"
+                className="absolute inset-0 -z-10 h-full w-full object-cover"
               />
-              <div
-                className="absolute inset-0 -z-10 bg-navy-950/75"
-                aria-hidden
-              />
+              <div className="absolute inset-0 -z-10 bg-navy-950/75" aria-hidden />
               <Badge tone="gold" className="mb-3" dot>
-                {t("verkoopPage.badge")}
+                <EditableText blockKey="verkoop.sell.badge" page={CMS_PAGE} section="sell">
+                  {t("verkoopPage.badge")}
+                </EditableText>
               </Badge>
               <h2 className="heading-display text-3xl text-white sm:text-4xl">
-                {t("verkoopPage.sellTitle")}
+                <EditableText blockKey="verkoop.sell.title" page={CMS_PAGE} section="sell" type="heading">
+                  {t("verkoopPage.sellTitle")}
+                </EditableText>
               </h2>
               <p className="mt-3 max-w-md text-sm leading-relaxed text-sand-100/80">
-                {t("verkoopPage.sellDesc")}
+                <EditableText blockKey="verkoop.sell.desc" page={CMS_PAGE} section="sell" type="paragraph">
+                  {t("verkoopPage.sellDesc")}
+                </EditableText>
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href={`/${locale}/contact`}>
-                  <Button
-                    variant="gold"
-                    rightIcon={<ArrowRight className="h-4 w-4" />}
-                  >
-                    {t("verkoopPage.sellCta")}
+                  <Button variant="gold" rightIcon={<ArrowRight className="h-4 w-4" />}>
+                    <EditableText blockKey="verkoop.sell.cta_primary" page={CMS_PAGE} section="sell">
+                      {t("verkoopPage.sellCta")}
+                    </EditableText>
                   </Button>
                 </Link>
                 <Link href={`/${locale}/contact`}>
@@ -191,45 +202,29 @@ export default function VerkoopPage() {
                     className="border-white/30 bg-white/5 text-white hover:bg-white/10"
                     leftIcon={<Anchor className="h-4 w-4" />}
                   >
-                    {t("verkoopPage.valueCta")}
+                    <EditableText blockKey="verkoop.sell.cta_value" page={CMS_PAGE} section="sell">
+                      {t("verkoopPage.valueCta")}
+                    </EditableText>
                   </Button>
                 </Link>
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x divide-y divide-navy-100">
-              {[
-                {
-                  num: "01",
-                  title: t("verkoopPage.step1"),
-                  desc: t("verkoopPage.step1Desc"),
-                },
-                {
-                  num: "02",
-                  title: t("verkoopPage.step2"),
-                  desc: t("verkoopPage.step2Desc"),
-                },
-                {
-                  num: "03",
-                  title: t("verkoopPage.step3"),
-                  desc: t("verkoopPage.step3Desc"),
-                },
-                {
-                  num: "04",
-                  title: t("verkoopPage.step4"),
-                  desc: t("verkoopPage.step4Desc"),
-                },
-              ].map((step, i) => (
-                <div
-                  key={step.num}
-                  className={i < 2 ? "border-t-0 p-6" : "p-6"}
-                >
+              {(["step1", "step2", "step3", "step4"] as const).map((key, i) => (
+                <div key={key} className={i < 2 ? "border-t-0 p-6" : "p-6"}>
                   <div className="text-xs font-semibold tracking-widest text-navy-400">
-                    {step.num}
+                    {String(i + 1).padStart(2, "0")}
                   </div>
                   <div className="mt-1 text-base font-semibold text-navy-900">
-                    {step.title}
+                    <EditableText blockKey={`verkoop.${key}.title`} page={CMS_PAGE} section="steps">
+                      {t(`verkoopPage.${key}`)}
+                    </EditableText>
                   </div>
-                  <div className="mt-1 text-xs text-navy-500">{step.desc}</div>
+                  <div className="mt-1 text-xs text-navy-500">
+                    <EditableText blockKey={`verkoop.${key}.desc`} page={CMS_PAGE} section="steps" type="paragraph">
+                      {t(`verkoopPage.${key}Desc`)}
+                    </EditableText>
+                  </div>
                 </div>
               ))}
             </div>

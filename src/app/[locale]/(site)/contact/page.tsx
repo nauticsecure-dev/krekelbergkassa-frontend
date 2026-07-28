@@ -98,23 +98,23 @@ export default function ContactPage() {
       <section className="container-wide mt-12 grid gap-4 sm:grid-cols-3">
         <ContactCard
           icon={MapPin}
-          label={t("contactPage.addressLabel")}
-          value={t("contactPage.address")}
+          label={<EditableText blockKey="contact.card.address.label" page={CMS_PAGE} section="cards">{t("contactPage.addressLabel")}</EditableText>}
+          value={<EditableText blockKey="contact.card.address.value" page={CMS_PAGE} section="cards">{t("contactPage.address")}</EditableText>}
           actionLabel={t("contactPage.ctaRoute")}
           actionHref={MAPS_URL}
           external
         />
         <ContactCard
           icon={Phone}
-          label={t("contactPage.phoneLabel")}
-          value={t("contactPage.phone")}
+          label={<EditableText blockKey="contact.card.phone.label" page={CMS_PAGE} section="cards">{t("contactPage.phoneLabel")}</EditableText>}
+          value={<EditableText blockKey="contact.card.phone.value" page={CMS_PAGE} section="cards">{t("contactPage.phone")}</EditableText>}
           actionLabel={t("contactPage.ctaCall")}
           actionHref={companyInfo.phoneHref}
         />
         <ContactCard
           icon={Mail}
-          label={t("contactPage.emailLabel")}
-          value={t("contactPage.email")}
+          label={<EditableText blockKey="contact.card.email.label" page={CMS_PAGE} section="cards">{t("contactPage.emailLabel")}</EditableText>}
+          value={<EditableText blockKey="contact.card.email.value" page={CMS_PAGE} section="cards">{t("contactPage.email")}</EditableText>}
           actionLabel={t("contactPage.ctaMail")}
           actionHref={`mailto:${t("contactPage.email")}`}
         />
@@ -216,9 +216,15 @@ export default function ContactPage() {
       <section className="container-wide grid gap-6 pb-20 lg:grid-cols-[1fr_1.2fr]">
         <Card className="p-6">
           <Badge tone="marine" className="mb-3">
-            {t("contactPage.directions")}
+            <EditableText blockKey="contact.directions.badge" page={CMS_PAGE} section="directions">
+              {t("contactPage.directions")}
+            </EditableText>
           </Badge>
-          <h3 className="heading-display text-2xl">{t("contactPage.badge")}</h3>
+          <h3 className="heading-display text-2xl">
+            <EditableText blockKey="contact.directions.title" page={CMS_PAGE} section="directions" type="heading">
+              {t("contactPage.badge")}
+            </EditableText>
+          </h3>
           <ul className="mt-5 space-y-4 text-sm">
             <li className="flex items-start gap-3">
               <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-lg bg-sand-100 text-navy-700">
@@ -226,10 +232,14 @@ export default function ContactPage() {
               </span>
               <div>
                 <div className="font-semibold text-navy-900">
-                  {t("contactPage.directions")}
+                  <EditableText blockKey="contact.directions.road.label" page={CMS_PAGE} section="directions">
+                    {t("contactPage.directions")}
+                  </EditableText>
                 </div>
                 <p className="mt-1 text-navy-500">
-                  {t("contactPage.directionsRoad")}
+                  <EditableText blockKey="contact.directions.road.desc" page={CMS_PAGE} section="directions" type="paragraph">
+                    {t("contactPage.directionsRoad")}
+                  </EditableText>
                 </p>
               </div>
             </li>
@@ -239,10 +249,14 @@ export default function ContactPage() {
               </span>
               <div>
                 <div className="font-semibold text-navy-900">
-                  {t("contactPage.directions")}
+                  <EditableText blockKey="contact.directions.water.label" page={CMS_PAGE} section="directions">
+                    {t("contactPage.directions")}
+                  </EditableText>
                 </div>
                 <p className="mt-1 text-navy-500">
-                  {t("contactPage.directionsWater")}
+                  <EditableText blockKey="contact.directions.water.desc" page={CMS_PAGE} section="directions" type="paragraph">
+                    {t("contactPage.directionsWater")}
+                  </EditableText>
                 </p>
               </div>
             </li>
@@ -256,10 +270,14 @@ export default function ContactPage() {
             </span>
             <div>
               <Badge tone="gold" className="mb-1">
-                {t("contactPage.formTitle")}
+                <EditableText blockKey="contact.form.badge" page={CMS_PAGE} section="form">
+                  {t("contactPage.formTitle")}
+                </EditableText>
               </Badge>
               <div className="text-xs text-navy-500">
-                {t("contactPage.formDesc")}
+                <EditableText blockKey="contact.form.desc" page={CMS_PAGE} section="form" type="paragraph">
+                  {t("contactPage.formDesc")}
+                </EditableText>
               </div>
             </div>
           </div>
@@ -331,8 +349,8 @@ function ContactCard({
   external,
 }: {
   icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
+  label: React.ReactNode;
+  value: React.ReactNode;
   actionLabel: string;
   actionHref: string;
   external?: boolean;

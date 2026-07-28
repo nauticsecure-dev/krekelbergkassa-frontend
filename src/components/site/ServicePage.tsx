@@ -12,6 +12,8 @@ import { canAccessAdmin } from '@/lib/auth-routes';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { serviceCatalogService } from '@/lib/services';
 import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
+import { EditableText } from '@/components/cms/EditableText';
+import { EditableImage } from '@/components/cms/EditableImage';
 
 export interface ServicePageProps {
   badge: string;
@@ -24,27 +26,10 @@ export interface ServicePageProps {
   heroImage?: string;
   inlineImage?: string;
   primaryCta?: { label: string; href: string };
-  /** Product/service slug — enables an "Edit service" link for admins. */
   adminProductSlug?: string;
-  /** Optional caption under the pricing grid (e.g. data source / season). */
   priceFootnote?: string;
-  /**
-   * Public service-catalog slug. When set, live tariffs are fetched from
-   * `/v1/service-catalog/pages/{slug}` and replace `priceRanges`; the static
-   * `priceRanges` prop remains the fallback if the API is unavailable/empty.
-   */
   catalogSlug?: string;
-  /**
-   * CMS page slug (e.g. `diensten/winterstalling`). When set, the page is
-   * registered with the inline CMS so its content/SEO can be edited in place.
-   */
   cmsPage?: string;
-  /**
-   * Inline-CMS overrides for the hero. When provided these editable nodes
-   * replace the plain `title` / `description` / hero background respectively.
-   * They render their own hardcoded fallbacks, so the public output is
-   * identical when no CMS data exists.
-   */
   editableTitle?: React.ReactNode;
   editableDescription?: React.ReactNode;
   editableHeroImage?: React.ReactNode;
@@ -73,14 +58,9 @@ export function ServicePage({
   const { user, isDemo } = useAuth();
   const isAdmin = canAccessAdmin(user?.role, isDemo);
 
-  // Trello #112: declare this page's slug so the CMS provider fetches its
-  // editable blocks. Passing an empty string keeps the hook order stable while
-  // doing nothing when the page opts out of the CMS.
   useRegisterCmsPage(cmsPage ?? '');
   const cta = primaryCta ?? { label: t('nav.bookCrane'), href: `/${locale}/kraanafspraak` };
 
-  // Trello #98/#100: prefer live tariffs from the shared product DB, fall back
-  // to the static length table passed in via `priceRanges`.
   const catalogQuery = useQuery([catalogSlug ?? ''], () =>
     catalogSlug ? serviceCatalogService.page(catalogSlug).catch(() => null) : Promise.resolve(null),
   );
@@ -98,14 +78,25 @@ export function ServicePage({
       }));
   }, [catalogQuery.data, t]);
   const ranges = liveRanges ?? priceRanges ?? [];
+
+  const p = cmsPage ?? '';
+
   return (
     <>
-      {/* Hero with real photo */}
+      {/* Hero */}
       <section className="relative isolate overflow-hidden">
         {editableHeroImage ? (
           <div className="absolute inset-0 [&>span]:block [&>span]:h-full [&>span]:w-full">
             {editableHeroImage}
           </div>
+        ) : p ? (
+          <EditableImage
+            blockKey={`${p}.hero.image`}
+            page={p}
+            fallbackSrc={heroImage}
+            alt={title}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
         ) : (
           <div
             className="absolute inset-0 bg-cover bg-center"
@@ -116,16 +107,34 @@ export function ServicePage({
         <div className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/30" aria-hidden />
         <div className="container-wide relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
           <Badge tone="sand" className="mb-4" dot>
-            {badge}
+            {p ? (
+              <EditableText blockKey={`${p}.hero.badge`} page={p} section="hero">
+                {badge}
+              </EditableText>
+            ) : badge}
           </Badge>
           <h1 className="heading-display max-w-2xl text-4xl text-white sm:text-5xl lg:text-[56px]">
-            {editableTitle ?? title}
+            {editableTitle ?? (p ? (
+              <EditableText blockKey={`${p}.hero.title`} page={p} section="hero" type="heading">
+                {title}
+              </EditableText>
+            ) : title)}
           </h1>
-          <p className="mt-5 max-w-xl text-sand-100/85">{editableDescription ?? subtitle}</p>
+          <p className="mt-5 max-w-xl text-sand-100/85">
+            {editableDescription ?? (p ? (
+              <EditableText blockKey={`${p}.hero.subtitle`} page={p} section="hero" type="paragraph">
+                {subtitle}
+              </EditableText>
+            ) : subtitle)}
+          </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={cta.href}>
               <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                {cta.label}
+                {p ? (
+                  <EditableText blockKey={`${p}.hero.cta_primary`} page={p} section="hero">
+                    {cta.label}
+                  </EditableText>
+                ) : cta.label}
               </Button>
             </Link>
             <Link href={`/${locale}/contact`}>
@@ -148,25 +157,53 @@ export function ServicePage({
             <Badge tone="gold" className="mb-3">
               {t('servicePage.whatItIs')}
             </Badge>
-            <p className="text-lg leading-relaxed text-navy-700">{description}</p>
+            <p className="text-lg leading-relaxed text-navy-700">
+              {p ? (
+                <EditableText blockKey={`${p}.body`} page={p} section="body" type="long_text">
+                  {description}
+                </EditableText>
+              ) : description}
+            </p>
           </div>
-          {inlineImage ? (
-            <div
-              className="aspect-[5/4] w-full rounded-2xl bg-cover bg-center shadow-elev"
-              style={{ backgroundImage: `url(${inlineImage})` }}
-              aria-hidden
-            />
+          {inlineImage || p ? (
+            p ? (
+              <EditableImage
+                blockKey={`${p}.inline.image`}
+                page={p}
+                fallbackSrc={inlineImage ?? heroImage}
+                alt={title}
+                className="aspect-[5/4] w-full rounded-2xl object-cover shadow-elev"
+              />
+            ) : (
+              <div
+                className="aspect-[5/4] w-full rounded-2xl bg-cover bg-center shadow-elev"
+                style={{ backgroundImage: `url(${inlineImage})` }}
+                aria-hidden
+              />
+            )
           ) : null}
         </div>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((f) => (
+          {features.map((f, i) => (
             <Card key={f.title} className="p-6">
               <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-sand-100 text-navy-700">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-semibold text-navy-900">{f.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-navy-500">{f.desc}</p>
+              <h3 className="text-base font-semibold text-navy-900">
+                {p ? (
+                  <EditableText blockKey={`${p}.feature.${i}.title`} page={p} section="features">
+                    {f.title}
+                  </EditableText>
+                ) : f.title}
+              </h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-navy-500">
+                {p ? (
+                  <EditableText blockKey={`${p}.feature.${i}.desc`} page={p} section="features" type="paragraph">
+                    {f.desc}
+                  </EditableText>
+                ) : f.desc}
+              </p>
             </Card>
           ))}
         </div>
@@ -193,29 +230,39 @@ export function ServicePage({
               ) : null}
               <Link href={cta.href}>
                 <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  {cta.label}
+                  {p ? (
+                    <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
+                      {cta.label}
+                    </EditableText>
+                  ) : cta.label}
                 </Button>
               </Link>
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {ranges.map((p) => (
-              <Card key={p.label} className="flex items-center justify-between p-5">
+            {ranges.map((r) => (
+              <Card key={r.label} className="flex items-center justify-between p-5">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
                     {t('servicePage.length')}
                   </div>
-                  <div className="text-base font-semibold text-navy-900">{p.label}</div>
-                  {p.note ? (
-                    <div className="text-[11px] text-navy-400">{p.note}</div>
+                  <div className="text-base font-semibold text-navy-900">{r.label}</div>
+                  {r.note ? (
+                    <div className="text-[11px] text-navy-400">{r.note}</div>
                   ) : null}
                 </div>
-                <div className="text-2xl font-semibold text-navy-900">{p.price}</div>
+                <div className="text-2xl font-semibold text-navy-900">{r.price}</div>
               </Card>
             ))}
           </div>
           {priceFootnote ? (
-            <p className="mt-4 text-xs text-navy-400">{priceFootnote}</p>
+            <p className="mt-4 text-xs text-navy-400">
+              {p ? (
+                <EditableText blockKey={`${p}.price.footnote`} page={p} section="prices" type="paragraph">
+                  {priceFootnote}
+                </EditableText>
+              ) : priceFootnote}
+            </p>
           ) : null}
         </div>
       </section>
@@ -233,39 +280,61 @@ export function ServicePage({
           </Link>
         </div>
         <div className="space-y-3">
-          {faqs.map((f) => (
+          {faqs.map((f, i) => (
             <details
               key={f.q}
               className="group rounded-xl border border-navy-100 bg-white p-5 transition open:shadow-card"
             >
               <summary className="flex cursor-pointer items-center justify-between gap-4 list-none font-medium text-navy-900">
-                {f.q}
+                {p ? (
+                  <EditableText blockKey={`${p}.faq.${i}.q`} page={p} section="faq">
+                    {f.q}
+                  </EditableText>
+                ) : f.q}
                 <span className="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-sand-100 text-navy-700 transition group-open:rotate-45">
                   +
                 </span>
               </summary>
-              <p className="mt-3 text-sm leading-relaxed text-navy-500">{f.a}</p>
+              <p className="mt-3 text-sm leading-relaxed text-navy-500">
+                {p ? (
+                  <EditableText blockKey={`${p}.faq.${i}.a`} page={p} section="faq" type="paragraph">
+                    {f.a}
+                  </EditableText>
+                ) : f.a}
+              </p>
             </details>
           ))}
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA strip */}
       <section className="container-wide pb-24">
         <div className="rounded-2xl bg-navy-900 px-8 py-12 text-white sm:px-12">
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr] lg:items-center">
             <div>
               <h3 className="heading-display text-2xl text-white sm:text-3xl">
-                {t('servicePage.ctaTitle')}
+                {p ? (
+                  <EditableText blockKey={`${p}.cta.title`} page={p} section="cta" type="heading">
+                    {t('servicePage.ctaTitle')}
+                  </EditableText>
+                ) : t('servicePage.ctaTitle')}
               </h3>
               <p className="mt-2 max-w-xl text-sm text-sand-100/80">
-                {t('servicePage.ctaDesc')}
+                {p ? (
+                  <EditableText blockKey={`${p}.cta.desc`} page={p} section="cta" type="paragraph">
+                    {t('servicePage.ctaDesc')}
+                  </EditableText>
+                ) : t('servicePage.ctaDesc')}
               </p>
             </div>
             <div className="flex flex-wrap gap-3 lg:justify-end">
               <Link href={cta.href}>
                 <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  {cta.label}
+                  {p ? (
+                    <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
+                      {cta.label}
+                    </EditableText>
+                  ) : cta.label}
                 </Button>
               </Link>
               <Link href={`/${locale}/contact`}>
