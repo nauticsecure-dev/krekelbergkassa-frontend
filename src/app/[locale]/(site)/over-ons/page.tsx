@@ -158,10 +158,14 @@ export default function OverOnsPage() {
               <Award className="h-5 w-5 shrink-0 text-gold-600" />
               <div>
                 <div className="text-sm font-semibold text-navy-900">
-                  {t("over.hiswaTitle")}
+                  <EditableText blockKey="over-ons.hiswa.title" page={CMS_PAGE} section="story">
+                    {t("over.hiswaTitle")}
+                  </EditableText>
                 </div>
                 <div className="text-xs text-navy-500">
-                  {t("over.hiswaDesc")}
+                  <EditableText blockKey="over-ons.hiswa.desc" page={CMS_PAGE} section="story" type="paragraph">
+                    {t("over.hiswaDesc")}
+                  </EditableText>
                 </div>
               </div>
             </div>
@@ -198,11 +202,17 @@ export default function OverOnsPage() {
                 variant="primary"
                 rightIcon={<ArrowRight className="h-4 w-4" />}
               >
-                {t("over.ctaServices")}
+                <EditableText blockKey="over-ons.craft.cta_services" page={CMS_PAGE} section="craft">
+                  {t("over.ctaServices")}
+                </EditableText>
               </Button>
             </Link>
             <Link href={`/${locale}/kraanafspraak`}>
-              <Button variant="outline">{t("over.ctaCrane")}</Button>
+              <Button variant="outline">
+                <EditableText blockKey="over-ons.craft.cta_crane" page={CMS_PAGE} section="craft">
+                  {t("over.ctaCrane")}
+                </EditableText>
+              </Button>
             </Link>
           </div>
         </div>
