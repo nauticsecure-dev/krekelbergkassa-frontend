@@ -7,7 +7,7 @@
     "services": "Werf & services",
     "salesLocation": "Verkoop",
     "planning": "Planning",
-    "apartments": "Verblijf",
+
     "about": "Over ons",
     "contact": "Contact",
     "login": "Inloggen",
@@ -314,11 +314,6 @@
         "title": "Boot verkopen",
         "tagline": "Via Schepenkring Roermond",
         "desc": "Verkoop via onze fysieke locatie met professionele bemiddeling en doorlopende zichtbaarheid."
-      },
-      "apartments": {
-        "title": "Appartementen",
-        "tagline": "Overnachten aan de jachthaven",
-        "desc": "Comfortabel verblijf direct bij de werf — ideaal tijdens werkzaamheden of een rondreis."
       }
     },
     "werf": {
@@ -357,12 +352,6 @@
       "statTrust": "Begeleiding",
       "cta": "Bekijk botenaanbod",
       "sell": "Boot aanmelden"
-    },
-    "apartments": {
-      "badge": "Verblijf",
-      "title": "Appartementen te huur",
-      "body": "Overnachten direct aan de Maasplassen — ideaal voor schippers, familie of een korte vakantie in Limburg.",
-      "cta": "Bekijk appartementen"
     },
     "contact": {
       "badge": "Contact & locatie",
@@ -407,11 +396,6 @@
       "title": "Boot verkopen",
       "desc": "Verkoop uw boot via Schepenkring Roermond met fysieke zichtbaarheid.",
       "cta": "Boot aanmelden"
-    },
-    "apartments": {
-      "title": "Appartementen",
-      "desc": "Overnachten direct aan de Maasplassen bij de jachthaven.",
-      "cta": "Bekijk appartementen"
     }
   },
   "process": {
@@ -524,7 +508,7 @@
   "contactPage": {
     "badge": "Bezoek of bel ons",
     "title": "Welkom op de werf\nin Roermond.",
-    "subtitle": "Onze werf, brokerage en appartementen vindt u in één maritieme locatie aan de Maasplassen. Onze mensen staan voor u klaar.",
+    "subtitle": "Onze werf en brokerage vindt u in één maritieme locatie aan de Maasplassen. Onze mensen staan voor u klaar.",
     "address": "Hertenerweg 2, 6049AA Herten",
     "addressLabel": "Bezoekadres",
     "phone": "0475 315 661",
@@ -563,30 +547,6 @@
     "fMessage": "Bericht",
     "fSubmit": "Verstuur bericht",
     "fSent": "Bedankt — uw bericht is verstuurd."
-  },
-  "apartmentsPage": {
-    "badge": "Verblijf aan de Maasplassen",
-    "title": "Appartementen te huur",
-    "subtitle": "Twee comfortabele appartementen direct boven de werf — ideaal voor een werfbezoek, een vaarweekend of een korte verblijf in Roermond.",
-    "introTitle": "Boven de werf, midden tussen de boten",
-    "introBody": "Krekelberg Nautic beschikt over twee volledig ingerichte appartementen op de eerste verdieping. Beide bieden uitzicht op de jachthaven en het werfterrein. Ideaal voor klanten die hun schip bezoeken, voor watersporters die enkele dagen aan de Maasplassen willen verblijven of voor zakelijke gasten.",
-    "appOneTitle": "Appartement 1 · 2 personen",
-    "appOneDesc": "Knus appartement met slaapkamer, woonkamer, keuken en badkamer. Inclusief eigen terras op de jachthaven.",
-    "appTwoTitle": "Appartement 2 · 4 personen",
-    "appTwoDesc": "Ruim appartement met twee slaapkamers, woonkamer, volledig ingerichte keuken en eigen balkon met uitzicht op de Maasplassen.",
-    "amenitiesTitle": "Voorzieningen",
-    "amenityWifi": "Snel wifi",
-    "amenityKitchen": "Volledig uitgeruste keuken",
-    "amenityTV": "Smart TV",
-    "amenityParking": "Gratis parkeerplaats",
-    "amenityTerrace": "Privé terras of balkon",
-    "amenityHarbor": "Direct aan de jachthaven",
-    "locationTitle": "Locatie",
-    "locationBody": "U overnacht direct boven onze werf in Roermond, op slechts enkele meters van de Maasplassen. Het centrum van Roermond bereikt u in 5 minuten met de auto of fiets.",
-    "locationAddress": "Hertenerweg 2, 6049AA Herten",
-    "infoCta": "Vraag beschikbaarheid",
-    "phoneCta": "Bel 0475 315 661",
-    "contactNote": "Reserveringen verlopen persoonlijk via mail of telefoon, zodat we elke gast persoonlijk te woord kunnen staan."
   },
   "verkoopPage": {
     "badge": "Schepenkring Roermond",

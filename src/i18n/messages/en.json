@@ -7,7 +7,7 @@
     "services": "Yard & services",
     "salesLocation": "Sales",
     "planning": "Planning",
-    "apartments": "Stay",
+
     "about": "About",
     "contact": "Contact",
     "login": "Login",
@@ -314,11 +314,6 @@
         "title": "Sell your boat",
         "tagline": "Via Schepenkring Roermond",
         "desc": "Sell at our physical location with professional brokerage and continuous visibility."
-      },
-      "apartments": {
-        "title": "Apartments",
-        "tagline": "Stay at the marina",
-        "desc": "Comfortable stay right next to the yard — perfect during works or a short trip."
       }
     },
     "werf": {
@@ -357,12 +352,6 @@
       "statTrust": "Guided process",
       "cta": "View boats for sale",
       "sell": "List your boat"
-    },
-    "apartments": {
-      "badge": "Stay",
-      "title": "Apartments to rent",
-      "body": "Stay right by the Maasplassen — perfect for boaters, family or a short stay in Limburg.",
-      "cta": "View apartments"
     },
     "contact": {
       "badge": "Contact & location",
@@ -524,7 +513,7 @@
   "contactPage": {
     "badge": "Visit or call us",
     "title": "Welcome to the yard\nin Roermond.",
-    "subtitle": "Yard, brokerage and apartments are all on one maritime location at the Maasplassen. Our team is happy to help.",
+    "subtitle": "Our yard and brokerage are all in one maritime location at the Maasplassen. Our team is happy to help.",
     "address": "Hertenerweg 2, 6049AA Herten",
     "addressLabel": "Visiting address",
     "phone": "0475 315 661",
@@ -563,30 +552,6 @@
     "saturday": "Saturday",
     "sunday": "Sunday",
     "today": "Today"
-  },
-  "apartmentsPage": {
-    "badge": "Stay at the Maasplassen",
-    "title": "Apartments for rent",
-    "subtitle": "Two comfortable apartments directly above the yard — ideal for a yard visit, a boating weekend or a short stay in Roermond.",
-    "introTitle": "Above the yard, in the middle of the boats",
-    "introBody": "Krekelberg Nautic has two fully furnished apartments on the first floor. Both offer views over the marina and the yard. Ideal for customers visiting their vessel, watersports lovers staying a few days, or business guests.",
-    "appOneTitle": "Apartment 1 · 2 guests",
-    "appOneDesc": "Cosy apartment with bedroom, living room, kitchen and bathroom. Includes a private terrace overlooking the marina.",
-    "appTwoTitle": "Apartment 2 · 4 guests",
-    "appTwoDesc": "Spacious apartment with two bedrooms, living room, fully equipped kitchen and private balcony overlooking the Maasplassen.",
-    "amenitiesTitle": "Amenities",
-    "amenityWifi": "Fast Wi-Fi",
-    "amenityKitchen": "Fully equipped kitchen",
-    "amenityTV": "Smart TV",
-    "amenityParking": "Free parking",
-    "amenityTerrace": "Private terrace or balcony",
-    "amenityHarbor": "Right on the marina",
-    "locationTitle": "Location",
-    "locationBody": "You stay directly above our Roermond yard, just metres from the Maasplassen. Roermond town centre is a 5-minute drive or bike ride away.",
-    "locationAddress": "Hertenerweg 2, 6049AA Herten",
-    "infoCta": "Check availability",
-    "phoneCta": "Call 0475 315 661",
-    "contactNote": "Reservations are handled personally by mail or phone, so we can welcome every guest in person."
   },
   "verkoopPage": {
     "badge": "Schepenkring Roermond",
