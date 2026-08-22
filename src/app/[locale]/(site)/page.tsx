@@ -67,13 +67,15 @@ export default function HomePage() {
     <>
       {/* ---------- Hero ---------- */}
       <section className="relative isolate overflow-hidden bg-navy-950">
-        <EditableImage
-          blockKey="home.hero.image"
-          page={CMS_PAGE}
-          fallbackSrc="/img/krek/werf-hero.webp"
-          alt="Krekelberg Nautic jachtwerf"
-          className="absolute inset-0"
-        />
+        <div className="absolute inset-0 overflow-hidden">
+          <EditableImage
+            blockKey="home.hero.image"
+            page={CMS_PAGE}
+            fallbackSrc="/img/krek/werf-hero.webp"
+            alt="Krekelberg Nautic jachtwerf"
+            className="h-full w-full"
+          />
+        </div>
         <div
           aria-hidden
           className="absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/75 to-navy-950/35"
@@ -331,13 +333,15 @@ export default function HomePage() {
         <div className="overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-card">
           <div className="grid gap-0 lg:grid-cols-[1.1fr_1fr]">
             <div className="relative aspect-[5/3] overflow-hidden lg:aspect-auto">
-              <EditableImage
-                blockKey="home.sale.image"
-                page={CMS_PAGE}
-                fallbackSrc="/img/krek/verkoop-schip.webp"
-                alt="Boot te koop via Krekelberg Nautic"
-                className="absolute inset-0"
-              />
+              <div className="absolute inset-0 overflow-hidden">
+                <EditableImage
+                  blockKey="home.sale.image"
+                  page={CMS_PAGE}
+                  fallbackSrc="/img/krek/verkoop-schip.webp"
+                  alt="Boot te koop via Krekelberg Nautic"
+                  className="h-full w-full"
+                />
+              </div>
               <div className="absolute inset-0 bg-gradient-to-t from-navy-950/65 via-navy-950/10 to-transparent" />
             </div>
             <div className="p-8 sm:p-12">

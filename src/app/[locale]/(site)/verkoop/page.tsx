@@ -29,13 +29,15 @@ export default function VerkoopPage() {
     <>
       {/* Hero */}
       <section className="relative isolate overflow-hidden">
-        <EditableImage
-          blockKey="verkoop.hero.image"
-          page={CMS_PAGE}
-          fallbackSrc="/img/krek/verkoop-schip.webp"
-          alt="Verkoop hero"
-          className="absolute inset-0"
-        />
+        <div className="absolute inset-0 overflow-hidden">
+          <EditableImage
+            blockKey="verkoop.hero.image"
+            page={CMS_PAGE}
+            fallbackSrc="/img/krek/verkoop-schip.webp"
+            alt="Verkoop hero"
+            className="h-full w-full"
+          />
+        </div>
         <div
           className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/40"
           aria-hidden

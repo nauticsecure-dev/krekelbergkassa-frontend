@@ -44,13 +44,15 @@ export default function ContactPage() {
   return (
     <>
       <section className="relative isolate overflow-hidden">
-        <EditableImage
-          blockKey="contact.hero.image"
-          page={CMS_PAGE}
-          fallbackSrc="/img/krek/werf-hero.webp"
-          alt="Contact hero"
-          className="absolute inset-0"
-        />
+        <div className="absolute inset-0 overflow-hidden">
+          <EditableImage
+            blockKey="contact.hero.image"
+            page={CMS_PAGE}
+            fallbackSrc="/img/krek/werf-hero.webp"
+            alt="Contact hero"
+            className="h-full w-full"
+          />
+        </div>
         <div
           className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/55 to-navy-950/15"
           aria-hidden

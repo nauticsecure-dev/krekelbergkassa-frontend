@@ -110,13 +110,15 @@ export default function DienstenPage() {
     <>
       {/* ───────── Hero ───────── */}
       <section className="relative isolate overflow-hidden bg-navy-950">
-        <EditableImage
-          blockKey="diensten.hero.image"
-          page={CMS_PAGE}
-          fallbackSrc="/img/krek/boot-kranen.webp"
-          alt="Diensten hero"
-          className="absolute inset-0"
-        />
+        <div className="absolute inset-0 overflow-hidden">
+          <EditableImage
+            blockKey="diensten.hero.image"
+            page={CMS_PAGE}
+            fallbackSrc="/img/krek/boot-kranen.webp"
+            alt="Diensten hero"
+            className="h-full w-full"
+          />
+        </div>
         <div
           aria-hidden
           className="absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/70 to-navy-950/35"

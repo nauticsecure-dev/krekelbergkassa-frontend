@@ -90,13 +90,15 @@ export function ServicePage({
             {editableHeroImage}
           </div>
         ) : p ? (
-          <EditableImage
-            blockKey={`${p}.hero.image`}
-            page={p}
-            fallbackSrc={heroImage}
-            alt={title}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          <div className="absolute inset-0 overflow-hidden">
+            <EditableImage
+              blockKey={`${p}.hero.image`}
+              page={p}
+              fallbackSrc={heroImage}
+              alt={title}
+              className="h-full w-full"
+            />
+          </div>
         ) : (
           <div
             className="absolute inset-0 bg-cover bg-center"

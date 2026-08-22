@@ -70,13 +70,15 @@ export default function OverOnsPage() {
     <>
       {/* ───────── Hero ───────── */}
       <section className="relative isolate overflow-hidden bg-navy-950">
-        <EditableImage
-          blockKey="over-ons.hero.image"
-          page={CMS_PAGE}
-          fallbackSrc="/img/krek/jachthaven.webp"
-          alt="Over ons hero"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+        <div className="absolute inset-0 overflow-hidden">
+          <EditableImage
+            blockKey="over-ons.hero.image"
+            page={CMS_PAGE}
+            fallbackSrc="/img/krek/jachthaven.webp"
+            alt="Over ons hero"
+            className="h-full w-full"
+          />
+        </div>
         <div
           aria-hidden
           className="absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/70 to-navy-950/40"
