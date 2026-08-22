@@ -591,6 +591,7 @@ interface GlobalKeyDef {
 }
 
 const GLOBAL_KEYS: GlobalKeyDef[] = [
+  { key: 'header.cta.label', perLocale: true, labelKey: 'cms.global.headerCtaLabel' },
   { key: 'company.phone', labelKey: 'cms.global.phone' },
   { key: 'company.address.city', labelKey: 'cms.global.city' },
   { key: 'footer.tagline', perLocale: true, labelKey: 'cms.global.tagline' },

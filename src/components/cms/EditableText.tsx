@@ -68,7 +68,7 @@ export function EditableText({
       </Tag>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
         aria-label={t('cms.editText')}
         title={t('cms.editText')}
         className="absolute -right-2 -top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white opacity-0 shadow-md transition focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 group-hover/cms:opacity-100"

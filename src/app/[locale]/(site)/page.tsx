@@ -187,9 +187,12 @@ export default function HomePage() {
               <Link key={s.key} href={`/${locale}${s.href}`}>
                 <Card className="group h-full overflow-hidden p-0 transition hover:-translate-y-0.5 hover:shadow-elev">
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-105"
-                      style={{ backgroundImage: `url(${s.img})` }}
+                    <EditableImage
+                      blockKey={`home.svc.${s.key}.image`}
+                      page={CMS_PAGE}
+                      fallbackSrc={s.img}
+                      alt={t(`home.svc.${s.key}.title`)}
+                      className="absolute inset-0 transition duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/30 to-transparent" />
                     <div className="absolute left-4 top-4">
@@ -199,16 +202,22 @@ export default function HomePage() {
                     </div>
                     <div className="absolute bottom-4 left-4 right-4 text-white">
                       <div className="text-lg font-semibold leading-tight">
-                        {t(`home.svc.${s.key}.title`)}
+                        <EditableText blockKey={`home.svc.${s.key}.title`} page={CMS_PAGE} section="services">
+                          {t(`home.svc.${s.key}.title`)}
+                        </EditableText>
                       </div>
                       <div className="mt-1 text-xs text-sand-100/85">
-                        {t(`home.svc.${s.key}.tagline`)}
+                        <EditableText blockKey={`home.svc.${s.key}.tagline`} page={CMS_PAGE} section="services">
+                          {t(`home.svc.${s.key}.tagline`)}
+                        </EditableText>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center justify-between p-5">
                     <p className="line-clamp-2 text-sm text-navy-600">
-                      {t(`home.svc.${s.key}.desc`)}
+                      <EditableText blockKey={`home.svc.${s.key}.desc`} page={CMS_PAGE} section="services" type="paragraph">
+                        {t(`home.svc.${s.key}.desc`)}
+                      </EditableText>
                     </p>
                     <ArrowRight className="ml-3 h-4 w-4 shrink-0 text-navy-300 transition group-hover:translate-x-0.5 group-hover:text-navy-700" />
                   </div>
@@ -277,10 +286,14 @@ export default function HomePage() {
                   </span>
                   <div>
                     <div className="text-sm font-semibold text-navy-900">
-                      {t(`home.werf.bullet.${k}.title`)}
+                      <EditableText blockKey={`home.werf.bullet.${k}.title`} page={CMS_PAGE} section="werf">
+                        {t(`home.werf.bullet.${k}.title`)}
+                      </EditableText>
                     </div>
                     <div className="text-xs text-navy-500">
-                      {t(`home.werf.bullet.${k}.desc`)}
+                      <EditableText blockKey={`home.werf.bullet.${k}.desc`} page={CMS_PAGE} section="werf" type="paragraph">
+                        {t(`home.werf.bullet.${k}.desc`)}
+                      </EditableText>
                     </div>
                   </div>
                 </li>
@@ -292,11 +305,17 @@ export default function HomePage() {
                   variant="primary"
                   rightIcon={<ArrowRight className="h-4 w-4" />}
                 >
-                  {t("home.werf.cta")}
+                  <EditableText blockKey="home.werf.cta" page={CMS_PAGE} section="werf">
+                    {t("home.werf.cta")}
+                  </EditableText>
                 </Button>
               </Link>
               <Link href={`/${locale}/kraanafspraak`}>
-                <Button variant="outline">{t("home.werf.book")}</Button>
+                <Button variant="outline">
+                  <EditableText blockKey="home.werf.book" page={CMS_PAGE} section="werf">
+                    {t("home.werf.book")}
+                  </EditableText>
+                </Button>
               </Link>
             </div>
           </div>
@@ -348,11 +367,17 @@ export default function HomePage() {
                     variant="primary"
                     rightIcon={<ArrowRight className="h-4 w-4" />}
                   >
-                    {t("home.sale.cta")}
+                    <EditableText blockKey="home.sale.cta" page={CMS_PAGE} section="sale">
+                      {t("home.sale.cta")}
+                    </EditableText>
                   </Button>
                 </a>
                 <Link href={`/${locale}/verkoop`}>
-                  <Button variant="outline">{t("home.sale.sell")}</Button>
+                  <Button variant="outline">
+                    <EditableText blockKey="home.sale.sell" page={CMS_PAGE} section="sale">
+                      {t("home.sale.sell")}
+                    </EditableText>
+                  </Button>
                 </Link>
               </div>
             </div>
@@ -406,7 +431,9 @@ export default function HomePage() {
                   variant="primary"
                   rightIcon={<ArrowRight className="h-4 w-4" />}
                 >
-                  {t("home.contact.cta")}
+                  <EditableText blockKey="home.contact.cta" page={CMS_PAGE} section="contact">
+                    {t("home.contact.cta")}
+                  </EditableText>
                 </Button>
               </Link>
             </div>

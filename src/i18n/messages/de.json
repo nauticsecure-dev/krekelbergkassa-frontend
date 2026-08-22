@@ -3888,6 +3888,7 @@
     "globalTitle": "Globale Einstellungen",
     "globalDesc": "Änderungen gelten für die gesamte Website.",
     "global": {
+      "headerCtaLabel": "Header-Schaltflächentext",
       "phone": "Telefonnummer",
       "city": "Ort",
       "tagline": "Footer-Slogan",

@@ -68,7 +68,7 @@ export function EditableImage({
           />
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
             aria-label={t('cms.editImage')}
             title={t('cms.editImage')}
             className="absolute right-2 top-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-gold-500 text-white opacity-0 shadow-md transition focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 group-hover/cms:opacity-100"

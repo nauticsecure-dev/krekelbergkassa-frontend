@@ -3888,6 +3888,7 @@
     "globalTitle": "Algemene instellingen",
     "globalDesc": "Wijzigingen gelden op de hele site.",
     "global": {
+      "headerCtaLabel": "Navigatie-knoptekst",
       "phone": "Telefoonnummer",
       "city": "Plaats",
       "tagline": "Footer-slogan",

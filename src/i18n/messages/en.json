@@ -3888,6 +3888,7 @@
     "globalTitle": "Global settings",
     "globalDesc": "Changes apply across the whole site.",
     "global": {
+      "headerCtaLabel": "Header button text",
       "phone": "Phone number",
       "city": "City",
       "tagline": "Footer tagline",

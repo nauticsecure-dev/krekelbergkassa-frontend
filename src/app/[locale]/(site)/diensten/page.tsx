@@ -157,7 +157,9 @@ export default function DienstenPage() {
       {/* ───────── Intro paragraph ───────── */}
       <section className="container-wide py-12">
         <p className="mx-auto max-w-3xl text-center text-base leading-relaxed text-navy-700">
-          {t('werf.intro')}
+          <EditableText blockKey="diensten.intro" page={CMS_PAGE} section="intro" type="long_text">
+            {t('werf.intro')}
+          </EditableText>
         </p>
       </section>
 
@@ -199,12 +201,20 @@ export default function DienstenPage() {
       <section className="container-wide grid gap-10 py-20 lg:grid-cols-[1fr_2fr]">
         <div>
           <Badge tone="marine" className="mb-3">
-            {t('werf.faqBadge')}
+            <EditableText blockKey="diensten.faq.badge" page={CMS_PAGE} section="faq">
+              {t('werf.faqBadge')}
+            </EditableText>
           </Badge>
           <h2 className="heading-display text-3xl text-navy-900">
-            {t('werf.faqTitle')}
+            <EditableText blockKey="diensten.faq.title" page={CMS_PAGE} section="faq" type="heading">
+              {t('werf.faqTitle')}
+            </EditableText>
           </h2>
-          <p className="mt-2 text-sm text-navy-500">{t('werf.faqSubtitle')}</p>
+          <p className="mt-2 text-sm text-navy-500">
+            <EditableText blockKey="diensten.faq.subtitle" page={CMS_PAGE} section="faq" type="paragraph">
+              {t('werf.faqSubtitle')}
+            </EditableText>
+          </p>
           <Link
             href={`/${locale}/faq`}
             className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-navy-900 hover:text-marine-700"
@@ -241,7 +251,9 @@ export default function DienstenPage() {
                 </button>
                 {open ? (
                   <p className="border-t border-navy-100 px-5 py-4 text-sm leading-relaxed text-navy-600">
-                    {t(`werf.faq.${id}.a`)}
+                    <EditableText blockKey={`diensten.faq.${id}.a`} page={CMS_PAGE} section="faq" type="long_text">
+                      {t(`werf.faq.${id}.a`)}
+                    </EditableText>
                   </p>
                 ) : null}
               </div>
@@ -254,19 +266,30 @@ export default function DienstenPage() {
       <section className="container-wide pb-20">
         <div className="overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-card">
           <div className="grid gap-0 lg:grid-cols-[1.1fr_1fr]">
-            <div
-              className="relative aspect-[5/3] bg-cover bg-center lg:aspect-auto"
-              style={{ backgroundImage: 'url(/img/krek/jachthaven.webp)' }}
-            />
+            <div className="relative aspect-[5/3] overflow-hidden lg:aspect-auto">
+              <EditableImage
+                blockKey="diensten.cta.image"
+                page={CMS_PAGE}
+                fallbackSrc="/img/krek/jachthaven.webp"
+                alt="Jachthaven Krekelberg Nautic"
+                className="h-full w-full"
+              />
+            </div>
             <div className="p-8 sm:p-10">
               <Badge tone="navy" className="mb-3">
-                {t('werf.ctaBadge')}
+                <EditableText blockKey="diensten.cta.badge" page={CMS_PAGE} section="cta">
+                  {t('werf.ctaBadge')}
+                </EditableText>
               </Badge>
               <h2 className="heading-display text-3xl text-navy-900">
-                {t('werf.ctaTitle')}
+                <EditableText blockKey="diensten.cta.title" page={CMS_PAGE} section="cta" type="heading">
+                  {t('werf.ctaTitle')}
+                </EditableText>
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-navy-600">
-                {t('werf.ctaBody')}
+                <EditableText blockKey="diensten.cta.body" page={CMS_PAGE} section="cta" type="long_text">
+                  {t('werf.ctaBody')}
+                </EditableText>
               </p>
               <ul className="mt-5 space-y-2.5 text-sm text-navy-700">
                 <li className="flex items-center gap-2">
@@ -283,12 +306,16 @@ export default function DienstenPage() {
               <div className="mt-6 flex flex-wrap gap-2">
                 <Link href={`/${locale}/kraanafspraak`}>
                   <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                    {t('werf.ctaPlan')}
+                    <EditableText blockKey="diensten.cta.plan" page={CMS_PAGE} section="cta">
+                      {t('werf.ctaPlan')}
+                    </EditableText>
                   </Button>
                 </Link>
                 <Link href={`/${locale}/contact`}>
                   <Button variant="outline" leftIcon={<Calendar className="h-4 w-4" />}>
-                    {t('werf.ctaContact')}
+                    <EditableText blockKey="diensten.cta.contact" page={CMS_PAGE} section="cta">
+                      {t('werf.ctaContact')}
+                    </EditableText>
                   </Button>
                 </Link>
               </div>
