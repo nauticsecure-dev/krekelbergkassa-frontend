@@ -10,9 +10,9 @@ import {
   EyeOff,
   History,
   Image as ImageIcon,
-
   Package,
   Pencil,
+  Plus,
   ShoppingCart,
   Sparkles,
   Tag,
@@ -44,7 +44,8 @@ import { Input } from '@/components/ui/Input';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { productsService } from '@/lib/services';
+import { productsService, pricingService } from '@/lib/services';
+import type { PricingRule } from '@/lib/api-types';
 import {
   formToPayload,
   productPriceExclEuros,
@@ -56,6 +57,291 @@ import { formatCurrency, formatDateTime } from '@/lib/format';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+
+// ── Tariff helpers ────────────────────────────────────────────────────────────
+
+const EMPTY_TARIFF = {
+  range_from_m: '',
+  range_to_m: '',
+  price_incl_vat_euros: '',
+  price_excl_vat_euros: '',
+  vat_rate: '21',
+  price_type: 'fixed',
+  channel: 'all',
+};
+type TariffForm = typeof EMPTY_TARIFF;
+
+function cm(m: string) { return Math.round(parseFloat(m) * 100); }
+function eur(cents: number) { return (cents / 100).toFixed(2); }
+function centsOf(s: string) { return Math.round(parseFloat(s) * 100); }
+
+function TariffSection({ productId }: { productId: string }) {
+  const { push } = useToast();
+  const [open, setOpen] = React.useState(false);
+  const [editTarget, setEditTarget] = React.useState<PricingRule | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
+  const [form, setForm] = React.useState<TariffForm>(EMPTY_TARIFF);
+
+  const rules = useQuery([productId, 'pricing-rules'], () =>
+    pricingService.rules({ product_id: productId, per_page: 100 }).catch(() => null),
+  );
+
+  const createRule = useMutation((p: Record<string, unknown>) => pricingService.createRule(p));
+  const updateRule = useMutation((a: { id: string; data: Record<string, unknown> }) =>
+    pricingService.updateRule(a.id, a.data),
+  );
+  const deleteRule = useMutation((id: string) => pricingService.deleteRule(id));
+
+  const openCreate = () => {
+    setEditTarget(null);
+    setForm(EMPTY_TARIFF);
+    setOpen(true);
+  };
+
+  const openEdit = (rule: PricingRule) => {
+    setEditTarget(rule);
+    setForm({
+      range_from_m: (rule.range_from_cm / 100).toString(),
+      range_to_m: rule.range_to_cm >= 99999 ? '999' : (rule.range_to_cm / 100).toString(),
+      price_incl_vat_euros: eur(rule.price_incl_vat),
+      price_excl_vat_euros: eur(rule.price_excl_vat),
+      vat_rate: '21',
+      price_type: rule.price_type ?? 'fixed',
+      channel: rule.channel ?? 'all',
+    });
+    setOpen(true);
+  };
+
+  const onSave = async () => {
+    const rangeFrom = cm(form.range_from_m || '0');
+    const rangeTo = form.range_to_m === '999' || parseFloat(form.range_to_m) >= 999
+      ? 99999
+      : cm(form.range_to_m);
+    const inclVat = centsOf(form.price_incl_vat_euros);
+    const exclVat = form.price_excl_vat_euros
+      ? centsOf(form.price_excl_vat_euros)
+      : Math.round(inclVat / 1.21);
+
+    try {
+      if (editTarget) {
+        await updateRule.mutate({
+          id: editTarget.id,
+          data: {
+            range_from_cm: rangeFrom,
+            range_to_cm: rangeTo,
+            price_incl_vat: inclVat,
+            price_excl_vat: exclVat,
+            price_type: form.price_type,
+            channel: form.channel,
+          },
+        });
+      } else {
+        await createRule.mutate({
+          product_id: productId,
+          range_from_cm: rangeFrom,
+          range_to_cm: rangeTo,
+          price_incl_vat: inclVat,
+          price_excl_vat: exclVat,
+          price_type: form.price_type,
+          vat_rate: parseFloat(form.vat_rate),
+          channel: form.channel,
+        });
+      }
+      push({ tone: 'success', title: 'Tarief opgeslagen' });
+      setOpen(false);
+      void rules.refetch();
+    } catch {
+      push({ tone: 'error', title: 'Opslaan mislukt' });
+    }
+  };
+
+  const onDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteRule.mutate(deleteTarget);
+      push({ tone: 'success', title: 'Tarief verwijderd' });
+      setDeleteTarget(null);
+      void rules.refetch();
+    } catch {
+      push({ tone: 'error', title: 'Verwijderen mislukt' });
+    }
+  };
+
+  const ruleList: PricingRule[] = (rules.data?.data ?? []).slice().sort(
+    (a, b) => a.range_from_cm - b.range_from_cm,
+  );
+  const busy = createRule.loading || updateRule.loading;
+
+  return (
+    <>
+      <AdminSectionCard
+        title="Tarieven per lengteklasse"
+        icon={Tag}
+        action={
+          <Button variant="outline" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
+            Tarief toevoegen
+          </Button>
+        }
+      >
+        {rules.loading ? (
+          <p className="text-sm text-navy-500">Laden…</p>
+        ) : ruleList.length === 0 ? (
+          <p className="text-sm text-navy-500">{'Geen tarieven gevonden. Klik op "Tarief toevoegen".'}</p>
+        ) : (
+          <AdminTableCard>
+            <AdminTable minWidth={500}>
+              <AdminTableHead>
+                <tr>
+                  <AdminTableHeaderCell>Lengte</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>Type</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>Excl. BTW</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>Incl. BTW</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>Kanaal</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>Status</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
+                </tr>
+              </AdminTableHead>
+              <tbody>
+                {ruleList.map((rule) => (
+                  <AdminTableRow key={rule.id}>
+                    <AdminTableCell className="font-mono text-sm">{rule.range_label}</AdminTableCell>
+                    <AdminTableCell>
+                      <Badge tone="neutral">{rule.price_type ?? 'fixed'}</Badge>
+                    </AdminTableCell>
+                    <AdminTableCell className="font-semibold">
+                      {rule.price_excl_vat_euros != null
+                        ? `€ ${rule.price_excl_vat_euros.toFixed(2)}`
+                        : `€ ${eur(rule.price_excl_vat)}`}
+                    </AdminTableCell>
+                    <AdminTableCell className="font-semibold text-navy-900">
+                      {rule.price_incl_vat_euros != null
+                        ? `€ ${rule.price_incl_vat_euros.toFixed(2)}`
+                        : `€ ${eur(rule.price_incl_vat)}`}
+                    </AdminTableCell>
+                    <AdminTableCell>{rule.channel}</AdminTableCell>
+                    <AdminTableCell>
+                      <Badge tone={rule.active ? 'success' : 'neutral'}>
+                        {rule.active ? 'Actief' : 'Inactief'}
+                      </Badge>
+                    </AdminTableCell>
+                    <AdminTableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="sm" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={() => openEdit(rule)}>
+                          Bewerk
+                        </Button>
+                        <Button variant="ghost" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setDeleteTarget(rule.id)}
+                          className="text-rose-600 hover:bg-rose-50">
+                          Verwijder
+                        </Button>
+                      </div>
+                    </AdminTableCell>
+                  </AdminTableRow>
+                ))}
+              </tbody>
+            </AdminTable>
+          </AdminTableCard>
+        )}
+      </AdminSectionCard>
+
+      {/* Edit / Create modal */}
+      <Modal open={open} onClose={() => setOpen(false)} size="md">
+        <AdminModalHeader title={editTarget ? 'Tarief bewerken' : 'Nieuw tarief'} />
+        <AdminModalBody>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Van (meter)</label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.range_from_m}
+                onChange={(e) => setForm((f) => ({ ...f, range_from_m: e.target.value }))}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Tot (meter, 999 = onbeperkt)</label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.range_to_m}
+                onChange={(e) => setForm((f) => ({ ...f, range_to_m: e.target.value }))}
+                placeholder="999"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Prijs incl. BTW (€)</label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.price_incl_vat_euros}
+                onChange={(e) => setForm((f) => ({ ...f, price_incl_vat_euros: e.target.value }))}
+                placeholder="0.00"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Prijs excl. BTW (€, optioneel)</label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.price_excl_vat_euros}
+                onChange={(e) => setForm((f) => ({ ...f, price_excl_vat_euros: e.target.value }))}
+                placeholder="auto (incl ÷ 1.21)"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Type</label>
+              <select
+                className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900"
+                value={form.price_type}
+                onChange={(e) => setForm((f) => ({ ...f, price_type: e.target.value }))}
+              >
+                <option value="fixed">Vast bedrag</option>
+                <option value="per_meter">Per meter</option>
+                <option value="manual">Handmatig</option>
+                <option value="on_request">Op aanvraag</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Kanaal</label>
+              <select
+                className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900"
+                value={form.channel}
+                onChange={(e) => setForm((f) => ({ ...f, channel: e.target.value }))}
+              >
+                <option value="all">Alle</option>
+                <option value="kassa">Kassa</option>
+                <option value="portal">Portal</option>
+                <option value="stalling">Stalling</option>
+              </select>
+            </div>
+          </div>
+        </AdminModalBody>
+        <AdminModalFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>Annuleren</Button>
+          <Button variant="gold" onClick={onSave} disabled={busy || !form.range_to_m || !form.price_incl_vat_euros}>
+            {busy ? 'Opslaan…' : 'Opslaan'}
+          </Button>
+        </AdminModalFooter>
+      </Modal>
+
+      <AdminConfirmModal
+        open={!!deleteTarget}
+        title="Tarief verwijderen"
+        message="Weet u zeker dat u dit tarief wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+        confirmLabel="Verwijder"
+        onConfirm={onDelete}
+        onCancel={() => setDeleteTarget(null)}
+        loading={deleteRule.loading}
+      />
+    </>
+  );
+}
+
+// ── Product detail ────────────────────────────────────────────────────────────
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -481,6 +767,8 @@ export default function ProductDetailPage() {
             </div>
           </div>
         ) : null}
+
+        {p && !editing ? <TariffSection productId={id} /> : null}
 
         {p && !editing && auditLog.data && auditLog.data.data.length > 0 ? (
           <AdminSectionCard
