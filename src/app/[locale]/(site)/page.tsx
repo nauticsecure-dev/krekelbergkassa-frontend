@@ -216,11 +216,9 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between p-5">
-                    <p className="line-clamp-2 text-sm text-navy-600">
-                      <EditableText blockKey={`home.svc.${s.key}.desc`} page={CMS_PAGE} section="services" type="paragraph">
-                        {t(`home.svc.${s.key}.desc`)}
-                      </EditableText>
-                    </p>
+                    <EditableText blockKey={`home.svc.${s.key}.desc`} page={CMS_PAGE} section="services" type="paragraph" as="p" className="line-clamp-2 text-sm text-navy-600">
+                      {t(`home.svc.${s.key}.desc`)}
+                    </EditableText>
                     <ArrowRight className="ml-3 h-4 w-4 shrink-0 text-navy-300 transition group-hover:translate-x-0.5 group-hover:text-navy-700" />
                   </div>
                 </Card>
