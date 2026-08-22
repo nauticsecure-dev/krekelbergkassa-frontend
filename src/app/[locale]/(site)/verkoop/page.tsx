@@ -165,48 +165,52 @@ export default function VerkoopPage() {
         <Card className="overflow-hidden">
           <div className="grid gap-0 lg:grid-cols-[1.1fr_1fr]">
             <div className="relative isolate p-10 text-white">
-              <EditableImage
-                blockKey="verkoop.sell.image"
-                page={CMS_PAGE}
-                fallbackSrc="/img/krek/jachthaven.webp"
-                alt="Uw boot verkopen"
-                className="absolute inset-0 -z-10 h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 -z-10 bg-navy-950/75" aria-hidden />
-              <Badge tone="gold" className="mb-3" dot>
-                <EditableText blockKey="verkoop.sell.badge" page={CMS_PAGE} section="sell">
-                  {t("verkoopPage.badge")}
-                </EditableText>
-              </Badge>
-              <h2 className="heading-display text-3xl text-white sm:text-4xl">
-                <EditableText blockKey="verkoop.sell.title" page={CMS_PAGE} section="sell" type="heading">
-                  {t("verkoopPage.sellTitle")}
-                </EditableText>
-              </h2>
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-sand-100/80">
-                <EditableText blockKey="verkoop.sell.desc" page={CMS_PAGE} section="sell" type="paragraph">
-                  {t("verkoopPage.sellDesc")}
-                </EditableText>
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={`/${locale}/contact`}>
-                  <Button variant="gold" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                    <EditableText blockKey="verkoop.sell.cta_primary" page={CMS_PAGE} section="sell">
-                      {t("verkoopPage.sellCta")}
-                    </EditableText>
-                  </Button>
-                </Link>
-                <Link href={`/${locale}/contact`}>
-                  <Button
-                    variant="outline"
-                    className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-                    leftIcon={<Anchor className="h-4 w-4" />}
-                  >
-                    <EditableText blockKey="verkoop.sell.cta_value" page={CMS_PAGE} section="sell">
-                      {t("verkoopPage.valueCta")}
-                    </EditableText>
-                  </Button>
-                </Link>
+              <div className="absolute inset-0 overflow-hidden">
+                <EditableImage
+                  blockKey="verkoop.sell.image"
+                  page={CMS_PAGE}
+                  fallbackSrc="/img/krek/jachthaven.webp"
+                  alt="Uw boot verkopen"
+                  className="h-full w-full"
+                />
+              </div>
+              <div className="absolute inset-0 bg-navy-950/75" aria-hidden />
+              <div className="relative">
+                <Badge tone="gold" className="mb-3" dot>
+                  <EditableText blockKey="verkoop.sell.badge" page={CMS_PAGE} section="sell">
+                    {t("verkoopPage.badge")}
+                  </EditableText>
+                </Badge>
+                <h2 className="heading-display text-3xl text-white sm:text-4xl">
+                  <EditableText blockKey="verkoop.sell.title" page={CMS_PAGE} section="sell" type="heading">
+                    {t("verkoopPage.sellTitle")}
+                  </EditableText>
+                </h2>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-sand-100/80">
+                  <EditableText blockKey="verkoop.sell.desc" page={CMS_PAGE} section="sell" type="paragraph">
+                    {t("verkoopPage.sellDesc")}
+                  </EditableText>
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link href={`/${locale}/contact`}>
+                    <Button variant="gold" rightIcon={<ArrowRight className="h-4 w-4" />}>
+                      <EditableText blockKey="verkoop.sell.cta_primary" page={CMS_PAGE} section="sell">
+                        {t("verkoopPage.sellCta")}
+                      </EditableText>
+                    </Button>
+                  </Link>
+                  <Link href={`/${locale}/contact`}>
+                    <Button
+                      variant="outline"
+                      className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+                      leftIcon={<Anchor className="h-4 w-4" />}
+                    >
+                      <EditableText blockKey="verkoop.sell.cta_value" page={CMS_PAGE} section="sell">
+                        {t("verkoopPage.valueCta")}
+                      </EditableText>
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x divide-y divide-navy-100">
