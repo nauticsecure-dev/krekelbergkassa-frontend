@@ -63,11 +63,6 @@ function servicePriceForLength(s: CraneService, lengthCm: number): number {
   return lengthCm ? scaledPrice(s.basePrice, lengthCm) : s.basePrice;
 }
 
-const TIME_SLOTS_FALLBACK = [
-  '08:30','09:00','09:30','10:00','10:30',
-  '11:00','11:30','13:30','14:00','14:30','15:00','15:30',
-];
-
 const DUTCH_DAYS   = ['ma','di','wo','do','vr','za','zo'];
 const DUTCH_MONTHS = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
 
@@ -107,6 +102,7 @@ export default function KraanAfspraakPage() {
   const [openDays, setOpenDays]             = React.useState<Record<string, boolean>>({});
   const [timeSlots, setTimeSlots]           = React.useState<string[]>([]);
   const [loadingSlots, setLoadingSlots]     = React.useState(false);
+  const [slotsError, setSlotsError]         = React.useState<'closed' | 'error' | null>(null);
   const [images, setImages]                 = React.useState<File[]>([]);
   const [googleLoaded, setGoogleLoaded]     = React.useState(false);
   const addressRef                          = React.useRef<HTMLInputElement>(null);
@@ -182,13 +178,31 @@ export default function KraanAfspraakPage() {
   }, [view]);
 
   React.useEffect(() => {
-    if (!picked || !selectedServices.length || !lengthCm) { setTimeSlots([]); return; }
+    if (!picked || !selectedServices.length || !lengthCm) {
+      setTimeSlots([]);
+      setSlotsError(null);
+      setTime(null);
+      return;
+    }
     setLoadingSlots(true);
+    setSlotsError(null);
+    setTime(null);
     const dateIso = new Date(picked.getFullYear(), picked.getMonth(), picked.getDate(), 12).toISOString();
     void bookingService
       .slots({ date: dateIso, length_cm: Math.max(100, lengthCm), service_codes: selectedServices })
-      .then(res => setTimeSlots(res.is_open ? res.slots : []))
-      .catch(() => setTimeSlots(TIME_SLOTS_FALLBACK))
+      .then(res => {
+        if (res.is_open) {
+          setTimeSlots(res.slots);
+          setSlotsError(null);
+        } else {
+          setTimeSlots([]);
+          setSlotsError('closed');
+        }
+      })
+      .catch(() => {
+        setTimeSlots([]);
+        setSlotsError('error');
+      })
       .finally(() => setLoadingSlots(false));
   }, [picked, selectedServices, lengthCm]);
 
@@ -202,8 +216,11 @@ export default function KraanAfspraakPage() {
   const isOtherMonth = (d: Date) => d.getMonth() !== view.getMonth();
   const isToday      = (d: Date) => d.getTime() === today.getTime();
   const isPicked     = (d: Date) => picked?.getTime() === d.getTime();
+  const toLocalDateKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
   const isDayClosed  = (d: Date) => {
-    const key = d.toISOString().slice(0, 10);
+    const key = toLocalDateKey(d);
     return key in openDays && !openDays[key];
   };
 
@@ -646,27 +663,45 @@ export default function KraanAfspraakPage() {
                     ? t('crane.timeSlots', { date: `${picked.getDate()} ${DUTCH_MONTHS[picked.getMonth()]}` })
                     : t('crane.selectDate')}
                 </SectionTitle>
-                <div className="mt-3 grid grid-cols-4 gap-2">
-                  {(timeSlots.length ? timeSlots : loadingSlots ? [] : TIME_SLOTS_FALLBACK).map(s => {
-                    const active = time === s;
-                    return (
-                      <button
-                        key={s}
-                        disabled={!picked}
-                        onClick={() => setTime(s)}
-                        className={cn(
-                          'rounded-md border px-2 py-1.5 text-xs font-medium transition',
-                          !picked && 'cursor-not-allowed border-navy-100 text-navy-300',
-                          picked && (active
-                            ? 'border-navy-900 bg-navy-900 text-white'
-                            : 'border-navy-100 text-navy-800 hover:border-navy-300')
-                        )}
-                      >
-                        {s}
-                      </button>
-                    );
-                  })}
-                </div>
+                {slotsError === 'closed' && (
+                  <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+                    De werf is gesloten op deze dag. Kies een andere datum.
+                  </p>
+                )}
+                {slotsError === 'error' && (
+                  <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-800">
+                    Tijdsloten konden niet worden geladen. Bel ons op <strong>0475 315 661</strong>.
+                  </p>
+                )}
+                {!slotsError && !loadingSlots && picked && !lengthCm && (
+                  <p className="mt-3 rounded-lg border border-navy-100 bg-sand-50 px-3 py-2.5 text-xs text-navy-500">
+                    Voer eerst de lengte van uw boot in om beschikbare tijden te zien.
+                  </p>
+                )}
+                {!slotsError && (
+                  <div className="mt-3 grid grid-cols-4 gap-2">
+                    {(loadingSlots ? [] : timeSlots).map(s => {
+                      const active = time === s;
+                      return (
+                        <button
+                          key={s}
+                          onClick={() => setTime(s)}
+                          className={cn(
+                            'rounded-md border px-2 py-1.5 text-xs font-medium transition',
+                            active
+                              ? 'border-navy-900 bg-navy-900 text-white'
+                              : 'border-navy-100 text-navy-800 hover:border-navy-300'
+                          )}
+                        >
+                          {s}
+                        </button>
+                      );
+                    })}
+                    {!loadingSlots && timeSlots.length === 0 && picked && lengthCm && !slotsError && (
+                      <p className="col-span-4 text-xs text-navy-400">Geen beschikbare tijden op deze dag.</p>
+                    )}
+                  </div>
+                )}
               </div>
             </Card>
 

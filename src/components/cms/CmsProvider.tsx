@@ -155,12 +155,33 @@ function resolveGlobal(value: GlobalValue | undefined, tag: LocaleTag): string |
 }
 
 export function CmsProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { locale: rawLocale } = useIntl();
   const locale = rawLocale as AppLocale;
   const localeTag = appLocaleToTag(locale);
 
   const canEdit = !!user?.permissions?.includes('cms.manage');
+
+  // Wraps every CMS write call: if the server returns 401 the stored token has
+  // been invalidated (server deploy / token rotation). Clear the local session
+  // so the UI reflects the logged-out state, and surface a legible Dutch message.
+  const guardCms = React.useCallback(
+    async <T,>(fn: () => Promise<T>): Promise<T> => {
+      try {
+        return await fn();
+      } catch (err) {
+        if (
+          typeof err === 'object' && err !== null &&
+          'status' in err && (err as { status: number }).status === 401
+        ) {
+          void signOut();
+          throw { ...(err as object), message: 'Sessie verlopen — log opnieuw in' };
+        }
+        throw err;
+      }
+    },
+    [signOut],
+  );
 
   const [editMode, setEditModeState] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState<string | null>(null);
@@ -285,95 +306,106 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   // --- Save helpers (optimistic) -------------------------------------------
 
   const saveText = React.useCallback(
-    async (key: string, args: SaveContentArgs) => {
-      await cmsService.saveContentBlock(key, {
-        page: args.page,
-        section: args.section,
-        type: args.type ?? 'short_text',
-        value_by_locale: args.value_by_locale,
-      });
-      const optimistic = args.value_by_locale[localeTag];
-      if (optimistic != null) {
-        setContent((prev) => ({
-          ...prev,
-          [key]: { key, type: args.type ?? prev[key]?.type ?? 'short_text', value: optimistic },
-        }));
-      }
-    },
-    [localeTag],
+    (key: string, args: SaveContentArgs) =>
+      guardCms(async () => {
+        await cmsService.saveContentBlock(key, {
+          page: args.page,
+          section: args.section,
+          type: args.type ?? 'short_text',
+          value_by_locale: args.value_by_locale,
+        });
+        const optimistic = args.value_by_locale[localeTag];
+        if (optimistic != null) {
+          setContent((prev) => ({
+            ...prev,
+            [key]: { key, type: args.type ?? prev[key]?.type ?? 'short_text', value: optimistic },
+          }));
+        }
+      }),
+    [guardCms, localeTag],
   );
 
-  const uploadImage = React.useCallback(async (key: string, file: File) => {
-    const fd = new FormData();
-    fd.append('image', file);
-    const res = (await cmsService.uploadMediaBlock(key, fd)) as { image_url?: string };
-    const url = res?.image_url ?? '';
-    if (url) {
-      setMedia((prev) => ({
-        ...prev,
-        [key]: {
-          key,
-          image_url: url,
-          alt: prev[key]?.alt ?? '',
-          focal_point: prev[key]?.focal_point ?? { x: 50, y: 50 },
-          overlay: prev[key]?.overlay ?? 0,
-        },
-      }));
-    }
-    return url;
-  }, []);
+  const uploadImage = React.useCallback(
+    (key: string, file: File) =>
+      guardCms(async () => {
+        const fd = new FormData();
+        fd.append('image', file);
+        const res = (await cmsService.uploadMediaBlock(key, fd)) as { image_url?: string };
+        const url = res?.image_url ?? '';
+        if (url) {
+          setMedia((prev) => ({
+            ...prev,
+            [key]: {
+              key,
+              image_url: url,
+              alt: prev[key]?.alt ?? '',
+              focal_point: prev[key]?.focal_point ?? { x: 50, y: 50 },
+              overlay: prev[key]?.overlay ?? 0,
+            },
+          }));
+        }
+        return url;
+      }),
+    [guardCms],
+  );
 
   const saveMediaMeta = React.useCallback(
-    async (key: string, args: SaveMediaMetaArgs) => {
-      await cmsService.saveMediaBlock(key, {
-        alt_by_locale: args.alt_by_locale,
-        focal_x: args.focal_x,
-        focal_y: args.focal_y,
-        overlay: args.overlay,
-        crop_data: args.crop_data,
-      });
-      setMedia((prev) => {
-        const existing = prev[key];
-        if (!existing) return prev;
-        return {
-          ...prev,
-          [key]: {
-            ...existing,
-            alt: args.alt_by_locale?.[localeTag] ?? existing.alt,
-            focal_point: {
-              x: args.focal_x ?? existing.focal_point.x,
-              y: args.focal_y ?? existing.focal_point.y,
+    (key: string, args: SaveMediaMetaArgs) =>
+      guardCms(async () => {
+        await cmsService.saveMediaBlock(key, {
+          alt_by_locale: args.alt_by_locale,
+          focal_x: args.focal_x,
+          focal_y: args.focal_y,
+          overlay: args.overlay,
+          crop_data: args.crop_data,
+        });
+        setMedia((prev) => {
+          const existing = prev[key];
+          if (!existing) return prev;
+          return {
+            ...prev,
+            [key]: {
+              ...existing,
+              alt: args.alt_by_locale?.[localeTag] ?? existing.alt,
+              focal_point: {
+                x: args.focal_x ?? existing.focal_point.x,
+                y: args.focal_y ?? existing.focal_point.y,
+              },
+              overlay: args.overlay ?? existing.overlay,
             },
-            overlay: args.overlay ?? existing.overlay,
-          },
-        };
-      });
-    },
-    [localeTag],
+          };
+        });
+      }),
+    [guardCms, localeTag],
   );
 
   const saveSeo = React.useCallback(
-    async (slug: string, args: SaveSeoArgs) => {
-      await cmsService.saveSeo(slug, {
-        title_by_locale: args.title_by_locale,
-        description_by_locale: args.description_by_locale,
-        robots: args.robots,
-      });
-      setSeo((prev) => ({
-        title: args.title_by_locale?.[localeTag] ?? prev?.title ?? '',
-        description: args.description_by_locale?.[localeTag] ?? prev?.description ?? '',
-        og_title: prev?.og_title,
-        canonical_url: prev?.canonical_url,
-        robots: args.robots ?? prev?.robots ?? 'index,follow',
-      }));
-    },
-    [localeTag],
+    (slug: string, args: SaveSeoArgs) =>
+      guardCms(async () => {
+        await cmsService.saveSeo(slug, {
+          title_by_locale: args.title_by_locale,
+          description_by_locale: args.description_by_locale,
+          robots: args.robots,
+        });
+        setSeo((prev) => ({
+          title: args.title_by_locale?.[localeTag] ?? prev?.title ?? '',
+          description: args.description_by_locale?.[localeTag] ?? prev?.description ?? '',
+          og_title: prev?.og_title,
+          canonical_url: prev?.canonical_url,
+          robots: args.robots ?? prev?.robots ?? 'index,follow',
+        }));
+      }),
+    [guardCms, localeTag],
   );
 
-  const saveGlobal = React.useCallback(async (key: string, value: GlobalValue) => {
-    await cmsService.saveGlobalSetting(key, { value });
-    setGlobals((prev) => ({ ...prev, [key]: value }));
-  }, []);
+  const saveGlobal = React.useCallback(
+    (key: string, value: GlobalValue) =>
+      guardCms(async () => {
+        await cmsService.saveGlobalSetting(key, { value });
+        setGlobals((prev) => ({ ...prev, [key]: value }));
+      }),
+    [guardCms],
+  );
 
   const value = React.useMemo<CmsContextValue>(
     () => ({
