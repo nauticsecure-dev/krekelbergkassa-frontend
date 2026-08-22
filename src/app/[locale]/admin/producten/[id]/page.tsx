@@ -334,7 +334,7 @@ function TariffSection({ productId }: { productId: string }) {
         message="Weet u zeker dat u dit tarief wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
         confirmLabel="Verwijder"
         onConfirm={onDelete}
-        onCancel={() => setDeleteTarget(null)}
+        onClose={() => setDeleteTarget(null)}
         loading={deleteRule.loading}
       />
     </>
