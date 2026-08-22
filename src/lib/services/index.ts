@@ -2640,6 +2640,26 @@ export const contentService = {
       query: locale ? { locale } : undefined,
     });
   },
+  contactSubjects(locale?: string) {
+    return api<{ subjects: Array<{ key: string; label: string; category: string }> }>('/v1/contact-subjects', {
+      auth: false,
+      query: locale ? { locale } : undefined,
+    });
+  },
+  submitContact(body: {
+    name: string;
+    email: string;
+    phone?: string;
+    subject_key?: string;
+    message: string;
+    language: string;
+  }) {
+    return api<{ message: string }>('/v1/contact', {
+      method: 'POST',
+      auth: false,
+      body,
+    });
+  },
   // Admin FAQ editor (Trello #77)
   faqSettings() {
     return api<Record<string, unknown>>('/v1/admin/settings/faq');

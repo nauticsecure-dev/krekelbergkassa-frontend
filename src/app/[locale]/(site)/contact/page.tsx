@@ -31,15 +31,20 @@ const MAPS_EMBED = companyInfo.mapsEmbed;
 export default function ContactPage() {
   const { t, locale } = useIntl();
   useRegisterCmsPage(CMS_PAGE);
-  const [sent, setSent] = React.useState(false);
 
-  // Trello #59: live "Open now / Closed" status + today highlight from the API.
   const localeTag = locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
+  const language = locale === "en" ? "en" : locale === "de" ? "de" : "nl";
+
   const hoursQuery = useQuery([localeTag], () =>
     contentService.openingHours(localeTag).catch(() => null),
   );
   const liveStatus = hoursQuery.data?.status ?? null;
   const apiHours = hoursQuery.data?.hours ?? [];
+
+  const subjectsQuery = useQuery(["contact-subjects", localeTag], () =>
+    contentService.contactSubjects(localeTag).catch(() => null),
+  );
+  const subjects = subjectsQuery.data?.subjects ?? [];
 
   return (
     <>
@@ -75,11 +80,7 @@ export default function ContactPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a href={companyInfo.phoneHref}>
-              <Button
-                variant="gold"
-                size="lg"
-                leftIcon={<Phone className="h-4 w-4" />}
-              >
+              <Button variant="gold" size="lg" leftIcon={<Phone className="h-4 w-4" />}>
                 {t("contactPage.ctaCall")}
               </Button>
             </a>
@@ -284,61 +285,122 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {sent ? (
-            <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-              {t("contactPage.fSent")}
-            </div>
-          ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSent(true);
-              }}
-              className="mt-5 grid gap-3 sm:grid-cols-2"
-            >
-              <FormField label={t("contactPage.fName")}>
-                <input className="input-base" required />
-              </FormField>
-              <FormField label={t("contactPage.fEmail")}>
-                <input type="email" className="input-base" required />
-              </FormField>
-              <FormField label={t("contactPage.fPhone")}>
-                <input className="input-base" />
-              </FormField>
-              <FormField label={t("contactPage.fTopic")}>
-                <select className="input-base">
-                  <option>Algemene vraag</option>
-                  <option>Kraanafspraak</option>
-                  <option>Winterstalling</option>
-                  <option>Verkoop / aankoop</option>
-                  <option>Appartement</option>
-                </select>
-              </FormField>
-              <FormField
-                label={t("contactPage.fMessage")}
-                className="sm:col-span-2"
-              >
-                <textarea
-                  className="input-base min-h-[110px] resize-y"
-                  required
-                />
-              </FormField>
-              <div className="sm:col-span-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  fullWidth
-                  rightIcon={<Send className="h-4 w-4" />}
-                >
-                  {t("contactPage.fSubmit")}
-                </Button>
-              </div>
-            </form>
-          )}
+          <ContactForm subjects={subjects} language={language} t={t} />
         </Card>
       </section>
     </>
+  );
+}
+
+function ContactForm({
+  subjects,
+  language,
+  t,
+}: {
+  subjects: Array<{ key: string; label: string; category: string }>;
+  language: string;
+  t: (key: string) => string;
+}) {
+  const [status, setStatus] = React.useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [subjectKey, setSubjectKey] = React.useState("");
+  const [message, setMessage] = React.useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus("sending");
+    try {
+      await contentService.submitContact({
+        name,
+        email,
+        phone: phone || undefined,
+        subject_key: subjectKey || undefined,
+        message,
+        language,
+      });
+      setStatus("sent");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "sent") {
+    return (
+      <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        {t("contactPage.fSent")}
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-5 grid gap-3 sm:grid-cols-2">
+      {status === "error" && (
+        <div className="sm:col-span-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {t("contactPage.fError")}
+        </div>
+      )}
+      <FormField label={t("contactPage.fName")}>
+        <input
+          className="input-base"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </FormField>
+      <FormField label={t("contactPage.fEmail")}>
+        <input
+          type="email"
+          className="input-base"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </FormField>
+      <FormField label={t("contactPage.fPhone")}>
+        <input
+          className="input-base"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+      </FormField>
+      <FormField label={t("contactPage.fTopic")}>
+        <select
+          className="input-base"
+          value={subjectKey}
+          onChange={(e) => setSubjectKey(e.target.value)}
+        >
+          <option value="">{t("contactPage.fSelectTopic")}</option>
+          {subjects.map((s) => (
+            <option key={s.key} value={s.key}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </FormField>
+      <FormField label={t("contactPage.fMessage")} className="sm:col-span-2">
+        <textarea
+          className="input-base min-h-[110px] resize-y"
+          required
+          minLength={10}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+      </FormField>
+      <div className="sm:col-span-2">
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          disabled={status === "sending"}
+          rightIcon={<Send className="h-4 w-4" />}
+        >
+          {status === "sending" ? t("contactPage.fSending") : t("contactPage.fSubmit")}
+        </Button>
+      </div>
+    </form>
   );
 }
 

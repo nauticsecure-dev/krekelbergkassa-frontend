@@ -546,7 +546,10 @@
     "fTopic": "Onderwerp",
     "fMessage": "Bericht",
     "fSubmit": "Verstuur bericht",
-    "fSent": "Bedankt — uw bericht is verstuurd."
+    "fSending": "Wordt verzonden…",
+    "fSent": "Bedankt. Uw bericht is ontvangen. Wij nemen zo snel mogelijk contact met u op.",
+    "fError": "Uw bericht kon niet worden verzonden. Probeer het opnieuw of bel ons: 0475 315 661.",
+    "fSelectTopic": "Kies een onderwerp…"
   },
   "verkoopPage": {
     "badge": "Schepenkring Roermond",
