@@ -244,10 +244,14 @@ export default function HomePage() {
             <div className="absolute -bottom-6 -right-6 hidden rounded-xl bg-white p-5 shadow-elev lg:block">
               <ShieldCheck className="h-6 w-6 text-gold-500" />
               <div className="mt-2 text-xs font-semibold uppercase tracking-widest text-navy-500">
-                {t("home.werf.cert")}
+                <EditableText blockKey="home.werf.cert" page={CMS_PAGE} section="werf">
+                  {t("home.werf.cert")}
+                </EditableText>
               </div>
               <div className="text-sm font-semibold text-navy-900">
-                HISWA · 1972
+                <EditableText blockKey="home.werf.cert_sub" page={CMS_PAGE} section="werf">
+                  HISWA · 1976
+                </EditableText>
               </div>
             </div>
           </div>
