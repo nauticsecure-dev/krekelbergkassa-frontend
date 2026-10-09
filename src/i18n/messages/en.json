@@ -314,6 +314,11 @@
         "title": "Sell your boat",
         "tagline": "Via Schepenkring Roermond",
         "desc": "Sell at our physical location with professional brokerage and continuous visibility."
+      },
+      "week": {
+        "title": "A week ashore",
+        "tagline": "A week to work on your boat",
+        "desc": "Bring your boat ashore and take time for maintenance at our yard."
       }
     },
     "werf": {

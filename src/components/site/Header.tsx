@@ -58,6 +58,7 @@ export function Header() {
     { href: `/${locale}/diensten/afspuiten`, icon: Droplets, label: t('services.wash.title'), desc: t('services.wash.desc') },
     { href: `/${locale}/diensten/winterstalling`, icon: Warehouse, label: t('services.storage.title'), desc: t('services.storage.desc') },
     { href: `/${locale}/diensten/zelf-werken`, icon: Hammer, label: t('services.diy.title'), desc: t('services.diy.desc') },
+    { href: `/${locale}/diensten/weekje-op-wal`, icon: Calendar, label: t('home.svc.week.title'), desc: t('home.svc.week.desc') },
   ];
 
   const openMenu = (id: string) => {
@@ -139,21 +140,27 @@ export function Header() {
                 />
               ) : null}
             </li>
-            <NavLink
-              href={`/${locale}/verkoop`}
-              active={pathname.startsWith(`/${locale}/verkoop`)}
-            >
-              {t('nav.salesLocation')}
-            </NavLink>
-            <NavLink
-              href={`/${locale}/over-ons`}
-              active={pathname === `/${locale}/over-ons`}
-            >
-              {t('nav.about')}
-            </NavLink>
-            <NavLink href={`/${locale}/contact`} active={pathname === `/${locale}/contact`}>
-              {t('nav.contact')}
-            </NavLink>
+            <li>
+              <NavLink
+                href={`/${locale}/verkoop`}
+                active={pathname.startsWith(`/${locale}/verkoop`)}
+              >
+                {t('nav.salesLocation')}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                href={`/${locale}/over-ons`}
+                active={pathname === `/${locale}/over-ons`}
+              >
+                {t('nav.about')}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink href={`/${locale}/contact`} active={pathname === `/${locale}/contact`}>
+                {t('nav.contact')}
+              </NavLink>
+            </li>
           </ul>
         </nav>
 
@@ -232,33 +239,31 @@ function NavLink({
   children: React.ReactNode;
 }) {
   return (
-    <li>
-      <Link
-        href={href}
-        className={cn(
-          'group inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition',
-          active ? 'text-navy-900' : 'text-navy-700 hover:text-navy-900'
-        )}
-      >
-        <span className="relative">
-          {children}
-          <span
-            className={cn(
-              'absolute -bottom-1.5 left-0 right-0 h-[2px] origin-center rounded-full bg-gold-500 transition-transform duration-200',
-              active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-            )}
-          />
-        </span>
-        {hasMenu ? (
-          <ChevronDown
-            className={cn(
-              'h-3.5 w-3.5 text-navy-400 transition-transform',
-              expanded && 'rotate-180'
-            )}
-          />
-        ) : null}
-      </Link>
-    </li>
+    <Link
+      href={href}
+      className={cn(
+        'group inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition',
+        active ? 'text-navy-900' : 'text-navy-700 hover:text-navy-900'
+      )}
+    >
+      <span className="relative">
+        {children}
+        <span
+          className={cn(
+            'absolute -bottom-1.5 left-0 right-0 h-[2px] origin-center rounded-full bg-gold-500 transition-transform duration-200',
+            active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+          )}
+        />
+      </span>
+      {hasMenu ? (
+        <ChevronDown
+          className={cn(
+            'h-3.5 w-3.5 text-navy-400 transition-transform',
+            expanded && 'rotate-180'
+          )}
+        />
+      ) : null}
+    </Link>
   );
 }
 

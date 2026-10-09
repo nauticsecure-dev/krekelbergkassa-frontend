@@ -314,6 +314,11 @@
         "title": "Boot verkaufen",
         "tagline": "Über Schepenkring Roermond",
         "desc": "Verkauf an unserem physischen Standort mit professioneller Vermittlung und durchgehender Sichtbarkeit."
+      },
+      "week": {
+        "title": "Eine Woche an Land",
+        "tagline": "Eine Woche Zeit für Ihr Boot",
+        "desc": "Holen Sie Ihr Boot aus dem Wasser und nehmen Sie sich Zeit für Wartungsarbeiten auf unserer Werft."
       }
     },
     "werf": {

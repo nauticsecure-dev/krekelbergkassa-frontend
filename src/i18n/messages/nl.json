@@ -314,6 +314,11 @@
         "title": "Boot verkopen",
         "tagline": "Via Schepenkring Roermond",
         "desc": "Verkoop via onze fysieke locatie met professionele bemiddeling en doorlopende zichtbaarheid."
+      },
+      "week": {
+        "title": "Weekje op wal",
+        "tagline": "Een week ruimte voor uw boot",
+        "desc": "Haal uw boot uit het water en neem de tijd voor onderhoud op onze werf."
       }
     },
     "werf": {
