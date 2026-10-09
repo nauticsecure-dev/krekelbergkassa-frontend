@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import {
   canAccessAdmin,
+  canAccessAdminRoute,
   canAccessPortal,
   canAccessWorkOrders,
   isAdminPath,
@@ -50,6 +51,8 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   const deniedWorkOrders =
     !!user && isWorkOrdersPath(pathname) && !canAccessWorkOrders(user.role);
+  const deniedAdminRoute =
+    !!user && isAdminPath(pathname) && !canAccessAdminRoute(user.role, pathname);
 
   const resolvingAuth = loading || (sessionHint && !user);
 
@@ -59,6 +62,11 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     router.replace(`/${locale}/admin`);
   }, [deniedWorkOrders, router, locale]);
 
+  React.useEffect(() => {
+    if (!deniedAdminRoute) return;
+    router.replace(`/${locale}/admin`);
+  }, [deniedAdminRoute, router, locale]);
+
   // Login redirect only when auth check finished and there is no session token.
   React.useEffect(() => {
     if (resolvingAuth || !protectedRoute) return;
@@ -66,7 +74,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     router.replace(loginPath(locale, pathname));
   }, [resolvingAuth, needsLogin, protectedRoute, router, locale, pathname]);
 
-  if (deniedWorkOrders) {
+  if (deniedWorkOrders || deniedAdminRoute) {
     return null;
   }
 

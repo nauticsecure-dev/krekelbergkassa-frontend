@@ -58,6 +58,7 @@ export function Modal({
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
+      onClick={(event) => event.stopPropagation()}
     >
       <div
         className="anim-fade absolute inset-0 bg-navy-950/70 backdrop-blur-md"

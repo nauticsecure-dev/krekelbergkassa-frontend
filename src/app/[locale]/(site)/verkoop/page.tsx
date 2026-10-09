@@ -16,6 +16,7 @@ import { useIntl } from "@/i18n/IntlProvider";
 import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
+import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
 
 const CMS_PAGE = "verkoop";
 const SCHEPENKRING_URL =
@@ -59,24 +60,22 @@ export default function VerkoopPage() {
             </EditableText>
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a href={SCHEPENKRING_URL} target="_blank" rel="noopener noreferrer">
-              <Button variant="gold" size="lg" rightIcon={<ExternalLink className="h-4 w-4" />}>
-                <EditableText blockKey="verkoop.hero.cta_browse" page={CMS_PAGE} section="hero">
-                  {t("verkoopPage.browseCta")}
-                </EditableText>
-              </Button>
-            </a>
-            <Link href={`/${locale}/contact`}>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-              >
-                <EditableText blockKey="verkoop.hero.cta_sell" page={CMS_PAGE} section="hero">
-                  {t("verkoopPage.sellCta")}
-                </EditableText>
-              </Button>
-            </Link>
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="verkoop.hero.cta_browse"
+              label={t("verkoopPage.browseCta")}
+              href={SCHEPENKRING_URL}
+              variant="gold"
+              rightIcon={<ExternalLink className="h-4 w-4" />}
+            />
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="verkoop.hero.cta_sell"
+              label={t("verkoopPage.sellCta")}
+              href={`/${locale}/contact`}
+              variant="outline"
+              className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+            />
           </div>
         </div>
       </section>

@@ -23,6 +23,7 @@ import { cn } from "@/lib/cn";
 import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
+import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
 
 const CMS_PAGE = "contact";
 const MAPS_URL = companyInfo.mapsUrl;
@@ -79,21 +80,23 @@ export default function ContactPage() {
             </EditableText>
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href={companyInfo.phoneHref}>
-              <Button variant="gold" size="lg" leftIcon={<Phone className="h-4 w-4" />}>
-                {t("contactPage.ctaCall")}
-              </Button>
-            </a>
-            <a href={`mailto:${t("contactPage.email")}`}>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-                leftIcon={<Mail className="h-4 w-4" />}
-              >
-                {t("contactPage.ctaMail")}
-              </Button>
-            </a>
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="contact.hero.cta_primary"
+              label={t("contactPage.ctaCall")}
+              href={companyInfo.phoneHref}
+              variant="gold"
+              leftIcon={<Phone className="h-4 w-4" />}
+            />
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="contact.hero.cta_secondary"
+              label={t("contactPage.ctaMail")}
+              href={`mailto:${t("contactPage.email")}`}
+              variant="outline"
+              className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+              leftIcon={<Mail className="h-4 w-4" />}
+            />
           </div>
         </div>
       </section>

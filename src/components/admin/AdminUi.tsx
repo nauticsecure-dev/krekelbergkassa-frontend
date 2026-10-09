@@ -17,10 +17,47 @@ export function AdminContent({
   className?: string;
 }) {
   return (
-    <div className={cn('mx-auto w-full max-w-[1440px] space-y-5 px-4 pb-6 pt-2 sm:px-6 sm:pb-8', className)}>
+    <div className={cn('mx-auto w-full max-w-[var(--admin-content-max-width,1440px)] space-y-5 px-4 pb-6 pt-2 sm:px-6 sm:pb-8', className)}>
       {children}
     </div>
   );
+}
+
+export function AdminContentGrid({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={cn('grid min-w-0 gap-5', className)}>{children}</div>;
+}
+
+export function AdminFormSection({
+  title,
+  children,
+  className,
+}: {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={cn('space-y-3', className)}>
+      <h3 className="text-xs font-bold uppercase tracking-widest text-navy-400">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+export function AdminFormGrid({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={cn('grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2', className)}>{children}</div>;
 }
 
 export function AdminMetricGrid({ children }: { children: React.ReactNode }) {
@@ -404,6 +441,8 @@ export function AdminSectionCard({
     </section>
   );
 }
+
+export const AdminCard = AdminSectionCard;
 
 export function AdminListItem({
   title,

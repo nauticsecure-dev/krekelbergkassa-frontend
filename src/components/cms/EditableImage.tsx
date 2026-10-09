@@ -51,6 +51,11 @@ export function EditableImage({
         alt={altText}
         className="h-full w-full object-cover"
         style={{ objectPosition: `${focal.x}% ${focal.y}%` }}
+        onClick={editable ? (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen(true);
+        } : undefined}
       />
       {overlay > 0 ? (
         <span

@@ -1,4 +1,134 @@
 {
+  "adminModules": {
+    "overview": {
+      "todayAppointments": "Today's appointments",
+      "craneJobs": "Crane jobs",
+      "activeStorage": "Active storage",
+      "expiringStorage": "Storage expiring (30 days)",
+      "overdueInvoices": "Overdue invoices",
+      "newCustomers": "New customers today",
+      "newBrokerageLeads": "New brokerage leads",
+      "leadsUnavailable": "No lead register",
+      "allProducts": "All products",
+      "lowStockFilter": "Low stock",
+      "customerSearch": "Find customer",
+      "registerPayment": "Register payment"
+    },
+    "create": {
+      "customer": "Customer",
+      "boat": "Boat",
+      "appointment": "Appointment",
+      "stalling": "Storage",
+      "invoice": "Invoice",
+      "brokerage": "Sales dossier",
+      "supplier": "Supplier",
+      "service": "Service"
+    },
+    "nav": {
+      "overview": "Overview",
+      "planning": "Planning",
+      "pos": "POS",
+      "storage": "Storage",
+      "customers": "Customers",
+      "boats": "Boats",
+      "brokerage": "Brokerage",
+      "finance": "Finance",
+      "servicesPricing": "Services & Pricing",
+      "management": "Management"
+    },
+    "hubs": {
+      "planning": {
+        "title": "Planning",
+        "subtitle": "Manage appointments, calendar availability and yard work from one place.",
+        "schedule": "Schedule",
+        "calendar": "Calendar",
+        "calendarDesc": "Opening hours, exceptions, locations and yard capacity.",
+        "appointments": "Appointments",
+        "appointmentsDesc": "Review and manage customer appointments.",
+        "workOrders": "Work orders",
+        "workOrdersDesc": "Track scheduled work and its progress.",
+        "quickAccess": "Quick access",
+        "crane": "Crane appointment",
+        "craneDesc": "Open the crane booking page."
+      },
+      "finance": {
+        "title": "Finance",
+        "subtitle": "Central access to sales invoices, payments, suppliers and reports.",
+        "openAmount": "Outstanding",
+        "overdueAmount": "Overdue",
+        "dueAmount": "Still to pay",
+        "revenueMonth": "Revenue this month",
+        "costsMonth": "Purchases this month",
+        "costsUnavailable": "Purchase totals are not available through the current API.",
+        "loadError": "Could not load",
+        "invoiceWindow": "Based on the 100 most recent invoices.",
+        "overview": "Financial overview",
+        "invoices": "Sales invoices",
+        "invoicesDesc": "Find and manage invoices from every workflow.",
+        "payments": "Payments",
+        "paymentsDesc": "Review recorded payments and payment statuses.",
+        "reports": "Reports",
+        "reportsDesc": "Financial reports and summaries.",
+        "accounting": "Purchases and accounting",
+        "purchaseInvoices": "Purchase invoices",
+        "purchaseInvoicesDesc": "Import and process supplier invoices.",
+        "suppliers": "Creditors and suppliers",
+        "suppliersDesc": "Manage suppliers and outstanding balances.",
+        "ledger": "Accounting",
+        "ledgerDesc": "Open accounting records.",
+        "debtors": "Debtors",
+        "debtorsDesc": "Find customer accounts and invoices."
+      },
+      "brokerage": {
+        "title": "Brokerage",
+        "subtitle": "A central entry point for sales, boats, customer contacts and brokerage pricing.",
+        "workflows": "Brokerage",
+        "sales": "Sales dossiers",
+        "salesDesc": "Review recent sales and related invoices.",
+        "boats": "Boats for sale",
+        "boatsDesc": "Open the central boat register.",
+        "leads": "Leads and enquiries",
+        "leadsDesc": "A dedicated brokerage lead register is not available yet.",
+        "pricing": "Pricing",
+        "pricingDesc": "Manage brokerage rates."
+      },
+      "servicesPricing": {
+        "title": "Services & Pricing",
+        "subtitle": "Manage services and pricing rules and access the calculator from one place.",
+        "catalog": "Catalog and pricing",
+        "services": "Services",
+        "servicesDesc": "Manage products and services used across workflows.",
+        "rules": "Pricing rules",
+        "rulesDesc": "Manage central calculator and service rates.",
+        "groups": "Product groups",
+        "groupsDesc": "Organize services and products into groups.",
+        "bundles": "Bundles",
+        "bundlesDesc": "Manage combined product and service bundles.",
+        "calculator": "Calculator",
+        "calculatorDesc": "Calculate prices using the central pricing rules."
+      },
+      "management": {
+        "title": "Management",
+        "subtitle": "Manage users and settings. Technical system functions are restricted to administrators.",
+        "configuration": "Configuration",
+        "users": "Users",
+        "usersDesc": "Manage access and staff accounts.",
+        "settings": "Settings",
+        "settingsDesc": "Manage company and application settings.",
+        "system": "System administration",
+        "audit": "Audit",
+        "auditDesc": "Review technical change records.",
+        "security": "Security",
+        "securityDesc": "Manage security settings.",
+        "credentials": "API credentials",
+        "credentialsDesc": "Manage connected API access.",
+        "incidents": "Incidents",
+        "incidentsDesc": "Review system incidents.",
+        "systemAdmin": "System",
+        "systemAdminDesc": "Open technical system status and tasks."
+      }
+    }
+  },
   "brand": {
     "name": "Krekelberg Nautic",
     "tagline": "Yacht yard, storage and brokerage in Roermond"
@@ -21,6 +151,8 @@
   },
   "header": {
     "mainMenu": "Main menu",
+    "adminDashboard": "Admin dashboard",
+    "myAccount": "My account",
     "browseServices": "Browse all services",
     "browseStay": "Browse stay options",
     "groupServices": "Yard services",
@@ -314,6 +446,11 @@
         "title": "Sell your boat",
         "tagline": "Via Schepenkring Roermond",
         "desc": "Sell at our physical location with professional brokerage and continuous visibility."
+      },
+      "week": {
+        "title": "A week ashore",
+        "tagline": "A week to work on your boat",
+        "desc": "Bring your boat ashore and take time for maintenance at our yard."
       }
     },
     "werf": {
@@ -444,6 +581,8 @@
     "service": "Service",
     "duration": "Duration",
     "estimate": "Estimated total",
+    "catalogUnavailable": "Services and prices could not be loaded. Please try again later.",
+    "noBookableServices": "There are currently no services available to book online.",
     "submit": "Request appointment",
     "submitSuccess": "Appointment requested",
     "submitFailed": "Request failed",
@@ -1124,14 +1263,21 @@
       "deleted": "Removed",
       "open": "Open",
       "clear": "Clear",
+      "dismiss": "Dismiss",
+      "search": "Search",
+      "filter": "Filter",
+      "clearFilters": "Clear filters",
+      "saved": "Saved",
+      "retry": "Try again",
       "all": "All",
       "yes": "Yes",
       "no": "No"
     },
     "dashboard": {
       "title": "Operations",
-      "heroTitle": "Marina operations overview",
-      "subtitle": "Daily operational marina status",
+      "brand": "KREKELBERG NAUTIC",
+      "heroTitle": "Operational overview",
+      "subtitle": "Everything that needs attention today",
       "live": "Live",
       "quickActions": "Quick actions",
       "cards": {
@@ -1145,8 +1291,15 @@
         },
         "cashRevenue": {
           "title": "Cash desk revenue",
-          "subtitle": "Recent transactions"
+          "subtitle": "Recent transactions",
+          "today": "Today"
         },
+        "lowStock": {
+          "title": "Low stock",
+          "subtitle": "Products below minimum stock"
+        },
+        "today": "Today",
+        "expiringStorage": "{count} expiring soon",
         "syncStatus": {
           "title": "Sync status",
           "lastSync": "Last sync: {time}",
@@ -1168,12 +1321,14 @@
       },
       "calculatorCard": {
         "title": "Calculator",
-        "subtitle": "Quick price calculation for marina services",
-        "selectService": "Select service"
+        "subtitle": "Calculate a price directly from central pricing rules.",
+        "selectService": "Service",
+        "openFull": "Open full calculator"
       },
       "recentActivity": {
         "title": "Recent activity",
-        "subtitle": "The latest events in the system.",
+        "subtitle": "Important recent events.",
+        "loadError": "Activity could not be loaded.",
         "justNow": "Just now",
         "minutesAgo": "{count} min ago",
         "hoursAgo": "{count} h ago",
@@ -1541,6 +1696,8 @@
     "status": {
       "paid": "Paid",
       "overdue": "Overdue",
+      "partial": "Partially paid",
+      "final": "Final",
       "credited": "Credited",
       "cancelled": "Cancelled",
       "draft": "Draft",
@@ -1554,11 +1711,69 @@
       "subtitle": "Control log for security, payments, invoices, customers and sync",
       "searchPlaceholder": "Search by action, actor, entity",
       "allEntities": "All entity types",
+      "allCategories": "All areas",
+      "allSeverities": "All outcomes",
+      "dateFrom": "From",
+      "dateTo": "To",
+      "showTechnical": "Show technical events",
+      "technicalHidden": "Technical telemetry is hidden. Enable technical events to view it.",
+      "eventTypes": "Event types",
+      "entityTypes": "Entity types",
+      "recentActivity": "Recent activity",
+      "actorFallback": "System / unknown",
+      "summary": "Summary",
+      "changes": "Changes",
+      "noChanges": "No field changes available.",
+      "technicalDetails": "Technical details",
+      "openDetails": "Details",
+      "changeSummary": "{count} field(s) changed",
+      "categories": {
+        "finance": "Finance",
+        "cash": "Cash register",
+        "customers": "Customers",
+        "boats": "Boats",
+        "storage": "Storage",
+        "planning": "Planning",
+        "brokerage": "Brokerage",
+        "settings": "Settings",
+        "integrations": "Integrations",
+        "security": "Security",
+        "system": "System",
+        "technical": "Technical activity"
+      },
+      "severity": {
+        "info": "Info",
+        "success": "Success",
+        "warning": "Warning",
+        "error": "Error",
+        "critical": "Critical"
+      },
+      "eventTitles": {
+        "cashClosureCreated": "Cash closure created",
+        "mollieTested": "Mollie connection tested",
+        "signingFailed": "Signhost request failed",
+        "paymentReceived": "Payment received",
+        "pageVisited": "Page visited",
+        "systemError": "System error occurred",
+        "created": "{entity} created",
+        "updated": "{entity} updated",
+        "deleted": "{entity} deleted",
+        "cancelled": "{entity} cancelled",
+        "authentication": "Authentication activity",
+        "technicalActivity": "Technical activity",
+        "unknown": "Unknown system action"
+      },
       "entity": {
         "invoice": "Invoice",
         "customer": "Customer",
         "stalling": "Storage",
-        "payment": "Payment"
+        "payment": "Payment",
+        "boat": "Boat",
+        "appointment": "Appointment",
+        "cashClosure": "Cash closure",
+        "product": "Service / product",
+        "system": "System",
+        "record": "Record"
       },
       "loading": "Loading audit logs",
       "empty": "No audit events",
@@ -1567,7 +1782,9 @@
         "action": "Action",
         "entity": "Entity",
         "actor": "Actor",
-        "changes": "Changes"
+        "changes": "Changes",
+        "status": "Outcome",
+        "details": "Details"
       },
       "events": "{count} events"
     },
@@ -1689,6 +1906,15 @@
     "kassa": {
       "title": "Cash Desk",
       "subtitle": "Fast checkout with smart search and realtime calculation",
+      "refund": "Refund",
+      "refundSuccess": "Refund recorded",
+      "refundTitle": "Refund sale",
+      "refundSubtitle": "Choose the refund method and provide a reason.",
+      "refundMethod": "Refund method",
+      "refundReason": "Reason",
+      "refundReasonPlaceholder": "Describe why this sale is being refunded.",
+      "refundConfirm": "Confirm refund",
+      "editCustomer": "Edit customer details",
       "searchPlaceholder": "Search product or type e.g. wash 880",
       "selectCustomer": "Select customer",
       "payment": {
@@ -2224,6 +2450,8 @@
     "shell": {
       "notifications": "Notifications",
       "viewAllUpdates": "View all updates",
+      "viewWebsite": "View website",
+      "viewPage": "View page",
       "notifs": {
         "webhookFailedTitle": "Mollie webhook failed",
         "webhookFailedMessage": "tr_abc123 — retry manually",
@@ -2239,6 +2467,52 @@
     "invoices": {
       "title": "Invoices",
       "subtitle": "Financial overview across POS, storage, calculator and manual invoices",
+      "createIntro": "Choose how you want to create the invoice.",
+      "backToRegister": "Back to invoices",
+      "createChoice": "How would you like to start?",
+      "createChoiceDescription": "Import an existing invoice or create a new invoice manually.",
+      "importPdf": "Import PDF",
+      "importPdfDescription": "Upload the document to the import queue for extraction and review.",
+      "goToImport": "Go to PDF import",
+      "manualCreate": "Create manually",
+      "manualCreateDescription": "Create an invoice for a customer with your own invoice lines.",
+      "startManual": "Start manual invoice",
+      "back": "Back",
+      "customer": "Customer",
+      "customerCreateFailed": "Could not create customer",
+      "invalidLines": "Check the description and quantity for each invoice line.",
+      "changeCustomer": "Choose another customer",
+      "customerSearchHint": "Search by name, email, phone or company (at least 2 characters)",
+      "createCustomerInline": "Create customer",
+      "billingAddress": "Billing address",
+      "invoiceDetails": "Invoice details",
+      "invoiceDate": "Invoice date",
+      "dueDate": "Due date",
+      "invoiceNumberOptional": "Invoice number (leave blank to assign automatically)",
+      "reference": "Reference",
+      "sourceLabel": "Source",
+      "paymentMethod": "Payment method",
+      "currency": "Currency",
+      "lines": "Invoice lines",
+      "productSearch": "Search products or services",
+      "lineDescription": "Description",
+      "quantity": "Quantity",
+      "unitPriceExVat": "Unit price excl. VAT",
+      "vatRate": "VAT %",
+      "discount": "Discount %",
+      "addFreeLine": "Add free-text line",
+      "subtotal": "Subtotal excl. VAT",
+      "vatTotal": "Total VAT",
+      "totalAmount": "Total",
+      "notesAndTerms": "Notes",
+      "customerNote": "Note on invoice",
+      "internalNote": "Internal note",
+      "saveDraft": "Save invoice as draft",
+      "allPaymentStatuses": "All payment statuses",
+      "invoiceStates": "All invoice statuses",
+      "invoiceState": "Invoice status",
+      "paymentState": "Payment status",
+      "onAccount": "On account",
       "new": "New invoice",
       "defaultLineDescription": "New invoice line",
       "searchPlaceholder": "Search by invoice number, customer or email",
@@ -2258,7 +2532,10 @@
         "kassa": "POS",
         "stalling": "Storage",
         "manual": "Manual",
-        "calculator": "Calculator"
+        "calculator": "Calculator",
+        "appointment": "Appointment",
+        "brokerage": "Brokerage",
+        "import": "Import"
       },
       "metrics": {
         "open": "Open invoices",
@@ -2290,6 +2567,8 @@
     "invoiceDetail": {
       "fallbackTitle": "Invoice",
       "subtitle": "Invoice details",
+      "creditSuccess": "Credit note created",
+      "pdfGenerating": "Generating invoice PDF…",
       "loading": "Loading invoice",
       "source": "Source",
       "overviewTitle": "Invoice overview",
@@ -2333,6 +2612,8 @@
       "actions": {
         "send": "Send",
         "markPaid": "Mark paid",
+        "openCreditNote": "Open credit note",
+        "generatePdf": "Generate PDF",
         "mollieLink": "Mollie link",
         "regeneratePdf": "Regenerate PDF",
         "openPdf": "Open",
@@ -2352,7 +2633,8 @@
         "amount": "Amount to credit",
         "reason": "Reason (required)",
         "reasonPlaceholder": "Why is this invoice being credited?",
-        "confirm": "Create credit note"
+        "confirm": "Create credit note",
+        "sendEmail": "Email the credit note"
       },
       "paymentMethods": {
         "cash": "Cash",
@@ -2702,7 +2984,8 @@
       "toasts": {
         "confirmed": "Appointment confirmed",
         "cancelled": "Appointment cancelled",
-        "completed": "Appointment completed"
+        "completed": "Appointment completed",
+        "advanced": "Appointment status changed to {status}"
       }
     },
     "products": {
@@ -2769,6 +3052,10 @@
         "tagsPlaceholder": "storage, season",
         "aliases": "Aliases",
         "aliasesPlaceholder": "Alternative search names",
+        "showInKassa": "Show in POS",
+        "showInPublic": "Show on website",
+        "showInCalculator": "Show in calculator",
+        "showInBooking": "Show in bookings",
         "created": "Created",
         "updated": "Updated",
         "costPrice": "Cost price (€)",
@@ -2783,7 +3070,8 @@
         "identity": "Identity",
         "classification": "Classification",
         "pricing": "Pricing",
-        "pos": "POS & inventory"
+        "pos": "POS & inventory",
+        "visibility": "Visibility"
       },
       "categories": {
         "stalling": "Storage",
@@ -3253,6 +3541,10 @@
       "emptyTitle": "No work orders",
       "emptyMessage": "No work orders created yet.",
       "total": "{count} work orders",
+      "detail": {
+        "priority": "Priority",
+        "completionNote": "Completion note"
+      },
       "columns": {
         "number": "Number",
         "type": "Type",
@@ -3282,6 +3574,8 @@
         "fileUploaded": "File uploaded"
       },
       "detail": {
+        "priority": "Priority",
+        "completionNote": "Completion note",
         "open": "Open",
         "back": "← Back to work orders",
         "overview": "Work order overview",
@@ -3513,6 +3807,8 @@
       "ledgerTitle": "Ledger breakdown",
       "ledgerSubtitle": "Totals per ledger account.",
       "ledgerEmpty": "No ledger data available yet.",
+      "ledgerRevenue": "Revenue",
+      "ledgerCosts": "Costs",
       "stats": {
         "revenue": "Revenue",
         "expenses": "Expenses",
@@ -3832,6 +4128,27 @@
     "toolbarLabel": "CMS toolbar",
     "editText": "Edit text",
     "editImage": "Edit image",
+    "editCta": "Edit button",
+    "invalidCtaLink": "Check the button destination and destination type.",
+    "ctaDescription": "Edit the button label and destination for this hero.",
+    "ctaLabel": "Button label",
+    "ctaLinkType": "Destination type",
+    "ctaInternal": "Internal page",
+    "ctaExternal": "External URL",
+    "ctaEmail": "Email",
+    "ctaPhone": "Phone",
+    "ctaAnchor": "Page anchor",
+    "ctaRoute": "Internal route (without locale)",
+    "ctaUrl": "URL",
+    "ctaTarget": "Open in",
+    "ctaSameTab": "Same tab",
+    "ctaNewTab": "New tab",
+    "ctaStyle": "Button style",
+    "ctaPrimaryStyle": "Primary",
+    "ctaSecondaryStyle": "Secondary / outlined",
+    "ctaEnabled": "Show button",
+    "disabledCta": "Button hidden — edit",
+    "loadingLocales": "Loading translations…",
     "openingHours": "Opening hours",
     "save": "Save",
     "cancel": "Cancel",
@@ -3840,12 +4157,15 @@
     "uploadError": "Upload failed",
     "imageUploaded": "Image uploaded",
     "uploadImage": "Upload image",
+    "imageFormats": "Use a JPG, PNG or WEBP image.",
+    "imageDropHint": "Drop a JPG, PNG or WEBP file here.",
     "localeHint": "Only changed languages are saved.",
     "textPlaceholder": "Enter text…",
     "focalPoint": "Focal point",
     "focalHint": "Click the image to set the focal point.",
     "overlay": "Dark overlay",
     "altText": "Alt text",
+    "imageSeoTitle": "Image SEO title",
     "altPlaceholder": "Describe the image…",
     "seoTitle": "SEO",
     "noPage": "No page registered",

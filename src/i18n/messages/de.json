@@ -1,4 +1,134 @@
 {
+  "adminModules": {
+    "overview": {
+      "todayAppointments": "Termine heute",
+      "craneJobs": "Kranaufträge",
+      "activeStorage": "Aktive Lagerungen",
+      "expiringStorage": "Läuft in 30 Tagen ab",
+      "overdueInvoices": "Überfällige Rechnungen",
+      "newCustomers": "Neue Kunden heute",
+      "newBrokerageLeads": "Neue Makler-Leads",
+      "leadsUnavailable": "Kein Lead-Register",
+      "allProducts": "Alle Produkte",
+      "lowStockFilter": "Niedriger Bestand",
+      "customerSearch": "Kunden suchen",
+      "registerPayment": "Zahlung erfassen"
+    },
+    "create": {
+      "customer": "Kunde",
+      "boat": "Boot",
+      "appointment": "Termin",
+      "stalling": "Lagerung",
+      "invoice": "Rechnung",
+      "brokerage": "Verkaufsakte",
+      "supplier": "Lieferant",
+      "service": "Service"
+    },
+    "nav": {
+      "overview": "Übersicht",
+      "planning": "Planung",
+      "pos": "Kasse",
+      "storage": "Lagerung",
+      "customers": "Kunden",
+      "boats": "Boote",
+      "brokerage": "Maklergeschäft",
+      "finance": "Finanzen",
+      "servicesPricing": "Services & Preise",
+      "management": "Verwaltung"
+    },
+    "hubs": {
+      "planning": {
+        "title": "Planung",
+        "subtitle": "Termine, Kalenderverfügbarkeit und Werftarbeiten zentral verwalten.",
+        "schedule": "Planung",
+        "calendar": "Kalender",
+        "calendarDesc": "Öffnungszeiten, Ausnahmen, Standorte und Werftkapazität.",
+        "appointments": "Termine",
+        "appointmentsDesc": "Kundentermine prüfen und verwalten.",
+        "workOrders": "Arbeitsaufträge",
+        "workOrdersDesc": "Geplante Arbeiten und Fortschritt verfolgen.",
+        "quickAccess": "Schnellzugriff",
+        "crane": "Krantermin",
+        "craneDesc": "Kran-Buchungsseite öffnen."
+      },
+      "finance": {
+        "title": "Finanzen",
+        "subtitle": "Zentraler Zugang zu Verkaufsrechnungen, Zahlungen, Lieferanten und Berichten.",
+        "openAmount": "Offen",
+        "overdueAmount": "Überfällig",
+        "dueAmount": "Noch zu zahlen",
+        "revenueMonth": "Umsatz diesen Monat",
+        "costsMonth": "Einkäufe diesen Monat",
+        "costsUnavailable": "Einkaufssummen sind über die aktuelle API nicht verfügbar.",
+        "loadError": "Nicht geladen",
+        "invoiceWindow": "Basierend auf den 100 aktuellsten Rechnungen.",
+        "overview": "Finanzübersicht",
+        "invoices": "Verkaufsrechnungen",
+        "invoicesDesc": "Rechnungen aus allen Arbeitsabläufen finden und verwalten.",
+        "payments": "Zahlungen",
+        "paymentsDesc": "Erfasste Zahlungen und Zahlungsstatus prüfen.",
+        "reports": "Berichte",
+        "reportsDesc": "Finanzberichte und Übersichten.",
+        "accounting": "Einkauf und Buchhaltung",
+        "purchaseInvoices": "Eingangsrechnungen",
+        "purchaseInvoicesDesc": "Lieferantenrechnungen importieren und verarbeiten.",
+        "suppliers": "Kreditoren und Lieferanten",
+        "suppliersDesc": "Lieferanten und offene Posten verwalten.",
+        "ledger": "Buchhaltung",
+        "ledgerDesc": "Buchhaltungsübersichten öffnen.",
+        "debtors": "Debitoren",
+        "debtorsDesc": "Kundenkonten und Rechnungen finden."
+      },
+      "brokerage": {
+        "title": "Maklergeschäft",
+        "subtitle": "Zentraler Einstieg für Verkaufsakten, Boote, Kundenkontakte und Maklerpreise.",
+        "workflows": "Maklergeschäft",
+        "sales": "Verkaufsakten",
+        "salesDesc": "Aktuelle Verkäufe und zugehörige Rechnungen ansehen.",
+        "boats": "Boote zum Verkauf",
+        "boatsDesc": "Zentrales Bootsregister öffnen.",
+        "leads": "Leads und Anfragen",
+        "leadsDesc": "Ein eigenes Register für Makler-Leads ist noch nicht verfügbar.",
+        "pricing": "Preise",
+        "pricingDesc": "Maklergebühren verwalten."
+      },
+      "servicesPricing": {
+        "title": "Services & Preise",
+        "subtitle": "Services und Preisregeln verwalten und den Rechner zentral öffnen.",
+        "catalog": "Katalog und Preisverwaltung",
+        "services": "Services",
+        "servicesDesc": "Produkte und Services für alle Arbeitsabläufe verwalten.",
+        "rules": "Preisregeln",
+        "rulesDesc": "Zentrale Rechner- und Servicepreise verwalten.",
+        "groups": "Produktgruppen",
+        "groupsDesc": "Services und Produkte in Gruppen organisieren.",
+        "bundles": "Pakete",
+        "bundlesDesc": "Kombinierte Produkt- und Servicepakete verwalten.",
+        "calculator": "Rechner",
+        "calculatorDesc": "Preise anhand der zentralen Preisregeln berechnen."
+      },
+      "management": {
+        "title": "Verwaltung",
+        "subtitle": "Benutzer und Einstellungen verwalten. Technische Systemfunktionen sind Administratoren vorbehalten.",
+        "configuration": "Konfiguration",
+        "users": "Benutzer",
+        "usersDesc": "Zugriff und Mitarbeiterkonten verwalten.",
+        "settings": "Einstellungen",
+        "settingsDesc": "Unternehmens- und Anwendungseinstellungen verwalten.",
+        "system": "Systemverwaltung",
+        "audit": "Audit",
+        "auditDesc": "Technische Änderungsprotokolle ansehen.",
+        "security": "Sicherheit",
+        "securityDesc": "Sicherheitseinstellungen verwalten.",
+        "credentials": "API-Zugangsdaten",
+        "credentialsDesc": "API-Zugriffe verwalten.",
+        "incidents": "Vorfälle",
+        "incidentsDesc": "Systemvorfälle ansehen.",
+        "systemAdmin": "System",
+        "systemAdminDesc": "Technischen Systemstatus und Aufgaben öffnen."
+      }
+    }
+  },
   "brand": {
     "name": "Krekelberg Nautic",
     "tagline": "Jachtwerft, Lagerung und Yachtmakler in Roermond"
@@ -21,6 +151,8 @@
   },
   "header": {
     "mainMenu": "Hauptmenü",
+    "adminDashboard": "Admin-Dashboard",
+    "myAccount": "Mein Konto",
     "browseServices": "Alle Leistungen ansehen",
     "browseStay": "Aufenthaltsoptionen ansehen",
     "groupServices": "Werftservices",
@@ -314,6 +446,11 @@
         "title": "Boot verkaufen",
         "tagline": "Über Schepenkring Roermond",
         "desc": "Verkauf an unserem physischen Standort mit professioneller Vermittlung und durchgehender Sichtbarkeit."
+      },
+      "week": {
+        "title": "Eine Woche an Land",
+        "tagline": "Eine Woche Zeit für Ihr Boot",
+        "desc": "Holen Sie Ihr Boot aus dem Wasser und nehmen Sie sich Zeit für Wartungsarbeiten auf unserer Werft."
       }
     },
     "werf": {
@@ -439,6 +576,8 @@
     "service": "Service",
     "duration": "Dauer",
     "estimate": "Gesamt (Richtwert)",
+    "catalogUnavailable": "Leistungen und Preise konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "noBookableServices": "Derzeit sind keine Leistungen online buchbar.",
     "submit": "Termin anfragen",
     "submitSuccess": "Termin angefragt",
     "submitFailed": "Anfrage fehlgeschlagen",
@@ -1119,14 +1258,21 @@
       "deleted": "Entfernt",
       "open": "Öffnen",
       "clear": "Löschen",
+      "dismiss": "Schließen",
+      "search": "Suchen",
+      "filter": "Filtern",
+      "clearFilters": "Filter zurücksetzen",
+      "saved": "Gespeichert",
+      "retry": "Erneut versuchen",
       "all": "Alle",
       "yes": "Ja",
       "no": "Nein"
     },
     "dashboard": {
       "title": "Betrieb",
-      "heroTitle": "Marina-Betriebsübersicht",
-      "subtitle": "Täglicher Betriebsstatus der Marina",
+      "brand": "KREKELBERG NAUTIC",
+      "heroTitle": "Betriebsübersicht",
+      "subtitle": "Alles, was heute Aufmerksamkeit benötigt",
       "live": "Live",
       "quickActions": "Schnellaktionen",
       "cards": {
@@ -1140,8 +1286,15 @@
         },
         "cashRevenue": {
           "title": "Kassenumsatz",
-          "subtitle": "Neueste Transaktionen"
+          "subtitle": "Neueste Transaktionen",
+          "today": "Heute"
         },
+        "lowStock": {
+          "title": "Niedriger Bestand",
+          "subtitle": "Produkte unter Mindestbestand"
+        },
+        "today": "Heute",
+        "expiringStorage": "{count} laufen bald ab",
         "syncStatus": {
           "title": "Sync-Status",
           "lastSync": "Letzte Sync: {time}",
@@ -1163,12 +1316,14 @@
       },
       "calculatorCard": {
         "title": "Rechner",
-        "subtitle": "Schnelle Preisberechnung für Marina-Dienstleistungen",
-        "selectService": "Dienst auswählen"
+        "subtitle": "Preis direkt anhand der zentralen Preisregeln berechnen.",
+        "selectService": "Service",
+        "openFull": "Vollständigen Rechner öffnen"
       },
       "recentActivity": {
         "title": "Letzte Aktivität",
-        "subtitle": "Die neuesten Ereignisse im System.",
+        "subtitle": "Wichtige aktuelle Ereignisse.",
+        "loadError": "Aktivität konnte nicht geladen werden.",
         "justNow": "Gerade eben",
         "minutesAgo": "vor {count} Min.",
         "hoursAgo": "vor {count} Std.",
@@ -1536,6 +1691,8 @@
     "status": {
       "paid": "Bezahlt",
       "overdue": "Überfällig",
+      "partial": "Teilweise bezahlt",
+      "final": "Endgültig",
       "credited": "Gutgeschrieben",
       "cancelled": "Storniert",
       "draft": "Entwurf",
@@ -1549,11 +1706,69 @@
       "subtitle": "Kontrollprotokoll für Sicherheit, Zahlungen, Rechnungen, Kunden und Sync",
       "searchPlaceholder": "Nach Aktion, Akteur, Entität suchen",
       "allEntities": "Alle Entitätstypen",
+      "allCategories": "Alle Bereiche",
+      "allSeverities": "Alle Ergebnisse",
+      "dateFrom": "Von",
+      "dateTo": "Bis",
+      "showTechnical": "Technische Ereignisse anzeigen",
+      "technicalHidden": "Technische Telemetrie ist ausgeblendet. Aktivieren Sie technische Ereignisse, um sie anzuzeigen.",
+      "eventTypes": "Ereignistypen",
+      "entityTypes": "Entitätstypen",
+      "recentActivity": "Letzte Aktivitäten",
+      "actorFallback": "System / unbekannt",
+      "summary": "Zusammenfassung",
+      "changes": "Änderungen",
+      "noChanges": "Keine Feldänderungen verfügbar.",
+      "technicalDetails": "Technische Details",
+      "openDetails": "Details",
+      "changeSummary": "{count} Feld(er) geändert",
+      "categories": {
+        "finance": "Finanzen",
+        "cash": "Kasse",
+        "customers": "Kunden",
+        "boats": "Boote",
+        "storage": "Lagerung",
+        "planning": "Planung",
+        "brokerage": "Maklergeschäft",
+        "settings": "Einstellungen",
+        "integrations": "Integrationen",
+        "security": "Sicherheit",
+        "system": "System",
+        "technical": "Technische Aktivität"
+      },
+      "severity": {
+        "info": "Info",
+        "success": "Erfolgreich",
+        "warning": "Warnung",
+        "error": "Fehler",
+        "critical": "Kritisch"
+      },
+      "eventTitles": {
+        "cashClosureCreated": "Kassenabschluss erstellt",
+        "mollieTested": "Mollie-Verbindung getestet",
+        "signingFailed": "Signhost-Anfrage fehlgeschlagen",
+        "paymentReceived": "Zahlung erhalten",
+        "pageVisited": "Seite besucht",
+        "systemError": "Systemfehler aufgetreten",
+        "created": "{entity} erstellt",
+        "updated": "{entity} geändert",
+        "deleted": "{entity} gelöscht",
+        "cancelled": "{entity} storniert",
+        "authentication": "Anmeldeaktivität",
+        "technicalActivity": "Technische Aktivität",
+        "unknown": "Unbekannte Systemaktion"
+      },
       "entity": {
         "invoice": "Rechnung",
         "customer": "Kunde",
         "stalling": "Lagerung",
-        "payment": "Zahlung"
+        "payment": "Zahlung",
+        "boat": "Boot",
+        "appointment": "Termin",
+        "cashClosure": "Kassenabschluss",
+        "product": "Dienstleistung / Produkt",
+        "system": "System",
+        "record": "Datensatz"
       },
       "loading": "Audit-Logs laden",
       "empty": "Keine Audit-Ereignisse",
@@ -1562,7 +1777,9 @@
         "action": "Aktion",
         "entity": "Entität",
         "actor": "Akteur",
-        "changes": "Änderungen"
+        "changes": "Änderungen",
+        "status": "Ergebnis",
+        "details": "Details"
       },
       "events": "{count} Ereignisse"
     },
@@ -1684,6 +1901,15 @@
     "kassa": {
       "title": "Kasse",
       "subtitle": "Schneller Checkout mit intelligenter Suche und Echtzeitberechnung",
+      "refund": "Erstatten",
+      "refundSuccess": "Rückerstattung erfasst",
+      "refundTitle": "Verkauf erstatten",
+      "refundSubtitle": "Zahlungsmethode auswählen und Grund angeben.",
+      "refundMethod": "Erstattungsmethode",
+      "refundReason": "Grund",
+      "refundReasonPlaceholder": "Beschreiben Sie den Grund für die Erstattung.",
+      "refundConfirm": "Erstattung bestätigen",
+      "editCustomer": "Kundendaten bearbeiten",
       "searchPlaceholder": "Produkt suchen oder z.B. afspuiten 880 eingeben",
       "selectCustomer": "Kunde auswählen",
       "payment": {
@@ -2219,6 +2445,8 @@
     "shell": {
       "notifications": "Benachrichtigungen",
       "viewAllUpdates": "Alle Updates anzeigen",
+      "viewWebsite": "Website ansehen",
+      "viewPage": "Seite ansehen",
       "notifs": {
         "webhookFailedTitle": "Mollie-Webhook fehlgeschlagen",
         "webhookFailedMessage": "tr_abc123 — manuell erneut versuchen",
@@ -2234,6 +2462,52 @@
     "invoices": {
       "title": "Rechnungen",
       "subtitle": "Finanzübersicht über Kasse, Lagerung, Rechner und manuelle Rechnungen",
+      "createIntro": "Wählen Sie, wie Sie die Rechnung erstellen möchten.",
+      "backToRegister": "Zurück zu Rechnungen",
+      "createChoice": "Wie möchten Sie beginnen?",
+      "createChoiceDescription": "Importieren Sie eine vorhandene Rechnung oder erstellen Sie eine neue manuell.",
+      "importPdf": "PDF importieren",
+      "importPdfDescription": "Laden Sie das Dokument zur Extraktion und Prüfung in die Importwarteschlange hoch.",
+      "goToImport": "Zum PDF-Import",
+      "manualCreate": "Manuell erstellen",
+      "manualCreateDescription": "Erstellen Sie eine Rechnung mit Kunde und eigenen Rechnungspositionen.",
+      "startManual": "Manuelle Rechnung starten",
+      "back": "Zurück",
+      "customer": "Kunde",
+      "customerCreateFailed": "Kunde konnte nicht erstellt werden",
+      "invalidLines": "Bitte prüfen Sie Beschreibung und Menge aller Rechnungspositionen.",
+      "changeCustomer": "Anderen Kunden auswählen",
+      "customerSearchHint": "Nach Name, E-Mail, Telefon oder Unternehmen suchen (mindestens 2 Zeichen)",
+      "createCustomerInline": "Kunde erstellen",
+      "billingAddress": "Rechnungsadresse",
+      "invoiceDetails": "Rechnungsdetails",
+      "invoiceDate": "Rechnungsdatum",
+      "dueDate": "Fälligkeitsdatum",
+      "invoiceNumberOptional": "Rechnungsnummer (leer lassen für automatische Vergabe)",
+      "reference": "Referenz",
+      "sourceLabel": "Quelle",
+      "paymentMethod": "Zahlungsmethode",
+      "currency": "Währung",
+      "lines": "Rechnungspositionen",
+      "productSearch": "Produkte oder Leistungen suchen",
+      "lineDescription": "Beschreibung",
+      "quantity": "Menge",
+      "unitPriceExVat": "Einzelpreis exkl. MwSt.",
+      "vatRate": "MwSt. %",
+      "discount": "Rabatt %",
+      "addFreeLine": "Freie Position hinzufügen",
+      "subtotal": "Zwischensumme exkl. MwSt.",
+      "vatTotal": "MwSt. gesamt",
+      "totalAmount": "Gesamt",
+      "notesAndTerms": "Anmerkungen",
+      "customerNote": "Anmerkung auf der Rechnung",
+      "internalNote": "Interne Notiz",
+      "saveDraft": "Rechnung als Entwurf speichern",
+      "allPaymentStatuses": "Alle Zahlungsstatus",
+      "invoiceStates": "Alle Rechnungsstatus",
+      "invoiceState": "Rechnungsstatus",
+      "paymentState": "Zahlungsstatus",
+      "onAccount": "Auf Rechnung",
       "new": "Neue Rechnung",
       "defaultLineDescription": "Neue Rechnungszeile",
       "searchPlaceholder": "Nach Rechnungsnummer, Kunde oder E-Mail suchen",
@@ -2253,7 +2527,10 @@
         "kassa": "Kasse",
         "stalling": "Lagerung",
         "manual": "Manuell",
-        "calculator": "Rechner"
+        "calculator": "Rechner",
+        "appointment": "Termin",
+        "brokerage": "Bootsvermittlung",
+        "import": "Import"
       },
       "metrics": {
         "open": "Offene Rechnungen",
@@ -2285,6 +2562,8 @@
     "invoiceDetail": {
       "fallbackTitle": "Rechnung",
       "subtitle": "Rechnungsdetails",
+      "creditSuccess": "Gutschrift erstellt",
+      "pdfGenerating": "Rechnungs-PDF wird erstellt…",
       "loading": "Rechnung laden",
       "source": "Quelle",
       "overviewTitle": "Rechnungsübersicht",
@@ -2328,6 +2607,8 @@
       "actions": {
         "send": "Senden",
         "markPaid": "Als bezahlt markieren",
+        "openCreditNote": "Gutschrift öffnen",
+        "generatePdf": "PDF erstellen",
         "mollieLink": "Mollie-Link",
         "regeneratePdf": "PDF neu erzeugen",
         "openPdf": "Öffnen",
@@ -2347,7 +2628,8 @@
         "amount": "Gutzuschreibender Betrag",
         "reason": "Grund (erforderlich)",
         "reasonPlaceholder": "Warum wird diese Rechnung gutgeschrieben?",
-        "confirm": "Gutschrift erstellen"
+        "confirm": "Gutschrift erstellen",
+        "sendEmail": "Gutschrift per E-Mail senden"
       },
       "paymentMethods": {
         "cash": "Bar",
@@ -2697,7 +2979,8 @@
       "toasts": {
         "confirmed": "Termin bestätigt",
         "cancelled": "Termin storniert",
-        "completed": "Termin abgeschlossen"
+        "completed": "Termin abgeschlossen",
+        "advanced": "Terminstatus geändert zu {status}"
       }
     },
     "products": {
@@ -2764,6 +3047,10 @@
         "tagsPlaceholder": "lagerung, saison",
         "aliases": "Aliase",
         "aliasesPlaceholder": "Alternative Suchnamen",
+        "showInKassa": "In der Kasse anzeigen",
+        "showInPublic": "Auf der Website anzeigen",
+        "showInCalculator": "Im Rechner anzeigen",
+        "showInBooking": "Bei Buchungen anzeigen",
         "created": "Erstellt",
         "updated": "Aktualisiert",
         "costPrice": "Einkaufspreis (€)",
@@ -2778,7 +3065,8 @@
         "identity": "Identität",
         "classification": "Klassifizierung",
         "pricing": "Preise",
-        "pos": "Kasse & Bestand"
+        "pos": "Kasse & Bestand",
+        "visibility": "Sichtbarkeit"
       },
       "categories": {
         "stalling": "Lagerung",
@@ -3248,6 +3536,10 @@
       "emptyTitle": "Keine Arbeitsaufträge",
       "emptyMessage": "Noch keine Arbeitsaufträge erstellt.",
       "total": "{count} Arbeitsaufträge",
+      "detail": {
+        "priority": "Priorität",
+        "completionNote": "Abschlussnotiz"
+      },
       "columns": {
         "number": "Nummer",
         "type": "Typ",
@@ -3277,6 +3569,8 @@
         "fileUploaded": "Datei hochgeladen"
       },
       "detail": {
+        "priority": "Priorität",
+        "completionNote": "Abschlussnotiz",
         "open": "Öffnen",
         "back": "← Zurück zu Arbeitsaufträgen",
         "overview": "Arbeitsauftrag-Übersicht",
@@ -3508,6 +3802,8 @@
       "ledgerTitle": "Kontenaufschlüsselung",
       "ledgerSubtitle": "Summen pro Sachkonto.",
       "ledgerEmpty": "Noch keine Kontendaten verfügbar.",
+      "ledgerRevenue": "Umsatz",
+      "ledgerCosts": "Kosten",
       "stats": {
         "revenue": "Umsatz",
         "expenses": "Kosten",
@@ -3827,6 +4123,27 @@
     "toolbarLabel": "CMS-Leiste",
     "editText": "Text bearbeiten",
     "editImage": "Bild bearbeiten",
+    "editCta": "Schaltfläche bearbeiten",
+    "invalidCtaLink": "Bitte Zieltyp und Ziel der Schaltfläche prüfen.",
+    "ctaDescription": "Text und Ziel der Hero-Schaltfläche bearbeiten.",
+    "ctaLabel": "Schaltflächentext",
+    "ctaLinkType": "Zieltyp",
+    "ctaInternal": "Interne Seite",
+    "ctaExternal": "Externe URL",
+    "ctaEmail": "E-Mail",
+    "ctaPhone": "Telefon",
+    "ctaAnchor": "Seitenanker",
+    "ctaRoute": "Interne Route (ohne Sprachcode)",
+    "ctaUrl": "URL",
+    "ctaTarget": "Öffnen in",
+    "ctaSameTab": "Gleicher Tab",
+    "ctaNewTab": "Neuer Tab",
+    "ctaStyle": "Schaltflächenstil",
+    "ctaPrimaryStyle": "Primär",
+    "ctaSecondaryStyle": "Sekundär / umrandet",
+    "ctaEnabled": "Schaltfläche anzeigen",
+    "disabledCta": "Schaltfläche verborgen — bearbeiten",
+    "loadingLocales": "Übersetzungen werden geladen…",
     "openingHours": "Öffnungszeiten",
     "save": "Speichern",
     "cancel": "Abbrechen",
@@ -3835,12 +4152,15 @@
     "uploadError": "Upload fehlgeschlagen",
     "imageUploaded": "Bild hochgeladen",
     "uploadImage": "Bild hochladen",
+    "imageFormats": "Verwenden Sie ein JPG-, PNG- oder WEBP-Bild.",
+    "imageDropHint": "Ziehen Sie eine JPG-, PNG- oder WEBP-Datei hierher.",
     "localeHint": "Nur geänderte Sprachen werden gespeichert.",
     "textPlaceholder": "Text eingeben…",
     "focalPoint": "Fokuspunkt",
     "focalHint": "Klicken Sie auf das Bild, um den Fokuspunkt zu setzen.",
     "overlay": "Dunkle Überlagerung",
     "altText": "Alt-Text",
+    "imageSeoTitle": "SEO-Bildtitel",
     "altPlaceholder": "Bild beschreiben…",
     "seoTitle": "SEO",
     "noPage": "Keine Seite registriert",

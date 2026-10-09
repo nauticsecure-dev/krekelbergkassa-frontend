@@ -181,6 +181,19 @@ export default function PlanningPage() {
 
   const [createOpen, setCreateOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('create') === '1' && isStaff) {
+      setCreateOpen(true);
+    }
+  }, [isStaff]);
+
+  const closeCreateAppointment = () => {
+    setCreateOpen(false);
+    if (new URLSearchParams(window.location.search).has('create')) {
+      router.replace(`/${locale}/planning`, { scroll: false });
+    }
+  };
+
   // Staff notes editing state
   const [editNoteId, setEditNoteId] = React.useState<string | null>(null);
   const [staffNote, setStaffNote] = React.useState('');
@@ -646,10 +659,10 @@ export default function PlanningPage() {
       {isStaff ? (
         <CreateAppointmentModal
           open={createOpen}
-          onClose={() => setCreateOpen(false)}
+          onClose={closeCreateAppointment}
           staffMembers={staffMembers}
           onCreated={async () => {
-            setCreateOpen(false);
+            closeCreateAppointment();
             push({ tone: 'success', title: t('planning.created') });
             await refetch();
           }}

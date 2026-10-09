@@ -14,6 +14,7 @@ import { serviceCatalogService } from '@/lib/services';
 import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
 import { EditableText } from '@/components/cms/EditableText';
 import { EditableImage } from '@/components/cms/EditableImage';
+import { EditableHeroCta } from '@/components/cms/EditableHeroCta';
 
 export interface ServicePageProps {
   badge: string;
@@ -130,24 +131,42 @@ export function ServicePage({
             ) : subtitle)}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={cta.href}>
-              <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                {p ? (
-                  <EditableText blockKey={`${p}.hero.cta_primary`} page={p} section="hero">
-                    {cta.label}
-                  </EditableText>
-                ) : cta.label}
-              </Button>
-            </Link>
-            <Link href={`/${locale}/contact`}>
-              <Button
+            {p ? (
+              <EditableHeroCta
+                page={p}
+                blockKey={`${p}.hero.cta_primary`}
+                label={cta.label}
+                href={cta.href}
+                variant="gold"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              />
+            ) : (
+              <Link href={cta.href}>
+                <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
+                  {cta.label}
+                </Button>
+              </Link>
+            )}
+            {p ? (
+              <EditableHeroCta
+                page={p}
+                blockKey={`${p}.hero.cta_secondary`}
+                label={t('servicePage.askQuestion')}
+                href={`/${locale}/contact`}
                 variant="outline"
-                size="lg"
                 className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-              >
-                {t('servicePage.askQuestion')}
-              </Button>
-            </Link>
+              />
+            ) : (
+              <Link href={`/${locale}/contact`}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+                >
+                  {t('servicePage.askQuestion')}
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>

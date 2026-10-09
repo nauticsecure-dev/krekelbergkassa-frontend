@@ -424,13 +424,22 @@ export default function KassaPage() {
   const numericInput = Number(query.replace(/[^0-9]/g, ""));
   const queryText = query.replace(/[0-9]/g, "").trim().toLowerCase();
 
-  const allProducts = React.useMemo(
+  const catalogProducts = React.useMemo(
     () => productsQuery.data?.data ?? [],
     [productsQuery.data?.data],
   );
+  const allProducts = React.useMemo(
+    () => catalogProducts.filter((product) => product.show_in_kassa !== false),
+    [catalogProducts],
+  );
   const allRules = React.useMemo(
-    () => pricingQuery.data?.data ?? [],
-    [pricingQuery.data?.data],
+    () =>
+      (pricingQuery.data?.data ?? []).filter((rule) => {
+        const product =
+          catalogProducts.find((item) => item.id === rule.product_id) ?? rule.product;
+        return product?.show_in_kassa !== false;
+      }),
+    [pricingQuery.data?.data, catalogProducts],
   );
 
   // Trello #80: lookup product groups by name/code → resolve chip color + icon.

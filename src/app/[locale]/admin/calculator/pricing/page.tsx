@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import { LoadingState, EmptyState } from '@/components/admin/DataState';
+import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { pricingService, productsService } from '@/lib/services';
@@ -107,10 +107,13 @@ export default function CalculatorPricingPage() {
       <AdminContent>
         <AdminSectionCard title={t('adminNew.calculator.pricing.title')} icon={Settings}>
           {rules.loading ? <LoadingState label={t('adminNew.common.loading')} variant="table" /> : null}
-          {!rules.loading && rows.length === 0 ? (
+          {!rules.loading && rules.error ? (
+            <ErrorState message={rules.error} onRetry={() => void rules.refetch()} />
+          ) : null}
+          {!rules.loading && !rules.error && rows.length === 0 ? (
             <EmptyState title={t('adminNew.states.emptyTitle')} message={t('adminNew.calculator.pricing.empty')} />
           ) : null}
-          {!rules.loading && rows.length > 0 ? (
+          {!rules.loading && !rules.error && rows.length > 0 ? (
             <AdminTableCard>
               <AdminTable minWidth={800}>
                 <AdminTableHead>

@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useIntl } from '@/i18n/IntlProvider';
 import { cmsService } from '@/lib/services';
+import { locales } from '@/i18n/config';
 
 // ---------------------------------------------------------------------------
 // Trello #112 — Inline CMS / Visual Editor
@@ -28,14 +29,14 @@ export type AppLocale = 'nl' | 'en' | 'de';
  */
 export type LocaleTag = 'nl-NL' | 'en-GB' | 'de-DE' | 'fr-FR';
 
-/** Tabs shown in the edit modals (order matters for the UI). */
-export const EDITABLE_LOCALE_TAGS: LocaleTag[] = ['nl-NL', 'en-GB', 'de-DE', 'fr-FR'];
-
 const APP_TO_TAG: Record<AppLocale, LocaleTag> = {
   nl: 'nl-NL',
   en: 'en-GB',
   de: 'de-DE',
 };
+
+/** Tabs shown in the edit modals follow the app's configured render locales. */
+export const EDITABLE_LOCALE_TAGS: LocaleTag[] = locales.map((locale) => APP_TO_TAG[locale]);
 
 /** Map the active app locale to the backend locale tag used for reads. */
 export function appLocaleToTag(locale: string): LocaleTag {
@@ -59,6 +60,7 @@ export interface MediaBlock {
   key: string;
   image_url: string;
   alt: string;
+  seo_title?: string;
   focal_point: FocalPoint;
   overlay: number;
 }
@@ -98,6 +100,7 @@ export interface SaveContentArgs {
 
 export interface SaveMediaMetaArgs {
   alt_by_locale?: Partial<Record<LocaleTag, string>>;
+  seo_title_by_locale?: Partial<Record<LocaleTag, string>>;
   focal_x?: number;
   focal_y?: number;
   overlay?: number;
@@ -354,6 +357,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       guardCms(async () => {
         await cmsService.saveMediaBlock(key, {
           alt_by_locale: args.alt_by_locale,
+          seo_title_by_locale: args.seo_title_by_locale,
           focal_x: args.focal_x,
           focal_y: args.focal_y,
           overlay: args.overlay,
@@ -367,6 +371,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             [key]: {
               ...existing,
               alt: args.alt_by_locale?.[localeTag] ?? existing.alt,
+              seo_title: args.seo_title_by_locale?.[localeTag] ?? existing.seo_title,
               focal_point: {
                 x: args.focal_x ?? existing.focal_point.x,
                 y: args.focal_y ?? existing.focal_point.y,

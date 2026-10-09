@@ -5,6 +5,7 @@ import {
   Anchor,
   ArrowRight,
   Award,
+  Calendar,
   Clock,
   Droplets,
   Hammer,
@@ -20,9 +21,10 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
 import { companyInfo } from "@/lib/company";
-import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
+import { useCms, useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
+import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
 
 const CMS_PAGE = "home";
 
@@ -57,10 +59,17 @@ const SERVICES = [
     img: "/img/krek/verkoop-schip.webp",
     icon: Anchor,
   },
+  {
+    key: "week",
+    href: "/diensten/weekje-op-wal",
+    img: "/img/krek/werkzaamheden.webp",
+    icon: Calendar,
+  },
 ] as const;
 
 export default function HomePage() {
   const { t, locale } = useIntl();
+  const { editMode } = useCms();
   useRegisterCmsPage(CMS_PAGE);
 
   return (
@@ -97,28 +106,22 @@ export default function HomePage() {
             </EditableText>
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={`/${locale}/kraanafspraak`}>
-              <Button
-                variant="gold"
-                size="lg"
-                rightIcon={<ArrowRight className="h-4 w-4" />}
-              >
-                <EditableText blockKey="home.hero.cta_primary" page={CMS_PAGE} section="hero">
-                  {t("home.heroPrimary")}
-                </EditableText>
-              </Button>
-            </Link>
-            <Link href={`/${locale}/diensten`}>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-              >
-                <EditableText blockKey="home.hero.cta_secondary" page={CMS_PAGE} section="hero">
-                  {t("home.heroSecondary")}
-                </EditableText>
-              </Button>
-            </Link>
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="home.hero.cta_primary"
+              label={t("home.heroPrimary")}
+              href={`/${locale}/kraanafspraak`}
+              variant="gold"
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+            />
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="home.hero.cta_secondary"
+              label={t("home.heroSecondary")}
+              href={`/${locale}/diensten`}
+              variant="outline"
+              className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+            />
           </div>
 
           <div className="mt-12 flex max-w-3xl flex-wrap items-center gap-x-7 gap-y-3 text-sm text-sand-100/80">
@@ -185,44 +188,52 @@ export default function HomePage() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((s) => {
             const Icon = s.icon;
+            const card = (
+              <Card className="group h-full overflow-hidden p-0 transition hover:-translate-y-0.5 hover:shadow-elev">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <EditableImage
+                    blockKey={`home.svc.${s.key}.image`}
+                    page={CMS_PAGE}
+                    fallbackSrc={s.img}
+                    alt={t(`home.svc.${s.key}.title`)}
+                    className="absolute inset-0 transition duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/30 to-transparent" />
+                  <div className="absolute left-4 top-4">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white/95 text-navy-800 backdrop-blur">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <div className="text-lg font-semibold leading-tight">
+                      <EditableText blockKey={`home.svc.${s.key}.title`} page={CMS_PAGE} section="services">
+                        {t(`home.svc.${s.key}.title`)}
+                      </EditableText>
+                    </div>
+                    <div className="mt-1 text-xs text-sand-100/85">
+                      <EditableText blockKey={`home.svc.${s.key}.tagline`} page={CMS_PAGE} section="services">
+                        {t(`home.svc.${s.key}.tagline`)}
+                      </EditableText>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-5">
+                  <EditableText blockKey={`home.svc.${s.key}.desc`} page={CMS_PAGE} section="services" type="paragraph" as="p" className="line-clamp-2 text-sm text-navy-600">
+                    {t(`home.svc.${s.key}.desc`)}
+                  </EditableText>
+                  <ArrowRight className="ml-3 h-4 w-4 shrink-0 text-navy-300 transition group-hover:translate-x-0.5 group-hover:text-navy-700" />
+                </div>
+              </Card>
+            );
+
             return (
-              <Link key={s.key} href={`/${locale}${s.href}`}>
-                <Card className="group h-full overflow-hidden p-0 transition hover:-translate-y-0.5 hover:shadow-elev">
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <EditableImage
-                      blockKey={`home.svc.${s.key}.image`}
-                      page={CMS_PAGE}
-                      fallbackSrc={s.img}
-                      alt={t(`home.svc.${s.key}.title`)}
-                      className="absolute inset-0 transition duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/30 to-transparent" />
-                    <div className="absolute left-4 top-4">
-                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white/95 text-navy-800 backdrop-blur">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                    </div>
-                    <div className="absolute bottom-4 left-4 right-4 text-white">
-                      <div className="text-lg font-semibold leading-tight">
-                        <EditableText blockKey={`home.svc.${s.key}.title`} page={CMS_PAGE} section="services">
-                          {t(`home.svc.${s.key}.title`)}
-                        </EditableText>
-                      </div>
-                      <div className="mt-1 text-xs text-sand-100/85">
-                        <EditableText blockKey={`home.svc.${s.key}.tagline`} page={CMS_PAGE} section="services">
-                          {t(`home.svc.${s.key}.tagline`)}
-                        </EditableText>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-5">
-                    <EditableText blockKey={`home.svc.${s.key}.desc`} page={CMS_PAGE} section="services" type="paragraph" as="p" className="line-clamp-2 text-sm text-navy-600">
-                      {t(`home.svc.${s.key}.desc`)}
-                    </EditableText>
-                    <ArrowRight className="ml-3 h-4 w-4 shrink-0 text-navy-300 transition group-hover:translate-x-0.5 group-hover:text-navy-700" />
-                  </div>
-                </Card>
-              </Link>
+              editMode ? (
+                <div key={s.key}>{card}</div>
+              ) : (
+                <Link key={s.key} href={`/${locale}${s.href}`}>
+                  {card}
+                </Link>
+              )
             );
           })}
         </div>

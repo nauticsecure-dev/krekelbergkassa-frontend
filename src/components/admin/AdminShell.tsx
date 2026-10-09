@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   Bell,
   ChevronDown,
+  Globe,
   HelpCircle,
   LogOut,
   Menu,
@@ -71,7 +72,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           onMenuClick={() => setOpen(true)}
           onSearchClick={() => setSearchOpen(true)}
         />
-        <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
+          <AdminPageShell>{children}</AdminPageShell>
+        </main>
       </div>
 
       <AdminGlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
@@ -93,8 +96,11 @@ function GlobalTopbar({
 }) {
   const { t, locale } = useIntl();
   const { user } = useAuth();
+  const pathname = usePathname();
+  const publicPage = getPublicPageForAdminPath(pathname, locale);
   const { requestLogout } = useConfirmLogout();
   const { bellOpen, menuOpen, toggleBell, toggleMenu, closeAll } = useShellDropdowns();
+  const [createOpen, setCreateOpen] = React.useState(false);
   const notifications = useQuery([locale], async () => {
     const [invoices, stalling, reminders] = await Promise.all([
       invoicesService.list({ per_page: 30 }).catch(() => ({ data: [] as Array<{ is_overdue?: boolean; is_fully_paid?: boolean }> })),
@@ -168,14 +174,59 @@ function GlobalTopbar({
         <AdminSearchTrigger onClick={onSearchClick} />
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <Link
-            href={`/${locale}/admin/kassa`}
-            className="hidden md:inline-flex"
-            aria-label={t('admin.sidebar.kassa')}
-          >
-            <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gold-500 px-3 text-xs font-semibold text-white hover:bg-gold-600">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setCreateOpen((open) => !open)}
+              aria-expanded={createOpen}
+              aria-haspopup="menu"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gold-500 px-3 text-xs font-semibold text-white hover:bg-gold-600"
+            >
               <Plus className="h-3.5 w-3.5" />
-              {t('admin.common.new')}
+              <span className="hidden sm:inline">{t('admin.common.new')}</span>
+            </button>
+            {createOpen ? (
+              <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-navy-100 bg-white py-1 shadow-elev">
+                {[
+                  { key: 'customer', href: `/${locale}/admin/klanten?new=1` },
+                  { key: 'boat', href: `/${locale}/admin/boten?new=1` },
+                  { key: 'appointment', href: `/${locale}/planning?create=1` },
+                  { key: 'stalling', href: `/${locale}/admin/stalling?new=1` },
+                  { key: 'invoice', href: `/${locale}/admin/facturen?create=1`, roles: ['admin', 'manager'] },
+                  { key: 'brokerage', href: `/${locale}/admin/verkopen`, roles: ['admin', 'manager'] },
+                  { key: 'supplier', href: `/${locale}/admin/leveranciers?new=1`, roles: ['admin', 'manager'] },
+                  { key: 'service', href: `/${locale}/admin/producten/nieuw`, roles: ['admin', 'manager'] },
+                ].filter((item) => !item.roles || item.roles.includes(user?.role ?? ''))
+                  .map(({ key, href }) => (
+                  <Link
+                    key={key}
+                    href={href}
+                    role="menuitem"
+                    onClick={() => setCreateOpen(false)}
+                    className="block px-4 py-2.5 text-sm text-navy-700 hover:bg-sand-50"
+                  >
+                    {t(`adminModules.create.${key}`)}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          <Link
+            href={publicPage.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={publicPage.contextual ? t('adminNew.shell.viewPage') : t('adminNew.shell.viewWebsite')}
+            aria-label={publicPage.contextual ? t('adminNew.shell.viewPage') : t('adminNew.shell.viewWebsite')}
+            className="inline-flex"
+          >
+            <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-100 bg-white px-2.5 text-xs font-semibold text-navy-700 hover:bg-sand-50 sm:px-3">
+              <Globe className="h-4 w-4 shrink-0" />
+              <span className="hidden lg:inline">
+                {publicPage.contextual
+                  ? t('adminNew.shell.viewPage')
+                  : t('adminNew.shell.viewWebsite')}
+              </span>
             </span>
           </Link>
 
@@ -302,6 +353,26 @@ function GlobalTopbar({
   );
 }
 
+function getPublicPageForAdminPath(
+  pathname: string,
+  locale: string,
+): { href: string; contextual: boolean } {
+  const adminPrefix = `/${locale}/admin`;
+  const adminPath = pathname.startsWith(adminPrefix)
+    ? pathname.slice(adminPrefix.length) || '/'
+    : '/';
+  const publicPath =
+    adminPath === '/diensten' || adminPath.startsWith('/diensten/')
+      ? '/diensten'
+      : adminPath === '/stalling' || adminPath.startsWith('/stalling/')
+        ? '/diensten/winterstalling'
+        : null;
+
+  return publicPath
+    ? { href: `/${locale}${publicPath}`, contextual: true }
+    : { href: `/${locale}`, contextual: false };
+}
+
 /* -------------------------------------------------------------------------- */
 /*                       Reusable mobile drawer + headers                      */
 /* -------------------------------------------------------------------------- */
@@ -354,6 +425,46 @@ function MobileDrawer({
 
 export type AdminHeaderStat = PageHeaderStat;
 
+export function AdminPageShell({ children }: { children: React.ReactNode }) {
+  return <div className="min-w-0 [--admin-content-max-width:1440px]">{children}</div>;
+}
+
+export function AdminHero({
+  title,
+  subtitle,
+  eyebrow,
+  rightSlot,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  eyebrow?: string;
+  rightSlot?: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="admin-hero-card px-5 py-4 sm:px-7 sm:py-5">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-marine-200/25 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 left-1/3 h-40 w-40 rounded-full bg-gold-200/20 blur-3xl"
+      />
+      <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          {eyebrow ? <p className="admin-hero-eyebrow">{eyebrow}</p> : null}
+          <h1 className={cn('admin-hero-title', eyebrow ? 'mt-1' : '')}>{title}</h1>
+          {subtitle ? <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-navy-500">{subtitle}</p> : null}
+        </div>
+        {rightSlot ? <div className="flex shrink-0 flex-wrap items-center gap-2 lg:pt-1">{rightSlot}</div> : null}
+      </div>
+      {children ? <div className="relative mt-3">{children}</div> : null}
+    </div>
+  );
+}
+
 export function AdminPageHeader({
   title,
   subtitle,
@@ -371,34 +482,11 @@ export function AdminPageHeader({
 }) {
   return (
     <div className="bg-sand-50 px-4 pb-1 pt-3 sm:px-4 lg:px-6">
-      <div className="mx-auto max-w-[1440px]">
-        <div className="admin-hero-card px-5 py-4 sm:px-7 sm:py-5">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-marine-200/25 blur-3xl"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-24 left-1/3 h-40 w-40 rounded-full bg-gold-200/20 blur-3xl"
-          />
-
-          <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0 flex-1">
-              {eyebrow ? <p className="admin-hero-eyebrow">{eyebrow}</p> : null}
-              <h1 className={cn('admin-hero-title', eyebrow ? 'mt-1' : '')}>{title}</h1>
-              {subtitle ? (
-                <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-navy-500">{subtitle}</p>
-              ) : null}
-            </div>
-            {rightSlot ? (
-              <div className="flex shrink-0 flex-wrap items-center gap-2 lg:pt-1">{rightSlot}</div>
-            ) : null}
-          </div>
-
+      <div className="mx-auto w-full max-w-[var(--admin-content-max-width,1440px)]">
+        <AdminHero title={title} subtitle={subtitle} eyebrow={eyebrow} rightSlot={rightSlot}>
           {stats?.length ? <PageHeaderStatsGrid stats={stats} /> : null}
-
-          {children ? <div className="relative mt-3">{children}</div> : null}
-        </div>
+          {children}
+        </AdminHero>
       </div>
     </div>
   );

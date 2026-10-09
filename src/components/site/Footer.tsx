@@ -34,6 +34,7 @@ export function Footer({ className }: { className?: string }) {
             <li><Link href={`/${locale}/kraanafspraak`} className="hover:text-white">{t('services.crane.title')}</Link></li>
             <li><Link href={`/${locale}/diensten/afspuiten`} className="hover:text-white">{t('services.wash.title')}</Link></li>
             <li><Link href={`/${locale}/diensten/winterstalling`} className="hover:text-white">{t('services.storage.title')}</Link></li>
+            <li><Link href={`/${locale}/diensten/weekje-op-wal`} className="hover:text-white">{t('home.svc.week.title')}</Link></li>
             <li><Link href={`/${locale}/verkoop`} className="hover:text-white">{t('services.sale.title')}</Link></li>
           </ul>
         </div>

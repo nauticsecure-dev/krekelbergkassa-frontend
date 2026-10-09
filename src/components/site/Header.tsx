@@ -10,9 +10,7 @@ import {
   Droplets,
   Hammer,
   Menu,
-  Phone,
   Ship,
-  Sparkles,
   Warehouse,
   X,
 } from 'lucide-react';
@@ -22,8 +20,9 @@ import { Button } from '@/components/ui/Button';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { InstallButton } from '@/components/pwa/InstallButton';
 import { cn } from '@/lib/cn';
-import { companyInfo } from '@/lib/company';
 import { useCms } from '@/components/cms/CmsProvider';
+import { useAuth } from '@/lib/auth-context';
+import { canAccessAdmin, defaultRedirectForRole } from '@/lib/auth-routes';
 
 interface MegaItem {
   href: string;
@@ -35,10 +34,16 @@ interface MegaItem {
 export function Header() {
   const { t, locale } = useIntl();
   const { getGlobal } = useCms();
-  const phone = getGlobal('company.phone', t('footer.phone'));
+  const { user, loading } = useAuth();
   const ctaLabel = getGlobal('header.cta.label', 'Stalling');
   const ctaHref  = `/${locale}/${getGlobal('header.cta.path', 'diensten/winterstalling')}`;
   const pathname = usePathname();
+  const accountHref = user ? defaultRedirectForRole(user.role, locale) : `/${locale}/login`;
+  const accountLabel = !user
+    ? t('nav.login')
+    : canAccessAdmin(user.role, false)
+      ? t('header.adminDashboard')
+      : t('header.myAccount');
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const [hoveredMenu, setHoveredMenu] = React.useState<string | null>(null);
@@ -58,6 +63,7 @@ export function Header() {
     { href: `/${locale}/diensten/afspuiten`, icon: Droplets, label: t('services.wash.title'), desc: t('services.wash.desc') },
     { href: `/${locale}/diensten/winterstalling`, icon: Warehouse, label: t('services.storage.title'), desc: t('services.storage.desc') },
     { href: `/${locale}/diensten/zelf-werken`, icon: Hammer, label: t('services.diy.title'), desc: t('services.diy.desc') },
+    { href: `/${locale}/diensten/weekje-op-wal`, icon: Calendar, label: t('home.svc.week.title'), desc: t('home.svc.week.desc') },
   ];
 
   const openMenu = (id: string) => {
@@ -78,31 +84,6 @@ export function Header() {
           : 'border-b border-transparent bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/90'
       )}
     >
-      {/* Sub-bar */}
-      <div className="hidden border-b border-navy-100/60 bg-navy-900 text-white lg:block">
-        <div className="container-wide flex h-9 items-center justify-between text-xs">
-          <div className="flex items-center gap-5 text-sand-100/80">
-            <span className="inline-flex items-center gap-2">
-              <Sparkles className="h-3 w-3 text-gold-300" />
-              {t('nav.subnavCta')}
-            </span>
-          </div>
-          <div className="flex items-center gap-5 text-sand-100/80">
-            <Link href={`/${locale}/contact`} className="hover:text-white">
-              {t('nav.subnavLocation')}
-            </Link>
-            <span className="opacity-30">·</span>
-            <a href={companyInfo.phoneHref} className="inline-flex items-center gap-1.5 hover:text-white">
-              <Phone className="h-3 w-3" /> {phone}
-            </a>
-            <span className="opacity-30">·</span>
-            <a href="mailto:info@krekelberg-nautic.nl" className="hover:text-white">
-              {t('footer.email')}
-            </a>
-          </div>
-        </div>
-      </div>
-
       {/* Main bar */}
       <div className="container-wide flex h-[72px] items-center justify-between gap-8">
         <Link href={`/${locale}`} aria-label="Krekelberg Nautic" className="shrink-0">
@@ -139,21 +120,27 @@ export function Header() {
                 />
               ) : null}
             </li>
-            <NavLink
-              href={`/${locale}/verkoop`}
-              active={pathname.startsWith(`/${locale}/verkoop`)}
-            >
-              {t('nav.salesLocation')}
-            </NavLink>
-            <NavLink
-              href={`/${locale}/over-ons`}
-              active={pathname === `/${locale}/over-ons`}
-            >
-              {t('nav.about')}
-            </NavLink>
-            <NavLink href={`/${locale}/contact`} active={pathname === `/${locale}/contact`}>
-              {t('nav.contact')}
-            </NavLink>
+            <li>
+              <NavLink
+                href={`/${locale}/verkoop`}
+                active={pathname.startsWith(`/${locale}/verkoop`)}
+              >
+                {t('nav.salesLocation')}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                href={`/${locale}/over-ons`}
+                active={pathname === `/${locale}/over-ons`}
+              >
+                {t('nav.about')}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink href={`/${locale}/contact`} active={pathname === `/${locale}/contact`}>
+                {t('nav.contact')}
+              </NavLink>
+            </li>
           </ul>
         </nav>
 
@@ -161,11 +148,13 @@ export function Header() {
         <div className="flex shrink-0 items-center gap-2">
           <InstallButton variant="header" className="hidden md:inline-flex" />
           <LanguageSwitcher />
-          <Link href={`/${locale}/login`} className="hidden xl:inline-flex">
-            <Button variant="ghost" size="md">
-              {t('nav.login')}
-            </Button>
-          </Link>
+          {!loading ? (
+            <Link href={accountHref} className="hidden xl:inline-flex">
+              <Button variant="ghost" size="md">
+                {accountLabel}
+              </Button>
+            </Link>
+          ) : null}
           <Link href={ctaHref} className="hidden md:inline-flex">
             <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
               {ctaLabel}
@@ -197,11 +186,13 @@ export function Header() {
             <MobileLink href={`/${locale}/contact`}>{t('nav.contact')}</MobileLink>
             <div className="my-3 h-px bg-navy-100" />
             <div className="grid grid-cols-2 gap-2">
-              <Link href={`/${locale}/login`}>
-                <Button variant="outline" fullWidth>
-                  {t('nav.login')}
-                </Button>
-              </Link>
+              {!loading ? (
+                <Link href={accountHref}>
+                  <Button variant="outline" fullWidth>
+                    {accountLabel}
+                  </Button>
+                </Link>
+              ) : null}
               <Link href={ctaHref}>
                 <Button variant="gold" fullWidth>
                   {ctaLabel}
@@ -232,33 +223,31 @@ function NavLink({
   children: React.ReactNode;
 }) {
   return (
-    <li>
-      <Link
-        href={href}
-        className={cn(
-          'group inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition',
-          active ? 'text-navy-900' : 'text-navy-700 hover:text-navy-900'
-        )}
-      >
-        <span className="relative">
-          {children}
-          <span
-            className={cn(
-              'absolute -bottom-1.5 left-0 right-0 h-[2px] origin-center rounded-full bg-gold-500 transition-transform duration-200',
-              active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-            )}
-          />
-        </span>
-        {hasMenu ? (
-          <ChevronDown
-            className={cn(
-              'h-3.5 w-3.5 text-navy-400 transition-transform',
-              expanded && 'rotate-180'
-            )}
-          />
-        ) : null}
-      </Link>
-    </li>
+    <Link
+      href={href}
+      className={cn(
+        'group inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition',
+        active ? 'text-navy-900' : 'text-navy-700 hover:text-navy-900'
+      )}
+    >
+      <span className="relative">
+        {children}
+        <span
+          className={cn(
+            'absolute -bottom-1.5 left-0 right-0 h-[2px] origin-center rounded-full bg-gold-500 transition-transform duration-200',
+            active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+          )}
+        />
+      </span>
+      {hasMenu ? (
+        <ChevronDown
+          className={cn(
+            'h-3.5 w-3.5 text-navy-400 transition-transform',
+            expanded && 'rotate-180'
+          )}
+        />
+      ) : null}
+    </Link>
   );
 }
 

@@ -1,17 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CalendarRange, FileText, FilePlus2, Plus, Upload, User, X } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { ArrowDownUp, CalendarRange, FileText, Plus, Upload, X } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminFilterPill,
   AdminContent,
   AdminLinkButton,
-  AdminModalBody,
-  AdminModalFooter,
-  AdminModalHeader,
   AdminSearchInput,
   AdminSectionCard,
   AdminSelect,
@@ -24,15 +21,13 @@ import {
   AdminTableRow,
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
-import { InvoiceStatusBadge } from '@/components/admin/StatusBadge';
-import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { customersService, invoicesService, productGroupsService } from '@/lib/services';
+import { InvoiceStatusBadge, PaymentStatusBadge } from '@/components/admin/StatusBadge';
+import { useQuery } from '@/lib/hooks/useAsync';
+import { invoicesService, productGroupsService } from '@/lib/services';
 import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
-import { useToast } from '@/components/ui/ToastProvider';
-import { getApiErrorMessage } from '@/lib/api-error';
+import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 export default function InvoicesPageWrapper() {
   return (
@@ -42,30 +37,58 @@ export default function InvoicesPageWrapper() {
   );
 }
 
+function paymentStatusFor(invoice: {
+  outstanding_cents: number;
+  total_amount_cents: number;
+  due_date: string | null;
+  payment_status?: string | null;
+}) {
+  const outstanding = Number(invoice.outstanding_cents);
+  const total = Number(invoice.total_amount_cents);
+  if (outstanding <= 0) return 'paid';
+  const today = new Date().toLocaleDateString('sv-SE');
+  if (invoice.due_date && invoice.due_date.slice(0, 10) < today) return 'overdue';
+  if (outstanding < total) return 'partial';
+  return invoice.payment_status || 'open';
+}
+
 function InvoicesPage() {
   const { locale, t } = useIntl();
-  const { push } = useToast();
+  const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
-  const [search, setSearch] = React.useState('');
-  const [status, setStatus] = React.useState(searchParams.get('status') ?? '');
-  const [paymentStatus, setPaymentStatus] = React.useState(searchParams.get('payment_status') ?? '');
-  const [source, setSource] = React.useState('');
-  const [productGroup, setProductGroup] = React.useState(searchParams.get('product_group') ?? '');
-  const [paymentMethod, setPaymentMethod] = React.useState(searchParams.get('payment_method') ?? '');
-  const [dateFrom, setDateFrom] = React.useState(searchParams.get('date_from') ?? '');
-  const [dateTo, setDateTo] = React.useState(searchParams.get('date_to') ?? '');
-  const [page, setPage] = React.useState(1);
-  const [showCreate, setShowCreate] = React.useState(false);
-  const [customerId, setCustomerId] = React.useState('');
-  const [customerSearch, setCustomerSearch] = React.useState('');
+  const search = searchParams.get('search') ?? '';
+  const status = searchParams.get('status') ?? '';
+  const paymentStatus = searchParams.get('payment_status') ?? '';
+  const source = searchParams.get('source') ?? '';
+  const productGroup = searchParams.get('product_group') ?? '';
+  const paymentMethod = searchParams.get('payment_method') ?? '';
+  const dateFrom = searchParams.get('date_from') ?? '';
+  const dateTo = searchParams.get('date_to') ?? '';
+  const sortBy = searchParams.get('sort_by') ?? '';
+  const sortDir = searchParams.get('sort_dir') === 'asc' ? 'asc' : 'desc';
+  const page = Math.max(1, Number(searchParams.get('page') ?? 1) || 1);
+  const updateFilters = React.useCallback(
+    (updates: Record<string, string | null>, history: 'push' | 'replace' = 'push') => {
+      const params = new URLSearchParams(searchParams.toString());
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value) params.set(key, value);
+        else params.delete(key);
+      });
+      const query = params.toString();
+      router[history](query ? `${pathname}?${query}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+  useCreateMenuIntent(() => router.push(`/${locale}/admin/facturen/nieuw`), 'create');
 
   const groups = useQuery(['invoice-product-groups'], () =>
     productGroupsService.list().catch(() => [])
   );
 
   const invoices = useQuery(
-    [search, status, paymentStatus, source, productGroup, paymentMethod, dateFrom, dateTo, page],
+    [search, status, paymentStatus, source, productGroup, paymentMethod, dateFrom, dateTo, sortBy, sortDir, page],
     () =>
       invoicesService.list({
         search: search || undefined,
@@ -76,103 +99,81 @@ function InvoicesPage() {
         payment_method: paymentMethod || undefined,
         date_from: dateFrom || undefined,
         date_to: dateTo || undefined,
+        sort_by: sortBy || undefined,
+        sort_dir: sortBy ? sortDir : undefined,
         page,
         per_page: 20,
       })
   );
 
-  const customers = useQuery(
-    [customerSearch],
-    () =>
-      customersService.list({
-        search: customerSearch || undefined,
-        per_page: 50,
-      }),
-    { immediate: false }
-  );
-
-  React.useEffect(() => {
-    if (!showCreate) return;
-    void customers.refetch();
-  }, [showCreate, customerSearch]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const createInvoice = useMutation((selectedCustomerId: string) =>
-    invoicesService.create({
-      customer_id: selectedCustomerId,
-      source: 'manual',
-      lines: [
-        {
-          description: t('adminNew.invoices.defaultLineDescription'),
-          quantity: 1,
-          unit_price: 0,
-          vat_rate: 21,
-        },
-      ],
-    })
-  );
-
-  const openCreateModal = () => {
-    setCustomerId('');
-    setCustomerSearch('');
-    setShowCreate(true);
+  const statFilters = {
+    search: search || undefined,
+    status: status || undefined,
+    source: source || undefined,
+    product_group: productGroup || undefined,
+    payment_method: paymentMethod || undefined,
+    date_from: dateFrom || undefined,
+    date_to: dateTo || undefined,
   };
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customerId) {
-      push({ tone: 'error', title: t('adminNew.invoices.selectCustomer') });
-      return;
-    }
-    try {
-      const invoice = await createInvoice.mutate(customerId);
-      setShowCreate(false);
-      push({ tone: 'success', title: t('adminNew.invoices.toasts.created') });
-      window.location.href = `/${locale}/admin/facturen/${invoice.id}`;
-    } catch (err) {
-      push({
-        tone: 'error',
-        title: t('adminNew.invoices.toasts.createFailed'),
-        message: getApiErrorMessage(err),
-      });
-    }
-  };
-
   const openStats = useQuery(
-    ['invoice-stats-open', search, dateFrom, dateTo, productGroup, source],
+    ['invoice-stats-open', ...Object.values(statFilters)],
     () =>
       invoicesService
         .list({
-          search: search || undefined,
+          ...statFilters,
           payment_status: 'open',
-          date_from: dateFrom || undefined,
-          date_to: dateTo || undefined,
-          product_group: productGroup || undefined,
-          source: source || undefined,
           per_page: 1,
         })
-        .catch(() => null)
   );
   const overdueStats = useQuery(
-    ['invoice-stats-overdue', search, dateFrom, dateTo, productGroup, source],
+    ['invoice-stats-overdue', ...Object.values(statFilters)],
     () =>
       invoicesService
         .list({
-          search: search || undefined,
+          ...statFilters,
           payment_status: 'overdue',
-          date_from: dateFrom || undefined,
-          date_to: dateTo || undefined,
-          product_group: productGroup || undefined,
-          source: source || undefined,
           per_page: 1,
         })
-        .catch(() => null)
+  );
+  const paidStats = useQuery(
+    ['invoice-stats-paid', ...Object.values(statFilters)],
+    () => invoicesService.list({ ...statFilters, payment_status: 'paid', per_page: 1 })
+  );
+  const openBalanceStats = useQuery(
+    ['invoice-stats-open-balance', ...Object.values(statFilters)],
+    () => invoicesService.list({ ...statFilters, payment_status: 'open', per_page: 100 })
   );
 
   const rows = invoices.data?.data ?? [];
-  const openCount = openStats.data?.meta?.total ?? rows.filter((invoice) => invoice.status === 'open').length;
-  const overdueCount = overdueStats.data?.meta?.total ?? rows.filter((invoice) => invoice.is_overdue).length;
-  const paidCount = rows.filter((invoice) => invoice.is_fully_paid).length;
-  const openBalance = rows.reduce((sum, invoice) => sum + centsToEuro(invoice.outstanding_cents), 0);
+  const openCount = openStats.data?.meta?.total;
+  const overdueCount = overdueStats.data?.meta?.total;
+  const paidCount = paidStats.data?.meta?.total;
+  const openBalanceRows = openBalanceStats.data?.data ?? [];
+  const openBalanceTotal = openBalanceStats.data?.meta?.total;
+  const openBalanceComplete = openBalanceTotal != null
+    ? openBalanceTotal <= openBalanceRows.length
+    : openBalanceRows.length < 100;
+  const openBalance = openBalanceRows.reduce((sum, invoice) => sum + Number(invoice.outstanding_cents ?? 0), 0);
+  const paymentFilterHref = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) params.set('payment_status', value);
+    else params.delete('payment_status');
+    params.delete('page');
+    return `/${locale}/admin/facturen${params.size ? `?${params.toString()}` : ''}`;
+  };
+  const toggleSort = (column: string) => {
+    updateFilters({
+      sort_by: column,
+      sort_dir: sortBy === column && sortDir === 'desc' ? 'asc' : 'desc',
+      page: null,
+    });
+  };
+  const sortHeader = (label: string, column: string) => (
+    <button type="button" onClick={() => toggleSort(column)} className="inline-flex items-center gap-1.5">
+      {label}
+      <ArrowDownUp aria-hidden className={`h-3.5 w-3.5 ${sortBy === column ? 'text-marine-700' : 'text-navy-300'}`} />
+    </button>
+  );
 
   return (
     <>
@@ -182,31 +183,35 @@ function InvoicesPage() {
         stats={[
           {
             label: t('adminNew.invoices.metrics.open'),
-            value: openCount,
+            value: openStats.error ? '—' : openCount ?? '—',
             tone: 'marine',
+            active: paymentStatus === 'open',
             loading: invoices.loading || openStats.loading,
-            href: `/${locale}/admin/facturen?payment_status=open`,
+            href: paymentFilterHref('open'),
           },
           {
             label: t('adminNew.invoices.metrics.overdue'),
-            value: overdueCount,
+            value: overdueStats.error ? '—' : overdueCount ?? '—',
             tone: 'danger',
+            active: paymentStatus === 'overdue',
             loading: invoices.loading || overdueStats.loading,
-            href: `/${locale}/admin/facturen?payment_status=overdue`,
+            href: paymentFilterHref('overdue'),
           },
           {
             label: t('adminNew.invoices.metrics.paid'),
-            value: paidCount,
+            value: paidStats.error ? '—' : paidCount ?? '—',
             tone: 'success',
-            loading: invoices.loading,
-            href: `/${locale}/admin/facturen?payment_status=paid`,
+            active: paymentStatus === 'paid',
+            loading: invoices.loading || paidStats.loading,
+            href: paymentFilterHref('paid'),
           },
           {
             label: t('adminNew.invoices.metrics.openBalance'),
-            value: formatCurrency(openBalance, dateLocale),
+            value: openBalanceStats.error || !openBalanceComplete ? '—' : formatCurrency(openBalance / 100, dateLocale),
             tone: 'gold',
-            loading: invoices.loading,
-            href: `/${locale}/admin/facturen?payment_status=open`,
+            active: paymentStatus === 'open',
+            loading: openBalanceStats.loading,
+            href: paymentFilterHref('open'),
           },
         ]}
       />
@@ -223,14 +228,11 @@ function InvoicesPage() {
                   {t('adminNew.invoiceImports.title')}
                 </Button>
               </Link>
-              <Button
-                variant="gold"
-                size="sm"
-                leftIcon={<Plus className="h-4 w-4" />}
-                onClick={openCreateModal}
-              >
-                {t('adminNew.invoices.new')}
-              </Button>
+              <Link href={`/${locale}/admin/facturen/nieuw`}>
+                <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+                  {t('adminNew.invoices.new')}
+                </Button>
+              </Link>
             </div>
           }
         >
@@ -239,16 +241,16 @@ function InvoicesPage() {
             <AdminSearchInput
               value={search}
               onChange={(value) => {
-                setSearch(value);
-                setPage(1);
+                updateFilters({ search: value || null, page: null }, 'replace');
               }}
               placeholder={t('adminNew.invoices.searchPlaceholder')}
               className="lg:flex-1"
             />
             <div className="flex flex-wrap gap-2">
               {[
-                { value: '', label: t('adminNew.invoices.allStatuses') },
+                { value: '', label: t('adminNew.invoices.allPaymentStatuses') },
                 { value: 'open', label: t('adminNew.status.open') },
+                { value: 'partial', label: t('adminNew.status.partial', { defaultValue: 'Gedeeltelijk betaald' }) },
                 { value: 'overdue', label: t('adminNew.status.overdue') },
                 { value: 'paid', label: t('adminNew.status.paid') },
               ].map((pill) => (
@@ -256,9 +258,7 @@ function InvoicesPage() {
                   key={pill.value || 'all'}
                   active={paymentStatus === pill.value && paymentMethod !== 'on_account'}
                   onClick={() => {
-                    setPaymentStatus(pill.value);
-                    setPaymentMethod('');
-                    setPage(1);
+                    updateFilters({ payment_status: pill.value || null, payment_method: null, page: null });
                   }}
                 >
                   {pill.label}
@@ -267,36 +267,43 @@ function InvoicesPage() {
               <AdminFilterPill
                 active={paymentMethod === 'on_account'}
                 onClick={() => {
-                  setPaymentMethod(paymentMethod === 'on_account' ? '' : 'on_account');
-                  setPaymentStatus('');
-                  setPage(1);
+                  updateFilters({
+                    payment_method: paymentMethod === 'on_account' ? null : 'on_account',
+                    payment_status: null,
+                    page: null,
+                  });
                 }}
               >
-                {t('adminNew.invoices.onAccount')}
+                {t('adminNew.invoices.onAccount', { defaultValue: 'Op rekening' })}
               </AdminFilterPill>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
           <AdminSelect
+            value={paymentStatus}
+            onChange={(value) => updateFilters({ payment_status: value || null, page: null })}
+          >
+            <option value="">{t('adminNew.invoices.allPaymentStatuses', { defaultValue: 'Alle betaalstatussen' })}</option>
+            <option value="open">{t('adminNew.status.open')}</option>
+            <option value="partial">{t('adminNew.status.partial', { defaultValue: 'Gedeeltelijk betaald' })}</option>
+            <option value="overdue">{t('adminNew.status.overdue')}</option>
+            <option value="paid">{t('adminNew.status.paid')}</option>
+          </AdminSelect>
+          <AdminSelect
             value={status}
             onChange={(value) => {
-              setStatus(value);
-              setPage(1);
+              updateFilters({ status: value || null, page: null });
             }}
           >
-            <option value="">{t('adminNew.invoices.allStatuses')}</option>
-            <option value="open">{t('adminNew.status.open')}</option>
-            <option value="paid">{t('adminNew.status.paid')}</option>
-            <option value="overdue">{t('adminNew.status.overdue')}</option>
+            <option value="">{t('adminNew.invoices.invoiceStates', { defaultValue: 'Alle factuurstatussen' })}</option>
+            <option value="draft">{t('adminNew.status.draft')}</option>
             <option value="credited">{t('adminNew.status.credited')}</option>
             <option value="cancelled">{t('adminNew.status.cancelled')}</option>
-            <option value="draft">{t('adminNew.status.draft')}</option>
           </AdminSelect>
           <AdminSelect
             value={source}
             onChange={(value) => {
-              setSource(value);
-              setPage(1);
+              updateFilters({ source: value || null, page: null });
             }}
           >
             <option value="">{t('adminNew.invoices.allSources')}</option>
@@ -304,12 +311,14 @@ function InvoicesPage() {
             <option value="stalling">{t('adminNew.invoices.source.stalling')}</option>
             <option value="manual">{t('adminNew.invoices.source.manual')}</option>
             <option value="calculator">{t('adminNew.invoices.source.calculator')}</option>
+            <option value="appointment">{t('adminNew.invoices.source.appointment', { defaultValue: 'Afspraak' })}</option>
+            <option value="brokerage">{t('adminNew.invoices.source.brokerage', { defaultValue: 'Makelaardij' })}</option>
+            <option value="import">{t('adminNew.invoices.source.import', { defaultValue: 'Import' })}</option>
           </AdminSelect>
           <AdminSelect
             value={productGroup}
             onChange={(value) => {
-              setProductGroup(value);
-              setPage(1);
+              updateFilters({ product_group: value || null, page: null });
             }}
           >
             <option value="">{t('adminNew.invoices.allGroups')}</option>
@@ -326,8 +335,7 @@ function InvoicesPage() {
           <AdminSelect
             value={paymentMethod}
             onChange={(value) => {
-              setPaymentMethod(value);
-              setPage(1);
+              updateFilters({ payment_method: value || null, page: null });
             }}
           >
             <option value="">{t('adminNew.invoices.allMethods')}</option>
@@ -344,8 +352,7 @@ function InvoicesPage() {
               value={dateFrom}
               max={dateTo || undefined}
               onChange={(e) => {
-                setDateFrom(e.target.value);
-                setPage(1);
+                updateFilters({ date_from: e.target.value || null, page: null });
               }}
               className="w-[7.5rem] border-0 bg-transparent p-0 text-sm text-navy-700 focus:outline-none focus:ring-0"
             />
@@ -356,8 +363,7 @@ function InvoicesPage() {
               value={dateTo}
               min={dateFrom || undefined}
               onChange={(e) => {
-                setDateTo(e.target.value);
-                setPage(1);
+                updateFilters({ date_to: e.target.value || null, page: null });
               }}
               className="w-[7.5rem] border-0 bg-transparent p-0 text-sm text-navy-700 focus:outline-none focus:ring-0"
             />
@@ -366,9 +372,7 @@ function InvoicesPage() {
                 type="button"
                 aria-label={t('adminNew.common.cancel')}
                 onClick={() => {
-                  setDateFrom('');
-                  setDateTo('');
-                  setPage(1);
+                  updateFilters({ date_from: null, date_to: null, page: null });
                 }}
                 className="ml-0.5 rounded p-0.5 text-navy-400 hover:bg-sand-100 hover:text-navy-700"
               >
@@ -387,7 +391,7 @@ function InvoicesPage() {
                   count: invoices.data?.meta?.total ?? rows.length,
                 })}
                 meta={invoices.data?.meta}
-                onPageChange={setPage}
+                onPageChange={(newPage) => updateFilters({ page: String(newPage) })}
               />
             ) : undefined
           }
@@ -409,14 +413,15 @@ function InvoicesPage() {
             <AdminTable minWidth={1160}>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.columns.invoice')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.columns.customer')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.columns.source')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.columns.amount')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.columns.dueDate')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{sortHeader(t('adminNew.invoices.columns.invoice'), 'invoice_number')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{sortHeader(t('adminNew.invoices.columns.customer'), 'customer_name')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{sortHeader(t('adminNew.invoices.columns.source'), 'source')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{sortHeader(t('adminNew.invoices.columns.amount'), 'total_amount')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{sortHeader(t('adminNew.invoices.columns.dueDate'), 'due_date')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.invoices.columns.paymentMethod')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{t('adminNew.invoices.columns.paidDate')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.columns.status')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.invoices.invoiceState', { defaultValue: 'Factuurstatus' })}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('adminNew.invoices.paymentState', { defaultValue: 'Betaalstatus' })}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
@@ -450,7 +455,12 @@ function InvoicesPage() {
                       <AdminTableCell>{firstMethod ?? '—'}</AdminTableCell>
                       <AdminTableCell>{formatDate(invoice.paid_at, dateLocale)}</AdminTableCell>
                       <AdminTableCell>
-                        <InvoiceStatusBadge status={invoice.status} isOverdue={invoice.is_overdue} />
+                        <InvoiceStatusBadge status={invoice.status} />
+                      </AdminTableCell>
+                      <AdminTableCell>
+                        <PaymentStatusBadge
+                          status={paymentStatusFor(invoice)}
+                        />
                       </AdminTableCell>
                       <AdminTableCell className="text-right">
                         <AdminLinkButton href={`/${locale}/admin/facturen/${invoice.id}`}>
@@ -467,63 +477,6 @@ function InvoicesPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
-        <form onSubmit={handleCreate}>
-          <AdminModalHeader
-            title={t('adminNew.invoices.modal.title')}
-            subtitle={t('adminNew.invoices.modal.subtitle')}
-          />
-          <AdminModalBody>
-            <AdminSearchInput
-              placeholder={t('adminNew.customers.searchPlaceholder')}
-              value={customerSearch}
-              onChange={setCustomerSearch}
-            />
-            <div>
-              <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-navy-800">
-                <User className="h-4 w-4 text-marine-600" />
-                {t('adminNew.invoices.columns.customer')}
-              </label>
-              {customers.loading ? (
-                <LoadingState label={t('adminNew.customers.loading')} />
-              ) : customers.error ? (
-                <ErrorState message={customers.error} onRetry={() => void customers.refetch()} />
-              ) : (
-                <select
-                  className="input-base w-full"
-                  value={customerId}
-                  onChange={(e) => setCustomerId(e.target.value)}
-                  required
-                >
-                  <option value="">{t('adminNew.invoices.selectCustomer')}</option>
-                  {(customers.data?.data ?? []).map((customer) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name}
-                      {customer.email ? ` · ${customer.email}` : ''}
-                    </option>
-                  ))}
-                </select>
-              )}
-              {!customers.loading && (customers.data?.data ?? []).length === 0 ? (
-                <p className="mt-2 text-sm text-navy-500">{t('adminNew.invoices.modal.noCustomers')}</p>
-              ) : null}
-            </div>
-          </AdminModalBody>
-          <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
-              {t('adminNew.common.cancel')}
-            </Button>
-            <Button
-              type="submit"
-              variant="gold"
-              leftIcon={<FilePlus2 className="h-4 w-4" />}
-              disabled={createInvoice.loading || !customerId}
-            >
-              {createInvoice.loading ? t('adminNew.common.saving') : t('adminNew.invoices.new')}
-            </Button>
-          </AdminModalFooter>
-        </form>
-      </Modal>
     </>
   );
 }

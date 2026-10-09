@@ -27,6 +27,7 @@ import { suppliersService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
+import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 type Rec = Record<string, unknown>;
 
@@ -64,6 +65,7 @@ export default function SuppliersPage() {
     setForm(EMPTY);
     setShowForm(true);
   };
+  useCreateMenuIntent(openCreate);
   const openEdit = (row: Rec) => {
     setEditId(String(row.id));
     setForm({

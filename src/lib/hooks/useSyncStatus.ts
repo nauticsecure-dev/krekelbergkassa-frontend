@@ -12,18 +12,22 @@ export function useSyncStatus() {
   const [failed, setFailed] = React.useState(0);
   const [lastSyncAt, setLastSyncAt] = React.useState<string | null>(null);
   const [deviceName, setDeviceName] = React.useState<string | undefined>(undefined);
+  const [error, setError] = React.useState(false);
 
   const refresh = React.useCallback(async () => {
     setLoading(true);
+    setError(false);
     try {
       const [queued, status] = await Promise.all([
-        listOfflineChanges().catch(() => []),
-        syncService.status().catch(() => null),
+        listOfflineChanges(),
+        syncService.status(),
       ]);
       setPending(queued.filter((x) => x.status === 'pending').length);
       setFailed(queued.filter((x) => x.status === 'failed').length);
-      setLastSyncAt(status?.last_sync_at ?? null);
+      setLastSyncAt(status.last_sync_at ?? null);
       setDeviceName(status?.device_name);
+    } catch {
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -39,13 +43,14 @@ export function useSyncStatus() {
     pending,
     failed,
     lastSyncAt,
+    error,
     deviceName,
     refresh,
     stateLabel: !online
       ? 'Offline'
       : pending > 0
         ? 'Sync wachtend'
-        : failed > 0
+        : error || failed > 0
           ? 'Sync fout'
           : 'Online',
   };

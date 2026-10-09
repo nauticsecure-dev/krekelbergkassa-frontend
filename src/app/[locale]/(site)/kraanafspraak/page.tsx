@@ -22,6 +22,7 @@ import {
   Hammer,
   Image as ImageIcon,
   MapPin,
+  Pencil,
   Ship,
   Sparkles,
   User2,
@@ -31,36 +32,74 @@ import { cn } from '@/lib/cn';
 import { bookingService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { useAuth } from '@/lib/auth-context';
+import { canAccessAdmin } from '@/lib/auth-routes';
+import { useQuery } from '@/lib/hooks/useAsync';
+import { serviceCatalogService, type ServiceCatalogService } from '@/lib/services';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
-import {
-  scaledPrice,
-  tariffPrice,
-  type TariffColumn,
-} from '@/lib/pricing-table';
 
 const CMS_PAGE = 'kraanafspraak';
 
 interface CraneService {
   code: string;
   label: string;
-  baseDuration: number;
-  basePrice: number;
   icon: typeof Ship;
-  tariff?: TariffColumn;
+  catalogServiceCodes: string[];
 }
 
 const SERVICES: CraneService[] = [
-  { code: 'kranen_uit',  label: 'Kranen uit het water',    baseDuration: 30, basePrice: 65,  icon: Ship,    tariff: 'kranen' },
-  { code: 'kranen_in',   label: 'Kranen in het water',     baseDuration: 30, basePrice: 65,  icon: Anchor,  tariff: 'kranen' },
-  { code: 'afspuiten',   label: 'Romp afspuiten',          baseDuration: 20, basePrice: 50,  icon: Droplets,tariff: 'afspuiten' },
-  { code: 'antifouling', label: 'Antifouling controle',    baseDuration: 20, basePrice: 65,  icon: Sparkles },
-  { code: 'transport',   label: 'Bok transport',           baseDuration: 30, basePrice: 95,  icon: Hammer },
-  { code: 'plaats',      label: 'Plaatsing winterstalling',baseDuration: 45, basePrice: 125, icon: Hammer },
+  { code: 'kranen_uit',  label: 'Kranen uit het water',    icon: Ship,     catalogServiceCodes: ['kranen', 'kranen_uit'] },
+  { code: 'kranen_in',   label: 'Kranen in het water',     icon: Anchor,   catalogServiceCodes: ['kranen', 'kranen_in'] },
+  { code: 'afspuiten',   label: 'Romp afspuiten',          icon: Droplets, catalogServiceCodes: ['afspuiten'] },
+  { code: 'antifouling', label: 'Antifouling controle',    icon: Sparkles, catalogServiceCodes: ['antifouling'] },
+  { code: 'transport',   label: 'Bok transport',           icon: Hammer,   catalogServiceCodes: ['transport'] },
+  { code: 'plaats',      label: 'Plaatsing winterstalling',icon: Hammer,   catalogServiceCodes: ['plaats', 'winterstalling'] },
 ];
 
-function servicePriceForLength(s: CraneService, lengthCm: number): number {
-  if (s.tariff) return tariffPrice(s.tariff, lengthCm) ?? s.basePrice;
-  return lengthCm ? scaledPrice(s.basePrice, lengthCm) : s.basePrice;
+function catalogServiceFor(
+  service: CraneService,
+  catalogServices: ServiceCatalogService[] | null,
+) {
+  return catalogServices?.find((item) =>
+    item.visibility?.booking !== false &&
+    service.catalogServiceCodes.some((code) =>
+      item.service_code === code || item.code === code || item.slug === code
+    )
+  );
+}
+
+function catalogTariffForLength(
+  service: ServiceCatalogService | undefined,
+  lengthCm: number,
+) {
+  if (!service?.tariffs?.length) return undefined;
+  const cm = Math.max(0, Math.round(lengthCm));
+  const tariffs = service.tariffs
+    .slice()
+    .sort((a, b) => a.range_from_cm - b.range_from_cm);
+  return tariffs.find((item) => cm >= item.range_from_cm && cm <= item.range_to_cm)
+    ?? (cm < tariffs[0].range_from_cm ? tariffs[0] : tariffs[tariffs.length - 1]);
+}
+
+function servicePriceForLength(
+  s: CraneService,
+  lengthCm: number,
+  catalogServices: ServiceCatalogService[] | null,
+): number | null {
+  const catalogService = catalogServiceFor(s, catalogServices);
+  const tariff = catalogTariffForLength(catalogService, lengthCm);
+  if (!tariff || tariff.is_on_request) return null;
+  return tariff.price_incl_vat_euros
+    ?? (tariff.price_incl_vat != null ? tariff.price_incl_vat / 100 : null);
+}
+
+function serviceDurationForLength(
+  service: CraneService,
+  lengthCm: number,
+  catalogServices: ServiceCatalogService[] | null,
+) {
+  const catalogService = catalogServiceFor(service, catalogServices);
+  return catalogTariffForLength(catalogService, lengthCm)?.duration_minutes ?? null;
 }
 
 const DUTCH_DAYS   = ['ma','di','wo','do','vr','za','zo'];
@@ -84,7 +123,20 @@ const MAX_IMAGES = 5;
 export default function KraanAfspraakPage() {
   const { t, locale } = useIntl();
   const { push } = useToast();
+  const { user, isDemo } = useAuth();
+  const canManageProducts = canAccessAdmin(user?.role, isDemo);
   useRegisterCmsPage(CMS_PAGE);
+  const catalogQuery = useQuery(
+    [],
+    async () => (await serviceCatalogService.services()).services,
+  );
+  const catalogServices = catalogQuery.data;
+  const bookableServices = React.useMemo(
+    () => catalogServices
+      ? SERVICES.filter((service) => catalogServiceFor(service, catalogServices))
+      : [],
+    [catalogServices],
+  );
 
   const today = React.useMemo(() => {
     const d = new Date();
@@ -154,7 +206,7 @@ export default function KraanAfspraakPage() {
         straat:     get('route'),
         huisnummer: get('street_number'),
         postcode:   get('postal_code'),
-        stad:       get('locality') || get('administrative_area_level_2'),
+        stad:       get('locality') || get('postal_town') || get('administrative_area_level_2'),
       }));
     });
   }, [googleLoaded]);
@@ -209,8 +261,24 @@ export default function KraanAfspraakPage() {
   const toggleService = (code: string) =>
     setSelectedServices(cur => cur.includes(code) ? cur.filter(c => c !== code) : [...cur, code]);
 
-  const totalDuration = SERVICES.filter(s => selectedServices.includes(s.code)).reduce((sum, s) => sum + s.baseDuration, 0);
-  const finalPrice    = SERVICES.filter(s => selectedServices.includes(s.code)).reduce((sum, s) => sum + servicePriceForLength(s, lengthCm), 0);
+  React.useEffect(() => {
+    if (!catalogServices) return;
+    const availableCodes = new Set(bookableServices.map((service) => service.code));
+    setSelectedServices((current) => current.filter((code) => availableCodes.has(code)));
+  }, [bookableServices, catalogServices]);
+
+  const selectedBookableServices = bookableServices.filter((service) =>
+    selectedServices.includes(service.code)
+  );
+  const totalDuration = selectedBookableServices.reduce((sum, service) => {
+    return sum + (serviceDurationForLength(service, lengthCm, catalogServices) ?? 0);
+  }, 0);
+  const selectedPrices = selectedBookableServices.map((service) =>
+    servicePriceForLength(service, lengthCm, catalogServices)
+  );
+  const finalPrice = selectedPrices.length && selectedPrices.every((price) => price != null)
+    ? selectedPrices.reduce<number>((sum, price) => sum + (price ?? 0), 0)
+    : null;
 
   const isPast       = (d: Date) => d.getTime() < today.getTime();
   const isOtherMonth = (d: Date) => d.getMonth() !== view.getMonth();
@@ -239,7 +307,7 @@ export default function KraanAfspraakPage() {
 
   const canSubmit =
     !submitting && !submitted && !!picked && !!time &&
-    !!selectedServices.length && !!lengthCm &&
+    !!selectedBookableServices.length && !!lengthCm &&
     !!form.voornaam && !!form.email;
 
   const submit = async () => {
@@ -387,35 +455,35 @@ export default function KraanAfspraakPage() {
 
               {/* Address */}
               <SectionTitle icon={<MapPin className="h-4 w-4" />} className="mt-8">Adres</SectionTitle>
-              <div className="mt-4 grid gap-4 sm:grid-cols-12">
-                <div className="sm:col-span-8">
+              <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                <div>
                   <label className="mb-1.5 block text-sm font-medium text-navy-800">
                     Straat
                   </label>
                   <input
                     ref={addressRef}
-                    className="input-base w-full"
+                    className="input-base h-14 w-full text-base"
                     placeholder="Havenstraat"
                     value={form.straat}
                     onChange={setField('straat')}
                   />
                 </div>
                 <Input
-                  className="sm:col-span-4"
+                  className="h-14 text-base"
                   label="Huisnummer"
                   placeholder="12 A"
                   value={form.huisnummer}
                   onChange={setField('huisnummer')}
                 />
                 <Input
-                  className="sm:col-span-4"
+                  className="h-14 text-base"
                   label="Postcode"
                   placeholder="6041 AB"
                   value={form.postcode}
                   onChange={setField('postcode')}
                 />
                 <Input
-                  className="sm:col-span-8"
+                  className="h-14 text-base"
                   label="Stad"
                   placeholder="Roermond"
                   value={form.stad}
@@ -496,43 +564,68 @@ export default function KraanAfspraakPage() {
               <SectionTitle icon={<Sparkles className="h-4 w-4" />} className="mt-8">
                 {t('crane.services')}
               </SectionTitle>
+              {catalogQuery.error ? (
+                <p role="status" className="mt-2 text-xs text-amber-700">
+                  {t('crane.catalogUnavailable')}
+                </p>
+              ) : null}
+              {!catalogQuery.loading && !catalogQuery.error && bookableServices.length === 0 ? (
+                <p role="status" className="mt-2 text-xs text-navy-500">
+                  {t('crane.noBookableServices')}
+                </p>
+              ) : null}
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {SERVICES.map(s => {
+                {bookableServices.map(s => {
                   const Icon   = s.icon;
                   const active = selectedServices.includes(s.code);
+                  const catalogService = catalogServiceFor(s, catalogServices);
+                  const productSearch = catalogService?.code ?? catalogService?.service_code ?? s.catalogServiceCodes[0];
+                  const price = servicePriceForLength(s, lengthCm, catalogServices);
+                  const duration = serviceDurationForLength(s, lengthCm, catalogServices);
                   return (
-                    <button
-                      key={s.code}
-                      type="button"
-                      onClick={() => toggleService(s.code)}
-                      className={cn(
-                        'flex items-center gap-3 rounded-xl border p-3.5 text-left transition',
-                        active
-                          ? 'border-navy-900 bg-navy-900 text-white shadow-card'
-                          : 'border-navy-100 bg-white text-navy-900 hover:border-navy-300'
-                      )}
-                    >
-                      <div className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-lg',
-                        active ? 'bg-white/10 text-gold-300' : 'bg-sand-100 text-navy-700'
-                      )}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-semibold">{s.label}</div>
-                        <div className={cn('text-xs', active ? 'text-sand-100/80' : 'text-navy-400')}>
-                          Ca. {s.baseDuration} min
+                    <div key={s.code} className="flex items-stretch gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleService(s.code)}
+                        className={cn(
+                          'flex min-w-0 flex-1 items-center gap-3 rounded-xl border p-3.5 text-left transition',
+                          active
+                            ? 'border-navy-900 bg-navy-900 text-white shadow-card'
+                            : 'border-navy-100 bg-white text-navy-900 hover:border-navy-300'
+                        )}
+                      >
+                        <div className={cn(
+                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                          active ? 'bg-white/10 text-gold-300' : 'bg-sand-100 text-navy-700'
+                        )}>
+                          <Icon className="h-5 w-5" />
                         </div>
-                      </div>
-                      <div className={cn('text-sm font-semibold', active ? 'text-gold-300' : 'text-navy-900')}>
-                        €{servicePriceForLength(s, lengthCm)}
-                        {!lengthCm ? (
-                          <span className={cn('ml-0.5 text-[10px] font-normal', active ? 'text-sand-100/70' : 'text-navy-400')}>
-                            v.a.
-                          </span>
-                        ) : null}
-                      </div>
-                    </button>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-semibold">{s.label}</div>
+                          <div className={cn('text-xs', active ? 'text-sand-100/80' : 'text-navy-400')}>
+                            {duration != null ? `Ca. ${duration} min` : '—'}
+                          </div>
+                        </div>
+                        <div className={cn('shrink-0 text-sm font-semibold', active ? 'text-gold-300' : 'text-navy-900')}>
+                          {price == null ? t('servicePage.onRequest') : `€${price}`}
+                          {price != null && !lengthCm ? (
+                            <span className={cn('ml-0.5 text-[10px] font-normal', active ? 'text-sand-100/70' : 'text-navy-400')}>
+                              v.a.
+                            </span>
+                          ) : null}
+                        </div>
+                      </button>
+                      {canManageProducts ? (
+                        <Link
+                          href={`/${locale}/admin/producten?search=${encodeURIComponent(productSearch)}`}
+                          aria-label={`Beheer product voor ${s.label}`}
+                          title={`Beheer product voor ${s.label}`}
+                          className="inline-flex w-10 shrink-0 items-center justify-center rounded-xl border border-navy-100 bg-white text-navy-500 transition hover:border-marine-300 hover:text-marine-700"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Link>
+                      ) : null}
+                    </div>
                   );
                 })}
               </div>
@@ -735,7 +828,9 @@ export default function KraanAfspraakPage() {
                   <span className="text-xs font-medium uppercase tracking-widest text-sand-100/70">
                     {t('crane.estimate')}
                   </span>
-                  <span className="text-2xl font-semibold">€{finalPrice.toFixed(2)}</span>
+                  <span className="text-2xl font-semibold">
+                    {finalPrice == null ? t('servicePage.onRequest') : `€${finalPrice.toFixed(2)}`}
+                  </span>
                 </div>
               </div>
               <div className="px-5 py-4">

@@ -34,14 +34,23 @@ export default function ProductsPage() {
   const { push } = useToast();
   const [query, setQuery] = React.useState('');
   const [groupFilter, setGroupFilter] = React.useState('');
+  const [lowStockOnly, setLowStockOnly] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
   const [view, setView] = React.useState<'table' | 'grid'>('table');
 
-  const products = useQuery([query, groupFilter, page], () =>
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get('search');
+    if (search) setQuery(search);
+    setLowStockOnly(params.get('low_stock') === '1');
+  }, []);
+
+  const products = useQuery([query, groupFilter, lowStockOnly, page, view], () =>
     productsService.list({
       search: query || undefined,
       product_group_id: groupFilter || undefined,
+      low_stock: lowStockOnly || undefined,
       page,
       per_page: view === 'grid' ? 48 : 20,
     })
@@ -112,6 +121,15 @@ export default function ProductsPage() {
                     {String(g.name)}
                   </option>
                 ))}
+              </AdminSelect>
+            </div>
+            <div className="w-56">
+              <AdminSelect
+                value={lowStockOnly ? 'low' : ''}
+                onChange={(value) => { setLowStockOnly(value === 'low'); setPage(1); }}
+              >
+                <option value="">{t('adminModules.overview.allProducts')}</option>
+                <option value="low">{t('adminModules.overview.lowStockFilter')}</option>
               </AdminSelect>
             </div>
             <div className="flex rounded-lg border border-navy-200 bg-white">

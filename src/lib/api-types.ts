@@ -193,6 +193,7 @@ export interface Invoice {
   invoice_number: string;
   source: 'kassa' | 'stalling' | 'manual' | 'calculator' | string;
   status: string;
+  payment_status?: string | null;
   locale: string;
   currency: string;
   subtotal_cents: number;
@@ -248,6 +249,10 @@ export interface Product {
   aliases?: string[] | null;
   product_group_id?: string | null;
   group?: { code?: string; name?: string; color?: string } | null;
+  show_in_kassa?: boolean;
+  show_in_public?: boolean;
+  show_in_calculator?: boolean;
+  show_in_booking?: boolean;
   // Trello #80/#86: POS rendering + favourites
   display_color?: string | null;
   display_icon?: string | null;
@@ -375,9 +380,17 @@ export interface AuditLog {
   id: string;
   entity_type: string;
   entity_id: string | null;
+  entity_name?: string | null;
+  entity_number?: string | null;
   action: string;
+  event_code?: string | null;
   before_data: Record<string, unknown> | null;
   after_data: Record<string, unknown> | null;
+  request_id?: string | null;
+  correlation_id?: string | null;
+  endpoint?: string | null;
+  method?: string | null;
+  severity?: string | null;
   ip_address: string | null;
   user_agent: string | null;
   actor_type: string;

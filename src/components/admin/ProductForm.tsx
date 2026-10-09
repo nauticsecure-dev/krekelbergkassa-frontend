@@ -4,7 +4,7 @@ import * as React from 'react';
 import { ImagePlus, ScanLine } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { AdminSelect } from '@/components/admin/AdminUi';
+import { AdminFormGrid, AdminFormSection, AdminSelect } from '@/components/admin/AdminUi';
 import { BarcodeScannerModal } from '@/components/admin/BarcodeScannerModal';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -22,6 +22,10 @@ import {
 import { formatCurrency } from '@/lib/format';
 
 export { EMPTY_PRODUCT_FORM, type ProductFormState };
+
+function slugifyProductName(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
 
 export function ProductForm({
   form,
@@ -72,11 +76,8 @@ export function ProductForm({
 
   return (
     <div className="space-y-6">
-      <section>
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-navy-400">
-          {t('adminNew.products.sections.identity')}
-        </h3>
-        <div className="grid gap-4 sm:grid-cols-2">
+      <AdminFormSection title={t('adminNew.products.sections.identity')}>
+        <AdminFormGrid className="xl:grid-cols-3">
           <Input
             label={t('adminNew.products.columns.code')}
             value={form.code}
@@ -87,16 +88,20 @@ export function ProductForm({
           <Input
             label={t('adminNew.products.columns.name')}
             value={form.name}
-            onChange={(e) => set({ name: e.target.value })}
+            onChange={(e) => {
+              const name = e.target.value;
+              const generatedSlug = slugifyProductName(form.name);
+              set({ name, ...(!form.slug || form.slug === generatedSlug ? { slug: slugifyProductName(name) } : {}) });
+            }}
             required
           />
           <Input
             label={t('adminNew.products.fields.slug', { defaultValue: 'Slug (service-pagina)' })}
             value={form.slug}
-            onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+            onChange={(e) => set({ slug: slugifyProductName(e.target.value) })}
             placeholder="bijv. afspuiten"
           />
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 xl:col-span-3">
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
               {t('adminNew.products.fields.description')}
             </label>
@@ -107,14 +112,15 @@ export function ProductForm({
               placeholder={t('adminNew.products.fields.descriptionPlaceholder')}
             />
           </div>
-        </div>
-      </section>
+          <label className="flex items-center gap-2 text-sm sm:col-span-2 xl:col-span-3">
+            <input type="checkbox" checked={form.active} onChange={(e) => set({ active: e.target.checked })} />
+            {t('adminNew.products.active')}
+          </label>
+        </AdminFormGrid>
+      </AdminFormSection>
 
-      <section>
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-navy-400">
-          {t('adminNew.products.sections.classification')}
-        </h3>
-        <div className="grid gap-4 sm:grid-cols-2">
+      <AdminFormSection title={t('adminNew.products.sections.classification')}>
+        <AdminFormGrid className="xl:grid-cols-3">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
               {t('adminNew.products.columns.category')}
@@ -160,19 +166,18 @@ export function ProductForm({
             onChange={(e) => set({ tags: e.target.value })}
             placeholder={t('adminNew.products.fields.tagsPlaceholder')}
           />
-          <Input
-            label={t('adminNew.products.fields.aliases')}
-            value={form.aliases}
-            onChange={(e) => set({ aliases: e.target.value })}
-            placeholder={t('adminNew.products.fields.aliasesPlaceholder')}
-          />
-        </div>
-      </section>
+          <div className="sm:col-span-2 xl:col-span-1">
+            <Input
+              label={t('adminNew.products.fields.aliases')}
+              value={form.aliases}
+              onChange={(e) => set({ aliases: e.target.value })}
+              placeholder={t('adminNew.products.fields.aliasesPlaceholder')}
+            />
+          </div>
+        </AdminFormGrid>
+      </AdminFormSection>
 
-      <section>
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-navy-400">
-          {t('adminNew.products.sections.pricing')}
-        </h3>
+      <AdminFormSection title={t('adminNew.products.sections.pricing')}>
         <div className="grid gap-4 sm:grid-cols-3">
           <Input
             label={t('adminNew.products.fields.priceExcl')}
@@ -221,12 +226,9 @@ export function ProductForm({
             placeholder="0"
           />
         </div>
-      </section>
+      </AdminFormSection>
 
-      <section>
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-navy-400">
-          {t('adminNew.products.sections.pos')}
-        </h3>
+      <AdminFormSection title={t('adminNew.products.sections.pos')}>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
@@ -324,35 +326,27 @@ export function ProductForm({
             </div>
           </div>
         </div>
-      </section>
+      </AdminFormSection>
 
-      <section>
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-navy-400">
-          {t('adminNew.products.sections.visibility', { defaultValue: 'Zichtbaarheid' })}
-        </h3>
+      <AdminFormSection title={t('adminNew.products.sections.visibility')}>
         <div className="grid gap-2 sm:grid-cols-2">
           {([
-            ['show_in_kassa', 'adminNew.products.fields.showInKassa', 'Tonen in kassa'],
-            ['show_in_public', 'adminNew.products.fields.showInPublic', 'Tonen op website'],
-            ['show_in_calculator', 'adminNew.products.fields.showInCalculator', 'Tonen in calculator'],
-            ['show_in_booking', 'adminNew.products.fields.showInBooking', 'Tonen bij boekingen'],
-          ] as [keyof typeof form, string, string][]).map(([field, key, fallback]) => (
-            <label key={field} className="flex items-center gap-2 text-sm">
+            ['show_in_kassa', 'adminNew.products.fields.showInKassa'],
+            ['show_in_public', 'adminNew.products.fields.showInPublic'],
+            ['show_in_calculator', 'adminNew.products.fields.showInCalculator'],
+            ['show_in_booking', 'adminNew.products.fields.showInBooking'],
+          ] as [keyof ProductFormState, string][]).map(([field, key]) => (
+            <label key={field} className="flex min-w-0 items-center gap-2 text-sm">
               <input
                 type="checkbox"
                 checked={form[field] as boolean}
                 onChange={(e) => set({ [field]: e.target.checked })}
               />
-              {t(key, { defaultValue: fallback })}
+              {t(key)}
             </label>
           ))}
         </div>
-      </section>
-
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={form.active} onChange={(e) => set({ active: e.target.checked })} />
-        {t('adminNew.products.active')}
-      </label>
+      </AdminFormSection>
 
       <BarcodeScannerModal
         open={showScanner}
