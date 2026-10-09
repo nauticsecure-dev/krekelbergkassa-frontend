@@ -5,9 +5,14 @@
       "craneJobs": "Crane jobs",
       "activeStorage": "Active storage",
       "expiringStorage": "Storage expiring (30 days)",
+      "overdueInvoices": "Overdue invoices",
       "newCustomers": "New customers today",
       "newBrokerageLeads": "New brokerage leads",
-      "leadsUnavailable": "No lead register"
+      "leadsUnavailable": "No lead register",
+      "allProducts": "All products",
+      "lowStockFilter": "Low stock",
+      "customerSearch": "Find customer",
+      "registerPayment": "Register payment"
     },
     "create": {
       "customer": "Customer",
@@ -1256,14 +1261,16 @@
       "deleted": "Removed",
       "open": "Open",
       "clear": "Clear",
+      "retry": "Try again",
       "all": "All",
       "yes": "Yes",
       "no": "No"
     },
     "dashboard": {
       "title": "Operations",
-      "heroTitle": "Marina operations overview",
-      "subtitle": "Daily operational marina status",
+      "brand": "KREKELBERG NAUTIC",
+      "heroTitle": "Operational overview",
+      "subtitle": "Everything that needs attention today",
       "live": "Live",
       "quickActions": "Quick actions",
       "cards": {
@@ -1277,8 +1284,14 @@
         },
         "cashRevenue": {
           "title": "Cash desk revenue",
-          "subtitle": "Recent transactions"
+          "subtitle": "Recent transactions",
+          "today": "Today"
         },
+        "lowStock": {
+          "title": "Low stock",
+          "subtitle": "Products below minimum stock"
+        },
+        "expiringStorage": "{count} expiring soon",
         "syncStatus": {
           "title": "Sync status",
           "lastSync": "Last sync: {time}",
@@ -1300,12 +1313,14 @@
       },
       "calculatorCard": {
         "title": "Calculator",
-        "subtitle": "Quick price calculation for marina services",
-        "selectService": "Select service"
+        "subtitle": "Calculate a price directly from central pricing rules.",
+        "selectService": "Service",
+        "openFull": "Open full calculator"
       },
       "recentActivity": {
         "title": "Recent activity",
-        "subtitle": "The latest events in the system.",
+        "subtitle": "Important recent events.",
+        "loadError": "Activity could not be loaded.",
         "justNow": "Just now",
         "minutesAgo": "{count} min ago",
         "hoursAgo": "{count} h ago",

@@ -165,6 +165,10 @@ export function EmptyState({
   );
 }
 
+export const AdminLoadingState = LoadingState;
+export const AdminErrorState = ErrorState;
+export const AdminEmptyState = EmptyState;
+
 function SkeletonBlock({ className }: { className?: string }) {
   return (
     <span

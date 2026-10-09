@@ -38,6 +38,7 @@ export default function SyncStatusPage() {
   const { t, locale } = useIntl();
   const { push } = useToast();
   const status = useSyncStatus();
+  const refreshStatus = status.refresh;
   const [items, setItems] = React.useState<PendingChange[]>([]);
   const [syncDevices, setSyncDevices] = React.useState<
     Array<{ device_id?: string; device_name?: string; last_sync_at?: string }>
@@ -55,8 +56,8 @@ export default function SyncStatusPage() {
     ]);
     setItems(queued);
     setSyncDevices(devices as Array<{ device_id?: string; device_name?: string; last_sync_at?: string }>);
-    await status.refresh();
-  }, [status]);
+    await refreshStatus();
+  }, [refreshStatus]);
 
   React.useEffect(() => {
     void load();
@@ -112,9 +113,13 @@ export default function SyncStatusPage() {
         stats={[
           {
             label: t('adminNew.sync.connection'),
-            value: status.online ? t('adminNew.sync.online') : t('adminNew.sync.offline'),
-            icon: status.online ? Wifi : WifiOff,
-            tone: status.online ? 'success' : 'warning',
+            value: status.error
+              ? t('adminNew.sync.error')
+              : status.online
+                ? t('adminNew.sync.online')
+                : t('adminNew.sync.offline'),
+            icon: status.error ? AlertTriangle : status.online ? Wifi : WifiOff,
+            tone: status.error ? 'danger' : status.online ? 'success' : 'warning',
           },
           {
             label: t('adminNew.sync.pending'),
@@ -126,11 +131,11 @@ export default function SyncStatusPage() {
             label: t('adminNew.sync.failed'),
             value: status.failed,
             icon: AlertTriangle,
-            tone: status.failed > 0 ? 'danger' : 'success',
+            tone: status.error || status.failed > 0 ? 'danger' : 'success',
           },
           {
             label: t('adminNew.sync.lastSync'),
-            value: status.lastSyncAt
+            value: !status.error && status.lastSyncAt
               ? new Date(status.lastSyncAt).toLocaleString(dateLocale)
               : '—',
             icon: CheckCircle2,

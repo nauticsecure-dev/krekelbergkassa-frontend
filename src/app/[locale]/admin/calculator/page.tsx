@@ -449,6 +449,7 @@ export default function CalculatorPage() {
       <AdminPageHeader
         title={t('adminNew.calculator.title')}
         subtitle={t('adminNew.calculator.subtitle')}
+        eyebrow={t('adminModules.hubs.servicesPricing.title')}
         rightSlot={
           <div className="flex flex-wrap gap-2">
             <Button

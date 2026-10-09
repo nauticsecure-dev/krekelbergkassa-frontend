@@ -72,7 +72,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           onMenuClick={() => setOpen(true)}
           onSearchClick={() => setSearchOpen(true)}
         />
-        <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
+          <AdminPageShell>{children}</AdminPageShell>
+        </main>
       </div>
 
       <AdminGlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
@@ -423,6 +425,46 @@ function MobileDrawer({
 
 export type AdminHeaderStat = PageHeaderStat;
 
+export function AdminPageShell({ children }: { children: React.ReactNode }) {
+  return <div className="min-w-0 [--admin-content-max-width:1440px]">{children}</div>;
+}
+
+export function AdminHero({
+  title,
+  subtitle,
+  eyebrow,
+  rightSlot,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  eyebrow?: string;
+  rightSlot?: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="admin-hero-card px-5 py-4 sm:px-7 sm:py-5">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-marine-200/25 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 left-1/3 h-40 w-40 rounded-full bg-gold-200/20 blur-3xl"
+      />
+      <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          {eyebrow ? <p className="admin-hero-eyebrow">{eyebrow}</p> : null}
+          <h1 className={cn('admin-hero-title', eyebrow ? 'mt-1' : '')}>{title}</h1>
+          {subtitle ? <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-navy-500">{subtitle}</p> : null}
+        </div>
+        {rightSlot ? <div className="flex shrink-0 flex-wrap items-center gap-2 lg:pt-1">{rightSlot}</div> : null}
+      </div>
+      {children ? <div className="relative mt-3">{children}</div> : null}
+    </div>
+  );
+}
+
 export function AdminPageHeader({
   title,
   subtitle,
@@ -440,34 +482,11 @@ export function AdminPageHeader({
 }) {
   return (
     <div className="bg-sand-50 px-4 pb-1 pt-3 sm:px-4 lg:px-6">
-      <div className="mx-auto max-w-[1440px]">
-        <div className="admin-hero-card px-5 py-4 sm:px-7 sm:py-5">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-marine-200/25 blur-3xl"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-24 left-1/3 h-40 w-40 rounded-full bg-gold-200/20 blur-3xl"
-          />
-
-          <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0 flex-1">
-              {eyebrow ? <p className="admin-hero-eyebrow">{eyebrow}</p> : null}
-              <h1 className={cn('admin-hero-title', eyebrow ? 'mt-1' : '')}>{title}</h1>
-              {subtitle ? (
-                <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-navy-500">{subtitle}</p>
-              ) : null}
-            </div>
-            {rightSlot ? (
-              <div className="flex shrink-0 flex-wrap items-center gap-2 lg:pt-1">{rightSlot}</div>
-            ) : null}
-          </div>
-
+      <div className="mx-auto w-full max-w-[var(--admin-content-max-width,1440px)]">
+        <AdminHero title={title} subtitle={subtitle} eyebrow={eyebrow} rightSlot={rightSlot}>
           {stats?.length ? <PageHeaderStatsGrid stats={stats} /> : null}
-
-          {children ? <div className="relative mt-3">{children}</div> : null}
-        </div>
+          {children}
+        </AdminHero>
       </div>
     </div>
   );

@@ -21,7 +21,6 @@ import {
   AdminSelect,
   AdminStatusStrip,
 } from '@/components/admin/AdminUi';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { useSyncStatus } from '@/lib/hooks/useSyncStatus';
@@ -59,14 +58,15 @@ export default function AdminDashboardPage() {
 
   const calculate = useMutation(pricingService.calculate);
 
-  const { data, loading } = useQuery([locale], async () => {
-    const [invoices, stalling, appointments, customers, sales, analytics, reminders, activity, closures, lowStock] = await Promise.all([
-      invoicesService.list({ per_page: 100 }),
-      stallingService.list({ per_page: 100 }),
-      appointmentsService.list({ per_page: 100 }).catch(() => ({ data: [] as import('@/lib/api-types').Appointment[] })),
-      customersService.list({ per_page: 100 }).catch(() => ({ data: [] as import('@/lib/api-types').Customer[] })),
-      kassaService.recentSales().catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
-      kassaService.analytics().catch(() => null),
+  const { data, loading, refetch } = useQuery([locale], async () => {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const [invoices, stalling, appointments, customers, analytics, reminders, activity, closures, lowStock] = await Promise.all([
+      invoicesService.list({ per_page: 100 }).catch(() => null),
+      stallingService.list({ per_page: 100 }).catch(() => null),
+      appointmentsService.list({ date_from: today, date_to: today, per_page: 100 }).catch(() => null),
+      customersService.list({ per_page: 100 }).catch(() => null),
+      kassaService.analytics({ period: 'today' }).catch(() => null),
       adminService.remindersSummary().catch(() => null),
       // Trello #109: recent-activity feed for the dashboard.
       adminService.timelineFeed({ per_page: 10 }).catch(() => null),
@@ -75,50 +75,47 @@ export default function AdminDashboardPage() {
       productsService.list({ low_stock: true, per_page: 1 }).catch(() => null),
     ]);
 
-    const overdueInvoices = invoices.data.filter((x) => x.is_overdue).length;
-    const openInvoices = invoices.data.filter((x) => !x.is_fully_paid).length;
-    const overdueStalling = stalling.data.filter((x) => x.payment_status === 'overdue').length;
-    const now = new Date();
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const invoicesComplete = invoices?.meta?.last_page === 1;
+    const stallingComplete = stalling?.meta?.last_page === 1;
+    const appointmentsComplete = appointments?.meta?.last_page === 1;
+    const customersComplete = customers?.meta?.last_page === 1;
+    const overdueInvoices = invoicesComplete ? invoices.data.filter((x) => x.is_overdue).length : null;
+    const openInvoices = invoicesComplete ? invoices.data.filter((x) => !x.is_fully_paid).length : null;
     const inThirtyDays = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30);
-    const todayAppointments = appointments.data.filter((item) => item.appointment_date?.slice(0, 10) === today);
-    const craneJobs = todayAppointments.filter((item) =>
+    const todayAppointments = appointmentsComplete ? appointments.data : null;
+    const craneJobs = todayAppointments?.filter((item) =>
       item.service_codes?.some((code) => /crane|kraan/i.test(code))
     ).length;
-    const activeStalling = stalling.data.filter((contract) =>
+    const activeStalling = stallingComplete ? stalling.data.filter((contract) =>
       !contract.is_expired &&
       !['cancelled', 'ended', 'checked_out'].includes(contract.status.toLowerCase())
-    ).length;
-    const expiringStalling = stalling.data.filter((contract) => {
+    ).length : null;
+    const expiringStalling = stallingComplete ? stalling.data.filter((contract) => {
       const end = new Date(`${contract.end_date}T00:00:00`);
       return !contract.is_expired && end >= now && end <= inThirtyDays;
-    }).length;
-    const newCustomers = customers.data.filter((customer) => customer.created_at?.slice(0, 10) === today).length;
-    const todayRevenue = sales.data.reduce((sum, sale) => {
-      const raw =
-        typeof sale.total_amount_cents === 'string'
-          ? Number(sale.total_amount_cents)
-          : sale.total_amount_cents;
-      return sum + (Number.isFinite(raw) ? Number(raw) : 0);
-    }, 0);
+    }).length : null;
+    const newCustomers = customersComplete
+      ? customers.data.filter((customer) => customer.created_at?.slice(0, 10) === today).length
+      : null;
 
     const analyticsTotals = analytics?.totals as Record<string, number> | undefined;
-    const reminderCounts = normalizeRemindersSummary(reminders);
+    const todayRevenue = analyticsTotals?.turnover_cents ?? null;
+    const reminderCounts = reminders ? normalizeRemindersSummary(reminders) : null;
 
-    const activityItems = ((activity as { data?: Record<string, unknown>[] } | null)?.data ?? []).slice(0, 10);
+    const activityItems = ((activity as { data?: Record<string, unknown>[] } | null)?.data ?? null)?.slice(0, 10) ?? null;
     const closureRows = ((closures as { data?: Record<string, unknown>[] } | null)?.data ?? []);
     const cashDifference = closureRows.length
       ? Number(closureRows[0].difference_cents ?? 0)
       : null;
 
-    const lowStockCount = (lowStock as { meta?: { total?: number } } | null)?.meta?.total ?? 0;
+    const lowStockResponse = lowStock as { meta?: { total?: number }; data?: unknown[] } | null;
+    const lowStockCount = lowStockResponse?.meta?.total ?? (lowStockResponse?.data?.length === 0 ? 0 : null);
 
     return {
-      overdueInvoices,
       openInvoices,
-      overdueStalling,
-      todayAppointments: todayAppointments.length,
-      craneJobs,
+      overdueInvoices,
+      todayAppointments: todayAppointments?.length ?? null,
+      craneJobs: craneJobs ?? null,
       activeStalling,
       expiringStalling,
       newCustomers,
@@ -164,7 +161,9 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const syncLabel = !sync.online
+  const syncLabel = sync.error
+    ? t('adminNew.sync.error')
+    : !sync.online
     ? t('adminNew.sync.offline')
     : sync.failed > 0
       ? t('adminNew.sync.error')
@@ -175,59 +174,60 @@ export default function AdminDashboardPage() {
   return (
     <>
       <AdminPageHeader
-        eyebrow={t('adminNew.dashboard.title')}
+        eyebrow={t('adminNew.dashboard.brand')}
         title={t('adminNew.dashboard.heroTitle')}
         subtitle={t('adminNew.dashboard.subtitle')}
-        rightSlot={
-          <Badge tone="success" dot>
-            {t('adminNew.dashboard.live')}
-          </Badge>
-        }
         stats={[
           {
             label: t('adminNew.dashboard.cards.openInvoices.title'),
-            value: data?.openInvoices ?? 0,
+            value: data?.openInvoices ?? '—',
             hint: t('adminNew.dashboard.cards.openInvoices.subtitle', {
-              count: data?.overdueInvoices ?? 0,
+              count: data?.overdueInvoices ?? '—',
             }),
+            hintHref: data?.overdueInvoices ? `/${locale}/admin/facturen?status=overdue` : undefined,
             icon: CreditCard,
             tone: 'marine',
             loading,
             href: `/${locale}/admin/facturen?status=open`,
           },
           {
-            label: t('adminNew.dashboard.cards.stallingActions.title'),
-            value: data?.overdueStalling ?? 0,
-            hint: t('adminNew.dashboard.cards.stallingActions.subtitle'),
+            label: t('adminModules.overview.activeStorage'),
+            value: data?.activeStalling ?? '—',
+            hint: t('adminNew.dashboard.cards.expiringStorage', { count: data?.expiringStalling ?? '—' }),
+            hintHref: data?.expiringStalling ? `/${locale}/admin/stalling?status=expiring` : undefined,
             icon: Warehouse,
-            tone: 'warning',
+            tone: 'marine',
             loading,
             href: `/${locale}/admin/stalling`,
           },
           {
             label: t('adminNew.dashboard.cards.cashRevenue.title'),
-            value: formatCurrency(centsToEuro(data?.todayRevenue ?? 0), dateLocale),
-            hint: t('adminNew.dashboard.cards.cashRevenue.subtitle'),
+            value: data?.todayRevenue == null ? '—' : formatCurrency(centsToEuro(data.todayRevenue), dateLocale),
+            hint: t('adminNew.dashboard.cards.today'),
             icon: Receipt,
             tone: 'success',
             loading,
             href: `/${locale}/admin/kassa`,
           },
           {
-            label: t('adminNew.dashboard.cards.lowStock.title', { defaultValue: 'Lage voorraad' }),
-            value: data?.lowStockCount ?? 0,
-            hint: t('adminNew.dashboard.cards.lowStock.subtitle', { defaultValue: 'producten onder minimum' }),
+            label: t('adminNew.dashboard.cards.lowStock.title'),
+            value: data?.lowStockCount ?? '—',
+            hint: t('adminNew.dashboard.cards.lowStock.subtitle'),
             icon: Package,
             tone: (data?.lowStockCount ?? 0) > 0 ? 'warning' : 'success',
             loading,
-            href: `/${locale}/admin/product-stats`,
+            href: `/${locale}/admin/producten?low_stock=1`,
           },
           {
             label: t('adminNew.dashboard.cards.syncStatus.title'),
             value: syncLabel,
-            hint: sync.pending > 0 ? `${sync.pending} pending` : t('adminNew.dashboard.cards.syncStatus.noSync'),
+            hint: sync.lastSyncAt
+              ? t('adminNew.dashboard.cards.syncStatus.lastSync', {
+                  time: new Date(sync.lastSyncAt).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }),
+                })
+              : t('adminNew.dashboard.cards.syncStatus.noSync'),
             icon: AlertTriangle,
-            tone: !sync.online ? 'warning' : sync.failed > 0 ? 'danger' : 'success',
+            tone: sync.error || sync.failed > 0 ? 'danger' : !sync.online || sync.pending > 0 ? 'warning' : 'success',
             loading: sync.loading,
             href: `/${locale}/admin/sync`,
           },
@@ -235,21 +235,21 @@ export default function AdminDashboardPage() {
       />
 
       <AdminContent>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <Link href={`/${locale}/admin/afspraken`} className="block">
-            <AdminStatusStrip label={t('adminModules.overview.todayAppointments')} value={data?.todayAppointments ?? 0} tone="marine" />
+            <AdminStatusStrip label={t('adminModules.overview.todayAppointments')} value={data?.todayAppointments ?? '—'} tone="marine" />
           </Link>
           <Link href={`/${locale}/admin/afspraken`} className="block">
-            <AdminStatusStrip label={t('adminModules.overview.craneJobs')} value={data?.craneJobs ?? 0} tone="gold" />
+            <AdminStatusStrip label={t('adminModules.overview.craneJobs')} value={data?.craneJobs ?? '—'} tone="gold" />
           </Link>
           <Link href={`/${locale}/admin/stalling`} className="block">
-            <AdminStatusStrip label={t('adminModules.overview.activeStorage')} value={data?.activeStalling ?? 0} tone="success" />
+            <AdminStatusStrip label={t('adminModules.overview.expiringStorage')} value={data?.expiringStalling ?? '—'} tone="warning" />
           </Link>
-          <Link href={`/${locale}/admin/stalling`} className="block">
-            <AdminStatusStrip label={t('adminModules.overview.expiringStorage')} value={data?.expiringStalling ?? 0} tone="warning" />
+          <Link href={`/${locale}/admin/facturen?status=overdue`} className="block">
+            <AdminStatusStrip label={t('adminModules.overview.overdueInvoices')} value={data?.overdueInvoices ?? '—'} tone="danger" />
           </Link>
           <Link href={`/${locale}/admin/klanten`} className="block">
-            <AdminStatusStrip label={t('adminModules.overview.newCustomers')} value={data?.newCustomers ?? 0} tone="navy" />
+            <AdminStatusStrip label={t('adminModules.overview.newCustomers')} value={data?.newCustomers ?? '—'} tone="navy" />
           </Link>
           <Link href={`/${locale}/admin/makelaardij`} className="block">
             <AdminStatusStrip
@@ -266,30 +266,27 @@ export default function AdminDashboardPage() {
             icon={Sparkles}
           >
             <div className="grid gap-3 sm:grid-cols-2">
-              <AdminQuickAction
-                href={`/${locale}/admin/kassa`}
-                label={t('admin.sidebar.kassa')}
-                icon={Receipt}
-                tone="gold"
-              />
-              <AdminQuickAction
-                href={`/${locale}/admin/stalling`}
-                label={t('adminNew.dashboard.actions.stalling')}
-                icon={Warehouse}
-                tone="gold"
-              />
-              <AdminQuickAction
-                href={`/${locale}/admin/facturen`}
-                label={t('adminNew.dashboard.actions.invoices')}
-                icon={CreditCard}
-                tone="navy"
-              />
-              <AdminQuickAction
-                href={`/${locale}/admin/calculator`}
-                label={t('adminNew.dashboard.actions.calculator')}
-                icon={Calculator}
-                tone="success"
-              />
+              {user?.role === 'staff' ? (
+                <>
+                  <AdminQuickAction href={`/${locale}/planning`} label={t('adminModules.create.appointment')} icon={Receipt} tone="gold" />
+                  <AdminQuickAction href={`/${locale}/admin/kassa`} label={t('admin.sidebar.kassa')} icon={Receipt} tone="gold" />
+                  <AdminQuickAction href={`/${locale}/admin/stalling?new=1`} label={t('adminModules.create.stalling')} icon={Warehouse} tone="gold" />
+                  <AdminQuickAction href={`/${locale}/admin/klanten`} label={t('adminModules.overview.customerSearch')} icon={CreditCard} tone="navy" />
+                </>
+              ) : (
+                <>
+                  <AdminQuickAction href={`/${locale}/admin/facturen?create=1`} label={t('adminModules.create.invoice')} icon={CreditCard} tone="gold" />
+                  <AdminQuickAction href={`/${locale}/admin/betalingen`} label={t('adminModules.overview.registerPayment')} icon={Receipt} tone="navy" />
+                  <AdminQuickAction href={`/${locale}/admin/klanten`} label={t('adminModules.overview.customerSearch')} icon={CreditCard} tone="marine" />
+                  {user?.role === 'admin' ? (
+                    <>
+                      <AdminQuickAction href={`/${locale}/admin/boten?new=1`} label={t('adminModules.create.boat')} icon={Warehouse} tone="success" />
+                      <AdminQuickAction href={`/${locale}/admin/verkopen`} label={t('adminModules.create.brokerage')} icon={Receipt} tone="gold" />
+                      <AdminQuickAction href={`/${locale}/admin/financieel`} label={t('adminModules.nav.finance')} icon={CreditCard} tone="navy" />
+                    </>
+                  ) : null}
+                </>
+              )}
             </div>
           </AdminSectionCard>
 
@@ -332,10 +329,8 @@ export default function AdminDashboardPage() {
                 <Button variant="gold" size="sm" onClick={() => void runQuickCalc()} disabled={calculate.loading}>
                   {t('adminNew.calculator.calculate')}
                 </Button>
-                <Link href={`/${locale}/admin/calculator`}>
-                  <Button variant="outline" size="sm">
-                    {t('adminNew.dashboard.actions.calculator')} →
-                  </Button>
+                <Link href={`/${locale}/admin/calculator`} className="inline-flex items-center text-sm font-semibold text-marine-700 hover:text-marine-900">
+                  {t('adminNew.dashboard.calculatorCard.openFull')} →
                 </Link>
               </div>
             </div>
@@ -351,20 +346,20 @@ export default function AdminDashboardPage() {
           <div className={`grid gap-3 ${showWorkOrders ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
             <AdminStatusStrip
               label={t('adminNew.reminders.invoiceDue')}
-              value={data?.reminderCounts?.invoiceDue ?? 0}
-              tone={(data?.reminderCounts?.invoiceDue ?? 0) > 0 ? 'warning' : 'success'}
+              value={data?.reminderCounts?.invoiceDue ?? '—'}
+              tone={data?.reminderCounts == null ? 'navy' : data.reminderCounts.invoiceDue > 0 ? 'warning' : 'success'}
             />
             <AdminStatusStrip
               label={t('adminNew.reminders.contractsExpiring')}
-              value={data?.reminderCounts?.contractsExpiring ?? 0}
-              tone={(data?.reminderCounts?.contractsExpiring ?? 0) > 0 ? 'gold' : 'marine'}
+              value={data?.reminderCounts?.contractsExpiring ?? '—'}
+              tone={data?.reminderCounts == null ? 'navy' : data.reminderCounts.contractsExpiring > 0 ? 'warning' : 'success'}
             />
             {showWorkOrders ? (
               <Link href={`/${locale}/admin/werkorders`} className="block">
                 <AdminStatusStrip
                   label={t('adminNew.reminders.workOrdersDue')}
-                  value={data?.reminderCounts?.workOrdersDue ?? 0}
-                  tone={(data?.reminderCounts?.workOrdersDue ?? 0) > 0 ? 'danger' : 'navy'}
+                value={data?.reminderCounts?.workOrdersDue ?? '—'}
+                tone={data?.reminderCounts == null ? 'navy' : data.reminderCounts.workOrdersDue > 0 ? 'danger' : 'success'}
                 />
               </Link>
             ) : null}
@@ -387,7 +382,14 @@ export default function AdminDashboardPage() {
           >
             {loading ? (
               <p className="text-sm text-navy-500">{t('adminNew.common.loading')}</p>
-            ) : (data?.activityItems ?? []).length === 0 ? (
+            ) : data?.activityItems == null ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="text-sm text-rose-700">{t('adminNew.dashboard.recentActivity.loadError')}</p>
+                <Button variant="outline" size="sm" onClick={() => void refetch()}>
+                  {t('adminNew.common.retry')}
+                </Button>
+              </div>
+            ) : data.activityItems.length === 0 ? (
               <p className="text-sm text-navy-500">{t('adminNew.timeline.emptyMessage')}</p>
             ) : (
               <ol className="space-y-2">

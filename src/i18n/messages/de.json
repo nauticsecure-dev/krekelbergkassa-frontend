@@ -5,9 +5,14 @@
       "craneJobs": "Kranaufträge",
       "activeStorage": "Aktive Lagerungen",
       "expiringStorage": "Läuft in 30 Tagen ab",
+      "overdueInvoices": "Überfällige Rechnungen",
       "newCustomers": "Neue Kunden heute",
       "newBrokerageLeads": "Neue Makler-Leads",
-      "leadsUnavailable": "Kein Lead-Register"
+      "leadsUnavailable": "Kein Lead-Register",
+      "allProducts": "Alle Produkte",
+      "lowStockFilter": "Niedriger Bestand",
+      "customerSearch": "Kunden suchen",
+      "registerPayment": "Zahlung erfassen"
     },
     "create": {
       "customer": "Kunde",
@@ -1251,14 +1256,16 @@
       "deleted": "Entfernt",
       "open": "Öffnen",
       "clear": "Löschen",
+      "retry": "Erneut versuchen",
       "all": "Alle",
       "yes": "Ja",
       "no": "Nein"
     },
     "dashboard": {
       "title": "Betrieb",
-      "heroTitle": "Marina-Betriebsübersicht",
-      "subtitle": "Täglicher Betriebsstatus der Marina",
+      "brand": "KREKELBERG NAUTIC",
+      "heroTitle": "Betriebsübersicht",
+      "subtitle": "Alles, was heute Aufmerksamkeit benötigt",
       "live": "Live",
       "quickActions": "Schnellaktionen",
       "cards": {
@@ -1272,8 +1279,14 @@
         },
         "cashRevenue": {
           "title": "Kassenumsatz",
-          "subtitle": "Neueste Transaktionen"
+          "subtitle": "Neueste Transaktionen",
+          "today": "Heute"
         },
+        "lowStock": {
+          "title": "Niedriger Bestand",
+          "subtitle": "Produkte unter Mindestbestand"
+        },
+        "expiringStorage": "{count} laufen bald ab",
         "syncStatus": {
           "title": "Sync-Status",
           "lastSync": "Letzte Sync: {time}",
@@ -1295,12 +1308,14 @@
       },
       "calculatorCard": {
         "title": "Rechner",
-        "subtitle": "Schnelle Preisberechnung für Marina-Dienstleistungen",
-        "selectService": "Dienst auswählen"
+        "subtitle": "Preis direkt anhand der zentralen Preisregeln berechnen.",
+        "selectService": "Service",
+        "openFull": "Vollständigen Rechner öffnen"
       },
       "recentActivity": {
         "title": "Letzte Aktivität",
-        "subtitle": "Die neuesten Ereignisse im System.",
+        "subtitle": "Wichtige aktuelle Ereignisse.",
+        "loadError": "Aktivität konnte nicht geladen werden.",
         "justNow": "Gerade eben",
         "minutesAgo": "vor {count} Min.",
         "hoursAgo": "vor {count} Std.",

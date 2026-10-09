@@ -5,9 +5,14 @@
       "craneJobs": "Kraanopdrachten",
       "activeStorage": "Actieve stalling",
       "expiringStorage": "Aflopende stalling (30 dagen)",
+      "overdueInvoices": "Achterstallige facturen",
       "newCustomers": "Nieuwe klanten vandaag",
       "newBrokerageLeads": "Nieuwe makelaardijleads",
-      "leadsUnavailable": "Geen leadregister"
+      "leadsUnavailable": "Geen leadregister",
+      "allProducts": "Alle producten",
+      "lowStockFilter": "Lage voorraad",
+      "customerSearch": "Klant zoeken",
+      "registerPayment": "Betaling registreren"
     },
     "create": {
       "customer": "Klant",
@@ -1251,14 +1256,16 @@
       "deleted": "Verwijderd",
       "open": "Openen",
       "clear": "Wissen",
+      "retry": "Opnieuw proberen",
       "all": "Alle",
       "yes": "Ja",
       "no": "Nee"
     },
     "dashboard": {
       "title": "Operatie",
-      "heroTitle": "Operationeel jachthaven overzicht",
-      "subtitle": "Dagelijkse operationele status van de jachthaven",
+      "brand": "KREKELBERG NAUTIC",
+      "heroTitle": "Operationeel overzicht",
+      "subtitle": "Alles wat vandaag aandacht nodig heeft",
       "live": "Live",
       "quickActions": "Snelle acties",
       "cards": {
@@ -1272,8 +1279,14 @@
         },
         "cashRevenue": {
           "title": "Kassa omzet",
-          "subtitle": "Recente transacties"
+          "subtitle": "Recente transacties",
+          "today": "Vandaag"
         },
+        "lowStock": {
+          "title": "Lage voorraad",
+          "subtitle": "Producten onder minimumvoorraad"
+        },
+        "expiringStorage": "{count} lopen binnenkort af",
         "syncStatus": {
           "title": "Sync status",
           "lastSync": "Laatste sync: {time}",
@@ -1295,12 +1308,14 @@
       },
       "calculatorCard": {
         "title": "Calculator",
-        "subtitle": "Snel prijs berekenen voor jachthaven diensten",
-        "selectService": "Selecteer dienst"
+        "subtitle": "Bereken direct een prijs uit de centrale prijsregels.",
+        "selectService": "Dienst",
+        "openFull": "Open volledige calculator"
       },
       "recentActivity": {
         "title": "Recente activiteit",
-        "subtitle": "De laatste gebeurtenissen in het systeem.",
+        "subtitle": "Belangrijke recente gebeurtenissen.",
+        "loadError": "Activiteit kon niet worden geladen.",
         "justNow": "Zojuist",
         "minutesAgo": "{count} min geleden",
         "hoursAgo": "{count} uur geleden",

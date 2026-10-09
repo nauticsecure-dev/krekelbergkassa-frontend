@@ -8,7 +8,7 @@ import { useSyncStatus } from '@/lib/hooks/useSyncStatus';
 
 export function ConnectionIndicator() {
   const { locale, t } = useIntl();
-  const { online, pending, failed, loading, stateLabel } = useSyncStatus();
+  const { online, pending, failed, loading, error, stateLabel } = useSyncStatus();
 
   if (loading) {
     return (
@@ -18,12 +18,13 @@ export function ConnectionIndicator() {
     );
   }
 
-  const tone = !online ? 'warning' : failed > 0 ? 'danger' : pending > 0 ? 'marine' : 'success';
+  const hasSyncError = error || failed > 0;
+  const tone = !online ? 'warning' : hasSyncError ? 'danger' : pending > 0 ? 'marine' : 'success';
 
   return (
     <Link href={`/${locale}/admin/sync`} className="hidden sm:inline-flex">
       <Badge tone={tone} className="cursor-pointer" dot>
-        {!online ? <WifiOff className="h-3 w-3" /> : failed > 0 ? <AlertTriangle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
+        {!online ? <WifiOff className="h-3 w-3" /> : hasSyncError ? <AlertTriangle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
         {stateLabel === 'Offline'
           ? t('adminNew.sync.offline')
           : stateLabel === 'Sync wachtend'

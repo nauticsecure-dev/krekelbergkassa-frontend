@@ -21,6 +21,7 @@ export type PageHeaderStat = {
   icon?: LucideIcon;
   tone?: PageHeaderStatTone;
   href?: string;
+  hintHref?: string;
   /** Small shortcut icon in the card header (e.g. pencil → edit page). */
   actionIcon?: LucideIcon;
   actionHref?: string;
@@ -86,26 +87,36 @@ function PageHeaderStatCard({ stat }: { stat: PageHeaderStat }) {
   );
 
   const className = cn(
-    'block rounded-xl border border-navy-100/60 bg-white/95 px-4 py-3.5 shadow-sm transition',
+    'flex h-full min-h-[104px] flex-col justify-between rounded-xl border border-navy-100/60 bg-white/95 px-4 py-3.5 shadow-sm transition',
     stat.href ? 'hover:border-navy-200/70 hover:shadow-md' : 'hover:border-navy-200/70'
   );
 
-  if (stat.href) {
-    return (
-      <Link href={stat.href} className={className}>
-        {inner}
-      </Link>
-    );
-  }
-
-  return <div className={className}>{inner}</div>;
+  return (
+    <div className={className}>
+      {stat.href ? (
+        <Link href={stat.href} className="block flex-1">
+          {inner}
+        </Link>
+      ) : (
+        <div className="flex-1">{inner}</div>
+      )}
+      {stat.hint && !stat.loading && stat.hintHref ? (
+        <Link href={stat.hintHref} className="relative z-10 mt-1 inline-flex text-xs font-semibold text-marine-700 hover:text-marine-900">
+          {stat.hint}
+        </Link>
+      ) : null}
+    </div>
+  );
 }
 
 export function PageHeaderStatsGrid({ stats }: { stats: PageHeaderStat[] }) {
   if (!stats.length) return null;
 
   return (
-    <div className="relative mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className={cn(
+      'relative mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3',
+      stats.length === 5 ? 'xl:grid-cols-5' : 'xl:grid-cols-4'
+    )}>
       {stats.map((stat) => (
         <PageHeaderStatCard key={stat.label} stat={stat} />
       ))}
