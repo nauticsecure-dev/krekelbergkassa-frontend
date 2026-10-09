@@ -21,6 +21,7 @@ import { companyInfo } from "@/lib/company";
 import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
+import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
 
 const CMS_PAGE = "over-ons";
 
@@ -99,6 +100,23 @@ export default function OverOnsPage() {
               {t("over.heroSubtitle")}
             </EditableText>
           </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="over-ons.hero.cta_primary"
+              label={t("nav.contact")}
+              href={`/${locale}/contact`}
+              variant="gold"
+            />
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="over-ons.hero.cta_secondary"
+              label={t("nav.services")}
+              href={`/${locale}/diensten`}
+              variant="outline"
+              className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+            />
+          </div>
         </div>
       </section>
 

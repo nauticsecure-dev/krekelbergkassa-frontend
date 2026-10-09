@@ -288,6 +288,8 @@ export function ImageEditModal({
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
   const [altValues, setAltValues] = React.useState<ByTag>({});
   const [altBase, setAltBase] = React.useState<ByTag>({});
+  const [seoTitleValues, setSeoTitleValues] = React.useState<ByTag>({});
+  const [seoTitleBase, setSeoTitleBase] = React.useState<ByTag>({});
   const [previewSrc, setPreviewSrc] = React.useState(fallbackSrc);
   const [focal, setFocal] = React.useState({ x: 50, y: 50 });
   const [overlay, setOverlay] = React.useState(0);
@@ -298,17 +300,23 @@ export function ImageEditModal({
     if (!open) return;
     const block = getMedia(blockKey);
     const seededAlt: ByTag = { [localeTag]: block?.alt ?? '' };
+    const seededSeoTitle: ByTag = { [localeTag]: block?.seo_title ?? '' };
     setAltValues(seededAlt);
     setAltBase(seededAlt);
+    setSeoTitleValues(seededSeoTitle);
+    setSeoTitleBase(seededSeoTitle);
     setPreviewSrc(block?.image_url || fallbackSrc);
     setFocal(block?.focal_point ?? { x: 50, y: 50 });
     setOverlay(block?.overlay ?? 0);
     setActive(localeTag);
   }, [open, blockKey, fallbackSrc, localeTag, getMedia]);
 
-  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const uploadFile = async (file?: File) => {
     if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      push({ tone: 'error', title: t('cms.uploadError'), message: t('cms.imageFormats') });
+      return;
+    }
     setUploading(true);
     try {
       const url = await uploadImage(blockKey, file);
@@ -318,8 +326,17 @@ export function ImageEditModal({
       pushError(err, t('cms.uploadError'));
     } finally {
       setUploading(false);
-      e.target.value = '';
     }
+  };
+
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await uploadFile(e.target.files?.[0]);
+    e.target.value = '';
+  };
+
+  const onDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    await uploadFile(event.dataTransfer.files?.[0]);
   };
 
   // Click anywhere on the preview to set the focal point (0..100 each axis).
@@ -337,8 +354,10 @@ export function ImageEditModal({
     setSaving(true);
     try {
       const alt_by_locale = changedByLocale(altValues, altBase);
+      const seo_title_by_locale = changedByLocale(seoTitleValues, seoTitleBase);
       await saveMediaMeta(blockKey, {
         alt_by_locale: Object.keys(alt_by_locale).length ? alt_by_locale : undefined,
+        seo_title_by_locale: Object.keys(seo_title_by_locale).length ? seo_title_by_locale : undefined,
         focal_x: focal.x,
         focal_y: focal.y,
         overlay,
@@ -395,7 +414,11 @@ export function ImageEditModal({
         </div>
 
         {/* Upload */}
-        <div>
+        <div
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => void onDrop(event)}
+          className="rounded-xl border border-dashed border-navy-200 p-4"
+        >
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm font-medium text-navy-800 hover:bg-navy-50">
             {uploading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -405,12 +428,13 @@ export function ImageEditModal({
             {t('cms.uploadImage')}
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               className="sr-only"
               onChange={onFileChange}
               disabled={uploading}
             />
           </label>
+          <p className="mt-2 text-xs text-navy-400">{t('cms.imageDropHint')}</p>
         </div>
 
         {/* Overlay slider */}
@@ -449,6 +473,18 @@ export function ImageEditModal({
             className={fieldClass}
             placeholder={t('cms.altPlaceholder')}
             aria-label={`${t('cms.altText')} ${TAG_LABEL[active]}`}
+          />
+          <label className="mb-1.5 mt-4 block text-xs font-semibold uppercase tracking-wide text-navy-500">
+            {t('cms.imageSeoTitle')}
+          </label>
+          <input
+            key={`seo-${active}`}
+            type="text"
+            value={seoTitleValues[active] ?? ''}
+            onChange={(e) => setSeoTitleValues((v) => ({ ...v, [active]: e.target.value }))}
+            className={fieldClass}
+            placeholder={t('cms.imageSeoTitle')}
+            aria-label={`${t('cms.imageSeoTitle')} ${TAG_LABEL[active]}`}
           />
         </div>
       </div>

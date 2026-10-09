@@ -24,6 +24,7 @@ import { companyInfo } from "@/lib/company";
 import { useCms, useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
+import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
 
 const CMS_PAGE = "home";
 
@@ -105,28 +106,22 @@ export default function HomePage() {
             </EditableText>
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={`/${locale}/kraanafspraak`}>
-              <Button
-                variant="gold"
-                size="lg"
-                rightIcon={<ArrowRight className="h-4 w-4" />}
-              >
-                <EditableText blockKey="home.hero.cta_primary" page={CMS_PAGE} section="hero">
-                  {t("home.heroPrimary")}
-                </EditableText>
-              </Button>
-            </Link>
-            <Link href={`/${locale}/diensten`}>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-              >
-                <EditableText blockKey="home.hero.cta_secondary" page={CMS_PAGE} section="hero">
-                  {t("home.heroSecondary")}
-                </EditableText>
-              </Button>
-            </Link>
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="home.hero.cta_primary"
+              label={t("home.heroPrimary")}
+              href={`/${locale}/kraanafspraak`}
+              variant="gold"
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+            />
+            <EditableHeroCta
+              page={CMS_PAGE}
+              blockKey="home.hero.cta_secondary"
+              label={t("home.heroSecondary")}
+              href={`/${locale}/diensten`}
+              variant="outline"
+              className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+            />
           </div>
 
           <div className="mt-12 flex max-w-3xl flex-wrap items-center gap-x-7 gap-y-3 text-sm text-sand-100/80">
