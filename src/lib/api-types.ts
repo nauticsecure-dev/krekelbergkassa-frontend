@@ -380,9 +380,17 @@ export interface AuditLog {
   id: string;
   entity_type: string;
   entity_id: string | null;
+  entity_name?: string | null;
+  entity_number?: string | null;
   action: string;
+  event_code?: string | null;
   before_data: Record<string, unknown> | null;
   after_data: Record<string, unknown> | null;
+  request_id?: string | null;
+  correlation_id?: string | null;
+  endpoint?: string | null;
+  method?: string | null;
+  severity?: string | null;
   ip_address: string | null;
   user_agent: string | null;
   actor_type: string;
