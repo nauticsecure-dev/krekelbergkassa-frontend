@@ -190,7 +190,7 @@ function GlobalTopbar({
                 {[
                   { key: 'customer', href: `/${locale}/admin/klanten?new=1` },
                   { key: 'boat', href: `/${locale}/admin/boten?new=1` },
-                  { key: 'appointment', href: `/${locale}/admin/afspraken` },
+                  { key: 'appointment', href: `/${locale}/planning?create=1` },
                   { key: 'stalling', href: `/${locale}/admin/stalling?new=1` },
                   { key: 'invoice', href: `/${locale}/admin/facturen?create=1`, roles: ['admin', 'manager'] },
                   { key: 'brokerage', href: `/${locale}/admin/verkopen`, roles: ['admin', 'manager'] },

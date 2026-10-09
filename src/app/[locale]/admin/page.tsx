@@ -107,7 +107,10 @@ export default function AdminDashboardPage() {
       ?.filter((item) => {
         const source = String(item.source ?? '').toLowerCase();
         const type = `${item.type ?? ''} ${item.event_type ?? ''} ${item.related_type ?? ''} ${item.title ?? ''}`.toLowerCase();
-        return source !== 'audit' && !/(track.?event|page.?view|page.?changed|request.?id|\/api\/|^post\b)/i.test(type);
+        const title = typeof item.title === 'string' ? item.title.trim() : '';
+        return title.length > 0 &&
+          source !== 'audit' &&
+          !/(track.?event|page.?view|page.?changed|request.?id|\/api\/|^post\b)/i.test(type);
       })
       .slice(0, 10) ?? null;
     const closureRows = ((closures as { data?: Record<string, unknown>[] } | null)?.data ?? []);
@@ -191,11 +194,11 @@ export default function AdminDashboardPage() {
             hint: t('adminNew.dashboard.cards.openInvoices.subtitle', {
               count: data?.overdueInvoices ?? '—',
             }),
-            hintHref: data?.overdueInvoices ? `/${locale}/admin/facturen?status=overdue` : undefined,
+            hintHref: data?.overdueInvoices ? `/${locale}/admin/facturen?payment_status=overdue` : undefined,
             icon: CreditCard,
             tone: 'marine',
             loading,
-            href: `/${locale}/admin/facturen?status=open`,
+            href: `/${locale}/admin/facturen?payment_status=open`,
           },
           {
             label: t('adminModules.overview.activeStorage'),
@@ -254,7 +257,7 @@ export default function AdminDashboardPage() {
           <Link href={`/${locale}/admin/stalling`} className="block">
             <AdminStatusStrip label={t('adminModules.overview.expiringStorage')} value={data?.expiringStalling ?? '—'} tone="warning" />
           </Link>
-          <Link href={`/${locale}/admin/facturen?status=overdue`} className="block">
+          <Link href={`/${locale}/admin/facturen?payment_status=overdue`} className="block">
             <AdminStatusStrip label={t('adminModules.overview.overdueInvoices')} value={data?.overdueInvoices ?? '—'} tone="danger" />
           </Link>
           <Link href={`/${locale}/admin/klanten`} className="block">
@@ -277,7 +280,7 @@ export default function AdminDashboardPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               {user?.role === 'staff' ? (
                 <>
-                  <AdminQuickAction href={`/${locale}/planning`} label={t('adminModules.create.appointment')} icon={Receipt} tone="gold" />
+                  <AdminQuickAction href={`/${locale}/planning?create=1`} label={t('adminModules.create.appointment')} icon={Receipt} tone="gold" />
                   <AdminQuickAction href={`/${locale}/admin/kassa`} label={t('admin.sidebar.kassa')} icon={Receipt} tone="gold" />
                   <AdminQuickAction href={`/${locale}/admin/stalling?new=1`} label={t('adminModules.create.stalling')} icon={Warehouse} tone="gold" />
                   <AdminQuickAction href={`/${locale}/admin/klanten`} label={t('adminModules.overview.customerSearch')} icon={CreditCard} tone="navy" />
@@ -353,7 +356,7 @@ export default function AdminDashboardPage() {
           className="mt-5"
         >
           <div className={`grid gap-3 ${showWorkOrders ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
-            <Link href={`/${locale}/admin/facturen?status=open`} className="block">
+            <Link href={`/${locale}/admin/facturen?payment_status=open`} className="block">
               <AdminStatusStrip
                 label={t('adminNew.reminders.invoiceDue')}
                 value={data?.reminderCounts?.invoiceDue ?? '—'}
@@ -407,7 +410,7 @@ export default function AdminDashboardPage() {
             ) : (
               <ol className="space-y-2">
                 {(data?.activityItems ?? []).map((item, i) => {
-                  const title = String(item.title ?? item.type ?? '—');
+                  const title = String(item.title);
                   const created = String(item.created_at ?? '');
                   return (
                     <li key={String(item.id ?? i)} className="flex items-start justify-between gap-3 border-b border-navy-50 pb-2 last:border-0">

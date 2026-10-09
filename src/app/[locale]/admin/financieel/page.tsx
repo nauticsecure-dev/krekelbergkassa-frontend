@@ -23,6 +23,7 @@ export default function FinanceHubPage() {
     invoicesService.list({ per_page: 100 })
   );
   const rows = invoices.data?.data ?? [];
+  const completeInvoiceWindow = invoices.data?.meta?.last_page === 1;
   const outstanding = rows.filter((invoice) => !invoice.is_fully_paid);
   const overdueCents = outstanding
     .filter((invoice) => invoice.is_overdue)
@@ -40,10 +41,10 @@ export default function FinanceHubPage() {
       title={t(`${prefix}.title`)}
       subtitle={t(`${prefix}.subtitle`)}
       stats={[
-        { label: t(`${prefix}.openAmount`), value: invoices.error ? t(`${prefix}.loadError`) : formatCurrency((overdueCents + dueCents) / 100, dateLocale), hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: Receipt, tone: 'marine', loading: invoices.loading, href: `/${locale}/admin/facturen` },
-        { label: t(`${prefix}.overdueAmount`), value: invoices.error ? t(`${prefix}.loadError`) : formatCurrency(overdueCents / 100, dateLocale), hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: CreditCard, tone: 'danger', loading: invoices.loading, href: `/${locale}/admin/facturen?status=overdue` },
-        { label: t(`${prefix}.dueAmount`), value: invoices.error ? t(`${prefix}.loadError`) : formatCurrency(dueCents / 100, dateLocale), hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: Users, tone: 'warning', loading: invoices.loading, href: `/${locale}/admin/facturen?status=open` },
-        { label: t(`${prefix}.revenueMonth`), value: invoices.error ? t(`${prefix}.loadError`) : formatCurrency(revenueCents / 100, dateLocale), hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: TrendingUp, tone: 'success', loading: invoices.loading, href: `/${locale}/admin/rapportages` },
+        { label: t(`${prefix}.openAmount`), value: invoices.error ? t(`${prefix}.loadError`) : completeInvoiceWindow ? formatCurrency((overdueCents + dueCents) / 100, dateLocale) : '—', hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: Receipt, tone: 'marine', loading: invoices.loading, href: `/${locale}/admin/facturen` },
+        { label: t(`${prefix}.overdueAmount`), value: invoices.error ? t(`${prefix}.loadError`) : completeInvoiceWindow ? formatCurrency(overdueCents / 100, dateLocale) : '—', hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: CreditCard, tone: 'danger', loading: invoices.loading, href: `/${locale}/admin/facturen?payment_status=overdue` },
+        { label: t(`${prefix}.dueAmount`), value: invoices.error ? t(`${prefix}.loadError`) : completeInvoiceWindow ? formatCurrency(dueCents / 100, dateLocale) : '—', hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: Users, tone: 'warning', loading: invoices.loading, href: `/${locale}/admin/facturen?payment_status=open` },
+        { label: t(`${prefix}.revenueMonth`), value: invoices.error ? t(`${prefix}.loadError`) : completeInvoiceWindow ? formatCurrency(revenueCents / 100, dateLocale) : '—', hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: TrendingUp, tone: 'success', loading: invoices.loading, href: `/${locale}/admin/rapportages` },
         { label: t(`${prefix}.costsMonth`), value: '—', hint: t(`${prefix}.costsUnavailable`), icon: Building2, tone: 'navy' },
       ]}
       groups={[
