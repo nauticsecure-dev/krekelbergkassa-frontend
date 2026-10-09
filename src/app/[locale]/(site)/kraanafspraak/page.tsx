@@ -37,31 +37,23 @@ import { canAccessAdmin } from '@/lib/auth-routes';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { serviceCatalogService, type ServiceCatalogService } from '@/lib/services';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
-import {
-  scaledPrice,
-  tariffPrice,
-  type TariffColumn,
-} from '@/lib/pricing-table';
 
 const CMS_PAGE = 'kraanafspraak';
 
 interface CraneService {
   code: string;
   label: string;
-  baseDuration: number;
-  basePrice: number;
   icon: typeof Ship;
-  tariff?: TariffColumn;
   catalogServiceCodes: string[];
 }
 
 const SERVICES: CraneService[] = [
-  { code: 'kranen_uit',  label: 'Kranen uit het water',    baseDuration: 30, basePrice: 65,  icon: Ship,    tariff: 'kranen',    catalogServiceCodes: ['kranen', 'kranen_uit'] },
-  { code: 'kranen_in',   label: 'Kranen in het water',     baseDuration: 30, basePrice: 65,  icon: Anchor,  tariff: 'kranen',    catalogServiceCodes: ['kranen', 'kranen_in'] },
-  { code: 'afspuiten',   label: 'Romp afspuiten',          baseDuration: 20, basePrice: 50,  icon: Droplets,tariff: 'afspuiten', catalogServiceCodes: ['afspuiten'] },
-  { code: 'antifouling', label: 'Antifouling controle',    baseDuration: 20, basePrice: 65,  icon: Sparkles,               catalogServiceCodes: ['antifouling'] },
-  { code: 'transport',   label: 'Bok transport',           baseDuration: 30, basePrice: 95,  icon: Hammer,                  catalogServiceCodes: ['transport'] },
-  { code: 'plaats',      label: 'Plaatsing winterstalling',baseDuration: 45, basePrice: 125, icon: Hammer,                 catalogServiceCodes: ['plaats', 'winterstalling'] },
+  { code: 'kranen_uit',  label: 'Kranen uit het water',    icon: Ship,     catalogServiceCodes: ['kranen', 'kranen_uit'] },
+  { code: 'kranen_in',   label: 'Kranen in het water',     icon: Anchor,   catalogServiceCodes: ['kranen', 'kranen_in'] },
+  { code: 'afspuiten',   label: 'Romp afspuiten',          icon: Droplets, catalogServiceCodes: ['afspuiten'] },
+  { code: 'antifouling', label: 'Antifouling controle',    icon: Sparkles, catalogServiceCodes: ['antifouling'] },
+  { code: 'transport',   label: 'Bok transport',           icon: Hammer,   catalogServiceCodes: ['transport'] },
+  { code: 'plaats',      label: 'Plaatsing winterstalling',icon: Hammer,   catalogServiceCodes: ['plaats', 'winterstalling'] },
 ];
 
 function catalogServiceFor(
@@ -93,16 +85,12 @@ function servicePriceForLength(
   s: CraneService,
   lengthCm: number,
   catalogServices: ServiceCatalogService[] | null,
-): number {
+): number | null {
   const catalogService = catalogServiceFor(s, catalogServices);
   const tariff = catalogTariffForLength(catalogService, lengthCm);
-  if (tariff) {
-    const price = tariff.price_incl_vat_euros
-      ?? (tariff.price_incl_vat != null ? tariff.price_incl_vat / 100 : null);
-    if (price != null) return price;
-  }
-  if (s.tariff) return tariffPrice(s.tariff, lengthCm) ?? s.basePrice;
-  return lengthCm ? scaledPrice(s.basePrice, lengthCm) : s.basePrice;
+  if (!tariff || tariff.is_on_request) return null;
+  return tariff.price_incl_vat_euros
+    ?? (tariff.price_incl_vat != null ? tariff.price_incl_vat / 100 : null);
 }
 
 function serviceDurationForLength(
@@ -111,8 +99,7 @@ function serviceDurationForLength(
   catalogServices: ServiceCatalogService[] | null,
 ) {
   const catalogService = catalogServiceFor(service, catalogServices);
-  return catalogTariffForLength(catalogService, lengthCm)?.duration_minutes
-    ?? service.baseDuration;
+  return catalogTariffForLength(catalogService, lengthCm)?.duration_minutes ?? null;
 }
 
 const DUTCH_DAYS   = ['ma','di','wo','do','vr','za','zo'];
@@ -139,21 +126,17 @@ export default function KraanAfspraakPage() {
   const { user, isDemo } = useAuth();
   const canManageProducts = canAccessAdmin(user?.role, isDemo);
   useRegisterCmsPage(CMS_PAGE);
-  const [catalogLoadError, setCatalogLoadError] = React.useState(false);
   const catalogQuery = useQuery(
     [],
-    async () => {
-      try {
-        const response = await serviceCatalogService.services();
-        setCatalogLoadError(false);
-        return response.services;
-      } catch {
-        setCatalogLoadError(true);
-        return null;
-      }
-    },
+    async () => (await serviceCatalogService.services()).services,
   );
   const catalogServices = catalogQuery.data;
+  const bookableServices = React.useMemo(
+    () => catalogServices
+      ? SERVICES.filter((service) => catalogServiceFor(service, catalogServices))
+      : [],
+    [catalogServices],
+  );
 
   const today = React.useMemo(() => {
     const d = new Date();
@@ -278,12 +261,24 @@ export default function KraanAfspraakPage() {
   const toggleService = (code: string) =>
     setSelectedServices(cur => cur.includes(code) ? cur.filter(c => c !== code) : [...cur, code]);
 
-  const totalDuration = SERVICES.filter(s => selectedServices.includes(s.code)).reduce((sum, s) => {
-    return sum + serviceDurationForLength(s, lengthCm, catalogServices);
+  React.useEffect(() => {
+    if (!catalogServices) return;
+    const availableCodes = new Set(bookableServices.map((service) => service.code));
+    setSelectedServices((current) => current.filter((code) => availableCodes.has(code)));
+  }, [bookableServices, catalogServices]);
+
+  const selectedBookableServices = bookableServices.filter((service) =>
+    selectedServices.includes(service.code)
+  );
+  const totalDuration = selectedBookableServices.reduce((sum, service) => {
+    return sum + (serviceDurationForLength(service, lengthCm, catalogServices) ?? 0);
   }, 0);
-  const finalPrice = SERVICES
-    .filter(s => selectedServices.includes(s.code))
-    .reduce((sum, s) => sum + servicePriceForLength(s, lengthCm, catalogServices), 0);
+  const selectedPrices = selectedBookableServices.map((service) =>
+    servicePriceForLength(service, lengthCm, catalogServices)
+  );
+  const finalPrice = selectedPrices.length && selectedPrices.every((price) => price != null)
+    ? selectedPrices.reduce<number>((sum, price) => sum + (price ?? 0), 0)
+    : null;
 
   const isPast       = (d: Date) => d.getTime() < today.getTime();
   const isOtherMonth = (d: Date) => d.getMonth() !== view.getMonth();
@@ -312,7 +307,7 @@ export default function KraanAfspraakPage() {
 
   const canSubmit =
     !submitting && !submitted && !!picked && !!time &&
-    !!selectedServices.length && !!lengthCm &&
+    !!selectedBookableServices.length && !!lengthCm &&
     !!form.voornaam && !!form.email;
 
   const submit = async () => {
@@ -569,17 +564,24 @@ export default function KraanAfspraakPage() {
               <SectionTitle icon={<Sparkles className="h-4 w-4" />} className="mt-8">
                 {t('crane.services')}
               </SectionTitle>
-              {catalogLoadError ? (
+              {catalogQuery.error ? (
                 <p role="status" className="mt-2 text-xs text-amber-700">
-                  Live tarieven konden niet worden geladen. Er worden tijdelijke indicatieve tarieven getoond.
+                  {t('crane.catalogUnavailable')}
+                </p>
+              ) : null}
+              {!catalogQuery.loading && !catalogQuery.error && bookableServices.length === 0 ? (
+                <p role="status" className="mt-2 text-xs text-navy-500">
+                  {t('crane.noBookableServices')}
                 </p>
               ) : null}
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {SERVICES.map(s => {
+                {bookableServices.map(s => {
                   const Icon   = s.icon;
                   const active = selectedServices.includes(s.code);
                   const catalogService = catalogServiceFor(s, catalogServices);
                   const productSearch = catalogService?.code ?? catalogService?.service_code ?? s.catalogServiceCodes[0];
+                  const price = servicePriceForLength(s, lengthCm, catalogServices);
+                  const duration = serviceDurationForLength(s, lengthCm, catalogServices);
                   return (
                     <div key={s.code} className="flex items-stretch gap-2">
                       <button
@@ -601,12 +603,12 @@ export default function KraanAfspraakPage() {
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-semibold">{s.label}</div>
                           <div className={cn('text-xs', active ? 'text-sand-100/80' : 'text-navy-400')}>
-                            Ca. {serviceDurationForLength(s, lengthCm, catalogServices)} min
+                            {duration != null ? `Ca. ${duration} min` : '—'}
                           </div>
                         </div>
                         <div className={cn('shrink-0 text-sm font-semibold', active ? 'text-gold-300' : 'text-navy-900')}>
-                          €{servicePriceForLength(s, lengthCm, catalogServices)}
-                          {!lengthCm ? (
+                          {price == null ? t('servicePage.onRequest') : `€${price}`}
+                          {price != null && !lengthCm ? (
                             <span className={cn('ml-0.5 text-[10px] font-normal', active ? 'text-sand-100/70' : 'text-navy-400')}>
                               v.a.
                             </span>
@@ -826,7 +828,9 @@ export default function KraanAfspraakPage() {
                   <span className="text-xs font-medium uppercase tracking-widest text-sand-100/70">
                     {t('crane.estimate')}
                   </span>
-                  <span className="text-2xl font-semibold">€{finalPrice.toFixed(2)}</span>
+                  <span className="text-2xl font-semibold">
+                    {finalPrice == null ? t('servicePage.onRequest') : `€${finalPrice.toFixed(2)}`}
+                  </span>
                 </div>
               </div>
               <div className="px-5 py-4">

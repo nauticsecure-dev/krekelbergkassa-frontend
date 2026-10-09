@@ -581,6 +581,8 @@
     "service": "Service",
     "duration": "Duration",
     "estimate": "Estimated total",
+    "catalogUnavailable": "Services and prices could not be loaded. Please try again later.",
+    "noBookableServices": "There are currently no services available to book online.",
     "submit": "Request appointment",
     "submitSuccess": "Appointment requested",
     "submitFailed": "Request failed",
@@ -1261,6 +1263,11 @@
       "deleted": "Removed",
       "open": "Open",
       "clear": "Clear",
+      "dismiss": "Dismiss",
+      "search": "Search",
+      "filter": "Filter",
+      "clearFilters": "Clear filters",
+      "saved": "Saved",
       "retry": "Try again",
       "all": "All",
       "yes": "Yes",
@@ -1291,6 +1298,7 @@
           "title": "Low stock",
           "subtitle": "Products below minimum stock"
         },
+        "today": "Today",
         "expiringStorage": "{count} expiring soon",
         "syncStatus": {
           "title": "Sync status",
@@ -1836,6 +1844,15 @@
     "kassa": {
       "title": "Cash Desk",
       "subtitle": "Fast checkout with smart search and realtime calculation",
+      "refund": "Refund",
+      "refundSuccess": "Refund recorded",
+      "refundTitle": "Refund sale",
+      "refundSubtitle": "Choose the refund method and provide a reason.",
+      "refundMethod": "Refund method",
+      "refundReason": "Reason",
+      "refundReasonPlaceholder": "Describe why this sale is being refunded.",
+      "refundConfirm": "Confirm refund",
+      "editCustomer": "Edit customer details",
       "searchPlaceholder": "Search product or type e.g. wash 880",
       "selectCustomer": "Select customer",
       "payment": {
@@ -2388,6 +2405,7 @@
     "invoices": {
       "title": "Invoices",
       "subtitle": "Financial overview across POS, storage, calculator and manual invoices",
+      "onAccount": "On account",
       "new": "New invoice",
       "defaultLineDescription": "New invoice line",
       "searchPlaceholder": "Search by invoice number, customer or email",
@@ -2439,6 +2457,8 @@
     "invoiceDetail": {
       "fallbackTitle": "Invoice",
       "subtitle": "Invoice details",
+      "creditSuccess": "Credit note created",
+      "pdfGenerating": "Generating invoice PDF…",
       "loading": "Loading invoice",
       "source": "Source",
       "overviewTitle": "Invoice overview",
@@ -2482,6 +2502,8 @@
       "actions": {
         "send": "Send",
         "markPaid": "Mark paid",
+        "openCreditNote": "Open credit note",
+        "generatePdf": "Generate PDF",
         "mollieLink": "Mollie link",
         "regeneratePdf": "Regenerate PDF",
         "openPdf": "Open",
@@ -2501,7 +2523,8 @@
         "amount": "Amount to credit",
         "reason": "Reason (required)",
         "reasonPlaceholder": "Why is this invoice being credited?",
-        "confirm": "Create credit note"
+        "confirm": "Create credit note",
+        "sendEmail": "Email the credit note"
       },
       "paymentMethods": {
         "cash": "Cash",
@@ -2851,7 +2874,8 @@
       "toasts": {
         "confirmed": "Appointment confirmed",
         "cancelled": "Appointment cancelled",
-        "completed": "Appointment completed"
+        "completed": "Appointment completed",
+        "advanced": "Appointment status changed to {status}"
       }
     },
     "products": {
@@ -2918,6 +2942,10 @@
         "tagsPlaceholder": "storage, season",
         "aliases": "Aliases",
         "aliasesPlaceholder": "Alternative search names",
+        "showInKassa": "Show in POS",
+        "showInPublic": "Show on website",
+        "showInCalculator": "Show in calculator",
+        "showInBooking": "Show in bookings",
         "created": "Created",
         "updated": "Updated",
         "costPrice": "Cost price (€)",
@@ -2932,7 +2960,8 @@
         "identity": "Identity",
         "classification": "Classification",
         "pricing": "Pricing",
-        "pos": "POS & inventory"
+        "pos": "POS & inventory",
+        "visibility": "Visibility"
       },
       "categories": {
         "stalling": "Storage",
@@ -3402,6 +3431,10 @@
       "emptyTitle": "No work orders",
       "emptyMessage": "No work orders created yet.",
       "total": "{count} work orders",
+      "detail": {
+        "priority": "Priority",
+        "completionNote": "Completion note"
+      },
       "columns": {
         "number": "Number",
         "type": "Type",
@@ -3431,6 +3464,8 @@
         "fileUploaded": "File uploaded"
       },
       "detail": {
+        "priority": "Priority",
+        "completionNote": "Completion note",
         "open": "Open",
         "back": "← Back to work orders",
         "overview": "Work order overview",
@@ -3662,6 +3697,8 @@
       "ledgerTitle": "Ledger breakdown",
       "ledgerSubtitle": "Totals per ledger account.",
       "ledgerEmpty": "No ledger data available yet.",
+      "ledgerRevenue": "Revenue",
+      "ledgerCosts": "Costs",
       "stats": {
         "revenue": "Revenue",
         "expenses": "Expenses",

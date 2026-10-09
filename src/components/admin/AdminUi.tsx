@@ -33,6 +33,33 @@ export function AdminContentGrid({
   return <div className={cn('grid min-w-0 gap-5', className)}>{children}</div>;
 }
 
+export function AdminFormSection({
+  title,
+  children,
+  className,
+}: {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={cn('space-y-3', className)}>
+      <h3 className="text-xs font-bold uppercase tracking-widest text-navy-400">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+export function AdminFormGrid({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={cn('grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2', className)}>{children}</div>;
+}
+
 export function AdminMetricGrid({ children }: { children: React.ReactNode }) {
   return <div className="bento-grid-4">{children}</div>;
 }

@@ -248,6 +248,10 @@ export interface Product {
   aliases?: string[] | null;
   product_group_id?: string | null;
   group?: { code?: string; name?: string; color?: string } | null;
+  show_in_kassa?: boolean;
+  show_in_public?: boolean;
+  show_in_calculator?: boolean;
+  show_in_booking?: boolean;
   // Trello #80/#86: POS rendering + favourites
   display_color?: string | null;
   display_icon?: string | null;

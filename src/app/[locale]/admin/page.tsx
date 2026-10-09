@@ -102,7 +102,14 @@ export default function AdminDashboardPage() {
     const todayRevenue = analyticsTotals?.turnover_cents ?? null;
     const reminderCounts = reminders ? normalizeRemindersSummary(reminders) : null;
 
-    const activityItems = ((activity as { data?: Record<string, unknown>[] } | null)?.data ?? null)?.slice(0, 10) ?? null;
+    const activityRows = (activity as { data?: Record<string, unknown>[] } | null)?.data ?? null;
+    const activityItems = activityRows
+      ?.filter((item) => {
+        const source = String(item.source ?? '').toLowerCase();
+        const type = `${item.type ?? ''} ${item.event_type ?? ''} ${item.related_type ?? ''} ${item.title ?? ''}`.toLowerCase();
+        return source !== 'audit' && !/(track.?event|page.?view|page.?changed|request.?id|\/api\/|^post\b)/i.test(type);
+      })
+      .slice(0, 10) ?? null;
     const closureRows = ((closures as { data?: Record<string, unknown>[] } | null)?.data ?? []);
     const cashDifference = closureRows.length
       ? Number(closureRows[0].difference_cents ?? 0)
@@ -214,18 +221,20 @@ export default function AdminDashboardPage() {
             value: data?.lowStockCount ?? '—',
             hint: t('adminNew.dashboard.cards.lowStock.subtitle'),
             icon: Package,
-            tone: (data?.lowStockCount ?? 0) > 0 ? 'warning' : 'success',
+            tone: data?.lowStockCount == null ? 'navy' : data.lowStockCount > 0 ? 'warning' : 'success',
             loading,
             href: `/${locale}/admin/producten?low_stock=1`,
           },
           {
             label: t('adminNew.dashboard.cards.syncStatus.title'),
-            value: syncLabel,
-            hint: sync.lastSyncAt
-              ? t('adminNew.dashboard.cards.syncStatus.lastSync', {
-                  time: new Date(sync.lastSyncAt).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }),
-                })
-              : t('adminNew.dashboard.cards.syncStatus.noSync'),
+            value: sync.error ? '—' : syncLabel,
+            hint: sync.error
+              ? syncLabel
+              : sync.lastSyncAt
+                ? t('adminNew.dashboard.cards.syncStatus.lastSync', {
+                    time: new Date(sync.lastSyncAt).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }),
+                  })
+                : t('adminNew.dashboard.cards.syncStatus.noSync'),
             icon: AlertTriangle,
             tone: sync.error || sync.failed > 0 ? 'danger' : !sync.online || sync.pending > 0 ? 'warning' : 'success',
             loading: sync.loading,
@@ -344,16 +353,20 @@ export default function AdminDashboardPage() {
           className="mt-5"
         >
           <div className={`grid gap-3 ${showWorkOrders ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
-            <AdminStatusStrip
-              label={t('adminNew.reminders.invoiceDue')}
-              value={data?.reminderCounts?.invoiceDue ?? '—'}
-              tone={data?.reminderCounts == null ? 'navy' : data.reminderCounts.invoiceDue > 0 ? 'warning' : 'success'}
-            />
-            <AdminStatusStrip
-              label={t('adminNew.reminders.contractsExpiring')}
-              value={data?.reminderCounts?.contractsExpiring ?? '—'}
-              tone={data?.reminderCounts == null ? 'navy' : data.reminderCounts.contractsExpiring > 0 ? 'warning' : 'success'}
-            />
+            <Link href={`/${locale}/admin/facturen?status=open`} className="block">
+              <AdminStatusStrip
+                label={t('adminNew.reminders.invoiceDue')}
+                value={data?.reminderCounts?.invoiceDue ?? '—'}
+                tone={data?.reminderCounts == null ? 'navy' : data.reminderCounts.invoiceDue > 0 ? 'warning' : 'success'}
+              />
+            </Link>
+            <Link href={`/${locale}/admin/stalling?status=expiring`} className="block">
+              <AdminStatusStrip
+                label={t('adminNew.reminders.contractsExpiring')}
+                value={data?.reminderCounts?.contractsExpiring ?? '—'}
+                tone={data?.reminderCounts == null ? 'navy' : data.reminderCounts.contractsExpiring > 0 ? 'warning' : 'success'}
+              />
+            </Link>
             {showWorkOrders ? (
               <Link href={`/${locale}/admin/werkorders`} className="block">
                 <AdminStatusStrip

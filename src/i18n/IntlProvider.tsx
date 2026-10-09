@@ -8,7 +8,7 @@ type Dict = Record<string, unknown>;
 interface IntlContextValue {
   locale: Locale;
   messages: Dict;
-  t: (path: string, vars?: Record<string, string | number>) => string;
+  t: (path: string, vars?: Record<string, string | number | undefined>) => string;
 }
 
 const IntlContext = createContext<IntlContextValue | null>(null);
@@ -22,11 +22,19 @@ function getByPath(dict: Dict, path: string): unknown {
   }, dict);
 }
 
-function interpolate(value: string, vars?: Record<string, string | number>) {
+function interpolate(value: string, vars?: Record<string, string | number | undefined>) {
   if (!vars) return value;
   return value.replace(/\{(\w+)\}/g, (_, k) =>
     vars[k] != null ? String(vars[k]) : `{${k}}`
   );
+}
+
+function readableMissingKey(path: string) {
+  const leaf = path.split('.').at(-1) ?? path;
+  return leaf
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export function IntlProvider({
@@ -45,7 +53,11 @@ export function IntlProvider({
       t: (path, vars) => {
         const v = getByPath(messages, path);
         if (typeof v === 'string') return interpolate(v, vars);
-        return path;
+        const fallback = vars?.defaultValue;
+        return interpolate(
+          typeof fallback === 'string' ? fallback : readableMissingKey(path),
+          vars
+        );
       },
     }),
     [locale, messages]

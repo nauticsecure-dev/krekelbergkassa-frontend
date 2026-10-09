@@ -576,6 +576,8 @@
     "service": "Service",
     "duration": "Duur",
     "estimate": "Totaal indicatie",
+    "catalogUnavailable": "Diensten en tarieven konden niet worden geladen. Probeer het later opnieuw.",
+    "noBookableServices": "Er zijn momenteel geen diensten beschikbaar om online te boeken.",
     "submit": "Afspraak aanvragen",
     "submitSuccess": "Afspraak aangevraagd",
     "submitFailed": "Aanvraag mislukt",
@@ -1256,6 +1258,11 @@
       "deleted": "Verwijderd",
       "open": "Openen",
       "clear": "Wissen",
+      "dismiss": "Sluiten",
+      "search": "Zoeken",
+      "filter": "Filteren",
+      "clearFilters": "Filters wissen",
+      "saved": "Opgeslagen",
       "retry": "Opnieuw proberen",
       "all": "Alle",
       "yes": "Ja",
@@ -1286,6 +1293,7 @@
           "title": "Lage voorraad",
           "subtitle": "Producten onder minimumvoorraad"
         },
+        "today": "Vandaag",
         "expiringStorage": "{count} lopen binnenkort af",
         "syncStatus": {
           "title": "Sync status",
@@ -1390,6 +1398,8 @@
         "fileUploaded": "Bestand geüpload"
       },
       "detail": {
+        "priority": "Prioriteit",
+        "completionNote": "Notitie bij afronding",
         "open": "Openen",
         "back": "← Terug naar werkorders",
         "overview": "Werkorder-overzicht",
@@ -2237,6 +2247,15 @@
     "kassa": {
       "title": "Kassa",
       "subtitle": "Snelle checkout met slim zoeken en realtime berekening",
+      "refund": "Terugbetalen",
+      "refundSuccess": "Terugbetaling geregistreerd",
+      "refundTitle": "Verkoop terugbetalen",
+      "refundSubtitle": "Kies de betaalmethode en geef een reden op.",
+      "refundMethod": "Terugbetaalmethode",
+      "refundReason": "Reden",
+      "refundReasonPlaceholder": "Beschrijf waarom deze verkoop wordt terugbetaald.",
+      "refundConfirm": "Terugbetaling bevestigen",
+      "editCustomer": "Klantgegevens bewerken",
       "searchPlaceholder": "Zoek product of type bv: afspuiten 880",
       "selectCustomer": "Klant selecteren",
       "payment": {
@@ -2789,6 +2808,7 @@
     "invoices": {
       "title": "Facturen",
       "subtitle": "Financieel overzicht over kassa, stalling, calculator en handmatige facturen",
+      "onAccount": "Op rekening",
       "new": "Nieuwe factuur",
       "defaultLineDescription": "Nieuwe factuurregel",
       "searchPlaceholder": "Zoek op factuurnummer, klant of e-mail",
@@ -2840,6 +2860,8 @@
     "invoiceDetail": {
       "fallbackTitle": "Factuur",
       "subtitle": "Factuurdetails",
+      "creditSuccess": "Creditnota aangemaakt",
+      "pdfGenerating": "Factuur-PDF wordt aangemaakt…",
       "loading": "Factuur laden",
       "source": "Bron",
       "overviewTitle": "Factuur overzicht",
@@ -2883,6 +2905,8 @@
       "actions": {
         "send": "Versturen",
         "markPaid": "Markeer betaald",
+        "openCreditNote": "Creditnota openen",
+        "generatePdf": "PDF aanmaken",
         "mollieLink": "Mollie link",
         "regeneratePdf": "PDF opnieuw genereren",
         "openPdf": "Openen",
@@ -2902,7 +2926,8 @@
         "amount": "Te crediteren bedrag",
         "reason": "Reden (verplicht)",
         "reasonPlaceholder": "Waarom wordt deze factuur gecrediteerd?",
-        "confirm": "Creditnota aanmaken"
+        "confirm": "Creditnota aanmaken",
+        "sendEmail": "Creditnota per e-mail versturen"
       },
       "paymentMethods": {
         "cash": "Contant",
@@ -3252,7 +3277,8 @@
       "toasts": {
         "confirmed": "Afspraak bevestigd",
         "cancelled": "Afspraak geannuleerd",
-        "completed": "Afspraak afgerond"
+        "completed": "Afspraak afgerond",
+        "advanced": "Afspraakstatus gewijzigd naar {status}"
       }
     },
     "products": {
@@ -3319,6 +3345,10 @@
         "tagsPlaceholder": "stalling, seizoen",
         "aliases": "Aliassen",
         "aliasesPlaceholder": "Alternatieve zoeknamen",
+        "showInKassa": "Tonen in kassa",
+        "showInPublic": "Tonen op website",
+        "showInCalculator": "Tonen in calculator",
+        "showInBooking": "Tonen bij boekingen",
         "created": "Aangemaakt",
         "updated": "Bijgewerkt",
         "costPrice": "Inkoopprijs (€)",
@@ -3333,7 +3363,8 @@
         "identity": "Identiteit",
         "classification": "Classificatie",
         "pricing": "Prijzen",
-        "pos": "Kassa & voorraad"
+        "pos": "Kassa & voorraad",
+        "visibility": "Zichtbaarheid"
       },
       "categories": {
         "stalling": "Stalling",
@@ -3657,6 +3688,8 @@
       "ledgerTitle": "Grootboekoverzicht",
       "ledgerSubtitle": "Totalen per grootboekrekening.",
       "ledgerEmpty": "Nog geen grootboekgegevens beschikbaar.",
+      "ledgerRevenue": "Omzet",
+      "ledgerCosts": "Kosten",
       "stats": {
         "revenue": "Omzet",
         "expenses": "Kosten",

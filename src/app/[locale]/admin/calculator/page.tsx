@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { customersService, invoicesService, pricingService, usersService } from '@/lib/services';
+import { customersService, invoicesService, pricingService, serviceCatalogService, usersService } from '@/lib/services';
 import { formatCurrency } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -60,6 +60,21 @@ export default function CalculatorPage() {
   const customers = useQuery(['calculator-customers'], () =>
     customersService.list({ per_page: 100 })
   );
+  const serviceCatalog = useQuery(['calculator-service-catalog'], () =>
+    serviceCatalogService.services()
+  );
+  const availableServiceIds = React.useMemo(() => {
+    const services = serviceCatalog.data?.services ?? [];
+    return SERVICE_IDS.filter((id) => services.some((service) =>
+      service.visibility?.calculator !== false &&
+      [service.code, service.service_code, service.slug].includes(id)
+    ));
+  }, [serviceCatalog.data]);
+  React.useEffect(() => {
+    if (!serviceCatalog.data) return;
+    const available = new Set(availableServiceIds);
+    setSelectedServices((current) => current.filter((service) => available.has(service)));
+  }, [availableServiceIds, serviceCatalog.data]);
   const adminUsers = useQuery(['calculator-admin-users'], () =>
     usersService.list({ per_page: 200 })
   );
@@ -305,8 +320,16 @@ export default function CalculatorPage() {
   };
 
   const runCalculation = async () => {
+    if (serviceCatalog.loading || serviceCatalog.error) {
+      push({ tone: 'error', title: t('adminNew.calculator.catalogUnavailable', { defaultValue: 'Diensten konden niet worden geladen.' }) });
+      return;
+    }
     if (!lengthCm || selectedServices.length === 0) {
       push({ tone: 'error', title: t('adminNew.calculator.toasts.lengthAndServiceRequired') });
+      return;
+    }
+    if (selectedServices.some((service) => !availableServiceIds.includes(service))) {
+      push({ tone: 'error', title: t('adminNew.calculator.catalogUnavailable', { defaultValue: 'Selecteer een beschikbare dienst.' }) });
       return;
     }
 
@@ -366,8 +389,8 @@ export default function CalculatorPage() {
     const fromRecords = (records.data?.data ?? [])
       .map((r) => String(r.service_type ?? ''))
       .filter(Boolean);
-    return [...new Set([...SERVICE_IDS, ...fromRecords])].sort();
-  }, [records.data?.data]);
+    return [...new Set([...availableServiceIds, ...fromRecords])].sort();
+  }, [availableServiceIds, records.data?.data]);
 
   const resolveTotal = React.useMemo(() => {
     if (!result) return 0;
@@ -533,7 +556,19 @@ export default function CalculatorPage() {
               {t('adminNew.calculator.services')}
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {SERVICE_IDS.map((service) => {
+              {serviceCatalog.error ? (
+                <p role="status" className="text-sm text-red-700">
+                  {t('adminNew.calculator.catalogUnavailable', { defaultValue: 'Diensten konden niet worden geladen.' })}
+                </p>
+              ) : serviceCatalog.loading ? (
+                <p role="status" className="text-sm text-navy-500">
+                  {t('adminNew.common.loading')}
+                </p>
+              ) : availableServiceIds.length === 0 ? (
+                <p role="status" className="text-sm text-navy-500">
+                  {t('adminNew.calculator.noAvailableServices', { defaultValue: 'Er zijn geen diensten beschikbaar voor de calculator.' })}
+                </p>
+              ) : availableServiceIds.map((service) => {
                 const active = selectedServices.includes(service);
                 return (
                   <button
@@ -597,7 +632,7 @@ export default function CalculatorPage() {
               variant="gold"
               leftIcon={<Calculator className="h-4 w-4" />}
               onClick={runCalculation}
-              disabled={calculate.loading || preview.loading}
+              disabled={calculate.loading || preview.loading || serviceCatalog.loading || !!serviceCatalog.error || availableServiceIds.length === 0}
             >
               {calculate.loading || preview.loading
                 ? t('adminNew.calculator.calculating')

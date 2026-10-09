@@ -576,6 +576,8 @@
     "service": "Service",
     "duration": "Dauer",
     "estimate": "Gesamt (Richtwert)",
+    "catalogUnavailable": "Leistungen und Preise konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "noBookableServices": "Derzeit sind keine Leistungen online buchbar.",
     "submit": "Termin anfragen",
     "submitSuccess": "Termin angefragt",
     "submitFailed": "Anfrage fehlgeschlagen",
@@ -1256,6 +1258,11 @@
       "deleted": "Entfernt",
       "open": "Öffnen",
       "clear": "Löschen",
+      "dismiss": "Schließen",
+      "search": "Suchen",
+      "filter": "Filtern",
+      "clearFilters": "Filter zurücksetzen",
+      "saved": "Gespeichert",
       "retry": "Erneut versuchen",
       "all": "Alle",
       "yes": "Ja",
@@ -1286,6 +1293,7 @@
           "title": "Niedriger Bestand",
           "subtitle": "Produkte unter Mindestbestand"
         },
+        "today": "Heute",
         "expiringStorage": "{count} laufen bald ab",
         "syncStatus": {
           "title": "Sync-Status",
@@ -1831,6 +1839,15 @@
     "kassa": {
       "title": "Kasse",
       "subtitle": "Schneller Checkout mit intelligenter Suche und Echtzeitberechnung",
+      "refund": "Erstatten",
+      "refundSuccess": "Rückerstattung erfasst",
+      "refundTitle": "Verkauf erstatten",
+      "refundSubtitle": "Zahlungsmethode auswählen und Grund angeben.",
+      "refundMethod": "Erstattungsmethode",
+      "refundReason": "Grund",
+      "refundReasonPlaceholder": "Beschreiben Sie den Grund für die Erstattung.",
+      "refundConfirm": "Erstattung bestätigen",
+      "editCustomer": "Kundendaten bearbeiten",
       "searchPlaceholder": "Produkt suchen oder z.B. afspuiten 880 eingeben",
       "selectCustomer": "Kunde auswählen",
       "payment": {
@@ -2383,6 +2400,7 @@
     "invoices": {
       "title": "Rechnungen",
       "subtitle": "Finanzübersicht über Kasse, Lagerung, Rechner und manuelle Rechnungen",
+      "onAccount": "Auf Rechnung",
       "new": "Neue Rechnung",
       "defaultLineDescription": "Neue Rechnungszeile",
       "searchPlaceholder": "Nach Rechnungsnummer, Kunde oder E-Mail suchen",
@@ -2434,6 +2452,8 @@
     "invoiceDetail": {
       "fallbackTitle": "Rechnung",
       "subtitle": "Rechnungsdetails",
+      "creditSuccess": "Gutschrift erstellt",
+      "pdfGenerating": "Rechnungs-PDF wird erstellt…",
       "loading": "Rechnung laden",
       "source": "Quelle",
       "overviewTitle": "Rechnungsübersicht",
@@ -2477,6 +2497,8 @@
       "actions": {
         "send": "Senden",
         "markPaid": "Als bezahlt markieren",
+        "openCreditNote": "Gutschrift öffnen",
+        "generatePdf": "PDF erstellen",
         "mollieLink": "Mollie-Link",
         "regeneratePdf": "PDF neu erzeugen",
         "openPdf": "Öffnen",
@@ -2496,7 +2518,8 @@
         "amount": "Gutzuschreibender Betrag",
         "reason": "Grund (erforderlich)",
         "reasonPlaceholder": "Warum wird diese Rechnung gutgeschrieben?",
-        "confirm": "Gutschrift erstellen"
+        "confirm": "Gutschrift erstellen",
+        "sendEmail": "Gutschrift per E-Mail senden"
       },
       "paymentMethods": {
         "cash": "Bar",
@@ -2846,7 +2869,8 @@
       "toasts": {
         "confirmed": "Termin bestätigt",
         "cancelled": "Termin storniert",
-        "completed": "Termin abgeschlossen"
+        "completed": "Termin abgeschlossen",
+        "advanced": "Terminstatus geändert zu {status}"
       }
     },
     "products": {
@@ -2913,6 +2937,10 @@
         "tagsPlaceholder": "lagerung, saison",
         "aliases": "Aliase",
         "aliasesPlaceholder": "Alternative Suchnamen",
+        "showInKassa": "In der Kasse anzeigen",
+        "showInPublic": "Auf der Website anzeigen",
+        "showInCalculator": "Im Rechner anzeigen",
+        "showInBooking": "Bei Buchungen anzeigen",
         "created": "Erstellt",
         "updated": "Aktualisiert",
         "costPrice": "Einkaufspreis (€)",
@@ -2927,7 +2955,8 @@
         "identity": "Identität",
         "classification": "Klassifizierung",
         "pricing": "Preise",
-        "pos": "Kasse & Bestand"
+        "pos": "Kasse & Bestand",
+        "visibility": "Sichtbarkeit"
       },
       "categories": {
         "stalling": "Lagerung",
@@ -3397,6 +3426,10 @@
       "emptyTitle": "Keine Arbeitsaufträge",
       "emptyMessage": "Noch keine Arbeitsaufträge erstellt.",
       "total": "{count} Arbeitsaufträge",
+      "detail": {
+        "priority": "Priorität",
+        "completionNote": "Abschlussnotiz"
+      },
       "columns": {
         "number": "Nummer",
         "type": "Typ",
@@ -3426,6 +3459,8 @@
         "fileUploaded": "Datei hochgeladen"
       },
       "detail": {
+        "priority": "Priorität",
+        "completionNote": "Abschlussnotiz",
         "open": "Öffnen",
         "back": "← Zurück zu Arbeitsaufträgen",
         "overview": "Arbeitsauftrag-Übersicht",
@@ -3657,6 +3692,8 @@
       "ledgerTitle": "Kontenaufschlüsselung",
       "ledgerSubtitle": "Summen pro Sachkonto.",
       "ledgerEmpty": "Noch keine Kontendaten verfügbar.",
+      "ledgerRevenue": "Umsatz",
+      "ledgerCosts": "Kosten",
       "stats": {
         "revenue": "Umsatz",
         "expenses": "Kosten",
