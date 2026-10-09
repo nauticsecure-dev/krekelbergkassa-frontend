@@ -181,7 +181,7 @@ function GlobalTopbar({
               className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gold-500 px-3 text-xs font-semibold text-white hover:bg-gold-600"
             >
               <Plus className="h-3.5 w-3.5" />
-              {t('admin.common.new')}
+              <span className="hidden sm:inline">{t('admin.common.new')}</span>
             </button>
             {createOpen ? (
               <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-navy-100 bg-white py-1 shadow-elev">
