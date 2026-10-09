@@ -154,7 +154,7 @@ export default function KraanAfspraakPage() {
         straat:     get('route'),
         huisnummer: get('street_number'),
         postcode:   get('postal_code'),
-        stad:       get('locality') || get('administrative_area_level_2'),
+        stad:       get('locality') || get('postal_town') || get('administrative_area_level_2'),
       }));
     });
   }, [googleLoaded]);
@@ -387,35 +387,35 @@ export default function KraanAfspraakPage() {
 
               {/* Address */}
               <SectionTitle icon={<MapPin className="h-4 w-4" />} className="mt-8">Adres</SectionTitle>
-              <div className="mt-4 grid gap-4 sm:grid-cols-12">
-                <div className="sm:col-span-8">
+              <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                <div>
                   <label className="mb-1.5 block text-sm font-medium text-navy-800">
                     Straat
                   </label>
                   <input
                     ref={addressRef}
-                    className="input-base w-full"
+                    className="input-base h-14 w-full text-base"
                     placeholder="Havenstraat"
                     value={form.straat}
                     onChange={setField('straat')}
                   />
                 </div>
                 <Input
-                  className="sm:col-span-4"
+                  className="h-14 text-base"
                   label="Huisnummer"
                   placeholder="12 A"
                   value={form.huisnummer}
                   onChange={setField('huisnummer')}
                 />
                 <Input
-                  className="sm:col-span-4"
+                  className="h-14 text-base"
                   label="Postcode"
                   placeholder="6041 AB"
                   value={form.postcode}
                   onChange={setField('postcode')}
                 />
                 <Input
-                  className="sm:col-span-8"
+                  className="h-14 text-base"
                   label="Stad"
                   placeholder="Roermond"
                   value={form.stad}

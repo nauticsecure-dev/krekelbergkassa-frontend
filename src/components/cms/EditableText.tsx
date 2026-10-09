@@ -63,7 +63,14 @@ export function EditableText({
 
   return (
     <span className={cn('group/cms relative inline-block', className && 'block')}>
-      <Tag className={cn('outline-dashed outline-1 outline-gold-400/60', className)}>
+      <Tag
+        className={cn('outline-dashed outline-1 outline-gold-400/60', className)}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen(true);
+        }}
+      >
         {content}
       </Tag>
       <button
