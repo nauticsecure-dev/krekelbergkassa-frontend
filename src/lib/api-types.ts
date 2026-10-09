@@ -193,6 +193,7 @@ export interface Invoice {
   invoice_number: string;
   source: 'kassa' | 'stalling' | 'manual' | 'calculator' | string;
   status: string;
+  payment_status?: string | null;
   locale: string;
   currency: string;
   subtotal_cents: number;

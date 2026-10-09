@@ -21,6 +21,7 @@ export type PageHeaderStat = {
   icon?: LucideIcon;
   tone?: PageHeaderStatTone;
   href?: string;
+  active?: boolean;
   hintHref?: string;
   /** Small shortcut icon in the card header (e.g. pencil → edit page). */
   actionIcon?: LucideIcon;
@@ -87,8 +88,9 @@ function PageHeaderStatCard({ stat }: { stat: PageHeaderStat }) {
   );
 
   const className = cn(
-    'flex h-full min-h-[104px] flex-col justify-between rounded-xl border border-navy-100/60 bg-white/95 px-4 py-3.5 shadow-sm transition',
-    stat.href ? 'hover:border-navy-200/70 hover:shadow-md' : 'hover:border-navy-200/70'
+    'flex h-full min-h-[104px] flex-col justify-between rounded-xl border bg-white/95 px-4 py-3.5 shadow-sm transition',
+    stat.active ? 'border-marine-500 ring-2 ring-marine-100' : 'border-navy-100/60',
+    stat.href ? `${stat.active ? 'hover:border-marine-600' : 'hover:border-navy-200/70'} hover:shadow-md` : 'hover:border-navy-200/70'
   );
 
   return (
