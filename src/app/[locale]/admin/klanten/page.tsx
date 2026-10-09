@@ -34,6 +34,7 @@ import { impersonateCustomer, ImpersonationError } from '@/lib/impersonate';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 export default function CustomersPage() {
   const { locale, t } = useIntl();
@@ -47,6 +48,7 @@ export default function CustomersPage() {
   const [lastLogin, setLastLogin] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
+  useCreateMenuIntent(() => setShowCreate(true));
   const [form, setForm] = React.useState({
     name: '',
     email: '',

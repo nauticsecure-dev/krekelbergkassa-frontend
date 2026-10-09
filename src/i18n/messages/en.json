@@ -1,4 +1,129 @@
 {
+  "adminModules": {
+    "overview": {
+      "todayAppointments": "Today's appointments",
+      "craneJobs": "Crane jobs",
+      "activeStorage": "Active storage",
+      "expiringStorage": "Storage expiring (30 days)",
+      "newCustomers": "New customers today",
+      "newBrokerageLeads": "New brokerage leads",
+      "leadsUnavailable": "No lead register"
+    },
+    "create": {
+      "customer": "Customer",
+      "boat": "Boat",
+      "appointment": "Appointment",
+      "stalling": "Storage",
+      "invoice": "Invoice",
+      "brokerage": "Sales dossier",
+      "supplier": "Supplier",
+      "service": "Service"
+    },
+    "nav": {
+      "overview": "Overview",
+      "planning": "Planning",
+      "pos": "POS",
+      "storage": "Storage",
+      "customers": "Customers",
+      "boats": "Boats",
+      "brokerage": "Brokerage",
+      "finance": "Finance",
+      "servicesPricing": "Services & Pricing",
+      "management": "Management"
+    },
+    "hubs": {
+      "planning": {
+        "title": "Planning",
+        "subtitle": "Manage appointments, calendar availability and yard work from one place.",
+        "schedule": "Schedule",
+        "calendar": "Calendar",
+        "calendarDesc": "Opening hours, exceptions, locations and yard capacity.",
+        "appointments": "Appointments",
+        "appointmentsDesc": "Review and manage customer appointments.",
+        "workOrders": "Work orders",
+        "workOrdersDesc": "Track scheduled work and its progress.",
+        "quickAccess": "Quick access",
+        "crane": "Crane appointment",
+        "craneDesc": "Open the crane booking page."
+      },
+      "finance": {
+        "title": "Finance",
+        "subtitle": "Central access to sales invoices, payments, suppliers and reports.",
+        "openAmount": "Outstanding",
+        "overdueAmount": "Overdue",
+        "dueAmount": "Still to pay",
+        "revenueMonth": "Revenue this month",
+        "costsMonth": "Purchases this month",
+        "costsUnavailable": "Purchase totals are not available through the current API.",
+        "loadError": "Could not load",
+        "invoiceWindow": "Based on the 100 most recent invoices.",
+        "overview": "Financial overview",
+        "invoices": "Sales invoices",
+        "invoicesDesc": "Find and manage invoices from every workflow.",
+        "payments": "Payments",
+        "paymentsDesc": "Review recorded payments and payment statuses.",
+        "reports": "Reports",
+        "reportsDesc": "Financial reports and summaries.",
+        "accounting": "Purchases and accounting",
+        "purchaseInvoices": "Purchase invoices",
+        "purchaseInvoicesDesc": "Import and process supplier invoices.",
+        "suppliers": "Creditors and suppliers",
+        "suppliersDesc": "Manage suppliers and outstanding balances.",
+        "ledger": "Accounting",
+        "ledgerDesc": "Open accounting records.",
+        "debtors": "Debtors",
+        "debtorsDesc": "Find customer accounts and invoices."
+      },
+      "brokerage": {
+        "title": "Brokerage",
+        "subtitle": "A central entry point for sales, boats, customer contacts and brokerage pricing.",
+        "workflows": "Brokerage",
+        "sales": "Sales dossiers",
+        "salesDesc": "Review recent sales and related invoices.",
+        "boats": "Boats for sale",
+        "boatsDesc": "Open the central boat register.",
+        "leads": "Leads and enquiries",
+        "leadsDesc": "A dedicated brokerage lead register is not available yet.",
+        "pricing": "Pricing",
+        "pricingDesc": "Manage brokerage rates."
+      },
+      "servicesPricing": {
+        "title": "Services & Pricing",
+        "subtitle": "Manage services and pricing rules and access the calculator from one place.",
+        "catalog": "Catalog and pricing",
+        "services": "Services",
+        "servicesDesc": "Manage products and services used across workflows.",
+        "rules": "Pricing rules",
+        "rulesDesc": "Manage central calculator and service rates.",
+        "groups": "Product groups",
+        "groupsDesc": "Organize services and products into groups.",
+        "bundles": "Bundles",
+        "bundlesDesc": "Manage combined product and service bundles.",
+        "calculator": "Calculator",
+        "calculatorDesc": "Calculate prices using the central pricing rules."
+      },
+      "management": {
+        "title": "Management",
+        "subtitle": "Manage users and settings. Technical system functions are restricted to administrators.",
+        "configuration": "Configuration",
+        "users": "Users",
+        "usersDesc": "Manage access and staff accounts.",
+        "settings": "Settings",
+        "settingsDesc": "Manage company and application settings.",
+        "system": "System administration",
+        "audit": "Audit",
+        "auditDesc": "Review technical change records.",
+        "security": "Security",
+        "securityDesc": "Manage security settings.",
+        "credentials": "API credentials",
+        "credentialsDesc": "Manage connected API access.",
+        "incidents": "Incidents",
+        "incidentsDesc": "Review system incidents.",
+        "systemAdmin": "System",
+        "systemAdminDesc": "Open technical system status and tasks."
+      }
+    }
+  },
   "brand": {
     "name": "Krekelberg Nautic",
     "tagline": "Yacht yard, storage and brokerage in Roermond"
@@ -21,6 +146,8 @@
   },
   "header": {
     "mainMenu": "Main menu",
+    "adminDashboard": "Admin dashboard",
+    "myAccount": "My account",
     "browseServices": "Browse all services",
     "browseStay": "Browse stay options",
     "groupServices": "Yard services",
@@ -2229,6 +2356,8 @@
     "shell": {
       "notifications": "Notifications",
       "viewAllUpdates": "View all updates",
+      "viewWebsite": "View website",
+      "viewPage": "View page",
       "notifs": {
         "webhookFailedTitle": "Mollie webhook failed",
         "webhookFailedMessage": "tr_abc123 — retry manually",

@@ -33,6 +33,7 @@ import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 export default function InvoicesPageWrapper() {
   return (
@@ -57,6 +58,7 @@ function InvoicesPage() {
   const [dateTo, setDateTo] = React.useState(searchParams.get('date_to') ?? '');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
+  useCreateMenuIntent(() => setShowCreate(true), 'create');
   const [customerId, setCustomerId] = React.useState('');
   const [customerSearch, setCustomerSearch] = React.useState('');
 

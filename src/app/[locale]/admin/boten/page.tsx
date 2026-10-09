@@ -31,6 +31,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
+import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 export default function BoatsPage() {
   const { locale, t } = useIntl();
@@ -40,6 +41,7 @@ export default function BoatsPage() {
   const [statusFilter, setStatusFilter] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
+  useCreateMenuIntent(() => setShowCreate(true));
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
   const emptyCreateForm = {
     customer_id: '',

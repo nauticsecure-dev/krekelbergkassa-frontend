@@ -43,6 +43,7 @@ import { formatCurrency, formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 export default function StallingPage() {
   const { locale, t } = useIntl();
@@ -76,6 +77,7 @@ export default function StallingPage() {
   // Trello #73: click-to-edit cells for paid_until / bok_number.
   const [inlineEdit, setInlineEdit] = React.useState<{ id: string; field: 'paid_until' | 'bok_number'; value: string } | null>(null);
   const [showCreate, setShowCreate] = React.useState(false);
+  useCreateMenuIntent(() => setShowCreate(true));
   const [createForm, setCreateForm] = React.useState({
     boat_id: '',
     customer_id: '',
@@ -1290,4 +1292,3 @@ export default function StallingPage() {
     </>
   );
 }
-

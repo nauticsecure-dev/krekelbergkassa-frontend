@@ -1,4 +1,129 @@
 {
+  "adminModules": {
+    "overview": {
+      "todayAppointments": "Termine heute",
+      "craneJobs": "Kranaufträge",
+      "activeStorage": "Aktive Lagerungen",
+      "expiringStorage": "Läuft in 30 Tagen ab",
+      "newCustomers": "Neue Kunden heute",
+      "newBrokerageLeads": "Neue Makler-Leads",
+      "leadsUnavailable": "Kein Lead-Register"
+    },
+    "create": {
+      "customer": "Kunde",
+      "boat": "Boot",
+      "appointment": "Termin",
+      "stalling": "Lagerung",
+      "invoice": "Rechnung",
+      "brokerage": "Verkaufsakte",
+      "supplier": "Lieferant",
+      "service": "Service"
+    },
+    "nav": {
+      "overview": "Übersicht",
+      "planning": "Planung",
+      "pos": "Kasse",
+      "storage": "Lagerung",
+      "customers": "Kunden",
+      "boats": "Boote",
+      "brokerage": "Maklergeschäft",
+      "finance": "Finanzen",
+      "servicesPricing": "Services & Preise",
+      "management": "Verwaltung"
+    },
+    "hubs": {
+      "planning": {
+        "title": "Planung",
+        "subtitle": "Termine, Kalenderverfügbarkeit und Werftarbeiten zentral verwalten.",
+        "schedule": "Planung",
+        "calendar": "Kalender",
+        "calendarDesc": "Öffnungszeiten, Ausnahmen, Standorte und Werftkapazität.",
+        "appointments": "Termine",
+        "appointmentsDesc": "Kundentermine prüfen und verwalten.",
+        "workOrders": "Arbeitsaufträge",
+        "workOrdersDesc": "Geplante Arbeiten und Fortschritt verfolgen.",
+        "quickAccess": "Schnellzugriff",
+        "crane": "Krantermin",
+        "craneDesc": "Kran-Buchungsseite öffnen."
+      },
+      "finance": {
+        "title": "Finanzen",
+        "subtitle": "Zentraler Zugang zu Verkaufsrechnungen, Zahlungen, Lieferanten und Berichten.",
+        "openAmount": "Offen",
+        "overdueAmount": "Überfällig",
+        "dueAmount": "Noch zu zahlen",
+        "revenueMonth": "Umsatz diesen Monat",
+        "costsMonth": "Einkäufe diesen Monat",
+        "costsUnavailable": "Einkaufssummen sind über die aktuelle API nicht verfügbar.",
+        "loadError": "Nicht geladen",
+        "invoiceWindow": "Basierend auf den 100 aktuellsten Rechnungen.",
+        "overview": "Finanzübersicht",
+        "invoices": "Verkaufsrechnungen",
+        "invoicesDesc": "Rechnungen aus allen Arbeitsabläufen finden und verwalten.",
+        "payments": "Zahlungen",
+        "paymentsDesc": "Erfasste Zahlungen und Zahlungsstatus prüfen.",
+        "reports": "Berichte",
+        "reportsDesc": "Finanzberichte und Übersichten.",
+        "accounting": "Einkauf und Buchhaltung",
+        "purchaseInvoices": "Eingangsrechnungen",
+        "purchaseInvoicesDesc": "Lieferantenrechnungen importieren und verarbeiten.",
+        "suppliers": "Kreditoren und Lieferanten",
+        "suppliersDesc": "Lieferanten und offene Posten verwalten.",
+        "ledger": "Buchhaltung",
+        "ledgerDesc": "Buchhaltungsübersichten öffnen.",
+        "debtors": "Debitoren",
+        "debtorsDesc": "Kundenkonten und Rechnungen finden."
+      },
+      "brokerage": {
+        "title": "Maklergeschäft",
+        "subtitle": "Zentraler Einstieg für Verkaufsakten, Boote, Kundenkontakte und Maklerpreise.",
+        "workflows": "Maklergeschäft",
+        "sales": "Verkaufsakten",
+        "salesDesc": "Aktuelle Verkäufe und zugehörige Rechnungen ansehen.",
+        "boats": "Boote zum Verkauf",
+        "boatsDesc": "Zentrales Bootsregister öffnen.",
+        "leads": "Leads und Anfragen",
+        "leadsDesc": "Ein eigenes Register für Makler-Leads ist noch nicht verfügbar.",
+        "pricing": "Preise",
+        "pricingDesc": "Maklergebühren verwalten."
+      },
+      "servicesPricing": {
+        "title": "Services & Preise",
+        "subtitle": "Services und Preisregeln verwalten und den Rechner zentral öffnen.",
+        "catalog": "Katalog und Preisverwaltung",
+        "services": "Services",
+        "servicesDesc": "Produkte und Services für alle Arbeitsabläufe verwalten.",
+        "rules": "Preisregeln",
+        "rulesDesc": "Zentrale Rechner- und Servicepreise verwalten.",
+        "groups": "Produktgruppen",
+        "groupsDesc": "Services und Produkte in Gruppen organisieren.",
+        "bundles": "Pakete",
+        "bundlesDesc": "Kombinierte Produkt- und Servicepakete verwalten.",
+        "calculator": "Rechner",
+        "calculatorDesc": "Preise anhand der zentralen Preisregeln berechnen."
+      },
+      "management": {
+        "title": "Verwaltung",
+        "subtitle": "Benutzer und Einstellungen verwalten. Technische Systemfunktionen sind Administratoren vorbehalten.",
+        "configuration": "Konfiguration",
+        "users": "Benutzer",
+        "usersDesc": "Zugriff und Mitarbeiterkonten verwalten.",
+        "settings": "Einstellungen",
+        "settingsDesc": "Unternehmens- und Anwendungseinstellungen verwalten.",
+        "system": "Systemverwaltung",
+        "audit": "Audit",
+        "auditDesc": "Technische Änderungsprotokolle ansehen.",
+        "security": "Sicherheit",
+        "securityDesc": "Sicherheitseinstellungen verwalten.",
+        "credentials": "API-Zugangsdaten",
+        "credentialsDesc": "API-Zugriffe verwalten.",
+        "incidents": "Vorfälle",
+        "incidentsDesc": "Systemvorfälle ansehen.",
+        "systemAdmin": "System",
+        "systemAdminDesc": "Technischen Systemstatus und Aufgaben öffnen."
+      }
+    }
+  },
   "brand": {
     "name": "Krekelberg Nautic",
     "tagline": "Jachtwerft, Lagerung und Yachtmakler in Roermond"
@@ -21,6 +146,8 @@
   },
   "header": {
     "mainMenu": "Hauptmenü",
+    "adminDashboard": "Admin-Dashboard",
+    "myAccount": "Mein Konto",
     "browseServices": "Alle Leistungen ansehen",
     "browseStay": "Aufenthaltsoptionen ansehen",
     "groupServices": "Werftservices",
@@ -2224,6 +2351,8 @@
     "shell": {
       "notifications": "Benachrichtigungen",
       "viewAllUpdates": "Alle Updates anzeigen",
+      "viewWebsite": "Website ansehen",
+      "viewPage": "Seite ansehen",
       "notifs": {
         "webhookFailedTitle": "Mollie-Webhook fehlgeschlagen",
         "webhookFailedMessage": "tr_abc123 — manuell erneut versuchen",

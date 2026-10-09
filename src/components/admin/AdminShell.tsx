@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   Bell,
   ChevronDown,
+  Globe,
   HelpCircle,
   LogOut,
   Menu,
@@ -93,8 +94,11 @@ function GlobalTopbar({
 }) {
   const { t, locale } = useIntl();
   const { user } = useAuth();
+  const pathname = usePathname();
+  const publicPage = getPublicPageForAdminPath(pathname, locale);
   const { requestLogout } = useConfirmLogout();
   const { bellOpen, menuOpen, toggleBell, toggleMenu, closeAll } = useShellDropdowns();
+  const [createOpen, setCreateOpen] = React.useState(false);
   const notifications = useQuery([locale], async () => {
     const [invoices, stalling, reminders] = await Promise.all([
       invoicesService.list({ per_page: 30 }).catch(() => ({ data: [] as Array<{ is_overdue?: boolean; is_fully_paid?: boolean }> })),
@@ -168,14 +172,59 @@ function GlobalTopbar({
         <AdminSearchTrigger onClick={onSearchClick} />
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <Link
-            href={`/${locale}/admin/kassa`}
-            className="hidden md:inline-flex"
-            aria-label={t('admin.sidebar.kassa')}
-          >
-            <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gold-500 px-3 text-xs font-semibold text-white hover:bg-gold-600">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setCreateOpen((open) => !open)}
+              aria-expanded={createOpen}
+              aria-haspopup="menu"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gold-500 px-3 text-xs font-semibold text-white hover:bg-gold-600"
+            >
               <Plus className="h-3.5 w-3.5" />
               {t('admin.common.new')}
+            </button>
+            {createOpen ? (
+              <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-navy-100 bg-white py-1 shadow-elev">
+                {[
+                  { key: 'customer', href: `/${locale}/admin/klanten?new=1` },
+                  { key: 'boat', href: `/${locale}/admin/boten?new=1` },
+                  { key: 'appointment', href: `/${locale}/admin/afspraken` },
+                  { key: 'stalling', href: `/${locale}/admin/stalling?new=1` },
+                  { key: 'invoice', href: `/${locale}/admin/facturen?create=1`, roles: ['admin', 'manager'] },
+                  { key: 'brokerage', href: `/${locale}/admin/verkopen`, roles: ['admin', 'manager'] },
+                  { key: 'supplier', href: `/${locale}/admin/leveranciers?new=1`, roles: ['admin', 'manager'] },
+                  { key: 'service', href: `/${locale}/admin/producten/nieuw`, roles: ['admin', 'manager'] },
+                ].filter((item) => !item.roles || item.roles.includes(user?.role ?? ''))
+                  .map(({ key, href }) => (
+                  <Link
+                    key={key}
+                    href={href}
+                    role="menuitem"
+                    onClick={() => setCreateOpen(false)}
+                    className="block px-4 py-2.5 text-sm text-navy-700 hover:bg-sand-50"
+                  >
+                    {t(`adminModules.create.${key}`)}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          <Link
+            href={publicPage.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={publicPage.contextual ? t('adminNew.shell.viewPage') : t('adminNew.shell.viewWebsite')}
+            aria-label={publicPage.contextual ? t('adminNew.shell.viewPage') : t('adminNew.shell.viewWebsite')}
+            className="inline-flex"
+          >
+            <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-100 bg-white px-2.5 text-xs font-semibold text-navy-700 hover:bg-sand-50 sm:px-3">
+              <Globe className="h-4 w-4 shrink-0" />
+              <span className="hidden lg:inline">
+                {publicPage.contextual
+                  ? t('adminNew.shell.viewPage')
+                  : t('adminNew.shell.viewWebsite')}
+              </span>
             </span>
           </Link>
 
@@ -300,6 +349,26 @@ function GlobalTopbar({
       </div>
     </div>
   );
+}
+
+function getPublicPageForAdminPath(
+  pathname: string,
+  locale: string,
+): { href: string; contextual: boolean } {
+  const adminPrefix = `/${locale}/admin`;
+  const adminPath = pathname.startsWith(adminPrefix)
+    ? pathname.slice(adminPrefix.length) || '/'
+    : '/';
+  const publicPath =
+    adminPath === '/diensten' || adminPath.startsWith('/diensten/')
+      ? '/diensten'
+      : adminPath === '/stalling' || adminPath.startsWith('/stalling/')
+        ? '/diensten/winterstalling'
+        : null;
+
+  return publicPath
+    ? { href: `/${locale}${publicPath}`, contextual: true }
+    : { href: `/${locale}`, contextual: false };
 }
 
 /* -------------------------------------------------------------------------- */

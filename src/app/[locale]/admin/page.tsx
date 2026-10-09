@@ -27,6 +27,8 @@ import { useQuery } from '@/lib/hooks/useAsync';
 import { useSyncStatus } from '@/lib/hooks/useSyncStatus';
 import {
   invoicesService,
+  appointmentsService,
+  customersService,
   kassaService,
   pricingService,
   productsService,
@@ -58,9 +60,11 @@ export default function AdminDashboardPage() {
   const calculate = useMutation(pricingService.calculate);
 
   const { data, loading } = useQuery([locale], async () => {
-    const [invoices, stalling, sales, analytics, reminders, activity, closures, lowStock] = await Promise.all([
+    const [invoices, stalling, appointments, customers, sales, analytics, reminders, activity, closures, lowStock] = await Promise.all([
       invoicesService.list({ per_page: 100 }),
       stallingService.list({ per_page: 100 }),
+      appointmentsService.list({ per_page: 100 }).catch(() => ({ data: [] as import('@/lib/api-types').Appointment[] })),
+      customersService.list({ per_page: 100 }).catch(() => ({ data: [] as import('@/lib/api-types').Customer[] })),
       kassaService.recentSales().catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
       kassaService.analytics().catch(() => null),
       adminService.remindersSummary().catch(() => null),
@@ -74,6 +78,22 @@ export default function AdminDashboardPage() {
     const overdueInvoices = invoices.data.filter((x) => x.is_overdue).length;
     const openInvoices = invoices.data.filter((x) => !x.is_fully_paid).length;
     const overdueStalling = stalling.data.filter((x) => x.payment_status === 'overdue').length;
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const inThirtyDays = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30);
+    const todayAppointments = appointments.data.filter((item) => item.appointment_date?.slice(0, 10) === today);
+    const craneJobs = todayAppointments.filter((item) =>
+      item.service_codes?.some((code) => /crane|kraan/i.test(code))
+    ).length;
+    const activeStalling = stalling.data.filter((contract) =>
+      !contract.is_expired &&
+      !['cancelled', 'ended', 'checked_out'].includes(contract.status.toLowerCase())
+    ).length;
+    const expiringStalling = stalling.data.filter((contract) => {
+      const end = new Date(`${contract.end_date}T00:00:00`);
+      return !contract.is_expired && end >= now && end <= inThirtyDays;
+    }).length;
+    const newCustomers = customers.data.filter((customer) => customer.created_at?.slice(0, 10) === today).length;
     const todayRevenue = sales.data.reduce((sum, sale) => {
       const raw =
         typeof sale.total_amount_cents === 'string'
@@ -97,6 +117,11 @@ export default function AdminDashboardPage() {
       overdueInvoices,
       openInvoices,
       overdueStalling,
+      todayAppointments: todayAppointments.length,
+      craneJobs,
+      activeStalling,
+      expiringStalling,
+      newCustomers,
       todayRevenue,
       analyticsTurnover: analyticsTotals?.turnover_cents ?? todayRevenue,
       reminderCounts,
@@ -210,6 +235,30 @@ export default function AdminDashboardPage() {
       />
 
       <AdminContent>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          <Link href={`/${locale}/admin/afspraken`} className="block">
+            <AdminStatusStrip label={t('adminModules.overview.todayAppointments')} value={data?.todayAppointments ?? 0} tone="marine" />
+          </Link>
+          <Link href={`/${locale}/admin/afspraken`} className="block">
+            <AdminStatusStrip label={t('adminModules.overview.craneJobs')} value={data?.craneJobs ?? 0} tone="gold" />
+          </Link>
+          <Link href={`/${locale}/admin/stalling`} className="block">
+            <AdminStatusStrip label={t('adminModules.overview.activeStorage')} value={data?.activeStalling ?? 0} tone="success" />
+          </Link>
+          <Link href={`/${locale}/admin/stalling`} className="block">
+            <AdminStatusStrip label={t('adminModules.overview.expiringStorage')} value={data?.expiringStalling ?? 0} tone="warning" />
+          </Link>
+          <Link href={`/${locale}/admin/klanten`} className="block">
+            <AdminStatusStrip label={t('adminModules.overview.newCustomers')} value={data?.newCustomers ?? 0} tone="navy" />
+          </Link>
+          <Link href={`/${locale}/admin/makelaardij`} className="block">
+            <AdminStatusStrip
+              label={t('adminModules.overview.newBrokerageLeads')}
+              value={t('adminModules.overview.leadsUnavailable')}
+              tone="navy"
+            />
+          </Link>
+        </div>
         <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
           <AdminSectionCard
             title={t('adminNew.dashboard.quickActions')}

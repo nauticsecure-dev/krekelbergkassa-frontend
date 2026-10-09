@@ -103,6 +103,47 @@ export function canAccessAdmin(role: Role | undefined, isDemo: boolean): boolean
   return role === 'admin' || role === 'manager' || role === 'staff';
 }
 
+export function canAccessAdminRoute(role: Role | undefined, pathname: string): boolean {
+  if (!role || role === 'customer' || role === 'guest') return false;
+  const path = stripLocale(pathname);
+  const adminPath = path.replace(/^\/admin(?=\/|$)/, '') || '/';
+
+  const adminOnlyPrefixes = [
+    '/beheer',
+    '/gebruikers',
+    '/instellingen',
+    '/audit',
+    '/beveiliging',
+    '/api-credentials',
+    '/incidenten',
+    '/systeem',
+    '/sync',
+    '/scan-logs',
+  ];
+  if (adminOnlyPrefixes.some((prefix) => adminPath === prefix || adminPath.startsWith(`${prefix}/`))) {
+    return role === 'admin';
+  }
+
+  if (role === 'admin' || role === 'manager') return true;
+
+  const staffPrefixes = [
+    '/',
+    '/planning',
+    '/kalender',
+    '/afspraken',
+    '/werkorders',
+    '/kassa',
+    '/stalling',
+    '/klanten',
+    '/boten',
+  ];
+  return staffPrefixes.some((prefix) =>
+    prefix === '/'
+      ? adminPath === '/'
+      : adminPath === prefix || adminPath.startsWith(`${prefix}/`)
+  );
+}
+
 /** Work orders API is permission-gated — admin role cannot access /v1/work-orders. */
 export function canAccessWorkOrders(role: Role | undefined): boolean {
   return role === 'staff' || role === 'manager';

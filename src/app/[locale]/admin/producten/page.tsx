@@ -38,6 +38,11 @@ export default function ProductsPage() {
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
   const [view, setView] = React.useState<'table' | 'grid'>('table');
 
+  React.useEffect(() => {
+    const search = new URLSearchParams(window.location.search).get('search');
+    if (search) setQuery(search);
+  }, []);
+
   const products = useQuery([query, groupFilter, page], () =>
     productsService.list({
       search: query || undefined,

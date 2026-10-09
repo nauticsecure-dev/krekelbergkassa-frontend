@@ -10,9 +10,7 @@ import {
   Droplets,
   Hammer,
   Menu,
-  Phone,
   Ship,
-  Sparkles,
   Warehouse,
   X,
 } from 'lucide-react';
@@ -22,8 +20,9 @@ import { Button } from '@/components/ui/Button';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { InstallButton } from '@/components/pwa/InstallButton';
 import { cn } from '@/lib/cn';
-import { companyInfo } from '@/lib/company';
 import { useCms } from '@/components/cms/CmsProvider';
+import { useAuth } from '@/lib/auth-context';
+import { canAccessAdmin, defaultRedirectForRole } from '@/lib/auth-routes';
 
 interface MegaItem {
   href: string;
@@ -35,10 +34,16 @@ interface MegaItem {
 export function Header() {
   const { t, locale } = useIntl();
   const { getGlobal } = useCms();
-  const phone = getGlobal('company.phone', t('footer.phone'));
+  const { user, loading } = useAuth();
   const ctaLabel = getGlobal('header.cta.label', 'Stalling');
   const ctaHref  = `/${locale}/${getGlobal('header.cta.path', 'diensten/winterstalling')}`;
   const pathname = usePathname();
+  const accountHref = user ? defaultRedirectForRole(user.role, locale) : `/${locale}/login`;
+  const accountLabel = !user
+    ? t('nav.login')
+    : canAccessAdmin(user.role, false)
+      ? t('header.adminDashboard')
+      : t('header.myAccount');
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const [hoveredMenu, setHoveredMenu] = React.useState<string | null>(null);
@@ -79,31 +84,6 @@ export function Header() {
           : 'border-b border-transparent bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/90'
       )}
     >
-      {/* Sub-bar */}
-      <div className="hidden border-b border-navy-100/60 bg-navy-900 text-white lg:block">
-        <div className="container-wide flex h-9 items-center justify-between text-xs">
-          <div className="flex items-center gap-5 text-sand-100/80">
-            <span className="inline-flex items-center gap-2">
-              <Sparkles className="h-3 w-3 text-gold-300" />
-              {t('nav.subnavCta')}
-            </span>
-          </div>
-          <div className="flex items-center gap-5 text-sand-100/80">
-            <Link href={`/${locale}/contact`} className="hover:text-white">
-              {t('nav.subnavLocation')}
-            </Link>
-            <span className="opacity-30">·</span>
-            <a href={companyInfo.phoneHref} className="inline-flex items-center gap-1.5 hover:text-white">
-              <Phone className="h-3 w-3" /> {phone}
-            </a>
-            <span className="opacity-30">·</span>
-            <a href="mailto:info@krekelberg-nautic.nl" className="hover:text-white">
-              {t('footer.email')}
-            </a>
-          </div>
-        </div>
-      </div>
-
       {/* Main bar */}
       <div className="container-wide flex h-[72px] items-center justify-between gap-8">
         <Link href={`/${locale}`} aria-label="Krekelberg Nautic" className="shrink-0">
@@ -168,11 +148,13 @@ export function Header() {
         <div className="flex shrink-0 items-center gap-2">
           <InstallButton variant="header" className="hidden md:inline-flex" />
           <LanguageSwitcher />
-          <Link href={`/${locale}/login`} className="hidden xl:inline-flex">
-            <Button variant="ghost" size="md">
-              {t('nav.login')}
-            </Button>
-          </Link>
+          {!loading ? (
+            <Link href={accountHref} className="hidden xl:inline-flex">
+              <Button variant="ghost" size="md">
+                {accountLabel}
+              </Button>
+            </Link>
+          ) : null}
           <Link href={ctaHref} className="hidden md:inline-flex">
             <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
               {ctaLabel}
@@ -204,11 +186,13 @@ export function Header() {
             <MobileLink href={`/${locale}/contact`}>{t('nav.contact')}</MobileLink>
             <div className="my-3 h-px bg-navy-100" />
             <div className="grid grid-cols-2 gap-2">
-              <Link href={`/${locale}/login`}>
-                <Button variant="outline" fullWidth>
-                  {t('nav.login')}
-                </Button>
-              </Link>
+              {!loading ? (
+                <Link href={accountHref}>
+                  <Button variant="outline" fullWidth>
+                    {accountLabel}
+                  </Button>
+                </Link>
+              ) : null}
               <Link href={ctaHref}>
                 <Button variant="gold" fullWidth>
                   {ctaLabel}

@@ -1,4 +1,129 @@
 {
+  "adminModules": {
+    "overview": {
+      "todayAppointments": "Afspraken vandaag",
+      "craneJobs": "Kraanopdrachten",
+      "activeStorage": "Actieve stalling",
+      "expiringStorage": "Aflopende stalling (30 dagen)",
+      "newCustomers": "Nieuwe klanten vandaag",
+      "newBrokerageLeads": "Nieuwe makelaardijleads",
+      "leadsUnavailable": "Geen leadregister"
+    },
+    "create": {
+      "customer": "Klant",
+      "boat": "Boot",
+      "appointment": "Afspraak",
+      "stalling": "Stalling",
+      "invoice": "Factuur",
+      "brokerage": "Verkoopdossier",
+      "supplier": "Leverancier",
+      "service": "Dienst"
+    },
+    "nav": {
+      "overview": "Overzicht",
+      "planning": "Planning",
+      "pos": "Kassa",
+      "storage": "Stalling",
+      "customers": "Klanten",
+      "boats": "Boten",
+      "brokerage": "Makelaardij",
+      "finance": "Financieel",
+      "servicesPricing": "Diensten & Prijzen",
+      "management": "Beheer"
+    },
+    "hubs": {
+      "planning": {
+        "title": "Planning",
+        "subtitle": "Beheer afspraken, kalenderbeschikbaarheid en werfwerk vanuit één plek.",
+        "schedule": "Planning",
+        "calendar": "Kalender",
+        "calendarDesc": "Openingstijden, uitzonderingen, locaties en werfcapaciteit.",
+        "appointments": "Afspraken",
+        "appointmentsDesc": "Bekijk en verwerk klantafspraken.",
+        "workOrders": "Werkopdrachten",
+        "workOrdersDesc": "Volg gepland werk en de uitvoering op.",
+        "quickAccess": "Snel naar",
+        "crane": "Kraanafspraak",
+        "craneDesc": "Open de kraanboekingspagina."
+      },
+      "finance": {
+        "title": "Financieel",
+        "subtitle": "Centraal overzicht voor verkoopfacturen, betalingen, leveranciers en rapportages.",
+        "openAmount": "Openstaand",
+        "overdueAmount": "Te laat",
+        "dueAmount": "Nog te betalen",
+        "revenueMonth": "Omzet deze maand",
+        "costsMonth": "Inkoop deze maand",
+        "costsUnavailable": "Inkooptotalen zijn niet beschikbaar via de huidige API.",
+        "loadError": "Niet geladen",
+        "invoiceWindow": "Gebaseerd op de 100 meest recente facturen.",
+        "overview": "Financieel overzicht",
+        "invoices": "Verkoopfacturen",
+        "invoicesDesc": "Zoek en beheer facturen uit alle workflows.",
+        "payments": "Betalingen",
+        "paymentsDesc": "Bekijk geregistreerde betalingen en betaalstatussen.",
+        "reports": "Rapportages",
+        "reportsDesc": "Financiële rapportages en overzichten.",
+        "accounting": "Inkoop en boekhouding",
+        "purchaseInvoices": "Inkoopfacturen",
+        "purchaseInvoicesDesc": "Importeer en verwerk leveranciersfacturen.",
+        "suppliers": "Crediteuren en leveranciers",
+        "suppliersDesc": "Beheer leveranciersgegevens en openstaande posten.",
+        "ledger": "Boekhouding",
+        "ledgerDesc": "Open de boekhoudkundige overzichten.",
+        "debtors": "Debiteuren",
+        "debtorsDesc": "Vind klantrekeningen en klantfacturen."
+      },
+      "brokerage": {
+        "title": "Makelaardij",
+        "subtitle": "Een centrale ingang voor verkoopdossiers, boten, klantcontacten en tarieven.",
+        "workflows": "Makelaardij",
+        "sales": "Verkoopdossiers",
+        "salesDesc": "Bekijk recente verkopen en bijbehorende facturen.",
+        "boats": "Boten in verkoop",
+        "boatsDesc": "Open het centrale botenregister.",
+        "leads": "Leads en aanvragen",
+        "leadsDesc": "Er is nog geen afzonderlijk register voor makelaardijleads.",
+        "pricing": "Tarieven",
+        "pricingDesc": "Beheer makelaardijtarieven."
+      },
+      "servicesPricing": {
+        "title": "Diensten & Prijzen",
+        "subtitle": "Beheer diensten en prijsregels en open de calculator vanuit één centrale plek.",
+        "catalog": "Catalogus en prijsbeheer",
+        "services": "Diensten",
+        "servicesDesc": "Beheer producten en diensten die in de workflows worden gebruikt.",
+        "rules": "Prijsregels",
+        "rulesDesc": "Beheer centrale calculator- en servicetarieven.",
+        "groups": "Productgroepen",
+        "groupsDesc": "Orden diensten en producten in groepen.",
+        "bundles": "Bundels",
+        "bundlesDesc": "Beheer samengestelde product- en servicebundels.",
+        "calculator": "Calculator",
+        "calculatorDesc": "Bereken prijzen op basis van de centrale prijsregels."
+      },
+      "management": {
+        "title": "Beheer",
+        "subtitle": "Beheer gebruikers en instellingen. Technische systeemfuncties zijn alleen beschikbaar voor beheerders.",
+        "configuration": "Configuratie",
+        "users": "Gebruikers",
+        "usersDesc": "Beheer toegang en medewerkersaccounts.",
+        "settings": "Instellingen",
+        "settingsDesc": "Beheer bedrijfs- en applicatie-instellingen.",
+        "system": "Systeembeheer",
+        "audit": "Audit",
+        "auditDesc": "Bekijk technische wijzigingsregistraties.",
+        "security": "Beveiliging",
+        "securityDesc": "Beheer beveiligingsinstellingen.",
+        "credentials": "API-credentials",
+        "credentialsDesc": "Beheer gekoppelde API-toegang.",
+        "incidents": "Incidenten",
+        "incidentsDesc": "Bekijk systeemincidenten.",
+        "systemAdmin": "Systeem",
+        "systemAdminDesc": "Open technische systeemstatus en taken."
+      }
+    }
+  },
   "brand": {
     "name": "Krekelberg Nautic",
     "tagline": "Jachtwerf, stalling en jachtmakelaar in Roermond"
@@ -21,6 +146,8 @@
   },
   "header": {
     "mainMenu": "Hoofdmenu",
+    "adminDashboard": "Admin dashboard",
+    "myAccount": "Mijn account",
     "browseServices": "Bekijk alle diensten",
     "browseStay": "Bekijk verblijfopties",
     "groupServices": "Werfdiensten",
@@ -2630,6 +2757,8 @@
     "shell": {
       "notifications": "Meldingen",
       "viewAllUpdates": "Bekijk alle updates",
+      "viewWebsite": "Website bekijken",
+      "viewPage": "Bekijk pagina",
       "notifs": {
         "webhookFailedTitle": "Mollie webhook gefaald",
         "webhookFailedMessage": "tr_abc123 — handmatig opnieuw proberen",
