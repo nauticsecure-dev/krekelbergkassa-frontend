@@ -58,7 +58,7 @@ import {
 import { useMutation, useQuery } from "@/lib/hooks/useAsync";
 import type { Product, PricingRule, KassaQrSession } from "@/lib/api-types";
 import { formatCurrency } from "@/lib/format";
-import { productPriceInclEuros } from "@/lib/products";
+import { productPriceExclEuros, productPriceInclEuros } from "@/lib/products";
 import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useIntl } from "@/i18n/IntlProvider";
@@ -73,6 +73,7 @@ interface CartItem {
   quantity: number;
   unit_price_cents: number;
   vat_rate: number;
+  metadata?: Record<string, unknown>;
   image_url?: string | null;
   color?: string | null;
 }
@@ -503,7 +504,7 @@ export default function KassaPage() {
         id: `prefill-${contractId || "deposit"}`,
         description,
         quantity: 1,
-        unit_price_cents: cents,
+        unit_price_cents: Math.round((cents * 100) / 121),
         vat_rate: 21,
       },
     ]);
@@ -646,12 +647,13 @@ export default function KassaPage() {
   }, [recentSales.data, allProducts]);
 
   const addProduct = (product: Product, rule?: PricingRule | null) => {
-    const unitCents = rule
-      ? rule.price_incl_vat
-      : Math.round(productPriceInclEuros(product) * 100) ||
-        product.price_incl_vat;
-    const description = rule
-      ? `${product.name} (${rule.range_from_cm}-${rule.range_to_cm} cm)`
+    const selectedRule = rule ?? null;
+    const unitCents = selectedRule
+      ? selectedRule.price_excl_vat
+      : Math.round(productPriceExclEuros(product) * 100) ||
+        product.price_excl_vat;
+    const description = selectedRule
+      ? `${product.name} (${selectedRule.range_from_cm}-${selectedRule.range_to_cm} cm)`
       : product.name;
 
     setCart((prev) => {
@@ -667,12 +669,15 @@ export default function KassaPage() {
       return [
         ...prev,
         {
-          id: `${product.id}-${rule?.id ?? "base"}`,
+          id: `${product.id}-${selectedRule?.id ?? "base"}`,
           product_id: product.id,
           description,
           quantity: 1,
           unit_price_cents: unitCents,
-          vat_rate: Number(product.vat_rate ?? 21),
+          vat_rate: Number(selectedRule?.vat_rate ?? product.vat_rate ?? 21),
+          metadata: selectedRule
+            ? { length_cm: selectedRule.range_from_cm }
+            : undefined,
           image_url: product.image_url,
           color: product.color ?? product.group?.color ?? null,
         },
@@ -761,14 +766,11 @@ export default function KassaPage() {
   const vatCents = cart.reduce(
     (sum, item) =>
       sum +
-      Math.round(
-        (item.unit_price_cents * item.quantity * item.vat_rate) /
-          (100 + item.vat_rate),
-      ),
+      Math.round(item.unit_price_cents * item.quantity * item.vat_rate / 100),
     0,
   );
-  const totalCents = subtotalCents;
-  const exclCents = subtotalCents - vatCents;
+  const exclCents = subtotalCents;
+  const totalCents = exclCents + vatCents;
   const primaryVatRate = cart[0]?.vat_rate ?? 21;
   const money = (cents: number) => formatCurrency(cents / 100, localeTag);
 
@@ -915,7 +917,7 @@ export default function KassaPage() {
           description: item.description,
           quantity: item.quantity,
           unit_price_cents: item.unit_price_cents,
-          vat_rate: item.vat_rate,
+          metadata: item.metadata,
         })),
       });
       setQrSession(session);
@@ -1026,7 +1028,7 @@ export default function KassaPage() {
           description: item.description,
           quantity: item.quantity,
           unit_price_cents: item.unit_price_cents,
-          vat_rate: item.vat_rate,
+          metadata: item.metadata,
         })),
       };
 
@@ -1108,7 +1110,7 @@ export default function KassaPage() {
           description: item.description,
           quantity: item.quantity,
           unit_price_cents: item.unit_price_cents,
-          vat_rate: item.vat_rate,
+          metadata: item.metadata,
         })),
       });
       push({ tone: "success", title: t("adminNew.kassa.toasts.quoteDone") });
@@ -1313,12 +1315,7 @@ export default function KassaPage() {
                         key={pr.id}
                         type="button"
                         onClick={() => {
-                          const priceInclCents = Math.round(productPriceInclEuros(pr) * 100);
-                          setCart((prev) => {
-                            const existing = prev.find((c) => c.product_id === pr.id);
-                            if (existing) return prev.map((c) => c.product_id === pr.id ? { ...c, quantity: c.quantity + 1 } : c);
-                            return [...prev, { id: pr.id, product_id: pr.id, description: pr.name, quantity: 1, unit_price_cents: priceInclCents, vat_rate: Number(pr.vat_rate ?? 21), image_url: pr.image_url, color: pr.color ?? pr.group?.color }];
-                          });
+                          addProduct(pr);
                           setShowAiSearch(false);
                           setAiResults(null);
                         }}
@@ -1856,7 +1853,7 @@ export default function KassaPage() {
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span className="text-sm font-semibold text-navy-900">
-                        {money(item.unit_price_cents * item.quantity)}
+                        {money(Math.round(item.unit_price_cents * item.quantity * (100 + item.vat_rate) / 100))}
                       </span>
                       <button
                         onClick={() => removeItem(item.id)}

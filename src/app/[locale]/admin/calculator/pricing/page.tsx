@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Settings, Trash2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Plus, Settings, Trash2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -24,6 +24,7 @@ import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataSta
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { pricingService, productsService } from '@/lib/services';
+import type { PricingRule } from '@/lib/api-types';
 import { formatCurrency } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -33,6 +34,7 @@ export default function CalculatorPricingPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const [showCreate, setShowCreate] = React.useState(false);
+  const [editingRule, setEditingRule] = React.useState<string | null>(null);
   const [form, setForm] = React.useState({
     product_id: '',
     range_from_cm: '0',
@@ -45,9 +47,15 @@ export default function CalculatorPricingPage() {
   });
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
 
-  const rules = useQuery(['pricing-rules-admin'], () => pricingService.rules({ per_page: 200 }));
+  const rules = useQuery(['pricing-rules-admin'], () =>
+    pricingService.rules({ per_page: 200, include_inactive: true }),
+  );
   const products = useQuery(['products-pricing'], () => productsService.list({ per_page: 200 }));
   const createRule = useMutation(pricingService.createRule);
+  const updateRule = useMutation(
+    ({ id, ...payload }: Record<string, unknown> & { id: string }) =>
+      pricingService.updateRule(id, payload),
+  );
   const deleteRule = useMutation(pricingService.deleteRule);
 
   const onCreate = async (e: React.FormEvent) => {
@@ -55,8 +63,7 @@ export default function CalculatorPricingPage() {
     try {
       const vatRate = Number(form.vat_rate) || 21;
       const price = Math.round(Number(form.price_incl_vat) * 100);
-      await createRule.mutate({
-        product_id: form.product_id,
+      const payload = {
         range_from_cm: Number(form.range_from_cm),
         range_to_cm: Number(form.range_to_cm),
         price_excl_vat: Math.round(price / (1 + vatRate / 100)),
@@ -65,13 +72,34 @@ export default function CalculatorPricingPage() {
         price_type: form.price_type,
         channel: form.channel,
         active: form.active,
-      });
+      };
+      if (editingRule) {
+        await updateRule.mutate({ id: editingRule, ...payload });
+      } else {
+        await createRule.mutate({ product_id: form.product_id, ...payload });
+      }
       setShowCreate(false);
+      setEditingRule(null);
       await rules.refetch();
       push({ tone: 'success', title: t('adminNew.calculator.pricing.saved') });
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
     }
+  };
+
+  const openEdit = (rule: PricingRule) => {
+    setEditingRule(rule.id);
+    setForm({
+      product_id: rule.product_id,
+      range_from_cm: String(rule.range_from_cm),
+      range_to_cm: String(rule.range_to_cm),
+      price_incl_vat: (rule.price_incl_vat / 100).toFixed(2),
+      vat_rate: String(rule.vat_rate ?? 21),
+      channel: rule.channel ?? 'all',
+      price_type: rule.price_type ?? 'fixed',
+      active: rule.active,
+    });
+    setShowCreate(true);
   };
 
   const onDelete = async (id: string) => {
@@ -146,6 +174,14 @@ export default function CalculatorPricingPage() {
                       <AdminTableCell className="text-right">
                         <button
                           type="button"
+                          className="mr-3 text-navy-500 hover:text-navy-800"
+                          onClick={() => openEdit(rule)}
+                          aria-label={t('adminNew.common.edit')}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
                           className="text-rose-600 hover:text-rose-800"
                           onClick={() => setDeleteTarget(rule.id)}
                         >
@@ -161,12 +197,19 @@ export default function CalculatorPricingPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
+      <Modal
+        open={showCreate}
+        onClose={() => {
+          setShowCreate(false);
+          setEditingRule(null);
+        }}
+        size="md"
+      >
         <form onSubmit={onCreate}>
-          <AdminModalHeader title={t('adminNew.calculator.pricing.newRule')} />
+          <AdminModalHeader title={editingRule ? t('adminNew.common.edit') : t('adminNew.calculator.pricing.newRule')} />
           <AdminModalBody>
             <div className="space-y-3">
-              <div>
+              {!editingRule ? <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Product *</label>
                 <select className="input-base w-full" value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} required>
                   <option value="">{t('adminNew.calculator.pricing.selectProduct')}</option>
@@ -174,10 +217,10 @@ export default function CalculatorPricingPage() {
                     <option key={p.id} value={p.id}>{p.name} {p.code ? `(${p.code})` : ''}</option>
                   ))}
                 </select>
-              </div>
+              </div> : null}
               <div className="grid grid-cols-2 gap-3">
-                <Input label="Van (cm)" value={form.range_from_cm} onChange={(e) => setForm({ ...form, range_from_cm: e.target.value })} type="number" />
-                <Input label="Tot (cm)" value={form.range_to_cm} onChange={(e) => setForm({ ...form, range_to_cm: e.target.value })} type="number" />
+                <Input label="Van (cm)" value={form.range_from_cm} onChange={(e) => setForm({ ...form, range_from_cm: e.target.value })} type="number" min={0} required />
+                <Input label="Tot (cm)" value={form.range_to_cm} onChange={(e) => setForm({ ...form, range_to_cm: e.target.value })} type="number" min={1} required />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <Input label="Prijs incl. BTW (€)" value={form.price_incl_vat} onChange={(e) => setForm({ ...form, price_incl_vat: e.target.value })} type="number" step="0.01" required />
@@ -212,7 +255,7 @@ export default function CalculatorPricingPage() {
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold">{t('adminNew.common.save')}</Button>
+            <Button type="submit" variant="gold" disabled={createRule.loading || updateRule.loading}>{t('adminNew.common.save')}</Button>
           </AdminModalFooter>
         </form>
       </Modal>

@@ -48,6 +48,7 @@
         "workOrders": "Arbeitsaufträge",
         "workOrdersDesc": "Geplante Arbeiten und Fortschritt verfolgen.",
         "quickAccess": "Schnellzugriff",
+        "quickActions": "Schnellaktionen",
         "crane": "Krantermin",
         "craneDesc": "Kran-Buchungsseite öffnen."
       },
@@ -62,6 +63,7 @@
         "costsUnavailable": "Einkaufssummen sind über die aktuelle API nicht verfügbar.",
         "loadError": "Nicht geladen",
         "invoiceWindow": "Basierend auf den 100 aktuellsten Rechnungen.",
+        "quickActions": "Schnellaktionen",
         "overview": "Finanzübersicht",
         "invoices": "Verkaufsrechnungen",
         "invoicesDesc": "Rechnungen aus allen Arbeitsabläufen finden und verwalten.",
@@ -142,8 +144,6 @@
     "contact": "Kontakt",
     "login": "Anmelden",
     "bookCrane": "Krantermin",
-    "subnavCta": "Professioneller Service für jedes Boot",
-    "subnavLocation": "Standort · Roermond",
     "megaCta": "Alles für Ihr Boot an einem Ort",
     "megaAction": "Termin buchen",
     "installShort": "App",
@@ -632,6 +632,7 @@
     "editService": "Service bearbeiten",
     "onRequest": "Auf Anfrage",
     "from": "ab",
+    "pricingUnavailable": "Preise sind derzeit nicht verfügbar. Bitte kontaktieren Sie uns für ein Angebot.",
     "overviewTitle": "Unsere Leistungen und Preise",
     "overviewSubtitle": "Aktuelle Preise pro Längenklasse, direkt aus unserem System."
   },
@@ -2447,6 +2448,7 @@
       "viewAllUpdates": "Alle Updates anzeigen",
       "viewWebsite": "Website ansehen",
       "viewPage": "Seite ansehen",
+      "viewBoat": "Boot ansehen",
       "notifs": {
         "webhookFailedTitle": "Mollie-Webhook fehlgeschlagen",
         "webhookFailedMessage": "tr_abc123 — manuell erneut versuchen",

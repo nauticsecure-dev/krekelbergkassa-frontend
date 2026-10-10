@@ -3,6 +3,7 @@
 import {
   CalendarDays,
   ClipboardList,
+  Plus,
   Hammer,
   Ship,
 } from 'lucide-react';
@@ -17,6 +18,27 @@ export default function PlanningHubPage() {
     <AdminModuleHub
       title={t(`${prefix}.title`)}
       subtitle={t(`${prefix}.subtitle`)}
+      actionsLabel={t(`${prefix}.quickActions`)}
+      actions={[
+        {
+          href: `/${locale}/planning?create=1`,
+          label: t('adminModules.create.appointment'),
+          description: t(`${prefix}.appointmentsDesc`),
+          icon: Plus,
+        },
+        {
+          href: `/${locale}/kraanafspraak`,
+          label: t(`${prefix}.crane`),
+          description: t(`${prefix}.craneDesc`),
+          icon: Ship,
+        },
+        {
+          href: `/${locale}/admin/werkorders`,
+          label: t(`${prefix}.workOrders`),
+          description: t(`${prefix}.workOrdersDesc`),
+          icon: Hammer,
+        },
+      ]}
       groups={[
         {
           title: t(`${prefix}.schedule`),

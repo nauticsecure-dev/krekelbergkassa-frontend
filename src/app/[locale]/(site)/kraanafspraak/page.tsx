@@ -36,6 +36,7 @@ import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin } from '@/lib/auth-routes';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { serviceCatalogService, type ServiceCatalogService } from '@/lib/services';
+import { formatCurrency } from '@/lib/format';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 const CMS_PAGE = 'kraanafspraak';
@@ -125,6 +126,7 @@ export default function KraanAfspraakPage() {
   const { push } = useToast();
   const { user, isDemo } = useAuth();
   const canManageProducts = canAccessAdmin(user?.role, isDemo);
+  const currencyLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
   useRegisterCmsPage(CMS_PAGE);
   const catalogQuery = useQuery(
     [],
@@ -561,9 +563,6 @@ export default function KraanAfspraakPage() {
               </div>
 
               {/* Services */}
-              <SectionTitle icon={<Sparkles className="h-4 w-4" />} className="mt-8">
-                {t('crane.services')}
-              </SectionTitle>
               {catalogQuery.error ? (
                 <p role="status" className="mt-2 text-xs text-amber-700">
                   {t('crane.catalogUnavailable')}
@@ -574,6 +573,27 @@ export default function KraanAfspraakPage() {
                   {t('crane.noBookableServices')}
                 </p>
               ) : null}
+              <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+                <SectionTitle icon={<Sparkles className="h-4 w-4" />}>
+                  {t('crane.services')}
+                </SectionTitle>
+                {canManageProducts ? (
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold">
+                    <Link
+                      href={`/${locale}/admin/producten`}
+                      className="text-marine-700 underline-offset-2 hover:underline"
+                    >
+                      {t('adminModules.hubs.servicesPricing.services')}
+                    </Link>
+                    <Link
+                      href={`/${locale}/admin/calculator/pricing`}
+                      className="text-marine-700 underline-offset-2 hover:underline"
+                    >
+                      {t('adminModules.hubs.servicesPricing.rules')}
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {bookableServices.map(s => {
                   const Icon   = s.icon;
@@ -607,7 +627,7 @@ export default function KraanAfspraakPage() {
                           </div>
                         </div>
                         <div className={cn('shrink-0 text-sm font-semibold', active ? 'text-gold-300' : 'text-navy-900')}>
-                          {price == null ? t('servicePage.onRequest') : `€${price}`}
+                          {price == null ? t('servicePage.onRequest') : formatCurrency(price, currencyLocale)}
                           {price != null && !lengthCm ? (
                             <span className={cn('ml-0.5 text-[10px] font-normal', active ? 'text-sand-100/70' : 'text-navy-400')}>
                               v.a.

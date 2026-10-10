@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
 import { ArrowRight } from 'lucide-react';
-import { AdminContent } from '@/components/admin/AdminUi';
+import { AdminContent, AdminQuickAction } from '@/components/admin/AdminUi';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import type { AdminHeaderStat } from '@/components/admin/AdminShell';
 
@@ -24,16 +24,41 @@ export function AdminModuleHub({
   subtitle,
   groups,
   stats,
+  actions,
+  actionsLabel,
 }: {
   title: string;
   subtitle: string;
   groups: AdminModuleGroup[];
   stats?: AdminHeaderStat[];
+  actions?: AdminModuleLink[];
+  actionsLabel?: string;
 }) {
   return (
     <>
       <AdminPageHeader title={title} subtitle={subtitle} stats={stats} />
       <AdminContent>
+        {actions?.length ? (
+          <section className="space-y-3" aria-label={actionsLabel ?? title}>
+            {actionsLabel ? (
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-navy-500">
+                {actionsLabel}
+              </h2>
+            ) : null}
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {actions.map(({ href, label, description, icon }) => (
+                <AdminQuickAction
+                  key={href}
+                  href={href}
+                  label={label}
+                  description={description}
+                  icon={icon}
+                  tone="gold"
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
         {groups.map((group) => (
           <section key={group.title} className="space-y-3">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-navy-500">{group.title}</h2>

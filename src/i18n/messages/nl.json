@@ -48,6 +48,7 @@
         "workOrders": "Werkopdrachten",
         "workOrdersDesc": "Volg gepland werk en de uitvoering op.",
         "quickAccess": "Snel naar",
+        "quickActions": "Snelacties",
         "crane": "Kraanafspraak",
         "craneDesc": "Open de kraanboekingspagina."
       },
@@ -62,6 +63,7 @@
         "costsUnavailable": "Inkooptotalen zijn niet beschikbaar via de huidige API.",
         "loadError": "Niet geladen",
         "invoiceWindow": "Gebaseerd op de 100 meest recente facturen.",
+        "quickActions": "Snelacties",
         "overview": "Financieel overzicht",
         "invoices": "Verkoopfacturen",
         "invoicesDesc": "Zoek en beheer facturen uit alle workflows.",
@@ -142,8 +144,6 @@
     "contact": "Contact",
     "login": "Inloggen",
     "bookCrane": "Plan kraanbeurt",
-    "subnavCta": "Professionele service voor iedere boot",
-    "subnavLocation": "Locatie · Roermond",
     "megaCta": "Alles voor uw boot op één locatie",
     "megaAction": "Maak afspraak",
     "installShort": "App",
@@ -632,6 +632,7 @@
     "editService": "Bewerk service",
     "onRequest": "Op aanvraag",
     "from": "vanaf",
+    "pricingUnavailable": "Tarieven zijn momenteel niet beschikbaar. Neem contact met ons op voor een prijsopgave.",
     "overviewTitle": "Onze diensten en tarieven",
     "overviewSubtitle": "Live tarieven per lengteklasse, rechtstreeks uit onze administratie."
   },
@@ -2855,6 +2856,7 @@
       "viewAllUpdates": "Bekijk alle updates",
       "viewWebsite": "Website bekijken",
       "viewPage": "Bekijk pagina",
+      "viewBoat": "Bekijk boot",
       "notifs": {
         "webhookFailedTitle": "Mollie webhook gefaald",
         "webhookFailedMessage": "tr_abc123 — handmatig opnieuw proberen",

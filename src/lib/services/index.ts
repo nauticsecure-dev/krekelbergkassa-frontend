@@ -825,12 +825,8 @@ export const pricingService = {
   },
   // Trello #107: lightweight product-code price preview for the contract modal.
   previewProduct(params: { product_code: string; entity_id?: string; entity_type?: string }) {
-    return api<Record<string, unknown>>('/v1/pricing/preview', {
-      query: {
-        product_code: params.product_code,
-        entity_id: params.entity_id,
-        entity_type: params.entity_type,
-      },
+    return api<Record<string, unknown>>('/v1/pricing/product-preview', {
+      query: params,
     });
   },
   async rules(query?: Record<string, string | number | boolean | undefined>) {

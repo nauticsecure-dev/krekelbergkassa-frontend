@@ -48,6 +48,7 @@
         "workOrders": "Work orders",
         "workOrdersDesc": "Track scheduled work and its progress.",
         "quickAccess": "Quick access",
+        "quickActions": "Quick actions",
         "crane": "Crane appointment",
         "craneDesc": "Open the crane booking page."
       },
@@ -62,6 +63,7 @@
         "costsUnavailable": "Purchase totals are not available through the current API.",
         "loadError": "Could not load",
         "invoiceWindow": "Based on the 100 most recent invoices.",
+        "quickActions": "Quick actions",
         "overview": "Financial overview",
         "invoices": "Sales invoices",
         "invoicesDesc": "Find and manage invoices from every workflow.",
@@ -142,8 +144,6 @@
     "contact": "Contact",
     "login": "Login",
     "bookCrane": "Book crane slot",
-    "subnavCta": "Professional service for every boat",
-    "subnavLocation": "Location · Roermond",
     "megaCta": "Everything for your boat in one place",
     "megaAction": "Book now",
     "installShort": "App",
@@ -637,6 +637,7 @@
     "editService": "Edit service",
     "onRequest": "On request",
     "from": "from",
+    "pricingUnavailable": "Pricing is currently unavailable. Please contact us for a quote.",
     "overviewTitle": "Our services and rates",
     "overviewSubtitle": "Live rates per length class, straight from our system."
   },
@@ -2452,6 +2453,7 @@
       "viewAllUpdates": "View all updates",
       "viewWebsite": "View website",
       "viewPage": "View page",
+      "viewBoat": "View boat",
       "notifs": {
         "webhookFailedTitle": "Mollie webhook failed",
         "webhookFailedMessage": "tr_abc123 — retry manually",

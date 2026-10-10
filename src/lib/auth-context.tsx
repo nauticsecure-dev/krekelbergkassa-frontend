@@ -134,8 +134,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isDemo, setIsDemo] = React.useState(false);
   const [isPortalSession, setIsPortalSession] = React.useState(false);
   const hydratedRef = React.useRef(false);
+  const refreshAttemptRef = React.useRef(0);
 
   const refresh = React.useCallback(async () => {
+    const refreshAttempt = ++refreshAttemptRef.current;
     if (hasAnySession() && !readCachedUser<User>()) {
       setLoading(true);
     }
@@ -149,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const stored =
           typeof window !== 'undefined' ? localStorage.getItem(DEMO_USER_KEY) : null;
         const parsed: User | null = stored ? JSON.parse(stored) : null;
+        if (refreshAttempt !== refreshAttemptRef.current) return;
         setUser(parsed ?? demoUserFor('customer'));
         setIsDemo(true);
         setIsPortalSession(false);
@@ -160,12 +163,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (hasStaffToken) {
         try {
           const staffUser = await loadStaffSession();
+          if (refreshAttempt !== refreshAttemptRef.current) return;
           setUser(staffUser);
           writeCachedUser(staffUser);
           setIsDemo(false);
           setIsPortalSession(false);
           return;
         } catch (err) {
+          if (refreshAttempt !== refreshAttemptRef.current) return;
           if (isUnauthorized(err)) {
             auth.clearSession();
             writeCachedUser(null);
@@ -184,12 +189,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (portalToken) {
         try {
           const portalUser = await loadPortalSession();
+          if (refreshAttempt !== refreshAttemptRef.current) return;
           setUser(portalUser);
           writeCachedUser(portalUser);
           setIsDemo(false);
           setIsPortalSession(true);
           return;
         } catch (err) {
+          if (refreshAttempt !== refreshAttemptRef.current) return;
           if (isUnauthorized(err)) {
             auth.clearPortalSession();
             writeCachedUser(null);
@@ -205,12 +212,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
+      if (refreshAttempt !== refreshAttemptRef.current) return;
       setUser(null);
       setIsDemo(false);
       setIsPortalSession(false);
       writeCachedUser(null);
     } finally {
-      setLoading(false);
+      if (refreshAttempt === refreshAttemptRef.current) setLoading(false);
     }
   }, []);
 
@@ -223,6 +231,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  React.useEffect(() => {
+    const onFocus = () => {
+      void refresh();
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (
+        event.key === null ||
+        event.key === 'krek_session' ||
+        event.key === 'krek_portal_session'
+      ) {
+        void refresh();
+      }
+    };
+
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [refresh]);
+
   // Trello #104: complete a staff session from a login/mfa-verify response.
   const completeStaffLogin = React.useCallback(
     (res: Awaited<ReturnType<typeof authService.login>>, remember: boolean) => {
@@ -230,6 +260,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!sessionToken) {
         throw new Error('Login succeeded but no session token was returned.');
       }
+      refreshAttemptRef.current += 1;
       auth.clearPortalSession();
       auth.setSession(sessionToken, remember, res.session?.expires_at);
       const next: User = {
@@ -273,6 +304,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const verifyCustomerMagicLink = React.useCallback(async (token: string, remember = true) => {
     const res = await authService.verifyMagicLink(token);
+    refreshAttemptRef.current += 1;
     auth.clearSession();
     auth.setPortalSession(res.portal_token, remember);
     const next: User = {
@@ -292,6 +324,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInDemo = React.useCallback(async (role: Role = 'customer') => {
     const demoUser = demoUserFor(role);
+    refreshAttemptRef.current += 1;
     auth.clearPortalSession();
     auth.setSession(`${DEMO_TOKEN_PREFIX}${role}::${Date.now()}`, true);
     if (typeof window !== 'undefined') {
@@ -306,6 +339,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = React.useCallback(async () => {
+    refreshAttemptRef.current += 1;
     const token = auth.getToken();
     const portalToken = auth.getPortalToken();
 
