@@ -48,6 +48,7 @@
         "workOrders": "Work orders",
         "workOrdersDesc": "Track scheduled work and its progress.",
         "quickAccess": "Quick access",
+        "quickActions": "Quick actions",
         "crane": "Crane appointment",
         "craneDesc": "Open the crane booking page."
       },
@@ -62,6 +63,7 @@
         "costsUnavailable": "Purchase totals are not available through the current API.",
         "loadError": "Could not load",
         "invoiceWindow": "Based on the 100 most recent invoices.",
+        "quickActions": "Quick actions",
         "overview": "Financial overview",
         "invoices": "Sales invoices",
         "invoicesDesc": "Find and manage invoices from every workflow.",

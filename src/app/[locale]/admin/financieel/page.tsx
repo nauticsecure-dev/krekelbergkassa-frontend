@@ -5,6 +5,7 @@ import {
   Building2,
   CreditCard,
   FileText,
+  Plus,
   Receipt,
   TrendingUp,
   Users,
@@ -40,6 +41,27 @@ export default function FinanceHubPage() {
     <AdminModuleHub
       title={t(`${prefix}.title`)}
       subtitle={t(`${prefix}.subtitle`)}
+      actionsLabel={t(`${prefix}.quickActions`)}
+      actions={[
+        {
+          href: `/${locale}/admin/facturen?create=1`,
+          label: t('adminModules.create.invoice'),
+          description: t(`${prefix}.invoicesDesc`),
+          icon: Plus,
+        },
+        {
+          href: `/${locale}/admin/facturen/import`,
+          label: t(`${prefix}.purchaseInvoices`),
+          description: t(`${prefix}.purchaseInvoicesDesc`),
+          icon: FileText,
+        },
+        {
+          href: `/${locale}/admin/betalingen`,
+          label: t('adminModules.overview.registerPayment'),
+          description: t(`${prefix}.paymentsDesc`),
+          icon: CreditCard,
+        },
+      ]}
       stats={[
         { label: t(`${prefix}.openAmount`), value: invoices.error ? t(`${prefix}.loadError`) : completeInvoiceWindow ? formatCurrency((overdueCents + dueCents) / 100, dateLocale) : '—', hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: Receipt, tone: 'marine', loading: invoices.loading, href: `/${locale}/admin/facturen` },
         { label: t(`${prefix}.overdueAmount`), value: invoices.error ? t(`${prefix}.loadError`) : completeInvoiceWindow ? formatCurrency(overdueCents / 100, dateLocale) : '—', hint: invoices.error || t(`${prefix}.invoiceWindow`), icon: CreditCard, tone: 'danger', loading: invoices.loading, href: `/${locale}/admin/facturen?payment_status=overdue` },

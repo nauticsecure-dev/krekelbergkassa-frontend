@@ -48,6 +48,7 @@
         "workOrders": "Arbeitsaufträge",
         "workOrdersDesc": "Geplante Arbeiten und Fortschritt verfolgen.",
         "quickAccess": "Schnellzugriff",
+        "quickActions": "Schnellaktionen",
         "crane": "Krantermin",
         "craneDesc": "Kran-Buchungsseite öffnen."
       },
@@ -62,6 +63,7 @@
         "costsUnavailable": "Einkaufssummen sind über die aktuelle API nicht verfügbar.",
         "loadError": "Nicht geladen",
         "invoiceWindow": "Basierend auf den 100 aktuellsten Rechnungen.",
+        "quickActions": "Schnellaktionen",
         "overview": "Finanzübersicht",
         "invoices": "Verkaufsrechnungen",
         "invoicesDesc": "Rechnungen aus allen Arbeitsabläufen finden und verwalten.",

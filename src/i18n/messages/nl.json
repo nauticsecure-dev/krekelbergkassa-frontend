@@ -48,6 +48,7 @@
         "workOrders": "Werkopdrachten",
         "workOrdersDesc": "Volg gepland werk en de uitvoering op.",
         "quickAccess": "Snel naar",
+        "quickActions": "Snelacties",
         "crane": "Kraanafspraak",
         "craneDesc": "Open de kraanboekingspagina."
       },
@@ -62,6 +63,7 @@
         "costsUnavailable": "Inkooptotalen zijn niet beschikbaar via de huidige API.",
         "loadError": "Niet geladen",
         "invoiceWindow": "Gebaseerd op de 100 meest recente facturen.",
+        "quickActions": "Snelacties",
         "overview": "Financieel overzicht",
         "invoices": "Verkoopfacturen",
         "invoicesDesc": "Zoek en beheer facturen uit alle workflows.",
