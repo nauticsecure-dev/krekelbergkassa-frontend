@@ -78,7 +78,7 @@ export function EditableText({
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
         aria-label={t('cms.editText')}
         title={t('cms.editText')}
-        className="absolute -right-2 -top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white opacity-0 shadow-md transition focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 group-hover/cms:opacity-100"
+        className="absolute -right-2 -top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
       >
         <Pencil className="h-3.5 w-3.5" />
       </button>
