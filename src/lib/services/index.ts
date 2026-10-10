@@ -831,6 +831,10 @@ export const pricingService = {
   },
   async rules(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/pricing/rules', { query });
+    if (res && typeof res === 'object' && !Array.isArray(res)) {
+      const rules = (res as Record<string, unknown>).rules;
+      if (Array.isArray(rules)) return asPaginated<PricingRule>(rules);
+    }
     return asPaginated<PricingRule>(res);
   },
   rule(id: string) {
