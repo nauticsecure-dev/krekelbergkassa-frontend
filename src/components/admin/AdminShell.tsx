@@ -29,7 +29,7 @@ import { ConnectionIndicator } from '@/components/sync/ConnectionIndicator';
 import { useShellDropdowns } from '@/components/shell/useShellDropdowns';
 import { PageHeaderStatsGrid, type PageHeaderStat } from '@/components/shell/PageHeaderStats';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { adminService, invoicesService, stallingService } from '@/lib/services';
+import { adminService, boatsService, invoicesService, stallingService } from '@/lib/services';
 import { trackEvent } from '@/lib/track-event';
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -97,7 +97,17 @@ function GlobalTopbar({
   const { t, locale } = useIntl();
   const { user } = useAuth();
   const pathname = usePathname();
-  const publicPage = getPublicPageForAdminPath(pathname, locale);
+  const boatId = getAdminBoatId(pathname, locale);
+  const boatDossier = useQuery(
+    [boatId ?? ''],
+    () => boatId ? boatsService.dossier(boatId) : Promise.resolve(null),
+    { immediate: Boolean(boatId) },
+  );
+  const publicPage = getPublicPageForAdminPath(
+    pathname,
+    locale,
+    boatDossier.loading ? null : getPublicBoatPath(boatDossier.data),
+  );
   const { requestLogout } = useConfirmLogout();
   const { bellOpen, menuOpen, toggleBell, toggleMenu, closeAll } = useShellDropdowns();
   const [createOpen, setCreateOpen] = React.useState(false);
@@ -216,15 +226,29 @@ function GlobalTopbar({
             href={publicPage.href}
             target="_blank"
             rel="noopener noreferrer"
-            title={publicPage.contextual ? t('adminNew.shell.viewPage') : t('adminNew.shell.viewWebsite')}
-            aria-label={publicPage.contextual ? t('adminNew.shell.viewPage') : t('adminNew.shell.viewWebsite')}
+            title={
+              publicPage.contextual
+                ? publicPage.boat
+                  ? t('adminNew.shell.viewBoat')
+                  : t('adminNew.shell.viewPage')
+                : t('adminNew.shell.viewWebsite')
+            }
+            aria-label={
+              publicPage.contextual
+                ? publicPage.boat
+                  ? t('adminNew.shell.viewBoat')
+                  : t('adminNew.shell.viewPage')
+                : t('adminNew.shell.viewWebsite')
+            }
             className="inline-flex"
           >
             <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-100 bg-white px-2.5 text-xs font-semibold text-navy-700 hover:bg-sand-50 sm:px-3">
               <Globe className="h-4 w-4 shrink-0" />
-              <span className="hidden lg:inline">
+              <span className="hidden sm:inline">
                 {publicPage.contextual
-                  ? t('adminNew.shell.viewPage')
+                  ? publicPage.boat
+                    ? t('adminNew.shell.viewBoat')
+                    : t('adminNew.shell.viewPage')
                   : t('adminNew.shell.viewWebsite')}
               </span>
             </span>
@@ -353,24 +377,65 @@ function GlobalTopbar({
   );
 }
 
+const PUBLIC_SERVICE_SLUGS = new Set([
+  'afspuiten',
+  'weekje-op-wal',
+  'winterstalling',
+  'zelf-werken',
+]);
+
 function getPublicPageForAdminPath(
   pathname: string,
   locale: string,
-): { href: string; contextual: boolean } {
+  publicBoatPath: string | null,
+): { href: string; contextual: boolean; boat?: boolean } {
   const adminPrefix = `/${locale}/admin`;
   const adminPath = pathname.startsWith(adminPrefix)
     ? pathname.slice(adminPrefix.length) || '/'
     : '/';
-  const publicPath =
-    adminPath === '/diensten' || adminPath.startsWith('/diensten/')
-      ? '/diensten'
-      : adminPath === '/stalling' || adminPath.startsWith('/stalling/')
-        ? '/diensten/winterstalling'
-        : null;
+  const serviceSlug = adminPath.match(/^\/diensten\/([^/]+)$/)?.[1];
+  const boatPath = adminPath.match(/^\/boten\/[^/]+$/) ? publicBoatPath : null;
+  const publicPath = boatPath
+    ?? (adminPath === '/contact'
+      ? '/contact'
+      : adminPath === '/diensten'
+        ? '/diensten'
+        : serviceSlug && PUBLIC_SERVICE_SLUGS.has(serviceSlug)
+          ? `/diensten/${serviceSlug}`
+          : adminPath === '/stalling' || adminPath.startsWith('/stalling/')
+            ? '/diensten/winterstalling'
+            : null);
 
   return publicPath
-    ? { href: `/${locale}${publicPath}`, contextual: true }
+    ? {
+        href: localizePublicPath(publicPath, locale),
+        contextual: true,
+        boat: Boolean(boatPath),
+      }
     : { href: `/${locale}`, contextual: false };
+}
+
+function getAdminBoatId(pathname: string, locale: string): string | null {
+  const match = pathname.match(new RegExp(`^/${locale}/admin/boten/([^/]+)$`));
+  return match?.[1] ?? null;
+}
+
+function getPublicBoatPath(dossier: Record<string, unknown> | null | undefined): string | null {
+  const boat = dossier?.boat;
+  if (!boat || typeof boat !== 'object') return null;
+  const record = boat as Record<string, unknown>;
+  const publicPath = record.public_path ?? record.public_url ?? record.frontend_url;
+  return typeof publicPath === 'string' &&
+    publicPath.startsWith('/') &&
+    !publicPath.startsWith('//')
+    ? publicPath
+    : null;
+}
+
+function localizePublicPath(path: string, locale: string): string {
+  const localePrefix = path.match(/^\/(nl|en|de)(\/.*)?$/);
+  if (localePrefix) return `/${locale}${localePrefix[2] ?? ''}`;
+  return `/${locale}${path}`;
 }
 
 /* -------------------------------------------------------------------------- */

@@ -142,8 +142,6 @@
     "contact": "Contact",
     "login": "Inloggen",
     "bookCrane": "Plan kraanbeurt",
-    "subnavCta": "Professionele service voor iedere boot",
-    "subnavLocation": "Locatie · Roermond",
     "megaCta": "Alles voor uw boot op één locatie",
     "megaAction": "Maak afspraak",
     "installShort": "App",
@@ -2855,6 +2853,7 @@
       "viewAllUpdates": "Bekijk alle updates",
       "viewWebsite": "Website bekijken",
       "viewPage": "Bekijk pagina",
+      "viewBoat": "Bekijk boot",
       "notifs": {
         "webhookFailedTitle": "Mollie webhook gefaald",
         "webhookFailedMessage": "tr_abc123 — handmatig opnieuw proberen",

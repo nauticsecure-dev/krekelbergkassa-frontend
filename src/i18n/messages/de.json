@@ -142,8 +142,6 @@
     "contact": "Kontakt",
     "login": "Anmelden",
     "bookCrane": "Krantermin",
-    "subnavCta": "Professioneller Service für jedes Boot",
-    "subnavLocation": "Standort · Roermond",
     "megaCta": "Alles für Ihr Boot an einem Ort",
     "megaAction": "Termin buchen",
     "installShort": "App",
@@ -2447,6 +2445,7 @@
       "viewAllUpdates": "Alle Updates anzeigen",
       "viewWebsite": "Website ansehen",
       "viewPage": "Seite ansehen",
+      "viewBoat": "Boot ansehen",
       "notifs": {
         "webhookFailedTitle": "Mollie-Webhook fehlgeschlagen",
         "webhookFailedMessage": "tr_abc123 — manuell erneut versuchen",

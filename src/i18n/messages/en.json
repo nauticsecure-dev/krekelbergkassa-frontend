@@ -142,8 +142,6 @@
     "contact": "Contact",
     "login": "Login",
     "bookCrane": "Book crane slot",
-    "subnavCta": "Professional service for every boat",
-    "subnavLocation": "Location · Roermond",
     "megaCta": "Everything for your boat in one place",
     "megaAction": "Book now",
     "installShort": "App",
@@ -2452,6 +2450,7 @@
       "viewAllUpdates": "View all updates",
       "viewWebsite": "View website",
       "viewPage": "View page",
+      "viewBoat": "View boat",
       "notifs": {
         "webhookFailedTitle": "Mollie webhook failed",
         "webhookFailedMessage": "tr_abc123 — retry manually",
