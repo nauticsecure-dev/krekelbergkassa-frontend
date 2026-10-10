@@ -198,8 +198,8 @@ export default function HomePage() {
                     alt={t(`home.svc.${s.key}.title`)}
                     className="absolute inset-0 transition duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/30 to-transparent" />
-                  <div className="absolute left-4 top-4">
+                  <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/30 to-transparent" />
+                  <div aria-hidden className="pointer-events-none absolute left-4 top-4">
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white/95 text-navy-800 backdrop-blur">
                       <Icon className="h-4 w-4" />
                     </span>
