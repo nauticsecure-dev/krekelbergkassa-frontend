@@ -159,7 +159,7 @@ export default function StallingPage() {
     winter: 'STALL-WINTER',
     summer: 'STALL-SUMMER',
     year: 'STALL-SUMMER',
-    week: 'KRANEN',
+    week: 'WEEK-OP-WAL',
   };
   React.useEffect(() => {
     const code = TYPE_PRODUCT_CODE[createForm.type];
@@ -403,7 +403,7 @@ export default function StallingPage() {
         deposit_percentage: createForm.deposit_pct ? Number(createForm.deposit_pct) : undefined,
         price_total: createForm.price_total_euros
           ? Math.round(parseFloat(createForm.price_total_euros) * 100)
-          : undefined,
+          : pricePreview?.total_incl_vat,
         notes: createForm.notes || undefined,
         // Brokerage fields
         brokerage_start_date: brokerage && brokerageStart ? brokerageStart : undefined,

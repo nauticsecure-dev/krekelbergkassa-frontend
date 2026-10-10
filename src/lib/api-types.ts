@@ -274,6 +274,7 @@ export interface PricingRule {
   price_incl_vat: number;
   price_excl_vat_euros: number;
   price_incl_vat_euros: number;
+  vat_rate?: number;
   currency: string;
   valid_from: string | null;
   valid_to: string | null;

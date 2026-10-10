@@ -1,7 +1,6 @@
 import { ServicePage } from '@/components/site/ServicePage';
 import { EditableText } from '@/components/cms/EditableText';
 import { EditableImage } from '@/components/cms/EditableImage';
-import { tariffRanges } from '@/lib/pricing-table';
 
 const CMS_PAGE = 'diensten/weekje-op-wal';
 
@@ -37,13 +36,14 @@ export default function WeekjeOpWalPage() {
         />
       }
       badge="Weekje op wal"
+      catalogSlug="weekje-op-wal"
+      catalogServiceCode="WEEK-OP-WAL"
       title="Weekje op wal"
       subtitle="Haal uw boot uit het water en neem een week de tijd voor onderhoud op onze werf. We bespreken vooraf de planning en mogelijkheden voor uw schip."
       description="Met een weekje op wal heeft u rustig de tijd om aan uw boot te werken. Bespreek met ons de gewenste periode, het kranen en de faciliteiten die u nodig heeft. Onze werf biedt mogelijkheden voor zelfwerkzaamheden en hulp van onze monteurs op afspraak."
       heroImage="/img/krek/werkzaamheden.webp"
       inlineImage="/img/krek/werf-hero.webp"
       priceFootnote="Tarieven per lengteklasse, inclusief BTW. Neem contact op voor beschikbaarheid en afspraken over de inhoud van het arrangement."
-      priceRanges={tariffRanges('week_arrangement')}
       features={[
         { title: 'Een week op de wal', desc: 'Plan tijd om uw boot rustig onder handen te nemen.' },
         { title: 'Onderhoud op uw tempo', desc: 'Bespreek vooraf welke werkzaamheden u wilt uitvoeren.' },

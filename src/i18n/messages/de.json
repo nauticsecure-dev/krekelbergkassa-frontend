@@ -632,6 +632,7 @@
     "editService": "Service bearbeiten",
     "onRequest": "Auf Anfrage",
     "from": "ab",
+    "pricingUnavailable": "Preise sind derzeit nicht verfügbar. Bitte kontaktieren Sie uns für ein Angebot.",
     "overviewTitle": "Unsere Leistungen und Preise",
     "overviewSubtitle": "Aktuelle Preise pro Längenklasse, direkt aus unserem System."
   },

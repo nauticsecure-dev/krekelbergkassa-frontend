@@ -632,6 +632,7 @@
     "editService": "Bewerk service",
     "onRequest": "Op aanvraag",
     "from": "vanaf",
+    "pricingUnavailable": "Tarieven zijn momenteel niet beschikbaar. Neem contact met ons op voor een prijsopgave.",
     "overviewTitle": "Onze diensten en tarieven",
     "overviewSubtitle": "Live tarieven per lengteklasse, rechtstreeks uit onze administratie."
   },

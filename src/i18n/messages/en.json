@@ -637,6 +637,7 @@
     "editService": "Edit service",
     "onRequest": "On request",
     "from": "from",
+    "pricingUnavailable": "Pricing is currently unavailable. Please contact us for a quote.",
     "overviewTitle": "Our services and rates",
     "overviewSubtitle": "Live rates per length class, straight from our system."
   },

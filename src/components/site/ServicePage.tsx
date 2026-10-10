@@ -22,7 +22,6 @@ export interface ServicePageProps {
   subtitle: string;
   description: string;
   features: { title: string; desc: string }[];
-  priceRanges?: { label: string; price: string; note?: string }[];
   faqs: { q: string; a: string }[];
   heroImage?: string;
   inlineImage?: string;
@@ -30,6 +29,7 @@ export interface ServicePageProps {
   adminProductSlug?: string;
   priceFootnote?: string;
   catalogSlug?: string;
+  catalogServiceCode?: string;
   cmsPage?: string;
   editableTitle?: React.ReactNode;
   editableDescription?: React.ReactNode;
@@ -42,7 +42,6 @@ export function ServicePage({
   subtitle,
   description,
   features,
-  priceRanges,
   faqs,
   heroImage = '/img/krek/werf-hero.webp',
   inlineImage,
@@ -50,6 +49,7 @@ export function ServicePage({
   adminProductSlug,
   priceFootnote,
   catalogSlug,
+  catalogServiceCode,
   cmsPage,
   editableTitle,
   editableDescription,
@@ -63,12 +63,17 @@ export function ServicePage({
   const cta = primaryCta ?? { label: t('nav.bookCrane'), href: `/${locale}/kraanafspraak` };
 
   const catalogQuery = useQuery([catalogSlug ?? ''], () =>
-    catalogSlug ? serviceCatalogService.page(catalogSlug).catch(() => null) : Promise.resolve(null),
+    catalogSlug ? serviceCatalogService.page(catalogSlug) : Promise.resolve(null),
   );
   const liveRanges = React.useMemo(() => {
     const services = catalogQuery.data?.services ?? [];
-    const tariffs = services.flatMap((s) => s.tariffs ?? []);
-    if (!tariffs.length) return null;
+    const service = services.find((item) =>
+      [item.code, item.service_code, item.slug].some(
+        (value) => value?.toLowerCase() === catalogServiceCode?.toLowerCase(),
+      ),
+    );
+    const tariffs = service?.tariffs ?? [];
+    if (!catalogServiceCode || !tariffs.length) return [];
     return tariffs
       .slice()
       .sort((a, b) => a.range_from_cm - b.range_from_cm)
@@ -77,8 +82,9 @@ export function ServicePage({
         price: tf.is_on_request ? t('servicePage.onRequest') : tf.display_price,
         note: tf.range_from_cm === 0 ? t('servicePage.from') : undefined,
       }));
-  }, [catalogQuery.data, t]);
-  const ranges = liveRanges ?? priceRanges ?? [];
+  }, [catalogQuery.data, catalogServiceCode, t]);
+  const showPricingWarning =
+    !catalogQuery.loading && (!liveRanges.length || !!catalogQuery.error);
 
   const p = cmsPage ?? '';
 
@@ -261,7 +267,7 @@ export function ServicePage({
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {ranges.map((r) => (
+            {liveRanges.map((r) => (
               <Card key={r.label} className="flex items-center justify-between p-5">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
@@ -276,6 +282,11 @@ export function ServicePage({
               </Card>
             ))}
           </div>
+          {showPricingWarning ? (
+            <p role="status" className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              {t('servicePage.pricingUnavailable')}
+            </p>
+          ) : null}
           {priceFootnote ? (
             <p className="mt-4 text-xs text-navy-400">
               {p ? (

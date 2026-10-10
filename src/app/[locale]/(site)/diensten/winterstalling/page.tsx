@@ -1,7 +1,6 @@
 import { ServicePage } from '@/components/site/ServicePage';
 import { EditableText } from '@/components/cms/EditableText';
 import { EditableImage } from '@/components/cms/EditableImage';
-import { tariffRanges } from '@/lib/pricing-table';
 
 const CMS_PAGE = 'diensten/winterstalling';
 
@@ -38,6 +37,7 @@ export default function WinterstallingPage() {
       }
       adminProductSlug="STALL-WINTER"
       catalogSlug="winterstalling"
+      catalogServiceCode="STALL-WINTER"
       priceFootnote="Winterberging-tarief per lengteklasse, inclusief BTW (incl. 2× kranen en afspuiten). De definitieve prijs volgt uit de exacte lengte van uw boot."
       badge="Winterstalling"
       title="Veilige winterstalling"
@@ -53,7 +53,6 @@ export default function WinterstallingPage() {
         { title: 'Onderhoud op locatie', desc: 'Externe monteurs welkom onder werfvoorwaarden.' },
         { title: 'Voor- en najaar combineren', desc: 'Kranen en afspuiten in één arrangement.' },
       ]}
-      priceRanges={tariffRanges('winterberging')}
       faqs={[
         { q: 'Wanneer start het stallingsseizoen?', a: 'Winterstalling loopt van 1 november tot 30 april. Zomerstalling is mogelijk van 1 mei tot 31 oktober.' },
         { q: 'Kan ik tussentijds werkzaamheden uitvoeren?', a: 'Ja. Tijdens openingstijden bent u welkom op het werfterrein, met toegang tot werkruimtes en water/stroom.' },
