@@ -45,13 +45,18 @@ export function EditableText({
   className,
   children,
 }: EditableTextProps) {
-  const { canEdit, editMode, getText } = useCms();
+  const { canEdit, editMode, getText, registerTextBlock, unregisterTextBlock } = useCms();
   const { t } = useIntl();
   const [open, setOpen] = React.useState(false);
 
   const fallbackText = React.useMemo(() => childrenToText(children), [children]);
   const stored = getText(blockKey, '');
   const Tag = (as ?? 'span') as AsTag;
+
+  React.useEffect(() => {
+    registerTextBlock({ key: blockKey, page, section, type, fallback: fallbackText });
+    return () => unregisterTextBlock(blockKey);
+  }, [blockKey, page, section, type, fallbackText, registerTextBlock, unregisterTextBlock]);
 
   // Render the stored value when present, otherwise the hardcoded children so
   // the public site is unchanged until a first edit upserts the key.
@@ -62,9 +67,12 @@ export function EditableText({
   }
 
   return (
-    <span className={cn('group/cms relative inline-block', className && 'block')}>
+    <span className={cn('group/cms relative isolate inline-block min-w-[5.5rem]', className && 'block')}>
       <Tag
-        className={cn('outline-dashed outline-1 outline-gold-400/60', className)}
+        className={cn(
+          'inline-flex min-h-8 min-w-[5.5rem] cursor-pointer items-center outline-dashed outline-1 outline-gold-400/60',
+          className,
+        )}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -76,9 +84,9 @@ export function EditableText({
       <button
         type="button"
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
-        aria-label={t('cms.editText')}
-        title={t('cms.editText')}
-        className="absolute -right-2 -top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
+        aria-label={`${t('cms.editText')}: ${blockKey}`}
+        title={blockKey}
+        className="absolute -right-3 -top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-full bg-gold-500 text-white shadow-md transition hover:bg-gold-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
       >
         <Pencil className="h-3.5 w-3.5" />
       </button>

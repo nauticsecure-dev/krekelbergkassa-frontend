@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Clock, Eye, Pencil, Search, Settings } from 'lucide-react';
+import { Clock, Eye, List, Pencil, Search, Settings } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useCms } from './CmsProvider';
-import { GlobalSettingsModal, SeoEditModal } from './CmsModals';
+import { BlockListModal, GlobalSettingsModal, SeoEditModal } from './CmsModals';
 
 /**
  * Floating editor toolbar (bottom-right). Rendered only for users holding
@@ -17,6 +17,7 @@ export function CmsToolbar() {
   const { canEdit, editMode, toggleEditMode, currentPage } = useCms();
   const [seoOpen, setSeoOpen] = React.useState(false);
   const [globalOpen, setGlobalOpen] = React.useState(false);
+  const [blocksOpen, setBlocksOpen] = React.useState(false);
 
   if (!canEdit) return null;
 
@@ -50,6 +51,16 @@ export function CmsToolbar() {
 
         <button
           type="button"
+          onClick={() => setBlocksOpen(true)}
+          aria-label={t('cms.blocksTitle')}
+          title={t('cms.blocksTitle')}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-navy-600 transition hover:bg-navy-50 hover:text-navy-900"
+        >
+          <List className="h-4 w-4" />
+        </button>
+
+        <button
+          type="button"
           onClick={() => setSeoOpen(true)}
           aria-label={t('cms.seoTitle')}
           title={t('cms.seoTitle')}
@@ -80,6 +91,7 @@ export function CmsToolbar() {
 
       <SeoEditModal open={seoOpen} onClose={() => setSeoOpen(false)} pageSlug={currentPage} />
       <GlobalSettingsModal open={globalOpen} onClose={() => setGlobalOpen(false)} />
+      <BlockListModal open={blocksOpen} onClose={() => setBlocksOpen(false)} />
     </>
   );
 }

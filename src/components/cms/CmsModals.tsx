@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Languages, Loader2, Upload } from 'lucide-react';
+import { Languages, Loader2, RotateCcw, Upload } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -13,6 +13,7 @@ import {
   useCms,
   type GlobalValue,
   type LocaleTag,
+  type RegisteredTextBlock,
 } from './CmsProvider';
 
 // ---------------------------------------------------------------------------
@@ -168,19 +169,21 @@ export function TextEditModal({
           source_locale: active,
           target_locales: otherLocales,
         });
-        // Merge translated values — don't overwrite locales the editor already filled in
-        for (const [locale, translated] of Object.entries(res.translations)) {
-          const tag = locale as LocaleTag;
-          if (!currentValues[tag]?.trim()) {
-            currentValues = { ...currentValues, [tag]: translated };
+        for (const locale of otherLocales) {
+          const translated = res.translations[locale];
+          if (!translated?.trim()) {
+            throw new Error(`Geen vertaling ontvangen voor ${TAG_LABEL[locale]}`);
           }
+          currentValues = { ...currentValues, [locale]: translated };
         }
         setValues(currentValues);
         push({ tone: 'success', title: 'Vertaling gegenereerd' });
-      } catch {
-        push({ tone: 'info', title: 'Vertaling mislukt — tekst opgeslagen zonder vertaling' });
-      } finally {
+      } catch (err) {
+        pushError(err, 'Vertalen mislukt — tekst is niet opgeslagen');
         setTranslating(false);
+        return;
+      } finally {
+        if (currentValues === values) setTranslating(false);
       }
     }
 
@@ -228,7 +231,7 @@ export function TextEditModal({
           />
           <Languages className="h-4 w-4 shrink-0 text-navy-500" />
           <span>
-            Automatisch vertalen naar{' '}
+              Vertaal bij opslaan automatisch naar{' '}
             <strong>{otherLocales.map((l) => TAG_LABEL[l]).join(', ')}</strong> via AI
           </span>
           {autoTranslate && (
@@ -238,6 +241,18 @@ export function TextEditModal({
           )}
         </label>
 
+        <button
+          type="button"
+          onClick={() =>
+            setValues((v) => ({ ...v, [active]: fallbackText }))
+          }
+          disabled={!fallbackText || values[active] === fallbackText}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-navy-600 transition hover:text-navy-900 disabled:cursor-not-allowed disabled:text-navy-300"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          {t('cms.useDefault')}
+        </button>
+        <p className="text-xs text-navy-400">{t('cms.useDefaultHint')}</p>
         <p className="text-xs text-navy-400">{t('cms.localeHint')}</p>
       </div>
 
@@ -737,5 +752,103 @@ export function GlobalSettingsModal({
       </div>
       <ModalFooter onCancel={onClose} onSave={onSave} saving={saving} />
     </Modal>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 5. Page text-block list (small overlays / hard-to-click fields)
+// ---------------------------------------------------------------------------
+
+export function BlockListModal({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useIntl();
+  const { listTextBlocks, getText, currentPage } = useCms();
+  const [query, setQuery] = React.useState('');
+  const [selected, setSelected] = React.useState<RegisteredTextBlock | null>(null);
+
+  const blocks = listTextBlocks();
+  const filtered = React.useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return blocks;
+    return blocks.filter((block) => {
+      const stored = getText(block.key, '');
+      return (
+        block.key.toLowerCase().includes(q) ||
+        block.fallback.toLowerCase().includes(q) ||
+        stored.toLowerCase().includes(q)
+      );
+    });
+  }, [blocks, query, getText]);
+
+  React.useEffect(() => {
+    if (!open) {
+      setQuery('');
+      setSelected(null);
+    }
+  }, [open]);
+
+  return (
+    <>
+      <Modal open={open && !selected} onClose={onClose} size="lg">
+        <ModalHeader
+          title={t('cms.blocksTitle')}
+          desc={currentPage ? `${t('cms.blocksDesc')} (${currentPage})` : t('cms.blocksDesc')}
+        />
+        <div className="space-y-3 overflow-y-auto px-6 py-5">
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('cms.blocksSearch')}
+            className={fieldClass}
+            aria-label={t('cms.blocksSearch')}
+          />
+          {filtered.length === 0 ? (
+            <p className="text-sm text-navy-500">{t('cms.blocksEmpty')}</p>
+          ) : (
+            <ul className="divide-y divide-navy-100 rounded-lg border border-navy-100">
+              {filtered.map((block) => {
+                const stored = getText(block.key, '');
+                const preview = stored || block.fallback;
+                const usesFallback = !stored;
+                return (
+                  <li key={block.key}>
+                    <button
+                      type="button"
+                      onClick={() => setSelected(block)}
+                      className="flex w-full flex-col gap-0.5 px-3 py-2.5 text-left transition hover:bg-navy-50"
+                    >
+                      <span className="font-mono text-xs font-semibold text-navy-800">
+                        {block.key}
+                      </span>
+                      <span className="line-clamp-2 text-sm text-navy-600">{preview}</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-navy-400">
+                        {usesFallback ? t('cms.blocksDefault') : t('cms.blocksStored')}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </Modal>
+      {selected ? (
+        <TextEditModal
+          open
+          onClose={() => setSelected(null)}
+          blockKey={selected.key}
+          page={selected.page}
+          section={selected.section}
+          type={selected.type}
+          fallbackText={selected.fallback}
+        />
+      ) : null}
+    </>
   );
 }

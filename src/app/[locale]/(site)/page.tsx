@@ -252,17 +252,37 @@ export default function HomePage() {
                 className="h-full w-full"
               />
             </div>
-            <div className="absolute -bottom-6 -right-6 hidden rounded-xl bg-white p-5 shadow-elev lg:block">
+            <div
+              className={`absolute -bottom-6 -right-6 z-10 min-w-[13rem] rounded-xl bg-white p-5 shadow-elev ${
+                editMode ? 'block' : 'hidden lg:block'
+              }`}
+            >
               <ShieldCheck className="h-6 w-6 text-gold-500" />
-              <div className="mt-2 text-xs font-semibold uppercase tracking-widest text-navy-500">
-                <EditableText blockKey="home.werf.cert" page={CMS_PAGE} section="werf">
-                  {t("home.werf.cert")}
-                </EditableText>
-              </div>
-              <div className="text-sm font-semibold text-navy-900">
-                <EditableText blockKey="home.werf.cert_sub" page={CMS_PAGE} section="werf">
-                  HISWA · 1976
-                </EditableText>
+              <div className={editMode ? 'mt-3 space-y-4' : 'mt-2'}>
+                <div>
+                  {editMode ? (
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-navy-400">
+                      home.werf.cert
+                    </p>
+                  ) : null}
+                  <div className="text-xs font-semibold uppercase tracking-widest text-navy-500">
+                    <EditableText blockKey="home.werf.cert" page={CMS_PAGE} section="werf">
+                      {t("home.werf.cert")}
+                    </EditableText>
+                  </div>
+                </div>
+                <div>
+                  {editMode ? (
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-navy-400">
+                      home.werf.cert_sub
+                    </p>
+                  ) : null}
+                  <div className="text-sm font-semibold text-navy-900">
+                    <EditableText blockKey="home.werf.cert_sub" page={CMS_PAGE} section="werf">
+                      HISWA · 1976
+                    </EditableText>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

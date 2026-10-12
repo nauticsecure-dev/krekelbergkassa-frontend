@@ -113,6 +113,15 @@ export interface SaveSeoArgs {
   robots?: string;
 }
 
+/** Text field registered by `EditableText` so the toolbar can list tiny overlays. */
+export interface RegisteredTextBlock {
+  key: string;
+  page: string;
+  section?: string;
+  type: string;
+  fallback: string;
+}
+
 interface CmsContextValue {
   /** True when the signed-in user holds the `cms.manage` permission. */
   canEdit: boolean;
@@ -129,6 +138,11 @@ interface CmsContextValue {
   currentPage: string | null;
   /** Pages declare their slug so the provider fetches their content. */
   registerPage: (pageSlug: string) => void;
+
+  /** Mounted `EditableText` fields on the current page (for the block list). */
+  registerTextBlock: (block: RegisteredTextBlock) => void;
+  unregisterTextBlock: (key: string) => void;
+  listTextBlocks: () => RegisteredTextBlock[];
 
   // Read accessors — always fall back to the provided default.
   getText: (key: string, fallback?: string) => string;
@@ -194,6 +208,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [media, setMedia] = React.useState<Record<string, MediaBlock>>({});
   const [seo, setSeo] = React.useState<SeoData | null>(null);
   const [globals, setGlobals] = React.useState<Record<string, GlobalValue>>({});
+  const [textCatalog, setTextCatalog] = React.useState<Record<string, RegisteredTextBlock>>({});
 
   // Editing is meaningless without permission — force it off if it flips.
   const setEditMode = React.useCallback(
@@ -260,6 +275,37 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     },
     [],
   );
+
+  const registerTextBlock = React.useCallback((block: RegisteredTextBlock) => {
+    setTextCatalog((prev) => {
+      const existing = prev[block.key];
+      if (
+        existing &&
+        existing.page === block.page &&
+        existing.section === block.section &&
+        existing.type === block.type &&
+        existing.fallback === block.fallback
+      ) {
+        return prev;
+      }
+      return { ...prev, [block.key]: block };
+    });
+  }, []);
+
+  const unregisterTextBlock = React.useCallback((key: string) => {
+    setTextCatalog((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  const listTextBlocks = React.useCallback(() => {
+    return Object.values(textCatalog)
+      .filter((block) => !currentPage || block.page === currentPage)
+      .sort((a, b) => a.key.localeCompare(b.key));
+  }, [textCatalog, currentPage]);
 
   // (Re)fetch whenever the registered page or locale changes.
   React.useEffect(() => {
@@ -422,6 +468,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       localeTag,
       currentPage,
       registerPage,
+      registerTextBlock,
+      unregisterTextBlock,
+      listTextBlocks,
       getText,
       getMedia,
       getGlobal,
@@ -443,6 +492,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       localeTag,
       currentPage,
       registerPage,
+      registerTextBlock,
+      unregisterTextBlock,
+      listTextBlocks,
       getText,
       getMedia,
       getGlobal,

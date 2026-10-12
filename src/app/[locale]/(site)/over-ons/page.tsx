@@ -33,7 +33,7 @@ const VALUES = [
 ] as const;
 
 const TIMELINE = [
-  { year: "1972", key: "start" },
+  { year: "1976", key: "start" },
   { year: "1989", key: "crane" },
   { year: "2004", key: "brokerage" },
   { year: "2018", key: "apartments" },

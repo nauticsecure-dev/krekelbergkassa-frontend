@@ -15,7 +15,7 @@ export function Footer({ className }: { className?: string }) {
 
   // Trello #112: global settings flow through here read-only. Editing happens
   // via the CMS toolbar's Global modal; fall back to the existing values.
-  const tagline = getGlobal('footer.tagline', `${t('brand.tagline')}. Vakmanschap, planning en stalling sinds 1972.`);
+  const tagline = getGlobal('footer.tagline', `${t('brand.tagline')}. Vakmanschap, planning en stalling sinds 1976.`);
   const phone = getGlobal('company.phone', t('footer.phone'));
   return (
     <footer className={cn('mt-24 bg-navy-900 text-sand-100', className)}>
