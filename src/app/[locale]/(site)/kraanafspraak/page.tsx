@@ -26,6 +26,7 @@ import {
   Ship,
   Sparkles,
   User2,
+  Warehouse,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -46,15 +47,21 @@ interface CraneService {
   label: string;
   icon: typeof Ship;
   catalogServiceCodes: string[];
+  unitKey?: string;
 }
 
+const BOAT_TYPES = ['motor', 'sail', 'rib', 'other'] as const;
+
+const COUNTRIES = ['NL', 'BE', 'DE', 'FR', 'GB', 'IE', 'AT', 'CH', 'DK', 'SE', 'NO', 'PL'] as const;
+
 const SERVICES: CraneService[] = [
-  { code: 'kranen_uit',  label: 'Kranen uit het water',    icon: Ship,     catalogServiceCodes: ['kranen', 'kranen_uit'] },
-  { code: 'kranen_in',   label: 'Kranen in het water',     icon: Anchor,   catalogServiceCodes: ['kranen', 'kranen_in'] },
-  { code: 'afspuiten',   label: 'Romp afspuiten',          icon: Droplets, catalogServiceCodes: ['afspuiten'] },
-  { code: 'antifouling', label: 'Antifouling controle',    icon: Sparkles, catalogServiceCodes: ['antifouling'] },
-  { code: 'transport',   label: 'Bok transport',           icon: Hammer,   catalogServiceCodes: ['transport'] },
-  { code: 'plaats',      label: 'Plaatsing winterstalling',icon: Hammer,   catalogServiceCodes: ['plaats', 'winterstalling'] },
+  { code: 'kranen_uit',  label: 'Kranen uit het water',    icon: Ship,      catalogServiceCodes: ['kranen', 'kranen_uit'] },
+  { code: 'kranen_in',   label: 'Kranen in het water',     icon: Anchor,    catalogServiceCodes: ['kranen', 'kranen_in'] },
+  { code: 'afspuiten',   label: 'Romp afspuiten',          icon: Droplets,  catalogServiceCodes: ['afspuiten'] },
+  { code: 'antifouling', label: 'Antifouling controle',    icon: Sparkles,  catalogServiceCodes: ['antifouling'] },
+  { code: 'transport',   label: 'Bok transport',           icon: Hammer,    catalogServiceCodes: ['transport', 'bok_transport', 'bok-transport'] },
+  { code: 'plaats',      label: 'Plaatsing winterstalling',icon: Hammer,    catalogServiceCodes: ['plaats', 'winterstalling-plaatsing'] },
+  { code: 'stalling_week', label: 'Stalling per week',     icon: Warehouse, catalogServiceCodes: ['stalling-week', 'stalling_week', 'STALL-WEEK'], unitKey: 'crane.perWeek' },
 ];
 
 function catalogServiceFor(
@@ -169,14 +176,17 @@ export default function KraanAfspraakPage() {
     huisnummer: '',
     postcode: '',
     stad: '',
+    country: 'NL',
     phone: '',
     email: '',
     // Boat
     boatName: '',
     boatBrand: '',
     boatModel: '',
+    boatType: 'motor',
     boatEngine: '',
     boatYear: '',
+    registration: '',
     length: '',
     width: '',
     draft: '',
@@ -184,8 +194,9 @@ export default function KraanAfspraakPage() {
     notes: '',
   });
 
-  const setField = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setForm(prev => ({ ...prev, [key]: e.target.value }));
+  const setField = (key: keyof typeof form) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => setForm(prev => ({ ...prev, [key]: e.target.value }));
 
   // Google Places autocomplete
   React.useEffect(() => {
@@ -231,11 +242,27 @@ export default function KraanAfspraakPage() {
       .catch(() => setOpenDays({}));
   }, [view]);
 
+  const selectedBookableServices = bookableServices.filter((service) =>
+    selectedServices.includes(service.code)
+  );
+  const totalDuration = selectedBookableServices.reduce((sum, service) => {
+    return sum + (serviceDurationForLength(service, lengthCm, catalogServices) ?? 0);
+  }, 0);
+
   React.useEffect(() => {
     if (!picked || !selectedServices.length || !lengthCm) {
       setTimeSlots([]);
       setSlotsError(null);
       setTime(null);
+      return;
+    }
+    // Services without a duration (e.g. stalling per week alone) have no time slot,
+    // and the slots endpoint rejects them — ask for a timed service instead.
+    if (totalDuration === 0) {
+      setTimeSlots([]);
+      setSlotsError(null);
+      setTime(null);
+      setLoadingSlots(false);
       return;
     }
     setLoadingSlots(true);
@@ -258,7 +285,7 @@ export default function KraanAfspraakPage() {
         setSlotsError('error');
       })
       .finally(() => setLoadingSlots(false));
-  }, [picked, selectedServices, lengthCm]);
+  }, [picked, selectedServices, lengthCm, totalDuration]);
 
   const toggleService = (code: string) =>
     setSelectedServices(cur => cur.includes(code) ? cur.filter(c => c !== code) : [...cur, code]);
@@ -269,12 +296,6 @@ export default function KraanAfspraakPage() {
     setSelectedServices((current) => current.filter((code) => availableCodes.has(code)));
   }, [bookableServices, catalogServices]);
 
-  const selectedBookableServices = bookableServices.filter((service) =>
-    selectedServices.includes(service.code)
-  );
-  const totalDuration = selectedBookableServices.reduce((sum, service) => {
-    return sum + (serviceDurationForLength(service, lengthCm, catalogServices) ?? 0);
-  }, 0);
   const selectedPrices = selectedBookableServices.map((service) =>
     servicePriceForLength(service, lengthCm, catalogServices)
   );
@@ -331,13 +352,16 @@ export default function KraanAfspraakPage() {
           house_number: form.huisnummer || null,
           postal_code: form.postcode || null,
           city:        form.stad || null,
+          country:     form.country || null,
         },
         boat: {
           name:        form.boatName,
           brand:       form.boatBrand || null,
           model:       form.boatModel || null,
+          type:        form.boatType,
           engine:      form.boatEngine || null,
           build_year:  form.boatYear ? Number(form.boatYear) : null,
+          registration_number: form.registration || null,
           length_m:    lengthM,
           width_m:     form.width ? Number(form.width) / 100 : null,
           draft_m:     form.draft ? Number(form.draft) / 100 : null,
@@ -350,7 +374,11 @@ export default function KraanAfspraakPage() {
       if (images.length && result && typeof result === 'object' && 'appointment_id' in result) {
         const fd = new FormData();
         images.forEach(img => fd.append('photos[]', img));
-        await bookingService.uploadBookingPhotos(result.appointment_id as string, fd).catch(() => null);
+        try {
+          await bookingService.uploadBookingPhotos(result.appointment_id as string, fd);
+        } catch {
+          push({ tone: 'error', title: t('crane.photosNotUploaded') });
+        }
       }
 
       setSubmitted(true);
@@ -491,6 +519,15 @@ export default function KraanAfspraakPage() {
                   value={form.stad}
                   onChange={setField('stad')}
                 />
+                <SelectField
+                  label={t('crane.country')}
+                  value={form.country}
+                  onChange={setField('country')}
+                >
+                  {COUNTRIES.map(code => (
+                    <option key={code} value={code}>{t(`crane.countries.${code}`)}</option>
+                  ))}
+                </SelectField>
               </div>
 
               {/* Boat */}
@@ -502,11 +539,27 @@ export default function KraanAfspraakPage() {
                   value={form.boatName}
                   onChange={setField('boatName')}
                 />
+                <SelectField
+                  label={t('crane.boatType')}
+                  value={form.boatType}
+                  onChange={setField('boatType')}
+                >
+                  {BOAT_TYPES.map(type => (
+                    <option key={type} value={type}>{t(`crane.boatTypes.${type}`)}</option>
+                  ))}
+                </SelectField>
                 <Input
                   label="Motor"
                   placeholder="Volvo Penta D4"
                   value={form.boatEngine}
                   onChange={setField('boatEngine')}
+                />
+                <Input
+                  label={t('crane.registration')}
+                  placeholder="1234AB56"
+                  hint={t('crane.registrationHint')}
+                  value={form.registration}
+                  onChange={setField('registration')}
                 />
                 <Input
                   label="Merk"
@@ -623,7 +676,9 @@ export default function KraanAfspraakPage() {
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-semibold">{s.label}</div>
                           <div className={cn('text-xs', active ? 'text-sand-100/80' : 'text-navy-400')}>
-                            {duration != null ? `Ca. ${duration} min` : '—'}
+                            {s.unitKey
+                              ? t(s.unitKey)
+                              : duration != null ? `Ca. ${duration} min` : '—'}
                           </div>
                         </div>
                         <div className={cn('shrink-0 text-sm font-semibold', active ? 'text-gold-300' : 'text-navy-900')}>
@@ -791,6 +846,11 @@ export default function KraanAfspraakPage() {
                     Voer eerst de lengte van uw boot in om beschikbare tijden te zien.
                   </p>
                 )}
+                {!slotsError && picked && lengthCm && totalDuration === 0 && selectedBookableServices.length > 0 && (
+                  <p role="status" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+                    {t('crane.needsTimeSlot')}
+                  </p>
+                )}
                 {!slotsError && (
                   <div className="mt-3 grid grid-cols-4 gap-2">
                     {(loadingSlots ? [] : timeSlots).map(s => {
@@ -810,7 +870,7 @@ export default function KraanAfspraakPage() {
                         </button>
                       );
                     })}
-                    {!loadingSlots && timeSlots.length === 0 && picked && lengthCm && !slotsError && (
+                    {!loadingSlots && timeSlots.length === 0 && picked && lengthCm && totalDuration > 0 && !slotsError && (
                       <p className="col-span-4 text-xs text-navy-400">Geen beschikbare tijden op deze dag.</p>
                     )}
                   </div>
@@ -883,6 +943,19 @@ export default function KraanAfspraakPage() {
         loading={submitting}
       />
     </>
+  );
+}
+
+function SelectField({
+  label,
+  className,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
+  return (
+    <label className={cn('block w-full', className)}>
+      <span className="mb-1.5 block text-sm font-medium text-navy-800">{label}</span>
+      <select className="input-base" {...props} />
+    </label>
   );
 }
 

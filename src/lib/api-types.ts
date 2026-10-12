@@ -555,6 +555,7 @@ export interface Appointment {
   staff_notes: string | null;
   public_notes: string | null;
   photo_ids: unknown[] | null;
+  photo_urls?: string[];
   confirmed_at: string | null;
   started_at: string | null;
   completed_at: string | null;

@@ -601,7 +601,35 @@
       "boatWeight": "3500",
       "notes": "e.g. preferred berth or special details about your boat"
     },
-    "boatLengthHint": "In centimetres, e.g. 890 for 8.90 m"
+    "boatLengthHint": "In centimetres, e.g. 890 for 8.90 m",
+    "boatType": "Boat type",
+    "boatTypes": {
+      "motor": "Motorboat",
+      "sail": "Sailboat",
+      "rib": "RIB",
+      "other": "Other"
+    },
+    "registration": "KRM number",
+    "registrationHint": "Dutch vessel registry (Kadaster) number of your boat",
+    "country": "Country",
+    "countries": {
+      "NL": "Netherlands",
+      "BE": "Belgium",
+      "DE": "Germany",
+      "FR": "France",
+      "GB": "United Kingdom",
+      "IE": "Ireland",
+      "AT": "Austria",
+      "CH": "Switzerland",
+      "DK": "Denmark",
+      "SE": "Sweden",
+      "NO": "Norway",
+      "PL": "Poland"
+    },
+    "stallingWeek": "Storage per week",
+    "perWeek": "per week",
+    "needsTimeSlot": "Also pick a service with a duration, such as crane out of the water. Storage alone has no time slot.",
+    "photosNotUploaded": "Your request was sent, but the photos could not be uploaded. Contact us if you wanted to share photos."
   },
   "faq": {
     "title": "Frequently asked questions",

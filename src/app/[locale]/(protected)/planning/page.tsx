@@ -728,6 +728,27 @@ export default function PlanningPage() {
               </div>
             ) : null}
 
+            {/* Customer photo uploads from the booking form */}
+            {selected.photo_urls?.length ? (
+              <div className="mt-3">
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-navy-400">
+                  Foto&apos;s van klant ({selected.photo_urls.length})
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {selected.photo_urls.map((url) => (
+                    <a key={url} href={url} target="_blank" rel="noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt=""
+                        className="h-16 w-full rounded-lg border border-navy-100 object-cover transition hover:border-marine-300"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {/* Public notes (staff-writable, customer-visible) */}
             {selected.public_notes ? (
               <div className="mt-3 rounded-lg border border-marine-200 bg-marine-50/40 p-3">

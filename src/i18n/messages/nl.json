@@ -596,7 +596,35 @@
       "boatWeight": "3500",
       "notes": "Bijv. gewenste ligplaats of bijzonderheden over uw boot"
     },
-    "boatLengthHint": "In centimeters, bijv. 890 voor 8,90 m"
+    "boatLengthHint": "In centimeters, bijv. 890 voor 8,90 m",
+    "boatType": "Boottype",
+    "boatTypes": {
+      "motor": "Motorboot",
+      "sail": "Zeilboot",
+      "rib": "RIB",
+      "other": "Overig"
+    },
+    "registration": "KRM-nummer",
+    "registrationHint": "Kadasterregistratie van uw motor- of zeilvaartuig",
+    "country": "Land",
+    "countries": {
+      "NL": "Nederland",
+      "BE": "België",
+      "DE": "Duitsland",
+      "FR": "Frankrijk",
+      "GB": "Verenigd Koninkrijk",
+      "IE": "Ierland",
+      "AT": "Oostenrijk",
+      "CH": "Zwitserland",
+      "DK": "Denemarken",
+      "SE": "Zweden",
+      "NO": "Noorwegen",
+      "PL": "Polen"
+    },
+    "stallingWeek": "Stalling per week",
+    "perWeek": "per week",
+    "needsTimeSlot": "Kies ook een dienst met een tijdsduur, bijvoorbeeld kranen uit het water. Solo stalling heeft geen tijdslot.",
+    "photosNotUploaded": "Aanvraag is verzonden, maar de foto's zijn niet geupload. Neem contact op als u foto's wilde delen."
   },
   "faq": {
     "title": "Veelgestelde vragen",

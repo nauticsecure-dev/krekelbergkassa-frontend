@@ -596,7 +596,35 @@
       "boatWeight": "3500",
       "notes": "z. B. gewünschter Liegeplatz oder Besonderheiten zu Ihrem Boot"
     },
-    "boatLengthHint": "In Zentimetern, z. B. 890 für 8,90 m"
+    "boatLengthHint": "In Zentimetern, z. B. 890 für 8,90 m",
+    "boatType": "Bootstyp",
+    "boatTypes": {
+      "motor": "Motorboot",
+      "sail": "Segelboot",
+      "rib": "Schlauchboot (RIB)",
+      "other": "Sonstiges"
+    },
+    "registration": "KRM-Nummer",
+    "registrationHint": "Registrierungsnummer des Wasserfahrzeugs (Kadaster NL)",
+    "country": "Land",
+    "countries": {
+      "NL": "Niederlande",
+      "BE": "Belgien",
+      "DE": "Deutschland",
+      "FR": "Frankreich",
+      "GB": "Vereinigtes Königreich",
+      "IE": "Irland",
+      "AT": "Österreich",
+      "CH": "Schweiz",
+      "DK": "Dänemark",
+      "SE": "Schweden",
+      "NO": "Norwegen",
+      "PL": "Polen"
+    },
+    "stallingWeek": "Lagerplatz pro Woche",
+    "perWeek": "pro Woche",
+    "needsTimeSlot": "Wählen Sie auch eine Leistung mit Dauer, z. B. Kranen aus dem Wasser. Nur ein Lagerplatz hat kein Zeitfenster.",
+    "photosNotUploaded": "Ihre Anfrage wurde gesendet, aber die Fotos konnten nicht hochgeladen werden. Kontaktieren Sie uns, falls Sie Fotos teilen wollten."
   },
   "faq": {
     "title": "Häufig gestellte Fragen",
