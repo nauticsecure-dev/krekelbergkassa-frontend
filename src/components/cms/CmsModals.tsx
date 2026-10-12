@@ -163,6 +163,7 @@ export function TextEditModal({
     // Auto-translate: send the active locale text to all other locales
     if (autoTranslate && currentValues[active]?.trim()) {
       setTranslating(true);
+      const missing: LocaleTag[] = [];
       try {
         const res = await cmsService.translate({
           text: currentValues[active]!,
@@ -172,18 +173,27 @@ export function TextEditModal({
         for (const locale of otherLocales) {
           const translated = res.translations[locale];
           if (!translated?.trim()) {
-            throw new Error(`Geen vertaling ontvangen voor ${TAG_LABEL[locale]}`);
+            missing.push(locale);
+            continue;
           }
           currentValues = { ...currentValues, [locale]: translated };
         }
         setValues(currentValues);
-        push({ tone: 'success', title: 'Vertaling gegenereerd' });
+        if (missing.length === 0) {
+          push({ tone: 'success', title: 'Vertaling gegenereerd' });
+        } else {
+          push({
+            tone: 'info',
+            title: 'Niet alles vertaald',
+            message: `${missing.map((l) => TAG_LABEL[l]).join(', ')} niet vertaald — bewaar en probeer het opnieuw.`,
+          });
+        }
       } catch (err) {
-        pushError(err, 'Vertalen mislukt — tekst is niet opgeslagen');
-        setTranslating(false);
-        return;
+        // AI unavailable (no OPENAI_API_KEY, 503, timeout): keep the editor's
+        // own change and save it instead of discarding the whole edit.
+        pushError(err, 'Automatisch vertalen mislukt — de tekst die u bewerkte wordt wel opgeslagen');
       } finally {
-        if (currentValues === values) setTranslating(false);
+        setTranslating(false);
       }
     }
 
