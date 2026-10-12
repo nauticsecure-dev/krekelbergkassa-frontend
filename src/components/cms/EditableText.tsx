@@ -67,7 +67,10 @@ export function EditableText({
   }
 
   return (
-    <span className={cn('group/cms relative isolate inline-block min-w-[5.5rem]', className && 'block')}>
+    <span
+      data-cms-edit="text"
+      className={cn('group/cms relative isolate inline-block min-w-[5.5rem]', className && 'block')}
+    >
       <Tag
         className={cn(
           'inline-flex min-h-8 min-w-[5.5rem] cursor-pointer items-center outline-dashed outline-1 outline-gold-400/60',

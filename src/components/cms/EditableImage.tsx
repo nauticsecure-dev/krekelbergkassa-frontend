@@ -50,7 +50,10 @@ export function EditableImage({
   const editable = canEdit && editMode;
 
   return (
-    <span className={cn('group/cms relative block overflow-hidden', className)}>
+    <span
+      data-cms-edit={editable ? 'image' : undefined}
+      className={cn('group/cms relative block overflow-hidden', className)}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}

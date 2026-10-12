@@ -225,6 +225,21 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     if (!canEdit) setEditModeState(false);
   }, [canEdit]);
 
+  // While editing, a button/CTA whose label is an EditableText still sits inside
+  // a live <a>. Clicking its padding or icon would navigate away and drop the
+  // editor, so cancel navigation for exactly those links.
+  React.useEffect(() => {
+    if (!canEdit || !editMode) return;
+    const cancelLinkNavigation = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target || typeof target.closest !== 'function') return;
+      const link = target.closest('a[href], area[href]');
+      if (link?.querySelector('[data-cms-edit]')) event.preventDefault();
+    };
+    document.addEventListener('click', cancelLinkNavigation, true);
+    return () => document.removeEventListener('click', cancelLinkNavigation, true);
+  }, [canEdit, editMode]);
+
   const mergeContentBlocks = React.useCallback((blocks: ContentBlock[] | undefined) => {
     if (!blocks?.length) return;
     setContent((prev) => {

@@ -218,7 +218,13 @@ export default function VerkoopPage() {
               {(["step1", "step2", "step3", "step4"] as const).map((key, i) => (
                 <div key={key} className={i < 2 ? "border-t-0 p-6" : "p-6"}>
                   <div className="text-xs font-semibold tracking-widest text-navy-400">
-                    {String(i + 1).padStart(2, "0")}
+                    <EditableText
+                      blockKey={`verkoop.${key}.number`}
+                      page={CMS_PAGE}
+                      section="steps"
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </EditableText>
                   </div>
                   <div className="mt-1 text-base font-semibold text-navy-900">
                     <EditableText blockKey={`verkoop.${key}.title`} page={CMS_PAGE} section="steps">
