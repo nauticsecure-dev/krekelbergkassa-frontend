@@ -241,7 +241,6 @@ export default function CalculatorPricingPage() {
                   <select className="input-base w-full" value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })}>
                     <option value="all">Alle kanalen</option>
                     <option value="kassa">Kassa</option>
-                    <option value="public">Website</option>
                     <option value="portal">Klantportaal</option>
                     <option value="stalling">Stalling</option>
                   </select>

@@ -150,8 +150,8 @@ function TariffSection({ productId }: { productId: string }) {
       push({ tone: 'success', title: 'Tarief opgeslagen' });
       setOpen(false);
       void rules.refetch();
-    } catch {
-      push({ tone: 'error', title: 'Opslaan mislukt' });
+    } catch (err) {
+      push({ tone: 'error', title: 'Opslaan mislukt', message: getApiErrorMessage(err) });
     }
   };
 
@@ -162,8 +162,8 @@ function TariffSection({ productId }: { productId: string }) {
       push({ tone: 'success', title: 'Tarief verwijderd' });
       setDeleteTarget(null);
       void rules.refetch();
-    } catch {
-      push({ tone: 'error', title: 'Verwijderen mislukt' });
+    } catch (err) {
+      push({ tone: 'error', title: 'Verwijderen mislukt', message: getApiErrorMessage(err) });
     }
   };
 
