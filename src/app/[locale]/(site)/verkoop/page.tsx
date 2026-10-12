@@ -40,7 +40,7 @@ export default function VerkoopPage() {
           />
         </div>
         <div
-          className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/40"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/40"
           aria-hidden
         />
         <div className="container-wide relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
@@ -175,7 +175,7 @@ export default function VerkoopPage() {
                   className="h-full w-full"
                 />
               </div>
-              <div className="absolute inset-0 bg-navy-950/75" aria-hidden />
+              <div className="pointer-events-none absolute inset-0 bg-navy-950/75" aria-hidden />
               <div className="relative">
                 <Badge tone="gold" className="mb-3" dot>
                   <EditableText blockKey="verkoop.sell.badge" page={CMS_PAGE} section="sell">

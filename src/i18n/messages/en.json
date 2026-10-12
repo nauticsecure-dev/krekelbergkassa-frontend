@@ -4187,6 +4187,11 @@
     "globalDesc": "Changes apply across the whole site.",
     "global": {
       "headerCtaLabel": "Header button text",
+      "headerCtaPath": "Button link (e.g. diensten/winterstalling)",
+      "navServices": "Menu: Services",
+      "navSales": "Menu: Sales",
+      "navAbout": "Menu: About us",
+      "navContact": "Menu: Contact",
       "phone": "Phone number",
       "city": "City",
       "tagline": "Footer tagline",

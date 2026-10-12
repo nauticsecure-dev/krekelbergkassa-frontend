@@ -294,14 +294,16 @@ export function ImageEditModal({
   open,
   onClose,
   blockKey,
+  page,
   fallbackSrc,
 }: {
   open: boolean;
   onClose: () => void;
   blockKey: string;
   /**
-   * Page slug — accepted for call-site symmetry with TextEditModal. Media saves
-   * are key-addressed so the slug is not part of the upsert payload.
+   * Page slug. Sent with both the upload and the metadata save: the public
+   * page-content query only returns media blocks whose `page` matches, so a
+   * block created without it would silently never appear on the site.
    */
   page?: string;
   fallbackSrc: string;
@@ -344,7 +346,7 @@ export function ImageEditModal({
     }
     setUploading(true);
     try {
-      const url = await uploadImage(blockKey, file);
+      const url = await uploadImage(blockKey, file, page);
       if (url) setPreviewSrc(url);
       push({ tone: 'success', title: t('cms.imageUploaded') });
     } catch (err) {
@@ -381,6 +383,7 @@ export function ImageEditModal({
       const alt_by_locale = changedByLocale(altValues, altBase);
       const seo_title_by_locale = changedByLocale(seoTitleValues, seoTitleBase);
       await saveMediaMeta(blockKey, {
+        page,
         alt_by_locale: Object.keys(alt_by_locale).length ? alt_by_locale : undefined,
         seo_title_by_locale: Object.keys(seo_title_by_locale).length ? seo_title_by_locale : undefined,
         focal_x: focal.x,
@@ -653,6 +656,11 @@ interface GlobalKeyDef {
 
 const GLOBAL_KEYS: GlobalKeyDef[] = [
   { key: 'header.cta.label', perLocale: true, labelKey: 'cms.global.headerCtaLabel' },
+  { key: 'header.cta.path', perLocale: true, labelKey: 'cms.global.headerCtaPath' },
+  { key: 'header.nav.werf_services', perLocale: true, labelKey: 'cms.global.navServices' },
+  { key: 'header.nav.verkoop', perLocale: true, labelKey: 'cms.global.navSales' },
+  { key: 'header.nav.over', perLocale: true, labelKey: 'cms.global.navAbout' },
+  { key: 'header.nav.contact', perLocale: true, labelKey: 'cms.global.navContact' },
   { key: 'company.phone', labelKey: 'cms.global.phone' },
   { key: 'company.address.city', labelKey: 'cms.global.city' },
   { key: 'footer.tagline', perLocale: true, labelKey: 'cms.global.tagline' },
@@ -759,6 +767,78 @@ export function GlobalSettingsModal({
             )}
           </div>
         ))}
+      </div>
+      <ModalFooter onCancel={onClose} onSave={onSave} saving={saving} />
+    </Modal>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 4b. Single global-setting text editor (used by inline EditableGlobalText)
+// ---------------------------------------------------------------------------
+
+export function GlobalTextEditModal({
+  open,
+  onClose,
+  settingKey,
+  fallback,
+  title,
+}: {
+  open: boolean;
+  onClose: () => void;
+  settingKey: string;
+  fallback: string;
+  title?: string;
+}) {
+  const { t } = useIntl();
+  const { push, pushError } = useToast();
+  const { getGlobalRaw, saveGlobal, localeTag } = useCms();
+
+  const [active, setActive] = React.useState<LocaleTag>(localeTag);
+  const [values, setValues] = React.useState<ByTag>({});
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const raw = getGlobalRaw(settingKey);
+    const seeded: ByTag = {};
+    for (const tag of EDITABLE_LOCALE_TAGS) {
+      const fromMap = typeof raw === 'object' && raw ? raw[tag] : undefined;
+      // Locales that were never authored start from the component's fallback so
+      // saving cannot blank out another language.
+      seeded[tag] = fromMap ?? (typeof raw === 'string' && raw ? raw : fallback);
+    }
+    setValues(seeded);
+    setActive(localeTag);
+  }, [open, settingKey, fallback, localeTag, getGlobalRaw]);
+
+  const onSave = async () => {
+    setSaving(true);
+    try {
+      await saveGlobal(settingKey, values);
+      push({ tone: 'success', title: t('cms.saved') });
+      onClose();
+    } catch (err) {
+      pushError(err, t('cms.saveError'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} size="md">
+      <ModalHeader title={title ?? t('cms.editText')} desc={settingKey} />
+      <div className="space-y-4 overflow-y-auto px-6 py-5">
+        <LocaleTabs active={active} onChange={setActive} />
+        <input
+          key={active}
+          type="text"
+          value={values[active] ?? ''}
+          onChange={(e) => setValues((v) => ({ ...v, [active]: e.target.value }))}
+          className={fieldClass}
+          aria-label={`${title ?? t('cms.editText')} ${TAG_LABEL[active]}`}
+        />
+        <p className="text-xs text-navy-400">{t('cms.localeHint')}</p>
       </div>
       <ModalFooter onCancel={onClose} onSave={onSave} saving={saving} />
     </Modal>

@@ -121,7 +121,7 @@ export default function DienstenPage() {
         </div>
         <div
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/70 to-navy-950/35"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/70 to-navy-950/35"
         />
         <div className="container-wide relative pb-20 pt-16 text-white sm:pb-28 sm:pt-24 lg:pb-32 lg:pt-28">
           <Badge tone="sand" dot className="mb-4">

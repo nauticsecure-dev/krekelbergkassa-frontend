@@ -99,6 +99,8 @@ export interface SaveContentArgs {
 }
 
 export interface SaveMediaMetaArgs {
+  /** Page slug; required to keep the block attached to its page. */
+  page?: string;
   alt_by_locale?: Partial<Record<LocaleTag, string>>;
   seo_title_by_locale?: Partial<Record<LocaleTag, string>>;
   focal_x?: number;
@@ -156,7 +158,7 @@ interface CmsContextValue {
 
   // Save helpers — call cmsService then update local state optimistically.
   saveText: (key: string, args: SaveContentArgs) => Promise<void>;
-  uploadImage: (key: string, file: File) => Promise<string>;
+  uploadImage: (key: string, file: File, page?: string) => Promise<string>;
   saveMediaMeta: (key: string, args: SaveMediaMetaArgs) => Promise<void>;
   saveSeo: (slug: string, args: SaveSeoArgs) => Promise<void>;
   saveGlobal: (key: string, value: GlobalValue) => Promise<void>;
@@ -375,10 +377,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const uploadImage = React.useCallback(
-    (key: string, file: File) =>
+    (key: string, file: File, page?: string) =>
       guardCms(async () => {
         const fd = new FormData();
         fd.append('image', file);
+        // The public page-content query filters media by page, so a block created
+        // without its page would upload fine but never render again after reload.
+        if (page) fd.append('page', page);
         const res = (await cmsService.uploadMediaBlock(key, fd)) as { image_url?: string };
         const url = res?.image_url ?? '';
         if (url) {
@@ -402,6 +407,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     (key: string, args: SaveMediaMetaArgs) =>
       guardCms(async () => {
         await cmsService.saveMediaBlock(key, {
+          page: args.page,
           alt_by_locale: args.alt_by_locale,
           seo_title_by_locale: args.seo_title_by_locale,
           focal_x: args.focal_x,
@@ -410,8 +416,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           crop_data: args.crop_data,
         });
         setMedia((prev) => {
-          const existing = prev[key];
-          if (!existing) return prev;
+          const existing: MediaBlock = prev[key] ?? {
+            key,
+            image_url: '',
+            alt: '',
+            focal_point: { x: 50, y: 50 },
+            overlay: 0,
+          };
           return {
             ...prev,
             [key]: {

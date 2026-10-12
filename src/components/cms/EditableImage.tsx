@@ -17,6 +17,11 @@ interface EditableImageProps {
   alt?: string;
   /** Hardcoded source used until a CMS image is uploaded. */
   fallbackSrc: string;
+  /**
+   * Class applied to the `<img>` only, never to the edit controls — so a
+   * decorative wrapper can dim the photo without dimming or blocking the pencil.
+   */
+  imageClassName?: string;
 }
 
 /**
@@ -30,6 +35,7 @@ export function EditableImage({
   className,
   alt,
   fallbackSrc,
+  imageClassName,
 }: EditableImageProps) {
   const { canEdit, editMode, getMedia } = useCms();
   const { t } = useIntl();
@@ -49,7 +55,7 @@ export function EditableImage({
       <img
         src={src}
         alt={altText}
-        className="h-full w-full object-cover"
+        className={cn('h-full w-full object-cover', imageClassName)}
         style={{ objectPosition: `${focal.x}% ${focal.y}%` }}
         onClick={editable ? (event) => {
           event.preventDefault();
@@ -76,7 +82,7 @@ export function EditableImage({
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
             aria-label={t('cms.editImage')}
             title={t('cms.editImage')}
-            className="absolute right-2 top-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-gold-500 text-white opacity-60 shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 group-hover/cms:opacity-100"
+            className="pointer-events-auto absolute right-2 top-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-gold-500 text-white opacity-60 shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 group-hover/cms:opacity-100"
           >
             <Pencil className="h-4 w-4" />
           </button>

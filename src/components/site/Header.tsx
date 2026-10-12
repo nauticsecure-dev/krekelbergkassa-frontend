@@ -21,8 +21,13 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { InstallButton } from '@/components/pwa/InstallButton';
 import { cn } from '@/lib/cn';
 import { useCms } from '@/components/cms/CmsProvider';
+import { EditableGlobalText } from '@/components/cms/EditableGlobalText';
 import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin, defaultRedirectForRole } from '@/lib/auth-routes';
+
+/** Header CTA caption + target until the client overrides them in the CMS. */
+const CTA_LABEL = 'header.cta.label';
+const CTA_PATH = 'header.cta.path';
 
 interface MegaItem {
   href: string;
@@ -35,8 +40,8 @@ export function Header() {
   const { t, locale } = useIntl();
   const { getGlobal } = useCms();
   const { user, loading } = useAuth();
-  const ctaLabel = getGlobal('header.cta.label', 'Stalling');
-  const ctaHref  = `/${locale}/${getGlobal('header.cta.path', 'diensten/winterstalling')}`;
+  const ctaLabel = getGlobal(CTA_LABEL, 'Stalling');
+  const ctaHref  = `/${locale}/${getGlobal(CTA_PATH, 'diensten/winterstalling')}`;
   const pathname = usePathname();
   const accountHref = user ? defaultRedirectForRole(user.role, locale) : `/${locale}/login`;
   const accountLabel = !user
@@ -107,7 +112,7 @@ export function Header() {
                 hasMenu
                 expanded={hoveredMenu === 'services'}
               >
-                {t('nav.services')}
+                <EditableGlobalText settingKey="header.nav.werf_services" fallback={t('nav.services')} />
               </NavLink>
               {hoveredMenu === 'services' ? (
                 <MegaPanel
@@ -125,7 +130,7 @@ export function Header() {
                 href={`/${locale}/verkoop`}
                 active={pathname.startsWith(`/${locale}/verkoop`)}
               >
-                {t('nav.salesLocation')}
+                <EditableGlobalText settingKey="header.nav.verkoop" fallback={t('nav.salesLocation')} />
               </NavLink>
             </li>
             <li>
@@ -133,12 +138,12 @@ export function Header() {
                 href={`/${locale}/over-ons`}
                 active={pathname === `/${locale}/over-ons`}
               >
-                {t('nav.about')}
+                <EditableGlobalText settingKey="header.nav.over" fallback={t('nav.about')} />
               </NavLink>
             </li>
             <li>
               <NavLink href={`/${locale}/contact`} active={pathname === `/${locale}/contact`}>
-                {t('nav.contact')}
+                <EditableGlobalText settingKey="header.nav.contact" fallback={t('nav.contact')} />
               </NavLink>
             </li>
           </ul>
@@ -157,7 +162,7 @@ export function Header() {
           ) : null}
           <Link href={ctaHref} className="hidden md:inline-flex">
             <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
-              {ctaLabel}
+              <EditableGlobalText settingKey={CTA_LABEL} fallback="Stalling" title="Koptekst knop" />
             </Button>
           </Link>
           <button

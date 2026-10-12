@@ -4182,6 +4182,11 @@
     "globalDesc": "Änderungen gelten für die gesamte Website.",
     "global": {
       "headerCtaLabel": "Header-Schaltflächentext",
+      "headerCtaPath": "Link der Schaltfläche (z. B. diensten/winterstalling)",
+      "navServices": "Menü: Dienstleistungen",
+      "navSales": "Menü: Verkauf",
+      "navAbout": "Menü: Über uns",
+      "navContact": "Menü: Kontakt",
       "phone": "Telefonnummer",
       "city": "Ort",
       "tagline": "Footer-Slogan",

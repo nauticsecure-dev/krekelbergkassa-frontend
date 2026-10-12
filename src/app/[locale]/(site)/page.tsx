@@ -87,7 +87,7 @@ export default function HomePage() {
         </div>
         <div
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/75 to-navy-950/35"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/75 to-navy-950/35"
         />
         <div className="container-wide relative pb-24 pt-20 text-white sm:pb-32 sm:pt-28 lg:pb-40 lg:pt-36">
           <Badge tone="sand" dot className="mb-5">
@@ -371,7 +371,7 @@ export default function HomePage() {
                   className="h-full w-full"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-navy-950/65 via-navy-950/10 to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/65 via-navy-950/10 to-transparent" aria-hidden />
             </div>
             <div className="p-8 sm:p-12">
               <Badge tone="navy" className="mb-3">
@@ -481,13 +481,14 @@ export default function HomePage() {
       {/* ---------- Final CTA strip ---------- */}
       <section className="container-wide pb-24">
         <div className="relative overflow-hidden rounded-2xl bg-navy-950 px-8 py-12 text-white sm:px-12">
-          <div aria-hidden className="absolute inset-0 opacity-25">
+          <div aria-hidden className="pointer-events-none absolute inset-0">
             <EditableImage
               blockKey="home.cta.image"
               page={CMS_PAGE}
               fallbackSrc="/img/krek/jachthaven.webp"
               alt=""
               className="h-full w-full"
+              imageClassName="opacity-25"
             />
           </div>
           <div className="relative grid gap-6 lg:grid-cols-[2fr_1fr] lg:items-center">

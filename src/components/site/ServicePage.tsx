@@ -113,7 +113,7 @@ export function ServicePage({
             aria-hidden
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/30" aria-hidden />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/30" aria-hidden />
         <div className="container-wide relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
           <Badge tone="sand" className="mb-4" dot>
             {p ? (

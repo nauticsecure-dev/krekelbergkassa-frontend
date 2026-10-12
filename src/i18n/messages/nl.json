@@ -4178,6 +4178,11 @@
     "globalDesc": "Wijzigingen gelden op de hele site.",
     "global": {
       "headerCtaLabel": "Navigatie-knoptekst",
+      "headerCtaPath": "Link van de knop (bijv. diensten/winterstalling)",
+      "navServices": "Menu: Diensten",
+      "navSales": "Menu: Verkoop",
+      "navAbout": "Menu: Over ons",
+      "navContact": "Menu: Contact",
       "phone": "Telefoonnummer",
       "city": "Plaats",
       "tagline": "Footer-slogan",
