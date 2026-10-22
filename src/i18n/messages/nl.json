@@ -584,8 +584,22 @@
     "confirmSubmit": "Je aanvraag versturen? Je ontvangt binnen 24 uur een bevestiging per e-mail.",
     "footerNote": "Uw aanvraag wordt binnen 24 uur bevestigd. Een betaalverzoek wordt toegestuurd.",
     "selectDate": "Selecteer eerst een datum",
+    "dayClosed": "De werf is gesloten op deze dag. Kies een andere datum.",
+    "slotsLoadFailed": "Tijdsloten konden niet worden geladen. Bel ons op 0475 315 661.",
     "manualReview": "Manuele beoordeling vereist",
     "notes": "Opmerkingen (optioneel)",
+    "validation": {
+      "incomplete": "Vul eerst deze velden in: {fields}.",
+      "required": "{field} is verplicht.",
+      "invalid": "{field} is ongeldig.",
+      "service": "Dienst",
+      "length": "Bootlengte",
+      "firstName": "Voornaam",
+      "email": "E-mailadres",
+      "date": "Datum",
+      "time": "Tijdslot",
+      "hoverHint": "Vul de gemarkeerde velden in om verder te gaan."
+    },
     "placeholders": {
       "name": "Jan Jansen",
       "phone": "06 12345678",
@@ -629,9 +643,11 @@
     "ctaTitle": "Klaar om uw afspraak te plannen?",
     "ctaDesc": "Reserveer binnen 2 minuten en ontvang direct een indicatie van de kosten.",
     "ctaContact": "Contact",
-    "editService": "Bewerk service",
+    "editService": "Bewerk product",
+    "editPrices": "Tarieven aanpassen",
     "onRequest": "Op aanvraag",
     "from": "vanaf",
+    "inclVat": "incl. {rate}% BTW",
     "pricingUnavailable": "Tarieven zijn momenteel niet beschikbaar. Neem contact met ons op voor een prijsopgave.",
     "overviewTitle": "Onze diensten en tarieven",
     "overviewSubtitle": "Live tarieven per lengteklasse, rechtstreeks uit onze administratie."
@@ -3278,7 +3294,9 @@
         "newRule": "Nieuwe pricing rule",
         "selectProduct": "Selecteer product",
         "confirmDelete": "Deze prijsregel verwijderen?",
-        "deleted": "Prijsregel verwijderd"
+        "deleted": "Prijsregel verwijderd",
+        "filtered": "Gefilterd",
+        "clearFilter": "Filters wissen"
       },
       "manageServices": "Services beheren",
       "editPricing": "Prijzen bewerken",
@@ -4170,6 +4188,7 @@
     "globalDesc": "Wijzigingen gelden op de hele site.",
     "global": {
       "headerCtaLabel": "Navigatie-knoptekst",
+      "headerCtaPath": "Navigatie-knop link",
       "phone": "Telefoonnummer",
       "city": "Plaats",
       "tagline": "Footer-slogan",

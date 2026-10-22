@@ -60,26 +60,26 @@ export default function ContactPage() {
           />
         </div>
         <div
-          className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/55 to-navy-950/15"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/55 to-navy-950/15"
           aria-hidden
         />
-        <div className="container-wide relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
-          <Badge tone="sand" dot className="mb-4">
+        <div className="container-wide pointer-events-none relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
+          <Badge tone="sand" dot className="pointer-events-auto mb-4">
             <EditableText blockKey="contact.hero.badge" page={CMS_PAGE} section="hero">
               {t("contactPage.badge")}
             </EditableText>
           </Badge>
-          <h1 className="heading-display max-w-2xl whitespace-pre-line text-4xl text-white sm:text-5xl lg:text-[56px]">
+          <h1 className="heading-display pointer-events-auto max-w-2xl whitespace-pre-line text-4xl text-white sm:text-5xl lg:text-[56px]">
             <EditableText blockKey="contact.hero.title" page={CMS_PAGE} section="hero" type="heading">
               {t("contactPage.title")}
             </EditableText>
           </h1>
-          <p className="mt-5 max-w-xl text-sand-100/85">
+          <p className="pointer-events-auto mt-5 max-w-xl text-sand-100/85">
             <EditableText blockKey="contact.hero.subtitle" page={CMS_PAGE} section="hero" type="paragraph">
               {t("contactPage.subtitle")}
             </EditableText>
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="pointer-events-none mt-8 flex w-fit flex-wrap gap-3">
             <EditableHeroCta
               page={CMS_PAGE}
               blockKey="contact.hero.cta_primary"
@@ -288,7 +288,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <ContactForm subjects={subjects} language={language} t={t} />
+          <ContactForm subjects={subjects} language={language} localeTag={localeTag} t={t} />
         </Card>
       </section>
     </>
@@ -298,10 +298,12 @@ export default function ContactPage() {
 function ContactForm({
   subjects,
   language,
+  localeTag,
   t,
 }: {
   subjects: Array<{ key: string; label: string; category: string }>;
   language: string;
+  localeTag: string;
   t: (key: string) => string;
 }) {
   const [status, setStatus] = React.useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -311,19 +313,32 @@ function ContactForm({
   const [subjectKey, setSubjectKey] = React.useState("");
   const [message, setMessage] = React.useState("");
 
+  const canSubmit = Boolean(subjectKey) && status !== "sending";
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!subjectKey) {
+      setStatus("error");
+      return;
+    }
     setStatus("sending");
     try {
-      await contentService.submitContact({
+      const result = await contentService.submitContact({
         name,
         email,
         phone: phone || undefined,
-        subject_key: subjectKey || undefined,
+        subject_key: subjectKey,
         message,
         language,
+        source_page: typeof window !== "undefined" ? window.location.href : undefined,
+        source_locale: localeTag,
       });
-      setStatus("sent");
+      // Only treat an explicit ok payload as success; never assume 2xx alone.
+      if (result?.message === "ok") {
+        setStatus("sent");
+      } else {
+        setStatus("error");
+      }
     } catch {
       setStatus("error");
     }
@@ -371,6 +386,7 @@ function ContactForm({
       <FormField label={t("contactPage.fTopic")}>
         <select
           className="input-base"
+          required
           value={subjectKey}
           onChange={(e) => setSubjectKey(e.target.value)}
         >
@@ -397,7 +413,7 @@ function ContactForm({
           variant="primary"
           size="lg"
           fullWidth
-          disabled={status === "sending"}
+          disabled={!canSubmit}
           rightIcon={<Send className="h-4 w-4" />}
         >
           {status === "sending" ? t("contactPage.fSending") : t("contactPage.fSubmit")}

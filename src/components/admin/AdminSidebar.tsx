@@ -153,7 +153,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
       )}
     >
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-4">
-        {!collapsed ? <Logo variant="light" /> : <span className="mx-auto text-xs font-bold text-gold-300">KN</span>}
+        {!collapsed ? <Logo variant="light" editable={false} /> : <span className="mx-auto text-xs font-bold text-gold-300">KN</span>}
         {onToggleCollapse ? (
           <button
             type="button"

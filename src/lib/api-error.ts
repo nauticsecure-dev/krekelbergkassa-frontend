@@ -44,9 +44,48 @@ export function getApiRequestId(err: unknown): string | undefined {
   return undefined;
 }
 
+function validationPayload(err: unknown): Record<string, unknown> | null {
+  const payload =
+    isApiError(err) && err.data && typeof err.data === 'object'
+      ? (err.data as Record<string, unknown>)
+      : err && typeof err === 'object'
+        ? (err as Record<string, unknown>)
+        : null;
+
+  if (!payload?.errors || typeof payload.errors !== 'object') return null;
+  return payload.errors as Record<string, unknown>;
+}
+
+/** Laravel-style field → messages map from an API error payload. */
+export function getApiValidationErrors(err: unknown): Record<string, string[]> {
+  const errors = validationPayload(err);
+  if (!errors) return {};
+
+  const mapped: Record<string, string[]> = {};
+  for (const [key, value] of Object.entries(errors)) {
+    const messages: string[] = [];
+    if (typeof value === 'string' && value.trim()) messages.push(value.trim());
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (typeof item === 'string' && item.trim()) messages.push(item.trim());
+      }
+    }
+    if (messages.length) mapped[key] = messages;
+  }
+  return mapped;
+}
+
+/** Collect Laravel-style field validation messages from an API error payload. */
+export function getApiValidationMessages(err: unknown): string[] {
+  return Object.values(getApiValidationErrors(err)).flat();
+}
+
 export function getApiErrorMessage(err: unknown, fallback = 'Unexpected error'): string {
   const requestId = getApiRequestId(err);
   const withRef = (msg: string) => (requestId ? `${msg} (ref: ${requestId})` : msg);
+
+  const validation = getApiValidationMessages(err);
+  if (validation.length) return withRef(validation.join(' '));
 
   if (isApiError(err)) {
     const fromData = extractMessageFromPayload(err.data);

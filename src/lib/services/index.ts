@@ -1,4 +1,4 @@
-import { api } from '@/lib/api';
+import { api, apiResult } from '@/lib/api';
 import { getDeviceId } from '@/lib/device';
 import type {
   AdminUser,
@@ -39,7 +39,8 @@ import type {
   SyncDevice,
   SyncStatus,
 } from '@/lib/api-types';
-import { asArray, asPaginated, maybeResource, toBoolean, toNumber } from './utils';
+import { asArray, asPaginated, maybeResource, paginatedRows, toBoolean, toNumber } from './utils';
+export { paginatedRows };
 
 export interface LoginResponse {
   user: SessionUser;
@@ -1731,18 +1732,20 @@ export const bookingService = {
       registration_number?: string | null;
     };
     service_codes: string[];
-  }) {
-    return api<{ appointment_id: string; status: string }>('/v1/booking', {
+  }, opts?: { requestId?: string }) {
+    return apiResult<{ appointment_id: string; status: string }>('/v1/booking', {
       method: 'POST',
       auth: false,
       body: payload,
+      requestId: opts?.requestId,
     });
   },
-  uploadBookingPhotos(appointmentId: string, formData: FormData) {
-    return api<unknown>(`/v1/booking/${appointmentId}/photos`, {
+  uploadBookingPhotos(appointmentId: string, formData: FormData, opts?: { requestId?: string }) {
+    return apiResult<unknown>(`/v1/booking/${appointmentId}/photos`, {
       method: 'POST',
       auth: false,
       body: formData,
+      requestId: opts?.requestId,
     });
   },
 };
@@ -2199,7 +2202,7 @@ export const searchService = {
 export const productGroupsService = {
   async list(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/product-groups', { query });
-    return asArray<Record<string, unknown>>(res);
+    return asPaginated<Record<string, unknown>>(res);
   },
   create(payload: Record<string, unknown>) {
     return api<Record<string, unknown>>('/v1/product-groups', {
@@ -2650,9 +2653,11 @@ export const contentService = {
     name: string;
     email: string;
     phone?: string;
-    subject_key?: string;
+    subject_key: string;
     message: string;
     language: string;
+    source_page?: string;
+    source_locale?: string;
   }) {
     return api<{ message: string }>('/v1/contact', {
       method: 'POST',
@@ -2684,6 +2689,7 @@ export interface ServiceCatalogTariff {
   price_incl_vat_euros?: number;
   display_price: string;
   duration_minutes?: number;
+  vat_rate?: number | string;
   channel?: string;
   is_on_request: boolean;
 }

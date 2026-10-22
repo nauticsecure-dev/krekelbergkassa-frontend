@@ -108,7 +108,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <section className="hidden text-white lg:block">
             <div className="rounded-3xl border border-white/10 bg-navy-950/50 p-8 shadow-elev backdrop-blur-md xl:p-10">
               <div className="mb-6 flex items-center justify-between">
-                <Logo variant="light" />
+                <Logo variant="light" editable={false} />
                 <span className="rounded-full border border-gold-300/40 bg-gold-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-200">
                   {v.badge}
                 </span>

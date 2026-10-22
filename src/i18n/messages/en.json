@@ -589,8 +589,22 @@
     "confirmSubmit": "Submit this appointment request? You will receive a confirmation by email within 24 hours.",
     "footerNote": "Your request is confirmed within 24h. A payment link will follow by email.",
     "selectDate": "Please select a date first",
+    "dayClosed": "The yard is closed on this day. Please choose another date.",
+    "slotsLoadFailed": "Time slots could not be loaded. Call us on 0475 315 661.",
     "manualReview": "Manual review required",
     "notes": "Notes (optional)",
+    "validation": {
+      "incomplete": "Please fill in these fields first: {fields}.",
+      "required": "{field} is required.",
+      "invalid": "{field} is invalid.",
+      "service": "Service",
+      "length": "Boat length",
+      "firstName": "First name",
+      "email": "Email",
+      "date": "Date",
+      "time": "Time slot",
+      "hoverHint": "Fill in the highlighted fields to continue."
+    },
     "placeholders": {
       "name": "John Smith",
       "phone": "06 12345678",
@@ -634,9 +648,11 @@
     "ctaTitle": "Ready to book your slot?",
     "ctaDesc": "Reserve in under 2 minutes and receive an instant cost indication.",
     "ctaContact": "Contact",
-    "editService": "Edit service",
+    "editService": "Edit product",
+    "editPrices": "Edit prices",
     "onRequest": "On request",
     "from": "from",
+    "inclVat": "incl. {rate}% VAT",
     "pricingUnavailable": "Pricing is currently unavailable. Please contact us for a quote.",
     "overviewTitle": "Our services and rates",
     "overviewSubtitle": "Live rates per length class, straight from our system."
@@ -2881,7 +2897,9 @@
         "newRule": "New pricing rule",
         "selectProduct": "Select product",
         "confirmDelete": "Delete this pricing rule?",
-        "deleted": "Pricing rule deleted"
+        "deleted": "Pricing rule deleted",
+        "filtered": "Filtered",
+        "clearFilter": "Clear filters"
       },
       "manageServices": "Services beheren"
     },
@@ -4179,6 +4197,7 @@
     "globalDesc": "Changes apply across the whole site.",
     "global": {
       "headerCtaLabel": "Header button text",
+      "headerCtaPath": "Header button link",
       "phone": "Phone number",
       "city": "City",
       "tagline": "Footer tagline",

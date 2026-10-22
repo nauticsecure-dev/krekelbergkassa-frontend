@@ -24,7 +24,7 @@ import { Button } from '@/components/ui/Button';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
 import { InvoiceStatusBadge, PaymentStatusBadge } from '@/components/admin/StatusBadge';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { invoicesService, productGroupsService } from '@/lib/services';
+import { invoicesService, paginatedRows, productGroupsService } from '@/lib/services';
 import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
@@ -84,7 +84,7 @@ function InvoicesPage() {
   useCreateMenuIntent(() => router.push(`/${locale}/admin/facturen/nieuw`), 'create');
 
   const groups = useQuery(['invoice-product-groups'], () =>
-    productGroupsService.list().catch(() => [])
+    productGroupsService.list({ per_page: 100 }).catch(() => ({ data: [] as Record<string, unknown>[] }))
   );
 
   const invoices = useQuery(
@@ -322,7 +322,7 @@ function InvoicesPage() {
             }}
           >
             <option value="">{t('adminNew.invoices.allGroups')}</option>
-            {(groups.data ?? []).map((g) => {
+            {paginatedRows(groups.data).map((g) => {
               const code = String((g as Record<string, unknown>).code ?? '');
               const name = String((g as Record<string, unknown>).name ?? code);
               return code ? (

@@ -20,7 +20,7 @@ import {
 } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { productsService, productGroupsService } from '@/lib/services';
+import { paginatedRows, productsService, productGroupsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -59,8 +59,7 @@ export default function ProductsPage() {
   const deleteProduct = useMutation(productsService.remove);
 
   const rows = products.data?.data ?? [];
-  const groupRows = (groups.data as { data?: Array<Record<string, unknown>> })?.data
-    ?? (Array.isArray(groups.data) ? (groups.data as Array<Record<string, unknown>>) : []);
+  const groupRows = paginatedRows(groups.data);
   const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
 
   const categoryLabel = (category: string | null | undefined) => {

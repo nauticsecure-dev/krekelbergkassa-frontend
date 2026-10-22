@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Pencil, Plus, Settings, Trash2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
@@ -26,6 +27,7 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { pricingService, productsService } from '@/lib/services';
 import type { PricingRule } from '@/lib/api-types';
 import { formatCurrency } from '@/lib/format';
+import { productPriceInclEuros } from '@/lib/products';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -33,6 +35,11 @@ import { getApiErrorMessage } from '@/lib/api-error';
 export default function CalculatorPricingPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
+  const searchParams = useSearchParams();
+  const productFilter = searchParams.get('product') ?? undefined;
+  const serviceCodeFilter = searchParams.get('service_code') ?? undefined;
+  const ruleIdParam = searchParams.get('rule_id');
+  const deepLinkHandled = React.useRef(false);
   const [showCreate, setShowCreate] = React.useState(false);
   const [editingRule, setEditingRule] = React.useState<string | null>(null);
   const [form, setForm] = React.useState({
@@ -47,10 +54,27 @@ export default function CalculatorPricingPage() {
   });
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
 
-  const rules = useQuery(['pricing-rules-admin'], () =>
-    pricingService.rules({ per_page: 200, include_inactive: true }),
+  const rules = useQuery(
+    ['pricing-rules-admin', productFilter ?? '', serviceCodeFilter ?? ''],
+    () =>
+      pricingService.rules({
+        per_page: 200,
+        include_inactive: true,
+        ...(productFilter ? { product: productFilter } : {}),
+        ...(serviceCodeFilter && !productFilter ? { service_code: serviceCodeFilter } : {}),
+      }),
   );
   const products = useQuery(['products-pricing'], () => productsService.list({ per_page: 200 }));
+  const productList = products.data?.data ?? [];
+  const activeFilterLabel = productFilter ?? serviceCodeFilter;
+
+  React.useEffect(() => {
+    if (!productFilter || form.product_id || editingRule) return;
+    const match = productList.find(
+      (p) => p.code?.toLowerCase() === productFilter.toLowerCase(),
+    );
+    if (match) setForm((prev) => ({ ...prev, product_id: match.id }));
+  }, [productFilter, productList, form.product_id, editingRule]);
   const createRule = useMutation(pricingService.createRule);
   const updateRule = useMutation(
     ({ id, ...payload }: Record<string, unknown> & { id: string }) =>
@@ -114,6 +138,25 @@ export default function CalculatorPricingPage() {
 
   const rows = rules.data?.data ?? [];
 
+  React.useEffect(() => {
+    if (deepLinkHandled.current || !ruleIdParam || rules.loading || rows.length === 0) return;
+    const rule = rows.find((item) => item.id === ruleIdParam);
+    if (!rule) return;
+    deepLinkHandled.current = true;
+    setEditingRule(rule.id);
+    setForm({
+      product_id: rule.product_id,
+      range_from_cm: String(rule.range_from_cm),
+      range_to_cm: String(rule.range_to_cm),
+      price_incl_vat: (rule.price_incl_vat / 100).toFixed(2),
+      vat_rate: String(rule.vat_rate ?? 21),
+      channel: rule.channel ?? 'all',
+      price_type: rule.price_type ?? 'fixed',
+      active: rule.active,
+    });
+    setShowCreate(true);
+  }, [ruleIdParam, rules.loading, rows]);
+
   return (
     <>
       <AdminPageHeader
@@ -133,6 +176,20 @@ export default function CalculatorPricingPage() {
         }
       />
       <AdminContent>
+        {activeFilterLabel ? (
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-navy-100 bg-sand-50 px-3 py-2 text-sm text-navy-700">
+            <span>
+              {t('adminNew.calculator.pricing.filtered')}:{' '}
+              <span className="font-semibold">{activeFilterLabel}</span>
+            </span>
+            <Link
+              href={`/${locale}/admin/calculator/pricing`}
+              className="text-xs font-semibold text-navy-500 underline-offset-2 hover:text-navy-800 hover:underline"
+            >
+              {t('adminNew.calculator.pricing.clearFilter')}
+            </Link>
+          </div>
+        ) : null}
         <AdminSectionCard title={t('adminNew.calculator.pricing.title')} icon={Settings}>
           {rules.loading ? <LoadingState label={t('adminNew.common.loading')} variant="table" /> : null}
           {!rules.loading && rules.error ? (
@@ -149,6 +206,7 @@ export default function CalculatorPricingPage() {
                     <AdminTableHeaderCell>Product</AdminTableHeaderCell>
                     <AdminTableHeaderCell>Range (cm)</AdminTableHeaderCell>
                     <AdminTableHeaderCell>Prijs incl. BTW</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>BTW</AdminTableHeaderCell>
                     <AdminTableHeaderCell>Type</AdminTableHeaderCell>
                     <AdminTableHeaderCell>Kanaal</AdminTableHeaderCell>
                     <AdminTableHeaderCell>Actief</AdminTableHeaderCell>
@@ -163,7 +221,10 @@ export default function CalculatorPricingPage() {
                         {rule.service_code ? <span className="ml-1 text-xs text-navy-400">({rule.service_code})</span> : null}
                       </AdminTableCell>
                       <AdminTableCell className="tabular-nums">{rule.range_from_cm} – {rule.range_to_cm} cm</AdminTableCell>
-                      <AdminTableCell>{formatCurrency(rule.price_incl_vat_euros, 'nl-NL')}</AdminTableCell>
+                      <AdminTableCell>{formatCurrency(productPriceInclEuros(rule), 'nl-NL')}</AdminTableCell>
+                      <AdminTableCell className="tabular-nums text-sm text-navy-600">
+                        {rule.vat_rate != null ? `${rule.vat_rate}%` : '—'}
+                      </AdminTableCell>
                       <AdminTableCell><span className="text-xs text-navy-500">{rule.price_type ?? '—'}</span></AdminTableCell>
                       <AdminTableCell><span className="text-xs text-navy-500">{rule.channel ?? 'all'}</span></AdminTableCell>
                       <AdminTableCell>
@@ -213,7 +274,7 @@ export default function CalculatorPricingPage() {
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Product *</label>
                 <select className="input-base w-full" value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} required>
                   <option value="">{t('adminNew.calculator.pricing.selectProduct')}</option>
-                  {(products.data?.data ?? []).map((p) => (
+                  {productList.map((p) => (
                     <option key={p.id} value={p.id}>{p.name} {p.code ? `(${p.code})` : ''}</option>
                   ))}
                 </select>
@@ -241,7 +302,6 @@ export default function CalculatorPricingPage() {
                   <select className="input-base w-full" value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })}>
                     <option value="all">Alle kanalen</option>
                     <option value="kassa">Kassa</option>
-                    <option value="public">Website</option>
                     <option value="portal">Klantportaal</option>
                     <option value="stalling">Stalling</option>
                   </select>

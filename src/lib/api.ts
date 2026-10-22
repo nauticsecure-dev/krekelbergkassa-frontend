@@ -9,7 +9,7 @@ import {
 import { queueOfflineChange } from './offline-sync';
 
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';
+  process.env.NEXT_PUBLIC_API_URL ?? '/api';
 export const AUTH_COOKIE = 'krek_session';
 export const PORTAL_COOKIE = 'krek_portal_session';
 export const LOCALE_COOKIE = 'krek_locale';
@@ -26,7 +26,7 @@ export type ApiError = {
 const REQUEST_TIMEOUT_MS = 25_000;
 
 /** Trello #104: generate a correlation id sent as X-Request-Id. */
-function generateRequestId(): string {
+export function generateRequestId(): string {
   try {
     if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
       return `req_${crypto.randomUUID().replace(/-/g, '').slice(0, 20)}`;
@@ -47,10 +47,35 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
   portalAuth?: boolean;
   queueWhenOffline?: boolean;
   timeoutMs?: number;
+  /** Correlation id sent as X-Request-Id. Reused when the caller already has one. */
+  requestId?: string;
+}
+
+export type ApiResult<T> = {
+  data: T;
+  requestId: string;
+  status: number;
+};
+
+function apiPath(path: string): string {
+  if (path.startsWith('http')) return path;
+  const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
+  const segment = path.startsWith('/') ? path : `/${path}`;
+  if (base.startsWith('http')) return `${base}${segment}`;
+  const joined = `${base}${segment}`;
+  return joined.startsWith('/') ? joined : `/${joined}`;
 }
 
 function buildUrl(path: string, query?: RequestOptions['query']) {
-  const url = new URL(path.startsWith('http') ? path : `${API_BASE}${path}`);
+  const href = apiPath(path);
+  const url = href.startsWith('http')
+    ? new URL(href)
+    : new URL(
+        href,
+        typeof window !== 'undefined'
+          ? window.location.origin
+          : (process.env.NEXT_PUBLIC_SITE_ORIGIN ?? 'http://localhost:3000'),
+      );
   if (query) {
     for (const [k, v] of Object.entries(query)) {
       if (v === undefined || v === null || v === '') continue;
@@ -75,6 +100,15 @@ export async function api<T = unknown>(
   path: string,
   opts: RequestOptions = {}
 ): Promise<T> {
+  const result = await apiResult<T>(path, opts);
+  return result.data;
+}
+
+/** Same as api(), plus the echoed X-Request-Id and HTTP status. */
+export async function apiResult<T = unknown>(
+  path: string,
+  opts: RequestOptions = {}
+): Promise<ApiResult<T>> {
   const credentialsMode =
     opts.credentials ?? (API_BASE.startsWith('/') ? 'same-origin' : 'omit');
 
@@ -85,7 +119,7 @@ export async function api<T = unknown>(
   headers.set('Accept', 'application/json');
 
   // Trello #104: send a correlation id (reuse one if the caller set it).
-  const requestId = headers.get('X-Request-Id') ?? generateRequestId();
+  const requestId = opts.requestId ?? headers.get('X-Request-Id') ?? generateRequestId();
   headers.set('X-Request-Id', requestId);
 
   if (opts.auth !== false) {
@@ -122,6 +156,7 @@ export async function api<T = unknown>(
         throw {
           status: 408,
           message: 'Request timed out. Please try again.',
+          requestId,
         } satisfies ApiError;
       }
       throw err;
@@ -150,6 +185,8 @@ export async function api<T = unknown>(
       payload = await res.text().catch(() => null);
     }
 
+    const responseRequestId = res.headers.get('X-Request-Id') ?? requestId;
+
     if (!res.ok) {
       const err: ApiError = {
         status: res.status,
@@ -162,12 +199,16 @@ export async function api<T = unknown>(
             ? String((payload as Record<string, unknown>).code)
             : undefined),
         data: payload,
-        requestId: res.headers.get('X-Request-Id') ?? requestId,
+        requestId: responseRequestId,
       };
       throw err;
     }
 
-    return (payload as T) ?? (undefined as T);
+    return {
+      data: (payload as T) ?? (undefined as T),
+      requestId: responseRequestId,
+      status: res.status,
+    };
   } catch (err) {
     if (
       opts.queueWhenOffline &&

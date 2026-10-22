@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Cropper, { type Area } from 'react-easy-crop';
 import { Languages, Loader2, Upload } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -269,21 +270,23 @@ export function ImageEditModal({
   open,
   onClose,
   blockKey,
+  page,
   fallbackSrc,
+  aspect = 16 / 9,
 }: {
   open: boolean;
   onClose: () => void;
   blockKey: string;
-  /**
-   * Page slug — accepted for call-site symmetry with TextEditModal. Media saves
-   * are key-addressed so the slug is not part of the upsert payload.
-   */
+  /** Page slug stored on the media block so public page-content can load it. */
   page?: string;
   fallbackSrc: string;
+  /** Cropper aspect ratio (width/height). Defaults to 16/9 for hero images. */
+  aspect?: number;
 }) {
   const { t } = useIntl();
   const { push, pushError } = useToast();
-  const { getMedia, uploadImage, saveMediaMeta, localeTag } = useCms();
+  const { getMedia, uploadImage, saveMediaMeta, localeTag, currentPage } = useCms();
+  const resolvedPage = page || currentPage || undefined;
 
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
   const [altValues, setAltValues] = React.useState<ByTag>({});
@@ -293,6 +296,9 @@ export function ImageEditModal({
   const [previewSrc, setPreviewSrc] = React.useState(fallbackSrc);
   const [focal, setFocal] = React.useState({ x: 50, y: 50 });
   const [overlay, setOverlay] = React.useState(0);
+  const [crop, setCrop] = React.useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = React.useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = React.useState<Area | null>(null);
   const [uploading, setUploading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 
@@ -308,6 +314,9 @@ export function ImageEditModal({
     setPreviewSrc(block?.image_url || fallbackSrc);
     setFocal(block?.focal_point ?? { x: 50, y: 50 });
     setOverlay(block?.overlay ?? 0);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
     setActive(localeTag);
   }, [open, blockKey, fallbackSrc, localeTag, getMedia]);
 
@@ -319,7 +328,7 @@ export function ImageEditModal({
     }
     setUploading(true);
     try {
-      const url = await uploadImage(blockKey, file);
+      const url = await uploadImage(blockKey, file, resolvedPage);
       if (url) setPreviewSrc(url);
       push({ tone: 'success', title: t('cms.imageUploaded') });
     } catch (err) {
@@ -339,28 +348,26 @@ export function ImageEditModal({
     await uploadFile(event.dataTransfer.files?.[0]);
   };
 
-  // Click anywhere on the preview to set the focal point (0..100 each axis).
-  const onPreviewClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
-    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-    setFocal({
-      x: Math.min(100, Math.max(0, x)),
-      y: Math.min(100, Math.max(0, y)),
-    });
-  };
-
   const onSave = async () => {
     setSaving(true);
     try {
       const alt_by_locale = changedByLocale(altValues, altBase);
       const seo_title_by_locale = changedByLocale(seoTitleValues, seoTitleBase);
       await saveMediaMeta(blockKey, {
+        page: resolvedPage,
         alt_by_locale: Object.keys(alt_by_locale).length ? alt_by_locale : undefined,
         seo_title_by_locale: Object.keys(seo_title_by_locale).length ? seo_title_by_locale : undefined,
         focal_x: focal.x,
         focal_y: focal.y,
         overlay,
+        crop_data: croppedAreaPixels
+          ? {
+              x: croppedAreaPixels.x,
+              y: croppedAreaPixels.y,
+              width: croppedAreaPixels.width,
+              height: croppedAreaPixels.height,
+            }
+          : undefined,
       });
       push({ tone: 'success', title: t('cms.saved') });
       onClose();
@@ -386,30 +393,32 @@ export function ImageEditModal({
             </span>
           </div>
           <div
-            onClick={onPreviewClick}
-            className="relative aspect-[16/9] w-full cursor-crosshair overflow-hidden rounded-lg bg-navy-100"
-            role="presentation"
+            className="relative w-full overflow-hidden rounded-lg bg-navy-950"
+            style={{ aspectRatio: String(aspect) }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={previewSrc}
-              alt=""
-              className="h-full w-full object-cover"
-              style={{ objectPosition: `${focal.x}% ${focal.y}%` }}
-            />
-            {overlay > 0 ? (
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{ backgroundColor: `rgba(8, 19, 38, ${overlay})` }}
-              />
-            ) : null}
-            <span
-              aria-hidden
-              className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-gold-500 shadow"
-              style={{ left: `${focal.x}%`, top: `${focal.y}%` }}
+            <Cropper
+              image={previewSrc}
+              crop={crop}
+              zoom={zoom}
+              aspect={aspect}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={(_area, pixels) => setCroppedAreaPixels(pixels)}
             />
           </div>
+          <label className="mt-3 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-navy-500">
+            Zoom
+            <input
+              type="range"
+              min={1}
+              max={3}
+              step={0.05}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+              className="w-full accent-gold-500"
+              aria-label="Zoom"
+            />
+          </label>
           <p className="mt-1.5 text-xs text-navy-400">{t('cms.focalHint')}</p>
         </div>
 
@@ -624,10 +633,12 @@ interface GlobalKeyDef {
   /** When true the value is a per-locale map; otherwise a plain string. */
   perLocale?: boolean;
   labelKey: string;
+  placeholder?: string;
 }
 
 const GLOBAL_KEYS: GlobalKeyDef[] = [
   { key: 'header.cta.label', perLocale: true, labelKey: 'cms.global.headerCtaLabel' },
+  { key: 'header.cta.path', labelKey: 'cms.global.headerCtaPath', placeholder: 'diensten/winterstalling' },
   { key: 'company.phone', labelKey: 'cms.global.phone' },
   { key: 'company.address.city', labelKey: 'cms.global.city' },
   { key: 'footer.tagline', perLocale: true, labelKey: 'cms.global.tagline' },
@@ -662,7 +673,10 @@ export function GlobalSettingsModal({
       if (def.perLocale) {
         nextMaps[def.key] = typeof raw === 'object' && raw ? { ...raw } : {};
       } else {
-        nextStrings[def.key] = typeof raw === 'string' ? raw : '';
+        nextStrings[def.key] =
+          typeof raw === 'string' && raw !== ''
+            ? raw
+            : (def.placeholder ?? '');
       }
     }
     setStrings(nextStrings);
@@ -729,6 +743,7 @@ export function GlobalSettingsModal({
                   setStrings((s) => ({ ...s, [def.key]: e.target.value }))
                 }
                 className={fieldClass}
+                placeholder={def.placeholder}
                 aria-label={t(def.labelKey)}
               />
             )}

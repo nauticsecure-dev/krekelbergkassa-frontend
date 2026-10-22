@@ -99,6 +99,7 @@ export interface SaveContentArgs {
 }
 
 export interface SaveMediaMetaArgs {
+  page?: string;
   alt_by_locale?: Partial<Record<LocaleTag, string>>;
   seo_title_by_locale?: Partial<Record<LocaleTag, string>>;
   focal_x?: number;
@@ -129,6 +130,12 @@ interface CmsContextValue {
   currentPage: string | null;
   /** Pages declare their slug so the provider fetches their content. */
   registerPage: (pageSlug: string) => void;
+  /**
+   * True once the first page-content fetch for `page` has settled (success or
+   * failure). Until then EditableImage prefers a cached URL over the hardcoded
+   * fallback so reloads do not flash the old stock photo.
+   */
+  isPageReady: (pageSlug: string) => boolean;
 
   // Read accessors — always fall back to the provided default.
   getText: (key: string, fallback?: string) => string;
@@ -142,13 +149,56 @@ interface CmsContextValue {
 
   // Save helpers — call cmsService then update local state optimistically.
   saveText: (key: string, args: SaveContentArgs) => Promise<void>;
-  uploadImage: (key: string, file: File) => Promise<string>;
+  uploadImage: (key: string, file: File, page?: string) => Promise<string>;
   saveMediaMeta: (key: string, args: SaveMediaMetaArgs) => Promise<void>;
   saveSeo: (slug: string, args: SaveSeoArgs) => Promise<void>;
   saveGlobal: (key: string, value: GlobalValue) => Promise<void>;
 }
 
 const CmsContext = React.createContext<CmsContextValue | null>(null);
+
+const PAGE_CACHE_PREFIX = 'cms:page:';
+
+interface PageCachePayload {
+  content_blocks?: ContentBlock[];
+  media_blocks?: MediaBlock[];
+}
+
+function pageCacheKey(slug: string, localeTag: LocaleTag) {
+  return `${PAGE_CACHE_PREFIX}${slug}:${localeTag}`;
+}
+
+function readPageCache(slug: string, localeTag: LocaleTag): PageCachePayload | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(pageCacheKey(slug, localeTag));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PageCachePayload;
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writePageCache(slug: string, localeTag: LocaleTag, payload: PageCachePayload) {
+  if (typeof window === 'undefined' || !slug) return;
+  try {
+    window.sessionStorage.setItem(pageCacheKey(slug, localeTag), JSON.stringify(payload));
+  } catch {
+    // Quota / private mode — ignore; network fetch still works.
+  }
+}
+
+function patchPageCacheMedia(
+  slug: string,
+  localeTag: LocaleTag,
+  block: MediaBlock,
+) {
+  if (!slug) return;
+  const existing = readPageCache(slug, localeTag) ?? {};
+  const media = [...(existing.media_blocks ?? []).filter((b) => b.key !== block.key), block];
+  writePageCache(slug, localeTag, { ...existing, media_blocks: media });
+}
 
 /** Pick a string out of a global value, preferring the active locale tag. */
 function resolveGlobal(value: GlobalValue | undefined, tag: LocaleTag): string | undefined {
@@ -188,6 +238,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   const [editMode, setEditModeState] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState<string | null>(null);
+  const [readyPages, setReadyPages] = React.useState<Record<string, boolean>>({});
 
   // Keyed block stores. Maps keep last-write-wins semantics simple.
   const [content, setContent] = React.useState<Record<string, ContentBlock>>({});
@@ -233,6 +284,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         const res = (await cmsService.pageContent(slug, localeTag)) as PageContentResponse;
         mergeContentBlocks(res?.content_blocks);
         mergeMediaBlocks(res?.media_blocks);
+        writePageCache(slug, localeTag, {
+          content_blocks: res?.content_blocks ?? [],
+          media_blocks: res?.media_blocks ?? [],
+        });
         if (res?.seo) {
           setSeo({
             title: res.seo.title ?? '',
@@ -246,7 +301,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           setGlobals((prev) => ({ ...prev, ...res.global_settings }));
         }
       } catch {
-        // Public render must never break — silently keep the fallbacks.
+        // Public render must never break — silently keep the fallbacks / cache.
+      } finally {
+        setReadyPages((prev) => ({ ...prev, [slug]: true }));
       }
     },
     [localeTag, mergeContentBlocks, mergeMediaBlocks],
@@ -256,16 +313,39 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     (pageSlug: string) => {
       const slug = pageSlug.trim();
       if (!slug) return; // opt-out: keep whatever page (if any) is registered
+      // Seed last-known blocks before paint so heroes do not flash fallbackSrc.
+      const cached = readPageCache(slug, localeTag);
+      if (cached?.content_blocks?.length) mergeContentBlocks(cached.content_blocks);
+      if (cached?.media_blocks?.length) mergeMediaBlocks(cached.media_blocks);
       setCurrentPage((prev) => (prev === slug ? prev : slug));
     },
-    [],
+    [localeTag, mergeContentBlocks, mergeMediaBlocks],
+  );
+
+  const isPageReady = React.useCallback(
+    (pageSlug: string) => !!readyPages[pageSlug.trim()],
+    [readyPages],
   );
 
   // (Re)fetch whenever the registered page or locale changes.
   React.useEffect(() => {
     if (!currentPage) return;
+    // Locale change: re-seed that locale's cache, then refresh from the network.
+    const cached = readPageCache(currentPage, localeTag);
+    if (cached?.content_blocks?.length) mergeContentBlocks(cached.content_blocks);
+    if (cached?.media_blocks?.length) mergeMediaBlocks(cached.media_blocks);
+    setReadyPages((prev) => ({ ...prev, [currentPage]: false }));
     void fetchPage(currentPage);
-  }, [currentPage, fetchPage]);
+  }, [currentPage, fetchPage, localeTag, mergeContentBlocks, mergeMediaBlocks]);
+
+  // Always load global page media (site logo, shared header assets) so the
+  // logo resolves on every route — including before a page slug registers.
+  React.useEffect(() => {
+    const cached = readPageCache('global', localeTag);
+    if (cached?.media_blocks?.length) mergeMediaBlocks(cached.media_blocks);
+    if (cached?.content_blocks?.length) mergeContentBlocks(cached.content_blocks);
+    void fetchPage('global');
+  }, [fetchPage, localeTag, mergeContentBlocks, mergeMediaBlocks]);
 
   // Editors get the full global-settings set so the Global modal can show all
   // known keys regardless of which page is open. Non-editors rely on whatever
@@ -317,6 +397,18 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           type: args.type ?? 'short_text',
           value_by_locale: args.value_by_locale,
         });
+        if (args.page === 'global') {
+          let merged: GlobalValue = args.value_by_locale;
+          setGlobals((prev) => {
+            const existing = prev[key];
+            merged = {
+              ...(typeof existing === 'object' && existing ? existing : {}),
+              ...args.value_by_locale,
+            };
+            return { ...prev, [key]: merged };
+          });
+          await cmsService.saveGlobalSetting(key, { value: merged });
+        }
         const optimistic = args.value_by_locale[localeTag];
         if (optimistic != null) {
           setContent((prev) => ({
@@ -329,33 +421,37 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const uploadImage = React.useCallback(
-    (key: string, file: File) =>
+    (key: string, file: File, page?: string) =>
       guardCms(async () => {
+        const pageSlug = (page || currentPage || '').trim();
         const fd = new FormData();
         fd.append('image', file);
+        if (pageSlug) fd.append('page', pageSlug);
         const res = (await cmsService.uploadMediaBlock(key, fd)) as { image_url?: string };
         const url = res?.image_url ?? '';
         if (url) {
-          setMedia((prev) => ({
-            ...prev,
-            [key]: {
+          setMedia((prev) => {
+            const next: MediaBlock = {
               key,
               image_url: url,
               alt: prev[key]?.alt ?? '',
               focal_point: prev[key]?.focal_point ?? { x: 50, y: 50 },
               overlay: prev[key]?.overlay ?? 0,
-            },
-          }));
+            };
+            if (pageSlug) patchPageCacheMedia(pageSlug, localeTag, next);
+            return { ...prev, [key]: next };
+          });
         }
         return url;
       }),
-    [guardCms],
+    [guardCms, currentPage, localeTag],
   );
 
   const saveMediaMeta = React.useCallback(
     (key: string, args: SaveMediaMetaArgs) =>
       guardCms(async () => {
         await cmsService.saveMediaBlock(key, {
+          page: args.page || currentPage || undefined,
           alt_by_locale: args.alt_by_locale,
           seo_title_by_locale: args.seo_title_by_locale,
           focal_x: args.focal_x,
@@ -366,22 +462,22 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         setMedia((prev) => {
           const existing = prev[key];
           if (!existing) return prev;
-          return {
-            ...prev,
-            [key]: {
-              ...existing,
-              alt: args.alt_by_locale?.[localeTag] ?? existing.alt,
-              seo_title: args.seo_title_by_locale?.[localeTag] ?? existing.seo_title,
-              focal_point: {
-                x: args.focal_x ?? existing.focal_point.x,
-                y: args.focal_y ?? existing.focal_point.y,
-              },
-              overlay: args.overlay ?? existing.overlay,
+          const next: MediaBlock = {
+            ...existing,
+            alt: args.alt_by_locale?.[localeTag] ?? existing.alt,
+            seo_title: args.seo_title_by_locale?.[localeTag] ?? existing.seo_title,
+            focal_point: {
+              x: args.focal_x ?? existing.focal_point.x,
+              y: args.focal_y ?? existing.focal_point.y,
             },
+            overlay: args.overlay ?? existing.overlay,
           };
+          const pageSlug = (args.page || currentPage || '').trim();
+          if (pageSlug) patchPageCacheMedia(pageSlug, localeTag, next);
+          return { ...prev, [key]: next };
         });
       }),
-    [guardCms, localeTag],
+    [guardCms, localeTag, currentPage],
   );
 
   const saveSeo = React.useCallback(
@@ -422,6 +518,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       localeTag,
       currentPage,
       registerPage,
+      isPageReady,
       getText,
       getMedia,
       getGlobal,
@@ -443,6 +540,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       localeTag,
       currentPage,
       registerPage,
+      isPageReady,
       getText,
       getMedia,
       getGlobal,
@@ -467,12 +565,12 @@ export function useCms(): CmsContextValue {
 }
 
 /**
- * Convenience hook for pages: register the slug once on mount. Keeps page
- * components from importing React effects directly just to declare their slug.
+ * Convenience hook for pages: register the slug before paint so session-cached
+ * media can seed the first frame (avoids fallback → CMS image flash on reload).
  */
 export function useRegisterCmsPage(pageSlug: string) {
   const { registerPage } = useCms();
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     registerPage(pageSlug);
   }, [registerPage, pageSlug]);
 }

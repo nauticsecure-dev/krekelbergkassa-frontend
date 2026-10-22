@@ -177,7 +177,7 @@ function GlobalTopbar({
         </button>
 
         <Link href={`/${locale}/admin`} className="lg:hidden" aria-label="Krekelberg">
-          <Logo />
+          <Logo editable={false} />
         </Link>
 
         {/* Search */}
@@ -473,7 +473,7 @@ function MobileDrawer({
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
-            <Logo variant="light" />
+            <Logo variant="light" editable={false} />
             <button
               onClick={onClose}
               className="rounded-md p-2 text-sand-100/70 hover:bg-white/5 hover:text-white"

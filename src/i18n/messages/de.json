@@ -584,8 +584,22 @@
     "confirmSubmit": "Diese Terminanfrage absenden? Sie erhalten innerhalb von 24 Stunden eine Bestätigung per E-Mail.",
     "footerNote": "Ihre Anfrage wird innerhalb 24h bestätigt. Eine Zahlungsanfrage folgt per Mail.",
     "selectDate": "Bitte erst einen Tag wählen",
+    "dayClosed": "Die Werft ist an diesem Tag geschlossen. Bitte wählen Sie ein anderes Datum.",
+    "slotsLoadFailed": "Zeiten konnten nicht geladen werden. Rufen Sie uns unter 0475 315 661 an.",
     "manualReview": "Manuelle Prüfung erforderlich",
     "notes": "Anmerkungen (optional)",
+    "validation": {
+      "incomplete": "Bitte füllen Sie zuerst diese Felder aus: {fields}.",
+      "required": "{field} ist erforderlich.",
+      "invalid": "{field} ist ungültig.",
+      "service": "Leistung",
+      "length": "Bootslänge",
+      "firstName": "Vorname",
+      "email": "E-Mail",
+      "date": "Datum",
+      "time": "Zeitfenster",
+      "hoverHint": "Füllen Sie die markierten Felder aus, um fortzufahren."
+    },
     "placeholders": {
       "name": "Max Mustermann",
       "phone": "06 12345678",
@@ -629,7 +643,8 @@
     "ctaTitle": "Bereit, Ihren Termin zu buchen?",
     "ctaDesc": "Reservieren Sie in unter 2 Minuten und erhalten Sie sofort eine Kostenangabe.",
     "ctaContact": "Kontakt",
-    "editService": "Service bearbeiten",
+    "editService": "Produkt bearbeiten",
+    "editPrices": "Tarife anpassen",
     "onRequest": "Auf Anfrage",
     "from": "ab",
     "pricingUnavailable": "Preise sind derzeit nicht verfügbar. Bitte kontaktieren Sie uns für ein Angebot.",
@@ -2876,7 +2891,9 @@
         "newRule": "Neue Preisregel",
         "selectProduct": "Produkt auswählen",
         "confirmDelete": "Diese Preisregel löschen?",
-        "deleted": "Preisregel gelöscht"
+        "deleted": "Preisregel gelöscht",
+        "filtered": "Gefiltert",
+        "clearFilter": "Filter löschen"
       },
       "manageServices": "Services beheren"
     },
@@ -4174,6 +4191,7 @@
     "globalDesc": "Änderungen gelten für die gesamte Website.",
     "global": {
       "headerCtaLabel": "Header-Schaltflächentext",
+      "headerCtaPath": "Header-Schaltflächenlink",
       "phone": "Telefonnummer",
       "city": "Ort",
       "tagline": "Footer-Slogan",

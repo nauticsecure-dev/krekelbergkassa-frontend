@@ -1,6 +1,17 @@
 /** @type {import('next').NextConfig} */
+const backendPublic =
+  process.env.API_PROXY_TARGET ??
+  'http://localhost/krekelbergkassa/krekelbergkassa-backend/public';
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  rewrites: async () => [
+    {
+      source: '/api/:path*',
+      destination: `${backendPublic}/api/:path*`,
+    },
+  ],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**' },

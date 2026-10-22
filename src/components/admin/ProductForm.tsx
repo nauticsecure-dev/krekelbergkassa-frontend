@@ -8,7 +8,7 @@ import { AdminFormGrid, AdminFormSection, AdminSelect } from '@/components/admin
 import { BarcodeScannerModal } from '@/components/admin/BarcodeScannerModal';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
-import { productsService, productGroupsService } from '@/lib/services';
+import { paginatedRows, productsService, productGroupsService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { getApiErrorMessage } from '@/lib/api-error';
 import {
@@ -50,8 +50,7 @@ export function ProductForm({
   const set = (patch: Partial<ProductFormState>) => onChange({ ...form, ...patch });
 
   const groups = useQuery(['product-groups-form'], () => productGroupsService.list({ per_page: 100 }));
-  const groupRows = (groups.data as { data?: Array<Record<string, unknown>> })?.data
-    ?? (Array.isArray(groups.data) ? (groups.data as Array<Record<string, unknown>>) : []);
+  const groupRows = paginatedRows(groups.data);
 
   const [showScanner, setShowScanner] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);

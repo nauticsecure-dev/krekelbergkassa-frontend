@@ -388,6 +388,14 @@ export interface AuditLog {
   before_data: Record<string, unknown> | null;
   after_data: Record<string, unknown> | null;
   request_id?: string | null;
+  url?: string | null;
+  route_name?: string | null;
+  intent?: string | null;
+  session_id?: string | null;
+  anonymous_session_id?: string | null;
+  api_method?: string | null;
+  api_endpoint?: string | null;
+  http_status?: number | null;
   correlation_id?: string | null;
   endpoint?: string | null;
   method?: string | null;

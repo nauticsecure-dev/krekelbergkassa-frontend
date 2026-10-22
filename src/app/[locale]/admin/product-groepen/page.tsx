@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
-import { productGroupsService } from '@/lib/services';
+import { paginatedRows, productGroupsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -80,7 +80,7 @@ export default function ProductGroupsPage() {
   const deleteGroup = useMutation((id: string) => productGroupsService.remove(id));
   const archiveGroup = useMutation((id: string) => productGroupsService.archive(id));
 
-  const rows = (groups.data ?? []) as Group[];
+  const rows = paginatedRows(groups.data) as Group[];
 
   const str = (g: Group, k: string) => (g[k] == null ? '' : String(g[k]));
 

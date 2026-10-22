@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   ArrowRight,
   Award,
@@ -22,6 +21,7 @@ import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
 import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
+import { EditSafeLink } from "@/components/cms/EditSafeLink";
 
 const CMS_PAGE = "over-ons";
 
@@ -82,25 +82,25 @@ export default function OverOnsPage() {
         </div>
         <div
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/70 to-navy-950/40"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/70 to-navy-950/40"
         />
-        <div className="container-wide relative pb-20 pt-16 text-white sm:pb-28 sm:pt-24 lg:pb-32 lg:pt-28">
-          <Badge tone="sand" dot className="mb-4">
+        <div className="container-wide pointer-events-none relative pb-20 pt-16 text-white sm:pb-28 sm:pt-24 lg:pb-32 lg:pt-28">
+          <Badge tone="sand" dot className="pointer-events-auto mb-4">
             <EditableText blockKey="over-ons.hero.badge" page={CMS_PAGE} section="hero">
               {t("over.heroBadge")}
             </EditableText>
           </Badge>
-          <h1 className="heading-display max-w-2xl text-4xl text-white sm:text-5xl">
+          <h1 className="heading-display pointer-events-auto max-w-2xl text-4xl text-white sm:text-5xl">
             <EditableText blockKey="over-ons.hero.title" page={CMS_PAGE} section="hero" type="heading">
               {t("over.heroTitle")}
             </EditableText>
           </h1>
-          <p className="mt-4 max-w-xl text-sand-100/85">
+          <p className="pointer-events-auto mt-4 max-w-xl text-sand-100/85">
             <EditableText blockKey="over-ons.hero.subtitle" page={CMS_PAGE} section="hero" type="paragraph">
               {t("over.heroSubtitle")}
             </EditableText>
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="pointer-events-none mt-8 flex w-fit flex-wrap gap-3">
             <EditableHeroCta
               page={CMS_PAGE}
               blockKey="over-ons.hero.cta_primary"
@@ -217,7 +217,7 @@ export default function OverOnsPage() {
             </EditableText>
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href={`/${locale}/diensten`}>
+            <EditSafeLink href={`/${locale}/diensten`}>
               <Button
                 variant="primary"
                 rightIcon={<ArrowRight className="h-4 w-4" />}
@@ -226,14 +226,14 @@ export default function OverOnsPage() {
                   {t("over.ctaServices")}
                 </EditableText>
               </Button>
-            </Link>
-            <Link href={`/${locale}/kraanafspraak`}>
+            </EditSafeLink>
+            <EditSafeLink href={`/${locale}/kraanafspraak`}>
               <Button variant="outline">
                 <EditableText blockKey="over-ons.craft.cta_crane" page={CMS_PAGE} section="craft">
                   {t("over.ctaCrane")}
                 </EditableText>
               </Button>
-            </Link>
+            </EditSafeLink>
           </div>
         </div>
         <EditableImage
@@ -407,19 +407,19 @@ export default function OverOnsPage() {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-marine-700" />
-              <a href={companyInfo.phoneHref} className="hover:text-navy-900">
+              <EditSafeLink href={companyInfo.phoneHref} className="pointer-events-auto hover:text-navy-900">
                 <EditableText blockKey="over-ons.visit.phone" page={CMS_PAGE} section="visit">
                   {companyInfo.phone}
                 </EditableText>
-              </a>
+              </EditSafeLink>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-marine-700" />
-              <a href={companyInfo.emailHref} className="hover:text-navy-900">
+              <EditSafeLink href={companyInfo.emailHref} className="pointer-events-auto hover:text-navy-900">
                 <EditableText blockKey="over-ons.visit.email" page={CMS_PAGE} section="visit">
                   {companyInfo.email}
                 </EditableText>
-              </a>
+              </EditSafeLink>
             </li>
             <li className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-marine-700" />
@@ -429,13 +429,13 @@ export default function OverOnsPage() {
             </li>
           </ul>
           <div className="mt-6 flex flex-wrap gap-2">
-            <Link href={`/${locale}/contact`}>
+            <EditSafeLink href={`/${locale}/contact`}>
               <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
                 <EditableText blockKey="over-ons.visit.cta" page={CMS_PAGE} section="visit">
                   {t("over.makeAppointment")}
                 </EditableText>
               </Button>
-            </Link>
+            </EditSafeLink>
           </div>
         </div>
 

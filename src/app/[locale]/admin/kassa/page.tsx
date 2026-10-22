@@ -52,6 +52,7 @@ import {
   customersService,
   kassaService,
   pricingService,
+  paginatedRows,
   productGroupsService,
   productsService,
 } from "@/lib/services";
@@ -318,7 +319,7 @@ export default function KassaPage() {
   );
   // Trello #80: product groups → category chip color + DB icon.
   const groupsQuery = useQuery(["kassa-product-groups"], () =>
-    productGroupsService.list().catch(() => []),
+    productGroupsService.list({ per_page: 100 }).catch(() => ({ data: [] })),
   );
   // Trello #86: bulk product heatmap (times sold today/week) for tile badges.
   const productStatsQuery = useQuery(["kassa-product-stats"], () =>
@@ -446,7 +447,7 @@ export default function KassaPage() {
   // Trello #80: lookup product groups by name/code → resolve chip color + icon.
   const groupByName = React.useMemo(() => {
     const map = new Map<string, { color?: string | null; icon?: string | null }>();
-    ((groupsQuery.data ?? []) as Array<Record<string, unknown>>).forEach((g) => {
+    paginatedRows(groupsQuery.data).forEach((g) => {
       const color = (g.color ?? g.display_color) as string | null | undefined;
       const icon = (g.icon ?? g.display_icon) as string | null | undefined;
       const entry = { color, icon };
@@ -1422,7 +1423,7 @@ export default function KassaPage() {
                 {t("adminNew.kassa.smartMatch")}:
               </span>
               {matchingRule.range_from_cm}–{matchingRule.range_to_cm} cm ·{" "}
-              {formatCurrency(matchingRule.price_incl_vat_euros, localeTag)}
+              {formatCurrency(productPriceInclEuros(matchingRule), localeTag)}
             </div>
           ) : null}
 
@@ -1539,10 +1540,7 @@ export default function KassaPage() {
                     <CatalogTile
                       key={rule.id}
                       title={`${rule.range_from_cm} – ${rule.range_to_cm} cm`}
-                      price={formatCurrency(
-                        rule.price_incl_vat_euros,
-                        localeTag,
-                      )}
+                      price={formatCurrency(productPriceInclEuros(rule), localeTag)}
                       accent={
                         product?.color ?? product?.group?.color ?? "#1f93b8"
                       }
@@ -1612,7 +1610,7 @@ export default function KassaPage() {
                         meta={metaBits.length ? metaBits.join(" · ") : undefined}
                         price={formatCurrency(
                           ruleMatch
-                            ? ruleMatch.price_incl_vat_euros
+                            ? productPriceInclEuros(ruleMatch)
                             : productPriceInclEuros(product),
                           localeTag,
                         )}

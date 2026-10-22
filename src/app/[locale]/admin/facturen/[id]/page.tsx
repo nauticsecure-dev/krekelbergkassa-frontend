@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/Input';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { InvoiceStatusBadge, PaymentStatusBadge } from '@/components/admin/StatusBadge';
-import { invoicesService, productGroupsService } from '@/lib/services';
+import { invoicesService, paginatedRows, productGroupsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { centsToEuro, formatCurrency, formatDate, formatDateTime } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -65,8 +65,7 @@ export default function InvoiceDetailPage() {
   });
   const groups = useQuery(['invoice-groups'], () => productGroupsService.list({ per_page: 100 }));
   const groupColorMap = React.useMemo(() => {
-    const g = (groups.data as { data?: Array<Record<string, unknown>> })?.data
-      ?? (Array.isArray(groups.data) ? (groups.data as Array<Record<string, unknown>>) : []);
+    const g = paginatedRows(groups.data);
     return Object.fromEntries(g.map((gr) => [String(gr.id), String(gr.color ?? '')]));
   }, [groups.data]);
 

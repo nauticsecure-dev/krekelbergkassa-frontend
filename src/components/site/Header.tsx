@@ -21,6 +21,8 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { InstallButton } from '@/components/pwa/InstallButton';
 import { cn } from '@/lib/cn';
 import { useCms } from '@/components/cms/CmsProvider';
+import { EditableText } from '@/components/cms/EditableText';
+import { EditSafeLink } from '@/components/cms/EditSafeLink';
 import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin, defaultRedirectForRole } from '@/lib/auth-routes';
 
@@ -35,10 +37,11 @@ export function Header() {
   const { t, locale } = useIntl();
   const { getGlobal } = useCms();
   const { user, loading } = useAuth();
-  const ctaLabel = getGlobal('header.cta.label', 'Stalling');
-  const ctaHref  = `/${locale}/${getGlobal('header.cta.path', 'diensten/winterstalling')}`;
+  const stallingLabel = getGlobal('header.cta.label', 'Stalling');
+  const stallingHref = `/${locale}/${getGlobal('header.cta.path', 'diensten/winterstalling')}`;
   const pathname = usePathname();
-  const accountHref = user ? defaultRedirectForRole(user.role, locale) : `/${locale}/login`;
+  const loginHref = `/${locale}/login`;
+  const accountHref = user ? defaultRedirectForRole(user.role, locale) : loginHref;
   const accountLabel = !user
     ? t('nav.login')
     : canAccessAdmin(user.role, false)
@@ -86,9 +89,9 @@ export function Header() {
     >
       {/* Main bar */}
       <div className="container-wide flex h-[72px] items-center justify-between gap-8">
-        <Link href={`/${locale}`} aria-label="Krekelberg Nautic" className="shrink-0">
+        <EditSafeLink href={`/${locale}`} aria-label="Krekelberg Nautic" className="shrink-0">
           <Logo />
-        </Link>
+        </EditSafeLink>
 
         {/* Desktop nav */}
         <nav className="hidden flex-1 items-center justify-center lg:flex">
@@ -149,17 +152,12 @@ export function Header() {
           <InstallButton variant="header" className="hidden md:inline-flex" />
           <LanguageSwitcher />
           {!loading ? (
-            <Link href={accountHref} className="hidden xl:inline-flex">
-              <Button variant="ghost" size="md">
+            <Link href={accountHref} className="hidden md:inline-flex">
+              <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
                 {accountLabel}
               </Button>
             </Link>
           ) : null}
-          <Link href={ctaHref} className="hidden md:inline-flex">
-            <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
-              {ctaLabel}
-            </Button>
-          </Link>
           <button
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 bg-white text-navy-700 transition hover:bg-sand-50 lg:hidden"
             onClick={() => setOpen((v) => !v)}
@@ -185,19 +183,21 @@ export function Header() {
             <MobileLink href={`/${locale}/over-ons`}>{t('nav.about')}</MobileLink>
             <MobileLink href={`/${locale}/contact`}>{t('nav.contact')}</MobileLink>
             <div className="my-3 h-px bg-navy-100" />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid gap-2">
               {!loading ? (
                 <Link href={accountHref}>
-                  <Button variant="outline" fullWidth>
+                  <Button variant="gold" fullWidth rightIcon={<ArrowRight className="h-4 w-4" />}>
                     {accountLabel}
                   </Button>
                 </Link>
               ) : null}
-              <Link href={ctaHref}>
-                <Button variant="gold" fullWidth>
-                  {ctaLabel}
+              <EditSafeLink href={stallingHref} className="pointer-events-auto">
+                <Button variant="outline" fullWidth>
+                  <EditableText blockKey="header.cta.label" page="global" section="header">
+                    {stallingLabel}
+                  </EditableText>
                 </Button>
-              </Link>
+              </EditSafeLink>
             </div>
             <div className="mt-2">
               <InstallButton variant="header" className="w-full justify-center" />
