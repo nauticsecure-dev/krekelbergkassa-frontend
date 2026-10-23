@@ -26,7 +26,7 @@ import { ErrorState, LoadingState } from '@/components/admin/DataState';
 import { adminHealthService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 
 type SecurityResponse = {
   status?: string;
@@ -61,7 +61,7 @@ function statusTone(status?: string): { tone: 'success' | 'warning' | 'danger'; 
 
 export default function SecurityDashboardPage() {
   const { t, locale } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const security = useQuery([], () =>
     adminHealthService.security() as Promise<SecurityResponse>

@@ -7,6 +7,7 @@ import { Loader2, Search } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { useIntl } from '@/i18n/IntlProvider';
 import { searchService } from '@/lib/services';
+import { adminRecordHref } from '@/config/admin-routes';
 import { cn } from '@/lib/cn';
 
 const SECTION_KEYS = [
@@ -18,16 +19,21 @@ const SECTION_KEYS = [
   'calculator_records',
 ] as const;
 
+function recordFrom(item: Record<string, unknown>) {
+  return {
+    id: typeof item.id === 'string' ? item.id : null,
+    public_id: typeof item.public_id === 'string' ? item.public_id : null,
+    slug: typeof item.slug === 'string' ? item.slug : null,
+  };
+}
+
 const SECTION_ROUTES: Record<string, (locale: string, item: Record<string, unknown>) => string | null> = {
-  customers: (locale, item) =>
-    item.id ? `/${locale}/admin/klanten/${item.id}` : null,
-  boats: (locale, item) =>
-    item.id ? `/${locale}/admin/boten/${item.id}` : null,
+  customers: (locale, item) => (item.id || item.public_id ? adminRecordHref(locale, 'klanten', recordFrom(item)) : null),
+  boats: (locale, item) => (item.id || item.public_id ? adminRecordHref(locale, 'boten', recordFrom(item)) : null),
   invoices: (locale, item) =>
     item.id ? `/${locale}/admin/facturen/${item.id}` : null,
-  products: (locale, item) =>
-    item.id ? `/${locale}/admin/producten/${item.id}` : null,
-  stalling: () => null,
+  products: (locale, item) => (item.id || item.public_id ? adminRecordHref(locale, 'producten', recordFrom(item)) : null),
+  stalling: (locale, item) => (item.id || item.public_id ? adminRecordHref(locale, 'stalling', recordFrom(item)) : null),
   calculator_records: (locale) => `/${locale}/admin/calculator`,
 };
 

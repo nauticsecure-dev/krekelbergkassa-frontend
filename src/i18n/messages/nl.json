@@ -34,23 +34,29 @@
       "brokerage": "Makelaardij",
       "finance": "Financieel",
       "servicesPricing": "Diensten & Prijzen",
-      "management": "Beheer"
+      "management": "Beheer",
+      "systemAdmin": "Systeembeheer"
     },
     "hubs": {
       "planning": {
         "title": "Planning",
         "subtitle": "Beheer afspraken, kalenderbeschikbaarheid en werfwerk vanuit één plek.",
         "schedule": "Planning",
-        "calendar": "Kalender",
-        "calendarDesc": "Openingstijden, uitzonderingen, locaties en werfcapaciteit.",
-        "appointments": "Afspraken",
-        "appointmentsDesc": "Bekijk en verwerk klantafspraken.",
+        "calendar": "Beschikbaarheid & werfkalender",
+        "calendarDesc": "Openingstijden, lunchblokken en uitzonderingen.",
+        "appointments": "Afsprakenplanning",
+        "appointmentsDesc": "Dag-, week- en maandplanning van afspraken.",
         "workOrders": "Werkopdrachten",
         "workOrdersDesc": "Volg gepland werk en de uitvoering op.",
         "quickAccess": "Snel naar",
         "quickActions": "Snelacties",
         "crane": "Kraanafspraak",
-        "craneDesc": "Open de kraanboekingspagina."
+        "craneDesc": "Open de kraanboekingspagina.",
+        "tabCalendar": "Kalender",
+        "tabAppointments": "Afspraken",
+        "tabToday": "Vandaag",
+        "tabWeek": "Week",
+        "tabYard": "Werfplanning"
       },
       "finance": {
         "title": "Financieel",
@@ -62,7 +68,7 @@
         "costsMonth": "Inkoop deze maand",
         "costsUnavailable": "Inkooptotalen zijn niet beschikbaar via de huidige API.",
         "loadError": "Niet geladen",
-        "invoiceWindow": "Gebaseerd op de 100 meest recente facturen.",
+        "invoiceWindow": "Totaal over alle facturen.",
         "quickActions": "Snelacties",
         "overview": "Financieel overzicht",
         "invoices": "Verkoopfacturen",
@@ -111,7 +117,8 @@
       },
       "management": {
         "title": "Beheer",
-        "subtitle": "Beheer gebruikers en instellingen. Technische systeemfuncties zijn alleen beschikbaar voor beheerders.",
+        "subtitle": "Beheer gebruikers en instellingen. Technische systeemfuncties zijn alleen beschikbaar voor systeembeheerders.",
+        "superAdminDenied": "Geen toegang. Alleen voor systeembeheerders.",
         "configuration": "Configuratie",
         "users": "Gebruikers",
         "usersDesc": "Beheer toegang en medewerkersaccounts.",
@@ -139,7 +146,6 @@
     "services": "Werf & services",
     "salesLocation": "Verkoop",
     "planning": "Planning",
-
     "about": "Over ons",
     "contact": "Contact",
     "login": "Inloggen",
@@ -588,6 +594,19 @@
     "slotsLoadFailed": "Tijdsloten konden niet worden geladen. Bel ons op 0475 315 661.",
     "manualReview": "Manuele beoordeling vereist",
     "notes": "Opmerkingen (optioneel)",
+    "address": {
+      "title": "Adres",
+      "street": "Straatnaam",
+      "houseNumber": "Huisnummer",
+      "postalCode": "Postcode",
+      "city": "Stad",
+      "streetPlaceholder": "Havenstraat",
+      "housePlaceholder": "12 A",
+      "postalPlaceholder": "6041 AB",
+      "cityPlaceholder": "Roermond",
+      "autocompleteHint": "Typ uw straat en kies een suggestie. Huisnummer, postcode en stad worden dan ingevuld. U kunt elk veld ook zelf aanpassen.",
+      "manualFallback": "Adres automatisch invullen is niet beschikbaar. Vul straat, nummer, postcode en stad handmatig in."
+    },
     "validation": {
       "incomplete": "Vul eerst deze velden in: {fields}.",
       "required": "{field} is verplicht.",
@@ -598,6 +617,10 @@
       "email": "E-mailadres",
       "date": "Datum",
       "time": "Tijdslot",
+      "street": "Straatnaam",
+      "houseNumber": "Huisnummer",
+      "postalCode": "Postcode",
+      "city": "Stad",
       "hoverHint": "Vul de gemarkeerde velden in om verder te gaan."
     },
     "placeholders": {
@@ -3377,13 +3400,14 @@
       }
     },
     "appointments": {
-      "title": "Afspraken",
-      "subtitle": "Beheer kraanafspraken, bevestigingen en statusupdates",
+      "title": "Afsprakenplanning",
+      "subtitle": "Plan afspraken per dag, week en maand",
       "loading": "Afspraken laden",
       "filterStatus": "Filter op status",
       "allStatuses": "Alle statussen",
       "statusPending": "In afwachting",
       "statusConfirmed": "Bevestigd",
+      "statusPlanned": "Ingepland",
       "statusStarted": "Gestart",
       "statusCompleted": "Afgerond",
       "statusCancelled": "Geannuleerd",
@@ -3396,7 +3420,7 @@
       "cancelReason": "Geannuleerd via admin",
       "total": "{count} afspraken",
       "today": "Vandaag",
-      "listOverview": "Filter en beheer alle kraanafspraken",
+      "listOverview": "Tijdschema met uren en dagen. Sleep een afspraak om hem te verplaatsen.",
       "columns": {
         "date": "Datum",
         "time": "Tijd",
@@ -3408,7 +3432,10 @@
         "confirmed": "Afspraak bevestigd",
         "cancelled": "Afspraak geannuleerd",
         "completed": "Afspraak afgerond",
-        "advanced": "Afspraakstatus gewijzigd naar {status}"
+        "advanced": "Afspraakstatus gewijzigd naar {status}",
+        "moved": "Afspraak verplaatst",
+        "moveFailed": "Kon afspraak niet verplaatsen",
+        "conflict": "Dit tijdslot overlapt een andere afspraak"
       }
     },
     "products": {
@@ -4055,6 +4082,25 @@
       "toasts": {
         "started": "Back-up gestart"
       }
+    },
+    "shortcuts": {
+      "title": "Snelkoppelingen",
+      "subtitle": "Knoppen op het operationeel overzicht",
+      "saved": "Snelkoppeling opgeslagen",
+      "forbidden": "Je hebt geen rechten om snelkoppelingen te beheren.",
+      "reset": "Standaard herstellen",
+      "create": "Snelkoppeling toevoegen",
+      "moveUp": "Omhoog",
+      "moveDown": "Omlaag",
+      "active": "Actief",
+      "key": "Sleutel",
+      "route": "Bestemming",
+      "label": "Label",
+      "roles": "Rollen",
+      "allRoles": "Leeg betekent zichtbaar voor elke rol.",
+      "advanced": "Geavanceerd",
+      "customUrl": "Aangepast pad",
+      "save": "Opslaan"
     }
   },
   "planning": {

@@ -12,6 +12,7 @@ import { useMutation } from '@/lib/hooks/useAsync';
 import { productsService } from '@/lib/services';
 import { formToPayload } from '@/lib/products';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { adminRecordHref } from '@/config/admin-routes';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 
@@ -27,7 +28,7 @@ export default function NewProductPage() {
     try {
       const created = await createProduct.mutate(formToPayload(form));
       push({ tone: 'success', title: t('adminNew.products.toasts.created') });
-      router.push(`/${locale}/admin/producten/${created.id}`);
+      router.push(adminRecordHref(locale, 'producten', created));
     } catch (err) {
       push({
         tone: 'error',

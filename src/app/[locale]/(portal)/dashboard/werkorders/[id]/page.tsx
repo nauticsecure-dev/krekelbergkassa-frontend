@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { portalService } from '@/lib/services';
 import { useQuery, useMutation } from '@/lib/hooks/useAsync';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 
@@ -159,7 +159,7 @@ export default function PortalWorkOrderDetailPage() {
   const id = params?.id ?? '';
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [lightboxUrl, setLightboxUrl] = React.useState<string | null>(null);
   const [showAccept, setShowAccept] = React.useState(false);

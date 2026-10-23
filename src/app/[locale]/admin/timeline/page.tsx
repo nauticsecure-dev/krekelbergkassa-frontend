@@ -39,7 +39,7 @@ import { adminService } from '@/lib/services';
 import { useQuery, useMutation } from '@/lib/hooks/useAsync';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 
 type Rec = Record<string, unknown>;
@@ -139,7 +139,7 @@ function presetDates(id: DatePreset): { from: string; to: string } {
 export default function TimelinePage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [search, setSearch] = React.useState('');
   const [category, setCategory] = React.useState('');

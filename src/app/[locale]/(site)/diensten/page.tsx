@@ -307,19 +307,21 @@ export default function DienstenPage() {
                 </li>
               </ul>
               <div className="mt-6 flex flex-wrap gap-2">
-                <EditSafeLink href={`/${locale}/kraanafspraak`}>
-                  <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                    <EditableText blockKey="diensten.cta.plan" page={CMS_PAGE} section="cta">
-                      {t('werf.ctaPlan')}
-                    </EditableText>
-                  </Button>
+                <EditSafeLink
+                  href={`/${locale}/kraanafspraak`}
+                  button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+                >
+                  <EditableText blockKey="diensten.cta.plan" page={CMS_PAGE} section="cta">
+                    {t('werf.ctaPlan')}
+                  </EditableText>
                 </EditSafeLink>
-                <EditSafeLink href={`/${locale}/contact`}>
-                  <Button variant="outline" leftIcon={<Calendar className="h-4 w-4" />}>
-                    <EditableText blockKey="diensten.cta.contact" page={CMS_PAGE} section="cta">
-                      {t('werf.ctaContact')}
-                    </EditableText>
-                  </Button>
+                <EditSafeLink
+                  href={`/${locale}/contact`}
+                  button={{ variant: "outline", leftIcon: <Calendar className="h-4 w-4" /> }}
+                >
+                  <EditableText blockKey="diensten.cta.contact" page={CMS_PAGE} section="cta">
+                    {t('werf.ctaContact')}
+                  </EditableText>
                 </EditSafeLink>
               </div>
             </div>

@@ -22,6 +22,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
 import { LanguageSwitcher } from '@/components/site/LanguageSwitcher';
 import { Badge } from '@/components/ui/Badge';
+import { adminHref } from '@/config/admin-routes';
+import { canPerformCreate, createActions } from '@/config/admin-create-actions';
 import { useAuth } from '@/lib/auth-context';
 import { useIntl } from '@/i18n/IntlProvider';
 import { cn } from '@/lib/cn';
@@ -29,7 +31,7 @@ import { ConnectionIndicator } from '@/components/sync/ConnectionIndicator';
 import { useShellDropdowns } from '@/components/shell/useShellDropdowns';
 import { PageHeaderStatsGrid, type PageHeaderStat } from '@/components/shell/PageHeaderStats';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { adminService, boatsService, invoicesService, stallingService } from '@/lib/services';
+import { adminService, boatsService, invoicesService, productsService, stallingService } from '@/lib/services';
 import { trackEvent } from '@/lib/track-event';
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -98,15 +100,22 @@ function GlobalTopbar({
   const { user } = useAuth();
   const pathname = usePathname();
   const boatId = getAdminBoatId(pathname, locale);
+  const productId = getAdminProductId(pathname, locale);
   const boatDossier = useQuery(
     [boatId ?? ''],
     () => boatId ? boatsService.dossier(boatId) : Promise.resolve(null),
     { immediate: Boolean(boatId) },
   );
+  const productRecord = useQuery(
+    [productId ?? ''],
+    () => productId ? productsService.get(productId) : Promise.resolve(null),
+    { immediate: Boolean(productId) },
+  );
   const publicPage = getPublicPageForAdminPath(
     pathname,
     locale,
     boatDossier.loading ? null : getPublicBoatPath(boatDossier.data),
+    productRecord.loading ? null : getPublicProductPath(productRecord.data),
   );
   const { requestLogout } = useConfirmLogout();
   const { bellOpen, menuOpen, toggleBell, toggleMenu, closeAll } = useShellDropdowns();
@@ -167,7 +176,7 @@ function GlobalTopbar({
 
   return (
     <div className="sticky top-0 z-40 shrink-0 border-b border-navy-100 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="flex h-16 items-center gap-3 px-3 sm:px-5">
+      <div className="flex h-16 min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-5">
         <button
           onClick={onMenuClick}
           className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 text-navy-700 hover:bg-sand-50 lg:hidden"
@@ -176,8 +185,8 @@ function GlobalTopbar({
           <Menu className="h-5 w-5" />
         </button>
 
-        <Link href={`/${locale}/admin`} className="lg:hidden" aria-label="Krekelberg">
-          <Logo editable={false} />
+        <Link href={`/${locale}/admin`} className="min-w-0 lg:hidden" aria-label="Krekelberg">
+          <Logo editable={false} className="[&_img]:h-8 [&>div:last-child]:hidden sm:[&>div:last-child]:block" />
         </Link>
 
         {/* Search */}
@@ -197,25 +206,17 @@ function GlobalTopbar({
             </button>
             {createOpen ? (
               <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-navy-100 bg-white py-1 shadow-elev">
-                {[
-                  { key: 'customer', href: `/${locale}/admin/klanten?new=1` },
-                  { key: 'boat', href: `/${locale}/admin/boten?new=1` },
-                  { key: 'appointment', href: `/${locale}/planning?create=1` },
-                  { key: 'stalling', href: `/${locale}/admin/stalling?new=1` },
-                  { key: 'invoice', href: `/${locale}/admin/facturen?create=1`, roles: ['admin', 'manager'] },
-                  { key: 'brokerage', href: `/${locale}/admin/verkopen`, roles: ['admin', 'manager'] },
-                  { key: 'supplier', href: `/${locale}/admin/leveranciers?new=1`, roles: ['admin', 'manager'] },
-                  { key: 'service', href: `/${locale}/admin/producten/nieuw`, roles: ['admin', 'manager'] },
-                ].filter((item) => !item.roles || item.roles.includes(user?.role ?? ''))
-                  .map(({ key, href }) => (
+                {createActions
+                  .filter((item) => canPerformCreate(user, item))
+                  .map((item) => (
                   <Link
-                    key={key}
-                    href={href}
+                    key={item.key}
+                    href={adminHref(locale, item.routeKey)}
                     role="menuitem"
                     onClick={() => setCreateOpen(false)}
                     className="block px-4 py-2.5 text-sm text-navy-700 hover:bg-sand-50"
                   >
-                    {t(`adminModules.create.${key}`)}
+                    {t(item.labelKey)}
                   </Link>
                 ))}
               </div>
@@ -240,7 +241,7 @@ function GlobalTopbar({
                   : t('adminNew.shell.viewPage')
                 : t('adminNew.shell.viewWebsite')
             }
-            className="inline-flex"
+            className="hidden sm:inline-flex"
           >
             <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-100 bg-white px-2.5 text-xs font-semibold text-navy-700 hover:bg-sand-50 sm:px-3">
               <Globe className="h-4 w-4 shrink-0" />
@@ -388,23 +389,22 @@ function getPublicPageForAdminPath(
   pathname: string,
   locale: string,
   publicBoatPath: string | null,
+  publicProductPath: string | null,
 ): { href: string; contextual: boolean; boat?: boolean } {
   const adminPrefix = `/${locale}/admin`;
   const adminPath = pathname.startsWith(adminPrefix)
     ? pathname.slice(adminPrefix.length) || '/'
     : '/';
-  const serviceSlug = adminPath.match(/^\/diensten\/([^/]+)$/)?.[1];
   const boatPath = adminPath.match(/^\/boten\/[^/]+$/) ? publicBoatPath : null;
+  const productMatch = adminPath.match(/^\/producten\/([^/]+)$/);
+  const productPath = productMatch && productMatch[1] !== 'nieuw' ? publicProductPath : null;
   const publicPath = boatPath
-    ?? (adminPath === '/contact'
-      ? '/contact'
-      : adminPath === '/diensten'
-        ? '/diensten'
-        : serviceSlug && PUBLIC_SERVICE_SLUGS.has(serviceSlug)
-          ? `/diensten/${serviceSlug}`
-          : adminPath === '/stalling' || adminPath.startsWith('/stalling/')
-            ? '/diensten/winterstalling'
-            : null);
+    ?? productPath
+    ?? (adminPath === '/diensten'
+      ? '/diensten'
+      : adminPath === '/stalling' || adminPath.startsWith('/stalling/')
+        ? '/diensten/winterstalling'
+        : null);
 
   return publicPath
     ? {
@@ -416,24 +416,46 @@ function getPublicPageForAdminPath(
 }
 
 function getAdminBoatId(pathname: string, locale: string): string | null {
-  const match = pathname.match(new RegExp(`^/${locale}/admin/boten/([^/]+)$`));
+  const match = pathname.match(new RegExp(`^/${locale}/admin/boten/([^/]+)(?:/[^/]+)?$`));
   return match?.[1] ?? null;
+}
+
+function getAdminProductId(pathname: string, locale: string): string | null {
+  const match = pathname.match(new RegExp(`^/${locale}/admin/producten/([^/]+)$`));
+  const id = match?.[1];
+  return id && id !== 'nieuw' ? id : null;
+}
+
+function internalPath(value: unknown): string | null {
+  return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//')
+    ? value
+    : null;
 }
 
 function getPublicBoatPath(dossier: Record<string, unknown> | null | undefined): string | null {
   const boat = dossier?.boat;
   if (!boat || typeof boat !== 'object') return null;
   const record = boat as Record<string, unknown>;
-  const publicPath = record.public_path ?? record.public_url ?? record.frontend_url;
-  return typeof publicPath === 'string' &&
-    publicPath.startsWith('/') &&
-    !publicPath.startsWith('//')
-    ? publicPath
-    : null;
+  const publicPath = internalPath(record.public_path)
+    ?? internalPath(record.public_url)
+    ?? internalPath(record.frontend_url);
+  if (publicPath) return publicPath;
+  const slug = typeof record.slug === 'string' ? record.slug.trim() : '';
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug) ? `/boten/${slug}` : null;
+}
+
+function getPublicProductPath(
+  product: { public_path?: unknown; slug?: unknown } | null | undefined,
+): string | null {
+  if (!product) return null;
+  const publicPath = internalPath(product.public_path);
+  if (publicPath) return publicPath;
+  const slug = typeof product.slug === 'string' ? product.slug.trim() : '';
+  return PUBLIC_SERVICE_SLUGS.has(slug) ? `/diensten/${slug}` : null;
 }
 
 function localizePublicPath(path: string, locale: string): string {
-  const localePrefix = path.match(/^\/(nl|en|de)(\/.*)?$/);
+  const localePrefix = path.match(/^\/(nl|en|de|fr)(\/.*)?$/);
   if (localePrefix) return `/${locale}${localePrefix[2] ?? ''}`;
   return `/${locale}${path}`;
 }
@@ -517,13 +539,15 @@ export function AdminHero({
         aria-hidden
         className="pointer-events-none absolute -bottom-24 left-1/3 h-40 w-40 rounded-full bg-gold-200/20 blur-3xl"
       />
-      <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
+      <div className="relative flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 basis-[16rem]">
           {eyebrow ? <p className="admin-hero-eyebrow">{eyebrow}</p> : null}
           <h1 className={cn('admin-hero-title', eyebrow ? 'mt-1' : '')}>{title}</h1>
           {subtitle ? <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-navy-500">{subtitle}</p> : null}
         </div>
-        {rightSlot ? <div className="flex shrink-0 flex-wrap items-center gap-2 lg:pt-1">{rightSlot}</div> : null}
+        {rightSlot ? (
+          <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2 pt-1">{rightSlot}</div>
+        ) : null}
       </div>
       {children ? <div className="relative mt-3">{children}</div> : null}
     </div>

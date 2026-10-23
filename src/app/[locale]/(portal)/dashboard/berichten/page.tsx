@@ -29,7 +29,7 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { portalService } from '@/lib/services';
 import type { PortalTimelineItem } from '@/lib/api-types';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
@@ -51,7 +51,7 @@ function isUnread(item: PortalTimelineItem) {
 export default function PortalMessagesPage() {
   const { t, locale } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [readFilter, setReadFilter] = React.useState<ReadFilter>('');
   const [selected, setSelected] = React.useState<PortalTimelineItem | null>(null);
   const [confirmMarkAll, setConfirmMarkAll] = React.useState(false);

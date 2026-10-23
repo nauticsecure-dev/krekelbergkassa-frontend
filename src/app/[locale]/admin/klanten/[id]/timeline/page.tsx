@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/Input';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { adminService, customersService, boatsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { formatDateTime, formatDate } from '@/lib/format';
+import { formatDateTime, formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -37,7 +37,7 @@ export default function CustomerTimelinePage() {
   const { push } = useToast();
   const params = useParams<{ id: string }>();
   const customerId = params?.id ?? '';
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [page, setPage] = React.useState(1);
   const [search, setSearch] = React.useState('');

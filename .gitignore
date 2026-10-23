@@ -110,3 +110,9 @@ ui-debug.log
 ehthumbs.db
 Thumbs.db 
 .cursorignore
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

@@ -22,7 +22,7 @@ import { accountingService, supplierPayablesService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
 
 type Rec = Record<string, unknown>;
 const str = (r: Rec, ...keys: string[]): string => {
@@ -45,7 +45,7 @@ const num = (r: Rec, ...keys: string[]): number => {
 export default function AccountingPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [payStatus, setPayStatus] = React.useState('');
 
   const [dateFrom, setDateFrom] = React.useState('');

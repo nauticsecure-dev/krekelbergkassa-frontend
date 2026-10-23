@@ -20,14 +20,14 @@ import { Badge } from '@/components/ui/Badge';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { productsService } from '@/lib/services';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 
 const SOURCES = ['usb', 'camera', 'manual', 'api'];
 
 export default function ScanLogsPage() {
   const { locale, t } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [page, setPage] = React.useState(1);
   const [source, setSource] = React.useState('');
   const [result, setResult] = React.useState('');

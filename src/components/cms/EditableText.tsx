@@ -69,7 +69,7 @@ export function EditableText({
   className,
   children,
 }: EditableTextProps) {
-  const { canEdit, editMode, getText } = useCms();
+  const { isCmsEditing, getText } = useCms();
   const { t } = useIntl();
   const [open, setOpen] = React.useState(false);
 
@@ -83,22 +83,31 @@ export function EditableText({
   // the public site is unchanged until a first edit upserts the key.
   const content: React.ReactNode = stored ? stored : children;
 
-  if (!canEdit || !editMode) {
+  if (!isCmsEditing) {
     return <Tag className={className}>{content}</Tag>;
   }
 
-  const openEditor = (event: React.MouseEvent) => {
+  const stopNav = (event: React.SyntheticEvent) => {
     event.preventDefault();
     event.stopPropagation();
+  };
+  const openEditor = (event: React.SyntheticEvent) => {
+    stopNav(event);
     setOpen(true);
   };
 
   return (
     <Wrap
       className={cn(
-        'group/cms pointer-events-auto relative',
+        'group/cms pointer-events-auto relative cursor-text',
         block ? 'block' : 'inline-block',
       )}
+      onPointerDown={stopNav}
+      onMouseDown={stopNav}
+      onTouchStart={stopNav}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') stopNav(event);
+      }}
       onClick={openEditor}
     >
       <Tag className={cn('outline-dashed outline-1 outline-gold-400/60', className)}>
@@ -106,6 +115,12 @@ export function EditableText({
       </Tag>
       <button
         type="button"
+        onPointerDown={stopNav}
+        onMouseDown={stopNav}
+        onTouchStart={stopNav}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') openEditor(event);
+        }}
         onClick={openEditor}
         aria-label={t('cms.editText')}
         title={t('cms.editText')}

@@ -29,7 +29,7 @@ import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formsService, type FormTemplate } from '@/lib/services';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -56,7 +56,7 @@ function statusTone(s: string) {
 export default function FormsPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [search, setSearch] = React.useState('');
   const [categoryFilter, setCategoryFilter] = React.useState('');

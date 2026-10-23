@@ -271,14 +271,15 @@ export function ServicePage({
                   </Button>
                 </Link>
               ) : null}
-              <EditSafeLink href={cta.href}>
-                <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  {p ? (
-                    <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
-                      {cta.label}
-                    </EditableText>
-                  ) : cta.label}
-                </Button>
+              <EditSafeLink
+                href={cta.href}
+                button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                {p ? (
+                  <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
+                    {cta.label}
+                  </EditableText>
+                ) : cta.label}
               </EditSafeLink>
             </div>
           </div>
@@ -383,14 +384,15 @@ export function ServicePage({
               </p>
             </div>
             <div className="flex flex-wrap gap-3 lg:justify-end">
-              <EditSafeLink href={cta.href}>
-                <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  {p ? (
-                    <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
-                      {cta.label}
-                    </EditableText>
-                  ) : cta.label}
-                </Button>
+              <EditSafeLink
+                href={cta.href}
+                button={{ variant: "gold", size: "lg", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                {p ? (
+                  <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
+                    {cta.label}
+                  </EditableText>
+                ) : cta.label}
               </EditSafeLink>
               <Link href={`/${locale}/contact`}>
                 <Button

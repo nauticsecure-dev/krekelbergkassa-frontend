@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
 import { companyInfo } from "@/lib/company";
 import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
@@ -217,22 +216,18 @@ export default function OverOnsPage() {
             </EditableText>
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <EditSafeLink href={`/${locale}/diensten`}>
-              <Button
-                variant="primary"
-                rightIcon={<ArrowRight className="h-4 w-4" />}
-              >
-                <EditableText blockKey="over-ons.craft.cta_services" page={CMS_PAGE} section="craft">
-                  {t("over.ctaServices")}
-                </EditableText>
-              </Button>
+            <EditSafeLink
+              href={`/${locale}/diensten`}
+              button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+            >
+              <EditableText blockKey="over-ons.craft.cta_services" page={CMS_PAGE} section="craft">
+                {t("over.ctaServices")}
+              </EditableText>
             </EditSafeLink>
-            <EditSafeLink href={`/${locale}/kraanafspraak`}>
-              <Button variant="outline">
-                <EditableText blockKey="over-ons.craft.cta_crane" page={CMS_PAGE} section="craft">
-                  {t("over.ctaCrane")}
-                </EditableText>
-              </Button>
+            <EditSafeLink href={`/${locale}/kraanafspraak`} button={{ variant: "outline" }}>
+              <EditableText blockKey="over-ons.craft.cta_crane" page={CMS_PAGE} section="craft">
+                {t("over.ctaCrane")}
+              </EditableText>
             </EditSafeLink>
           </div>
         </div>
@@ -429,12 +424,13 @@ export default function OverOnsPage() {
             </li>
           </ul>
           <div className="mt-6 flex flex-wrap gap-2">
-            <EditSafeLink href={`/${locale}/contact`}>
-              <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                <EditableText blockKey="over-ons.visit.cta" page={CMS_PAGE} section="visit">
-                  {t("over.makeAppointment")}
-                </EditableText>
-              </Button>
+            <EditSafeLink
+              href={`/${locale}/contact`}
+              button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+            >
+              <EditableText blockKey="over-ons.visit.cta" page={CMS_PAGE} section="visit">
+                {t("over.makeAppointment")}
+              </EditableText>
             </EditSafeLink>
           </div>
         </div>

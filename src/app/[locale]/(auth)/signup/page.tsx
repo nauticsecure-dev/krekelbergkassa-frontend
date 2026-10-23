@@ -1,5 +1,7 @@
 "use client";
 
+import { intlLocale } from '@/lib/format';
+
 import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, Mail, Phone, User2 } from "lucide-react";
@@ -34,7 +36,7 @@ export default function SignupPage() {
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim() || null,
-        preferred_locale: locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL",
+        preferred_locale: intlLocale(locale),
       });
       setSuccess(true);
       push({

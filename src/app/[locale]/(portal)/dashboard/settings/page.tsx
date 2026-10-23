@@ -26,7 +26,7 @@ import { useQuery } from '@/lib/hooks/useAsync';
 import { portalService } from '@/lib/services';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, intlLocale } from '@/lib/format';
 import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -35,7 +35,7 @@ export default function PortalSettingsPage() {
   const { t, locale } = useIntl();
   const { user } = useAuth();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const me = useQuery([], () => portalService.me());
 
   const displayName = me.data?.customer.name ?? user?.name ?? '—';

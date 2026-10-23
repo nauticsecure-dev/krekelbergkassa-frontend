@@ -21,7 +21,6 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { InstallButton } from '@/components/pwa/InstallButton';
 import { cn } from '@/lib/cn';
 import { useCms } from '@/components/cms/CmsProvider';
-import { EditableText } from '@/components/cms/EditableText';
 import { EditSafeLink } from '@/components/cms/EditSafeLink';
 import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin, defaultRedirectForRole } from '@/lib/auth-routes';
@@ -152,12 +151,17 @@ export function Header() {
           <InstallButton variant="header" className="hidden md:inline-flex" />
           <LanguageSwitcher />
           {!loading ? (
-            <Link href={accountHref} className="hidden md:inline-flex">
-              <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
+            <Link href={accountHref} className="hidden lg:inline-flex">
+              <Button variant="ghost" size="md">
                 {accountLabel}
               </Button>
             </Link>
           ) : null}
+          <Link href={stallingHref} className="hidden md:inline-flex">
+            <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
+              {stallingLabel}
+            </Button>
+          </Link>
           <button
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 bg-white text-navy-700 transition hover:bg-sand-50 lg:hidden"
             onClick={() => setOpen((v) => !v)}
@@ -183,21 +187,19 @@ export function Header() {
             <MobileLink href={`/${locale}/over-ons`}>{t('nav.about')}</MobileLink>
             <MobileLink href={`/${locale}/contact`}>{t('nav.contact')}</MobileLink>
             <div className="my-3 h-px bg-navy-100" />
-            <div className="grid gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {!loading ? (
                 <Link href={accountHref}>
-                  <Button variant="gold" fullWidth rightIcon={<ArrowRight className="h-4 w-4" />}>
+                  <Button variant="outline" fullWidth>
                     {accountLabel}
                   </Button>
                 </Link>
               ) : null}
-              <EditSafeLink href={stallingHref} className="pointer-events-auto">
-                <Button variant="outline" fullWidth>
-                  <EditableText blockKey="header.cta.label" page="global" section="header">
-                    {stallingLabel}
-                  </EditableText>
+              <Link href={stallingHref}>
+                <Button variant="gold" fullWidth>
+                  {stallingLabel}
                 </Button>
-              </EditSafeLink>
+              </Link>
             </div>
             <div className="mt-2">
               <InstallButton variant="header" className="w-full justify-center" />

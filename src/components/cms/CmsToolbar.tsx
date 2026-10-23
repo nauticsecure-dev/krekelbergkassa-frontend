@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Clock, Eye, Pencil, Search, Settings } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -13,6 +14,11 @@ import { GlobalSettingsModal, SeoEditModal } from './CmsModals';
  * `cms.manage`; entirely absent (no DOM, no-op) for everyone else.
  */
 export function CmsToolbar() {
+  const pathname = usePathname();
+  return <CmsToolbarInner key={pathname} />;
+}
+
+function CmsToolbarInner() {
   const { t, locale } = useIntl();
   const { canEdit, editMode, toggleEditMode, currentPage } = useCms();
   const [seoOpen, setSeoOpen] = React.useState(false);

@@ -58,7 +58,8 @@ import {
 } from "@/lib/services";
 import { useMutation, useQuery } from "@/lib/hooks/useAsync";
 import type { Product, PricingRule, KassaQrSession } from "@/lib/api-types";
-import { formatCurrency } from "@/lib/format";
+import { adminRecordHref } from "@/config/admin-routes";
+import { formatCurrency, intlLocale } from "@/lib/format";
 import { productPriceExclEuros, productPriceInclEuros } from "@/lib/products";
 import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -135,7 +136,7 @@ export default function KassaPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const localeTag =
-    locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
+    intlLocale(locale);
 
   const [query, setQuery] = React.useState("");
   const [aiQuery, setAiQuery] = React.useState("");
@@ -1581,7 +1582,7 @@ export default function KassaPage() {
                       ) : null}
                       {/* Trello #80: quick edit pencil → product detail */}
                       <Link
-                        href={`/${locale}/admin/producten/${product.id}`}
+                        href={adminRecordHref(locale, 'producten', product)}
                         onClick={(e) => e.stopPropagation()}
                         aria-label={t("adminNew.kassa.editProduct")}
                         className="absolute right-1.5 top-1.5 z-10 rounded-full bg-white/80 p-1 text-navy-400 transition hover:scale-110 hover:text-marine-600"

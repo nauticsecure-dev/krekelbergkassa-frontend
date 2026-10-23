@@ -5,6 +5,7 @@ import type {
   AdminWallet,
   AppSettings,
   AuditLog,
+  AuditLogCounters,
   Boat,
   BoatLocation,
   BookingCalendarResponse,
@@ -459,6 +460,24 @@ export const invoicesService = {
   async list(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/invoices', { query });
     return asPaginated<Invoice>(res);
+  },
+  summary(query?: Record<string, string | number | boolean | undefined>) {
+    return api<{
+      open_count: number;
+      partial_count: number;
+      overdue_count: number;
+      paid_count: number;
+      open_balance_cents: number;
+    }>('/v1/invoices/summary', { query });
+  },
+  stats() {
+    return api<{
+      open_cents: number;
+      overdue_cents: number;
+      due_cents: number;
+      revenue_month_cents: number;
+      costs_month_cents: number;
+    }>('/v1/invoices/stats');
   },
   get(id: string) {
     return api<Invoice>(`/v1/invoices/${id}`);
@@ -1233,7 +1252,12 @@ export const syncService = {
 export const auditService = {
   async logs(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/admin/audit-logs', { query });
-    return asPaginated<AuditLog>(res);
+    const page = asPaginated<AuditLog>(res);
+    const counters =
+      res && typeof res === 'object' && 'counters' in res
+        ? (res as { counters?: AuditLogCounters }).counters
+        : undefined;
+    return { ...page, counters };
   },
   get(id: string) {
     return api<AuditLog>(`/v1/admin/audit-logs/${id}`);
@@ -1616,6 +1640,15 @@ export const appointmentsService = {
     const res = await api<unknown>('/v1/appointments', { query });
     return asPaginated<Appointment>(res);
   },
+  calendar(query: {
+    from: string;
+    to: string;
+    status?: string;
+    assigned_to?: string;
+    location_id?: string;
+  }) {
+    return api<{ data: Appointment[] }>('/v1/appointments/calendar', { query });
+  },
   get(id: string) {
     return api<Appointment>(`/v1/appointments/${id}`);
   },
@@ -1668,7 +1701,13 @@ export const appointmentsService = {
     return api<Record<string, unknown>>('/v1/appointments/stats', { query });
   },
   // Trello #99: conflict detection before scheduling/creating.
-  checkConflicts(payload: { date: string; start_time: string; duration_minutes?: number; location_id?: string | null }) {
+  checkConflicts(payload: {
+    date: string;
+    start_time: string;
+    duration_minutes?: number;
+    location_id?: string | null;
+    ignore_appointment_id?: string | null;
+  }) {
     return api<{ has_conflicts: boolean; conflicts: Array<Record<string, unknown>> }>(
       '/v1/appointments/check-conflicts',
       { method: 'POST', body: payload }
@@ -2185,6 +2224,48 @@ export const extractionTemplatesService = {
   },
   delete(id: string) {
     return api<{ message: string }>(`/v1/invoice-extraction-templates/${id}`, { method: 'DELETE' });
+  },
+};
+
+export interface InvoiceLayoutBlocks {
+  logo?: { enabled?: boolean; align?: string };
+  header?: { title?: string; show_number?: boolean; show_dates?: boolean };
+  lines?: { show_description?: boolean; show_quantity?: boolean; show_unit_price?: boolean; show_vat?: boolean };
+  totals?: { show_subtotal?: boolean; show_vat?: boolean; show_total?: boolean };
+  footer?: { text?: string };
+  terms?: { text?: string };
+  tags?: string[];
+}
+
+export interface InvoiceLayoutTemplate {
+  id: string;
+  name: string;
+  locale?: string | null;
+  version: number;
+  active: boolean;
+  blocks: InvoiceLayoutBlocks;
+  snapshots?: Array<{ version: number; blocks: InvoiceLayoutBlocks; saved_at?: string }>;
+  updated_at?: string | null;
+}
+
+export const invoiceLayoutTemplatesService = {
+  async list() {
+    const res = await api<unknown>('/v1/invoice-layout-templates');
+    return asArray<InvoiceLayoutTemplate>(res);
+  },
+  create(payload: Record<string, unknown>) {
+    return api<InvoiceLayoutTemplate>('/v1/invoice-layout-templates', {
+      method: 'POST',
+      body: payload,
+      queueWhenOffline: true,
+    });
+  },
+  update(id: string, payload: Record<string, unknown>) {
+    return api<InvoiceLayoutTemplate>(`/v1/invoice-layout-templates/${id}`, {
+      method: 'PATCH',
+      body: payload,
+      queueWhenOffline: true,
+    });
   },
 };
 
@@ -2881,6 +2962,45 @@ export const formsService = {
       method: 'POST',
       body: payload ?? {},
     });
+  },
+};
+
+export type DashboardShortcut = {
+  id: string;
+  key: string;
+  route_key: string;
+  custom_url: string | null;
+  icon: string;
+  labels: Record<string, string>;
+  role_names: string[] | null;
+  sort_order: number;
+  active: boolean;
+};
+
+export const dashboardShortcutsService = {
+  list() {
+    return api<{ data: DashboardShortcut[] }>('/v1/dashboard-shortcuts');
+  },
+  manage() {
+    return api<{ data: DashboardShortcut[]; routes: string[] }>('/v1/dashboard-shortcuts/manage');
+  },
+  create(body: Partial<DashboardShortcut> & { labels: Record<string, string>; route_key: string; key: string }) {
+    return api<{ data: DashboardShortcut }>('/v1/dashboard-shortcuts', { method: 'POST', body });
+  },
+  update(id: string, body: Partial<DashboardShortcut>) {
+    return api<{ data: DashboardShortcut }>(`/v1/dashboard-shortcuts/${id}`, { method: 'PATCH', body });
+  },
+  remove(id: string) {
+    return api<{ deleted: boolean }>(`/v1/dashboard-shortcuts/${id}`, { method: 'DELETE' });
+  },
+  reorder(ids: string[]) {
+    return api<{ data: DashboardShortcut[]; routes: string[] }>('/v1/dashboard-shortcuts/reorder', {
+      method: 'POST',
+      body: { ids },
+    });
+  },
+  reset() {
+    return api<{ data: DashboardShortcut[]; routes: string[] }>('/v1/dashboard-shortcuts/reset', { method: 'POST' });
   },
 };
 

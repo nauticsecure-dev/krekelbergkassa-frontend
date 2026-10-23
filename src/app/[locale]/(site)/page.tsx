@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
 import { cn } from "@/lib/cn";
 import { companyInfo } from "@/lib/company";
@@ -71,8 +70,8 @@ const SERVICES = [
 
 export default function HomePage() {
   const { t, locale } = useIntl();
-  const { canEdit, editMode } = useCms();
-  const editingCards = canEdit && editMode;
+  const { isCmsEditing } = useCms();
+  const editingCards = isCmsEditing;
   useRegisterCmsPage(CMS_PAGE);
 
   return (
@@ -330,22 +329,18 @@ export default function HomePage() {
               ))}
             </ul>
             <div className="mt-7 flex flex-wrap gap-3">
-              <EditSafeLink href={`/${locale}/diensten`}>
-                <Button
-                  variant="primary"
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
-                >
-                  <EditableText blockKey="home.werf.cta" page={CMS_PAGE} section="werf">
-                    {t("home.werf.cta")}
-                  </EditableText>
-                </Button>
+              <EditSafeLink
+                href={`/${locale}/diensten`}
+                button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                <EditableText blockKey="home.werf.cta" page={CMS_PAGE} section="werf">
+                  {t("home.werf.cta")}
+                </EditableText>
               </EditSafeLink>
-              <EditSafeLink href={`/${locale}/kraanafspraak`}>
-                <Button variant="outline">
-                  <EditableText blockKey="home.werf.book" page={CMS_PAGE} section="werf">
-                    {t("home.werf.book")}
-                  </EditableText>
-                </Button>
+              <EditSafeLink href={`/${locale}/kraanafspraak`} button={{ variant: "outline" }}>
+                <EditableText blockKey="home.werf.book" page={CMS_PAGE} section="werf">
+                  {t("home.werf.book")}
+                </EditableText>
               </EditSafeLink>
             </div>
           </div>
@@ -393,22 +388,16 @@ export default function HomePage() {
                 <EditSafeLink
                   href="https://www.schepenkring.nl/aanbod-boten/?kantoor=Roermond"
                   external
+                  button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
                 >
-                  <Button
-                    variant="primary"
-                    rightIcon={<ArrowRight className="h-4 w-4" />}
-                  >
-                    <EditableText blockKey="home.sale.cta" page={CMS_PAGE} section="sale">
-                      {t("home.sale.cta")}
-                    </EditableText>
-                  </Button>
+                  <EditableText blockKey="home.sale.cta" page={CMS_PAGE} section="sale">
+                    {t("home.sale.cta")}
+                  </EditableText>
                 </EditSafeLink>
-                <EditSafeLink href={`/${locale}/verkoop`}>
-                  <Button variant="outline">
-                    <EditableText blockKey="home.sale.sell" page={CMS_PAGE} section="sale">
-                      {t("home.sale.sell")}
-                    </EditableText>
-                  </Button>
+                <EditSafeLink href={`/${locale}/verkoop`} button={{ variant: "outline" }}>
+                  <EditableText blockKey="home.sale.sell" page={CMS_PAGE} section="sale">
+                    {t("home.sale.sell")}
+                  </EditableText>
                 </EditSafeLink>
               </div>
             </div>
@@ -457,15 +446,13 @@ export default function HomePage() {
               </li>
             </ul>
             <div className="mt-5 flex flex-wrap gap-3">
-              <EditSafeLink href={`/${locale}/contact`}>
-                <Button
-                  variant="primary"
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
-                >
-                  <EditableText blockKey="home.contact.cta" page={CMS_PAGE} section="contact">
-                    {t("home.contact.cta")}
-                  </EditableText>
-                </Button>
+              <EditSafeLink
+                href={`/${locale}/contact`}
+                button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                <EditableText blockKey="home.contact.cta" page={CMS_PAGE} section="contact">
+                  {t("home.contact.cta")}
+                </EditableText>
               </EditSafeLink>
             </div>
           </div>
@@ -503,27 +490,27 @@ export default function HomePage() {
               </p>
             </div>
             <div className="pointer-events-none flex flex-wrap gap-3 lg:justify-end">
-              <EditSafeLink href={`/${locale}/kraanafspraak`} className="pointer-events-auto">
-                <Button
-                  variant="gold"
-                  size="lg"
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
-                >
-                  <EditableText blockKey="home.cta.primary" page={CMS_PAGE} section="cta">
-                    {t("home.cta.primary")}
-                  </EditableText>
-                </Button>
+              <EditSafeLink
+                href={`/${locale}/kraanafspraak`}
+                className="pointer-events-auto"
+                button={{ variant: "gold", size: "lg", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                <EditableText blockKey="home.cta.primary" page={CMS_PAGE} section="cta">
+                  {t("home.cta.primary")}
+                </EditableText>
               </EditSafeLink>
-              <EditSafeLink href={`/${locale}/contact`} className="pointer-events-auto">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-                >
-                  <EditableText blockKey="home.cta.secondary" page={CMS_PAGE} section="cta">
-                    {t("home.cta.secondary")}
-                  </EditableText>
-                </Button>
+              <EditSafeLink
+                href={`/${locale}/contact`}
+                className="pointer-events-auto"
+                button={{
+                  variant: "outline",
+                  size: "lg",
+                  className: "border-white/30 bg-white/5 text-white hover:bg-white/10",
+                }}
+              >
+                <EditableText blockKey="home.cta.secondary" page={CMS_PAGE} section="cta">
+                  {t("home.cta.secondary")}
+                </EditableText>
               </EditSafeLink>
             </div>
           </div>

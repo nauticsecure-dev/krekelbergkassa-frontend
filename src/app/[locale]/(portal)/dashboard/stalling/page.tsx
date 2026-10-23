@@ -23,13 +23,13 @@ import { Modal } from '@/components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { portalService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import type { PortalContract } from '@/lib/api-types';
 import { useIntl } from '@/i18n/IntlProvider';
 
 export default function PortalStallingPage() {
   const { t, locale } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [selected, setSelected] = React.useState<PortalContract | null>(null);
 
   const contracts = useQuery([], () => portalService.contracts());

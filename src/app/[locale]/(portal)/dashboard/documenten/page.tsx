@@ -18,7 +18,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { PaymentStatusBadge } from '@/components/admin/StatusBadge';
 import { portalService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import type { PortalInvoice } from '@/lib/api-types';
 
@@ -93,7 +93,7 @@ function collectDocuments(invoices: PortalInvoice[]): DocRow[] {
 
 export default function PortalDocumentsPage() {
   const { t, locale } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const invoices = useQuery([], () => portalService.invoices({ per_page: 100 }));
   const documents = collectDocuments(invoices.data?.data ?? []);

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 import { Inter, Cormorant_Garamond } from 'next/font/google';
 import { RegisterSW } from '@/components/pwa/RegisterSW';
 import './globals.css';
@@ -49,8 +50,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const locale = headers().get('x-locale');
+  const lang = locale === 'en' || locale === 'de' || locale === 'fr' ? locale : 'nl';
+
   return (
-    <html lang="nl" className={`${inter.variable} ${display.variable}`}>
+    <html lang={lang} className={`${inter.variable} ${display.variable}`}>
       <body className="min-h-screen bg-sand-50 font-sans text-navy-900 antialiased">
         {children}
         <RegisterSW />

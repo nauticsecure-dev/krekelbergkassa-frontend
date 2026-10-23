@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { adminRecordHref } from '@/config/admin-routes';
 import {
   ArrowLeft,
   Camera,
@@ -39,7 +40,7 @@ import { Modal } from '@/components/ui/Modal';
 import { LoadingState, ErrorState, EmptyState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formsService, stallingService, type FormResponse, type FormTemplate } from '@/lib/services';
-import { formatCurrency, formatDate, formatDateTime } from '@/lib/format';
+import { formatCurrency, formatDate, formatDateTime, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -85,7 +86,7 @@ export default function StallingDetailPage() {
   const { push } = useToast();
   const params = useParams();
   const id = String(params.id);
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [auditPage, setAuditPage] = React.useState(1);
   const photoInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -251,12 +252,12 @@ export default function StallingDetailPage() {
                   {str(customer, 'email') ? <Field label="Email" value={<a href={`mailto:${str(customer, 'email')}`} className="text-marine-700 hover:underline">{str(customer, 'email')}</a>} /> : null}
                   {str(customer, 'phone') ? <Field label="Telefoon" value={str(customer, 'phone')} /> : null}
                   {customer.id ? (
-                    <Link href={`/${locale}/admin/klanten/${customer.id}`} className="mt-2 block text-sm font-semibold text-marine-700 hover:text-marine-900">
+                    <Link href={adminRecordHref(locale, 'klanten', customer)} className="mt-2 block text-sm font-semibold text-marine-700 hover:text-marine-900">
                       {t('adminNew.customers.details')} →
                     </Link>
                   ) : null}
                   {boat.id ? (
-                    <Link href={`/${locale}/admin/boten/${boat.id}`} className="block text-sm font-semibold text-marine-700 hover:text-marine-900">
+                    <Link href={adminRecordHref(locale, 'boten', boat)} className="block text-sm font-semibold text-marine-700 hover:text-marine-900">
                       {str(boat, 'name')} →
                     </Link>
                   ) : null}

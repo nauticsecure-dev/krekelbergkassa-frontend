@@ -3,7 +3,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button, buttonClassName } from '@/components/ui/Button';
+import { cn } from '@/lib/cn';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -133,7 +134,7 @@ export function EditableHeroCta({
 }) {
   const { t, locale } = useIntl();
   const { push, pushError } = useToast();
-  const { canEdit, editMode, localeTag, getText, saveText } = useCms();
+  const { isCmsEditing, localeTag, getText, saveText } = useCms();
   const configKey = `${blockKey}.link`;
   const labelKey = labelBlockKey ?? `${blockKey}.label`;
   const config = React.useMemo(
@@ -148,7 +149,7 @@ export function EditableHeroCta({
   const [labels, setLabels] = React.useState<Partial<Record<LocaleTag, string>>>({});
   const [baseLabels, setBaseLabels] = React.useState<Partial<Record<LocaleTag, string>>>({});
   const [draft, setDraft] = React.useState<CtaConfig>(config);
-  const editing = canEdit && editMode;
+  const editing = isCmsEditing;
   const destination = resolveHref(config, locale);
 
   React.useEffect(() => {
@@ -206,7 +207,7 @@ export function EditableHeroCta({
   };
 
   const buttonVariant = config.style === 'secondary' ? 'outline' : variant;
-  const buttonClassName = className ?? (config.style === 'secondary'
+  const extraClass = className ?? (config.style === 'secondary'
     ? 'border-white/30 bg-white/5 text-white hover:bg-white/10'
     : undefined);
 
@@ -214,34 +215,29 @@ export function EditableHeroCta({
   if (editing) {
     return (
       <>
-        <span className="group/cms pointer-events-auto relative inline-flex items-center gap-1 rounded-lg outline-dashed outline-2 outline-gold-400/70">
-          {config.enabled ? (
-            <Button
-              type="button"
-              variant={buttonVariant}
-              size={size}
-              className={buttonClassName}
-              rightIcon={rightIcon}
-              leftIcon={leftIcon}
-              onClick={(event) => { event.preventDefault(); event.stopPropagation(); setOpen(true); }}
-            >
-              {text}
-            </Button>
-          ) : (
-            <span className="rounded-lg bg-gold-500 px-4 py-3 text-sm font-semibold text-white">
-              {t('cms.disabledCta')}
-            </span>
-          )}
+        <div className="group/cms pointer-events-auto relative inline-flex cursor-text">
+          <div
+            className={buttonClassName({
+              variant: config.enabled ? buttonVariant : 'gold',
+              size,
+              className: extraClass,
+            })}
+          >
+            {leftIcon ? <span className="-ml-0.5">{leftIcon}</span> : null}
+            <span>{config.enabled ? text : t('cms.disabledCta')}</span>
+            {rightIcon ? <span className="-mr-0.5">{rightIcon}</span> : null}
+          </div>
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
+            onClick={(event) => { event.preventDefault(); event.stopPropagation(); setOpen(true); }}
             aria-label={t('cms.editCta')}
             title={t('cms.editCta')}
-            className="absolute -right-2 -top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white opacity-70 shadow transition hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
+            className="absolute -right-2 -top-2 z-20 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white opacity-70 shadow transition hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
-        </span>
+        </div>
         <CtaEditModal
           open={open}
           onClose={() => setOpen(false)}
@@ -260,27 +256,29 @@ export function EditableHeroCta({
     );
   }
 
-  const button = (
-    <Button
-      variant={buttonVariant}
-      size={size}
-      className={buttonClassName}
-      rightIcon={rightIcon ?? (config.target === '_blank' ? <ArrowUpRight className="h-4 w-4" /> : undefined)}
-      leftIcon={leftIcon}
-    >
-      {text}
-    </Button>
+  const classes = buttonClassName({
+    variant: buttonVariant,
+    size,
+    className: cn('pointer-events-auto', extraClass),
+  });
+  const icon = rightIcon ?? (config.target === '_blank' ? <ArrowUpRight className="h-4 w-4" /> : undefined);
+  const labelContent = (
+    <>
+      {leftIcon ? <span className="-ml-0.5">{leftIcon}</span> : null}
+      <span>{text}</span>
+      {icon ? <span className="-mr-0.5">{icon}</span> : null}
+    </>
   );
   return config.link_type === 'internal' && config.target === '_self' ? (
-    <Link href={destination} className="pointer-events-auto">{button}</Link>
+    <Link href={destination} className={classes}>{labelContent}</Link>
   ) : (
     <a
       href={destination}
-      className="pointer-events-auto"
+      className={classes}
       target={config.target}
       rel={config.target === '_blank' ? 'noopener noreferrer' : undefined}
     >
-      {button}
+      {labelContent}
     </a>
   );
 }

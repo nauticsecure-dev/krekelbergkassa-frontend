@@ -33,6 +33,34 @@ export function AdminContentGrid({
   return <div className={cn('grid min-w-0 gap-5', className)}>{children}</div>;
 }
 
+/** Two-column admin split. Pages set the side width here instead of a one-off grid template. */
+export function AdminSplitLayout({
+  children,
+  sidebarWidth = '24rem',
+  sidebar = 'end',
+  className,
+}: {
+  children: React.ReactNode;
+  sidebarWidth?: string;
+  sidebar?: 'start' | 'end';
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        'grid min-w-0 grid-cols-1 gap-5 [&>*]:min-w-0',
+        sidebar === 'start'
+          ? 'lg:grid-cols-[var(--admin-split-side)_minmax(0,1fr)]'
+          : 'lg:grid-cols-[minmax(0,1fr)_var(--admin-split-side)]',
+        className,
+      )}
+      style={{ '--admin-split-side': sidebarWidth } as React.CSSProperties}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function AdminFormSection({
   title,
   children,
@@ -132,7 +160,7 @@ export function AdminToolbar({
 }) {
   return (
     <Card className={cn('p-3 shadow-card sm:p-4', className)}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">{children}</div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">{children}</div>
     </Card>
   );
 }
@@ -366,7 +394,7 @@ export function AdminQuickAction({
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-navy-900">{label}</div>
+        <div className="break-words text-sm font-semibold text-navy-900">{label}</div>
         {description ? (
           <div className="truncate text-[11px] text-navy-500">{description}</div>
         ) : null}
@@ -425,19 +453,19 @@ export function AdminSectionCard({
         className
       )}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-navy-100/80 bg-gradient-to-r from-sand-50/90 via-white to-marine-50/30 px-5 py-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-navy-100/80 bg-gradient-to-r from-sand-50/90 via-white to-marine-50/30 px-4 py-3.5 sm:px-5 sm:py-4">
         <div className="flex min-w-0 items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-marine-50 text-marine-700">
             <Icon className="h-4 w-4" />
           </span>
-          <div>
+          <div className="min-w-0">
             <h3 className="text-sm font-semibold text-navy-900">{title}</h3>
             {description ? <p className="mt-0.5 text-xs text-navy-500">{description}</p> : null}
           </div>
         </div>
-        {action}
+        {action ? <div className="ml-auto shrink-0">{action}</div> : null}
       </div>
-      <div className="p-5">{children}</div>
+      <div className="min-w-0 p-4 sm:p-5">{children}</div>
     </section>
   );
 }
@@ -580,9 +608,9 @@ export function AdminStatusStrip({
   };
 
   return (
-    <div className={cn('flex items-center justify-between rounded-xl border px-4 py-3', tones[tone])}>
-      <span className="text-sm text-navy-600">{label}</span>
-      <span className="text-sm font-semibold text-navy-900">{value}</span>
+    <div className={cn('flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl border px-4 py-3', tones[tone])}>
+      <span className="min-w-0 text-sm text-navy-600">{label}</span>
+      <span className="shrink-0 text-sm font-semibold text-navy-900">{value}</span>
     </div>
   );
 }

@@ -26,7 +26,7 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 
 type Incident = Record<string, unknown>;
 
@@ -48,7 +48,7 @@ function statusTone(status: string): 'success' | 'marine' | 'gold' | 'navy' {
 
 export default function IncidentsPage() {
   const { t, locale } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const { push } = useToast();
 
   const [statusFilter, setStatusFilter] = React.useState('');

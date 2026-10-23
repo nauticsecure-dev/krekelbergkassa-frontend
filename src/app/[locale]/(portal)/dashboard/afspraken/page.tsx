@@ -37,7 +37,7 @@ import { useQuery, useMutation } from '@/lib/hooks/useAsync';
 import { portalService } from '@/lib/services';
 import type { Appointment } from '@/lib/api-types';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatDate, formatDateTime } from '@/lib/format';
+import { formatDate, formatDateTime, intlLocale } from '@/lib/format';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 
@@ -59,7 +59,7 @@ function isPast(a: Appointment): boolean {
 export default function PortalAppointmentsPage() {
   const { t, locale } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('');
   const [selected, setSelected] = React.useState<Appointment | null>(null);
   const [downloadingId, setDownloadingId] = React.useState<string | null>(null);

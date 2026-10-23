@@ -27,7 +27,7 @@ import { useShellDropdowns } from '@/components/shell/useShellDropdowns';
 import { PageHeaderStatsGrid, type PageHeaderStat } from '@/components/shell/PageHeaderStats';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { portalService } from '@/lib/services';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 
 export function PortalShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
@@ -201,7 +201,7 @@ function PortalGlobalTopbar({ onMenuClick }: { onMenuClick: () => void }) {
                             <div className="mt-1 text-[11px] text-navy-400">
                               {formatDateTime(
                                 String(n.created_at ?? ''),
-                                locale === 'en' ? 'en-GB' : 'nl-NL'
+                                intlLocale(locale)
                               )}
                             </div>
                           </div>

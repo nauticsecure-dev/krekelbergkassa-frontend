@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Copy, Eye, FilePlus2, Link2, Mail, MapPin, Pencil, Plus, Receipt, Ship, ShieldCheck, Warehouse, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { adminRecordHref } from '@/config/admin-routes';
 import { PaymentStatusBadge } from '@/components/admin/StatusBadge';
 import type { StallingContract } from '@/lib/api-types';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
@@ -39,7 +40,7 @@ import {
   stallingService,
   type BrokeragePreview,
 } from '@/lib/services';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -48,7 +49,7 @@ import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 export default function StallingPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
@@ -620,7 +621,7 @@ export default function StallingPage() {
                       <div className="font-medium text-navy-900">{contract.customer?.name ?? '—'}</div>
                       {contract.customer?.id ? (
                         <Link
-                          href={`/${locale}/admin/klanten/${contract.customer.id}`}
+                          href={adminRecordHref(locale, 'klanten', contract.customer)}
                           className="text-xs font-semibold text-marine-700 hover:text-marine-900"
                         >
                           {t('adminNew.stalling.openCustomer')}
@@ -711,7 +712,7 @@ export default function StallingPage() {
                     </AdminTableCell>
                     <AdminTableCell>
                       <div className="flex flex-wrap justify-end gap-2">
-                        <Link href={`/${locale}/admin/stalling/${contract.id}`}>
+                        <Link href={adminRecordHref(locale, 'stalling', contract)}>
                           <Button
                             variant="outline"
                             size="sm"
@@ -835,7 +836,7 @@ export default function StallingPage() {
                     </AdminTableCell>
                     <AdminTableCell>{log.user?.name ?? '—'}</AdminTableCell>
                     <AdminTableCell>
-                      <Badge tone="neutral">{log.action}</Badge>
+                      <Badge tone="neutral">{log.title || log.action}</Badge>
                     </AdminTableCell>
                     <AdminTableCell>
                       {changes.length === 0 ? (

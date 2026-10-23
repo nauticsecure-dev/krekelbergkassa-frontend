@@ -1,5 +1,7 @@
 'use client';
 
+import { intlLocale } from '@/lib/format';
+
 import * as React from 'react';
 import {
   AlertTriangle,
@@ -47,7 +49,7 @@ export default function SyncStatusPage() {
   const [confirmClear, setConfirmClear] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
 
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const load = React.useCallback(async () => {
     const [queued, devices] = await Promise.all([

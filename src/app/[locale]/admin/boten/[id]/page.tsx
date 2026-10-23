@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
+import { adminRecordHref } from '@/config/admin-routes';
 import {
   Anchor,
   AlertTriangle,
@@ -34,7 +35,7 @@ import { Input } from '@/components/ui/Input';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { auditService, boatsService, customersService } from '@/lib/services';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -45,7 +46,7 @@ export default function BoatDossierPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const id = String(params.id);
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [showEdit, setShowEdit] = React.useState(false);
   const [showTransfer, setShowTransfer] = React.useState(false);
@@ -359,7 +360,7 @@ export default function BoatDossierPage() {
                     <AdminStatusStrip label={t('adminNew.common.name')} value={String(owner.name ?? '—')} tone="marine" />
                     {owner.id ? (
                       <Link
-                        href={`/${locale}/admin/klanten/${owner.id}`}
+                        href={adminRecordHref(locale, 'klanten', owner)}
                         className="text-sm font-semibold text-marine-700 hover:text-marine-900"
                       >
                         {t('adminNew.customers.details')} →
@@ -752,7 +753,7 @@ export default function BoatDossierPage() {
                             );
                       return (
                         <div key={String(log.id ?? i)} className="rounded-lg border border-navy-100 px-3 py-2 text-sm">
-                          <div className="font-medium text-navy-900">{String(log.action ?? '—')}</div>
+                          <div className="font-medium text-navy-900">{String(log.title ?? log.action ?? '—')}</div>
                           {changes.map((c, j) => (
                             <div key={j} className="text-xs text-navy-600">
                               {c.field_name}: <span className="text-rose-600">{formatAuditValue(c.old_value)}</span> →{' '}

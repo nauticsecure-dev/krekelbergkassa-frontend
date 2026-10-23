@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { LayoutGrid, List, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { adminRecordHref } from '@/config/admin-routes';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
   AdminContent,
@@ -24,7 +25,7 @@ import { paginatedRows, productsService, productGroupsService } from '@/lib/serv
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, intlLocale } from '@/lib/format';
 import { productPriceInclEuros } from '@/lib/products';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -60,7 +61,7 @@ export default function ProductsPage() {
 
   const rows = products.data?.data ?? [];
   const groupRows = paginatedRows(groups.data);
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const categoryLabel = (category: string | null | undefined) => {
     if (!category) return '—';
@@ -163,7 +164,7 @@ export default function ProductsPage() {
                   return (
                     <Link
                       key={row.id}
-                      href={`/${locale}/admin/producten/${row.id}`}
+                      href={adminRecordHref(locale, 'producten', row)}
                       className="group relative flex flex-col overflow-hidden rounded-xl border border-navy-100 bg-white shadow-sm transition hover:shadow-md"
                     >
                       <div
@@ -232,7 +233,7 @@ export default function ProductsPage() {
                     <AdminTableRow key={row.id}>
                       <AdminTableCell>
                         <Link
-                          href={`/${locale}/admin/producten/${row.id}`}
+                          href={adminRecordHref(locale, 'producten', row)}
                           className="flex items-center gap-2 font-semibold text-marine-700 hover:text-marine-800"
                         >
                           <span
@@ -269,7 +270,7 @@ export default function ProductsPage() {
                       </AdminTableCell>
                       <AdminTableCell>
                         <div className="flex justify-end gap-1">
-                          <Link href={`/${locale}/admin/producten/${row.id}`}>
+                          <Link href={adminRecordHref(locale, 'producten', row)}>
                             <Button size="sm" variant="ghost" leftIcon={<Pencil className="h-3.5 w-3.5" />}>
                               {t('adminNew.common.view')}
                             </Button>

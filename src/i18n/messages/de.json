@@ -34,23 +34,29 @@
       "brokerage": "Maklergeschäft",
       "finance": "Finanzen",
       "servicesPricing": "Services & Preise",
-      "management": "Verwaltung"
+      "management": "Verwaltung",
+      "systemAdmin": "Systemverwaltung"
     },
     "hubs": {
       "planning": {
         "title": "Planung",
         "subtitle": "Termine, Kalenderverfügbarkeit und Werftarbeiten zentral verwalten.",
         "schedule": "Planung",
-        "calendar": "Kalender",
-        "calendarDesc": "Öffnungszeiten, Ausnahmen, Standorte und Werftkapazität.",
-        "appointments": "Termine",
-        "appointmentsDesc": "Kundentermine prüfen und verwalten.",
+        "calendar": "Verfügbarkeit & Werftkalender",
+        "calendarDesc": "Öffnungszeiten, Mittagspausen und Ausnahmen.",
+        "appointments": "Terminplanung",
+        "appointmentsDesc": "Termine nach Tag, Woche und Monat planen.",
         "workOrders": "Arbeitsaufträge",
         "workOrdersDesc": "Geplante Arbeiten und Fortschritt verfolgen.",
         "quickAccess": "Schnellzugriff",
         "quickActions": "Schnellaktionen",
         "crane": "Krantermin",
-        "craneDesc": "Kran-Buchungsseite öffnen."
+        "craneDesc": "Kran-Buchungsseite öffnen.",
+        "tabCalendar": "Kalender",
+        "tabAppointments": "Termine",
+        "tabToday": "Heute",
+        "tabWeek": "Woche",
+        "tabYard": "Werftplanung"
       },
       "finance": {
         "title": "Finanzen",
@@ -62,7 +68,7 @@
         "costsMonth": "Einkäufe diesen Monat",
         "costsUnavailable": "Einkaufssummen sind über die aktuelle API nicht verfügbar.",
         "loadError": "Nicht geladen",
-        "invoiceWindow": "Basierend auf den 100 aktuellsten Rechnungen.",
+        "invoiceWindow": "Summe über alle Rechnungen.",
         "quickActions": "Schnellaktionen",
         "overview": "Finanzübersicht",
         "invoices": "Verkaufsrechnungen",
@@ -111,7 +117,8 @@
       },
       "management": {
         "title": "Verwaltung",
-        "subtitle": "Benutzer und Einstellungen verwalten. Technische Systemfunktionen sind Administratoren vorbehalten.",
+        "subtitle": "Benutzer und Einstellungen verwalten. Technische Systemfunktionen sind Systemadministratoren vorbehalten.",
+        "superAdminDenied": "Kein Zugriff. Nur für Systemadministratoren.",
         "configuration": "Konfiguration",
         "users": "Benutzer",
         "usersDesc": "Zugriff und Mitarbeiterkonten verwalten.",
@@ -139,7 +146,6 @@
     "services": "Werft & Service",
     "salesLocation": "Verkauf",
     "planning": "Planung",
-
     "about": "Über uns",
     "contact": "Kontakt",
     "login": "Anmelden",
@@ -588,6 +594,19 @@
     "slotsLoadFailed": "Zeiten konnten nicht geladen werden. Rufen Sie uns unter 0475 315 661 an.",
     "manualReview": "Manuelle Prüfung erforderlich",
     "notes": "Anmerkungen (optional)",
+    "address": {
+      "title": "Adresse",
+      "street": "Straßenname",
+      "houseNumber": "Hausnummer",
+      "postalCode": "Postleitzahl",
+      "city": "Ort",
+      "streetPlaceholder": "Havenstraat",
+      "housePlaceholder": "12 A",
+      "postalPlaceholder": "6041 AB",
+      "cityPlaceholder": "Roermond",
+      "autocompleteHint": "Beginnen Sie mit der Straße und wählen Sie einen Vorschlag. Hausnummer, Postleitzahl und Ort werden dann ausgefüllt. Jedes Feld können Sie selbst anpassen.",
+      "manualFallback": "Adressvorschläge sind nicht verfügbar. Geben Sie Straße, Hausnummer, Postleitzahl und Ort selbst ein."
+    },
     "validation": {
       "incomplete": "Bitte füllen Sie zuerst diese Felder aus: {fields}.",
       "required": "{field} ist erforderlich.",
@@ -598,6 +617,10 @@
       "email": "E-Mail",
       "date": "Datum",
       "time": "Zeitfenster",
+      "street": "Straßenname",
+      "houseNumber": "Hausnummer",
+      "postalCode": "Postleitzahl",
+      "city": "Ort",
       "hoverHint": "Füllen Sie die markierten Felder aus, um fortzufahren."
     },
     "placeholders": {
@@ -2968,13 +2991,14 @@
       }
     },
     "appointments": {
-      "title": "Termine",
-      "subtitle": "Krantermine, Bestätigungen und Status verwalten",
+      "title": "Terminplanung",
+      "subtitle": "Termine nach Tag, Woche und Monat planen",
       "loading": "Termine laden",
       "filterStatus": "Nach Status filtern",
       "allStatuses": "Alle Status",
       "statusPending": "Ausstehend",
       "statusConfirmed": "Bestätigt",
+      "statusPlanned": "Geplant",
       "statusStarted": "Gestartet",
       "statusCompleted": "Abgeschlossen",
       "statusCancelled": "Storniert",
@@ -2987,7 +3011,7 @@
       "cancelReason": "Über Admin storniert",
       "total": "{count} Termine",
       "today": "Heute",
-      "listOverview": "Alle Krantermine filtern und verwalten",
+      "listOverview": "Zeitplan mit Stunden und Tagen. Ziehen Sie einen Termin, um ihn zu verschieben.",
       "columns": {
         "date": "Datum",
         "time": "Uhrzeit",
@@ -2999,7 +3023,10 @@
         "confirmed": "Termin bestätigt",
         "cancelled": "Termin storniert",
         "completed": "Termin abgeschlossen",
-        "advanced": "Terminstatus geändert zu {status}"
+        "advanced": "Terminstatus geändert zu {status}",
+        "moved": "Termin verschoben",
+        "moveFailed": "Termin konnte nicht verschoben werden",
+        "conflict": "Dieses Zeitfenster überschneidet sich mit einem anderen Termin"
       }
     },
     "products": {
@@ -3557,38 +3584,6 @@
       "total": "{count} Arbeitsaufträge",
       "detail": {
         "priority": "Priorität",
-        "completionNote": "Abschlussnotiz"
-      },
-      "columns": {
-        "number": "Nummer",
-        "type": "Typ",
-        "status": "Status",
-        "priority": "Priorität",
-        "due": "Fälligkeitsdatum",
-        "boat": "Boot",
-        "assignee": "Zugewiesen an",
-        "hours": "Stunden",
-        "invoiceStatus": "Rechnung"
-      },
-      "status": {
-        "new": "Neu",
-        "inProgress": "In Bearbeitung",
-        "done": "Abgeschlossen",
-        "cancelled": "Storniert",
-        "completed": "Abgeschlossen"
-      },
-      "toasts": {
-        "created": "Arbeitsauftrag erstellt",
-        "assigned": "Arbeitsauftrag zugewiesen",
-        "started": "Arbeitsauftrag gestartet",
-        "completed": "Arbeitsauftrag abgeschlossen",
-        "invoiceCreated": "Rechnung erstellt",
-        "timeAdded": "Zeit hinzugefügt",
-        "materialAdded": "Material hinzugefügt",
-        "fileUploaded": "Datei hochgeladen"
-      },
-      "detail": {
-        "priority": "Priorität",
         "completionNote": "Abschlussnotiz",
         "open": "Öffnen",
         "back": "← Zurück zu Arbeitsaufträgen",
@@ -3624,6 +3619,34 @@
         "tabTimeline": "Zeitleiste",
         "tabAudit": "Audit-Log",
         "changes": "{count} Änderung(en)"
+      },
+      "columns": {
+        "number": "Nummer",
+        "type": "Typ",
+        "status": "Status",
+        "priority": "Priorität",
+        "due": "Fälligkeitsdatum",
+        "boat": "Boot",
+        "assignee": "Zugewiesen an",
+        "hours": "Stunden",
+        "invoiceStatus": "Rechnung"
+      },
+      "status": {
+        "new": "Neu",
+        "inProgress": "In Bearbeitung",
+        "done": "Abgeschlossen",
+        "cancelled": "Storniert",
+        "completed": "Abgeschlossen"
+      },
+      "toasts": {
+        "created": "Arbeitsauftrag erstellt",
+        "assigned": "Arbeitsauftrag zugewiesen",
+        "started": "Arbeitsauftrag gestartet",
+        "completed": "Arbeitsauftrag abgeschlossen",
+        "invoiceCreated": "Rechnung erstellt",
+        "timeAdded": "Zeit hinzugefügt",
+        "materialAdded": "Material hinzugefügt",
+        "fileUploaded": "Datei hochgeladen"
       },
       "forbiddenTitle": "Kein Zugriff auf Arbeitsaufträge",
       "forbiddenMessage": "Ihr Konto hat keine Berechtigung für /v1/work-orders. Der Admin-Rolle müssen in der API die work-orders-Rechte zugewiesen werden (Spatie), wie bei Staff/Manager.",
@@ -4058,6 +4081,25 @@
       "toasts": {
         "started": "Backup gestartet"
       }
+    },
+    "shortcuts": {
+      "title": "Verknüpfungen",
+      "subtitle": "Schaltflächen in der Betriebsübersicht",
+      "saved": "Verknüpfung gespeichert",
+      "forbidden": "Du hast keine Berechtigung, Verknüpfungen zu verwalten.",
+      "reset": "Standard wiederherstellen",
+      "create": "Verknüpfung hinzufügen",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "active": "Aktiv",
+      "key": "Schlüssel",
+      "route": "Ziel",
+      "label": "Bezeichnung",
+      "roles": "Rollen",
+      "allRoles": "Leer bedeutet sichtbar für jede Rolle.",
+      "advanced": "Erweitert",
+      "customUrl": "Eigener Pfad",
+      "save": "Speichern"
     }
   },
   "planning": {

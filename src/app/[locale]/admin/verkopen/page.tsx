@@ -22,7 +22,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { kassaService } from '@/lib/services';
 import type { Sale } from '@/lib/api-types';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 
 const num = (v: unknown): number => (typeof v === 'number' ? v : Number(v) || 0);
@@ -44,7 +44,7 @@ function saleHref(locale: string, sale: Sale): string | null {
 
 export default function SalesPage() {
   const { locale, t } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [search, setSearch] = React.useState('');
 
   const sales = useQuery(['kassa-sales'], () => kassaService.recentSales({ per_page: 100 }));

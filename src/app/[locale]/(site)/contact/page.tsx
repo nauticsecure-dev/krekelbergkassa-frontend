@@ -1,5 +1,7 @@
 "use client";
 
+import { intlLocale } from '@/lib/format';
+
 import * as React from "react";
 import {
   ArrowRight,
@@ -33,7 +35,7 @@ export default function ContactPage() {
   const { t, locale } = useIntl();
   useRegisterCmsPage(CMS_PAGE);
 
-  const localeTag = locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
+  const localeTag = intlLocale(locale);
   const language = locale === "en" ? "en" : locale === "de" ? "de" : "nl";
 
   const hoursQuery = useQuery([localeTag], () =>

@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useIntl } from '@/i18n/IntlProvider';
 import { cmsService } from '@/lib/services';
@@ -20,19 +21,16 @@ import { locales } from '@/i18n/config';
 // ---------------------------------------------------------------------------
 
 /** App render locales — must match `src/i18n/config.ts`. */
-export type AppLocale = 'nl' | 'en' | 'de';
+export type AppLocale = 'nl' | 'en' | 'de' | 'fr';
 
-/**
- * Backend locale tags. The app renders one of nl/en/de, but the editor exposes
- * an extra `fr-FR` tab so editors can author French even though there is no
- * French render locale yet.
- */
+/** Backend locale tags. French is a render locale as well as an editor tab. */
 export type LocaleTag = 'nl-NL' | 'en-GB' | 'de-DE' | 'fr-FR';
 
 const APP_TO_TAG: Record<AppLocale, LocaleTag> = {
   nl: 'nl-NL',
   en: 'en-GB',
   de: 'de-DE',
+  fr: 'fr-FR',
 };
 
 /** Tabs shown in the edit modals follow the app's configured render locales. */
@@ -119,6 +117,11 @@ interface CmsContextValue {
   canEdit: boolean;
   /** Whether inline edit mode is currently active. */
   editMode: boolean;
+  /**
+   * Edit affordances for the page that is actually on screen.
+   * False while navigating, before the page registers, or after it unmounts.
+   */
+  isCmsEditing: boolean;
   setEditMode: (on: boolean) => void;
   toggleEditMode: () => void;
 
@@ -129,7 +132,9 @@ interface CmsContextValue {
   /** The slug of the page currently registered for editing (if any). */
   currentPage: string | null;
   /** Pages declare their slug so the provider fetches their content. */
-  registerPage: (pageSlug: string) => void;
+  registerPage: (pageSlug: string, route: string) => void;
+  /** Drop a registration when that page unmounts or the route changes. */
+  unregisterPage: (pageSlug: string, route: string) => void;
   /**
    * True once the first page-content fetch for `page` has settled (success or
    * failure). Until then EditableImage prefers a cached URL over the hardcoded
@@ -236,8 +241,11 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     [signOut],
   );
 
+  const pathname = usePathname();
   const [editMode, setEditModeState] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState<string | null>(null);
+  const [pageRoute, setPageRoute] = React.useState<string | null>(null);
+  const isCmsEditing = canEdit && editMode && pageRoute === pathname && !!currentPage;
   const [readyPages, setReadyPages] = React.useState<Record<string, boolean>>({});
 
   // Keyed block stores. Maps keep last-write-wins semantics simple.
@@ -310,17 +318,24 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const registerPage = React.useCallback(
-    (pageSlug: string) => {
+    (pageSlug: string, route: string) => {
       const slug = pageSlug.trim();
-      if (!slug) return; // opt-out: keep whatever page (if any) is registered
+      if (!slug || !route) return;
       // Seed last-known blocks before paint so heroes do not flash fallbackSrc.
       const cached = readPageCache(slug, localeTag);
       if (cached?.content_blocks?.length) mergeContentBlocks(cached.content_blocks);
       if (cached?.media_blocks?.length) mergeMediaBlocks(cached.media_blocks);
-      setCurrentPage((prev) => (prev === slug ? prev : slug));
+      setCurrentPage(slug);
+      setPageRoute(route);
     },
     [localeTag, mergeContentBlocks, mergeMediaBlocks],
   );
+
+  const unregisterPage = React.useCallback((pageSlug: string, route: string) => {
+    const slug = pageSlug.trim();
+    setCurrentPage((prev) => (prev === slug ? null : prev));
+    setPageRoute((prev) => (prev === route ? null : prev));
+  }, []);
 
   const isPageReady = React.useCallback(
     (pageSlug: string) => !!readyPages[pageSlug.trim()],
@@ -388,9 +403,19 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   // --- Save helpers (optimistic) -------------------------------------------
 
+  const assertWritablePage = React.useCallback((page?: string) => {
+    if (!canEdit || !editMode || pageRoute !== pathname || !currentPage) {
+      throw new Error('CMS edit is not active for this page.');
+    }
+    if (page && page !== 'global' && page !== currentPage) {
+      throw new Error('CMS write does not match the current page.');
+    }
+  }, [canEdit, editMode, pageRoute, pathname, currentPage]);
+
   const saveText = React.useCallback(
     (key: string, args: SaveContentArgs) =>
       guardCms(async () => {
+        assertWritablePage(args.page);
         await cmsService.saveContentBlock(key, {
           page: args.page,
           section: args.section,
@@ -417,12 +442,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           }));
         }
       }),
-    [guardCms, localeTag],
+    [guardCms, localeTag, assertWritablePage],
   );
 
   const uploadImage = React.useCallback(
     (key: string, file: File, page?: string) =>
       guardCms(async () => {
+        assertWritablePage(page);
         const pageSlug = (page || currentPage || '').trim();
         const fd = new FormData();
         fd.append('image', file);
@@ -444,12 +470,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         }
         return url;
       }),
-    [guardCms, currentPage, localeTag],
+    [guardCms, currentPage, localeTag, assertWritablePage],
   );
 
   const saveMediaMeta = React.useCallback(
     (key: string, args: SaveMediaMetaArgs) =>
       guardCms(async () => {
+        assertWritablePage(args.page);
         await cmsService.saveMediaBlock(key, {
           page: args.page || currentPage || undefined,
           alt_by_locale: args.alt_by_locale,
@@ -477,12 +504,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           return { ...prev, [key]: next };
         });
       }),
-    [guardCms, localeTag, currentPage],
+    [guardCms, localeTag, currentPage, assertWritablePage],
   );
 
   const saveSeo = React.useCallback(
     (slug: string, args: SaveSeoArgs) =>
       guardCms(async () => {
+        assertWritablePage(slug);
         await cmsService.saveSeo(slug, {
           title_by_locale: args.title_by_locale,
           description_by_locale: args.description_by_locale,
@@ -496,28 +524,31 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           robots: args.robots ?? prev?.robots ?? 'index,follow',
         }));
       }),
-    [guardCms, localeTag],
+    [guardCms, localeTag, assertWritablePage],
   );
 
   const saveGlobal = React.useCallback(
     (key: string, value: GlobalValue) =>
       guardCms(async () => {
+        assertWritablePage();
         await cmsService.saveGlobalSetting(key, { value });
         setGlobals((prev) => ({ ...prev, [key]: value }));
       }),
-    [guardCms],
+    [guardCms, assertWritablePage],
   );
 
   const value = React.useMemo<CmsContextValue>(
     () => ({
       canEdit,
       editMode,
+      isCmsEditing,
       setEditMode,
       toggleEditMode,
       locale,
       localeTag,
       currentPage,
       registerPage,
+      unregisterPage,
       isPageReady,
       getText,
       getMedia,
@@ -534,12 +565,14 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     [
       canEdit,
       editMode,
+      isCmsEditing,
       setEditMode,
       toggleEditMode,
       locale,
       localeTag,
       currentPage,
       registerPage,
+      unregisterPage,
       isPageReady,
       getText,
       getMedia,
@@ -569,8 +602,12 @@ export function useCms(): CmsContextValue {
  * media can seed the first frame (avoids fallback → CMS image flash on reload).
  */
 export function useRegisterCmsPage(pageSlug: string) {
-  const { registerPage } = useCms();
+  const pathname = usePathname();
+  const { registerPage, unregisterPage } = useCms();
   React.useLayoutEffect(() => {
-    registerPage(pageSlug);
-  }, [registerPage, pageSlug]);
+    const slug = pageSlug.trim();
+    if (!slug) return;
+    registerPage(slug, pathname);
+    return () => unregisterPage(slug, pathname);
+  }, [registerPage, unregisterPage, pageSlug, pathname]);
 }

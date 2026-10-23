@@ -7,6 +7,7 @@ import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
   AdminSectionCard,
+  AdminSplitLayout,
   AdminTable,
   AdminTableCard,
   AdminTableCell,
@@ -19,7 +20,7 @@ import { Input } from '@/components/ui/Input';
 import { LoadingState, EmptyState } from '@/components/admin/DataState';
 import { kassaService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -30,7 +31,7 @@ const n = (v: unknown): number => (typeof v === 'number' ? v : Number(v) || 0);
 export default function CashClosePage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const money = (cents: unknown) => formatCurrency(n(cents) / 100, dateLocale);
 
   const [form, setForm] = React.useState({
@@ -89,7 +90,8 @@ export default function CashClosePage() {
           </Link>
         }
       />
-      <AdminContent className="grid gap-5 lg:grid-cols-[24rem_1fr]">
+      <AdminContent>
+        <AdminSplitLayout sidebar="start" sidebarWidth="24rem">
         <AdminSectionCard title={t('adminNew.cashClose.formTitle')} icon={Wallet} className="self-start">
           {cashReceivedCents != null ? (
             <div className="mb-4 rounded-lg bg-sand-50 px-4 py-3">
@@ -191,6 +193,7 @@ export default function CashClosePage() {
             )}
           </AdminTableCard>
         </AdminSectionCard>
+        </AdminSplitLayout>
       </AdminContent>
     </>
   );

@@ -27,7 +27,7 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 import { trackEvent } from '@/lib/track-event';
 
 type Credential = Record<string, unknown>;
@@ -36,7 +36,7 @@ const ENVIRONMENTS = ['production', 'staging', 'development'];
 
 export default function ApiCredentialsPage() {
   const { t, locale } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const { push } = useToast();
 
   const [serviceFilter, setServiceFilter] = React.useState('');

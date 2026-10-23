@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Anchor, MapPin, Plus, Ship, Trash2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { adminRecordHref } from '@/config/admin-routes';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import {
   AdminContent,
@@ -30,12 +31,12 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
+import { centsToEuro, formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 export default function BoatsPage() {
   const { locale, t } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const { push } = useToast();
   const [query, setQuery] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState('');
@@ -247,7 +248,7 @@ export default function BoatsPage() {
                       {boat.customer?.id ? (
                         <Link
                           className="font-semibold text-marine-700 hover:text-marine-900"
-                          href={`/${locale}/admin/klanten/${boat.customer.id}`}
+                          href={adminRecordHref(locale, 'klanten', boat.customer)}
                         >
                           {boat.customer.name}
                         </Link>
@@ -284,26 +285,26 @@ export default function BoatsPage() {
                     <AdminTableCell className="text-right">
                       <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5 text-xs">
                         <Link
-                          href={`/${locale}/admin/boten/${boat.id}?tab=storage`}
+                          href={adminRecordHref(locale, 'boten', boat, '?tab=storage')}
                           className="font-semibold text-marine-700 hover:text-marine-900"
                         >
                           {t('adminNew.boats.tabs.storage')}
                         </Link>
                         <Link
-                          href={`/${locale}/admin/boten/${boat.id}?tab=financial`}
+                          href={adminRecordHref(locale, 'boten', boat, '?tab=financial')}
                           className="font-semibold text-marine-700 hover:text-marine-900"
                         >
                           {t('adminNew.boats.tabs.financial')}
                         </Link>
                         <Link
-                          href={`/${locale}/admin/boten/${boat.id}?tab=workOrders`}
+                          href={adminRecordHref(locale, 'boten', boat, '?tab=workOrders')}
                           className="font-semibold text-marine-700 hover:text-marine-900"
                         >
                           {t('adminNew.boats.tabs.workOrders')}
                         </Link>
                       </div>
                       <div className="mt-1 flex items-center justify-end">
-                        <Link href={`/${locale}/admin/boten/${boat.id}`}>
+                        <Link href={adminRecordHref(locale, 'boten', boat)}>
                           <Button variant="ghost" size="sm">
                             {t('adminNew.common.edit')}
                           </Button>

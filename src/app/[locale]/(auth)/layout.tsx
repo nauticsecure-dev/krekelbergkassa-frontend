@@ -213,6 +213,8 @@ function LoginRoleTabs() {
   const searchParams = useSearchParams();
   const { t, locale } = useIntl();
   const role = coerceLoginRole(searchParams.get('role'));
+  const returnTo = searchParams.get('returnTo');
+  const returnQuery = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : '';
 
   return (
     <div className="border-b border-navy-100/60 bg-white px-4 py-3">
@@ -223,7 +225,7 @@ function LoginRoleTabs() {
         {LOGIN_ROLES.map((item) => (
           <RoleTabLink
             key={item.id}
-            href={`/${locale}/login?role=${item.id}`}
+            href={`/${locale}/login?role=${item.id}${returnQuery}`}
             active={role === item.id}
             label={t(item.labelKey)}
             role={item.id}

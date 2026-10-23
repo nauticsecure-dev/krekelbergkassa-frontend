@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/Badge';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { portalService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { formatDate, formatCurrency } from '@/lib/format';
+import { formatDate, formatCurrency, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 
 type Row = Record<string, unknown>;
@@ -73,7 +73,7 @@ function totalAmount(wo: Row): string | null {
 export default function PortalWorkOrdersPage() {
   const { locale, t } = useIntl();
   const router = useRouter();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [search, setSearch] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState('');

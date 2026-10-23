@@ -28,12 +28,10 @@ import { cn } from '@/lib/cn';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { portalService } from '@/lib/services';
 import type { PortalBoat, PortalTimelineItem } from '@/lib/api-types';
-import {
-  centsToEuro,
+import { centsToEuro,
   formatCurrency,
   formatDate,
-  formatDateTime,
-} from '@/lib/format';
+  formatDateTime, intlLocale } from '@/lib/format';
 import {
   filterTimelineItems,
   groupFeedTimeline,
@@ -63,7 +61,7 @@ export default function FeedPage() {
   const [typeFilter, setTypeFilter] = React.useState<TypeFilter>('');
   const [search, setSearch] = React.useState('');
 
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const firstName = (user?.name ?? 'Jan').split(' ')[0];
   const today = new Date();
   const greetingDate = new Intl.DateTimeFormat(dateLocale, {

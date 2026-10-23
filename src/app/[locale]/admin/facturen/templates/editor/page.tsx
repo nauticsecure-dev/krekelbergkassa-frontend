@@ -116,7 +116,7 @@ function EditorInner() {
   return (
     <>
       <AdminPageHeader
-        title={id ? t('adminNew.templates.editTitle') : t('adminNew.templates.new')}
+        title={id ? t('adminNew.templates.editExtraction', { defaultValue: 'Extractiesjabloon bewerken' }) : t('adminNew.templates.newExtraction', { defaultValue: 'Extractiesjabloon' })}
         subtitle={t('adminNew.templates.editorSubtitle')}
         rightSlot={
           <div className="flex gap-2">
@@ -132,6 +132,13 @@ function EditorInner() {
         }
       />
       <AdminContent>
+        <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-navy-700">
+          {t('adminNew.templates.extractionNotice', { defaultValue: 'Dit sjabloon hoort bij import en OCR: veldzones en matchregels. De opmaak van een gegenereerde factuur (logo, totalen, footer, voorwaarden) staat apart.' })}
+          {' '}
+          <Link href={`/${locale}/admin/facturen/templates/layout`} className="font-semibold text-marine-700">
+            {t('adminNew.templates.layout', { defaultValue: 'Factuuropmaak' })}
+          </Link>
+        </p>
         <AdminSectionCard title={t('adminNew.templates.detailsTitle')} icon={ScanText}>
           <div className="grid gap-3 sm:grid-cols-2">
             <Input

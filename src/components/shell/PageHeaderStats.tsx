@@ -48,7 +48,7 @@ function PageHeaderStatCard({ stat }: { stat: PageHeaderStat }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-navy-400">
+            <div className="truncate text-[10px] font-bold uppercase tracking-widest text-navy-400">
               {stat.label}
             </div>
             {ActionIcon && stat.actionHref ? (
@@ -62,7 +62,7 @@ function PageHeaderStatCard({ stat }: { stat: PageHeaderStat }) {
               </Link>
             ) : null}
           </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums text-navy-900">
+          <div className="mt-1 break-words text-xl font-semibold leading-tight tabular-nums text-navy-900 sm:text-2xl">
             {stat.loading ? (
               <span className="inline-block h-7 w-14 animate-pulse rounded-md bg-navy-100" />
             ) : (
@@ -88,7 +88,7 @@ function PageHeaderStatCard({ stat }: { stat: PageHeaderStat }) {
   );
 
   const className = cn(
-    'flex h-full min-h-[104px] flex-col justify-between rounded-xl border bg-white/95 px-4 py-3.5 shadow-sm transition',
+    'flex h-full min-h-[104px] min-w-0 flex-col justify-between rounded-xl border bg-white/95 px-4 py-3.5 shadow-sm transition',
     stat.active ? 'border-marine-500 ring-2 ring-marine-100' : 'border-navy-100/60',
     stat.href ? `${stat.active ? 'hover:border-marine-600' : 'hover:border-navy-200/70'} hover:shadow-md` : 'hover:border-navy-200/70'
   );
@@ -116,8 +116,12 @@ export function PageHeaderStatsGrid({ stats }: { stats: PageHeaderStat[] }) {
 
   return (
     <div className={cn(
-      'relative mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3',
-      stats.length === 5 ? 'xl:grid-cols-5' : 'xl:grid-cols-4'
+      'relative mt-4 grid min-w-0 gap-3 grid-cols-1 sm:grid-cols-2',
+      stats.length >= 5
+        ? 'xl:grid-cols-3 2xl:grid-cols-5'
+        : stats.length === 4
+          ? 'xl:grid-cols-4'
+          : 'lg:grid-cols-3'
     )}>
       {stats.map((stat) => (
         <PageHeaderStatCard key={stat.label} stat={stat} />

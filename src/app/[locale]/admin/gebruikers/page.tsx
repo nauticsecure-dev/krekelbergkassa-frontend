@@ -31,7 +31,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 
 export default function UsersPage() {
   const { t, locale } = useIntl();
@@ -87,7 +87,7 @@ export default function UsersPage() {
   const unblockUser = useMutation((id: string) => usersService.unblock(id));
 
   const rows = users.data?.data ?? [];
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();

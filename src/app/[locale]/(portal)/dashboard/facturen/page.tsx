@@ -27,7 +27,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { PaymentStatusBadge } from '@/components/admin/StatusBadge';
 import { portalService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
+import { centsToEuro, formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import type { PortalInvoice } from '@/lib/api-types';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -40,7 +40,7 @@ type StatusFilter = (typeof STATUS_FILTERS)[number];
 export default function PortalInvoicesPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [status, setStatus] = React.useState<StatusFilter>('');
   const [selected, setSelected] = React.useState<PortalInvoice | null>(null);
   const [invoiceDetail, setInvoiceDetail] = React.useState<PortalInvoice | null>(null);

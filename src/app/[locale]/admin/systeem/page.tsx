@@ -33,7 +33,7 @@ import { Modal } from '@/components/ui/Modal';
 import { HealthStatusBadge, healthStatusMeta } from '@/components/admin/HealthStatus';
 import { adminHealthService, governanceService, repairService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 import { trackEvent } from '@/lib/track-event';
 import { ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -43,7 +43,7 @@ import type { HealthCheckResult, Payment } from '@/lib/api-types';
 
 export default function SystemPage() {
   const { t, locale } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const { push } = useToast();
   const [running, setRunning] = React.useState<string | null>(null);
   const [showBackup, setShowBackup] = React.useState(false);

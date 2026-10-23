@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { CheckCircle2, ClipboardList } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { adminRecordHref } from '@/config/admin-routes';
 import {
   AdminContent,
   AdminSectionCard,
@@ -21,7 +22,7 @@ import { Badge } from '@/components/ui/Badge';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { tasksService } from '@/lib/services';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -52,7 +53,7 @@ const priorityTone = (p: string) => {
 export default function TakenPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [statusFilter, setStatusFilter] = React.useState('');
   const [page, setPage] = React.useState(1);
 
@@ -127,7 +128,7 @@ export default function TakenPage() {
               </AdminTableCell>
               <AdminTableCell>
                 {customer?.id ? (
-                  <Link href={`/${locale}/admin/klanten/${customer.id}`} className="font-semibold text-marine-700 hover:text-marine-900">
+                  <Link href={adminRecordHref(locale, 'klanten', customer)} className="font-semibold text-marine-700 hover:text-marine-900">
                     {customer.name ?? '—'}
                   </Link>
                 ) : '—'}

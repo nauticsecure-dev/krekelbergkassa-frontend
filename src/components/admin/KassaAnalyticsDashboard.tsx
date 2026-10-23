@@ -16,7 +16,7 @@ import {
 } from '@/components/admin/AdminUi';
 import { LoadingState } from '@/components/admin/DataState';
 import { useIntl } from '@/i18n/IntlProvider';
-import { centsToEuro, formatCurrency } from '@/lib/format';
+import { centsToEuro, formatCurrency, intlLocale } from '@/lib/format';
 import type { KassaAnalyticsView } from '@/lib/kassa-analytics';
 import { cn } from '@/lib/cn';
 
@@ -34,7 +34,7 @@ export function KassaAnalyticsDashboard({
   onPeriodChange: (period: string) => void;
 }) {
   const { locale, t } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const totals = analytics?.totals;
   const series = analytics?.series ?? [];
   const methods = analytics?.byPaymentMethod ?? [];

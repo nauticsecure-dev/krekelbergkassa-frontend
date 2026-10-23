@@ -57,6 +57,14 @@
   .input-base {
     @apply w-full rounded-lg border border-navy-100 bg-white px-3.5 py-2.5 text-sm text-navy-900 shadow-sm transition placeholder:text-navy-300 focus:border-marine-400 focus:outline-none focus:ring-2 focus:ring-marine-200;
   }
+  /* Google Places suggestions are appended to document.body. */
+  .pac-container {
+    z-index: 10000 !important;
+    border-radius: 0.5rem;
+    border: 1px solid theme('colors.navy.100');
+    box-shadow: theme('boxShadow.card');
+    font-family: inherit;
+  }
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: #c4cdd8 transparent;
@@ -173,3 +181,96 @@
 }
 .auth-input:focus-visible { outline: none; }
 .auth-input[type="password"] { padding-right: 2.6rem; }
+
+/* Appointment scheduler — time grid (hours × days) */
+.afspraken-calendar .fc {
+  --fc-border-color: #e6ebf1;
+  --fc-page-bg-color: #fff;
+  --fc-neutral-bg-color: #f7f5f1;
+  --fc-today-bg-color: rgba(31, 147, 184, 0.08);
+  --fc-now-indicator-color: #185c7c;
+  --fc-event-border-color: transparent;
+  font-family: inherit;
+}
+.afspraken-calendar .fc .fc-toolbar {
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #e6ebf1;
+}
+.afspraken-calendar .fc .fc-toolbar-title {
+  font-size: 1.15rem;
+  font-weight: 650;
+  color: #1a2e48;
+  text-transform: capitalize;
+}
+.afspraken-calendar .fc .fc-button {
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  text-transform: capitalize;
+  box-shadow: none;
+}
+.afspraken-calendar .fc .fc-button-primary {
+  background: #fff;
+  border-color: #d5dde6;
+  color: #1a2e48;
+}
+.afspraken-calendar .fc .fc-button-primary:hover {
+  background: #f7f5f1;
+  border-color: #d5dde6;
+  color: #1a2e48;
+}
+.afspraken-calendar .fc .fc-button-primary:not(:disabled).fc-button-active,
+.afspraken-calendar .fc .fc-button-primary:not(:disabled):active {
+  background: #185c7c;
+  border-color: #185c7c;
+  color: #fff;
+}
+.afspraken-calendar .fc .fc-button-primary:focus {
+  box-shadow: 0 0 0 3px rgba(24, 92, 124, 0.2);
+}
+.afspraken-calendar .fc .fc-col-header-cell-cushion,
+.afspraken-calendar .fc .fc-timegrid-slot-label-cushion {
+  color: #5c6b80;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.afspraken-calendar .fc .fc-timegrid-slot {
+  height: 2.35rem;
+}
+.afspraken-calendar .fc .fc-timegrid-event,
+.afspraken-calendar .fc .fc-daygrid-event {
+  border-radius: 0.4rem;
+  border-width: 0 0 0 3px;
+  box-shadow: none;
+}
+.afspraken-calendar .fc .fc-event {
+  cursor: grab;
+}
+.afspraken-calendar .fc .fc-event.is-locked {
+  cursor: pointer;
+  opacity: 0.55;
+}
+.afspraken-calendar .fc .fc-event-main {
+  padding: 1px 4px;
+  font-weight: 600;
+}
+.afspraken-calendar .fc .fc-daygrid-day-number {
+  color: #1a2e48;
+  font-weight: 650;
+}
+@media (max-width: 768px) {
+  .afspraken-calendar .fc .fc-toolbar {
+    padding: 0.75rem;
+  }
+  .afspraken-calendar .fc .fc-toolbar-title {
+    font-size: 1rem;
+  }
+  .afspraken-calendar .fc .fc-timegrid-slot {
+    height: 1.7rem;
+  }
+}

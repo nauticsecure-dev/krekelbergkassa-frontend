@@ -26,7 +26,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 
 type Rec = Record<string, unknown>;
 const STATUSES = [
@@ -122,7 +122,7 @@ export default function InvoiceImportsPage() {
   );
 
   const rows = (imports.data?.data ?? []) as Rec[];
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const toggle = (id: string) =>
     setSelected((prev) => {

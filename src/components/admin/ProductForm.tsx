@@ -19,7 +19,7 @@ import {
   calcPriceInclCents,
   eurosToCents,
 } from '@/lib/products';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, intlLocale } from '@/lib/format';
 
 export { EMPTY_PRODUCT_FORM, type ProductFormState };
 
@@ -41,13 +41,27 @@ export function ProductForm({
 }) {
   const { t, locale } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const priceExclCents = eurosToCents(form.price_excl_vat);
   const vatRate = Number(form.vat_rate) || 21;
   const priceInclCents = calcPriceInclCents(priceExclCents, vatRate);
 
   const set = (patch: Partial<ProductFormState>) => onChange({ ...form, ...patch });
+
+  const categoryLabel: Record<(typeof PRODUCT_CATEGORIES)[number], string> = {
+    stalling: t('adminNew.products.categories.stalling'),
+    repair: t('adminNew.products.categories.repair'),
+    retail: t('adminNew.products.categories.retail'),
+    other: t('adminNew.products.categories.other'),
+  };
+
+  const visibilityFields: Array<{ key: 'show_in_kassa' | 'show_in_public' | 'show_in_calculator' | 'show_in_booking'; label: string }> = [
+    { key: 'show_in_kassa', label: t('adminNew.products.fields.showInKassa') },
+    { key: 'show_in_public', label: t('adminNew.products.fields.showInPublic') },
+    { key: 'show_in_calculator', label: t('adminNew.products.fields.showInCalculator') },
+    { key: 'show_in_booking', label: t('adminNew.products.fields.showInBooking') },
+  ];
 
   const groups = useQuery(['product-groups-form'], () => productGroupsService.list({ per_page: 100 }));
   const groupRows = paginatedRows(groups.data);
@@ -128,7 +142,7 @@ export function ProductForm({
               <option value="">{t('adminNew.products.fields.categoryNone')}</option>
               {PRODUCT_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
-                  {t(`adminNew.products.categories.${cat}`)}
+                  {categoryLabel[cat]}
                 </option>
               ))}
             </AdminSelect>
@@ -329,19 +343,14 @@ export function ProductForm({
 
       <AdminFormSection title={t('adminNew.products.sections.visibility')}>
         <div className="grid gap-2 sm:grid-cols-2">
-          {([
-            ['show_in_kassa', 'adminNew.products.fields.showInKassa'],
-            ['show_in_public', 'adminNew.products.fields.showInPublic'],
-            ['show_in_calculator', 'adminNew.products.fields.showInCalculator'],
-            ['show_in_booking', 'adminNew.products.fields.showInBooking'],
-          ] as [keyof ProductFormState, string][]).map(([field, key]) => (
-            <label key={field} className="flex min-w-0 items-center gap-2 text-sm">
+          {visibilityFields.map((field) => (
+            <label key={field.key} className="flex min-w-0 items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                checked={form[field] as boolean}
-                onChange={(e) => set({ [field]: e.target.checked })}
+                checked={form[field.key]}
+                onChange={(e) => set({ [field.key]: e.target.checked })}
               />
-              {t(key)}
+              {field.label}
             </label>
           ))}
         </div>

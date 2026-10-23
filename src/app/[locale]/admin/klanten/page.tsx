@@ -1,9 +1,12 @@
 'use client';
 
+import { intlLocale } from '@/lib/format';
+
 import * as React from 'react';
 import Link from 'next/link';
 import { Ban, KeyRound, LogIn, Plus, ShieldCheck, UserCog, Users } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { adminRecordHref } from '@/config/admin-routes';
 import {
   AdminContent,
   AdminLinkButton,
@@ -182,7 +185,7 @@ export default function CustomersPage() {
     }
   };
 
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const rows = customers.data?.data ?? [];
   const total = customers.data?.meta?.total ?? rows.length;
@@ -450,7 +453,7 @@ export default function CustomersPage() {
                             {t('adminNew.customers.block')}
                           </Button>
                         )}
-                        <AdminLinkButton href={`/${locale}/admin/klanten/${customer.id}`}>
+                        <AdminLinkButton href={adminRecordHref(locale, 'klanten', customer)}>
                           {t('adminNew.customers.details')}
                         </AdminLinkButton>
                       </div>
