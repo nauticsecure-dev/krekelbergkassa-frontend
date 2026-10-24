@@ -17,8 +17,8 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { productsService, productGroupsService } from '@/lib/services';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { paginatedRows, productsService, productGroupsService } from '@/lib/services';
+import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import Link from 'next/link';
 
@@ -33,7 +33,7 @@ const SORT_OPTIONS = [
 
 export default function ProductStatsPage() {
   const { locale, t } = useIntl();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [sort, setSort] = React.useState('revenue');
   const [groupFilter, setGroupFilter] = React.useState('');
 
@@ -42,8 +42,7 @@ export default function ProductStatsPage() {
   );
   const groups = useQuery(['product-groups-stats'], () => productGroupsService.list({ per_page: 100 }));
 
-  const groupRows = (groups.data as { data?: Array<Record<string, unknown>> })?.data
-    ?? (Array.isArray(groups.data) ? (groups.data as Array<Record<string, unknown>>) : []);
+  const groupRows = paginatedRows(groups.data);
 
   const allRows = React.useMemo(() => stats.data ?? [], [stats.data]);
 

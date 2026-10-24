@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const locales = ['nl', 'en', 'de'];
+const locales = ['nl', 'en', 'de', 'fr'];
 const roots = ['src/app/[locale]/admin', 'src/components/admin'];
 const dictionaries = Object.fromEntries(
   locales.map((locale) => [
@@ -47,5 +47,5 @@ if (missing.length) {
   console.error(`Admin translations missing (${missing.length}):\n${missing.join('\n')}`);
   process.exitCode = 1;
 } else {
-  console.log('All static admin translation keys exist in NL, EN and DE.');
+  console.log('All static admin translation keys exist in NL, EN, DE and FR.');
 }

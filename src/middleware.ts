@@ -9,6 +9,7 @@ import {
   isPortalPath,
   isProtectedPath,
   isSafeReturnTo,
+  returnToParts,
   repairEncodedQueryPath,
 } from '@/lib/auth-routes';
 
@@ -57,6 +58,17 @@ export function middleware(req: NextRequest) {
 
   const locale = localeFromPath(pathname);
 
+  const prettyAdmin = pathname.match(
+    new RegExp(
+      `^/(${locales.join('|')})/admin/(producten|klanten|boten|stalling|leveranciers)/([^/]+)/([^/]+)/?$`
+    )
+  );
+  const reservedSlug = new Set(['timeline', 'nieuw', 'edit', 'editor', 'import']);
+  const rewritePath =
+    prettyAdmin && !reservedSlug.has(prettyAdmin[4])
+      ? `/${prettyAdmin[1]}/admin/${prettyAdmin[2]}/${prettyAdmin[3]}`
+      : null;
+
   const repaired = repairEncodedQueryPath(pathname);
   if (repaired) {
     const url = req.nextUrl.clone();
@@ -72,13 +84,13 @@ export function middleware(req: NextRequest) {
 
   if (isAdminPath(pathname) && !hasStaffSession) {
     const url = req.nextUrl.clone();
-    applyLoginRedirect(url, locale, pathname);
+    applyLoginRedirect(url, locale, `${pathname}${req.nextUrl.search}`);
     return NextResponse.redirect(url);
   }
 
   if (isPortalPath(pathname) && !hasPortalSession && !hasStaffSession) {
     const url = req.nextUrl.clone();
-    applyLoginRedirect(url, locale, pathname);
+    applyLoginRedirect(url, locale, `${pathname}${req.nextUrl.search}`);
     return NextResponse.redirect(url);
   }
 
@@ -88,8 +100,9 @@ export function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     const returnTo = url.searchParams.get('returnTo');
     if (isSafeReturnTo(returnTo)) {
-      url.pathname = returnTo;
-      url.search = '';
+      const parts = returnToParts(returnTo);
+      url.pathname = parts.pathname;
+      url.search = parts.search;
       return NextResponse.redirect(url);
     }
     url.pathname = defaultRedirectFromCookies(locale, hasStaffSession, hasPortalSession);
@@ -97,13 +110,17 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-locale', locale);
+  const res = rewritePath
+    ? NextResponse.rewrite(new URL(rewritePath + req.nextUrl.search, req.url), {
+        request: { headers: requestHeaders },
+      })
+    : NextResponse.next({ request: { headers: requestHeaders } });
   if (isProtectedPath(pathname) || isAuthPath(pathname)) {
-    const res = NextResponse.next();
     res.headers.set('Cache-Control', 'no-store');
-    return res;
   }
-
-  return NextResponse.next();
+  return res;
 }
 
 export const config = {

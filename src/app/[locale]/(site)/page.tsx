@@ -18,13 +18,14 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
+import { cn } from "@/lib/cn";
 import { companyInfo } from "@/lib/company";
 import { useCms, useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
 import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
+import { EditSafeLink } from "@/components/cms/EditSafeLink";
 
 const CMS_PAGE = "home";
 
@@ -69,7 +70,8 @@ const SERVICES = [
 
 export default function HomePage() {
   const { t, locale } = useIntl();
-  const { editMode } = useCms();
+  const { isCmsEditing } = useCms();
+  const editingCards = isCmsEditing;
   useRegisterCmsPage(CMS_PAGE);
 
   return (
@@ -87,25 +89,25 @@ export default function HomePage() {
         </div>
         <div
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/75 to-navy-950/35"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/75 to-navy-950/35"
         />
-        <div className="container-wide relative pb-24 pt-20 text-white sm:pb-32 sm:pt-28 lg:pb-40 lg:pt-36">
-          <Badge tone="sand" dot className="mb-5">
+        <div className="container-wide pointer-events-none relative pb-24 pt-20 text-white sm:pb-32 sm:pt-28 lg:pb-40 lg:pt-36">
+          <Badge tone="sand" dot className="pointer-events-auto mb-5">
             <EditableText blockKey="home.hero.badge" page={CMS_PAGE} section="hero">
               {t("home.heroBadge")}
             </EditableText>
           </Badge>
-          <h1 className="heading-display max-w-2xl text-4xl text-white sm:text-5xl lg:text-6xl">
+          <h1 className="heading-display pointer-events-auto max-w-2xl text-4xl text-white sm:text-5xl lg:text-6xl">
             <EditableText blockKey="home.hero.title" page={CMS_PAGE} section="hero">
               {t("home.heroTitle")}
             </EditableText>
           </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-sand-100/85">
+          <p className="pointer-events-auto mt-4 max-w-xl text-base leading-relaxed text-sand-100/85">
             <EditableText blockKey="home.hero.subtitle" page={CMS_PAGE} section="hero" type="long_text">
               {t("home.heroSubtitle")}
             </EditableText>
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="pointer-events-none mt-8 flex w-fit flex-wrap gap-3">
             <EditableHeroCta
               page={CMS_PAGE}
               blockKey="home.hero.cta_primary"
@@ -124,7 +126,7 @@ export default function HomePage() {
             />
           </div>
 
-          <div className="mt-12 flex max-w-3xl flex-wrap items-center gap-x-7 gap-y-3 text-sm text-sand-100/80">
+          <div className="pointer-events-auto mt-12 flex w-fit max-w-3xl flex-wrap items-center gap-x-7 gap-y-3 text-sm text-sand-100/80">
             <Trust icon={Award}>
               <EditableText blockKey="home.trust.experience" page={CMS_PAGE} section="trust">
                 {t("home.trustExperience")}
@@ -189,22 +191,34 @@ export default function HomePage() {
           {SERVICES.map((s) => {
             const Icon = s.icon;
             const card = (
-              <Card className="group h-full overflow-hidden p-0 transition hover:-translate-y-0.5 hover:shadow-elev">
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <EditableImage
-                    blockKey={`home.svc.${s.key}.image`}
-                    page={CMS_PAGE}
-                    fallbackSrc={s.img}
-                    alt={t(`home.svc.${s.key}.title`)}
-                    className="absolute inset-0 transition duration-500 group-hover:scale-105"
-                  />
+              <Card
+                className={cn(
+                  "group h-full p-0 transition hover:-translate-y-0.5 hover:shadow-elev",
+                  editingCards ? "overflow-visible" : "overflow-hidden",
+                )}
+              >
+                <div className="relative aspect-[4/3]">
+                  <div className="absolute inset-0 overflow-hidden rounded-t-xl">
+                    <EditableImage
+                      blockKey={`home.svc.${s.key}.image`}
+                      page={CMS_PAGE}
+                      fallbackSrc={s.img}
+                      alt={t(`home.svc.${s.key}.title`)}
+                      className="absolute inset-0 transition duration-500 group-hover:scale-105"
+                    />
+                  </div>
                   <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/30 to-transparent" />
                   <div aria-hidden className="pointer-events-none absolute left-4 top-4">
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white/95 text-navy-800 backdrop-blur">
                       <Icon className="h-4 w-4" />
                     </span>
                   </div>
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <div
+                    className={cn(
+                      "absolute bottom-4 left-4 right-4 z-10 text-white",
+                      editingCards ? "pointer-events-auto" : "pointer-events-none",
+                    )}
+                  >
                     <div className="text-lg font-semibold leading-tight">
                       <EditableText blockKey={`home.svc.${s.key}.title`} page={CMS_PAGE} section="services">
                         {t(`home.svc.${s.key}.title`)}
@@ -217,7 +231,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center justify-between p-5">
+                <div className="flex items-center justify-between overflow-visible p-5">
                   <EditableText blockKey={`home.svc.${s.key}.desc`} page={CMS_PAGE} section="services" type="paragraph" as="p" className="line-clamp-2 text-sm text-navy-600">
                     {t(`home.svc.${s.key}.desc`)}
                   </EditableText>
@@ -226,14 +240,14 @@ export default function HomePage() {
               </Card>
             );
 
+            if (editingCards) {
+              return <div key={s.key}>{card}</div>;
+            }
+
             return (
-              editMode ? (
-                <div key={s.key}>{card}</div>
-              ) : (
-                <Link key={s.key} href={`/${locale}${s.href}`}>
-                  {card}
-                </Link>
-              )
+              <Link key={s.key} href={`/${locale}${s.href}`}>
+                {card}
+              </Link>
             );
           })}
         </div>
@@ -315,23 +329,19 @@ export default function HomePage() {
               ))}
             </ul>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link href={`/${locale}/diensten`}>
-                <Button
-                  variant="primary"
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
-                >
-                  <EditableText blockKey="home.werf.cta" page={CMS_PAGE} section="werf">
-                    {t("home.werf.cta")}
-                  </EditableText>
-                </Button>
-              </Link>
-              <Link href={`/${locale}/kraanafspraak`}>
-                <Button variant="outline">
-                  <EditableText blockKey="home.werf.book" page={CMS_PAGE} section="werf">
-                    {t("home.werf.book")}
-                  </EditableText>
-                </Button>
-              </Link>
+              <EditSafeLink
+                href={`/${locale}/diensten`}
+                button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                <EditableText blockKey="home.werf.cta" page={CMS_PAGE} section="werf">
+                  {t("home.werf.cta")}
+                </EditableText>
+              </EditSafeLink>
+              <EditSafeLink href={`/${locale}/kraanafspraak`} button={{ variant: "outline" }}>
+                <EditableText blockKey="home.werf.book" page={CMS_PAGE} section="werf">
+                  {t("home.werf.book")}
+                </EditableText>
+              </EditSafeLink>
             </div>
           </div>
         </div>
@@ -351,7 +361,7 @@ export default function HomePage() {
                   className="h-full w-full"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-navy-950/65 via-navy-950/10 to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/65 via-navy-950/10 to-transparent" />
             </div>
             <div className="p-8 sm:p-12">
               <Badge tone="navy" className="mb-3">
@@ -375,27 +385,20 @@ export default function HomePage() {
                 <Mini big="100%" label={t("home.sale.statTrust")} />
               </div>
               <div className="mt-7 flex flex-wrap gap-3">
-                <a
+                <EditSafeLink
                   href="https://www.schepenkring.nl/aanbod-boten/?kantoor=Roermond"
-                  target="_blank"
-                  rel="noreferrer"
+                  external
+                  button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
                 >
-                  <Button
-                    variant="primary"
-                    rightIcon={<ArrowRight className="h-4 w-4" />}
-                  >
-                    <EditableText blockKey="home.sale.cta" page={CMS_PAGE} section="sale">
-                      {t("home.sale.cta")}
-                    </EditableText>
-                  </Button>
-                </a>
-                <Link href={`/${locale}/verkoop`}>
-                  <Button variant="outline">
-                    <EditableText blockKey="home.sale.sell" page={CMS_PAGE} section="sale">
-                      {t("home.sale.sell")}
-                    </EditableText>
-                  </Button>
-                </Link>
+                  <EditableText blockKey="home.sale.cta" page={CMS_PAGE} section="sale">
+                    {t("home.sale.cta")}
+                  </EditableText>
+                </EditSafeLink>
+                <EditSafeLink href={`/${locale}/verkoop`} button={{ variant: "outline" }}>
+                  <EditableText blockKey="home.sale.sell" page={CMS_PAGE} section="sale">
+                    {t("home.sale.sell")}
+                  </EditableText>
+                </EditSafeLink>
               </div>
             </div>
           </div>
@@ -443,16 +446,14 @@ export default function HomePage() {
               </li>
             </ul>
             <div className="mt-5 flex flex-wrap gap-3">
-              <Link href={`/${locale}/contact`}>
-                <Button
-                  variant="primary"
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
-                >
-                  <EditableText blockKey="home.contact.cta" page={CMS_PAGE} section="contact">
-                    {t("home.contact.cta")}
-                  </EditableText>
-                </Button>
-              </Link>
+              <EditSafeLink
+                href={`/${locale}/contact`}
+                button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                <EditableText blockKey="home.contact.cta" page={CMS_PAGE} section="contact">
+                  {t("home.contact.cta")}
+                </EditableText>
+              </EditSafeLink>
             </div>
           </div>
         </Card>
@@ -461,7 +462,7 @@ export default function HomePage() {
       {/* ---------- Final CTA strip ---------- */}
       <section className="container-wide pb-24">
         <div className="relative overflow-hidden rounded-2xl bg-navy-950 px-8 py-12 text-white sm:px-12">
-          <div aria-hidden className="absolute inset-0 opacity-25">
+          <div className="absolute inset-0 opacity-25">
             <EditableImage
               blockKey="home.cta.image"
               page={CMS_PAGE}
@@ -470,47 +471,47 @@ export default function HomePage() {
               className="h-full w-full"
             />
           </div>
-          <div className="relative grid gap-6 lg:grid-cols-[2fr_1fr] lg:items-center">
-            <div>
-              <Badge tone="sand" dot className="mb-3">
+          <div className="pointer-events-none relative grid gap-6 lg:grid-cols-[2fr_1fr] lg:items-center">
+            <div className="pointer-events-none">
+              <Badge tone="sand" dot className="pointer-events-auto mb-3">
                 <EditableText blockKey="home.cta.badge" page={CMS_PAGE} section="cta">
                   {t("home.cta.badge")}
                 </EditableText>
               </Badge>
-              <h3 className="heading-display text-2xl text-white sm:text-3xl">
+              <h3 className="heading-display pointer-events-auto text-2xl text-white sm:text-3xl">
                 <EditableText blockKey="home.cta.title" page={CMS_PAGE} section="cta">
                   {t("home.cta.title")}
                 </EditableText>
               </h3>
-              <p className="mt-2 max-w-xl text-sm text-sand-100/80">
+              <p className="pointer-events-auto mt-2 max-w-xl text-sm text-sand-100/80">
                 <EditableText blockKey="home.cta.subtitle" page={CMS_PAGE} section="cta" type="long_text">
                   {t("home.cta.subtitle")}
                 </EditableText>
               </p>
             </div>
-            <div className="flex flex-wrap gap-3 lg:justify-end">
-              <Link href={`/${locale}/kraanafspraak`}>
-                <Button
-                  variant="gold"
-                  size="lg"
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
-                >
-                  <EditableText blockKey="home.cta.primary" page={CMS_PAGE} section="cta">
-                    {t("home.cta.primary")}
-                  </EditableText>
-                </Button>
-              </Link>
-              <Link href={`/${locale}/contact`}>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-                >
-                  <EditableText blockKey="home.cta.secondary" page={CMS_PAGE} section="cta">
-                    {t("home.cta.secondary")}
-                  </EditableText>
-                </Button>
-              </Link>
+            <div className="pointer-events-none flex flex-wrap gap-3 lg:justify-end">
+              <EditSafeLink
+                href={`/${locale}/kraanafspraak`}
+                className="pointer-events-auto"
+                button={{ variant: "gold", size: "lg", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                <EditableText blockKey="home.cta.primary" page={CMS_PAGE} section="cta">
+                  {t("home.cta.primary")}
+                </EditableText>
+              </EditSafeLink>
+              <EditSafeLink
+                href={`/${locale}/contact`}
+                className="pointer-events-auto"
+                button={{
+                  variant: "outline",
+                  size: "lg",
+                  className: "border-white/30 bg-white/5 text-white hover:bg-white/10",
+                }}
+              >
+                <EditableText blockKey="home.cta.secondary" page={CMS_PAGE} section="cta">
+                  {t("home.cta.secondary")}
+                </EditableText>
+              </EditSafeLink>
             </div>
           </div>
         </div>

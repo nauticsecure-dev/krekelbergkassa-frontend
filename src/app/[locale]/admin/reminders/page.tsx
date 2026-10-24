@@ -36,7 +36,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { Trash2 } from 'lucide-react';
 import { adminService, appointmentsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -86,7 +86,7 @@ export default function RemindersPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const { user } = useAuth();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [showRule, setShowRule] = React.useState(false);
   const [rule, setRule] = React.useState(emptyRule);

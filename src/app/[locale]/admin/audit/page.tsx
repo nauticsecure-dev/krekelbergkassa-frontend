@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   AlertTriangle,
@@ -26,7 +27,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { auditService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 import type { AuditLog } from '@/lib/api-types';
 
 type Severity = 'info' | 'success' | 'warning' | 'error' | 'critical';
@@ -50,36 +51,16 @@ const CATEGORY_KEYS: AuditCategory[] = [
   'brokerage', 'settings', 'integrations', 'security', 'system', 'technical',
 ];
 
-const SECRET_KEY = /password|secret|token|credential|private.?key|api.?key|authorization/i;
-
-function categoryFor(log: AuditLog): AuditCategory {
-  const value = `${log.entity_type} ${log.action}`.toLowerCase();
-  if (/track.?event|frontend\.|request_started|request_finished|success_toast/.test(value)) return 'technical';
-  if (/security|permission|role|login|auth|credential/.test(value)) return 'security';
-  if (/mollie|signhost|webhook|integration/.test(value)) return 'integrations';
-  if (/cash.?closure|cashclosure|kassa|pos/.test(value)) return 'cash';
-  if (/invoice|payment|credit|refund|ledger|financial/.test(value)) return 'finance';
-  if (/customer|client/.test(value)) return 'customers';
-  if (/boat|vessel/.test(value)) return 'boats';
-  if (/stalling|storage|contract/.test(value)) return 'storage';
-  if (/appointment|planning|calendar/.test(value)) return 'planning';
-  if (/brokerage|sale|lead/.test(value)) return 'brokerage';
-  if (/setting|configuration/.test(value)) return 'settings';
-  return 'system';
+function asSeverity(value?: string | null): Severity {
+  if (value === 'info' || value === 'success' || value === 'warning' || value === 'error' || value === 'critical') {
+    return value;
+  }
+  return 'info';
 }
 
-function severityFor(log: AuditLog): Severity {
-  const storedSeverity = log.severity?.toLowerCase();
-  if (storedSeverity === 'info' || storedSeverity === 'success' || storedSeverity === 'warning' ||
-      storedSeverity === 'error' || storedSeverity === 'critical') {
-    return storedSeverity;
-  }
-  const value = `${log.action} ${log.reason ?? ''}`.toLowerCase();
-  if (/critical|payment.?webhook|security.?breach/.test(value)) return 'critical';
-  if (/fail|error|denied|rejected|exception/.test(value)) return 'error';
-  if (/warn|cancel|delete|revok|expire/.test(value)) return 'warning';
-  if (/created|updated|paid|completed|success|confirmed|tested/.test(value)) return 'success';
-  return 'info';
+function asCategory(value?: string | null): AuditCategory {
+  if (value && (CATEGORY_KEYS as string[]).includes(value)) return value as AuditCategory;
+  return 'system';
 }
 
 function entityLabel(entityType: string, t: AuditTranslate): string {
@@ -95,58 +76,32 @@ function entityLabel(entityType: string, t: AuditTranslate): string {
   return t('adminNew.audit.entity.system');
 }
 
-function eventTitle(log: AuditLog, t: AuditTranslate): string {
-  const action = log.action.toLowerCase().replace(/[_-]/g, '.');
-  const category = categoryFor(log);
-  const entity = entityLabel(log.entity_type, t);
-
-  if (/cash.?closure.*created|cashclosure\.created/.test(action)) return t('adminNew.audit.eventTitles.cashClosureCreated');
-  if (/mollie.*test|test.*mollie/.test(action)) return t('adminNew.audit.eventTitles.mollieTested');
-  if (/signhost.*(fail|error)|contract.*sign.*fail/.test(action)) return t('adminNew.audit.eventTitles.signingFailed');
-  if (/payment.*(paid|received|created)|invoice.*paid/.test(action)) return t('adminNew.audit.eventTitles.paymentReceived');
-  if (/frontend\.page.changed/.test(action)) return t('adminNew.audit.eventTitles.pageVisited');
-  if (/http.?error|exception/.test(action)) return t('adminNew.audit.eventTitles.systemError');
-  if (/created|store/.test(action)) return t('adminNew.audit.eventTitles.created', { entity });
-  if (/updated|changed/.test(action)) return t('adminNew.audit.eventTitles.updated', { entity });
-  if (/deleted|destroy/.test(action)) return t('adminNew.audit.eventTitles.deleted', { entity });
-  if (/cancel/.test(action)) return t('adminNew.audit.eventTitles.cancelled', { entity });
-  if (/login|logout|auth/.test(action)) return t('adminNew.audit.eventTitles.authentication');
-  if (category === 'technical') return t('adminNew.audit.eventTitles.technicalActivity');
-  return t('adminNew.audit.eventTitles.unknown');
-}
-
-function redactStructuredValue(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(redactStructuredValue);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>).map(([key, item]) => [
-        key,
-        SECRET_KEY.test(key) ? '[redacted]' : redactStructuredValue(item),
-      ])
-    );
-  }
-  return value;
-}
-
 function safeValue(value: unknown): string {
   if (value == null) return '—';
   if (typeof value === 'boolean') return value ? 'Aan' : 'Uit';
   if (typeof value === 'string' || typeof value === 'number') return String(value);
   try {
-    return JSON.stringify(redactStructuredValue(value));
+    return JSON.stringify(value);
   } catch {
     return '[waarde]';
   }
 }
 
 function getChanges(log: AuditLog): Array<{ key: string; before: string; after: string }> {
+  if (Array.isArray(log.changes)) {
+    return log.changes.map((change) => ({
+      key: String(change.field_name ?? '').replace(/[_-]/g, ' '),
+      before: safeValue(change.old_value),
+      after: safeValue(change.new_value),
+    }));
+  }
+
   const before = log.before_data ?? {};
   const after = log.after_data ?? {};
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
   const changes: Array<{ key: string; before: string; after: string }> = [];
 
   keys.forEach((key) => {
-    if (SECRET_KEY.test(key)) return;
     const oldValue = before[key];
     const newValue = after[key];
     if (JSON.stringify(oldValue) === JSON.stringify(newValue)) return;
@@ -174,7 +129,7 @@ function AuditPageContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const search = searchParams.get('search') ?? '';
   const entityType = searchParams.get('entity_type') ?? '';
@@ -182,7 +137,7 @@ function AuditPageContent() {
   const severity = searchParams.get('severity') ?? '';
   const dateFrom = searchParams.get('date_from') ?? '';
   const dateTo = searchParams.get('date_to') ?? '';
-  const technical = searchParams.get('technical') === '1';
+  const technical = searchParams.get('include_technical') === '1' || searchParams.get('technical') === '1';
   const page = Math.max(1, Number(searchParams.get('page') ?? 1) || 1);
   const [selectedLog, setSelectedLog] = React.useState<AuditLog | null>(null);
 
@@ -211,14 +166,9 @@ function AuditPageContent() {
     })
   );
 
-  const rows = (logs.data?.data ?? []).filter((log) => {
-    if (!technical && categoryFor(log) === 'technical') return false;
-    if (category && categoryFor(log) !== category) return false;
-    if (severity && severityFor(log) !== severity) return false;
-    return true;
-  });
-  const eventTypeCount = new Set(rows.map((row) => row.action)).size;
-  const entityTypeCount = new Set(rows.map((row) => row.entity_type)).size;
+  const rows = logs.data?.data ?? [];
+  const eventTypeCount = logs.data?.counters?.event_types ?? 0;
+  const entityTypeCount = logs.data?.counters?.entity_types ?? 0;
 
   return (
     <>
@@ -321,7 +271,8 @@ function AuditPageContent() {
                 type="checkbox"
                 checked={technical}
                 onChange={(event) => updateFilters({
-                  technical: event.target.checked ? '1' : null,
+                  include_technical: event.target.checked ? '1' : null,
+                  technical: null,
                   category: event.target.checked ? category || null : category === 'technical' ? null : category || null,
                   page: null,
                 })}
@@ -358,22 +309,23 @@ function AuditPageContent() {
                 </thead>
                 <tbody className="divide-y divide-navy-100">
                   {rows.map((log) => {
-                    const categoryKey = categoryFor(log);
-                    const state = severityFor(log);
+                    const categoryKey = asCategory(log.category);
+                    const state = asSeverity(log.severity);
                     const { tone, icon: StateIcon } = severityPresentation(state);
                     const changes = getChanges(log);
+                    const entityName = log.entity_name || log.entity_number || (log.entity_id ? t('adminNew.audit.entity.record') : null);
                     return (
                       <tr key={log.id} className="align-top hover:bg-sand-50">
                         <td className="whitespace-nowrap px-4 py-3 text-navy-600">
                           {formatDateTime(log.created_at, dateLocale)}
                         </td>
-                                        <td className="px-4 py-3">
+                        <td className="px-4 py-3">
                           <button
                             type="button"
                             onClick={() => setSelectedLog(log)}
                             className="text-left font-semibold text-navy-900 hover:text-marine-700"
                           >
-                            {eventTitle(log, t)}
+                            {log.title || log.action}
                           </button>
                           <p className="mt-1 max-w-lg text-xs text-navy-500">
                             {changes.length
@@ -383,10 +335,19 @@ function AuditPageContent() {
                         </td>
                         <td className="px-4 py-3">
                           <Badge tone="navy">{entityLabel(log.entity_type, t)}</Badge>
-                          {log.entity_id ? (
-                            <div className="mt-1 max-w-[150px] truncate text-xs text-navy-400">
-                              {log.entity_name || log.entity_number || t('adminNew.audit.entity.record')}
-                            </div>
+                          {entityName ? (
+                            log.entity_url ? (
+                              <Link
+                                href={`/${locale}${log.entity_url}`}
+                                className="mt-1 block max-w-[180px] truncate text-xs font-medium text-marine-700 hover:underline"
+                              >
+                                {entityName}
+                              </Link>
+                            ) : (
+                              <div className="mt-1 max-w-[180px] truncate text-xs text-navy-400">
+                                {entityName}
+                              </div>
+                            )
                           ) : null}
                         </td>
                         <td className="px-4 py-3">
@@ -430,6 +391,7 @@ function AuditPageContent() {
       <AuditDetailsModal
         log={selectedLog}
         locale={dateLocale}
+        routeLocale={locale}
         onClose={() => setSelectedLog(null)}
         t={t}
       />
@@ -440,11 +402,13 @@ function AuditPageContent() {
 function AuditDetailsModal({
   log,
   locale,
+  routeLocale,
   onClose,
   t,
 }: {
   log: AuditLog | null;
   locale: string;
+  routeLocale: string;
   onClose: () => void;
   t: (key: string, options?: Record<string, string | number>) => string;
 }) {
@@ -453,14 +417,14 @@ function AuditDetailsModal({
   if (!log) return null;
 
   const changes = getChanges(log);
-  const severity = severityFor(log);
+  const severity = asSeverity(log.severity);
   const { tone, icon: StateIcon } = severityPresentation(severity);
 
   return (
     <Modal open={!!log} onClose={onClose} size="lg" className="max-h-[90vh] overflow-y-auto p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="font-display text-2xl text-navy-900">{eventTitle(log, t)}</h2>
+          <h2 className="font-display text-2xl text-navy-900">{log.title || log.action}</h2>
           <p className="mt-1 text-sm text-navy-500">{formatDateTime(log.created_at, locale)}</p>
         </div>
         <Badge tone={tone}>
@@ -482,6 +446,14 @@ function AuditDetailsModal({
           <dt className="text-xs font-semibold uppercase text-navy-400">{t('adminNew.audit.columns.entity')}</dt>
           <dd className="mt-1 text-sm font-medium text-navy-800">
             {entityLabel(log.entity_type, t)} · {log.entity_name || log.entity_number || t('adminNew.audit.entity.record')}
+            {log.entity_url ? (
+              <>
+                {' · '}
+                <Link href={`/${routeLocale}${log.entity_url}`} className="font-semibold text-marine-700 hover:underline">
+                  {t('adminNew.audit.openDetails')}
+                </Link>
+              </>
+            ) : null}
           </dd>
         </div>
         {log.reason ? (

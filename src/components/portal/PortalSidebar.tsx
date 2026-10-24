@@ -166,7 +166,7 @@ export function PortalSidebar({ variant = 'desktop' }: Props) {
   return (
     <aside className="hidden h-screen w-64 shrink-0 flex-col bg-navy-950 text-sand-100 lg:flex">
       <div className="border-b border-white/5 px-6 py-5">
-        <Logo variant="light" />
+        <Logo variant="light" editable={false} />
       </div>
       {inner}
     </aside>

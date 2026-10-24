@@ -12,7 +12,8 @@ export class ImpersonationError extends Error {
 
 /** Staff/admin accounts must not be impersonated. */
 export function canImpersonateUser(role: string): boolean {
-  return role.toLowerCase() !== 'admin';
+  const normalized = role.toLowerCase();
+  return normalized !== 'admin' && normalized !== 'super_admin';
 }
 
 export async function impersonateUser(userId: string, locale: string) {
@@ -29,7 +30,7 @@ export async function impersonateUser(userId: string, locale: string) {
   const dest =
     role === 'customer'
       ? `/${locale}/feed`
-      : role === 'admin' || role === 'manager' || role === 'staff'
+      : role === 'admin' || role === 'super_admin' || role === 'manager' || role === 'staff'
         ? `/${locale}/admin`
         : `/${locale}/feed`;
 

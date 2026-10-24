@@ -23,6 +23,10 @@ interface EditableImageProps {
  * Renders a CMS-managed image. The stored media block (if any) controls the
  * source, the `object-position` from its focal point, and a dark overlay. When
  * no block exists, `fallbackSrc` renders so the public site is unchanged.
+ *
+ * While the page-content request is in flight, prefer a session-cached CMS URL
+ * over `fallbackSrc` so a reload does not flash the stock photo before the
+ * uploaded image appears.
  */
 export function EditableImage({
   blockKey,
@@ -31,12 +35,21 @@ export function EditableImage({
   alt,
   fallbackSrc,
 }: EditableImageProps) {
-  const { canEdit, editMode, getMedia } = useCms();
+  const { canEdit, editMode, getMedia, isPageReady } = useCms();
   const { t } = useIntl();
   const [open, setOpen] = React.useState(false);
 
   const block = getMedia(blockKey);
-  const src = block?.image_url || fallbackSrc;
+  const pageReady = isPageReady(page);
+  // Keep the last good CMS URL across brief ready=false refetch windows.
+  const stickyCmsSrc = React.useRef<string | null>(block?.image_url || null);
+  if (block?.image_url) stickyCmsSrc.current = block.image_url;
+
+  const src =
+    block?.image_url ||
+    stickyCmsSrc.current ||
+    (pageReady ? fallbackSrc : null);
+
   const altText = block?.alt || alt || '';
   const focal = block?.focal_point ?? { x: 50, y: 50 };
   const overlay = block?.overlay ?? 0;
@@ -44,19 +57,28 @@ export function EditableImage({
   const editable = canEdit && editMode;
 
   return (
-    <span className={cn('group/cms relative block overflow-hidden', className)}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={altText}
-        className="h-full w-full object-cover"
-        style={{ objectPosition: `${focal.x}% ${focal.y}%` }}
-        onClick={editable ? (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          setOpen(true);
-        } : undefined}
-      />
+    <span
+      className={cn(
+        'group/cms relative block overflow-hidden',
+        !src && 'bg-navy-950',
+        editable && 'cursor-pointer',
+        className,
+      )}
+      onClick={editable ? (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(true);
+      } : undefined}
+    >
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt={altText}
+          className={cn('h-full w-full object-cover', editable && 'pointer-events-none')}
+          style={{ objectPosition: `${focal.x}% ${focal.y}%` }}
+        />
+      ) : null}
       {overlay > 0 ? (
         <span
           aria-hidden
@@ -76,7 +98,7 @@ export function EditableImage({
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
             aria-label={t('cms.editImage')}
             title={t('cms.editImage')}
-            className="absolute right-2 top-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-gold-500 text-white opacity-60 shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 group-hover/cms:opacity-100"
+            className="pointer-events-auto absolute right-2 top-2 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full bg-gold-500 text-white opacity-90 shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 hover:opacity-100"
           >
             <Pencil className="h-4 w-4" />
           </button>

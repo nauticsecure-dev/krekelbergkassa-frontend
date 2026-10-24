@@ -38,7 +38,7 @@ import { Input } from '@/components/ui/Input';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { workOrdersService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 
@@ -114,7 +114,7 @@ export default function WorkOrderDetailPage() {
   const id = params?.id ?? '';
   const { locale, t } = useIntl();
   const { push, pushError } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [showAssign, setShowAssign] = React.useState(false);
   const [assignee, setAssignee] = React.useState('');
@@ -830,7 +830,7 @@ export default function WorkOrderDetailPage() {
                       <li key={str(a, 'id') || i} className="flex items-start gap-3 text-sm">
                         <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marine-400" />
                         <div className="min-w-0 flex-1">
-                          <div className="text-navy-800">{str(a, 'action') || '—'}</div>
+                          <div className="text-navy-800">{str(a, 'title') || str(a, 'action') || '—'}</div>
                           <div className="text-xs text-navy-400">
                             {(a.user as { name?: string } | undefined)?.name ?? ''}
                             {str(a, 'created_at') ? ` · ${formatDate_(str(a, 'created_at'))}` : ''}

@@ -36,7 +36,7 @@ import {
 import { findUserIdByEmail, impersonateUser, ImpersonationError } from '@/lib/impersonate';
 import { AddressAutocomplete, type AddressSelection } from '@/components/ui/AddressAutocomplete';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { formatCurrency, formatDate, centsToEuro } from '@/lib/format';
+import { formatCurrency, formatDate, centsToEuro, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -126,7 +126,7 @@ export default function CustomerDetailPage() {
     walletsService.generateMonthlyStatement(customerId!, {
       year: Number(statementYear),
       month: Number(statementMonth),
-      locale: locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL',
+      locale: intlLocale(locale),
     })
   );
 
@@ -454,7 +454,7 @@ export default function CustomerDetailPage() {
           },
           {
             label: t('adminNew.customerDetail.openBalance'),
-            value: formatCurrency(openBalance, locale === 'en' ? 'en-GB' : 'nl-NL'),
+            value: formatCurrency(openBalance, intlLocale(locale)),
             icon: Users,
             tone: openBalance > 0 ? 'warning' : 'success',
             loading: data.loading,
@@ -535,7 +535,7 @@ export default function CustomerDetailPage() {
                     label={t('adminNew.customerDetail.openBalance')}
                     value={formatCurrency(
                       openBalance,
-                      locale === 'en' ? 'en-GB' : 'nl-NL'
+                      intlLocale(locale)
                     )}
                     tone={openBalance > 0 ? 'warning' : 'success'}
                   />
@@ -604,14 +604,14 @@ export default function CustomerDetailPage() {
                 <div className="text-2xl font-semibold text-navy-900">
                   {formatCurrency(
                     data.data.wallet?.balance_euros ?? centsToEuro(data.data.wallet?.balance_cents),
-                    locale === 'en' ? 'en-GB' : 'nl-NL'
+                    intlLocale(locale)
                   )}
                 </div>
                 <p className="mt-1 text-xs text-navy-500">{t('adminNew.wallet.balanceHint')}</p>
                 {(data.data.wallet?.transactions ?? []).slice(0, 3).map((tx) => (
                   <div key={tx.id} className="mt-3 flex items-center justify-between border-t border-navy-100 pt-3 text-sm">
                     <span className="text-navy-600">{tx.description}</span>
-                    <span className="font-medium">{formatCurrency((tx.amount_euros ?? tx.amount_cents / 100), locale === 'en' ? 'en-GB' : 'nl-NL')}</span>
+                    <span className="font-medium">{formatCurrency((tx.amount_euros ?? tx.amount_cents / 100), intlLocale(locale))}</span>
                   </div>
                 ))}
               </AdminSectionCard>
@@ -692,7 +692,7 @@ export default function CustomerDetailPage() {
                           <div className="text-sm font-semibold text-navy-900">
                             {formatCurrency(
                               invoice.total_amount_euros,
-                              locale === 'en' ? 'en-GB' : 'nl-NL'
+                              intlLocale(locale)
                             )}
                           </div>
                           <InvoiceStatusBadge status={invoice.status} isOverdue={invoice.is_overdue} />
@@ -729,7 +729,7 @@ export default function CustomerDetailPage() {
                         <div className="text-sm font-semibold text-navy-900">
                           {formatCurrency(
                             contract.open_balance_cents / 100,
-                            locale === 'en' ? 'en-GB' : 'nl-NL'
+                            intlLocale(locale)
                           )}
                         </div>
                       </div>
@@ -1299,7 +1299,7 @@ export default function CustomerDetailPage() {
         }}
         title={t('adminNew.wallet.creditModal.title')}
         message={t('adminNew.wallet.confirmCredit', {
-          amount: formatCurrency(Number(walletAmount) || 0, locale === 'en' ? 'en-GB' : 'nl-NL'),
+          amount: formatCurrency(Number(walletAmount) || 0, intlLocale(locale)),
         })}
         confirmLabel={t('adminNew.wallet.credit')}
         cancelLabel={t('adminNew.common.cancel')}

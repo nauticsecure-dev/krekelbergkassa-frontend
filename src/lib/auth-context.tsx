@@ -11,7 +11,7 @@ import {
   writeCachedUser,
 } from './auth-storage';
 
-export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'guest';
+export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'super_admin' | 'guest';
 
 export type User = SessionUser;
 
@@ -92,7 +92,13 @@ const demoUserFor = (role: Role): User => {
 };
 
 function normalizeRole(role: string): Role {
-  if (role === 'admin' || role === 'manager' || role === 'staff' || role === 'customer') {
+  if (
+    role === 'admin' ||
+    role === 'super_admin' ||
+    role === 'manager' ||
+    role === 'staff' ||
+    role === 'customer'
+  ) {
     return role;
   }
   return 'staff';

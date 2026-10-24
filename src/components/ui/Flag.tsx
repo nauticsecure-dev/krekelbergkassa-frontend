@@ -33,6 +33,15 @@ export function Flag({ code, className, rounded = true }: FlagProps) {
       </svg>
     );
   }
+  if (code === 'fr') {
+    return (
+      <svg viewBox="0 0 3 2" className={base} preserveAspectRatio="xMidYMid slice" aria-hidden>
+        <rect width="1" height="2" fill="#002395" />
+        <rect x="1" width="1" height="2" fill="#FFFFFF" />
+        <rect x="2" width="1" height="2" fill="#ED2939" />
+      </svg>
+    );
+  }
   // GB (used for the EN locale)
   return (
     <svg viewBox="0 0 60 30" className={base} preserveAspectRatio="xMidYMid slice" aria-hidden>

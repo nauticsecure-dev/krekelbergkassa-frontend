@@ -14,6 +14,7 @@ import {
   Receipt,
   Settings,
   Ship,
+  Wrench,
   ShoppingCart,
   Users,
   Warehouse,
@@ -23,6 +24,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/lib/auth-context';
 import { useConfirmLogout } from '@/components/auth/ConfirmLogoutProvider';
+import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/cn';
 
 interface NavItem {
@@ -30,7 +32,7 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   matches?: string[];
-  roles?: string[];
+  permission?: string;
 }
 
 interface Props {
@@ -43,9 +45,9 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
   const { t, locale } = useIntl();
   const pathname = usePathname();
   const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'super_admin';
+  const { can } = usePermission();
   const { requestLogout } = useConfirmLogout();
-  const role = user?.role ?? 'staff';
-  const businessRoles = ['admin', 'manager'];
 
   const main: NavItem[] = [
     { href: `/${locale}/admin`, icon: Home, label: t('adminModules.nav.overview') },
@@ -53,25 +55,25 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
       href: `/${locale}/admin/planning`,
       icon: CalendarDays,
       label: t('adminModules.nav.planning'),
-      roles: ['admin', 'manager', 'staff'],
+      permission: 'planning.view',
       matches: [`/${locale}/admin/kalender`, `/${locale}/admin/afspraken`, `/${locale}/admin/werkorders`],
     },
-    { href: `/${locale}/admin/kassa`, icon: ShoppingCart, label: t('adminModules.nav.pos'), roles: ['admin', 'manager', 'staff'] },
-    { href: `/${locale}/admin/stalling`, icon: Warehouse, label: t('adminModules.nav.storage'), roles: ['admin', 'manager', 'staff'] },
-    { href: `/${locale}/admin/klanten`, icon: Users, label: t('adminModules.nav.customers'), roles: ['admin', 'manager', 'staff'] },
-    { href: `/${locale}/admin/boten`, icon: Ship, label: t('adminModules.nav.boats'), roles: ['admin', 'manager', 'staff'] },
+    { href: `/${locale}/admin/kassa`, icon: ShoppingCart, label: t('adminModules.nav.pos'), permission: 'kassa.view' },
+    { href: `/${locale}/admin/stalling`, icon: Warehouse, label: t('adminModules.nav.storage'), permission: 'stalling.view' },
+    { href: `/${locale}/admin/klanten`, icon: Users, label: t('adminModules.nav.customers'), permission: 'customers.view' },
+    { href: `/${locale}/admin/boten`, icon: Ship, label: t('adminModules.nav.boats'), permission: 'boats.view' },
     {
       href: `/${locale}/admin/makelaardij`,
       icon: Receipt,
       label: t('adminModules.nav.brokerage'),
-      roles: businessRoles,
+      permission: 'settings.update',
       matches: [`/${locale}/admin/verkopen`, `/${locale}/admin/tarieven/makelaardij`],
     },
     {
       href: `/${locale}/admin/financieel`,
       icon: CircleDollarSign,
       label: t('adminModules.nav.finance'),
-      roles: businessRoles,
+      permission: 'invoice.view',
       matches: [
         `/${locale}/admin/facturen`,
         `/${locale}/admin/betalingen`,
@@ -84,7 +86,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
       href: `/${locale}/admin/diensten-prijzen`,
       icon: Package,
       label: t('adminModules.nav.servicesPricing'),
-      roles: businessRoles,
+      permission: 'products.view',
       matches: [
         `/${locale}/admin/producten`,
         `/${locale}/admin/product-groepen`,
@@ -97,20 +99,32 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
       href: `/${locale}/admin/beheer`,
       icon: Settings,
       label: t('adminModules.nav.management'),
-      roles: ['admin'],
+      permission: 'users.view',
       matches: [
         `/${locale}/admin/gebruikers`,
         `/${locale}/admin/instellingen`,
-        `/${locale}/admin/audit`,
-        `/${locale}/admin/beveiliging`,
-        `/${locale}/admin/api-credentials`,
-        `/${locale}/admin/incidenten`,
-        `/${locale}/admin/systeem`,
       ],
     },
+    ...(isSuperAdmin
+      ? [
+          {
+            href: `/${locale}/admin/systeem`,
+            icon: Wrench,
+            label: t('adminModules.nav.systemAdmin'),
+            matches: [
+              `/${locale}/admin/audit`,
+              `/${locale}/admin/beveiliging`,
+              `/${locale}/admin/api-credentials`,
+              `/${locale}/admin/incidenten`,
+              `/${locale}/admin/systeem`,
+              `/${locale}/admin/systeembeheer`,
+            ],
+          } satisfies NavItem,
+        ]
+      : []),
   ];
 
-  const visibleMain = main.filter((item) => !item.roles || item.roles.includes(role));
+  const visibleMain = main.filter((item) => !item.permission || can(item.permission));
 
   const isActive = (item: NavItem) =>
     pathname === item.href ||
@@ -153,7 +167,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
       )}
     >
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-4">
-        {!collapsed ? <Logo variant="light" /> : <span className="mx-auto text-xs font-bold text-gold-300">KN</span>}
+        {!collapsed ? <Logo variant="light" editable={false} /> : <span className="mx-auto text-xs font-bold text-gold-300">KN</span>}
         {onToggleCollapse ? (
           <button
             type="button"

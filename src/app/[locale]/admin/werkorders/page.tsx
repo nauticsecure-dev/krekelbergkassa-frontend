@@ -28,7 +28,7 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 
 const TYPE_LABELS: Record<string, string> = {
   pressure_washing: 'Hogedrukreiniging',
@@ -82,7 +82,7 @@ function isOverdue(row: Record<string, unknown>): boolean {
   return new Date(due) < new Date(new Date().toDateString());
 }
 
-export default function WorkOrdersPage() {
+export default function WorkOrdersPage({ embedded = false }: { embedded?: boolean }) {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const [page, setPage] = React.useState(1);
@@ -128,7 +128,7 @@ export default function WorkOrdersPage() {
   );
 
   const rows = orders.data?.data ?? [];
-  const dateLocale = locale === 'en' ? 'en-GB' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,19 +170,19 @@ export default function WorkOrdersPage() {
   };
 
   const statsData = stats.data as Record<string, unknown> | null | undefined;
+  const createButton = orders.errorStatus === 403 ? null : (
+    <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+      {t('adminNew.workOrders.new')}
+    </Button>
+  );
 
   return (
     <>
+      {embedded ? null : (
       <AdminPageHeader
         title={t('adminNew.workOrders.title')}
         subtitle={t('adminNew.workOrders.subtitle')}
-        rightSlot={
-          orders.errorStatus === 403 ? null : (
-            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-              {t('adminNew.workOrders.new')}
-            </Button>
-          )
-        }
+        rightSlot={createButton}
         stats={[
           { label: 'Open', value: String(statsData?.open ?? 0), icon: Wrench, tone: 'marine' as const, loading: stats.loading },
           { label: 'Te laat', value: String(statsData?.overdue ?? 0), icon: AlertCircle, tone: (statsData?.overdue ? 'danger' : 'navy') as 'danger' | 'navy', loading: stats.loading },
@@ -190,7 +190,9 @@ export default function WorkOrdersPage() {
           { label: 'Uren', value: `${String(statsData?.labor_hours ?? 0)}u`, icon: Clock, tone: 'gold' as const, loading: stats.loading },
         ]}
       />
+      )}
       <AdminContent>
+        {embedded && createButton ? <div className="mb-4 flex justify-end">{createButton}</div> : null}
         {/* Filter bar */}
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <form onSubmit={handleSearch} className="flex items-center gap-2">

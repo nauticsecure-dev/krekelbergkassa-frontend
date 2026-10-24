@@ -15,6 +15,7 @@ import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
 import { EditableText } from '@/components/cms/EditableText';
 import { EditableImage } from '@/components/cms/EditableImage';
 import { EditableHeroCta } from '@/components/cms/EditableHeroCta';
+import { EditSafeLink } from '@/components/cms/EditSafeLink';
 
 export interface ServicePageProps {
   badge: string;
@@ -81,6 +82,8 @@ export function ServicePage({
         label: tf.range_label,
         price: tf.is_on_request ? t('servicePage.onRequest') : tf.display_price,
         note: tf.range_from_cm === 0 ? t('servicePage.from') : undefined,
+        showInclVat: !tf.is_on_request,
+        vatRate: tf.vat_rate,
       }));
   }, [catalogQuery.data, catalogServiceCode, t]);
   const showPricingWarning =
@@ -108,35 +111,35 @@ export function ServicePage({
           </div>
         ) : (
           <div
-            className="absolute inset-0 bg-cover bg-center"
+            className="pointer-events-none absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${heroImage})` }}
             aria-hidden
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/30" aria-hidden />
-        <div className="container-wide relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
-          <Badge tone="sand" className="mb-4" dot>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/30" aria-hidden />
+        <div className="container-wide pointer-events-none relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
+          <Badge tone="sand" className="pointer-events-auto mb-4" dot>
             {p ? (
               <EditableText blockKey={`${p}.hero.badge`} page={p} section="hero">
                 {badge}
               </EditableText>
             ) : badge}
           </Badge>
-          <h1 className="heading-display max-w-2xl text-4xl text-white sm:text-5xl lg:text-[56px]">
+          <h1 className="heading-display pointer-events-auto max-w-2xl text-4xl text-white sm:text-5xl lg:text-[56px]">
             {editableTitle ?? (p ? (
               <EditableText blockKey={`${p}.hero.title`} page={p} section="hero" type="heading">
                 {title}
               </EditableText>
             ) : title)}
           </h1>
-          <p className="mt-5 max-w-xl text-sand-100/85">
+          <p className="pointer-events-auto mt-5 max-w-xl text-sand-100/85">
             {editableDescription ?? (p ? (
               <EditableText blockKey={`${p}.hero.subtitle`} page={p} section="hero" type="paragraph">
                 {subtitle}
               </EditableText>
             ) : subtitle)}
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="pointer-events-none mt-8 flex w-fit flex-wrap gap-3">
             {p ? (
               <EditableHeroCta
                 page={p}
@@ -147,7 +150,7 @@ export function ServicePage({
                 rightIcon={<ArrowRight className="h-4 w-4" />}
               />
             ) : (
-              <Link href={cta.href}>
+              <Link href={cta.href} className="pointer-events-auto">
                 <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
                   {cta.label}
                 </Button>
@@ -163,7 +166,7 @@ export function ServicePage({
                 className="border-white/30 bg-white/5 text-white hover:bg-white/10"
               />
             ) : (
-              <Link href={`/${locale}/contact`}>
+              <Link href={`/${locale}/contact`} className="pointer-events-auto">
                 <Button
                   variant="outline"
                   size="lg"
@@ -249,21 +252,35 @@ export function ServicePage({
             </div>
             <div className="flex items-center gap-2">
               {isAdmin && adminProductSlug ? (
-                <Link href={`/${locale}/admin/producten?search=${encodeURIComponent(adminProductSlug)}`}>
+                <Link
+                  href={`/${locale}/admin/producten?search=${encodeURIComponent(adminProductSlug)}`}
+                >
                   <Button variant="outline" leftIcon={<Pencil className="h-4 w-4" />}>
                     {t('servicePage.editService')}
                   </Button>
                 </Link>
               ) : null}
-              <Link href={cta.href}>
-                <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  {p ? (
-                    <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
-                      {cta.label}
-                    </EditableText>
-                  ) : cta.label}
-                </Button>
-              </Link>
+              {isAdmin && (catalogServiceCode || adminProductSlug) ? (
+                <Link
+                  href={`/${locale}/admin/calculator/pricing?product=${encodeURIComponent(
+                    catalogServiceCode ?? adminProductSlug ?? '',
+                  )}`}
+                >
+                  <Button variant="outline" leftIcon={<Pencil className="h-4 w-4" />}>
+                    {t('servicePage.editPrices')}
+                  </Button>
+                </Link>
+              ) : null}
+              <EditSafeLink
+                href={cta.href}
+                button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                {p ? (
+                  <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
+                    {cta.label}
+                  </EditableText>
+                ) : cta.label}
+              </EditSafeLink>
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -278,7 +295,14 @@ export function ServicePage({
                     <div className="text-[11px] text-navy-400">{r.note}</div>
                   ) : null}
                 </div>
-                <div className="text-2xl font-semibold text-navy-900">{r.price}</div>
+                <div className="text-right">
+                  <div className="text-2xl font-semibold text-navy-900">{r.price}</div>
+                  {r.showInclVat ? (
+                    <div className="text-[11px] font-medium text-navy-400">
+                      {t('servicePage.inclVat', { rate: r.vatRate ?? 21 })}
+                    </div>
+                  ) : null}
+                </div>
               </Card>
             ))}
           </div>
@@ -360,15 +384,16 @@ export function ServicePage({
               </p>
             </div>
             <div className="flex flex-wrap gap-3 lg:justify-end">
-              <Link href={cta.href}>
-                <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  {p ? (
-                    <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
-                      {cta.label}
-                    </EditableText>
-                  ) : cta.label}
-                </Button>
-              </Link>
+              <EditSafeLink
+                href={cta.href}
+                button={{ variant: "gold", size: "lg", rightIcon: <ArrowRight className="h-4 w-4" /> }}
+              >
+                {p ? (
+                  <EditableText blockKey={`${p}.cta.label`} page={p} section="cta">
+                    {cta.label}
+                  </EditableText>
+                ) : cta.label}
+              </EditSafeLink>
               <Link href={`/${locale}/contact`}>
                 <Button
                   variant="outline"

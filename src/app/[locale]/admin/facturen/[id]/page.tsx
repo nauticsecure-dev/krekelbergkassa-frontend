@@ -23,11 +23,12 @@ import { Input } from '@/components/ui/Input';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { InvoiceStatusBadge, PaymentStatusBadge } from '@/components/admin/StatusBadge';
-import { invoicesService, productGroupsService } from '@/lib/services';
+import { adminService, auditService, invoicesService, paginatedRows, productGroupsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { centsToEuro, formatCurrency, formatDate, formatDateTime } from '@/lib/format';
+import { centsToEuro, formatCurrency, formatDate, formatDateTime, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { invoiceProvenance } from '@/lib/invoice-provenance';
 
 export default function InvoiceDetailPage() {
   const params = useParams<{ id: string }>();
@@ -54,6 +55,7 @@ export default function InvoiceDetailPage() {
     t('adminNew.invoiceDetail.defaults.reminderBody')
   );
   const [paidMethod, setPaidMethod] = React.useState('pin');
+  const [dossierTab, setDossierTab] = React.useState<'overzicht' | 'factuurregels' | 'betalingen' | 'documenten' | 'timeline' | 'audit'>('overzicht');
 
   const data = useQuery([invoiceId], async () => {
     if (!invoiceId) throw new Error('Missing invoice id');
@@ -64,9 +66,18 @@ export default function InvoiceDetailPage() {
     return { invoice, reminders };
   });
   const groups = useQuery(['invoice-groups'], () => productGroupsService.list({ per_page: 100 }));
+  const auditLog = useQuery(
+    [invoiceId, dossierTab, 'audit'],
+    () => (invoiceId ? auditService.byEntity('invoice', invoiceId) : Promise.resolve([])),
+    { immediate: dossierTab === 'audit' && Boolean(invoiceId) },
+  );
+  const timeline = useQuery(
+    [invoiceId, dossierTab, 'timeline'],
+    () => adminService.timelineFeed({ entity_type: 'invoice', entity_id: invoiceId, per_page: 50 }),
+    { immediate: dossierTab === 'timeline' && Boolean(invoiceId) },
+  );
   const groupColorMap = React.useMemo(() => {
-    const g = (groups.data as { data?: Array<Record<string, unknown>> })?.data
-      ?? (Array.isArray(groups.data) ? (groups.data as Array<Record<string, unknown>>) : []);
+    const g = paginatedRows(groups.data);
     return Object.fromEntries(g.map((gr) => [String(gr.id), String(gr.color ?? '')]));
   }, [groups.data]);
 
@@ -78,7 +89,7 @@ export default function InvoiceDetailPage() {
     invoicesService.createPayment(invoiceId, {
       method: 'ideal',
       redirect_url: typeof window !== 'undefined' ? window.location.href : undefined,
-      locale: locale === 'en' ? 'en-GB' : 'nl-NL',
+      locale: intlLocale(locale),
     })
   );
   const creditInvoice = useMutation(
@@ -86,13 +97,13 @@ export default function InvoiceDetailPage() {
       invoicesService.credit(invoiceId, payload)
   );
   const emailInvoice = useMutation(() =>
-    invoicesService.email(invoiceId, { locale: locale === 'en' ? 'en-GB' : 'nl-NL' })
+    invoicesService.email(invoiceId, { locale: intlLocale(locale) })
   );
   const cancelInvoice = useMutation(() => invoicesService.cancel(invoiceId));
   const sendReminder = useMutation(() =>
     invoicesService.sendReminder(invoiceId, {
       channel: 'email',
-      locale: locale === 'en' ? 'en-GB' : 'nl-NL',
+      locale: intlLocale(locale),
       subject: reminderSubject,
       body: reminderBody,
     })
@@ -124,6 +135,7 @@ export default function InvoiceDetailPage() {
   };
 
   const invoice = data.data?.invoice;
+  const provenance = invoice ? invoiceProvenance(locale, invoice) : null;
 
   const onOpenCredit = () => {
     setCreditMode('full');
@@ -224,7 +236,7 @@ export default function InvoiceDetailPage() {
             label: t('adminNew.invoiceDetail.summary.total'),
             value: formatCurrency(
               invoice?.total_amount_euros ?? 0,
-              locale === 'en' ? 'en-GB' : 'nl-NL'
+              intlLocale(locale)
             ),
             icon: Receipt,
             tone: 'navy',
@@ -234,7 +246,7 @@ export default function InvoiceDetailPage() {
             label: t('adminNew.invoiceDetail.summary.outstanding'),
             value: formatCurrency(
               centsToEuro(invoice?.outstanding_cents ?? 0),
-              locale === 'en' ? 'en-GB' : 'nl-NL'
+              intlLocale(locale)
             ),
             icon: CreditCard,
             tone: (invoice?.outstanding_cents ?? 0) > 0 ? 'warning' : 'success',
@@ -356,7 +368,7 @@ export default function InvoiceDetailPage() {
                     onClick={() =>
                       void action(
                         t('adminNew.invoiceDetail.toasts.emailed'),
-                        () => invoicesService.email(creditResult.id, { locale: locale === 'en' ? 'en-GB' : 'nl-NL' })
+                        () => invoicesService.email(creditResult.id, { locale: intlLocale(locale) })
                       )
                     }
                   >
@@ -374,20 +386,51 @@ export default function InvoiceDetailPage() {
               </div>
             ) : null}
 
+            <div className="mb-4 flex flex-wrap gap-2">
+              {([
+                ['overzicht', t('adminNew.invoiceDetail.tabs.overview', { defaultValue: 'Overzicht' })],
+                ['factuurregels', t('adminNew.invoiceDetail.tabs.lines', { defaultValue: 'Factuurregels' })],
+                ['betalingen', t('adminNew.invoiceDetail.tabs.payments', { defaultValue: 'Betalingen' })],
+                ['documenten', t('adminNew.invoiceDetail.tabs.documents', { defaultValue: 'Documenten' })],
+                ['timeline', t('adminNew.invoiceDetail.tabs.timeline', { defaultValue: 'Timeline' })],
+                ['audit', t('adminNew.invoiceDetail.tabs.audit', { defaultValue: 'Audit' })],
+              ] as const).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setDossierTab(id)}
+                  className={`rounded-lg border px-3 py-1.5 text-sm font-medium ${dossierTab === id ? 'border-marine-500 bg-marine-50 text-marine-800' : 'border-navy-200 bg-white text-navy-700'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {(dossierTab === 'overzicht' || dossierTab === 'factuurregels' || dossierTab === 'documenten') ? (
             <div className="bento-grid lg:grid-cols-3">
+              {dossierTab !== 'documenten' ? (
               <AdminSectionCard
-                className="lg:col-span-2"
-                title={t('adminNew.invoiceDetail.overviewTitle')}
+                className={dossierTab === 'factuurregels' ? 'lg:col-span-3' : 'lg:col-span-2'}
+                title={dossierTab === 'factuurregels' ? t('adminNew.invoiceDetail.tabs.lines', { defaultValue: 'Factuurregels' }) : t('adminNew.invoiceDetail.overviewTitle')}
                 description={`${t('adminNew.invoiceDetail.source')}: ${invoice.source}`}
                 icon={Receipt}
                 action={<InvoiceStatusBadge status={invoice.status} isOverdue={invoice.is_overdue} />}
               >
                 <div className="space-y-5">
+                  {dossierTab === 'overzicht' ? (
                   <AdminDetailGrid
                     items={[
                       {
                         label: t('adminNew.invoiceDetail.meta.invoiceDate'),
-                        value: formatDate(invoice.created_at),
+                        value: formatDate(invoice.invoice_date || invoice.created_at),
+                      },
+                      {
+                        label: t('adminNew.invoices.reference', { defaultValue: 'Referentie' }),
+                        value: invoice.reference || '—',
+                      },
+                      {
+                        label: t('adminNew.invoices.customerNote', { defaultValue: 'Opmerking op factuur' }),
+                        value: invoice.notes || '—',
                       },
                       {
                         label: t('adminNew.invoiceDetail.meta.dueDate'),
@@ -399,7 +442,9 @@ export default function InvoiceDetailPage() {
                       },
                     ]}
                   />
+                  ) : null}
 
+                  {dossierTab === 'factuurregels' ? (
                   <AdminTableCard>
                     <AdminTable minWidth={640}>
                       <AdminTableHead>
@@ -433,14 +478,14 @@ export default function InvoiceDetailPage() {
                             <AdminTableCell>
                               {formatCurrency(
                                 centsToEuro(line.unit_price),
-                                locale === 'en' ? 'en-GB' : 'nl-NL'
+                                intlLocale(locale)
                               )}
                             </AdminTableCell>
                             <AdminTableCell>{line.vat_rate}%</AdminTableCell>
                             <AdminTableCell className="font-semibold text-navy-900">
                               {formatCurrency(
                                 centsToEuro(line.line_total),
-                                locale === 'en' ? 'en-GB' : 'nl-NL'
+                                intlLocale(locale)
                               )}
                             </AdminTableCell>
                           </AdminTableRow>
@@ -449,9 +494,12 @@ export default function InvoiceDetailPage() {
                       </tbody>
                     </AdminTable>
                   </AdminTableCard>
+                  ) : null}
                 </div>
               </AdminSectionCard>
+              ) : null}
 
+              {dossierTab !== 'factuurregels' ? (
               <AdminSectionCard
                 title={t('adminNew.invoiceDetail.customerSnapshot')}
                 description={invoice.customer?.email ?? undefined}
@@ -470,21 +518,21 @@ export default function InvoiceDetailPage() {
                       label={t('adminNew.invoiceDetail.summary.subtotal')}
                       value={formatCurrency(
                         invoice.subtotal_euros,
-                        locale === 'en' ? 'en-GB' : 'nl-NL'
+                        intlLocale(locale)
                       )}
                     />
                     <Summary
                       label={t('adminNew.invoiceDetail.summary.vat')}
                       value={formatCurrency(
                         invoice.vat_amount_euros,
-                        locale === 'en' ? 'en-GB' : 'nl-NL'
+                        intlLocale(locale)
                       )}
                     />
                     <Summary
                       label={t('adminNew.invoiceDetail.summary.total')}
                       value={formatCurrency(
                         invoice.total_amount_euros,
-                        locale === 'en' ? 'en-GB' : 'nl-NL'
+                        intlLocale(locale)
                       )}
                       strong
                     />
@@ -492,13 +540,15 @@ export default function InvoiceDetailPage() {
                       label={t('adminNew.invoiceDetail.summary.outstanding')}
                       value={formatCurrency(
                         centsToEuro(invoice.outstanding_cents),
-                        locale === 'en' ? 'en-GB' : 'nl-NL'
+                        intlLocale(locale)
                       )}
                       strong
                     />
                   </div>
 
                   <div className="space-y-2">
+                    {dossierTab === 'documenten' ? (
+                    <>
                     <div className="rounded-xl border border-navy-100/70 bg-white p-2">
                       <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-widest text-navy-400">
                         {t('adminNew.invoiceDetail.pdfActions')}
@@ -584,6 +634,10 @@ export default function InvoiceDetailPage() {
                     >
                       {t('adminNew.invoiceDetail.actions.regeneratePdf')}
                     </Button>
+                    </>
+                    ) : null}
+                    {dossierTab === 'overzicht' ? (
+                    <>
                     <Button
                       variant="outline"
                       size="sm"
@@ -610,11 +664,16 @@ export default function InvoiceDetailPage() {
                     >
                       {t('adminNew.common.cancel')}
                     </Button>
+                    </>
+                    ) : null}
                   </div>
                 </div>
               </AdminSectionCard>
+              ) : null}
             </div>
+            ) : null}
 
+            {dossierTab === 'betalingen' ? (
             <div className="bento-grid lg:grid-cols-2">
               <AdminSectionCard
                 title={t('adminNew.invoiceDetail.paymentTimeline')}
@@ -640,7 +699,7 @@ export default function InvoiceDetailPage() {
                           <div className="font-semibold text-navy-900">
                             {formatCurrency(
                               payment.amount_euros,
-                              locale === 'en' ? 'en-GB' : 'nl-NL'
+                              intlLocale(locale)
                             )}
                           </div>
                           <PaymentStatusBadge status={payment.status} />
@@ -686,7 +745,9 @@ export default function InvoiceDetailPage() {
                 </div>
               </AdminSectionCard>
             </div>
+            ) : null}
 
+            {dossierTab === 'overzicht' ? (
             <div className="bento-grid lg:grid-cols-2">
               <AdminSectionCard
                 title={t('adminNew.invoiceDetail.customerSnapshot')}
@@ -742,6 +803,41 @@ export default function InvoiceDetailPage() {
                 />
               </AdminSectionCard>
             </div>
+            ) : null}
+
+            {dossierTab === 'timeline' ? (
+              <AdminSectionCard title={t('adminNew.invoiceDetail.tabs.timeline', { defaultValue: 'Timeline' })} icon={Mail}>
+                {timeline.loading ? <LoadingState label={t('adminNew.common.loading')} /> : null}
+                {timeline.error ? <ErrorState message={timeline.error} onRetry={() => void timeline.refetch()} /> : null}
+                <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
+                  {(timeline.data?.data ?? []).length ? (timeline.data?.data ?? []).map((item) => (
+                    <div key={String(item.id ?? item.created_at)} className="px-4 py-3 text-sm">
+                      <div className="font-medium text-navy-900">{String(item.title ?? item.type ?? '—')}</div>
+                      <div className="text-xs text-navy-500">{String(item.description ?? item.message ?? '')}</div>
+                    </div>
+                  )) : (
+                    <div className="px-4 py-6 text-sm text-navy-500">{t('adminNew.invoiceDetail.noPayments')}</div>
+                  )}
+                </div>
+              </AdminSectionCard>
+            ) : null}
+
+            {dossierTab === 'audit' ? (
+              <AdminSectionCard title={t('adminNew.invoiceDetail.tabs.audit', { defaultValue: 'Audit' })} icon={Receipt}>
+                {auditLog.loading ? <LoadingState label={t('adminNew.common.loading')} /> : null}
+                {auditLog.error ? <ErrorState message={auditLog.error} onRetry={() => void auditLog.refetch()} /> : null}
+                <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
+                  {(auditLog.data ?? []).length ? (auditLog.data ?? []).map((entry) => (
+                    <div key={entry.id} className="flex items-center justify-between px-4 py-3 text-sm">
+                      <span className="font-medium text-navy-900">{entry.title || entry.action}</span>
+                      <span className="text-xs text-navy-500">{formatDateTime(entry.created_at)}</span>
+                    </div>
+                  )) : (
+                    <div className="px-4 py-6 text-sm text-navy-500">—</div>
+                  )}
+                </div>
+              </AdminSectionCard>
+            ) : null}
 
             <div className="flex flex-wrap items-center gap-4">
               <Link
@@ -751,13 +847,13 @@ export default function InvoiceDetailPage() {
                 {t('adminNew.invoiceDetail.back')}
               </Link>
               {/* Trello #107: back-link to the originating stalling contract. */}
-              {(invoice.stalling_contract_id ?? invoice.stalling_contract?.id) ? (
+              {provenance ? (
                 <Link
-                  href={`/${locale}/admin/stalling/${invoice.stalling_contract_id ?? invoice.stalling_contract?.id}`}
+                  href={provenance.href}
                   className="inline-flex items-center gap-1 text-sm font-semibold text-marine-700 hover:text-marine-800"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  {t('adminNew.invoiceDetail.backToContract')}
+                  {t('adminNew.invoices.provenanceLabel', { defaultValue: 'Bron' })}: {provenance.label}
                 </Link>
               ) : null}
             </div>

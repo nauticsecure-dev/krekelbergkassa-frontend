@@ -35,7 +35,7 @@ import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import type { BoatLocation } from '@/lib/api-types';
 import { formatTimeRange, toTimeInputValue } from '@/lib/time';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 
 type ModalKind = 'regular' | 'exception' | 'lunch' | 'location' | 'editLocation' | null;
 
@@ -59,7 +59,7 @@ function monthRange(ref: Date): { from: string; to: string } {
   return { from: iso(from), to: iso(to) };
 }
 
-export default function CalendarAdminPage() {
+export default function CalendarAdminPage({ embedded = false }: { embedded?: boolean }) {
   const { t, locale } = useIntl();
   const { push } = useToast();
   const [modal, setModal] = React.useState<ModalKind>(null);
@@ -268,7 +268,7 @@ export default function CalendarAdminPage() {
   const todayDay = new Date().getDay();
   const openDays = regular.filter((r) => !r.is_closed).length;
   const blockedLocations = locationRows.filter((l) => l.is_blocked).length;
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const regularFormFromDay = (day: number) => {
     const row = regular.find((r) => r.day_of_week === day);
@@ -295,6 +295,7 @@ export default function CalendarAdminPage() {
 
   return (
     <>
+      {embedded ? null : (
       <AdminPageHeader
         title={t('adminNew.calendar.title')}
         subtitle={t('adminNew.calendar.subtitle')}
@@ -345,6 +346,7 @@ export default function CalendarAdminPage() {
           },
         ]}
       />
+      )}
       <AdminContent>
         {calendar.loading ? (
           <LoadingState label={t('adminNew.calendar.loading')} />

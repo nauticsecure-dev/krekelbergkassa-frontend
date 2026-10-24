@@ -1,3 +1,24 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "JSXElement[openingElement.name.name='Link'] JSXElement[openingElement.name.name='EditableText']",
+        "message": "Do not put EditableText inside Link. Use EditSafeLink so edit mode is not an anchor."
+      },
+      {
+        "selector": "JSXElement[openingElement.name.name='a'] JSXElement[openingElement.name.name='EditableText']",
+        "message": "Do not put EditableText inside an anchor."
+      },
+      {
+        "selector": "JSXElement[openingElement.name.name='Button'] JSXElement[openingElement.name.name='EditableText']",
+        "message": "Do not put EditableText inside Button. Pass button styles to EditSafeLink instead."
+      },
+      {
+        "selector": "JSXElement[openingElement.name.name='button'] JSXElement[openingElement.name.name='EditableText']",
+        "message": "Do not put EditableText inside a button."
+      }
+    ]
+  }
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   Anchor,
   ArrowRight,
@@ -10,7 +9,6 @@ import {
   Ship,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useIntl } from "@/i18n/IntlProvider";
 import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
@@ -40,26 +38,26 @@ export default function VerkoopPage() {
           />
         </div>
         <div
-          className="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/40"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/40"
           aria-hidden
         />
-        <div className="container-wide relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
-          <Badge tone="sand" dot className="mb-4">
+        <div className="container-wide pointer-events-none relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
+          <Badge tone="sand" dot className="pointer-events-auto mb-4">
             <EditableText blockKey="verkoop.hero.badge" page={CMS_PAGE} section="hero">
               {t("verkoopPage.badge")}
             </EditableText>
           </Badge>
-          <h1 className="heading-display max-w-2xl whitespace-pre-line text-4xl text-white sm:text-5xl lg:text-[56px]">
+          <h1 className="heading-display pointer-events-auto max-w-2xl whitespace-pre-line text-4xl text-white sm:text-5xl lg:text-[56px]">
             <EditableText blockKey="verkoop.hero.title" page={CMS_PAGE} section="hero" type="heading">
               {t("verkoopPage.title")}
             </EditableText>
           </h1>
-          <p className="mt-5 max-w-xl text-sand-100/85">
+          <p className="pointer-events-auto mt-5 max-w-xl text-sand-100/85">
             <EditableText blockKey="verkoop.hero.subtitle" page={CMS_PAGE} section="hero" type="paragraph">
               {t("verkoopPage.subtitle")}
             </EditableText>
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="pointer-events-none mt-8 flex w-fit flex-wrap items-center gap-3">
             <EditableHeroCta
               page={CMS_PAGE}
               blockKey="verkoop.hero.cta_browse"
@@ -136,13 +134,17 @@ export default function VerkoopPage() {
                 </EditableText>
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <a href={SCHEPENKRING_URL} target="_blank" rel="noopener noreferrer">
-                  <Button variant="primary" size="lg" rightIcon={<ExternalLink className="h-4 w-4" />}>
-                    <EditableText blockKey="verkoop.browse.cta" page={CMS_PAGE} section="browse">
-                      {t("verkoopPage.browseCta")}
-                    </EditableText>
-                  </Button>
-                </a>
+                <EditableHeroCta
+                  page={CMS_PAGE}
+                  blockKey="verkoop.browse.cta"
+                  labelBlockKey="verkoop.browse.cta"
+                  label={t("verkoopPage.browseCta")}
+                  href={SCHEPENKRING_URL}
+                  variant="primary"
+                  size="lg"
+                  section="browse"
+                  rightIcon={<ExternalLink className="h-4 w-4" />}
+                />
                 <span className="text-xs text-navy-400">
                   <EditableText blockKey="verkoop.browse.external_note" page={CMS_PAGE} section="browse">
                     {t("verkoopPage.browseExternal")}
@@ -175,42 +177,47 @@ export default function VerkoopPage() {
                   className="h-full w-full"
                 />
               </div>
-              <div className="absolute inset-0 bg-navy-950/75" aria-hidden />
-              <div className="relative">
-                <Badge tone="gold" className="mb-3" dot>
+              <div className="pointer-events-none absolute inset-0 bg-navy-950/75" aria-hidden />
+              <div className="relative pointer-events-none">
+                <Badge tone="gold" className="pointer-events-auto mb-3" dot>
                   <EditableText blockKey="verkoop.sell.badge" page={CMS_PAGE} section="sell">
                     {t("verkoopPage.badge")}
                   </EditableText>
                 </Badge>
-                <h2 className="heading-display text-3xl text-white sm:text-4xl">
+                <h2 className="heading-display pointer-events-auto text-3xl text-white sm:text-4xl">
                   <EditableText blockKey="verkoop.sell.title" page={CMS_PAGE} section="sell" type="heading">
                     {t("verkoopPage.sellTitle")}
                   </EditableText>
                 </h2>
-                <p className="mt-3 max-w-md text-sm leading-relaxed text-sand-100/80">
+                <p className="pointer-events-auto mt-3 max-w-md text-sm leading-relaxed text-sand-100/80">
                   <EditableText blockKey="verkoop.sell.desc" page={CMS_PAGE} section="sell" type="paragraph">
                     {t("verkoopPage.sellDesc")}
                   </EditableText>
                 </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href={`/${locale}/contact`}>
-                    <Button variant="gold" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                      <EditableText blockKey="verkoop.sell.cta_primary" page={CMS_PAGE} section="sell">
-                        {t("verkoopPage.sellCta")}
-                      </EditableText>
-                    </Button>
-                  </Link>
-                  <Link href={`/${locale}/contact`}>
-                    <Button
-                      variant="outline"
-                      className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-                      leftIcon={<Anchor className="h-4 w-4" />}
-                    >
-                      <EditableText blockKey="verkoop.sell.cta_value" page={CMS_PAGE} section="sell">
-                        {t("verkoopPage.valueCta")}
-                      </EditableText>
-                    </Button>
-                  </Link>
+                <div className="pointer-events-none mt-6 flex w-fit flex-wrap gap-3">
+                  <EditableHeroCta
+                    page={CMS_PAGE}
+                    blockKey="verkoop.sell.cta_primary"
+                    labelBlockKey="verkoop.sell.cta_primary"
+                    label={t("verkoopPage.sellCta")}
+                    href={`/${locale}/contact`}
+                    variant="gold"
+                    size="md"
+                    section="sell"
+                    rightIcon={<ArrowRight className="h-4 w-4" />}
+                  />
+                  <EditableHeroCta
+                    page={CMS_PAGE}
+                    blockKey="verkoop.sell.cta_value"
+                    labelBlockKey="verkoop.sell.cta_value"
+                    label={t("verkoopPage.valueCta")}
+                    href={`/${locale}/contact`}
+                    variant="outline"
+                    size="md"
+                    section="sell"
+                    className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+                    leftIcon={<Anchor className="h-4 w-4" />}
+                  />
                 </div>
               </div>
             </div>
@@ -218,7 +225,9 @@ export default function VerkoopPage() {
               {(["step1", "step2", "step3", "step4"] as const).map((key, i) => (
                 <div key={key} className={i < 2 ? "border-t-0 p-6" : "p-6"}>
                   <div className="text-xs font-semibold tracking-widest text-navy-400">
-                    {String(i + 1).padStart(2, "0")}
+                    <EditableText blockKey={`verkoop.${key}.number`} page={CMS_PAGE} section="steps">
+                      {String(i + 1).padStart(2, "0")}
+                    </EditableText>
                   </div>
                   <div className="mt-1 text-base font-semibold text-navy-900">
                     <EditableText blockKey={`verkoop.${key}.title`} page={CMS_PAGE} section="steps">

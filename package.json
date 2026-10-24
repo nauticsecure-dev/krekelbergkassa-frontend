@@ -8,9 +8,15 @@
     "start": "next start -p 3030",
     "lint": "next lint",
     "check:admin-i18n": "node scripts/check-admin-i18n.mjs",
-    "screenshots": "node scripts/screenshot.mjs"
+    "screenshots": "node scripts/screenshot.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
     "@zxing/browser": "^0.2.0",
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.5",
@@ -19,11 +25,13 @@
     "pdfjs-dist": "^4.10.38",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-easy-crop": "^6.2.4",
     "react-hot-toast": "^2.6.0",
     "recharts": "^2.15.4",
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",

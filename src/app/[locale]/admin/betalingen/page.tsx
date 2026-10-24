@@ -24,7 +24,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
 
 export default function PaymentsPage() {
   const { t, locale } = useIntl();
@@ -39,7 +39,7 @@ export default function PaymentsPage() {
   const reconcile = useMutation((id: string) => paymentsService.reconcile(id));
 
   const rows = payments.data?.data ?? [];
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const onReconcile = async (id: string) => {
     try {

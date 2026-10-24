@@ -30,7 +30,7 @@ for (const file of walk('src')) {
   while ((m = keyRe.exec(content)) !== null) used.add(m[1]);
 }
 
-const locales = ['nl', 'en', 'de'];
+const locales = ['nl', 'en', 'de', 'fr'];
 const messages = Object.fromEntries(
   locales.map((loc) => [
     loc,

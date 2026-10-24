@@ -31,12 +31,80 @@ import {
 import { cn } from '@/lib/cn';
 import { bookingService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
-import { getApiErrorMessage } from '@/lib/api-error';
+import {
+  getApiErrorMessage,
+  getApiErrorStatus,
+  getApiRequestId,
+  getApiValidationErrors,
+} from '@/lib/api-error';
+
+type BookingField =
+  | 'voornaam'
+  | 'email'
+  | 'straat'
+  | 'huisnummer'
+  | 'postcode'
+  | 'stad'
+  | 'length'
+  | 'service'
+  | 'date'
+  | 'time';
+
+const API_FIELD_TO_BOOKING: Record<string, BookingField> = {
+  first_name: 'voornaam',
+  email: 'email',
+  date: 'date',
+  start_time: 'time',
+  service_codes: 'service',
+  'boat.length_m': 'length',
+  'boat.length_cm': 'length',
+  'address.street': 'straat',
+  'address.house_number': 'huisnummer',
+  'address.postal_code': 'postcode',
+  'address.city': 'stad',
+};
+
+const BOOKING_FIELD_I18N: Record<BookingField, string> = {
+  voornaam: 'crane.validation.firstName',
+  email: 'crane.validation.email',
+  straat: 'crane.validation.street',
+  huisnummer: 'crane.validation.houseNumber',
+  postcode: 'crane.validation.postalCode',
+  stad: 'crane.validation.city',
+  length: 'crane.validation.length',
+  service: 'crane.validation.service',
+  date: 'crane.validation.date',
+  time: 'crane.validation.time',
+};
+
+/** Dutch postcode, or a 4- or 5-digit code for a typed-in BE/DE/FR address. */
+const POSTAL_CODE_PATTERN = /^(?:[1-9]\d{3}\s?[A-Za-z]{2}|[1-9]\d{3}|\d{5})$/;
+/** Starts with digits; allows a Dutch suffix such as "12 A" or "12-14". */
+const HOUSE_NUMBER_PATTERN = /^[0-9]+(?:[A-Za-z]|[\s\-/][0-9A-Za-z]+)*$/;
+
+function isValidHouseNumber(value: string) {
+  const trimmed = value.trim();
+  return trimmed.length > 0 && trimmed.length <= 20 && HOUSE_NUMBER_PATTERN.test(trimmed);
+}
+
+function isValidPostalCode(value: string) {
+  return POSTAL_CODE_PATTERN.test(value.trim());
+}
+
+function formatPostalCode(value: string) {
+  const compact = value.replace(/\s+/g, '').toUpperCase();
+  if (/^[1-9]\d{3}[A-Z]{2}$/.test(compact)) {
+    return `${compact.slice(0, 4)} ${compact.slice(4)}`;
+  }
+  return value.trim();
+}
+import { generateRequestId } from '@/lib/api';
+import { flushTrackEvents, trackEvent } from '@/lib/track-event';
 import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin } from '@/lib/auth-routes';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { serviceCatalogService, type ServiceCatalogService } from '@/lib/services';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, intlLocale } from '@/lib/format';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 const CMS_PAGE = 'kraanafspraak';
@@ -126,7 +194,7 @@ export default function KraanAfspraakPage() {
   const { push } = useToast();
   const { user, isDemo } = useAuth();
   const canManageProducts = canAccessAdmin(user?.role, isDemo);
-  const currencyLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const currencyLocale = intlLocale(locale);
   useRegisterCmsPage(CMS_PAGE);
   const catalogQuery = useQuery(
     [],
@@ -157,10 +225,39 @@ export default function KraanAfspraakPage() {
   const [timeSlots, setTimeSlots]           = React.useState<string[]>([]);
   const [loadingSlots, setLoadingSlots]     = React.useState(false);
   const [slotsError, setSlotsError]         = React.useState<'closed' | 'error' | null>(null);
+  const [slotsErrorMessage, setSlotsErrorMessage] = React.useState<string | null>(null);
+  const [submitError, setSubmitError]       = React.useState<string | null>(null);
+  const [fieldErrors, setFieldErrors]       = React.useState<Partial<Record<BookingField, string>>>({});
   const [images, setImages]                 = React.useState<File[]>([]);
   const [googleLoaded, setGoogleLoaded]     = React.useState(false);
+  const [googleError, setGoogleError]       = React.useState(
+    () => !process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+  );
   const addressRef                          = React.useRef<HTMLInputElement>(null);
+
+  const releaseStreetField = React.useCallback(() => {
+    const input = addressRef.current;
+    if (!input) return;
+    input.disabled = false;
+    input.readOnly = false;
+  }, []);
+
+  if (typeof window !== 'undefined') {
+    (window as Window & { gm_authFailure?: () => void }).gm_authFailure = () => {
+      setGoogleError(true);
+      releaseStreetField();
+    };
+  }
+
+  React.useEffect(() => {
+    if (!googleError) return;
+    const timers = [0, 50, 250, 1000].map((ms) => window.setTimeout(releaseStreetField, ms));
+    return () => timers.forEach((id) => window.clearTimeout(id));
+  }, [googleError, releaseStreetField]);
   const fileInputRef                        = React.useRef<HTMLInputElement>(null);
+  const submitErrorRef                      = React.useRef<HTMLDivElement>(null);
+  const slotsErrorRef                       = React.useRef<HTMLParagraphElement>(null);
+  const fieldRefs = React.useRef<Partial<Record<BookingField, HTMLElement | null>>>({});
 
   const [form, setForm] = React.useState({
     voornaam: '',
@@ -184,45 +281,112 @@ export default function KraanAfspraakPage() {
     notes: '',
   });
 
-  const setField = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setForm(prev => ({ ...prev, [key]: e.target.value }));
-
-  // Google Places autocomplete
-  React.useEffect(() => {
-    if (!googleLoaded || !addressRef.current) return;
-    const g = (window as unknown as { google?: { maps?: { places?: { Autocomplete: new (el: HTMLInputElement, opts: object) => { addListener: (evt: string, cb: () => void) => void; getPlace: () => { address_components?: { long_name: string; types: string[] }[] } } } } } }).google;
-    if (!g?.maps?.places) return;
-
-    const ac = new g.maps.places.Autocomplete(addressRef.current, {
-      types: ['address'],
-      componentRestrictions: { country: ['nl', 'be', 'de', 'fr'] },
-      fields: ['address_components'],
+  const clearFieldError = (key: BookingField) =>
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
     });
 
-    ac.addListener('place_changed', () => {
+  const setField = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
+    if (
+      key === 'voornaam' || key === 'email' || key === 'length' ||
+      key === 'straat' || key === 'huisnummer' || key === 'postcode' || key === 'stad'
+    ) {
+      clearFieldError(key);
+    }
+  };
+
+  // Google Places autocomplete on the street field. Manual typing still works
+  // when the script is missing or the address is not in the suggestion list.
+  React.useEffect(() => {
+    if (googleError || !googleLoaded || !addressRef.current) return;
+    const g = (window as unknown as {
+      google?: {
+        maps?: {
+          event?: { clearInstanceListeners: (instance: object) => void };
+          places?: {
+            Autocomplete: new (el: HTMLInputElement, opts: object) => {
+              addListener: (evt: string, cb: () => void) => void;
+              getPlace: () => { address_components?: { long_name: string; types: string[] }[] };
+            };
+          };
+        };
+      };
+    }).google;
+    if (!g?.maps?.places) {
+      setGoogleError(true);
+      return;
+    }
+
+    let ac: {
+      addListener: (evt: string, cb: () => void) => void;
+      getPlace: () => { address_components?: { long_name: string; types: string[] }[] };
+    };
+    try {
+      ac = new g.maps.places.Autocomplete(addressRef.current, {
+        types: ['address'],
+        componentRestrictions: { country: 'nl' },
+        fields: ['address_components'],
+      });
+    } catch {
+      setGoogleError(true);
+      return;
+    }
+
+    const applyPlace = () => {
       const place = ac.getPlace();
       const comps = place.address_components ?? [];
+      if (!comps.length) return;
       const get = (type: string) => comps.find(c => c.types.includes(type))?.long_name ?? '';
+      const street = get('route');
+      const houseNumber = get('street_number');
+      const postalCode = get('postal_code');
+      const city = get('locality') || get('postal_town') || get('administrative_area_level_2');
+
       setForm(prev => ({
         ...prev,
-        straat:     get('route'),
-        huisnummer: get('street_number'),
-        postcode:   get('postal_code'),
-        stad:       get('locality') || get('postal_town') || get('administrative_area_level_2'),
+        ...(street ? { straat: street } : {}),
+        ...(houseNumber ? { huisnummer: houseNumber } : {}),
+        ...(postalCode ? { postcode: formatPostalCode(postalCode) } : {}),
+        ...(city ? { stad: city } : {}),
       }));
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        if (street) delete next.straat;
+        if (houseNumber) delete next.huisnummer;
+        if (postalCode) delete next.postcode;
+        if (city) delete next.stad;
+        return next;
+      });
+    };
+
+    ac.addListener('place_changed', () => {
+      applyPlace();
+      // Places writes the full prediction back into the input after this event.
+      window.setTimeout(applyPlace, 0);
     });
-  }, [googleLoaded]);
+
+    return () => {
+      g.maps?.event?.clearInstanceListeners(ac);
+      releaseStreetField();
+    };
+  }, [googleError, googleLoaded, releaseStreetField]);
 
   const month      = buildMonth(view.getFullYear(), view.getMonth());
   const monthLabel = `${DUTCH_MONTHS[view.getMonth()]} ${view.getFullYear()}`;
   const lengthCm   = Number(form.length || 0);
   const lengthM    = lengthCm / 100;
+  const toLocalDateKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
   React.useEffect(() => {
     const from = new Date(view.getFullYear(), view.getMonth(), 1);
     const to   = new Date(view.getFullYear(), view.getMonth() + 1, 0);
     void bookingService
-      .calendar(from.toISOString(), to.toISOString())
+      .calendar(toLocalDateKey(from), toLocalDateKey(to))
       .then(res => {
         const map: Record<string, boolean> = {};
         for (const day of res.days) map[day.date.slice(0, 10)] = day.is_open;
@@ -235,33 +399,40 @@ export default function KraanAfspraakPage() {
     if (!picked || !selectedServices.length || !lengthCm) {
       setTimeSlots([]);
       setSlotsError(null);
+      setSlotsErrorMessage(null);
       setTime(null);
       return;
     }
     setLoadingSlots(true);
     setSlotsError(null);
+    setSlotsErrorMessage(null);
     setTime(null);
-    const dateIso = new Date(picked.getFullYear(), picked.getMonth(), picked.getDate(), 12).toISOString();
+    const dateKey = toLocalDateKey(picked);
     void bookingService
-      .slots({ date: dateIso, length_cm: Math.max(100, lengthCm), service_codes: selectedServices })
+      .slots({ date: dateKey, length_cm: Math.max(100, lengthCm), service_codes: selectedServices })
       .then(res => {
         if (res.is_open) {
           setTimeSlots(res.slots);
           setSlotsError(null);
+          setSlotsErrorMessage(null);
         } else {
           setTimeSlots([]);
           setSlotsError('closed');
+          setSlotsErrorMessage(null);
         }
       })
-      .catch(() => {
+      .catch((err) => {
         setTimeSlots([]);
         setSlotsError('error');
+        setSlotsErrorMessage(getApiErrorMessage(err, t('crane.slotsLoadFailed')));
       })
       .finally(() => setLoadingSlots(false));
-  }, [picked, selectedServices, lengthCm]);
+  }, [picked, selectedServices, lengthCm, t]);
 
-  const toggleService = (code: string) =>
-    setSelectedServices(cur => cur.includes(code) ? cur.filter(c => c !== code) : [...cur, code]);
+  const toggleService = (code: string) => {
+    clearFieldError('service');
+    setSelectedServices((cur) => (cur.includes(code) ? cur.filter((c) => c !== code) : [...cur, code]));
+  };
 
   React.useEffect(() => {
     if (!catalogServices) return;
@@ -286,13 +457,108 @@ export default function KraanAfspraakPage() {
   const isOtherMonth = (d: Date) => d.getMonth() !== view.getMonth();
   const isToday      = (d: Date) => d.getTime() === today.getTime();
   const isPicked     = (d: Date) => picked?.getTime() === d.getTime();
-  const toLocalDateKey = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
   const isDayClosed  = (d: Date) => {
     const key = toLocalDateKey(d);
     return key in openDays && !openDays[key];
   };
+
+  const requiredMsg = (field: BookingField) =>
+    t('crane.validation.required', { field: t(BOOKING_FIELD_I18N[field]) });
+
+  const invalidMsg = (field: BookingField) =>
+    t('crane.validation.invalid', { field: t(BOOKING_FIELD_I18N[field]) });
+
+  const collectClientErrors = (): Partial<Record<BookingField, string>> => {
+    const errors: Partial<Record<BookingField, string>> = {};
+    if (!form.voornaam.trim()) errors.voornaam = requiredMsg('voornaam');
+    if (!form.email.trim()) errors.email = requiredMsg('email');
+    if (!form.straat.trim()) errors.straat = requiredMsg('straat');
+    if (!form.huisnummer.trim()) errors.huisnummer = requiredMsg('huisnummer');
+    else if (!isValidHouseNumber(form.huisnummer)) errors.huisnummer = invalidMsg('huisnummer');
+    if (!form.postcode.trim()) errors.postcode = requiredMsg('postcode');
+    else if (!isValidPostalCode(form.postcode)) errors.postcode = invalidMsg('postcode');
+    if (!form.stad.trim()) errors.stad = requiredMsg('stad');
+    if (!lengthCm) errors.length = requiredMsg('length');
+    if (!selectedBookableServices.length) errors.service = requiredMsg('service');
+    if (!picked) errors.date = requiredMsg('date');
+    if (!time) errors.time = requiredMsg('time');
+    return errors;
+  };
+
+  const clientValidationMessage = (errors: Partial<Record<BookingField, string>> = collectClientErrors()) => {
+    const labels = (Object.keys(errors) as BookingField[]).map((key) => t(BOOKING_FIELD_I18N[key]));
+    if (!labels.length) return null;
+    return t('crane.validation.incomplete', { fields: labels.join(', ') });
+  };
+
+  const scrollToError = (el: HTMLElement | null) => {
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (typeof el.focus === 'function') {
+      try {
+        el.focus({ preventScroll: true });
+      } catch {
+        /* ignore non-focusable */
+      }
+    }
+  };
+
+  const focusFirstFieldError = (errors: Partial<Record<BookingField, string>>) => {
+    const order: BookingField[] = ['voornaam', 'email', 'straat', 'huisnummer', 'postcode', 'stad', 'length', 'service', 'date', 'time'];
+    const first = order.find((key) => errors[key]);
+    if (!first) {
+      scrollToError(submitErrorRef.current);
+      return;
+    }
+    scrollToError(fieldRefs.current[first] ?? submitErrorRef.current);
+  };
+
+  const showSubmitError = (
+    message: string,
+    errors: Partial<Record<BookingField, string>> = {},
+  ) => {
+    setFieldErrors(errors);
+    setSubmitError(message);
+    window.setTimeout(() => {
+      if (Object.keys(errors).length) focusFirstFieldError(errors);
+      else scrollToError(submitErrorRef.current);
+    }, 40);
+  };
+
+  const translateApiBookingError = (err: unknown): { message: string; fields: Partial<Record<BookingField, string>> } => {
+    const apiErrors = getApiValidationErrors(err);
+    const fields: Partial<Record<BookingField, string>> = {};
+    const messages: string[] = [];
+
+    for (const [apiKey, apiMessages] of Object.entries(apiErrors)) {
+      const field = API_FIELD_TO_BOOKING[apiKey];
+      if (field) {
+        const apiMessage = apiMessages[0] ?? '';
+        const looksRequired = /required|verplicht|erforderlich|obligatoire/i.test(apiMessage);
+        const msg = looksRequired || !apiMessage ? requiredMsg(field) : invalidMsg(field);
+        fields[field] = msg;
+        messages.push(msg);
+        continue;
+      }
+      if (apiMessages[0]) messages.push(apiMessages[0]);
+    }
+
+    if (messages.length) {
+      return { message: messages.join(' '), fields };
+    }
+
+    return {
+      message: getApiErrorMessage(err, t('crane.submitFailed')),
+      fields: {},
+    };
+  };
+
+  React.useEffect(() => {
+    if (!slotsError) return;
+    const id = window.setTimeout(() => scrollToError(slotsErrorRef.current), 0);
+    return () => window.clearTimeout(id);
+  }, [slotsError, slotsErrorMessage]);
 
   const handleImages = (files: FileList | null) => {
     if (!files) return;
@@ -307,30 +573,62 @@ export default function KraanAfspraakPage() {
   const removeImage = (idx: number) =>
     setImages(prev => prev.filter((_, i) => i !== idx));
 
+  const addressComplete =
+    !!form.straat.trim() &&
+    isValidHouseNumber(form.huisnummer) &&
+    isValidPostalCode(form.postcode) &&
+    !!form.stad.trim();
+
   const canSubmit =
     !submitting && !submitted && !!picked && !!time &&
     !!selectedBookableServices.length && !!lengthCm &&
-    !!form.voornaam && !!form.email;
+    !!form.voornaam.trim() && !!form.email.trim() &&
+    addressComplete;
+
+  const submitBlockReason = (): string => {
+    const reasons: string[] = [];
+    if (submitting) reasons.push('submitting');
+    if (submitted) reasons.push('already_submitted');
+    if (!picked) reasons.push('missing_date');
+    if (!time) reasons.push('missing_time');
+    if (!selectedBookableServices.length) reasons.push('missing_service');
+    if (!lengthCm) reasons.push('missing_length');
+    if (!form.voornaam) reasons.push('missing_first_name');
+    if (!form.email) reasons.push('missing_email');
+    if (!form.straat.trim()) reasons.push('missing_street');
+    if (!isValidHouseNumber(form.huisnummer)) reasons.push('invalid_house_number');
+    if (!isValidPostalCode(form.postcode)) reasons.push('invalid_postal_code');
+    if (!form.stad.trim()) reasons.push('missing_city');
+    return reasons.join(',') || 'unknown';
+  };
 
   const submit = async () => {
     if (!canSubmit || !picked || !time) return;
+    const requestId = generateRequestId();
+    setSubmitError(null);
     setSubmitting(true);
+    trackEvent('booking_submit_clicked', {
+      request_id: requestId,
+      intent: 'crane_booking',
+      api_method: 'POST',
+      api_endpoint: '/v1/booking',
+    });
     try {
-      const dateIso = new Date(picked.getFullYear(), picked.getMonth(), picked.getDate(), 12).toISOString();
       const result = await bookingService.book({
         first_name:  form.voornaam,
         last_name:   form.achternaam,
         phone:       form.phone || null,
         email:       form.email,
         locale,
-        date:        dateIso,
+        date:        toLocalDateKey(picked),
         start_time:  time,
         notes:       form.notes || null,
         address: {
-          street:      form.straat || null,
-          house_number: form.huisnummer || null,
-          postal_code: form.postcode || null,
-          city:        form.stad || null,
+          street:      form.straat.trim(),
+          house_number: form.huisnummer.trim(),
+          postal_code: formatPostalCode(form.postcode),
+          city:        form.stad.trim(),
+          country:     'NL',
         },
         boat: {
           name:        form.boatName,
@@ -344,22 +642,87 @@ export default function KraanAfspraakPage() {
           weight_kg:   form.weight ? Number(form.weight) : null,
         },
         service_codes: selectedServices,
-      });
+      }, { requestId });
+      const correlatedRequestId = result.requestId || requestId;
+      const appointmentId = result.data?.appointment_id;
 
-      // Upload images if any
-      if (images.length && result && typeof result === 'object' && 'appointment_id' in result) {
+      if (images.length && appointmentId) {
         const fd = new FormData();
         images.forEach(img => fd.append('photos[]', img));
-        await bookingService.uploadBookingPhotos(result.appointment_id as string, fd).catch(() => null);
+        try {
+          await bookingService.uploadBookingPhotos(appointmentId, fd, { requestId: correlatedRequestId });
+        } catch (photoErr) {
+          console.error('Booking photo upload failed', photoErr);
+          trackEvent('photo_upload_failed', {
+            request_id: correlatedRequestId,
+            intent: 'crane_booking',
+            entity_type: 'booking',
+            entity_id: appointmentId,
+            api_method: 'POST',
+            api_endpoint: `/v1/booking/${appointmentId}/photos`,
+            http_status: getApiErrorStatus(photoErr),
+            metadata: { message: getApiErrorMessage(photoErr) },
+          });
+        }
       }
 
+      trackEvent('booking_succeeded', {
+        request_id: correlatedRequestId,
+        intent: 'crane_booking',
+        http_status: result.status,
+        entity_type: 'booking',
+        entity_id: appointmentId,
+        api_method: 'POST',
+        api_endpoint: '/v1/booking',
+      });
       setSubmitted(true);
       push({ tone: 'success', title: t('crane.submitSuccess') });
     } catch (err) {
-      push({ tone: 'error', title: t('crane.submitFailed'), message: getApiErrorMessage(err) });
+      const failedRequestId = getApiRequestId(err) ?? requestId;
+      const translated = translateApiBookingError(err);
+      const message = translated.message;
+      trackEvent('booking_failed', {
+        request_id: failedRequestId,
+        intent: 'crane_booking',
+        http_status: getApiErrorStatus(err),
+        api_method: 'POST',
+        api_endpoint: '/v1/booking',
+        metadata: { message },
+      });
+      trackEvent('frontend_error_shown', {
+        request_id: failedRequestId,
+        intent: 'crane_booking',
+        http_status: getApiErrorStatus(err),
+        api_method: 'POST',
+        api_endpoint: '/v1/booking',
+        metadata: { message },
+      });
+      showSubmitError(message, translated.fields);
+      push({ tone: 'error', title: t('crane.submitFailed'), message });
     } finally {
+      flushTrackEvents();
       setSubmitting(false);
     }
+  };
+
+  const onSubmitClick = () => {
+    if (submitting || submitted) return;
+    if (!canSubmit) {
+      const errors = collectClientErrors();
+      const message = clientValidationMessage(errors) ?? t('crane.submitFailed');
+      showSubmitError(message, errors);
+      trackEvent('booking_submit_blocked', {
+        intent: 'crane_booking',
+        api_method: 'POST',
+        api_endpoint: '/v1/booking',
+        metadata: { reason: submitBlockReason() },
+      });
+      flushTrackEvents();
+      return;
+    }
+    setSubmitError(null);
+    setFieldErrors({});
+    setConfirmSubmit(true);
   };
 
   if (submitted) {
@@ -392,12 +755,13 @@ export default function KraanAfspraakPage() {
 
   return (
     <>
-      {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
+      {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
         <Script
           src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
           onLoad={() => setGoogleLoaded(true)}
+          onError={() => setGoogleError(true)}
         />
-      )}
+      ) : null}
 
       <div className="bg-sand-50/80">
         <div className="container-wide grid gap-8 py-12 lg:grid-cols-[1.55fr_1fr]">
@@ -426,11 +790,14 @@ export default function KraanAfspraakPage() {
               <SectionTitle icon={<User2 className="h-4 w-4" />}>Uw gegevens</SectionTitle>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <Input
-                  label="Voornaam"
+                  ref={(el) => { fieldRefs.current.voornaam = el; }}
+                  label={t('crane.validation.firstName')}
                   placeholder="Jan"
                   required
                   value={form.voornaam}
                   onChange={setField('voornaam')}
+                  error={fieldErrors.voornaam}
+                  title={fieldErrors.voornaam}
                 />
                 <Input
                   label="Achternaam"
@@ -439,57 +806,95 @@ export default function KraanAfspraakPage() {
                   onChange={setField('achternaam')}
                 />
                 <Input
-                  label="Telefoonnummer"
+                  label={t('crane.phone')}
                   placeholder="06 12345678"
                   type="tel"
                   value={form.phone}
                   onChange={setField('phone')}
                 />
                 <Input
-                  label="E-mailadres"
+                  ref={(el) => { fieldRefs.current.email = el; }}
+                  label={t('crane.email')}
                   type="email"
                   placeholder="jan@voorbeeld.nl"
                   required
                   value={form.email}
                   onChange={setField('email')}
+                  error={fieldErrors.email}
+                  title={fieldErrors.email}
                 />
               </div>
 
-              {/* Address */}
-              <SectionTitle icon={<MapPin className="h-4 w-4" />} className="mt-8">Adres</SectionTitle>
-              <div className="mt-4 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                    Straat
-                  </label>
-                  <input
-                    ref={addressRef}
-                    className="input-base h-14 w-full text-base"
-                    placeholder="Havenstraat"
-                    value={form.straat}
-                    onChange={setField('straat')}
-                  />
-                </div>
+              {/* Address — four full-width fields. Street is the Places search box. */}
+              <SectionTitle icon={<MapPin className="h-4 w-4" />} className="mt-8">
+                {t('crane.address.title')}
+              </SectionTitle>
+              {googleError ? (
+                <p id="address-manual-hint" role="status" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  {t('crane.address.manualFallback')}
+                </p>
+              ) : null}
+              <div className="mt-4 flex flex-col gap-4">
                 <Input
-                  className="h-14 text-base"
-                  label="Huisnummer"
-                  placeholder="12 A"
+                  ref={(el) => {
+                    addressRef.current = el;
+                    fieldRefs.current.straat = el;
+                  }}
+                  id="street"
+                  name="street"
+                  label={t('crane.address.street')}
+                  placeholder={t('crane.address.streetPlaceholder')}
+                  required
+                  autoComplete="off"
+                  className="h-14 px-4 text-base"
+                  value={form.straat}
+                  onChange={setField('straat')}
+                  error={fieldErrors.straat}
+                  title={fieldErrors.straat}
+                  hint={googleError ? undefined : t('crane.address.autocompleteHint')}
+                  aria-describedby={googleError ? 'address-manual-hint' : undefined}
+                />
+                <Input
+                  ref={(el) => { fieldRefs.current.huisnummer = el; }}
+                  id="house_number"
+                  name="house_number"
+                  label={t('crane.address.houseNumber')}
+                  placeholder={t('crane.address.housePlaceholder')}
+                  required
+                  autoComplete="off"
+                  className="h-14 px-4 text-base"
                   value={form.huisnummer}
                   onChange={setField('huisnummer')}
+                  error={fieldErrors.huisnummer}
+                  title={fieldErrors.huisnummer}
                 />
                 <Input
-                  className="h-14 text-base"
-                  label="Postcode"
-                  placeholder="6041 AB"
+                  ref={(el) => { fieldRefs.current.postcode = el; }}
+                  id="postal_code"
+                  name="postal_code"
+                  label={t('crane.address.postalCode')}
+                  placeholder={t('crane.address.postalPlaceholder')}
+                  required
+                  autoComplete="postal-code"
+                  className="h-14 px-4 text-base"
                   value={form.postcode}
                   onChange={setField('postcode')}
+                  error={fieldErrors.postcode}
+                  title={fieldErrors.postcode}
                 />
                 <Input
-                  className="h-14 text-base"
-                  label="Stad"
-                  placeholder="Roermond"
+                  ref={(el) => { fieldRefs.current.stad = el; }}
+                  id="city"
+                  name="city"
+                  label={t('crane.address.city')}
+                  placeholder={t('crane.address.cityPlaceholder')}
+                  required
+                  autoComplete="address-level2"
+                  className="h-14 px-4 text-base"
                   value={form.stad}
                   onChange={setField('stad')}
+                  error={fieldErrors.stad}
+                  title={fieldErrors.stad}
                 />
               </div>
 
@@ -508,18 +913,23 @@ export default function KraanAfspraakPage() {
                   value={form.boatEngine}
                   onChange={setField('boatEngine')}
                 />
-                <Input
-                  label="Merk"
-                  placeholder="Bavaria"
-                  value={form.boatBrand}
-                  onChange={setField('boatBrand')}
-                />
-                <Input
-                  label="Model"
-                  placeholder="Cruiser 34"
-                  value={form.boatModel}
-                  onChange={setField('boatModel')}
-                />
+                <div className="sm:col-span-2">
+                  <p className="mb-1.5 text-sm font-medium text-navy-800">Merk en model</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Input
+                      label="Merk"
+                      placeholder="Bavaria"
+                      value={form.boatBrand}
+                      onChange={setField('boatBrand')}
+                    />
+                    <Input
+                      label="Model"
+                      placeholder="Cruiser 34"
+                      value={form.boatModel}
+                      onChange={setField('boatModel')}
+                    />
+                  </div>
+                </div>
                 <Input
                   label="Bouwjaar"
                   placeholder="2015"
@@ -528,13 +938,16 @@ export default function KraanAfspraakPage() {
                   onChange={setField('boatYear')}
                 />
                 <Input
-                  label="Lengte (cm)"
+                  ref={(el) => { fieldRefs.current.length = el; }}
+                  label={t('crane.boatLength')}
                   placeholder="890"
                   inputMode="numeric"
                   required
-                  hint="In centimeters, bijv. 890 voor 8,90 m"
+                  hint={t('crane.boatLengthHint')}
                   value={form.length}
                   onChange={setField('length')}
+                  error={fieldErrors.length}
+                  title={fieldErrors.length}
                 />
                 <Input
                   label="Breedte (cm)"
@@ -573,7 +986,12 @@ export default function KraanAfspraakPage() {
                   {t('crane.noBookableServices')}
                 </p>
               ) : null}
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+              <div
+                ref={(el) => { fieldRefs.current.service = el; }}
+                tabIndex={-1}
+                className={cn('mt-8 scroll-mt-28 outline-none', fieldErrors.service && 'rounded-xl ring-2 ring-rose-300')}
+              >
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <SectionTitle icon={<Sparkles className="h-4 w-4" />}>
                   {t('crane.services')}
                 </SectionTitle>
@@ -649,6 +1067,10 @@ export default function KraanAfspraakPage() {
                   );
                 })}
               </div>
+              {fieldErrors.service ? (
+                <p className="mt-2 text-xs text-rose-600" title={fieldErrors.service}>{fieldErrors.service}</p>
+              ) : null}
+              </div>
 
               {/* Notes */}
               <div className="mt-8">
@@ -722,6 +1144,11 @@ export default function KraanAfspraakPage() {
 
           {/* Right: calendar + summary */}
           <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+            <div
+              ref={(el) => { fieldRefs.current.date = el; }}
+              tabIndex={-1}
+              className={cn('scroll-mt-28 outline-none', fieldErrors.date && 'rounded-xl ring-2 ring-rose-300')}
+            >
             <Card className="p-5">
               <div className="mb-4 flex items-center justify-between">
                 <SectionTitle icon={<CalendarDays className="h-4 w-4" />}>
@@ -755,7 +1182,12 @@ export default function KraanAfspraakPage() {
                     <button
                       key={i}
                       disabled={disabled}
-                      onClick={() => { setPicked(d); setTime(null); }}
+                      onClick={() => {
+                        clearFieldError('date');
+                        clearFieldError('time');
+                        setPicked(d);
+                        setTime(null);
+                      }}
                       className={cn(
                         'aspect-square rounded-md text-sm transition',
                         disabled && 'cursor-not-allowed text-navy-200',
@@ -769,21 +1201,38 @@ export default function KraanAfspraakPage() {
                   );
                 })}
               </div>
+              {fieldErrors.date ? (
+                <p className="mt-2 text-xs text-rose-600" title={fieldErrors.date}>{fieldErrors.date}</p>
+              ) : null}
 
-              <div className="mt-5 border-t border-navy-100 pt-4">
+              <div
+                ref={(el) => { fieldRefs.current.time = el; }}
+                tabIndex={-1}
+                className={cn('mt-5 scroll-mt-28 border-t border-navy-100 pt-4 outline-none', fieldErrors.time && 'rounded-lg ring-2 ring-rose-300')}
+              >
                 <SectionTitle icon={<Clock className="h-4 w-4" />}>
                   {picked
                     ? t('crane.timeSlots', { date: `${picked.getDate()} ${DUTCH_MONTHS[picked.getMonth()]}` })
                     : t('crane.selectDate')}
                 </SectionTitle>
                 {slotsError === 'closed' && (
-                  <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
-                    De werf is gesloten op deze dag. Kies een andere datum.
+                  <p
+                    ref={slotsErrorRef}
+                    tabIndex={-1}
+                    role="alert"
+                    className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 outline-none ring-rose-300 focus-visible:ring-2"
+                  >
+                    {t('crane.dayClosed')}
                   </p>
                 )}
                 {slotsError === 'error' && (
-                  <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-800">
-                    Tijdsloten konden niet worden geladen. Bel ons op <strong>0475 315 661</strong>.
+                  <p
+                    ref={slotsErrorRef}
+                    tabIndex={-1}
+                    role="alert"
+                    className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-800 outline-none ring-rose-300 focus-visible:ring-2"
+                  >
+                    {slotsErrorMessage ?? t('crane.slotsLoadFailed')}
                   </p>
                 )}
                 {!slotsError && !loadingSlots && picked && !lengthCm && (
@@ -798,7 +1247,10 @@ export default function KraanAfspraakPage() {
                       return (
                         <button
                           key={s}
-                          onClick={() => setTime(s)}
+                          onClick={() => {
+                            clearFieldError('time');
+                            setTime(s);
+                          }}
                           className={cn(
                             'rounded-md border px-2 py-1.5 text-xs font-medium transition',
                             active
@@ -815,10 +1267,14 @@ export default function KraanAfspraakPage() {
                     )}
                   </div>
                 )}
+                {fieldErrors.time ? (
+                  <p className="mt-2 text-xs text-rose-600" title={fieldErrors.time}>{fieldErrors.time}</p>
+                ) : null}
               </div>
             </Card>
+            </div>
 
-            <Card className="overflow-hidden">
+            <Card className="overflow-visible">
               <div className="border-b border-navy-100 px-5 py-4">
                 <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
                   {t('crane.appointment')}
@@ -854,16 +1310,44 @@ export default function KraanAfspraakPage() {
                 </div>
               </div>
               <div className="px-5 py-4">
-                <Button
-                  variant="gold"
-                  size="lg"
-                  fullWidth
-                  disabled={!canSubmit}
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
-                  onClick={() => setConfirmSubmit(true)}
-                >
-                  {submitted ? 'Aanvraag verzonden' : t('crane.submit')}
-                </Button>
+                {submitError ? (
+                  <div
+                    ref={submitErrorRef}
+                    tabIndex={-1}
+                    role="alert"
+                    className="mb-3 scroll-mt-28 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-800 outline-none ring-rose-300 focus-visible:ring-2"
+                  >
+                    {submitError}
+                  </div>
+                ) : (
+                  <div ref={submitErrorRef} className="sr-only" aria-hidden />
+                )}
+                <div className="group relative">
+                  {!canSubmit && !submitting && !submitted ? (
+                    <div
+                      role="tooltip"
+                      className="pointer-events-none absolute bottom-full left-0 right-0 z-20 mb-2 hidden rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-left text-xs text-rose-800 shadow-md group-hover:block group-focus-within:block"
+                    >
+                      {clientValidationMessage() ?? t('crane.validation.hoverHint')}
+                    </div>
+                  ) : null}
+                  <Button
+                    type="button"
+                    variant="gold"
+                    size="lg"
+                    fullWidth
+                    disabled={submitting || submitted}
+                    rightIcon={<ArrowRight className="h-4 w-4" />}
+                    title={
+                      !canSubmit && !submitting && !submitted
+                        ? (clientValidationMessage() ?? t('crane.validation.hoverHint'))
+                        : undefined
+                    }
+                    onClick={onSubmitClick}
+                  >
+                    {submitted ? t('crane.submitSuccess') : t('crane.submit')}
+                  </Button>
+                </div>
               </div>
             </Card>
           </div>

@@ -4,13 +4,13 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Archive, Calculator, ChevronDown, ChevronUp, ChevronsUpDown, Copy, Download, FilePlus2, Pencil, Receipt, Settings, UserPlus, X } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
-import { AdminContent, AdminSectionCard, AdminTable, AdminTableCard, AdminTableCell, AdminTableFooter, AdminTableHead, AdminTableHeaderCell, AdminTableRow } from '@/components/admin/AdminUi';
+import { AdminContent, AdminSectionCard, AdminSplitLayout, AdminTable, AdminTableCard, AdminTableCell, AdminTableFooter, AdminTableHead, AdminTableHeaderCell, AdminTableRow } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { customersService, invoicesService, pricingService, serviceCatalogService, usersService } from '@/lib/services';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -507,7 +507,7 @@ export default function CalculatorPage() {
           },
           {
             label: t('adminNew.calculator.result.totalPrice'),
-            value: result ? formatCurrency(resolveTotal, locale === 'en' ? 'en-GB' : 'nl-NL') : '—',
+            value: result ? formatCurrency(resolveTotal, intlLocale(locale)) : '—',
             icon: Receipt,
             tone: result ? 'success' : 'navy',
           },
@@ -521,7 +521,8 @@ export default function CalculatorPage() {
         ]}
       />
 
-      <AdminContent className="grid gap-5 lg:grid-cols-[1fr_24rem]">
+      <AdminContent>
+        <AdminSplitLayout sidebarWidth="24rem">
         <AdminSectionCard
           title={t('adminNew.calculator.title')}
           description={t('adminNew.calculator.subtitle')}
@@ -683,7 +684,7 @@ export default function CalculatorPage() {
               <div className="rounded-xl border border-marine-200/80 bg-gradient-to-r from-marine-50 to-white px-3 py-2">
                 <div className="text-xs text-navy-500">{t('adminNew.calculator.result.totalPrice')}</div>
                 <div className="text-xl font-semibold text-navy-900">
-                  {formatCurrency(resolveTotal, locale === 'en' ? 'en-GB' : 'nl-NL')}
+                  {formatCurrency(resolveTotal, intlLocale(locale))}
                 </div>
               </div>
               <details className="rounded-xl border border-navy-100 p-3">
@@ -697,6 +698,7 @@ export default function CalculatorPage() {
             </div>
           )}
         </AdminSectionCard>
+        </AdminSplitLayout>
       </AdminContent>
 
       <AdminContent>
@@ -946,10 +948,10 @@ export default function CalculatorPage() {
                           {String(rec.calculator_number ?? rec.number ?? rec.id)}
                         </AdminTableCell>
                         <AdminTableCell className="whitespace-nowrap">
-                          {String(rec.created_date ?? (rec.created_at ? new Date(String(rec.created_at)).toLocaleDateString(locale === 'en' ? 'en-GB' : 'nl-NL') : '—'))}
+                          {String(rec.created_date ?? (rec.created_at ? new Date(String(rec.created_at)).toLocaleDateString(intlLocale(locale)) : '—'))}
                         </AdminTableCell>
                         <AdminTableCell className="whitespace-nowrap text-sm text-navy-600">
-                          {rec.updated_at ? new Date(String(rec.updated_at)).toLocaleDateString(locale === 'en' ? 'en-GB' : 'nl-NL') : '—'}
+                          {rec.updated_at ? new Date(String(rec.updated_at)).toLocaleDateString(intlLocale(locale)) : '—'}
                         </AdminTableCell>
                         <AdminTableCell>
                           <div>{String(rec.customer_name ?? '—')}</div>
@@ -980,7 +982,7 @@ export default function CalculatorPage() {
                           {String(rec.created_by_name ?? '—')}
                         </AdminTableCell>
                         <AdminTableCell className="font-semibold text-navy-900">
-                          {formatCurrency(totalEuros, locale === 'en' ? 'en-GB' : 'nl-NL')}
+                          {formatCurrency(totalEuros, intlLocale(locale))}
                         </AdminTableCell>
                         <AdminTableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex flex-wrap justify-end gap-1">

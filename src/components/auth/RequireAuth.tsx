@@ -7,14 +7,16 @@ import {
   canAccessAdmin,
   canAccessAdminRoute,
   canAccessPortal,
-  canAccessWorkOrders,
   isAdminPath,
   isPortalPath,
   isProtectedPath,
+  isSuperAdminPath,
   isWorkOrdersPath,
   loginPath,
 } from '@/lib/auth-routes';
+import { ErrorState } from '@/components/admin/DataState';
 import { hasAnySession } from '@/lib/auth-storage';
+import { userCan } from '@/lib/permissions';
 import { useIntl } from '@/i18n/IntlProvider';
 
 function AuthLoading() {
@@ -32,7 +34,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading, isDemo, isPortalSession } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const { locale } = useIntl();
+  const { locale, t } = useIntl();
 
   const protectedRoute = isProtectedPath(pathname);
   const sessionHint = typeof window !== 'undefined' && hasAnySession();
@@ -50,9 +52,14 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   }, [pathname, user, isDemo, isPortalSession, protectedRoute, sessionHint]);
 
   const deniedWorkOrders =
-    !!user && isWorkOrdersPath(pathname) && !canAccessWorkOrders(user.role);
+    !!user && isWorkOrdersPath(pathname) && !userCan(user, 'work_orders.view');
+  const superAdminDenied =
+    !!user && isSuperAdminPath(pathname) && user.role !== 'super_admin';
   const deniedAdminRoute =
-    !!user && isAdminPath(pathname) && !canAccessAdminRoute(user.role, pathname);
+    !!user &&
+    isAdminPath(pathname) &&
+    !superAdminDenied &&
+    !canAccessAdminRoute(user.role, pathname);
 
   const resolvingAuth = loading || (sessionHint && !user);
 
@@ -73,6 +80,18 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     if (!needsLogin) return;
     router.replace(loginPath(locale, pathname));
   }, [resolvingAuth, needsLogin, protectedRoute, router, locale, pathname]);
+
+  if (superAdminDenied) {
+    return (
+      <div className="app-canvas flex min-h-screen items-center justify-center p-6">
+        <ErrorState
+          message={t('adminModules.hubs.management.superAdminDenied', {
+            defaultValue: 'Geen toegang. Alleen voor systeembeheerders.',
+          })}
+        />
+      </div>
+    );
+  }
 
   if (deniedWorkOrders || deniedAdminRoute) {
     return null;

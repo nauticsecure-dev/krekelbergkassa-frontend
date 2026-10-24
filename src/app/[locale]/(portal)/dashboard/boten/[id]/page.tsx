@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { portalService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
+import { centsToEuro, formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 
 type Row = Record<string, unknown>;
@@ -32,7 +32,7 @@ export default function PortalBoatDossierPage() {
   const { t, locale } = useIntl();
   const params = useParams();
   const id = String(params.id);
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const dossier = useQuery([id], () => portalService.boatDossier(id));
   const workOrdersQuery = useQuery([id, 'work-orders'], () =>

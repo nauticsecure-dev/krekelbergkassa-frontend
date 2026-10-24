@@ -27,7 +27,7 @@ import { useShellDropdowns } from '@/components/shell/useShellDropdowns';
 import { PageHeaderStatsGrid, type PageHeaderStat } from '@/components/shell/PageHeaderStats';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { portalService } from '@/lib/services';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, intlLocale } from '@/lib/format';
 
 export function PortalShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
@@ -69,7 +69,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         >
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
-              <Logo variant="light" />
+              <Logo variant="light" editable={false} />
               <button
                 onClick={() => setOpen(false)}
                 className="rounded-md p-2 text-sand-100/70 hover:bg-white/5 hover:text-white"
@@ -117,7 +117,7 @@ function PortalGlobalTopbar({ onMenuClick }: { onMenuClick: () => void }) {
         </button>
 
         <Link href={`/${locale}/feed`} className="lg:hidden" aria-label="Krekelberg">
-          <Logo />
+          <Logo editable={false} />
         </Link>
 
         <div className="relative hidden flex-1 lg:block">
@@ -201,7 +201,7 @@ function PortalGlobalTopbar({ onMenuClick }: { onMenuClick: () => void }) {
                             <div className="mt-1 text-[11px] text-navy-400">
                               {formatDateTime(
                                 String(n.created_at ?? ''),
-                                locale === 'en' ? 'en-GB' : 'nl-NL'
+                                intlLocale(locale)
                               )}
                             </div>
                           </div>

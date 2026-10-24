@@ -44,7 +44,7 @@ import { Badge } from '@/components/ui/Badge';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { kassaService, invoicesService, workOrdersService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -91,7 +91,7 @@ const str = (v: unknown): string => (v == null ? '' : String(v));
 export default function ReportsPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [period, setPeriod] = React.useState('this_month');
   const [exporting, setExporting] = React.useState(false);
   const [dateFrom, setDateFrom] = React.useState('');

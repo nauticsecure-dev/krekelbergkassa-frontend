@@ -34,6 +34,22 @@ const sizeClasses: Record<Size, string> = {
   lg: 'h-12 px-6 text-base gap-2.5',
 };
 
+/** Shared look for real buttons and edit-mode CTA surfaces that must not be `<button>`. */
+export function buttonClassName({
+  variant = 'primary',
+  size = 'md',
+  fullWidth,
+  className,
+}: Pick<ButtonProps, 'variant' | 'size' | 'fullWidth' | 'className'>) {
+  return cn(
+    'inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50',
+    variantClasses[variant],
+    sizeClasses[size],
+    fullWidth && 'w-full',
+    className,
+  );
+}
+
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   function Button(
     {
@@ -44,6 +60,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       rightIcon,
       fullWidth,
       children,
+      type,
       ...rest
     },
     ref
@@ -51,13 +68,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={cn(
-          'inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50',
-          variantClasses[variant],
-          sizeClasses[size],
-          fullWidth && 'w-full',
-          className
-        )}
+        type={type}
+        className={buttonClassName({ variant, size, fullWidth, className })}
         {...rest}
       >
         {leftIcon ? <span className="-ml-0.5">{leftIcon}</span> : null}

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Plus, PowerOff, ScanText, Trash2 } from 'lucide-react';
+import { ArrowLeft, FileText, Mail, Plus, PowerOff, ScanText, Trash2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
@@ -22,7 +22,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { extractionTemplatesService, type ExtractionTemplate } from '@/lib/services';
 import { companyInfo } from '@/lib/company';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { formatDate } from '@/lib/format';
+import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -30,7 +30,7 @@ import { getApiErrorMessage } from '@/lib/api-error';
 export default function ExtractionTemplatesPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const [deleteTarget, setDeleteTarget] = React.useState<ExtractionTemplate | null>(null);
 
   const templates = useQuery(['extraction-templates'], () =>
@@ -70,9 +70,14 @@ export default function ExtractionTemplatesPage() {
                 {t('adminNew.invoiceImports.title')}
               </Button>
             </Link>
+            <Link href={`/${locale}/admin/facturen/templates/layout`}>
+              <Button variant="outline" size="sm" leftIcon={<FileText className="h-4 w-4" />}>
+                {t('adminNew.templates.layout', { defaultValue: 'Factuuropmaak' })}
+              </Button>
+            </Link>
             <Link href={`/${locale}/admin/facturen/templates/editor`}>
               <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-                {t('adminNew.templates.new')}
+                {t('adminNew.templates.newExtraction', { defaultValue: 'Extractiesjabloon' })}
               </Button>
             </Link>
           </div>

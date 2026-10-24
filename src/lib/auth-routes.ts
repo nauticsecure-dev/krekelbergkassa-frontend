@@ -53,9 +53,22 @@ export function applyLoginRedirect(url: URL, locale: string, returnTo?: string) 
 
 export function isSafeReturnTo(returnTo: string | null): returnTo is string {
   if (!returnTo) return false;
-  if (!returnTo.startsWith('/')) return false;
-  if (returnTo.includes('://')) return false;
-  return !returnTo.includes('?');
+  if (!returnTo.startsWith('/') || returnTo.startsWith('//')) return false;
+  if (returnTo.includes('\\') || returnTo.includes('://')) return false;
+  const path = returnTo.split(/[?#]/)[0] ?? '';
+  if (!path.startsWith('/') || path.startsWith('//') || path.includes('@')) return false;
+  return true;
+}
+
+/** Split a same-origin return path into pathname and search (`?view=week&date=...`). */
+export function returnToParts(returnTo: string): { pathname: string; search: string } {
+  const withoutHash = returnTo.split('#')[0] ?? returnTo;
+  const queryIndex = withoutHash.indexOf('?');
+  if (queryIndex === -1) return { pathname: withoutHash, search: '' };
+  return {
+    pathname: withoutHash.slice(0, queryIndex),
+    search: withoutHash.slice(queryIndex),
+  };
 }
 
 /** Repair paths like /en/login%3FreturnTo=%2Fen%2Fadmin → /en/login?returnTo=... */
@@ -77,6 +90,7 @@ export function repairEncodedQueryPath(pathname: string): { pathname: string; se
 export function defaultRedirectForRole(role: Role, locale: string): string {
   switch (role) {
     case 'admin':
+    case 'super_admin':
     case 'manager':
       return `/${locale}/admin`;
     case 'staff':
@@ -99,8 +113,25 @@ export function defaultRedirectFromCookies(
 
 export function canAccessAdmin(role: Role | undefined, isDemo: boolean): boolean {
   if (!role) return false;
-  if (isDemo) return role === 'admin' || role === 'manager' || role === 'staff';
-  return role === 'admin' || role === 'manager' || role === 'staff';
+  if (isDemo) return role === 'admin' || role === 'super_admin' || role === 'manager' || role === 'staff';
+  return role === 'admin' || role === 'super_admin' || role === 'manager' || role === 'staff';
+}
+
+const SUPER_ADMIN_PREFIXES = [
+  '/audit',
+  '/beveiliging',
+  '/api-credentials',
+  '/incidenten',
+  '/systeem',
+  '/systeembeheer',
+];
+
+export function isSuperAdminPath(pathname: string): boolean {
+  const path = stripLocale(pathname);
+  const adminPath = path.replace(/^\/admin(?=\/|$)/, '') || '/';
+  return SUPER_ADMIN_PREFIXES.some(
+    (prefix) => adminPath === prefix || adminPath.startsWith(`${prefix}/`),
+  );
 }
 
 export function canAccessAdminRoute(role: Role | undefined, pathname: string): boolean {
@@ -120,11 +151,15 @@ export function canAccessAdminRoute(role: Role | undefined, pathname: string): b
     '/sync',
     '/scan-logs',
   ];
-  if (adminOnlyPrefixes.some((prefix) => adminPath === prefix || adminPath.startsWith(`${prefix}/`))) {
-    return role === 'admin';
+  if (SUPER_ADMIN_PREFIXES.some((prefix) => adminPath === prefix || adminPath.startsWith(`${prefix}/`))) {
+    return role === 'super_admin';
   }
 
-  if (role === 'admin' || role === 'manager') return true;
+  if (adminOnlyPrefixes.some((prefix) => adminPath === prefix || adminPath.startsWith(`${prefix}/`))) {
+    return role === 'admin' || role === 'super_admin';
+  }
+
+  if (role === 'admin' || role === 'super_admin' || role === 'manager') return true;
 
   const staffPrefixes = [
     '/',

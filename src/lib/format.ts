@@ -1,3 +1,17 @@
+/** App locale (nl, en, de, fr) to a BCP-47 tag used by Intl. */
+export function intlLocale(locale: string): string {
+  switch (locale) {
+    case 'en':
+      return 'en-GB';
+    case 'de':
+      return 'de-DE';
+    case 'fr':
+      return 'fr-FR';
+    default:
+      return 'nl-NL';
+  }
+}
+
 export function formatCurrency(value: number, locale = 'nl-NL', currency = 'EUR') {
   return new Intl.NumberFormat(locale, {
     style: 'currency',

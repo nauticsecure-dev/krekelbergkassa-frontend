@@ -7,15 +7,19 @@ import {
   AlertTriangle,
   Bell,
   Calculator,
+  CalendarPlus,
   CreditCard,
+  FileText,
   Package,
   Receipt,
   Sparkles,
   Warehouse,
+  type LucideIcon,
 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
+  AdminContentGrid,
   AdminQuickAction,
   AdminSectionCard,
   AdminSelect,
@@ -33,23 +37,60 @@ import {
   productsService,
   stallingService,
   adminService,
+  dashboardShortcutsService,
 } from '@/lib/services';
-import { centsToEuro, formatCurrency } from '@/lib/format';
+import type { DashboardShortcut } from '@/lib/services';
+import { adminHref } from '@/config/admin-routes';
+import { centsToEuro, formatCurrency, intlLocale } from '@/lib/format';
 import { normalizeRemindersSummary } from '@/lib/reminders-summary';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useMutation } from '@/lib/hooks/useAsync';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { pricingTotalInclEuros } from '@/lib/pricing-result';
-import { useAuth } from '@/lib/auth-context';
-import { canAccessWorkOrders } from '@/lib/auth-routes';
+import { usePermission } from '@/lib/permissions';
+
+const SHORTCUT_PERMISSION: Record<string, string> = {
+  'admin.kassa.index': 'kassa.view',
+  'admin.stalling.index': 'stalling.view',
+  'admin.invoices.index': 'invoice.view',
+  'admin.calculator.index': 'pricing.view',
+};
+
+const SHORTCUT_ICONS: Record<string, LucideIcon> = {
+  CreditCard,
+  Warehouse,
+  FileText,
+  Calculator,
+  Receipt,
+  Sparkles,
+};
+
+const FALLBACK_SHORTCUTS: DashboardShortcut[] = [
+  { id: 'kassa', key: 'kassa', route_key: 'admin.kassa.index', custom_url: null, icon: 'CreditCard', labels: { nl: 'Kassa', en: 'POS', de: 'Kasse', fr: 'Caisse' }, role_names: null, sort_order: 0, active: true },
+  { id: 'stalling-followup', key: 'stalling-followup', route_key: 'admin.stalling.index', custom_url: null, icon: 'Warehouse', labels: { nl: 'Stalling opvolgen', en: 'Follow up stalling', de: 'Stellplatz nachverfolgen', fr: 'Suivi hivernage' }, role_names: null, sort_order: 1, active: true },
+  { id: 'invoice-followup', key: 'invoice-followup', route_key: 'admin.invoices.index', custom_url: null, icon: 'FileText', labels: { nl: 'Facturen opvolgen', en: 'Follow up invoices', de: 'Rechnungen nachverfolgen', fr: 'Suivi factures' }, role_names: null, sort_order: 2, active: true },
+  { id: 'calculator', key: 'calculator', route_key: 'admin.calculator.index', custom_url: null, icon: 'Calculator', labels: { nl: 'Prijs berekenen', en: 'Calculate price', de: 'Preis berechnen', fr: 'Calculer prix' }, role_names: null, sort_order: 3, active: true },
+];
 
 export default function AdminDashboardPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
-  const { user } = useAuth();
-  const showWorkOrders = canAccessWorkOrders(user?.role);
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const { can } = usePermission();
+  const shortcutsQuery = useQuery([], async () => {
+    try {
+      return await dashboardShortcutsService.list();
+    } catch {
+      return { data: [] as DashboardShortcut[] };
+    }
+  });
+  const showWorkOrders = can('work_orders.view');
+  const shortcuts = (shortcutsQuery.data?.data?.length ? shortcutsQuery.data.data : FALLBACK_SHORTCUTS)
+    .filter((shortcut) => {
+      const permission = SHORTCUT_PERMISSION[shortcut.route_key];
+      return !permission || can(permission);
+    });
+  const dateLocale = intlLocale(locale);
   const sync = useSyncStatus();
 
   const [calcService, setCalcService] = React.useState('winterstalling');
@@ -187,6 +228,13 @@ export default function AdminDashboardPage() {
         eyebrow={t('adminNew.dashboard.brand')}
         title={t('adminNew.dashboard.heroTitle')}
         subtitle={t('adminNew.dashboard.subtitle')}
+        rightSlot={
+          <Link href={adminHref(locale, 'admin.planning.create')}>
+            <Button variant="gold" size="sm" leftIcon={<CalendarPlus className="h-4 w-4" />}>
+              {t('planning.createAppointment')}
+            </Button>
+          </Link>
+        }
         stats={[
           {
             label: t('adminNew.dashboard.cards.openInvoices.title'),
@@ -247,7 +295,7 @@ export default function AdminDashboardPage() {
       />
 
       <AdminContent>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid min-w-0 gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
           <Link href={`/${locale}/admin/afspraken`} className="block">
             <AdminStatusStrip label={t('adminModules.overview.todayAppointments')} value={data?.todayAppointments ?? '—'} tone="marine" />
           </Link>
@@ -271,34 +319,25 @@ export default function AdminDashboardPage() {
             />
           </Link>
         </div>
-        <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+        <AdminContentGrid className="lg:grid-cols-2">
           <AdminSectionCard
             title={t('adminNew.dashboard.quickActions')}
             description={t('adminNew.dashboard.subtitle')}
             icon={Sparkles}
           >
-            <div className="grid gap-3 sm:grid-cols-2">
-              {user?.role === 'staff' ? (
-                <>
-                  <AdminQuickAction href={`/${locale}/planning?create=1`} label={t('adminModules.create.appointment')} icon={Receipt} tone="gold" />
-                  <AdminQuickAction href={`/${locale}/admin/kassa`} label={t('admin.sidebar.kassa')} icon={Receipt} tone="gold" />
-                  <AdminQuickAction href={`/${locale}/admin/stalling?new=1`} label={t('adminModules.create.stalling')} icon={Warehouse} tone="gold" />
-                  <AdminQuickAction href={`/${locale}/admin/klanten`} label={t('adminModules.overview.customerSearch')} icon={CreditCard} tone="navy" />
-                </>
-              ) : (
-                <>
-                  <AdminQuickAction href={`/${locale}/admin/facturen?create=1`} label={t('adminModules.create.invoice')} icon={CreditCard} tone="gold" />
-                  <AdminQuickAction href={`/${locale}/admin/betalingen`} label={t('adminModules.overview.registerPayment')} icon={Receipt} tone="navy" />
-                  <AdminQuickAction href={`/${locale}/admin/klanten`} label={t('adminModules.overview.customerSearch')} icon={CreditCard} tone="marine" />
-                  {user?.role === 'admin' ? (
-                    <>
-                      <AdminQuickAction href={`/${locale}/admin/boten?new=1`} label={t('adminModules.create.boat')} icon={Warehouse} tone="success" />
-                      <AdminQuickAction href={`/${locale}/admin/verkopen`} label={t('adminModules.create.brokerage')} icon={Receipt} tone="gold" />
-                      <AdminQuickAction href={`/${locale}/admin/financieel`} label={t('adminModules.nav.finance')} icon={CreditCard} tone="navy" />
-                    </>
-                  ) : null}
-                </>
-              )}
+            <div className="grid min-w-0 gap-3 grid-cols-1 sm:grid-cols-2">
+              {shortcuts.map((shortcut) => {
+                const Icon = SHORTCUT_ICONS[shortcut.icon] ?? Sparkles;
+                return (
+                  <AdminQuickAction
+                    key={shortcut.key}
+                    href={adminHref(locale, shortcut.route_key, shortcut.custom_url)}
+                    label={shortcut.labels?.[locale] || shortcut.labels?.nl || shortcut.key}
+                    icon={Icon}
+                    tone="gold"
+                  />
+                );
+              })}
             </div>
           </AdminSectionCard>
 
@@ -337,7 +376,7 @@ export default function AdminDashboardPage() {
                   tone="success"
                 />
               ) : null}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                 <Button variant="gold" size="sm" onClick={() => void runQuickCalc()} disabled={calculate.loading}>
                   {t('adminNew.calculator.calculate')}
                 </Button>
@@ -347,7 +386,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           </AdminSectionCard>
-        </div>
+        </AdminContentGrid>
 
         <AdminSectionCard
           title={t('adminNew.reminders.title')}
@@ -355,7 +394,7 @@ export default function AdminDashboardPage() {
           icon={Bell}
           className="mt-5"
         >
-          <div className={`grid gap-3 ${showWorkOrders ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+          <div className={`grid min-w-0 gap-3 grid-cols-1 ${showWorkOrders ? 'sm:grid-cols-2 xl:grid-cols-3' : 'sm:grid-cols-2'}`}>
             <Link href={`/${locale}/admin/facturen?payment_status=open`} className="block">
               <AdminStatusStrip
                 label={t('adminNew.reminders.invoiceDue')}
@@ -382,7 +421,7 @@ export default function AdminDashboardPage() {
           </div>
         </AdminSectionCard>
 
-        <div className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+        <AdminContentGrid className="mt-5 lg:grid-cols-2">
           {/* Trello #109: live recent-activity feed */}
           <AdminSectionCard
             title={t('adminNew.dashboard.recentActivity.title')}
@@ -413,8 +452,8 @@ export default function AdminDashboardPage() {
                   const title = String(item.title);
                   const created = String(item.created_at ?? '');
                   return (
-                    <li key={String(item.id ?? i)} className="flex items-start justify-between gap-3 border-b border-navy-50 pb-2 last:border-0">
-                      <span className="text-sm text-navy-800">{title}</span>
+                    <li key={String(item.id ?? i)} className="flex min-w-0 items-start justify-between gap-3 border-b border-navy-50 pb-2 last:border-0">
+                      <span className="min-w-0 break-words text-sm text-navy-800">{title}</span>
                       <span className="shrink-0 text-xs text-navy-400">{created ? timeAgo(created) : ''}</span>
                     </li>
                   );
@@ -442,7 +481,7 @@ export default function AdminDashboardPage() {
               {t('adminNew.dashboard.cashDifference.openClosure')} →
             </Link>
           </AdminSectionCard>
-        </div>
+        </AdminContentGrid>
       </AdminContent>
     </>
   );

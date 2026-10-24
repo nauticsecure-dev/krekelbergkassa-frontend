@@ -34,23 +34,29 @@
       "brokerage": "Brokerage",
       "finance": "Finance",
       "servicesPricing": "Services & Pricing",
-      "management": "Management"
+      "management": "Management",
+      "systemAdmin": "System administration"
     },
     "hubs": {
       "planning": {
         "title": "Planning",
         "subtitle": "Manage appointments, calendar availability and yard work from one place.",
         "schedule": "Schedule",
-        "calendar": "Calendar",
-        "calendarDesc": "Opening hours, exceptions, locations and yard capacity.",
-        "appointments": "Appointments",
-        "appointmentsDesc": "Review and manage customer appointments.",
+        "calendar": "Availability & yard calendar",
+        "calendarDesc": "Opening hours, lunch blocks and exceptions.",
+        "appointments": "Appointment scheduler",
+        "appointmentsDesc": "Day, week and month planning for appointments.",
         "workOrders": "Work orders",
         "workOrdersDesc": "Track scheduled work and its progress.",
         "quickAccess": "Quick access",
         "quickActions": "Quick actions",
         "crane": "Crane appointment",
-        "craneDesc": "Open the crane booking page."
+        "craneDesc": "Open the crane booking page.",
+        "tabCalendar": "Calendar",
+        "tabAppointments": "Appointments",
+        "tabToday": "Today",
+        "tabWeek": "Week",
+        "tabYard": "Yard planning"
       },
       "finance": {
         "title": "Finance",
@@ -62,7 +68,7 @@
         "costsMonth": "Purchases this month",
         "costsUnavailable": "Purchase totals are not available through the current API.",
         "loadError": "Could not load",
-        "invoiceWindow": "Based on the 100 most recent invoices.",
+        "invoiceWindow": "Total across all invoices.",
         "quickActions": "Quick actions",
         "overview": "Financial overview",
         "invoices": "Sales invoices",
@@ -111,7 +117,8 @@
       },
       "management": {
         "title": "Management",
-        "subtitle": "Manage users and settings. Technical system functions are restricted to administrators.",
+        "subtitle": "Manage users and settings. Technical system functions are restricted to system administrators.",
+        "superAdminDenied": "No access. System administrators only.",
         "configuration": "Configuration",
         "users": "Users",
         "usersDesc": "Manage access and staff accounts.",
@@ -139,7 +146,6 @@
     "services": "Yard & services",
     "salesLocation": "Sales",
     "planning": "Planning",
-
     "about": "About",
     "contact": "Contact",
     "login": "Login",
@@ -589,8 +595,39 @@
     "confirmSubmit": "Submit this appointment request? You will receive a confirmation by email within 24 hours.",
     "footerNote": "Your request is confirmed within 24h. A payment link will follow by email.",
     "selectDate": "Please select a date first",
+    "dayClosed": "The yard is closed on this day. Please choose another date.",
+    "slotsLoadFailed": "Time slots could not be loaded. Call us on 0475 315 661.",
     "manualReview": "Manual review required",
     "notes": "Notes (optional)",
+    "address": {
+      "title": "Address",
+      "street": "Street",
+      "houseNumber": "House number",
+      "postalCode": "Postal code",
+      "city": "City",
+      "streetPlaceholder": "Havenstraat",
+      "housePlaceholder": "12 A",
+      "postalPlaceholder": "6041 AB",
+      "cityPlaceholder": "Roermond",
+      "autocompleteHint": "Start typing your street and pick a suggestion. House number, postal code and city are filled in. You can still edit every field yourself.",
+      "manualFallback": "Address lookup is unavailable. Enter the street, number, postal code and city yourself."
+    },
+    "validation": {
+      "incomplete": "Please fill in these fields first: {fields}.",
+      "required": "{field} is required.",
+      "invalid": "{field} is invalid.",
+      "service": "Service",
+      "length": "Boat length",
+      "firstName": "First name",
+      "email": "Email",
+      "date": "Date",
+      "time": "Time slot",
+      "street": "Street",
+      "houseNumber": "House number",
+      "postalCode": "Postal code",
+      "city": "City",
+      "hoverHint": "Fill in the highlighted fields to continue."
+    },
     "placeholders": {
       "name": "John Smith",
       "phone": "06 12345678",
@@ -634,9 +671,11 @@
     "ctaTitle": "Ready to book your slot?",
     "ctaDesc": "Reserve in under 2 minutes and receive an instant cost indication.",
     "ctaContact": "Contact",
-    "editService": "Edit service",
+    "editService": "Edit product",
+    "editPrices": "Edit prices",
     "onRequest": "On request",
     "from": "from",
+    "inclVat": "incl. {rate}% VAT",
     "pricingUnavailable": "Pricing is currently unavailable. Please contact us for a quote.",
     "overviewTitle": "Our services and rates",
     "overviewSubtitle": "Live rates per length class, straight from our system."
@@ -2881,7 +2920,9 @@
         "newRule": "New pricing rule",
         "selectProduct": "Select product",
         "confirmDelete": "Delete this pricing rule?",
-        "deleted": "Pricing rule deleted"
+        "deleted": "Pricing rule deleted",
+        "filtered": "Filtered",
+        "clearFilter": "Clear filters"
       },
       "manageServices": "Services beheren"
     },
@@ -2956,13 +2997,14 @@
       }
     },
     "appointments": {
-      "title": "Appointments",
-      "subtitle": "Manage crane appointments, confirmations and status updates",
+      "title": "Appointment scheduler",
+      "subtitle": "Plan appointments by day, week and month",
       "loading": "Loading appointments",
       "filterStatus": "Filter by status",
       "allStatuses": "All statuses",
       "statusPending": "Pending review",
       "statusConfirmed": "Confirmed",
+      "statusPlanned": "Planned",
       "statusStarted": "Started",
       "statusCompleted": "Completed",
       "statusCancelled": "Cancelled",
@@ -2975,7 +3017,7 @@
       "cancelReason": "Cancelled via admin",
       "total": "{count} appointments",
       "today": "Today",
-      "listOverview": "Filter and manage all crane appointments",
+      "listOverview": "Time grid with hours and days. Drag an appointment to move it.",
       "columns": {
         "date": "Date",
         "time": "Time",
@@ -2987,7 +3029,10 @@
         "confirmed": "Appointment confirmed",
         "cancelled": "Appointment cancelled",
         "completed": "Appointment completed",
-        "advanced": "Appointment status changed to {status}"
+        "advanced": "Appointment status changed to {status}",
+        "moved": "Appointment moved",
+        "moveFailed": "Could not move the appointment",
+        "conflict": "This time slot overlaps another appointment"
       }
     },
     "products": {
@@ -3545,38 +3590,6 @@
       "total": "{count} work orders",
       "detail": {
         "priority": "Priority",
-        "completionNote": "Completion note"
-      },
-      "columns": {
-        "number": "Number",
-        "type": "Type",
-        "status": "Status",
-        "priority": "Priority",
-        "due": "Due date",
-        "boat": "Boat",
-        "assignee": "Assigned to",
-        "hours": "Hours",
-        "invoiceStatus": "Invoice"
-      },
-      "status": {
-        "new": "New",
-        "inProgress": "In progress",
-        "done": "Done",
-        "cancelled": "Cancelled",
-        "completed": "Completed"
-      },
-      "toasts": {
-        "created": "Work order created",
-        "assigned": "Work order assigned",
-        "started": "Work order started",
-        "completed": "Work order completed",
-        "invoiceCreated": "Invoice created",
-        "timeAdded": "Time entry added",
-        "materialAdded": "Material added",
-        "fileUploaded": "File uploaded"
-      },
-      "detail": {
-        "priority": "Priority",
         "completionNote": "Completion note",
         "open": "Open",
         "back": "← Back to work orders",
@@ -3612,6 +3625,34 @@
         "tabTimeline": "Timeline",
         "tabAudit": "Audit log",
         "changes": "{count} change(s)"
+      },
+      "columns": {
+        "number": "Number",
+        "type": "Type",
+        "status": "Status",
+        "priority": "Priority",
+        "due": "Due date",
+        "boat": "Boat",
+        "assignee": "Assigned to",
+        "hours": "Hours",
+        "invoiceStatus": "Invoice"
+      },
+      "status": {
+        "new": "New",
+        "inProgress": "In progress",
+        "done": "Done",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+      },
+      "toasts": {
+        "created": "Work order created",
+        "assigned": "Work order assigned",
+        "started": "Work order started",
+        "completed": "Work order completed",
+        "invoiceCreated": "Invoice created",
+        "timeAdded": "Time entry added",
+        "materialAdded": "Material added",
+        "fileUploaded": "File uploaded"
       },
       "forbiddenTitle": "No access to work orders",
       "forbiddenMessage": "Your account does not have permission for /v1/work-orders. The admin role needs work-orders permissions granted in the API (Spatie), same as staff/manager.",
@@ -4046,6 +4087,25 @@
       "toasts": {
         "started": "Backup started"
       }
+    },
+    "shortcuts": {
+      "title": "Shortcuts",
+      "subtitle": "Buttons on the operational overview",
+      "saved": "Shortcut saved",
+      "forbidden": "You do not have permission to manage shortcuts.",
+      "reset": "Restore defaults",
+      "create": "Add shortcut",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "active": "Active",
+      "key": "Key",
+      "route": "Destination",
+      "label": "Label",
+      "roles": "Roles",
+      "allRoles": "Empty means visible for every role.",
+      "advanced": "Advanced",
+      "customUrl": "Custom path",
+      "save": "Save"
     }
   },
   "planning": {
@@ -4179,6 +4239,7 @@
     "globalDesc": "Changes apply across the whole site.",
     "global": {
       "headerCtaLabel": "Header button text",
+      "headerCtaPath": "Header button link",
       "phone": "Phone number",
       "city": "City",
       "tagline": "Footer tagline",

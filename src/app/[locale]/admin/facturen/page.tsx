@@ -24,10 +24,11 @@ import { Button } from '@/components/ui/Button';
 import { LoadingState, EmptyState, ErrorState } from '@/components/admin/DataState';
 import { InvoiceStatusBadge, PaymentStatusBadge } from '@/components/admin/StatusBadge';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { invoicesService, productGroupsService } from '@/lib/services';
-import { centsToEuro, formatCurrency, formatDate } from '@/lib/format';
+import { invoicesService, paginatedRows, productGroupsService } from '@/lib/services';
+import { centsToEuro, formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
+import { invoiceProvenance } from '@/lib/invoice-provenance';
 
 export default function InvoicesPageWrapper() {
   return (
@@ -45,11 +46,13 @@ function paymentStatusFor(invoice: {
 }) {
   const outstanding = Number(invoice.outstanding_cents);
   const total = Number(invoice.total_amount_cents);
-  if (outstanding <= 0) return 'paid';
+  if (total > 0 && outstanding <= 0) return 'paid';
+  const paid = total - outstanding;
+  if (paid > 0 && outstanding > 0) return 'partial';
   const today = new Date().toLocaleDateString('sv-SE');
-  if (invoice.due_date && invoice.due_date.slice(0, 10) < today) return 'overdue';
-  if (outstanding < total) return 'partial';
-  return invoice.payment_status || 'open';
+  if (invoice.due_date && invoice.due_date.slice(0, 10) < today && outstanding > 0) return 'overdue';
+  if (invoice.payment_status === 'partially_paid') return 'partial';
+  return 'open';
 }
 
 function InvoicesPage() {
@@ -57,7 +60,7 @@ function InvoicesPage() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
   const search = searchParams.get('search') ?? '';
   const status = searchParams.get('status') ?? '';
   const paymentStatus = searchParams.get('payment_status') ?? '';
@@ -84,7 +87,7 @@ function InvoicesPage() {
   useCreateMenuIntent(() => router.push(`/${locale}/admin/facturen/nieuw`), 'create');
 
   const groups = useQuery(['invoice-product-groups'], () =>
-    productGroupsService.list().catch(() => [])
+    productGroupsService.list({ per_page: 100 }).catch(() => ({ data: [] as Record<string, unknown>[] }))
   );
 
   const invoices = useQuery(
@@ -115,45 +118,16 @@ function InvoicesPage() {
     date_from: dateFrom || undefined,
     date_to: dateTo || undefined,
   };
-  const openStats = useQuery(
-    ['invoice-stats-open', ...Object.values(statFilters)],
-    () =>
-      invoicesService
-        .list({
-          ...statFilters,
-          payment_status: 'open',
-          per_page: 1,
-        })
-  );
-  const overdueStats = useQuery(
-    ['invoice-stats-overdue', ...Object.values(statFilters)],
-    () =>
-      invoicesService
-        .list({
-          ...statFilters,
-          payment_status: 'overdue',
-          per_page: 1,
-        })
-  );
-  const paidStats = useQuery(
-    ['invoice-stats-paid', ...Object.values(statFilters)],
-    () => invoicesService.list({ ...statFilters, payment_status: 'paid', per_page: 1 })
-  );
-  const openBalanceStats = useQuery(
-    ['invoice-stats-open-balance', ...Object.values(statFilters)],
-    () => invoicesService.list({ ...statFilters, payment_status: 'open', per_page: 100 })
+  const summary = useQuery(
+    ['invoice-register-summary', ...Object.values(statFilters)],
+    () => invoicesService.summary(statFilters),
   );
 
   const rows = invoices.data?.data ?? [];
-  const openCount = openStats.data?.meta?.total;
-  const overdueCount = overdueStats.data?.meta?.total;
-  const paidCount = paidStats.data?.meta?.total;
-  const openBalanceRows = openBalanceStats.data?.data ?? [];
-  const openBalanceTotal = openBalanceStats.data?.meta?.total;
-  const openBalanceComplete = openBalanceTotal != null
-    ? openBalanceTotal <= openBalanceRows.length
-    : openBalanceRows.length < 100;
-  const openBalance = openBalanceRows.reduce((sum, invoice) => sum + Number(invoice.outstanding_cents ?? 0), 0);
+  const openCount = summary.data?.open_count;
+  const overdueCount = summary.data?.overdue_count;
+  const paidCount = summary.data?.paid_count;
+  const openBalance = summary.data?.open_balance_cents ?? 0;
   const paymentFilterHref = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value) params.set('payment_status', value);
@@ -183,34 +157,34 @@ function InvoicesPage() {
         stats={[
           {
             label: t('adminNew.invoices.metrics.open'),
-            value: openStats.error ? '—' : openCount ?? '—',
+            value: summary.error ? '—' : openCount ?? '—',
             tone: 'marine',
             active: paymentStatus === 'open',
-            loading: invoices.loading || openStats.loading,
+            loading: invoices.loading || summary.loading,
             href: paymentFilterHref('open'),
           },
           {
             label: t('adminNew.invoices.metrics.overdue'),
-            value: overdueStats.error ? '—' : overdueCount ?? '—',
+            value: summary.error ? '—' : overdueCount ?? '—',
             tone: 'danger',
             active: paymentStatus === 'overdue',
-            loading: invoices.loading || overdueStats.loading,
+            loading: invoices.loading || summary.loading,
             href: paymentFilterHref('overdue'),
           },
           {
             label: t('adminNew.invoices.metrics.paid'),
-            value: paidStats.error ? '—' : paidCount ?? '—',
+            value: summary.error ? '—' : paidCount ?? '—',
             tone: 'success',
             active: paymentStatus === 'paid',
-            loading: invoices.loading || paidStats.loading,
+            loading: invoices.loading || summary.loading,
             href: paymentFilterHref('paid'),
           },
           {
             label: t('adminNew.invoices.metrics.openBalance'),
-            value: openBalanceStats.error || !openBalanceComplete ? '—' : formatCurrency(openBalance / 100, dateLocale),
+            value: summary.error ? '—' : formatCurrency(openBalance / 100, dateLocale),
             tone: 'gold',
             active: paymentStatus === 'open',
-            loading: openBalanceStats.loading,
+            loading: summary.loading,
             href: paymentFilterHref('open'),
           },
         ]}
@@ -322,7 +296,7 @@ function InvoicesPage() {
             }}
           >
             <option value="">{t('adminNew.invoices.allGroups')}</option>
-            {(groups.data ?? []).map((g) => {
+            {paginatedRows(groups.data).map((g) => {
               const code = String((g as Record<string, unknown>).code ?? '');
               const name = String((g as Record<string, unknown>).name ?? code);
               return code ? (
@@ -429,6 +403,7 @@ function InvoicesPage() {
                 {rows.map((invoice) => {
                   const firstMethod =
                     invoice.payments?.[0]?.method ?? invoice.payments?.[0]?.provider;
+                  const provenance = invoiceProvenance(locale, invoice);
                   return (
                     <AdminTableRow key={invoice.id}>
                       <AdminTableCell>
@@ -439,7 +414,14 @@ function InvoicesPage() {
                         <div className="font-medium text-navy-900">{invoice.customer?.name ?? '—'}</div>
                         <div className="text-xs text-navy-500">{invoice.customer?.email ?? '—'}</div>
                       </AdminTableCell>
-                      <AdminTableCell className="capitalize">{invoice.source}</AdminTableCell>
+                      <AdminTableCell>
+                        <div className="capitalize">{invoice.source}</div>
+                        {provenance ? (
+                          <Link href={provenance.href} className="mt-1 block text-sm font-medium text-marine-700 hover:underline">
+                            {t('adminNew.invoices.provenanceLabel', { defaultValue: 'Bron' })}: {provenance.label}
+                          </Link>
+                        ) : null}
+                      </AdminTableCell>
                       <AdminTableCell>
                         <div className="font-semibold text-navy-900">
                           {formatCurrency(invoice.total_amount_euros, dateLocale)}

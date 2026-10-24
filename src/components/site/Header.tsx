@@ -21,6 +21,7 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { InstallButton } from '@/components/pwa/InstallButton';
 import { cn } from '@/lib/cn';
 import { useCms } from '@/components/cms/CmsProvider';
+import { EditSafeLink } from '@/components/cms/EditSafeLink';
 import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin, defaultRedirectForRole } from '@/lib/auth-routes';
 
@@ -35,10 +36,11 @@ export function Header() {
   const { t, locale } = useIntl();
   const { getGlobal } = useCms();
   const { user, loading } = useAuth();
-  const ctaLabel = getGlobal('header.cta.label', 'Stalling');
-  const ctaHref  = `/${locale}/${getGlobal('header.cta.path', 'diensten/winterstalling')}`;
+  const stallingLabel = getGlobal('header.cta.label', 'Stalling');
+  const stallingHref = `/${locale}/${getGlobal('header.cta.path', 'diensten/winterstalling')}`;
   const pathname = usePathname();
-  const accountHref = user ? defaultRedirectForRole(user.role, locale) : `/${locale}/login`;
+  const loginHref = `/${locale}/login`;
+  const accountHref = user ? defaultRedirectForRole(user.role, locale) : loginHref;
   const accountLabel = !user
     ? t('nav.login')
     : canAccessAdmin(user.role, false)
@@ -86,9 +88,9 @@ export function Header() {
     >
       {/* Main bar */}
       <div className="container-wide flex h-[72px] items-center justify-between gap-8">
-        <Link href={`/${locale}`} aria-label="Krekelberg Nautic" className="shrink-0">
+        <EditSafeLink href={`/${locale}`} aria-label="Krekelberg Nautic" className="shrink-0">
           <Logo />
-        </Link>
+        </EditSafeLink>
 
         {/* Desktop nav */}
         <nav className="hidden flex-1 items-center justify-center lg:flex">
@@ -149,15 +151,15 @@ export function Header() {
           <InstallButton variant="header" className="hidden md:inline-flex" />
           <LanguageSwitcher />
           {!loading ? (
-            <Link href={accountHref} className="hidden xl:inline-flex">
+            <Link href={accountHref} className="hidden lg:inline-flex">
               <Button variant="ghost" size="md">
                 {accountLabel}
               </Button>
             </Link>
           ) : null}
-          <Link href={ctaHref} className="hidden md:inline-flex">
+          <Link href={stallingHref} className="hidden md:inline-flex">
             <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
-              {ctaLabel}
+              {stallingLabel}
             </Button>
           </Link>
           <button
@@ -193,9 +195,9 @@ export function Header() {
                   </Button>
                 </Link>
               ) : null}
-              <Link href={ctaHref}>
+              <Link href={stallingHref}>
                 <Button variant="gold" fullWidth>
-                  {ctaLabel}
+                  {stallingLabel}
                 </Button>
               </Link>
             </div>

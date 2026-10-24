@@ -53,7 +53,7 @@ import {
   productToForm,
   type ProductFormState,
 } from '@/lib/products';
-import { formatCurrency, formatDateTime } from '@/lib/format';
+import { formatCurrency, formatDateTime, intlLocale } from '@/lib/format';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -358,7 +358,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = String(params.id);
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [editing, setEditing] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
@@ -794,13 +794,21 @@ export default function ProductDetailPage() {
                 </AdminTableHead>
                 <tbody>
                   {auditLog.data.data.map((entry) => {
-                    const changes = (entry.changes ?? entry.new_values ?? {}) as Record<string, unknown>;
-                    const oldValues = (entry.old_values ?? {}) as Record<string, unknown>;
-                    const changedFields = Object.keys(changes);
-                    if (changedFields.length === 0) {
+                    const changeRows = Array.isArray(entry.changes)
+                      ? (entry.changes as Array<{ field_name?: string; old_value?: unknown; new_value?: unknown }>).map((change) => ({
+                          field: String(change.field_name ?? ''),
+                          oldValue: change.old_value,
+                          newValue: change.new_value,
+                        }))
+                      : Object.keys((entry.changes ?? entry.new_values ?? {}) as Record<string, unknown>).map((field) => ({
+                          field,
+                          oldValue: (entry.old_values as Record<string, unknown> | undefined)?.[field],
+                          newValue: ((entry.changes ?? entry.new_values ?? {}) as Record<string, unknown>)[field],
+                        }));
+                    if (changeRows.length === 0) {
                       return (
                         <AdminTableRow key={String(entry.id)}>
-                          <AdminTableCell className="font-mono text-xs text-navy-500">{String(entry.action ?? entry.event ?? 'update')}</AdminTableCell>
+                          <AdminTableCell className="font-mono text-xs text-navy-500">{String(entry.title ?? entry.action ?? entry.event ?? 'update')}</AdminTableCell>
                           <AdminTableCell>—</AdminTableCell>
                           <AdminTableCell>—</AdminTableCell>
                           <AdminTableCell className="text-xs">{String((entry.user as Record<string, unknown>)?.name ?? entry.user_id ?? '—')}</AdminTableCell>
@@ -808,11 +816,11 @@ export default function ProductDetailPage() {
                         </AdminTableRow>
                       );
                     }
-                    return changedFields.map((field, i) => (
-                      <AdminTableRow key={`${String(entry.id)}-${field}`}>
-                        <AdminTableCell className="font-mono text-xs">{field}</AdminTableCell>
-                        <AdminTableCell className="max-w-[160px] truncate text-xs text-navy-500">{oldValues[field] == null ? '—' : String(oldValues[field])}</AdminTableCell>
-                        <AdminTableCell className="max-w-[160px] truncate text-xs text-navy-900">{changes[field] == null ? '—' : String(changes[field])}</AdminTableCell>
+                    return changeRows.map((change, i) => (
+                      <AdminTableRow key={`${String(entry.id)}-${change.field}`}>
+                        <AdminTableCell className="font-mono text-xs">{change.field}</AdminTableCell>
+                        <AdminTableCell className="max-w-[160px] truncate text-xs text-navy-500">{change.oldValue == null ? '—' : String(change.oldValue)}</AdminTableCell>
+                        <AdminTableCell className="max-w-[160px] truncate text-xs text-navy-900">{change.newValue == null ? '—' : String(change.newValue)}</AdminTableCell>
                         {i === 0 ? (
                           <>
                             <AdminTableCell className="text-xs">{String((entry.user as Record<string, unknown>)?.name ?? entry.user_id ?? '—')}</AdminTableCell>

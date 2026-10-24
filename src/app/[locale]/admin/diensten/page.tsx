@@ -117,7 +117,11 @@ export default function DienstenAdminPage() {
                                 Product
                               </Button>
                             </Link>
-                            <Link href={`/${locale}/admin/calculator/pricing`}>
+                            <Link
+                              href={`/${locale}/admin/calculator/pricing?product=${encodeURIComponent(
+                                services[0]?.code ?? s.adminSearch,
+                              )}`}
+                            >
                               <Button size="sm" variant="ghost" leftIcon={<ShoppingCart className="h-3.5 w-3.5" />}>
                                 Tarieven
                               </Button>

@@ -9,6 +9,30 @@ import { TextEditModal } from './CmsModals';
 
 type AsTag = keyof React.JSX.IntrinsicElements;
 
+const BLOCK_TAGS = new Set<string>([
+  'p',
+  'div',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'li',
+  'blockquote',
+  'article',
+  'section',
+  'ul',
+  'ol',
+]);
+
+/** Block text must not be wrapped in a span — browsers re-parent <p> out of <span>. */
+function usesBlockWrapper(as: AsTag | undefined, className?: string) {
+  if (as && BLOCK_TAGS.has(as)) return true;
+  if (!className) return false;
+  return /\b(block|line-clamp-\d+|flex|inline-flex|grid|w-full)\b/.test(className);
+}
+
 interface EditableTextProps {
   /** Stable content-block key, e.g. `diensten.winterstalling.hero.title`. */
   blockKey: string;
@@ -45,40 +69,62 @@ export function EditableText({
   className,
   children,
 }: EditableTextProps) {
-  const { canEdit, editMode, getText } = useCms();
+  const { isCmsEditing, getText } = useCms();
   const { t } = useIntl();
   const [open, setOpen] = React.useState(false);
 
   const fallbackText = React.useMemo(() => childrenToText(children), [children]);
   const stored = getText(blockKey, '');
   const Tag = (as ?? 'span') as AsTag;
+  const block = usesBlockWrapper(as, className);
+  const Wrap = block ? 'div' : 'span';
 
   // Render the stored value when present, otherwise the hardcoded children so
   // the public site is unchanged until a first edit upserts the key.
   const content: React.ReactNode = stored ? stored : children;
 
-  if (!canEdit || !editMode) {
+  if (!isCmsEditing) {
     return <Tag className={className}>{content}</Tag>;
   }
 
+  const stopNav = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const openEditor = (event: React.SyntheticEvent) => {
+    stopNav(event);
+    setOpen(true);
+  };
+
   return (
-    <span className={cn('group/cms relative inline-block', className && 'block')}>
-      <Tag
-        className={cn('outline-dashed outline-1 outline-gold-400/60', className)}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          setOpen(true);
-        }}
-      >
+    <Wrap
+      className={cn(
+        'group/cms pointer-events-auto relative cursor-text',
+        block ? 'block' : 'inline-block',
+      )}
+      onPointerDown={stopNav}
+      onMouseDown={stopNav}
+      onTouchStart={stopNav}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') stopNav(event);
+      }}
+      onClick={openEditor}
+    >
+      <Tag className={cn('outline-dashed outline-1 outline-gold-400/60', className)}>
         {content}
       </Tag>
       <button
         type="button"
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
+        onPointerDown={stopNav}
+        onMouseDown={stopNav}
+        onTouchStart={stopNav}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') openEditor(event);
+        }}
+        onClick={openEditor}
         aria-label={t('cms.editText')}
         title={t('cms.editText')}
-        className="absolute -right-2 -top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white opacity-0 shadow-md transition focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 group-hover/cms:opacity-100"
+        className="absolute -right-1 -top-1 z-20 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white opacity-0 shadow-md transition focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 group-hover/cms:opacity-100"
       >
         <Pencil className="h-3.5 w-3.5" />
       </button>
@@ -91,6 +137,6 @@ export function EditableText({
         type={type}
         fallbackText={fallbackText}
       />
-    </span>
+    </Wrap>
   );
 }

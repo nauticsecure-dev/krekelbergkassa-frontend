@@ -1,4 +1,4 @@
-export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'guest';
+export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'super_admin' | 'guest';
 
 export interface SessionUser {
   id: string;
@@ -34,6 +34,8 @@ export interface PaginatedResponse<T> {
 
 export interface Customer {
   id: string;
+  public_id?: string | null;
+  slug?: string | null;
   customer_number: string;
   name: string;
   company_name: string | null;
@@ -64,6 +66,9 @@ export type BoatType = 'motor' | 'sail' | 'rib' | 'trailer' | 'other';
 
 export interface Boat {
   id: string;
+  public_id?: string | null;
+  slug?: string | null;
+  public_path?: string | null;
   customer_id: string;
   name: string;
   type: BoatType | string;
@@ -82,6 +87,8 @@ export interface Boat {
 
 export interface StallingContract {
   id: string;
+  public_id?: string | null;
+  slug?: string | null;
   contract_number: string;
   type: 'winter' | 'summer' | 'week' | 'year' | string;
   status: string;
@@ -148,6 +155,7 @@ export interface InvoiceLine {
   product_id: string | null;
   description: string;
   quantity: string;
+  discount_percent?: string | number | null;
   unit_price: number;
   vat_rate: string;
   vat_amount: number;
@@ -191,9 +199,16 @@ export interface Reminder {
 export interface Invoice {
   id: string;
   invoice_number: string;
-  source: 'kassa' | 'stalling' | 'manual' | 'calculator' | string;
+  source: 'kassa' | 'stalling' | 'manual' | 'calculator' | 'appointment' | 'brokerage' | 'import' | string;
+  source_type?: string | null;
+  source_id?: string | null;
   status: string;
   payment_status?: string | null;
+  reference?: string | null;
+  invoice_date?: string | null;
+  notes?: string | null;
+  internal_note?: string | null;
+  payment_method?: string | null;
   locale: string;
   currency: string;
   subtotal_cents: number;
@@ -228,6 +243,9 @@ export interface Invoice {
 
 export interface Product {
   id: string;
+  public_id?: string | null;
+  slug?: string | null;
+  public_path?: string | null;
   code: string;
   service_code: string | null;
   name: string;
@@ -377,17 +395,41 @@ export interface KassaQrSession {
   guest_phone?: string | null;
 }
 
+export interface AuditLogCounters {
+  event_types: number;
+  entity_types: number;
+}
+
+export interface AuditLogChange {
+  field_name: string;
+  old_value: unknown;
+  new_value: unknown;
+}
+
 export interface AuditLog {
   id: string;
   entity_type: string;
   entity_id: string | null;
   entity_name?: string | null;
   entity_number?: string | null;
+  entity_url?: string | null;
   action: string;
   event_code?: string | null;
+  title?: string | null;
+  category?: string | null;
+  is_technical?: boolean;
   before_data: Record<string, unknown> | null;
   after_data: Record<string, unknown> | null;
+  changes?: AuditLogChange[];
   request_id?: string | null;
+  url?: string | null;
+  route_name?: string | null;
+  intent?: string | null;
+  session_id?: string | null;
+  anonymous_session_id?: string | null;
+  api_method?: string | null;
+  api_endpoint?: string | null;
+  http_status?: number | null;
   correlation_id?: string | null;
   endpoint?: string | null;
   method?: string | null;

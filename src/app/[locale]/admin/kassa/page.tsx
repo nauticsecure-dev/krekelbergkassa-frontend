@@ -52,12 +52,14 @@ import {
   customersService,
   kassaService,
   pricingService,
+  paginatedRows,
   productGroupsService,
   productsService,
 } from "@/lib/services";
 import { useMutation, useQuery } from "@/lib/hooks/useAsync";
 import type { Product, PricingRule, KassaQrSession } from "@/lib/api-types";
-import { formatCurrency } from "@/lib/format";
+import { adminRecordHref } from "@/config/admin-routes";
+import { formatCurrency, intlLocale } from "@/lib/format";
 import { productPriceExclEuros, productPriceInclEuros } from "@/lib/products";
 import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -134,7 +136,7 @@ export default function KassaPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const localeTag =
-    locale === "en" ? "en-GB" : locale === "de" ? "de-DE" : "nl-NL";
+    intlLocale(locale);
 
   const [query, setQuery] = React.useState("");
   const [aiQuery, setAiQuery] = React.useState("");
@@ -318,7 +320,7 @@ export default function KassaPage() {
   );
   // Trello #80: product groups → category chip color + DB icon.
   const groupsQuery = useQuery(["kassa-product-groups"], () =>
-    productGroupsService.list().catch(() => []),
+    productGroupsService.list({ per_page: 100 }).catch(() => ({ data: [] })),
   );
   // Trello #86: bulk product heatmap (times sold today/week) for tile badges.
   const productStatsQuery = useQuery(["kassa-product-stats"], () =>
@@ -446,7 +448,7 @@ export default function KassaPage() {
   // Trello #80: lookup product groups by name/code → resolve chip color + icon.
   const groupByName = React.useMemo(() => {
     const map = new Map<string, { color?: string | null; icon?: string | null }>();
-    ((groupsQuery.data ?? []) as Array<Record<string, unknown>>).forEach((g) => {
+    paginatedRows(groupsQuery.data).forEach((g) => {
       const color = (g.color ?? g.display_color) as string | null | undefined;
       const icon = (g.icon ?? g.display_icon) as string | null | undefined;
       const entry = { color, icon };
@@ -1422,7 +1424,7 @@ export default function KassaPage() {
                 {t("adminNew.kassa.smartMatch")}:
               </span>
               {matchingRule.range_from_cm}–{matchingRule.range_to_cm} cm ·{" "}
-              {formatCurrency(matchingRule.price_incl_vat_euros, localeTag)}
+              {formatCurrency(productPriceInclEuros(matchingRule), localeTag)}
             </div>
           ) : null}
 
@@ -1539,10 +1541,7 @@ export default function KassaPage() {
                     <CatalogTile
                       key={rule.id}
                       title={`${rule.range_from_cm} – ${rule.range_to_cm} cm`}
-                      price={formatCurrency(
-                        rule.price_incl_vat_euros,
-                        localeTag,
-                      )}
+                      price={formatCurrency(productPriceInclEuros(rule), localeTag)}
                       accent={
                         product?.color ?? product?.group?.color ?? "#1f93b8"
                       }
@@ -1583,7 +1582,7 @@ export default function KassaPage() {
                       ) : null}
                       {/* Trello #80: quick edit pencil → product detail */}
                       <Link
-                        href={`/${locale}/admin/producten/${product.id}`}
+                        href={adminRecordHref(locale, 'producten', product)}
                         onClick={(e) => e.stopPropagation()}
                         aria-label={t("adminNew.kassa.editProduct")}
                         className="absolute right-1.5 top-1.5 z-10 rounded-full bg-white/80 p-1 text-navy-400 transition hover:scale-110 hover:text-marine-600"
@@ -1612,7 +1611,7 @@ export default function KassaPage() {
                         meta={metaBits.length ? metaBits.join(" · ") : undefined}
                         price={formatCurrency(
                           ruleMatch
-                            ? ruleMatch.price_incl_vat_euros
+                            ? productPriceInclEuros(ruleMatch)
                             : productPriceInclEuros(product),
                           localeTag,
                         )}

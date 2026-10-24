@@ -2,7 +2,7 @@
 // Do NOT hardcode address / phone / opening hours anywhere else — import from here.
 // (Trello cards 97 & 103: one global company config used everywhere, every language.)
 
-export type Locale = 'nl' | 'en' | 'de';
+export type Locale = 'nl' | 'en' | 'de' | 'fr';
 
 const MAPS_QUERY = 'Hertenerweg+2,+6049AA+Herten';
 
@@ -42,6 +42,7 @@ const HOURS_SUMMARY: Record<Locale, string> = {
   nl: 'Ma–vr 09:00–17:30 · Wo gesloten · Za + Zo 10:00–17:00',
   en: 'Mon–Fri 09:00–17:30 · Wed closed · Sat + Sun 10:00–17:00',
   de: 'Mo–Fr 09:00–17:30 · Mi geschlossen · Sa + So 10:00–17:00',
+  fr: 'Lun–Ven 09:00–17:30 · Mer fermé · Sam + Dim 10:00–17:00',
 };
 
 export function openingHoursSummary(locale: string): string {

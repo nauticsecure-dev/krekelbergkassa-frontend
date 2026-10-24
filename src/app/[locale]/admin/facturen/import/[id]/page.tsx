@@ -26,7 +26,7 @@ import { customersService, invoiceImportsService, suppliersService } from '@/lib
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
 
 type Rec = Record<string, unknown>;
 const str = (r: Rec, ...keys: string[]): string => {
@@ -55,7 +55,7 @@ export default function InvoiceImportReviewPage() {
   const { push } = useToast();
   const params = useParams();
   const id = String(params.id);
-  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'de' ? 'de-DE' : 'nl-NL';
+  const dateLocale = intlLocale(locale);
 
   const [approveOpen, setApproveOpen] = React.useState(false);
   const [rejectOpen, setRejectOpen] = React.useState(false);
