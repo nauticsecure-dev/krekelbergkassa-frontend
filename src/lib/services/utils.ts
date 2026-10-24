@@ -37,8 +37,8 @@ function paginationMeta(obj: Record<string, unknown>): PaginatedResponse<unknown
       last_page: toNumber(obj.last_page, 1),
       per_page: toNumber(obj.per_page, 0),
       total: toNumber(obj.total, 0),
-      from: obj.from != null ? toNumber(obj.from) : undefined,
-      to: obj.to != null ? toNumber(obj.to) : undefined,
+      from: obj.from != null ? toNumber(obj.from) : null,
+      to: obj.to != null ? toNumber(obj.to) : null,
     };
   }
   return undefined;
