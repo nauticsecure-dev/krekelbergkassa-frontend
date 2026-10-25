@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -570,14 +571,14 @@ export default function TimelinePage() {
                               onChange={(e) => setCommentText(e.target.value)}
                             />
                             <div className="flex flex-col gap-1">
-                              <select
+                              <SearchSelect
                                 className="input-base text-xs"
                                 value={commentVisibility}
                                 onChange={(e) => setCommentVisibility(e.target.value as 'customer' | 'internal')}
                               >
                                 <option value="customer">Klant</option>
                                 <option value="internal">Intern</option>
-                              </select>
+                              </SearchSelect>
                               <Button
                                 size="sm"
                                 variant="gold"

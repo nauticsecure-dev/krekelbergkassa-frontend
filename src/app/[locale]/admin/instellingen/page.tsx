@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { Copy, Globe2, Mail, Save, ShieldCheck, Sliders, TestTube2 } from 'lucide-react';
@@ -403,7 +404,7 @@ export default function SettingsPage() {
                     <label className="mb-1.5 block text-sm font-medium text-navy-800">
                       {t('adminNew.settings.payments.provider')}
                     </label>
-                    <select
+                    <SearchSelect
                       className="input-base"
                       value={paymentsForm.provider}
                       onChange={(e) =>
@@ -412,7 +413,7 @@ export default function SettingsPage() {
                     >
                       <option value="mollie">Mollie</option>
                       <option value="manual">Manual</option>
-                    </select>
+                    </SearchSelect>
                   </div>
                   <Input
                     label={t('adminNew.settings.payments.enabledMethods')}

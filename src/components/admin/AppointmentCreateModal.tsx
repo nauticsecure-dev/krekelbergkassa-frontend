@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { Modal } from '@/components/ui/Modal';
@@ -178,7 +179,7 @@ export function AppointmentCreateModal({
             placeholder={t('adminNew.common.search')}
             onChange={(event) => setCustomerSearch(event.target.value)}
           />
-          <select
+          <SearchSelect
             className="input-base w-full"
             value={customerId}
             onChange={(event) => {
@@ -190,42 +191,42 @@ export function AppointmentCreateModal({
             {customers.map((customer) => (
               <option key={customer.id} value={customer.id}>{customer.name}</option>
             ))}
-          </select>
+          </SearchSelect>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldBoat')}</span>
-          <select className="input-base w-full" value={boatId} onChange={(event) => setBoatId(event.target.value)}>
+          <SearchSelect className="input-base w-full" value={boatId} onChange={(event) => setBoatId(event.target.value)}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {boats.map((boat) => (
               <option key={boat.id} value={boat.id}>{boat.name}</option>
             ))}
-          </select>
+          </SearchSelect>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldService')}</span>
-          <select className="input-base w-full" value={serviceCode} onChange={(event) => setServiceCode(event.target.value)}>
+          <SearchSelect className="input-base w-full" value={serviceCode} onChange={(event) => setServiceCode(event.target.value)}>
             {SERVICES.map((service) => (
               <option key={service.code} value={service.code}>{t(service.labelKey)}</option>
             ))}
-          </select>
+          </SearchSelect>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldLocation')}</span>
-          <select className="input-base w-full" value={locationId} onChange={(event) => setLocationId(event.target.value)}>
+          <SearchSelect className="input-base w-full" value={locationId} onChange={(event) => setLocationId(event.target.value)}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {locations.map((location) => (
               <option key={location.id} value={location.id}>{location.code}</option>
             ))}
-          </select>
+          </SearchSelect>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldAssignee')}</span>
-          <select className="input-base w-full" value={assignee} onChange={(event) => setAssignee(event.target.value)}>
+          <SearchSelect className="input-base w-full" value={assignee} onChange={(event) => setAssignee(event.target.value)}>
             <option value="">{t('planning.unassigned')}</option>
             {staff.map((member) => (
               <option key={member.id} value={member.id}>{member.name}</option>
             ))}
-          </select>
+          </SearchSelect>
         </label>
         <Input label={t('planning.fieldDate')} type="date" value={date} onChange={(event) => setDate(event.target.value)} />
         <Input label={t('planning.fieldStartTime')} type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} />

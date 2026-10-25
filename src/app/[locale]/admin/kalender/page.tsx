@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -526,7 +527,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 <span className="mb-1 block font-medium text-navy-700">
                   {t('adminNew.calendar.fields.dayOfWeek')}
                 </span>
-                <select
+                <SearchSelect
                   className="input-base"
                   value={regularForm.day_of_week}
                   onChange={(e) => setRegularForm(regularFormFromDay(Number(e.target.value)))}
@@ -536,7 +537,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                       {dayLabel(d)}
                     </option>
                   ))}
-                </select>
+                </SearchSelect>
               </label>
               <label className="flex items-center gap-2 text-sm text-navy-700">
                 <input
@@ -698,7 +699,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 <span className="mb-1 block font-medium text-navy-700">
                   {t('adminNew.calendar.columns.difficulty')}
                 </span>
-                <select
+                <SearchSelect
                   className="input-base"
                   value={locationForm.difficulty}
                   onChange={(e) => setLocationForm({ ...locationForm, difficulty: e.target.value })}
@@ -707,7 +708,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   <option value="medium">medium</option>
                   <option value="difficult">difficult</option>
                   <option value="hall">hall</option>
-                </select>
+                </SearchSelect>
               </label>
               <Input
                 label={t('adminNew.calendar.fields.extraMinutes')}
@@ -750,7 +751,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 <span className="mb-1 block font-medium text-navy-700">
                   {t('adminNew.calendar.columns.difficulty')}
                 </span>
-                <select
+                <SearchSelect
                   className="input-base"
                   value={editForm.difficulty}
                   onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
@@ -759,7 +760,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   <option value="medium">medium</option>
                   <option value="difficult">difficult</option>
                   <option value="hall">hall</option>
-                </select>
+                </SearchSelect>
               </label>
               <label className="flex items-center gap-2 text-sm text-navy-700">
                 <input

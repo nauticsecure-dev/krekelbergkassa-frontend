@@ -1,4 +1,5 @@
 "use client";
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from "react";
 import Link from "next/link";
@@ -1396,7 +1397,7 @@ export default function KassaPage() {
             </span>
             <label className="relative ml-auto inline-flex items-center">
               <ArrowDownUp className="pointer-events-none absolute left-3 h-4 w-4 text-navy-400" />
-              <select
+              <SearchSelect
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortKey)}
                 className="input-base cursor-pointer py-2 pl-9 pr-8 text-sm"
@@ -1412,7 +1413,7 @@ export default function KassaPage() {
                   {t("adminNew.kassa.sort.priceDesc")}
                 </option>
                 <option value="name">{t("adminNew.kassa.sort.name")}</option>
-              </select>
+              </SearchSelect>
             </label>
           </div>
 
@@ -2140,7 +2141,7 @@ export default function KassaPage() {
         <AdminModalBody>
           {splitPayments.map((row, idx) => (
             <div key={idx} className="grid grid-cols-2 gap-2">
-              <select
+              <SearchSelect
                 className="input-base"
                 value={row.method}
                 onChange={(e) =>
@@ -2157,7 +2158,7 @@ export default function KassaPage() {
                 <option value="creditcard">{t("adminNew.kassa.payment.creditcard")}</option>
                 <option value="bancontact">Bancontact</option>
                 <option value="banktransfer">{t("adminNew.kassa.payment.banktransfer")}</option>
-              </select>
+              </SearchSelect>
               <Input
                 type="number"
                 step="0.01"

@@ -1,4 +1,5 @@
 "use client";
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import { intlLocale } from '@/lib/format';
 
@@ -386,7 +387,7 @@ function ContactForm({
         />
       </FormField>
       <FormField label={t("contactPage.fTopic")}>
-        <select
+        <SearchSelect
           className="input-base"
           required
           value={subjectKey}
@@ -398,7 +399,7 @@ function ContactForm({
               {s.label}
             </option>
           ))}
-        </select>
+        </SearchSelect>
       </FormField>
       <FormField label={t("contactPage.fMessage")} className="sm:col-span-2">
         <textarea

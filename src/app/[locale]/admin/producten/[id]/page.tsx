@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -294,7 +295,7 @@ function TariffSection({ productId }: { productId: string }) {
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Type</label>
-              <select
+              <SearchSelect
                 className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900"
                 value={form.price_type}
                 onChange={(e) => setForm((f) => ({ ...f, price_type: e.target.value }))}
@@ -303,11 +304,11 @@ function TariffSection({ productId }: { productId: string }) {
                 <option value="per_meter">Per meter</option>
                 <option value="manual">Handmatig</option>
                 <option value="on_request">Op aanvraag</option>
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Kanaal</label>
-              <select
+              <SearchSelect
                 className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900"
                 value={form.channel}
                 onChange={(e) => setForm((f) => ({ ...f, channel: e.target.value }))}
@@ -316,7 +317,7 @@ function TariffSection({ productId }: { productId: string }) {
                 <option value="kassa">Kassa</option>
                 <option value="portal">Portal</option>
                 <option value="stalling">Stalling</option>
-              </select>
+              </SearchSelect>
             </div>
           </div>
         </AdminModalBody>

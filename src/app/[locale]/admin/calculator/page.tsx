@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -539,7 +540,7 @@ export default function CalculatorPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.calculator.contractType')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base"
                 value={contractType}
                 onChange={(e) => setContractType(e.target.value)}
@@ -548,7 +549,7 @@ export default function CalculatorPage() {
                 <option value="summer">{t('adminNew.stalling.type.summer')}</option>
                 <option value="year">{t('adminNew.stalling.type.year')}</option>
                 <option value="week">{t('adminNew.stalling.type.week')}</option>
-              </select>
+              </SearchSelect>
             </div>
           </div>
 
@@ -594,7 +595,7 @@ export default function CalculatorPage() {
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
               {t('adminNew.calculator.customerOptional')}
             </label>
-            <select
+            <SearchSelect
               className="input-base"
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
@@ -605,7 +606,7 @@ export default function CalculatorPage() {
                   {customer.name}
                 </option>
               ))}
-            </select>
+            </SearchSelect>
           </div>
 
           {editingRecordId ? (
@@ -714,15 +715,15 @@ export default function CalculatorPage() {
               onChange={(e) => setRecSearch(e.target.value)}
               leftIcon={<Calculator className="h-4 w-4" />}
             />
-            <select className="input-base" value={recCustomer} onChange={(e) => setRecCustomer(e.target.value)}>
+            <SearchSelect className="input-base" value={recCustomer} onChange={(e) => setRecCustomer(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allCustomers')}</option>
               {(customers.data?.data ?? []).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
               ))}
-            </select>
-            <select className="input-base" value={recService} onChange={(e) => setRecService(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recService} onChange={(e) => setRecService(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allServices')}</option>
               {dynamicServiceTypes.map((s) => (
                 <option key={s} value={s}>
@@ -731,16 +732,16 @@ export default function CalculatorPage() {
                     : s}
                 </option>
               ))}
-            </select>
-            <select className="input-base" value={recCreatedBy} onChange={(e) => setRecCreatedBy(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recCreatedBy} onChange={(e) => setRecCreatedBy(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allUsers', { defaultValue: 'Alle gebruikers' })}</option>
               {(adminUsers.data?.data ?? []).map((u) => (
                 <option key={String(u.id)} value={String(u.id)}>
                   {String(u.name ?? u.email ?? u.id)}
                 </option>
               ))}
-            </select>
-            <select className="input-base" value={recStatus} onChange={(e) => setRecStatus(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recStatus} onChange={(e) => setRecStatus(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allStatuses')}</option>
               <option value="saved">{t('adminNew.calculator.records.statusSaved')}</option>
               <option value="draft">{t('adminNew.calculator.records.statusDraft')}</option>
@@ -749,17 +750,17 @@ export default function CalculatorPage() {
               <option value="paid">{t('adminNew.calculator.records.statusPaid')}</option>
               <option value="cancelled">{t('adminNew.calculator.records.statusCancelled')}</option>
               <option value="archived">{t('adminNew.calculator.records.statusArchived')}</option>
-            </select>
-            <select className="input-base" value={recHasQuote} onChange={(e) => setRecHasQuote(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recHasQuote} onChange={(e) => setRecHasQuote(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.quoteAny')}</option>
               <option value="yes">{t('adminNew.calculator.records.quoteYes')}</option>
               <option value="no">{t('adminNew.calculator.records.quoteNo')}</option>
-            </select>
-            <select className="input-base" value={recHasInvoice} onChange={(e) => setRecHasInvoice(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recHasInvoice} onChange={(e) => setRecHasInvoice(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.invoiceAny')}</option>
               <option value="yes">{t('adminNew.calculator.records.invoiceYes')}</option>
               <option value="no">{t('adminNew.calculator.records.invoiceNo')}</option>
-            </select>
+            </SearchSelect>
           </div>
 
           <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">

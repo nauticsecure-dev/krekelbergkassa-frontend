@@ -72,7 +72,7 @@ export function paginatedRows<T>(
 ): T[] {
   if (!page) return [];
   if (Array.isArray(page)) return page;
-  return page.data ?? [];
+  return Array.isArray(page.data) ? page.data : [];
 }
 
 export function maybeResource<T>(value: unknown, key: string): T {

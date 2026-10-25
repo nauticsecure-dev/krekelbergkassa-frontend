@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import {
@@ -600,14 +601,14 @@ export default function SystemPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.backups.fields.type')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={backupType}
                 onChange={(e) => setBackupType(e.target.value)}
               >
                 <option value="database">{t('adminNew.backups.types.database')}</option>
                 <option value="full">{t('adminNew.backups.types.full')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">

@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { Check, Copy, Eye, KeyRound, Plus, Trash2 } from 'lucide-react';
@@ -318,7 +319,7 @@ export default function ApiCredentialsPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.credentials.fields.environment')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={form.environment}
                 onChange={(e) => setForm((p) => ({ ...p, environment: e.target.value }))}
@@ -328,7 +329,7 @@ export default function ApiCredentialsPage() {
                     {t(`adminNew.credentials.environments.${env}`)}
                   </option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <Input
               label={t('adminNew.credentials.fields.keyValue')}

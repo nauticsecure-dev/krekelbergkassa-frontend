@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -342,7 +343,7 @@ function CtaEditModal({
         </label>
         <label className="block space-y-1 text-sm font-medium text-navy-700">
           {t('cms.ctaLinkType')}
-          <select
+          <SearchSelect
             className={inputClass}
             value={config.link_type}
             onChange={(e) => set('link_type', e.target.value as CtaLinkType)}
@@ -352,7 +353,7 @@ function CtaEditModal({
             <option value="email">{t('cms.ctaEmail')}</option>
             <option value="phone">{t('cms.ctaPhone')}</option>
             <option value="anchor">{t('cms.ctaAnchor')}</option>
-          </select>
+          </SearchSelect>
         </label>
         {config.link_type === 'internal' ? (
           <label className="block space-y-1 text-sm font-medium text-navy-700">
@@ -378,17 +379,17 @@ function CtaEditModal({
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1 text-sm font-medium text-navy-700">
             {t('cms.ctaTarget')}
-            <select className={inputClass} value={config.target} onChange={(e) => set('target', e.target.value as CtaConfig['target'])}>
+            <SearchSelect className={inputClass} value={config.target} onChange={(e) => set('target', e.target.value as CtaConfig['target'])}>
               <option value="_self">{t('cms.ctaSameTab')}</option>
               <option value="_blank">{t('cms.ctaNewTab')}</option>
-            </select>
+            </SearchSelect>
           </label>
           <label className="block space-y-1 text-sm font-medium text-navy-700">
             {t('cms.ctaStyle')}
-            <select className={inputClass} value={config.style} onChange={(e) => set('style', e.target.value as CtaStyle)}>
+            <SearchSelect className={inputClass} value={config.style} onChange={(e) => set('style', e.target.value as CtaStyle)}>
               <option value="primary">{t('cms.ctaPrimaryStyle')}</option>
               <option value="secondary">{t('cms.ctaSecondaryStyle')}</option>
-            </select>
+            </SearchSelect>
           </label>
         </div>
         <label className="flex items-center gap-2 text-sm font-medium text-navy-700">

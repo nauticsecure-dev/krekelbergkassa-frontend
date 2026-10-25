@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Cropper, { type Area } from 'react-easy-crop';
@@ -602,7 +603,7 @@ export function SeoEditModal({
           <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-500">
             {t('cms.robots')}
           </label>
-          <select
+          <SearchSelect
             value={robots}
             onChange={(e) => setRobots(e.target.value)}
             className={fieldClass}
@@ -613,7 +614,7 @@ export function SeoEditModal({
                 {opt}
               </option>
             ))}
-          </select>
+          </SearchSelect>
         </div>
         {!pageSlug ? (
           <p className="text-xs text-rose-500">{t('cms.noPageHint')}</p>

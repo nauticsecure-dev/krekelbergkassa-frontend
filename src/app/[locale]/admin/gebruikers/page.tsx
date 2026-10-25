@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { Ban, Pencil, Plus, Shield, ShieldCheck, UserCog, UserRound, UserX } from 'lucide-react';
@@ -322,7 +323,7 @@ export default function UsersPage() {
                               {t('adminNew.users.block', { defaultValue: 'Blokkeren' })}
                             </Button>
                           )}
-                          <select
+                          <SearchSelect
                             className="input-base max-w-[110px] py-1 text-xs"
                             value={row.locale ?? 'nl-NL'}
                             onChange={(e) =>
@@ -333,7 +334,7 @@ export default function UsersPage() {
                             <option value="en-GB">EN</option>
                             <option value="de-DE">DE</option>
                             <option value="fr-FR">FR</option>
-                          </select>
+                          </SearchSelect>
                           <Button size="sm" variant="ghost"
                             onClick={() => row.active ? setDeactivateTarget({ id: row.id, name: row.name }) : void toggleActive(row.id, row.active)}>
                             {row.active ? t('adminNew.users.deactivate') : t('adminNew.users.activate')}
@@ -368,32 +369,32 @@ export default function UsersPage() {
               <Input label={t('adminNew.users.fields.password')} type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.columns.role')}</span>
-                <select className="input-base" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+                <SearchSelect className="input-base" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
                   <option value="staff">staff</option>
                   <option value="manager">manager</option>
                   <option value="admin">admin</option>
                   <option value="employee">employee</option>
                   <option value="finance">finance</option>
-                </select>
+                </SearchSelect>
               </label>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.gender')}</span>
-                  <select className="input-base w-full" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}>
+                  <SearchSelect className="input-base w-full" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}>
                     <option value="">{t('adminNew.users.gender.unspecified')}</option>
                     <option value="male">{t('adminNew.users.gender.male')}</option>
                     <option value="female">{t('adminNew.users.gender.female')}</option>
                     <option value="other">{t('adminNew.users.gender.other')}</option>
-                  </select>
+                  </SearchSelect>
                 </label>
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.language')}</span>
-                  <select className="input-base w-full" value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })}>
+                  <SearchSelect className="input-base w-full" value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })}>
                     <option value="">{t('adminNew.users.localeDefault')}</option>
                     <option value="nl">NL</option>
                     <option value="en">EN</option>
                     <option value="de">DE</option>
-                  </select>
+                  </SearchSelect>
                 </label>
               </div>
             </div>
@@ -418,32 +419,32 @@ export default function UsersPage() {
               <Input label={t('adminNew.common.phone', { defaultValue: 'Telefoon' })} value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.columns.role')}</span>
-                <select className="input-base w-full" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}>
+                <SearchSelect className="input-base w-full" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}>
                   <option value="staff">staff</option>
                   <option value="manager">manager</option>
                   <option value="admin">admin</option>
                   <option value="employee">employee</option>
                   <option value="finance">finance</option>
-                </select>
+                </SearchSelect>
               </label>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.gender')}</span>
-                  <select className="input-base w-full" value={editForm.gender} onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}>
+                  <SearchSelect className="input-base w-full" value={editForm.gender} onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}>
                     <option value="">{t('adminNew.users.gender.unspecified')}</option>
                     <option value="male">{t('adminNew.users.gender.male')}</option>
                     <option value="female">{t('adminNew.users.gender.female')}</option>
                     <option value="other">{t('adminNew.users.gender.other')}</option>
-                  </select>
+                  </SearchSelect>
                 </label>
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.language')}</span>
-                  <select className="input-base w-full" value={editForm.locale} onChange={(e) => setEditForm({ ...editForm, locale: e.target.value })}>
+                  <SearchSelect className="input-base w-full" value={editForm.locale} onChange={(e) => setEditForm({ ...editForm, locale: e.target.value })}>
                     <option value="nl-NL">Nederlands (NL)</option>
                     <option value="en-GB">English (EN)</option>
                     <option value="de-DE">Deutsch (DE)</option>
                     <option value="fr-FR">Français (FR)</option>
-                  </select>
+                  </SearchSelect>
                 </label>
               </div>
             </div>

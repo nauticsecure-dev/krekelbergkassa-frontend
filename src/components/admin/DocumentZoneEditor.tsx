@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { FileUp, Trash2 } from 'lucide-react';
@@ -307,7 +308,7 @@ export function DocumentZoneEditor({
           />
           <label className="ml-auto flex items-center gap-2 text-sm">
             <span className="text-navy-500">{t('adminNew.templates.activeField')}</span>
-            <select
+            <SearchSelect
               className="input-base py-1 text-sm"
               value={field}
               onChange={(e) => setField(e.target.value)}
@@ -317,7 +318,7 @@ export function DocumentZoneEditor({
                   {fieldLabel(f)}
                 </option>
               ))}
-            </select>
+            </SearchSelect>
           </label>
         </div>
 
@@ -410,7 +411,7 @@ export function DocumentZoneEditor({
                   className="h-3 w-3 shrink-0 rounded-sm"
                   style={{ backgroundColor: ZONE_COLORS[z.field] ?? '#1f93b8' }}
                 />
-                <select
+                <SearchSelect
                   className="input-base flex-1 py-1 text-xs"
                   value={z.field}
                   onChange={(e) => setZoneField(idx, e.target.value)}
@@ -420,7 +421,7 @@ export function DocumentZoneEditor({
                       {fieldLabel(f)}
                     </option>
                   ))}
-                </select>
+                </SearchSelect>
                 <button
                   type="button"
                   onClick={() => removeZone(idx)}

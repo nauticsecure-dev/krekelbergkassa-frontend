@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { AlertTriangle, Plus } from 'lucide-react';
@@ -316,7 +317,7 @@ export default function IncidentsPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.incidents.fields.severity')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={createForm.severity}
                 onChange={(e) => setCreateForm((p) => ({ ...p, severity: e.target.value }))}
@@ -326,7 +327,7 @@ export default function IncidentsPage() {
                     {t(`adminNew.incidents.severities.${s}`)}
                   </option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <Input
               label={t('adminNew.incidents.fields.category')}
@@ -423,7 +424,7 @@ export default function IncidentsPage() {
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
                   {t('adminNew.incidents.fields.status')}
                 </label>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={updateForm.status}
                   onChange={(e) => setUpdateForm((p) => ({ ...p, status: e.target.value }))}
@@ -433,13 +434,13 @@ export default function IncidentsPage() {
                       {t(`adminNew.incidents.statuses.${s}`)}
                     </option>
                   ))}
-                </select>
+                </SearchSelect>
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
                   {t('adminNew.incidents.fields.assignedTo')}
                 </label>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={updateForm.assigned_to_user_id}
                   onChange={(e) =>
@@ -452,7 +453,7 @@ export default function IncidentsPage() {
                       {u.name}
                     </option>
                   ))}
-                </select>
+                </SearchSelect>
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">

@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import { intlLocale } from '@/lib/format';
 
@@ -497,7 +498,7 @@ export default function CustomersPage() {
                 <span className="mb-1.5 block font-medium text-navy-800">
                   {t('adminNew.customers.fields.gender')}
                 </span>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={form.gender}
                   onChange={(e) => setForm((prev) => ({ ...prev, gender: e.target.value }))}
@@ -506,13 +507,13 @@ export default function CustomersPage() {
                   <option value="male">{t('adminNew.customers.gender.male')}</option>
                   <option value="female">{t('adminNew.customers.gender.female')}</option>
                   <option value="other">{t('adminNew.customers.gender.other')}</option>
-                </select>
+                </SearchSelect>
               </label>
               <label className="block text-sm">
                 <span className="mb-1.5 block font-medium text-navy-800">
                   {t('adminNew.customers.fields.preferredLocale')}
                 </span>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={form.preferred_locale}
                   onChange={(e) =>
@@ -523,7 +524,7 @@ export default function CustomersPage() {
                   <option value="nl">NL</option>
                   <option value="en">EN</option>
                   <option value="de">DE</option>
-                </select>
+                </SearchSelect>
               </label>
             </div>
 
@@ -577,7 +578,7 @@ export default function CustomersPage() {
                   <span className="mb-1.5 block font-medium text-navy-800">
                     {t('adminNew.customers.address.country')}
                   </span>
-                  <select
+                  <SearchSelect
                     className="input-base w-full"
                     value={form.country}
                     onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
@@ -593,7 +594,7 @@ export default function CustomersPage() {
                     <option value="SE">Sweden</option>
                     <option value="US">United States</option>
                     <option value="">—</option>
-                  </select>
+                  </SearchSelect>
                 </label>
               </div>
             </div>

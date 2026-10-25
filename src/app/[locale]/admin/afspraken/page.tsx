@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import dynamic from 'next/dynamic';
@@ -348,7 +349,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
               <label className="sr-only" htmlFor="appointment-status-filter">
                 {t('adminNew.appointments.columns.status')}
               </label>
-              <select
+              <SearchSelect
                 id="appointment-status-filter"
                 className="input-base w-full min-w-0 sm:w-auto sm:min-w-[180px]"
                 value={status}
@@ -358,7 +359,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option} value={option}>{t(statusLabelKey(option))}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <Button
               variant="gold"

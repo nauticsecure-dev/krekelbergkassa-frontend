@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -920,7 +921,7 @@ export default function InvoiceDetailPage() {
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
               {t('adminNew.invoiceDetail.markPaidModal.method')}
             </label>
-            <select
+            <SearchSelect
               className="input-base"
               value={paidMethod}
               onChange={(e) => setPaidMethod(e.target.value)}
@@ -931,7 +932,7 @@ export default function InvoiceDetailPage() {
                 {t('adminNew.invoiceDetail.paymentMethods.banktransfer')}
               </option>
               <option value="manual">{t('adminNew.invoiceDetail.paymentMethods.manual')}</option>
-            </select>
+            </SearchSelect>
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowMarkPaid(false)}>

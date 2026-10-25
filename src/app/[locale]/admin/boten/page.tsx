@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -336,7 +337,7 @@ export default function BoatsPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.boats.columns.owner')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={form.customer_id}
                 onChange={(e) => setForm((prev) => ({ ...prev, customer_id: e.target.value }))}
@@ -348,7 +349,7 @@ export default function BoatsPage() {
                     {customer.name}
                   </option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <Input
               label={t('adminNew.common.name')}
@@ -360,7 +361,7 @@ export default function BoatsPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.boats.columns.type')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={form.type}
                 onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
@@ -370,7 +371,7 @@ export default function BoatsPage() {
                 <option value="rib">RIB</option>
                 <option value="trailer">Trailer</option>
                 <option value="other">{t('adminNew.boats.type.other')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Input

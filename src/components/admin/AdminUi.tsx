@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -202,13 +203,13 @@ export function AdminSelect({
   className?: string;
 }) {
   return (
-    <select
+    <SearchSelect
       className={cn('input-base w-full lg:w-auto lg:min-w-[180px]', className)}
       value={value}
       onChange={(e) => onChange(e.target.value)}
     >
       {children}
-    </select>
+    </SearchSelect>
   );
 }
 

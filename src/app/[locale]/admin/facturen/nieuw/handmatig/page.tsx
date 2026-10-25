@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import { intlLocale } from '@/lib/format';
 
@@ -275,15 +276,15 @@ export default function ManualInvoicePage() {
               <Input type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)} aria-label={t('adminNew.invoices.dueDate', { defaultValue: 'Vervaldatum' })} />
               <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} placeholder={t('adminNew.invoices.invoiceNumberOptional', { defaultValue: 'Factuurnummer (automatisch indien leeg)' })} />
               <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder={t('adminNew.invoices.reference', { defaultValue: 'Referentie' })} />
-              <select className="input-base" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} aria-label={t('adminNew.invoices.paymentMethod', { defaultValue: 'Betaalmethode' })}>
+              <SearchSelect className="input-base" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} aria-label={t('adminNew.invoices.paymentMethod', { defaultValue: 'Betaalmethode' })}>
                 <option value="">{t('adminNew.invoices.paymentMethod', { defaultValue: 'Betaalmethode' })}</option>
                 <option value="banktransfer">{t('adminNew.invoiceDetail.paymentMethods.banktransfer')}</option>
                 <option value="pin">{t('adminNew.invoiceDetail.paymentMethods.pin')}</option>
                 <option value="cash">{t('adminNew.invoiceDetail.paymentMethods.cash')}</option>
-              </select>
-              <select className="input-base" value={currency} onChange={(e) => setCurrency(e.target.value)} aria-label={t('adminNew.invoices.currency', { defaultValue: 'Valuta' })}>
+              </SearchSelect>
+              <SearchSelect className="input-base" value={currency} onChange={(e) => setCurrency(e.target.value)} aria-label={t('adminNew.invoices.currency', { defaultValue: 'Valuta' })}>
                 <option value="EUR">EUR — Euro</option>
-              </select>
+              </SearchSelect>
             </AdminFormGrid>
           </AdminSectionCard>
 

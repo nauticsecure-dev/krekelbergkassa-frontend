@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -360,7 +361,7 @@ export default function FeedPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-                <select
+                <SearchSelect
                   className="input-base h-9 w-auto pr-9 text-sm"
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
@@ -374,7 +375,7 @@ export default function FeedPage() {
                   <option value="work_orders">{t('feed.filterWorkOrders')}</option>
                   <option value="photos">{t('feed.filterPhotos')}</option>
                   <option value="documents">{t('feed.filterDocuments')}</option>
-                </select>
+                </SearchSelect>
               </div>
             </div>
 

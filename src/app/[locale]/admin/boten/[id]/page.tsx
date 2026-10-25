@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -481,11 +482,11 @@ export default function BoatDossierPage() {
                 icon={Camera}
                 action={
                   <div className="flex items-center gap-2">
-                    <select className="input-base h-8 py-0 text-xs" value={photoFolder} onChange={(e) => setPhotoFolder(e.target.value)}>
+                    <SearchSelect className="input-base h-8 py-0 text-xs" value={photoFolder} onChange={(e) => setPhotoFolder(e.target.value)}>
                       {['arrival', 'inspection', 'maintenance', 'damage', 'departure'].map((f) => (
                         <option key={f} value={f}>{t(`adminNew.boats.photoFolders.${f}`)}</option>
                       ))}
-                    </select>
+                    </SearchSelect>
                     <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { void onUpload('photo', e.target.files?.[0]); e.target.value = ''; }} />
                     <Button size="sm" variant="outline" leftIcon={<Upload className="h-3.5 w-3.5" />} disabled={uploadPhoto.loading} onClick={() => photoInputRef.current?.click()}>
                       {t('adminNew.common.add')}
@@ -557,11 +558,11 @@ export default function BoatDossierPage() {
                 icon={FileText}
                 action={
                   <div className="flex items-center gap-2">
-                    <select className="input-base h-8 py-0 text-xs" value={docCategory} onChange={(e) => setDocCategory(e.target.value)}>
+                    <SearchSelect className="input-base h-8 py-0 text-xs" value={docCategory} onChange={(e) => setDocCategory(e.target.value)}>
                       {['insurance', 'registration', 'ce_certificate', 'purchase_agreement', 'survey', 'other'].map((c) => (
                         <option key={c} value={c}>{t(`adminNew.boats.docCategories.${c}`)}</option>
                       ))}
-                    </select>
+                    </SearchSelect>
                     <input ref={docInputRef} type="file" className="hidden" onChange={(e) => { void onUpload('document', e.target.files?.[0]); e.target.value = ''; }} />
                     <Button size="sm" variant="outline" leftIcon={<Upload className="h-3.5 w-3.5" />} disabled={uploadDoc.loading} onClick={() => docInputRef.current?.click()}>
                       {t('adminNew.common.add')}
@@ -861,12 +862,12 @@ export default function BoatDossierPage() {
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.boats.newOwner')}</label>
-              <select className="input-base w-full" value={transferForm.customer_id} onChange={(e) => setTransferForm({ ...transferForm, customer_id: e.target.value })} required>
+              <SearchSelect className="input-base w-full" value={transferForm.customer_id} onChange={(e) => setTransferForm({ ...transferForm, customer_id: e.target.value })} required>
                 <option value="">{t('adminNew.kassa.selectCustomer')}</option>
                 {(customers.data?.data ?? []).map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <Input label={t('adminNew.boats.transferReason')} value={transferForm.transfer_reason} onChange={(e) => setTransferForm({ ...transferForm, transfer_reason: e.target.value })} placeholder="sale" />
             <div>

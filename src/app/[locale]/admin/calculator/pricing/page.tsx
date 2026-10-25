@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -272,12 +273,12 @@ export default function CalculatorPricingPage() {
             <div className="space-y-3">
               {!editingRule ? <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Product *</label>
-                <select className="input-base w-full" value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} required>
+                <SearchSelect className="input-base w-full" value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} required>
                   <option value="">{t('adminNew.calculator.pricing.selectProduct')}</option>
                   {productList.map((p) => (
                     <option key={p.id} value={p.id}>{p.name} {p.code ? `(${p.code})` : ''}</option>
                   ))}
-                </select>
+                </SearchSelect>
               </div> : null}
               <div className="grid grid-cols-2 gap-3">
                 <Input label="Van (cm)" value={form.range_from_cm} onChange={(e) => setForm({ ...form, range_from_cm: e.target.value })} type="number" min={0} required />
@@ -290,21 +291,21 @@ export default function CalculatorPricingPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Type</label>
-                  <select className="input-base w-full" value={form.price_type} onChange={(e) => setForm({ ...form, price_type: e.target.value })}>
+                  <SearchSelect className="input-base w-full" value={form.price_type} onChange={(e) => setForm({ ...form, price_type: e.target.value })}>
                     <option value="fixed">Vast bedrag</option>
                     <option value="per_meter">Per meter</option>
                     <option value="on_request">Op aanvraag</option>
                     <option value="manual">Handmatig</option>
-                  </select>
+                  </SearchSelect>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Kanaal</label>
-                  <select className="input-base w-full" value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })}>
+                  <SearchSelect className="input-base w-full" value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })}>
                     <option value="all">Alle kanalen</option>
                     <option value="kassa">Kassa</option>
                     <option value="portal">Klantportaal</option>
                     <option value="stalling">Stalling</option>
-                  </select>
+                  </SearchSelect>
                 </div>
               </div>
               <label className="flex items-center gap-2 text-sm">

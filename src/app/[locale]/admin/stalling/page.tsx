@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -869,12 +870,12 @@ export default function StallingPage() {
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.boat')}</label>
               <div className="flex gap-2">
-                <select className="input-base w-full" value={createForm.boat_id} onChange={(e) => setCreateForm({ ...createForm, boat_id: e.target.value })} required>
+                <SearchSelect className="input-base w-full" value={createForm.boat_id} onChange={(e) => setCreateForm({ ...createForm, boat_id: e.target.value })} required>
                   <option value="">{t('adminNew.boats.selectCustomer')}</option>
                   {(boats.data?.data ?? []).map((b) => (
                     <option key={b.id} value={b.id}>{b.name}</option>
                   ))}
-                </select>
+                </SearchSelect>
                 <Button type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewBoat(true)}>
                   {t('adminNew.stalling.fields.newBoat')}
                 </Button>
@@ -883,12 +884,12 @@ export default function StallingPage() {
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.customer')}</label>
               <div className="flex gap-2">
-                <select className="input-base w-full" value={createForm.customer_id} onChange={(e) => setCreateForm({ ...createForm, customer_id: e.target.value })}>
+                <SearchSelect className="input-base w-full" value={createForm.customer_id} onChange={(e) => setCreateForm({ ...createForm, customer_id: e.target.value })}>
                   <option value="">{t('adminNew.kassa.selectCustomer')}</option>
                   {(customers.data?.data ?? []).map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
-                </select>
+                </SearchSelect>
                 <Button type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewCustomer(true)}>
                   {t('adminNew.stalling.fields.newCustomer')}
                 </Button>
@@ -896,7 +897,7 @@ export default function StallingPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.type')}</label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={createForm.type}
                 onChange={(e) => {
@@ -915,7 +916,7 @@ export default function StallingPage() {
                 <option value="summer">{t('adminNew.stalling.type.summer')}</option>
                 <option value="year">{t('adminNew.stalling.type.year')}</option>
                 <option value="week">{t('adminNew.stalling.type.week')}</option>
-              </select>
+              </SearchSelect>
             </div>
             {/* Trello #107: live price preview for the selected type + boat. */}
             {pricePreview ? (
@@ -952,10 +953,10 @@ export default function StallingPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.paymentRoute')}</label>
-              <select className="input-base w-full" value={createForm.payment_route} onChange={(e) => setCreateForm({ ...createForm, payment_route: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={createForm.payment_route} onChange={(e) => setCreateForm({ ...createForm, payment_route: e.target.value })}>
                 <option value="email">{t('adminNew.stalling.fields.payByEmail')}</option>
                 <option value="kassa">{t('adminNew.stalling.fields.payAtKassa')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <Input
               label={t('adminNew.stalling.fields.depositPct')}
@@ -987,7 +988,7 @@ export default function StallingPage() {
             {(contractTemplates.data ?? []).length > 0 ? (
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">Contracttemplate</label>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={createForm.contract_template_id}
                   onChange={(e) => setCreateForm({ ...createForm, contract_template_id: e.target.value })}
@@ -996,7 +997,7 @@ export default function StallingPage() {
                   {(contractTemplates.data ?? []).map((tpl) => (
                     <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
                   ))}
-                </select>
+                </SearchSelect>
               </div>
             ) : null}
             <label className="flex items-center gap-2 text-sm font-medium text-navy-800">
@@ -1142,7 +1143,7 @@ export default function StallingPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.stalling.quickEdit.lifecycleLabel')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={editLifecycle}
                 onChange={(e) => setEditLifecycle(e.target.value)}
@@ -1151,7 +1152,7 @@ export default function StallingPage() {
                 <option value="ended">{t('adminNew.stalling.lifecycle.ended')}</option>
                 <option value="checked_out">{t('adminNew.stalling.lifecycle.checkedOut')}</option>
                 <option value="cancelled">{t('adminNew.stalling.lifecycle.cancelled')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
@@ -1194,30 +1195,30 @@ export default function StallingPage() {
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.customer')}</label>
-              <select className="input-base w-full" value={editForm.customer_id} onChange={(e) => setEditForm({ ...editForm, customer_id: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.customer_id} onChange={(e) => setEditForm({ ...editForm, customer_id: e.target.value })}>
                 <option value="">{t('adminNew.kassa.selectCustomer')}</option>
                 {(customers.data?.data ?? []).map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.boat')}</label>
-              <select className="input-base w-full" value={editForm.boat_id} onChange={(e) => setEditForm({ ...editForm, boat_id: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.boat_id} onChange={(e) => setEditForm({ ...editForm, boat_id: e.target.value })}>
                 <option value="">{t('adminNew.boats.selectCustomer')}</option>
                 {(boats.data?.data ?? []).map((b) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.type')}</label>
-              <select className="input-base w-full" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}>
                 <option value="winter">{t('adminNew.stalling.type.winter')}</option>
                 <option value="summer">{t('adminNew.stalling.type.summer')}</option>
                 <option value="year">{t('adminNew.stalling.type.year')}</option>
                 <option value="week">{t('adminNew.stalling.type.week')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Input label={t('adminNew.stalling.fields.startDate')} type="date" value={editForm.start_date} onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })} />
@@ -1229,11 +1230,11 @@ export default function StallingPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.billingType')}</label>
-              <select className="input-base w-full" value={editForm.billing_type} onChange={(e) => setEditForm({ ...editForm, billing_type: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.billing_type} onChange={(e) => setEditForm({ ...editForm, billing_type: e.target.value })}>
                 <option value="one_time">{t('adminNew.stalling.billing.oneTime')}</option>
                 <option value="monthly">{t('adminNew.stalling.billing.monthly')}</option>
                 <option value="yearly">{t('adminNew.stalling.billing.yearly')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.notes')}</label>

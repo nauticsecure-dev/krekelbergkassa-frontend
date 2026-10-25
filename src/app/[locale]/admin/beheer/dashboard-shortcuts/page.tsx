@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { Star } from 'lucide-react';
@@ -146,19 +147,19 @@ export default function DashboardShortcutsPage() {
                     </label>
                     <label className="text-sm text-navy-700">
                       {t('adminNew.shortcuts.route')}
-                      <select className="input-base mt-1 w-full" value={row.route_key} onChange={(event) => patchRow(row.id, { route_key: event.target.value })}>
+                      <SearchSelect className="input-base mt-1 w-full" value={row.route_key} onChange={(event) => patchRow(row.id, { route_key: event.target.value })}>
                         {routes.map((routeKey) => (
                           <option key={routeKey} value={routeKey}>{routeKey}</option>
                         ))}
-                      </select>
+                      </SearchSelect>
                     </label>
                     <label className="text-sm text-navy-700">
                       {t('adminNew.shortcuts.label')}
-                      <select className="input-base mt-1 w-full" value={row.icon} onChange={(event) => patchRow(row.id, { icon: event.target.value })}>
+                      <SearchSelect className="input-base mt-1 w-full" value={row.icon} onChange={(event) => patchRow(row.id, { icon: event.target.value })}>
                         {ICONS.map((icon) => (
                           <option key={icon} value={icon}>{icon}</option>
                         ))}
-                      </select>
+                      </SearchSelect>
                     </label>
                     {LOCALES.map((code) => (
                       <label key={code} className="text-sm text-navy-700">

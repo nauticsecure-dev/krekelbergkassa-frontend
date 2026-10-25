@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -1590,40 +1591,40 @@ function CreateAppointmentModal({ open, onClose, staffMembers, onCreated }: {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldCustomer')}</span>
-          <select className="input-base w-full" value={customerId} onChange={(e) => { setCustomerId(e.target.value); setBoatId(''); }}>
+          <SearchSelect className="input-base w-full" value={customerId} onChange={(e) => { setCustomerId(e.target.value); setBoatId(''); }}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          </SearchSelect>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldBoat')}</span>
-          <select className="input-base w-full" value={boatId} onChange={(e) => setBoatId(e.target.value)}>
+          <SearchSelect className="input-base w-full" value={boatId} onChange={(e) => setBoatId(e.target.value)}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {boats.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
+          </SearchSelect>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldService')}</span>
-          <select className="input-base w-full" value={serviceCode} onChange={(e) => setServiceCode(e.target.value)}>
+          <SearchSelect className="input-base w-full" value={serviceCode} onChange={(e) => setServiceCode(e.target.value)}>
             {SERVICE_FILTERS.map((s) => <option key={s.code} value={s.code}>{t(s.labelKey)}</option>)}
-          </select>
+          </SearchSelect>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldLocation')}</span>
-          <select className="input-base w-full" value={locationId} onChange={(e) => setLocationId(e.target.value)}>
+          <SearchSelect className="input-base w-full" value={locationId} onChange={(e) => setLocationId(e.target.value)}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {locations.map((l) => <option key={l.id} value={l.id}>{l.code}</option>)}
-          </select>
+          </SearchSelect>
         </label>
         <Input label={t('planning.fieldDate')} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         <Input label={t('planning.fieldStartTime')} type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
         <Input label={t('planning.fieldDuration')} type="number" min={15} step={15} value={duration} onChange={(e) => setDuration(e.target.value)} />
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldAssignee')}</span>
-          <select className="input-base w-full" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+          <SearchSelect className="input-base w-full" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
             <option value="">{t('planning.unassigned')}</option>
             {staffMembers.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
-          </select>
+          </SearchSelect>
         </label>
       </div>
       {hasConflicts ? (
