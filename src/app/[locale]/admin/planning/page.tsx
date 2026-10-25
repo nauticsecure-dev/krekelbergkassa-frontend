@@ -12,13 +12,13 @@ import { useIntl } from '@/i18n/IntlProvider';
 import { localDateKey } from '@/lib/appointment-calendar';
 import { cn } from '@/lib/cn';
 
-const CalendarAdminPage = dynamic(() => import('../kalender/page'), {
+const CalendarAdminPage = dynamic(() => import('@/components/admin/CalendarAdminPage'), {
   loading: () => <LoadingState />,
 });
-const AppointmentsPage = dynamic(() => import('../afspraken/page'), {
+const AppointmentsPage = dynamic(() => import('@/components/admin/AppointmentsPage'), {
   loading: () => <LoadingState />,
 });
-const WorkOrdersPage = dynamic(() => import('../werkorders/page'), {
+const WorkOrdersPage = dynamic(() => import('@/components/admin/WorkOrdersPage'), {
   loading: () => <LoadingState />,
 });
 

@@ -233,7 +233,7 @@ export default function KraanAfspraakPage() {
   const [googleError, setGoogleError]       = React.useState(
     () => !process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
   );
-  const addressRef                          = React.useRef<HTMLInputElement>(null);
+  const addressRef                          = React.useRef<HTMLInputElement | null>(null);
 
   const releaseStreetField = React.useCallback(() => {
     const input = addressRef.current;
@@ -254,7 +254,7 @@ export default function KraanAfspraakPage() {
     const timers = [0, 50, 250, 1000].map((ms) => window.setTimeout(releaseStreetField, ms));
     return () => timers.forEach((id) => window.clearTimeout(id));
   }, [googleError, releaseStreetField]);
-  const fileInputRef                        = React.useRef<HTMLInputElement>(null);
+  const fileInputRef                        = React.useRef<HTMLInputElement | null>(null);
   const submitErrorRef                      = React.useRef<HTMLDivElement>(null);
   const slotsErrorRef                       = React.useRef<HTMLParagraphElement>(null);
   const fieldRefs = React.useRef<Partial<Record<BookingField, HTMLElement | null>>>({});
