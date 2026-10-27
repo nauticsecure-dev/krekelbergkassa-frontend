@@ -1,4 +1,5 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -58,6 +59,7 @@ import { formatCurrency, formatDateTime, intlLocale } from '@/lib/format';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { usePermission } from '@/lib/permissions';
 
 // ── Tariff helpers ────────────────────────────────────────────────────────────
 
@@ -77,6 +79,11 @@ function eur(cents: number) { return (cents / 100).toFixed(2); }
 function centsOf(s: string) { return Math.round(parseFloat(s) * 100); }
 
 function TariffSection({ productId }: { productId: string }) {
+  const { t, locale } = useIntl();
+  const priceTypes: Record<string, string> = { fixed: t('globalUx.pricing.fixed'), per_meter: t('globalUx.pricing.per_meter'), on_request: t('globalUx.pricing.on_request'), manual: t('globalUx.pricing.manual') };
+  const channels: Record<string, string> = { all: t('globalUx.pricing.all'), kassa: t('globalUx.pricing.kassa'), portal: t('globalUx.pricing.portal'), stalling: t('globalUx.pricing.stalling') };
+  const { can } = usePermission();
+  const canUpdatePricing = can('pricing.update');
   const { push } = useToast();
   const [open, setOpen] = React.useState(false);
   const [editTarget, setEditTarget] = React.useState<PricingRule | null>(null);
@@ -84,7 +91,7 @@ function TariffSection({ productId }: { productId: string }) {
   const [form, setForm] = React.useState<TariffForm>(EMPTY_TARIFF);
 
   const rules = useQuery([productId, 'pricing-rules'], () =>
-    pricingService.rules({ product_id: productId, per_page: 100 }).catch(() => null),
+    pricingService.rules({ product_id: productId, per_page: 100 }),
   );
 
   const createRule = useMutation((p: Record<string, unknown>) => pricingService.createRule(p));
@@ -94,12 +101,14 @@ function TariffSection({ productId }: { productId: string }) {
   const deleteRule = useMutation((id: string) => pricingService.deleteRule(id));
 
   const openCreate = () => {
+    if (!canUpdatePricing) return;
     setEditTarget(null);
     setForm(EMPTY_TARIFF);
     setOpen(true);
   };
 
   const openEdit = (rule: PricingRule) => {
+    if (!canUpdatePricing) return;
     setEditTarget(rule);
     setForm({
       range_from_m: (rule.range_from_cm / 100).toString(),
@@ -114,6 +123,7 @@ function TariffSection({ productId }: { productId: string }) {
   };
 
   const onSave = async () => {
+    if (!canUpdatePricing) return;
     const rangeFrom = cm(form.range_from_m || '0');
     const rangeTo = form.range_to_m === '999' || parseFloat(form.range_to_m) >= 999
       ? 99999
@@ -148,23 +158,23 @@ function TariffSection({ productId }: { productId: string }) {
           channel: form.channel,
         });
       }
-      push({ tone: 'success', title: 'Tarief opgeslagen' });
+      push({ tone: 'success', title: t('adminNew.calculator.pricing.saved') });
       setOpen(false);
-      void rules.refetch();
+      void rules.refetch().catch(() => undefined);
     } catch {
-      push({ tone: 'error', title: 'Opslaan mislukt' });
+      push({ tone: 'error', title: t('adminNew.common.operationFailed') });
     }
   };
 
   const onDelete = async () => {
-    if (!deleteTarget) return;
+    if (!canUpdatePricing || !deleteTarget) return;
     try {
       await deleteRule.mutate(deleteTarget);
-      push({ tone: 'success', title: 'Tarief verwijderd' });
+      push({ tone: 'success', title: t('adminNew.calculator.pricing.deleted') });
       setDeleteTarget(null);
-      void rules.refetch();
+      void rules.refetch().catch(() => undefined);
     } catch {
-      push({ tone: 'error', title: 'Verwijderen mislukt' });
+      push({ tone: 'error', title: t('adminNew.common.operationFailed') });
     }
   };
 
@@ -176,29 +186,28 @@ function TariffSection({ productId }: { productId: string }) {
   return (
     <>
       <AdminSectionCard
-        title="Tarieven per lengteklasse"
+        title={t('globalUx.pricing.tariffTitle')}
         icon={Tag}
-        action={
+        action={canUpdatePricing ? (
           <Button variant="outline" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
-            Tarief toevoegen
-          </Button>
-        }
+            {t('globalUx.pricing.addTariff')}</Button>
+        ) : null}
       >
         {rules.loading ? (
-          <p className="text-sm text-navy-500">Laden…</p>
-        ) : ruleList.length === 0 ? (
-          <p className="text-sm text-navy-500">{'Geen tarieven gevonden. Klik op "Tarief toevoegen".'}</p>
+          <p className="text-sm text-navy-500">{t('adminNew.common.loading')}</p>
+        ) : rules.error ? (<ErrorState message={rules.error} onRetry={() => void rules.refetch().catch(() => undefined)} />) : ruleList.length === 0 ? (
+          <p className="text-sm text-navy-500">{t('globalUx.pricing.emptyTariffs')}</p>
         ) : (
           <AdminTableCard>
             <AdminTable minWidth={500}>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>Lengte</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>Type</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>Excl. BTW</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>Incl. BTW</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>Kanaal</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>Status</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('globalUx.pricing.length')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('globalUx.pricing.type')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('globalUx.pricing.exclVat')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('globalUx.pricing.inclVat')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('globalUx.pricing.channel')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{t('globalUx.pricing.status')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
@@ -207,34 +216,28 @@ function TariffSection({ productId }: { productId: string }) {
                   <AdminTableRow key={rule.id}>
                     <AdminTableCell className="font-mono text-sm">{rule.range_label}</AdminTableCell>
                     <AdminTableCell>
-                      <Badge tone="neutral">{rule.price_type ?? 'fixed'}</Badge>
+                      <Badge tone="neutral">{priceTypes[rule.price_type ?? 'fixed'] ?? rule.price_type}</Badge>
                     </AdminTableCell>
                     <AdminTableCell className="font-semibold">
-                      {rule.price_excl_vat_euros != null
-                        ? `€ ${rule.price_excl_vat_euros.toFixed(2)}`
-                        : `€ ${eur(rule.price_excl_vat)}`}
+                      {formatCurrency(productPriceExclEuros(rule), intlLocale(locale))}
                     </AdminTableCell>
                     <AdminTableCell className="font-semibold text-navy-900">
-                      {rule.price_incl_vat_euros != null
-                        ? `€ ${rule.price_incl_vat_euros.toFixed(2)}`
-                        : `€ ${eur(rule.price_incl_vat)}`}
+                      {formatCurrency(productPriceInclEuros(rule), intlLocale(locale))}
                     </AdminTableCell>
-                    <AdminTableCell>{rule.channel}</AdminTableCell>
+                    <AdminTableCell>{channels[rule.channel ?? 'all'] ?? rule.channel}</AdminTableCell>
                     <AdminTableCell>
                       <Badge tone={rule.active ? 'success' : 'neutral'}>
-                        {rule.active ? 'Actief' : 'Inactief'}
+                        {rule.active ? t('globalUx.pricing.active') : t('globalUx.pricing.inactive')}
                       </Badge>
                     </AdminTableCell>
                     <AdminTableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      {canUpdatePricing ? <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={() => openEdit(rule)}>
-                          Bewerk
-                        </Button>
+                          {t('adminNew.common.edit')}</Button>
                         <Button variant="ghost" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setDeleteTarget(rule.id)}
                           className="text-rose-600 hover:bg-rose-50">
-                          Verwijder
-                        </Button>
-                      </div>
+                          {t('adminNew.common.delete')}</Button>
+                      </div> : null}
                     </AdminTableCell>
                   </AdminTableRow>
                 ))}
@@ -245,95 +248,97 @@ function TariffSection({ productId }: { productId: string }) {
       </AdminSectionCard>
 
       {/* Edit / Create modal */}
-      <Modal open={open} onClose={() => setOpen(false)} size="md">
-        <AdminModalHeader title={editTarget ? 'Tarief bewerken' : 'Nieuw tarief'} />
+      <Modal open={canUpdatePricing && open} onClose={() => setOpen(false)} size="md">
+        <form onSubmit={(event) => { event.preventDefault(); void onSave(); }}>
+        <AdminModalHeader title={editTarget ? t('globalUx.pricing.editTariff') : t('globalUx.pricing.newTariff')} />
         <AdminModalBody>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Van (meter)</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.fromMeters')}</label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
-                value={form.range_from_m}
+                aria-label={t('globalUx.pricing.fromMeters')} value={form.range_from_m}
                 onChange={(e) => setForm((f) => ({ ...f, range_from_m: e.target.value }))}
                 placeholder="0"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Tot (meter, 999 = onbeperkt)</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.toMeters')}</label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
-                value={form.range_to_m}
+                aria-label={t('globalUx.pricing.toMeters')} required value={form.range_to_m}
                 onChange={(e) => setForm((f) => ({ ...f, range_to_m: e.target.value }))}
                 placeholder="999"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Prijs incl. BTW (€)</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.priceEuro')}</label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
-                value={form.price_incl_vat_euros}
+                aria-label={t('globalUx.pricing.priceEuro')} required value={form.price_incl_vat_euros}
                 onChange={(e) => setForm((f) => ({ ...f, price_incl_vat_euros: e.target.value }))}
                 placeholder="0.00"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Prijs excl. BTW (€, optioneel)</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.priceExclOptional')}</label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
-                value={form.price_excl_vat_euros}
+                aria-label={t('globalUx.pricing.priceExclOptional')} value={form.price_excl_vat_euros}
                 onChange={(e) => setForm((f) => ({ ...f, price_excl_vat_euros: e.target.value }))}
-                placeholder="auto (incl ÷ 1.21)"
+                placeholder={t('globalUx.pricing.autoVat')}
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Type</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.type')}</label>
               <SearchSelect
                 className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900"
                 value={form.price_type}
                 onChange={(e) => setForm((f) => ({ ...f, price_type: e.target.value }))}
               >
-                <option value="fixed">Vast bedrag</option>
-                <option value="per_meter">Per meter</option>
-                <option value="manual">Handmatig</option>
-                <option value="on_request">Op aanvraag</option>
+                <option value="fixed">{t('globalUx.pricing.fixed')}</option>
+                <option value="per_meter">{t('globalUx.pricing.per_meter')}</option>
+                <option value="manual">{t('globalUx.pricing.manual')}</option>
+                <option value="on_request">{t('globalUx.pricing.on_request')}</option>
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">Kanaal</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.channel')}</label>
               <SearchSelect
                 className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900"
                 value={form.channel}
                 onChange={(e) => setForm((f) => ({ ...f, channel: e.target.value }))}
               >
-                <option value="all">Alle</option>
-                <option value="kassa">Kassa</option>
-                <option value="portal">Portal</option>
-                <option value="stalling">Stalling</option>
+                <option value="all">{t('globalUx.pricing.all')}</option>
+                <option value="kassa">{t('globalUx.pricing.kassa')}</option>
+                <option value="portal">{t('globalUx.pricing.portal')}</option>
+                <option value="stalling">{t('globalUx.pricing.stalling')}</option>
               </SearchSelect>
             </div>
           </div>
         </AdminModalBody>
         <AdminModalFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>Annuleren</Button>
-          <Button variant="gold" onClick={onSave} disabled={busy || !form.range_to_m || !form.price_incl_vat_euros}>
-            {busy ? 'Opslaan…' : 'Opslaan'}
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={busy}>{t('adminNew.common.cancel')}</Button>
+          <Button variant="gold" type="submit" disabled={busy || !form.range_to_m || !form.price_incl_vat_euros}>
+            {busy ? t('globalUx.pricing.saving') : t('adminNew.common.save')}
           </Button>
         </AdminModalFooter>
+        </form>
       </Modal>
 
       <AdminConfirmModal
-        open={!!deleteTarget}
-        title="Tarief verwijderen"
-        message="Weet u zeker dat u dit tarief wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
-        confirmLabel="Verwijder"
+        open={canUpdatePricing && !!deleteTarget}
+        title={t('globalUx.pricing.deleteTariff')}
+        message={t('globalUx.pricing.confirmDelete')}
+        confirmLabel={t('adminNew.common.delete')}
         onConfirm={onDelete}
         onClose={() => setDeleteTarget(null)}
         loading={deleteRule.loading}
@@ -354,6 +359,8 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 }
 
 export default function ProductDetailPage() {
+  const { can } = usePermission();
+  const canWrite = can('products.write');
   const { locale, t } = useIntl();
   const { push } = useToast();
   const router = useRouter();
@@ -389,6 +396,7 @@ export default function ProductDetailPage() {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const onUploadImage = async (file: File | undefined) => {
+    if (!canWrite) return;
     if (!file) return;
     try {
       await uploadImage.mutate(file);
@@ -400,6 +408,7 @@ export default function ProductDetailPage() {
   };
 
   const onGenerateImage = async () => {
+    if (!canWrite) return;
     try {
       await generateImage.mutate(aiPrompt.trim() || `POS tile image for ${product.data?.name ?? 'product'}`);
       setShowAi(false);
@@ -420,6 +429,7 @@ export default function ProductDetailPage() {
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     if (!form) return;
     try {
       await updateProduct.mutate(formToPayload(form));
@@ -436,6 +446,7 @@ export default function ProductDetailPage() {
   };
 
   const onDelete = async () => {
+    if (!canWrite) return;
     try {
       await deleteProduct.mutate(id);
       push({ tone: 'success', title: t('adminNew.products.toasts.deleted') });
@@ -454,7 +465,7 @@ export default function ProductDetailPage() {
   const categoryLabel = (category: string | null | undefined) => {
     if (!category) return '—';
     const key = `adminNew.products.categories.${category}`;
-    const label = t(key);
+    const label = tEnum(t, 'adminNew.products.categories', category);
     return label === key ? category : label;
   };
 
@@ -478,7 +489,7 @@ export default function ProductDetailPage() {
                   </Button>
                 </Link>
                 {!editing ? (
-                  <Button
+                  <Button disabled={!canWrite}
                     variant="gold"
                     size="sm"
                     leftIcon={<Pencil className="h-4 w-4" />}
@@ -666,12 +677,12 @@ export default function ProductDetailPage() {
                   fullWidth
                   className="mt-3"
                   leftIcon={<ImageIcon className="h-4 w-4" />}
-                  disabled={uploadImage.loading}
+                  disabled={!canWrite || (uploadImage.loading)}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {uploadImage.loading ? t('adminNew.products.ai.uploading') : t('adminNew.products.ai.upload')}
                 </Button>
-                <Button
+                <Button disabled={!canWrite}
                   variant="outline"
                   size="sm"
                   fullWidth
@@ -755,7 +766,7 @@ export default function ProductDetailPage() {
                   <DetailRow label={t('adminNew.products.fields.created')} value={formatDateTime(p.created_at, dateLocale)} />
                   <DetailRow label={t('adminNew.products.fields.updated')} value={formatDateTime(p.updated_at, dateLocale)} />
                 </dl>
-                <Button
+                <Button disabled={!canWrite}
                   variant="ghost"
                   size="sm"
                   className="mt-4 text-rose-600 hover:text-rose-700"
@@ -866,7 +877,7 @@ export default function ProductDetailPage() {
         ) : null}
       </AdminContent>
 
-      <Modal open={showAi} onClose={() => setShowAi(false)} size="md">
+      <Modal open={showAi && canWrite} onClose={() => setShowAi(false)} size="md">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -898,7 +909,7 @@ export default function ProductDetailPage() {
       </Modal>
 
       <AdminConfirmModal
-        open={deleteOpen}
+        open={deleteOpen && canWrite}
         onClose={() => setDeleteOpen(false)}
         onConfirm={onDelete}
         title={t('adminNew.common.delete')}

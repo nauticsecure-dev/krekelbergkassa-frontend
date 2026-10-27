@@ -2,6 +2,7 @@
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
+import InvoiceLayoutTemplatePage from '../layout/page';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, History, ScanText } from 'lucide-react';
@@ -16,6 +17,11 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+
+function EditorRouter() {
+  const params = useSearchParams();
+  return params.has('id') || params.has('importId') || params.get('mode') === 'extraction' ? <EditorInner /> : <InvoiceLayoutTemplatePage />;
+}
 
 function EditorInner() {
   const { locale, t } = useIntl();
@@ -240,7 +246,7 @@ function EditorInner() {
 export default function TemplateEditorPage() {
   return (
     <React.Suspense fallback={<AdminContent><LoadingState label="…" /></AdminContent>}>
-      <EditorInner />
+      <EditorRouter />
     </React.Suspense>
   );
 }

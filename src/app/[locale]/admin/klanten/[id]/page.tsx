@@ -1,5 +1,7 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
+import { JourneyPanel } from '@/components/admin/JourneyPanel';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -44,7 +46,7 @@ import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function CustomerDetailPage() {
   const params = useParams<{ id: string }>();
-  const customerId = params?.id;
+  const routeCustomerId = params?.id;
   const { locale, t } = useIntl();
   const { push } = useToast();
 
@@ -60,18 +62,20 @@ export default function CustomerDetailPage() {
   const [statementYear, setStatementYear] = React.useState(String(new Date().getFullYear()));
   const [statementMonth, setStatementMonth] = React.useState(String(new Date().getMonth() + 1));
 
-  const data = useQuery([customerId], async () => {
-    if (!customerId) throw new Error('Missing customer id');
-    const [customer, boats, stalling, invoices, files, wallet, timeline] = await Promise.all([
-      customersService.get(customerId),
-      boatsService.list({ customer_id: customerId, per_page: 100 }),
-      stallingService.list({ customer_id: customerId, per_page: 100 }),
-      invoicesService.list({ customer_id: customerId, per_page: 100 }),
+  const data = useQuery([routeCustomerId], async () => {
+    if (!routeCustomerId) throw new Error('Missing customer id');
+    // Resolve a readable public ID before sending UUID-only relationship filters.
+    const customer = await customersService.get(routeCustomerId);
+    const canonicalId = customer.id;
+    const [boats, stalling, invoices, files, wallet, timeline] = await Promise.all([
+      boatsService.list({ customer_id: canonicalId, per_page: 100 }),
+      stallingService.list({ customer_id: canonicalId, per_page: 100 }),
+      invoicesService.list({ customer_id: canonicalId, per_page: 100 }),
       filesService
-        .list({ entity_type: 'customer', entity_id: customerId, per_page: 100 })
+        .list({ entity_type: 'customer', entity_id: canonicalId, per_page: 100 })
         .catch(() => ({ data: [] })),
-      walletsService.get(customerId).catch(() => null),
-      adminService.timeline({ customer_id: customerId, per_page: 30 }).catch(() => ({ data: [] })),
+      walletsService.get(canonicalId).catch(() => null),
+      adminService.timeline({ customer_id: canonicalId, per_page: 30 }).catch(() => ({ data: [] })),
     ]);
 
     return {
@@ -84,6 +88,8 @@ export default function CustomerDetailPage() {
       timeline: timeline.data ?? [],
     };
   });
+
+  const customerId = data.data?.customer.id ?? '';
 
   // Trello #90: customer health score widget.
   const health = useQuery([customerId, 'health'], () =>
@@ -549,6 +555,7 @@ export default function CustomerDetailPage() {
                 </Link>
               </AdminSectionCard>
 
+              <JourneyPanel customerId={customerId} />
               {/* Trello #90: customer health score */}
               {(() => {
                 const h = health.data as Record<string, unknown> | null;
@@ -575,7 +582,7 @@ export default function CustomerDetailPage() {
                       <div className={`text-4xl font-bold ${tone === 'danger' ? 'text-rose-600' : tone === 'gold' ? 'text-amber-600' : 'text-marine-700'}`}>
                         {String(h.score)}
                       </div>
-                      <Badge tone={tone}>{t(`adminNew.customerDetail.health.labels.${label}`)}</Badge>
+                      <Badge tone={tone}>{tEnum(t, 'adminNew.customerDetail.health.labels', label)}</Badge>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-navy-600">
                       <span>{t('adminNew.customerDetail.health.recentPaid')}: <strong>{String(breakdown.recent_paid_invoices ?? 0)}</strong></span>

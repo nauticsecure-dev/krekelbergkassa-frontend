@@ -1,4 +1,5 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -42,6 +43,7 @@ import {
   type BrokeragePreview,
 } from '@/lib/services';
 import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
+import { usePermission } from '@/lib/permissions';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -49,6 +51,10 @@ import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 export default function StallingPage() {
   const { locale, t } = useIntl();
+  const { can } = usePermission();
+  const canWrite = can('stalling.write');
+  const canCreateBoat = can('boats.write');
+  const canCreateCustomer = can('customers.write');
   const { push } = useToast();
   const dateLocale = intlLocale(locale);
 
@@ -79,7 +85,7 @@ export default function StallingPage() {
   // Trello #73: click-to-edit cells for paid_until / bok_number.
   const [inlineEdit, setInlineEdit] = React.useState<{ id: string; field: 'paid_until' | 'bok_number'; value: string } | null>(null);
   const [showCreate, setShowCreate] = React.useState(false);
-  useCreateMenuIntent(() => setShowCreate(true));
+  useCreateMenuIntent(() => { if (canWrite) setShowCreate(true); });
   const [createForm, setCreateForm] = React.useState({
     boat_id: '',
     customer_id: '',
@@ -220,6 +226,7 @@ export default function StallingPage() {
 
   const onCreateBoat = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canCreateBoat) return;
     try {
       const created = await createBoat.mutate({
         name: newBoat.name,
@@ -243,6 +250,7 @@ export default function StallingPage() {
 
   const onCreateCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canCreateCustomer) return;
     try {
       const created = await createCustomer.mutate({
         name: newCustomer.name,
@@ -287,6 +295,7 @@ export default function StallingPage() {
   // Trello #73: quick-edit now changes ONLY the lifecycle status (payment status
   // is computed and cannot be set) and records an optional change note.
   const openEdit = (contract: StallingContract) => {
+    if (!canWrite) return;
     setEditTarget(contract);
     setEditLifecycle(contract.status ?? 'active');
     setEditLocation(contract.boat?.location_code ?? contract.location_code ?? '');
@@ -295,6 +304,7 @@ export default function StallingPage() {
 
   // Trello #73: full edit modal — change customer/boat/period/billing/notes.
   const openFullEdit = (contract: StallingContract) => {
+    if (!canWrite) return;
     setEditFullTarget(contract);
     setEditForm({
       customer_id: contract.customer?.id ?? '',
@@ -312,6 +322,7 @@ export default function StallingPage() {
 
   const onSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     if (!editTarget) return;
     const id = editTarget.id;
     try {
@@ -332,6 +343,7 @@ export default function StallingPage() {
 
   const onSaveFullEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     if (!editFullTarget) return;
     try {
       await updateContract.mutate({
@@ -359,6 +371,7 @@ export default function StallingPage() {
 
   // Trello #73: click-to-edit a single cell (paid_until / bok_number) inline.
   const saveInline = async () => {
+    if (!canWrite) return;
     if (!inlineEdit) return;
     try {
       await updateContract.mutate({ id: inlineEdit.id, payload: { [inlineEdit.field]: inlineEdit.value || null } });
@@ -389,6 +402,7 @@ export default function StallingPage() {
 
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     try {
       const created = await createContract.mutate({
         boat_id: createForm.boat_id,
@@ -478,7 +492,7 @@ export default function StallingPage() {
         title={t('adminNew.stalling.title')}
         subtitle={t('adminNew.stalling.subtitle')}
         rightSlot={
-          <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+          <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
             {t('adminNew.stalling.new')}
           </Button>
         }
@@ -649,7 +663,7 @@ export default function StallingPage() {
                           </Button>
                         </span>
                       ) : (
-                        <button
+                        <button disabled={!canWrite}
                           type="button"
                           onClick={() => setInlineEdit({ id: contract.id, field: 'paid_until', value: contract.paid_until ?? '' })}
                           title={t('adminNew.stalling.inline.editPaidUntil')}
@@ -689,7 +703,7 @@ export default function StallingPage() {
                             </Button>
                           </span>
                         ) : (
-                          <button
+                          <button disabled={!canWrite}
                             type="button"
                             onClick={() => setInlineEdit({ id: contract.id, field: 'bok_number', value: contract.bok_number ?? '' })}
                             title={t('adminNew.stalling.inline.editBok')}
@@ -701,7 +715,7 @@ export default function StallingPage() {
                       </div>
                     </AdminTableCell>
                     <AdminTableCell>
-                      <button
+                      <button disabled={!canWrite}
                         type="button"
                         onClick={() => openEdit(contract)}
                         aria-label={t('adminNew.stalling.quickEdit.editAria')}
@@ -722,7 +736,7 @@ export default function StallingPage() {
                             {t('adminNew.common.open')}
                           </Button>
                         </Link>
-                        <Button
+                        <Button disabled={!canWrite}
                           variant="outline"
                           size="sm"
                           leftIcon={<Pencil className="h-3.5 w-3.5" />}
@@ -863,7 +877,7 @@ export default function StallingPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
+      <Modal open={showCreate && canWrite} onClose={() => setShowCreate(false)} size="md">
         <form onSubmit={onCreate}>
           <AdminModalHeader title={t('adminNew.stalling.new')} subtitle={t('adminNew.stalling.createSubtitle')} />
           <AdminModalBody>
@@ -876,7 +890,7 @@ export default function StallingPage() {
                     <option key={b.id} value={b.id}>{b.name}</option>
                   ))}
                 </SearchSelect>
-                <Button type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewBoat(true)}>
+                <Button disabled={!canCreateBoat} type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewBoat(true)}>
                   {t('adminNew.stalling.fields.newBoat')}
                 </Button>
               </div>
@@ -890,7 +904,7 @@ export default function StallingPage() {
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </SearchSelect>
-                <Button type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewCustomer(true)}>
+                <Button disabled={!canCreateCustomer} type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewCustomer(true)}>
                   {t('adminNew.stalling.fields.newCustomer')}
                 </Button>
               </div>
@@ -922,7 +936,7 @@ export default function StallingPage() {
             {pricePreview ? (
               <div className="rounded-lg bg-sand-50 p-3 text-sm">
                 <span className="font-medium text-navy-900">
-                  {t(`adminNew.stalling.type.${createForm.type}`)}: {formatCurrency(pricePreview.total_incl_vat / 100, dateLocale)}
+                  {tEnum(t, 'adminNew.stalling.type', createForm.type)}: {formatCurrency(pricePreview.total_incl_vat / 100, dateLocale)}
                 </span>
                 {createForm.deposit_pct ? (
                   <span className="ml-3 text-navy-500">
@@ -1065,14 +1079,14 @@ export default function StallingPage() {
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
+            <Button disabled={!canWrite} type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
             <Button type="submit" variant="gold" disabled={createContract.loading}>{t('adminNew.common.save')}</Button>
           </AdminModalFooter>
         </form>
       </Modal>
 
       {/* Trello #107: inline new-boat modal */}
-      <Modal open={showNewBoat} onClose={() => setShowNewBoat(false)} size="sm">
+      <Modal open={showNewBoat && canCreateBoat} onClose={() => setShowNewBoat(false)} size="sm">
         <form onSubmit={onCreateBoat}>
           <AdminModalHeader title={t('adminNew.stalling.fields.newBoat')} />
           <AdminModalBody>
@@ -1087,14 +1101,14 @@ export default function StallingPage() {
             <Input label={t('adminNew.stalling.fields.registration')} value={newBoat.registration_number} onChange={(e) => setNewBoat({ ...newBoat, registration_number: e.target.value })} />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowNewBoat(false)}>{t('adminNew.common.cancel')}</Button>
+            <Button disabled={!canCreateBoat} type="button" variant="ghost" onClick={() => setShowNewBoat(false)}>{t('adminNew.common.cancel')}</Button>
             <Button type="submit" variant="gold" disabled={createBoat.loading}>{t('adminNew.common.save')}</Button>
           </AdminModalFooter>
         </form>
       </Modal>
 
       {/* Trello #107: inline new-customer modal */}
-      <Modal open={showNewCustomer} onClose={() => setShowNewCustomer(false)} size="sm">
+      <Modal open={showNewCustomer && canCreateCustomer} onClose={() => setShowNewCustomer(false)} size="sm">
         <form onSubmit={onCreateCustomer}>
           <AdminModalHeader title={t('adminNew.stalling.fields.newCustomer')} />
           <AdminModalBody>
@@ -1114,7 +1128,7 @@ export default function StallingPage() {
             <Input label={t('adminNew.stalling.fields.companyName')} value={newCustomer.company_name} onChange={(e) => setNewCustomer({ ...newCustomer, company_name: e.target.value })} />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowNewCustomer(false)}>{t('adminNew.common.cancel')}</Button>
+            <Button disabled={!canCreateCustomer} type="button" variant="ghost" onClick={() => setShowNewCustomer(false)}>{t('adminNew.common.cancel')}</Button>
             <Button type="submit" variant="gold" disabled={createCustomer.loading}>{t('adminNew.common.save')}</Button>
           </AdminModalFooter>
         </form>

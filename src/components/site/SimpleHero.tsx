@@ -1,13 +1,14 @@
 import { Badge } from '@/components/ui/Badge';
+import type { ReactNode } from 'react';
 
 export function SimpleHero({
   badge,
   title,
   subtitle,
 }: {
-  badge?: string;
-  title: string;
-  subtitle: string;
+  badge?: ReactNode;
+  title: ReactNode;
+  subtitle: ReactNode;
 }) {
   return (
     <section className="hero-gradient">

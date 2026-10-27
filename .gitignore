@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+.next-journey-tests/
+/journey-test-results/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -72,6 +74,8 @@ AuthKey_PY3UQD7C7P.p8
 
 # Next.js build output
 .next
+.next-dev/
+.next-cms-verification/
 
 # Nuxt.js build / generate output
 .nuxt
@@ -116,3 +120,14 @@ Thumbs.db
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+.next-all-tests/
+
+.next-all-build/
+
+.next-isolated-live/
+
+.next-admin-audit/
+artifacts/admin-audit/snapshot/
+.next-global-ux/
+.next-erp/

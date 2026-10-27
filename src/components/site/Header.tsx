@@ -1,4 +1,5 @@
 'use client';
+import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -20,10 +21,10 @@ import { Button } from '@/components/ui/Button';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { InstallButton } from '@/components/pwa/InstallButton';
 import { cn } from '@/lib/cn';
-import { useCms } from '@/components/cms/CmsProvider';
 import { EditSafeLink } from '@/components/cms/EditSafeLink';
 import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin, defaultRedirectForRole } from '@/lib/auth-routes';
+import { EditableHeaderCta } from '@/components/cms/EditableHeaderCta';
 
 interface MegaItem {
   href: string;
@@ -34,10 +35,7 @@ interface MegaItem {
 
 export function Header() {
   const { t, locale } = useIntl();
-  const { getGlobal } = useCms();
   const { user, loading } = useAuth();
-  const stallingLabel = getGlobal('header.cta.label', 'Stalling');
-  const stallingHref = `/${locale}/${getGlobal('header.cta.path', 'diensten/winterstalling')}`;
   const pathname = usePathname();
   const loginHref = `/${locale}/login`;
   const accountHref = user ? defaultRedirectForRole(user.role, locale) : loginHref;
@@ -87,13 +85,13 @@ export function Header() {
       )}
     >
       {/* Main bar */}
-      <div className="container-wide flex h-[72px] items-center justify-between gap-8">
+      <div className="container-wide flex h-[72px] items-center justify-between gap-2 md:gap-4 xl:gap-8">
         <EditSafeLink href={`/${locale}`} aria-label="Krekelberg Nautic" className="shrink-0">
-          <Logo />
+          <Logo className="max-[380px]:[&>div]:hidden" />
         </EditSafeLink>
 
         {/* Desktop nav */}
-        <nav className="hidden flex-1 items-center justify-center lg:flex">
+        <nav className="hidden flex-1 items-center justify-center xl:flex">
           <ul className="flex items-center gap-1">
             <li
               onMouseEnter={() => openMenu('services')}
@@ -109,7 +107,7 @@ export function Header() {
                 hasMenu
                 expanded={hoveredMenu === 'services'}
               >
-                {t('nav.services')}
+                <TranslatedText textKey={'nav.services'} />
               </NavLink>
               {hoveredMenu === 'services' ? (
                 <MegaPanel
@@ -127,7 +125,7 @@ export function Header() {
                 href={`/${locale}/verkoop`}
                 active={pathname.startsWith(`/${locale}/verkoop`)}
               >
-                {t('nav.salesLocation')}
+                <TranslatedText textKey={'nav.salesLocation'} />
               </NavLink>
             </li>
             <li>
@@ -135,12 +133,12 @@ export function Header() {
                 href={`/${locale}/over-ons`}
                 active={pathname === `/${locale}/over-ons`}
               >
-                {t('nav.about')}
+                <TranslatedText textKey={'nav.about'} />
               </NavLink>
             </li>
             <li>
               <NavLink href={`/${locale}/contact`} active={pathname === `/${locale}/contact`}>
-                {t('nav.contact')}
+                <TranslatedText textKey={'nav.contact'} />
               </NavLink>
             </li>
           </ul>
@@ -151,19 +149,15 @@ export function Header() {
           <InstallButton variant="header" className="hidden md:inline-flex" />
           <LanguageSwitcher />
           {!loading ? (
-            <Link href={accountHref} className="hidden lg:inline-flex">
+            <Link href={accountHref} className="hidden xl:inline-flex">
               <Button variant="ghost" size="md">
                 {accountLabel}
               </Button>
             </Link>
           ) : null}
-          <Link href={stallingHref} className="hidden md:inline-flex">
-            <Button variant="gold" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
-              {stallingLabel}
-            </Button>
-          </Link>
+          <div className="hidden md:inline-flex"><EditableHeaderCta /></div>
           <button
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 bg-white text-navy-700 transition hover:bg-sand-50 lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 bg-white text-navy-700 transition hover:bg-sand-50 xl:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-label={t('header.mainMenu')}
           >
@@ -174,7 +168,7 @@ export function Header() {
 
       {/* Mobile drawer */}
       {open ? (
-        <div className="border-t border-navy-100 bg-white lg:hidden">
+        <div className="border-t border-navy-100 bg-white xl:hidden">
           <div className="container-wide grid gap-1 py-4">
             <MobileGroup label={t('header.groupServices')}>
               {servicesMega.map((m) => (
@@ -183,9 +177,9 @@ export function Header() {
                 </MobileSubLink>
               ))}
             </MobileGroup>
-            <MobileLink href={`/${locale}/verkoop`}>{t('nav.salesLocation')}</MobileLink>
-            <MobileLink href={`/${locale}/over-ons`}>{t('nav.about')}</MobileLink>
-            <MobileLink href={`/${locale}/contact`}>{t('nav.contact')}</MobileLink>
+            <MobileLink href={`/${locale}/verkoop`}><TranslatedText textKey={'nav.salesLocation'} /></MobileLink>
+            <MobileLink href={`/${locale}/over-ons`}><TranslatedText textKey={'nav.about'} /></MobileLink>
+            <MobileLink href={`/${locale}/contact`}><TranslatedText textKey={'nav.contact'} /></MobileLink>
             <div className="my-3 h-px bg-navy-100" />
             <div className="grid grid-cols-2 gap-2">
               {!loading ? (
@@ -195,11 +189,7 @@ export function Header() {
                   </Button>
                 </Link>
               ) : null}
-              <Link href={stallingHref}>
-                <Button variant="gold" fullWidth>
-                  {stallingLabel}
-                </Button>
-              </Link>
+              <EditableHeaderCta mobile />
             </div>
             <div className="mt-2">
               <InstallButton variant="header" className="w-full justify-center" />

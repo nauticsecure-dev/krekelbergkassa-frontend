@@ -1,0 +1,5 @@
+{
+  "/[locale]/admin/facturen/nieuw/handmatig/page": "app/[locale]/admin/facturen/nieuw/handmatig/page.js",
+  "/[locale]/admin/facturen/page": "app/[locale]/admin/facturen/page.js",
+  "/[locale]/admin/facturen/[id]/page": "app/[locale]/admin/facturen/[id]/page.js"
+}

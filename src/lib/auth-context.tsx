@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 import { auth } from './api';
+import { resetJourneyIdentity } from './session';
+import { discardQueuedTrackEvents, flushTrackEvents, trackEvent } from './track-event';
 import type { ApiError } from './api';
 import { authService, extractLoginToken, portalService } from './services';
 import type { SessionUser } from './api-types';
@@ -11,7 +13,7 @@ import {
   writeCachedUser,
 } from './auth-storage';
 
-export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'super_admin' | 'guest';
+export type Role = 'customer' | 'employee' | 'staff' | 'admin' | 'manager' | 'super_admin' | 'finance' | 'guest';
 
 export type User = SessionUser;
 
@@ -28,6 +30,8 @@ export class MfaRequiredError extends Error {
 interface AuthState {
   user: User | null;
   loading: boolean;
+  sessionVerified: boolean;
+  invalidateSession: () => void;
   isDemo: boolean;
   isPortalSession: boolean;
   signIn: (email: string, password: string, remember?: boolean) => Promise<User>;
@@ -93,15 +97,17 @@ const demoUserFor = (role: Role): User => {
 
 function normalizeRole(role: string): Role {
   if (
+    role === 'employee' ||
     role === 'admin' ||
     role === 'super_admin' ||
     role === 'manager' ||
+    role === 'finance' ||
     role === 'staff' ||
     role === 'customer'
   ) {
     return role;
   }
-  return 'staff';
+  return 'guest';
 }
 
 function initialAuthState(): { user: User | null; loading: boolean } {
@@ -137,13 +143,22 @@ async function loadPortalSession(): Promise<User | null> {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [sessionVerified, setSessionVerified] = React.useState(false);
   const [isDemo, setIsDemo] = React.useState(false);
   const [isPortalSession, setIsPortalSession] = React.useState(false);
   const hydratedRef = React.useRef(false);
+  const identityUserId = user?.id;
+  React.useEffect(() => {
+    if (!identityUserId || loading || isDemo) return;
+    trackEvent('identity_verified');
+    void flushTrackEvents();
+  }, [identityUserId, loading, isDemo]);
   const refreshAttemptRef = React.useRef(0);
+  const verifiedTokenRef = React.useRef<string | undefined>();
 
   const refresh = React.useCallback(async () => {
     const refreshAttempt = ++refreshAttemptRef.current;
+    if (auth.getToken() !== verifiedTokenRef.current) setSessionVerified(false);
     if (hasAnySession() && !readCachedUser<User>()) {
       setLoading(true);
     }
@@ -154,6 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const hasStaffToken = !!token && !token.startsWith(DEMO_TOKEN_PREFIX);
 
       if (token?.startsWith(DEMO_TOKEN_PREFIX)) {
+        setSessionVerified(false);
         const stored =
           typeof window !== 'undefined' ? localStorage.getItem(DEMO_USER_KEY) : null;
         const parsed: User | null = stored ? JSON.parse(stored) : null;
@@ -171,12 +187,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const staffUser = await loadStaffSession();
           if (refreshAttempt !== refreshAttemptRef.current) return;
           setUser(staffUser);
+          verifiedTokenRef.current = token;
+          setSessionVerified(true);
           writeCachedUser(staffUser);
           setIsDemo(false);
           setIsPortalSession(false);
           return;
         } catch (err) {
           if (refreshAttempt !== refreshAttemptRef.current) return;
+          setSessionVerified(false);
           if (isUnauthorized(err)) {
             auth.clearSession();
             writeCachedUser(null);
@@ -197,12 +216,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const portalUser = await loadPortalSession();
           if (refreshAttempt !== refreshAttemptRef.current) return;
           setUser(portalUser);
+          setSessionVerified(true);
           writeCachedUser(portalUser);
           setIsDemo(false);
           setIsPortalSession(true);
           return;
         } catch (err) {
           if (refreshAttempt !== refreshAttemptRef.current) return;
+          setSessionVerified(false);
           if (isUnauthorized(err)) {
             auth.clearPortalSession();
             writeCachedUser(null);
@@ -220,6 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (refreshAttempt !== refreshAttemptRef.current) return;
       setUser(null);
+      setSessionVerified(false);
       setIsDemo(false);
       setIsPortalSession(false);
       writeCachedUser(null);
@@ -274,6 +296,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: normalizeRole(res.user.role),
       };
       setUser(next);
+      verifiedTokenRef.current = sessionToken;
+      setSessionVerified(true);
       writeCachedUser(next);
       setIsDemo(false);
       setIsPortalSession(false);
@@ -321,6 +345,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       locale: res.customer.preferred_locale,
     };
     setUser(next);
+    setSessionVerified(true);
     writeCachedUser(next);
     setIsDemo(false);
     setIsPortalSession(true);
@@ -329,6 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInDemo = React.useCallback(async (role: Role = 'customer') => {
+    setSessionVerified(false);
     const demoUser = demoUserFor(role);
     refreshAttemptRef.current += 1;
     auth.clearPortalSession();
@@ -344,7 +370,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return demoUser;
   }, []);
 
+  const invalidateSession = React.useCallback(() => {
+    refreshAttemptRef.current += 1;
+    auth.clearSession();
+    auth.clearPortalSession();
+    writeCachedUser(null);
+    setUser(null);
+    setSessionVerified(false);
+    setIsDemo(false);
+    setIsPortalSession(false);
+    setLoading(false);
+  }, []);
+
   const signOut = React.useCallback(async () => {
+    setSessionVerified(false);
+    await flushTrackEvents();
     refreshAttemptRef.current += 1;
     const token = auth.getToken();
     const portalToken = auth.getPortalToken();
@@ -366,6 +406,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     auth.clearSession();
+    discardQueuedTrackEvents();
+    resetJourneyIdentity();
     writeCachedUser(null);
     setUser(null);
     setIsDemo(false);
@@ -378,6 +420,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         loading,
+        sessionVerified,
+        invalidateSession,
         isDemo,
         isPortalSession,
         signIn,

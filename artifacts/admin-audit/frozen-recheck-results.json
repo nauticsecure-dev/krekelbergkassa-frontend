@@ -1,0 +1,286 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-audit.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/frozen-recheck",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/frozen-recheck-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node --v8-pool-size=1 scripts/admin-audit-server.cjs",
+      "env": {
+        "NEXT_DIST_DIR": ".next-admin-audit",
+        "NEXT_PUBLIC_API_URL": "/api",
+        "API_PROXY_TARGET": "http://127.0.0.1:9",
+        "RAYON_NUM_THREADS": "1",
+        "NEXT_FONT_GOOGLE_MOCKED_RESPONSES": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\fixtures\\journey-fonts.cjs"
+      },
+      "url": "http://localhost:3047/sw.js",
+      "timeout": 300000,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "admin-audit.spec.ts",
+      "file": "admin-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "route failure boundary: /admin/boekhouding",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 97474,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:59:35.977Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9ib2VraG91ZGluZyIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vYm9la2hvdWRpbmciLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkJvZWtob3VkaW5nXG5cbk9temV0LCBrb3N0ZW4sIGJ0dyBlbiBjcmVkaXRldXJlbiBpbiDDqcOpbiBvb2dvcHNsYWcuXG5cbuKAk1xuTGV2ZXJhbmNpZXJzXG5PTVpFVFxu4oKswqAwLDAwXG5LT1NURU5cbuKCrMKgMCwwMFxuT1BFTlNUQUFOREUgQ1JFRElURVVSRU5cbuKCrMKgMCwwMFxuVEUgQkVUQUxFTiBCVFdcbuKCrMKgMCwwMFxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV8yMjFiNzgyMGExNWQ0MDY5YTZmYylcbk9wbmlldXcgcHJvYmVyZW5cbkNyZWRpdGV1cmVuXG5cbk9wZW5zdGFhbmRlIGxldmVyYW5jaWVyc2ZhY3R1cmVuIGRpZSBvcCBiZXRhbGluZyB3YWNodGVuLlxuXG5BbGxlXG5PcGVuXG5CZXRhYWxkXG5BY2h0ZXJzdGFsbGlnXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzNhYzg3YjA1MWJkNDQxNDI5MjcyKVxuT3BuaWV1dyBwcm9iZXJlblxuR3Jvb3Rib2Vrb3ZlcnppY2h0XG5cblRvdGFsZW4gcGVyIGdyb290Ym9la3Jla2VuaW5nLlxuXG5Ob2cgZ2VlbiBncm9vdGJvZWtnZWdldmVucyBiZXNjaGlrYmFhci4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\frozen-recheck\\admin-audit-route-failure-boundary-admin-boekhouding-admin-audit\\attachments\\page-evidence-803dce00273b09fbbe47219a12e829711c8f3092.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-ccadfbaf52b3efd73bd1",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/calculator/history",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13996,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:01:14.719Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9jYWxjdWxhdG9yL2hpc3RvcnkiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2NhbGN1bGF0b3IiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6ZmFsc2UsInRleHQiOiJESUVOU1RFTiAmIFBSSUpaRU5cblxuQ2FsY3VsYXRvclxuXG5Db25zaXN0ZW50ZSBwcmlqc2JlcmVrZW5pbmcgdm9vciBrYXNzYSwgc3RhbGxpbmcgZW4gdmVya29vcFxuXG5FeHBvcnRlZXIgQ1NWXG5QcmlqemVuIGJld2Vya2VuXG5CT09UTEVOR1RFIChDTSlcbjg4MCBjbVxuU0VSVklDRVNcbjFcblRPVEFMRSBQUklKU1xu4oCUXG5LTEFOVCAoT1BUSU9ORUVMIFZPT1IgQkVSRUtFTklORylcbjBcbkNhbGN1bGF0b3JcblxuQ29uc2lzdGVudGUgcHJpanNiZXJla2VuaW5nIHZvb3Iga2Fzc2EsIHN0YWxsaW5nIGVuIHZlcmtvb3BcblxuQm9vdGxlbmd0ZSAoY20pXG5Db250cmFjdCB0eXBlXG5XaW50ZXJcblNlcnZpY2VzXG5cbkRpZW5zdGVuIGtvbmRlbiBuaWV0IHdvcmRlbiBnZWxhZGVuLlxuXG5LbGFudCAob3B0aW9uZWVsIHZvb3IgYmVyZWtlbmluZylcblNlbGVjdGVlciBrbGFudFxuQmVyZWtlbiBwcmlqc1xuTWFhayBvZmZlcnRlXG5NYWFrIGZhY3R1dXJcbk5pZXV3ZSBrbGFudFxuUmVzdWx0YWF0XG5cbk5vZyBnZWVuIGJlcmVrZW5pbmcgdWl0Z2V2b2VyZC5cblxuTm9nIGdlZW4gYmVyZWtlbmluZyB1aXRnZXZvZXJkLlxuQ2FsY3VsYXRvciByZWNvcmRzXG5cbkVsa2Ugb3BnZXNsYWdlbiBiZXJla2VuaW5nIOKAlCBvcGVuIG9tIHZlcmRlciB0ZSBnYWFuLCBvbSB0ZSB6ZXR0ZW4gb2YgdGUgZHVwbGljZXJlbi5cblxuQWxsZSBrbGFudGVuXG5BbGxlIGRpZW5zdGVuXG5BbGxlIGdlYnJ1aWtlcnNcbkFsbGUgc3RhdHVzc2VuXG5PZmZlcnRlOiBhbGxlXG5GYWN0dXVyOiBhbGxlXG5BYW5nZW1hYWt0ICh2YW4vdG90KVxuQmlqZ2V3ZXJrdCAodmFuL3RvdClcblRvdGFhbGJlZHJhZyAo4oKsKVxuTm9nIGdlZW4gb3BnZXNsYWdlbiBiZXJla2VuaW5nZW4uIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\frozen-recheck\\admin-audit-route-failure-boundary-admin-calculator-history-admin-audit\\attachments\\page-evidence-77a1ef35ee5ddaa5374fd62a0f7aa517907a4809.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-80882ce045ba6fd8a482",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "nl: dashboard sidebar and KPI responsive evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12658,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:01:28.757Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-1ee5992c873e6515e4bd",
+          "file": "admin-audit.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "customer loading empty validation and create modal retain data then save",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 58881,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Audit validation failure/).first()\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Audit validation failure/).first()\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Audit validation failure/).first()\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Audit validation failure/).first()\u001b[22m\n\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:127:68",
+                    "location": {
+                      "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                      "column": 68,
+                      "line": 127
+                    },
+                    "snippet": "  125 |   await dialog.getByLabel(label('nl','adminNew.common.email'),{exact:false}).first().fill('audit-created@example.test');\n  126 |   await dialog.getByRole('button',{name:label('nl','adminNew.common.save'),exact:true}).click();\n> 127 |   await expect(page.getByText(/Audit email already exists/).first()).toBeVisible();\n      |                                                                    ^\n  128 |   await expect(name).toHaveValue('Audit Created Customer');\n  129 |   for(const width of [390,1280]) {\n  130 |     await page.setViewportSize({width,height:1000});"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                        "column": 68,
+                        "line": 127
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/Audit validation failure/).first()\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Audit validation failure/).first()\u001b[22m\n\n\n  125 |   await dialog.getByLabel(label('nl','adminNew.common.email'),{exact:false}).first().fill('audit-created@example.test');\n  126 |   await dialog.getByRole('button',{name:label('nl','adminNew.common.save'),exact:true}).click();\n> 127 |   await expect(page.getByText(/Audit email already exists/).first()).toBeVisible();\n      |                                                                    ^\n  128 |   await expect(name).toHaveValue('Audit Created Customer');\n  129 |   for(const width of [390,1280]) {\n  130 |     await page.setViewportSize({width,height:1000});\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:127:68"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:01:41.454Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\frozen-recheck\\admin-audit-customer-loadi-b5267-modal-retain-data-then-save-admin-audit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\frozen-recheck\\admin-audit-customer-loadi-b5267-modal-retain-data-then-save-admin-audit\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                    "column": 68,
+                    "line": 127
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-7123b6290fc5151b1992",
+          "file": "admin-audit.spec.ts",
+          "line": 93,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-27T02:59:18.736Z",
+    "duration": 226998.16999999998,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

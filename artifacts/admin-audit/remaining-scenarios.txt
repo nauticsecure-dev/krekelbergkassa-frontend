@@ -1,0 +1,144 @@
+[WebServer] (node:22984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:13384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:22984) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] (node:11840) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [admin-audit] › tests\browser\admin-review.spec.ts:54:7 › kassa: empty page renders without overflow or JavaScript errors (42.0s)
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] (node:22648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [admin-audit] › tests\browser\admin-review.spec.ts:54:7 › kalender: empty page renders without overflow or JavaScript errors (8.6s)
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] (node:24188) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [admin-audit] › tests\browser\admin-review.spec.ts:54:7 › audit: empty page renders without overflow or JavaScript errors (7.9s)
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] (node:5456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] (node:10380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [admin-audit] › tests\browser\pricing-permissions.spec.ts:34:5 › employee reaches filtered rules, saves cents, and reloads the updated tariff (11.9s)
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] (node:20196) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [admin-audit] › tests\browser\pricing-permissions.spec.ts:48:7 › public Winterstalling pricing link respects pricing.update (true) (9.3s)
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] (node:21012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 6 [admin-audit] › tests\browser\pricing-permissions.spec.ts:48:7 › public Winterstalling pricing link respects pricing.update (false) (2.7s)
+
+  6 passed (1.5m)

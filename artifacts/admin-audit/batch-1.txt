@@ -1,0 +1,46 @@
+[2m[WebServer] [22m(node:2284) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(node:4636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(node:4636) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+[2m[WebServer] [22mFailed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[2m[WebServer] [22m[90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16)[39m {
+[2m[WebServer] [22m  errno: [33m-4078[39m,
+[2m[WebServer] [22m  code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m  syscall: [32m'connect'[39m,
+[2m[WebServer] [22m  address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m  port: [33m9[39m
+[2m[WebServer] [22m}
+[2m[WebServer] [22mError: connect ECONNREFUSED 127.0.0.1:9
+[2m[WebServer] [22m[90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16)[39m {
+[2m[WebServer] [22m  errno: [33m-4078[39m,
+[2m[WebServer] [22m  code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m  syscall: [32m'connect'[39m,
+[2m[WebServer] [22m  address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m  port: [33m9[39m
+[2m[WebServer] [22m}
+[2m[WebServer] [22m(node:21260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker, shard 1 of 12
+
+(node:12812) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:12812) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22mFailed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[2m[WebServer] [22m[90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16)[39m {
+[2m[WebServer] [22m  errno: [33m-4078[39m,
+[2m[WebServer] [22m  code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m  syscall: [32m'connect'[39m,
+[2m[WebServer] [22m  address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m  port: [33m9[39m
+[2m[WebServer] [22m}
+[2m[WebServer] [22mError: connect ECONNREFUSED 127.0.0.1:9
+[2m[WebServer] [22m[90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16)[39m {
+[2m[WebServer] [22m  errno: [33m-4078[39m,
+[2m[WebServer] [22m  code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m  syscall: [32m'connect'[39m,
+[2m[WebServer] [22m  address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m  port: [33m9[39m
+[2m[WebServer] [22m}

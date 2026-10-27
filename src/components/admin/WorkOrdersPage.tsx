@@ -1,4 +1,5 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -64,7 +65,7 @@ function workOrderTypeLabel(
   const fromMeta = metaTypes?.find((o) => o.value === type)?.label;
   if (fromMeta) return fromMeta;
   const key = `adminNew.workOrders.types.${type}`;
-  const translated = t(key);
+  const translated = tEnum(t, 'adminNew.workOrders.types', type);
   if (translated !== key) return translated;
   return TYPE_LABELS[type] ?? type;
 }

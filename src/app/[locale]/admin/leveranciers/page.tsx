@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { adminRecordHref } from '@/config/admin-routes';
 import { Building2, Eye, Plus, Receipt } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
@@ -26,6 +27,7 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { suppliersService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { usePermission } from '@/lib/permissions';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
@@ -44,6 +46,8 @@ const EMPTY = { name: '', email: '', phone: '', vat_number: '', payment_terms_da
 
 export default function SuppliersPage() {
   const { locale, t } = useIntl();
+  const { can } = usePermission();
+  const canWrite = can('products.write');
   const { push } = useToast();
   const [search, setSearch] = React.useState('');
   const [page, setPage] = React.useState(1);
@@ -61,12 +65,14 @@ export default function SuppliersPage() {
   const meta = suppliers.data?.meta;
 
   const openCreate = () => {
+    if (!canWrite) return;
     setEditId(null);
     setForm(EMPTY);
     setShowForm(true);
   };
   useCreateMenuIntent(openCreate);
   const openEdit = (row: Rec) => {
+    if (!canWrite) return;
     setEditId(String(row.id));
     setForm({
       name: str(row, 'name'),
@@ -81,6 +87,7 @@ export default function SuppliersPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     const payload: Rec = {
       name: form.name,
       email: form.email || undefined,
@@ -112,7 +119,7 @@ export default function SuppliersPage() {
                 {t('adminNew.accounting.title')}
               </Button>
             </Link>
-            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
+            <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
               {t('adminNew.suppliers.new')}
             </Button>
           </div>
@@ -157,10 +164,10 @@ export default function SuppliersPage() {
                         </AdminTableCell>
                         <AdminTableCell>
                           <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
+                            <Button disabled={!canWrite} variant="ghost" size="sm" onClick={() => openEdit(row)}>
                               {t('adminNew.common.edit')}
                             </Button>
-                            <Link href={`/${locale}/admin/leveranciers/${id}`}>
+                            <Link href={adminRecordHref(locale, 'leveranciers', { id, public_id: str(row, 'public_id'), slug: str(row, 'slug') })}>
                               <Button variant="outline" size="sm" leftIcon={<Eye className="h-3.5 w-3.5" />}>
                                 {t('adminNew.common.open')}
                               </Button>
@@ -184,7 +191,7 @@ export default function SuppliersPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showForm} onClose={() => setShowForm(false)} size="md">
+      <Modal open={showForm && canWrite} onClose={() => setShowForm(false)} size="md">
         <form onSubmit={onSubmit}>
           <AdminModalHeader
             title={t(editId ? 'adminNew.suppliers.editTitle' : 'adminNew.suppliers.new')}

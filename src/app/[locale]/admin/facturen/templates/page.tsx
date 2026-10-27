@@ -75,7 +75,7 @@ export default function ExtractionTemplatesPage() {
                 {t('adminNew.templates.layout', { defaultValue: 'Factuuropmaak' })}
               </Button>
             </Link>
-            <Link href={`/${locale}/admin/facturen/templates/editor`}>
+            <Link href={`/${locale}/admin/facturen/templates/editor?mode=extraction`}>
               <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
                 {t('adminNew.templates.newExtraction', { defaultValue: 'Extractiesjabloon' })}
               </Button>

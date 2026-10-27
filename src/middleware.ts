@@ -22,7 +22,7 @@ function localeFromPath(pathname: string): string {
   return defaultLocale;
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (
@@ -39,6 +39,26 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  let activeLocales: readonly string[] = locales;
+  let configuredDefault: string = defaultLocale;
+  try {
+    const response = await fetch(new URL('/api/v1/i18n/locales', req.url), { cache: 'no-store', signal: AbortSignal.timeout(2000) });
+    if (response.ok) {
+      const configuration = await response.json();
+      const enabled = configuration.supported_locales?.filter((item: { enabled: boolean }) => item.enabled).map((item: { code: string }) => item.code.split('-')[0]).filter((code: string) => locales.includes(code as typeof locales[number]));
+      if (enabled?.length) {
+        activeLocales = enabled;
+        const candidate = configuration.default_locale?.split('-')[0];
+        configuredDefault = enabled.includes(candidate) ? candidate : enabled[0];
+      }
+    }
+  } catch { /* Keep routes available during a backend outage. */ }
+  const pathLocale = pathname.split('/')[1];
+  if (locales.includes(pathLocale as typeof locales[number]) && !activeLocales.includes(pathLocale)) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/' + configuredDefault + pathname.slice(pathLocale.length + 1);
+    return NextResponse.redirect(url);
+  }
   const hasLocale = locales.some(
     (l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`)
   );
@@ -47,9 +67,9 @@ export function middleware(req: NextRequest) {
     const cookieLocale = req.cookies.get(LOCALE_COOKIE)?.value;
     const acceptLang = req.headers.get('accept-language') ?? '';
     const detected =
-      cookieLocale && locales.includes(cookieLocale as (typeof locales)[number])
+      cookieLocale && activeLocales.includes(cookieLocale)
         ? cookieLocale
-        : locales.find((l) => acceptLang.toLowerCase().includes(l)) ?? defaultLocale;
+        : activeLocales.find((l) => acceptLang.toLowerCase().includes(l)) ?? configuredDefault;
 
     const url = req.nextUrl.clone();
     url.pathname = `/${detected}${pathname === '/' ? '' : pathname}`;
@@ -57,17 +77,6 @@ export function middleware(req: NextRequest) {
   }
 
   const locale = localeFromPath(pathname);
-
-  const prettyAdmin = pathname.match(
-    new RegExp(
-      `^/(${locales.join('|')})/admin/(producten|klanten|boten|stalling|leveranciers)/([^/]+)/([^/]+)/?$`
-    )
-  );
-  const reservedSlug = new Set(['timeline', 'nieuw', 'edit', 'editor', 'import']);
-  const rewritePath =
-    prettyAdmin && !reservedSlug.has(prettyAdmin[4])
-      ? `/${prettyAdmin[1]}/admin/${prettyAdmin[2]}/${prettyAdmin[3]}`
-      : null;
 
   const repaired = repairEncodedQueryPath(pathname);
   if (repaired) {
@@ -112,11 +121,9 @@ export function middleware(req: NextRequest) {
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-locale', locale);
-  const res = rewritePath
-    ? NextResponse.rewrite(new URL(rewritePath + req.nextUrl.search, req.url), {
-        request: { headers: requestHeaders },
-      })
-    : NextResponse.next({ request: { headers: requestHeaders } });
+  // Readable admin URLs have native [id]/[slug] pages. Rewriting those URLs
+  // back into this server adds a proxy hop that can time out during compilation.
+  const res = NextResponse.next({ request: { headers: requestHeaders } });
   if (isProtectedPath(pathname) || isAuthPath(pathname)) {
     res.headers.set('Cache-Control', 'no-store');
   }

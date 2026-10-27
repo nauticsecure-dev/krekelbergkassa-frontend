@@ -1,4 +1,21 @@
 {
+  "contactSubjects": {
+    "title": "Contactonderwerpen",
+    "description": "Beheer onderwerpen, vertalingen en e-mailontvangers van het contactformulier.",
+    "key": "Sleutel",
+    "category": "Categorie",
+    "label": "Label",
+    "recipient": "Ontvanger",
+    "fallback": "Leeg: gebruik het standaard contactadres (bedrijfsinstellingen of expliciete override).",
+    "order": "Volgorde",
+    "active": "Actief",
+    "inactive": "Inactief",
+    "add": "Nieuw onderwerp",
+    "save": "Opslaan",
+    "saving": "Opslaan…",
+    "saved": "Onderwerp opgeslagen.",
+    "retry": "Opnieuw proberen"
+  },
   "adminModules": {
     "overview": {
       "todayAppointments": "Afspraken vandaag",
@@ -52,7 +69,7 @@
         "quickActions": "Snelacties",
         "crane": "Kraanafspraak",
         "craneDesc": "Open de kraanboekingspagina.",
-        "tabCalendar": "Kalender",
+        "tabCalendar": "Beschikbaarheid & openingstijden",
         "tabAppointments": "Afspraken",
         "tabToday": "Vandaag",
         "tabWeek": "Week",
@@ -409,7 +426,7 @@
     "heroBadge": "Jachtmakelaar · Stalling · Doe-het-zelf-werf",
     "heroTitle": "Jachtwerf & jachtmakelaar in Roermond",
     "heroSubtitle": "Van kranen en stalling tot verkoopbemiddeling en zelf onderhoud uitvoeren – Krekelberg Nautic biedt alles voor uw schip op één complete werf aan de Maasplassen.",
-    "heroPrimary": "Plan kraanbeurt",
+    "heroPrimary": "Verkoop uw boot",
     "heroSecondary": "Bekijk werfactiviteiten",
     "ctaCrane": "Plan kraanbeurt",
     "ctaListings": "Bekijk botenaanbod",
@@ -559,7 +576,82 @@
     "copyright": "© {year} Krekelberg Nautic — Alle rechten voorbehouden.",
     "address": "Hertenerweg 2, 6049AA Herten",
     "phone": "0475 315 661",
-    "email": "info@krekelberg-nautic.nl"
+    "email": "marketing@answer24.nl"
+  },
+  "journey": {
+    "page": "Pagina",
+    "eventType": "Gebeurtenistype",
+    "likelyIntent": "Waarschijnlijke intentie",
+    "confidence": {
+      "low": "Lage zekerheid",
+      "medium": "Gemiddelde zekerheid",
+      "high": "Hoge zekerheid"
+    },
+    "title": "Activiteit / Klantreis",
+    "description": "Publieke klantreizen, API-resultaten en bevestigde afspraken.",
+    "search": "Naam, pagina of verzoek",
+    "intent": "Intentie",
+    "endpoint": "API-eindpunt",
+    "status": "Minimale HTTP-status",
+    "from": "Van",
+    "to": "Tot",
+    "errorsOnly": "Alleen fouten",
+    "abandonedOnly": "Afgebroken formulieren",
+    "loading": "Klantreis laden…",
+    "retry": "Opnieuw proberen",
+    "lost": "Mogelijk gemiste kansen",
+    "failedRequests": "mislukte verzoeken",
+    "abandonedSessions": "afgebroken sessies",
+    "abandonmentRule": "Afgebroken: formulier gestart, geen latere afspraak en 30 minuten geen activiteit. Aantallen kunnen overlappen.",
+    "sessionCounts": "Unieke sessies per stap; conversie van paginabezoek naar afspraak:",
+    "clearRequest": "Volledige klantreis tonen",
+    "silent": "Mogelijk onzichtbare fout",
+    "activity": "Activiteit",
+    "empty": "Geen klantreisgebeurtenissen voor deze filters.",
+    "intents": {
+      "all": "Alle intenties",
+      "crane_booking": "Kraanafspraak",
+      "sell_boat": "Boot verkopen",
+      "winter_storage": "Winterstalling",
+      "buy_boat": "Boot kopen"
+    },
+    "stages": {
+      "visited": "Boekingspagina bezocht",
+      "started": "Formulier gestart",
+      "service_selected": "Dienst geselecteerd",
+      "photos_selected": "Foto’s geselecteerd",
+      "submitted": "Ingediend",
+      "created": "Afspraak aangemaakt"
+    },
+    "outcomes": {
+      "created": "Afspraak aangemaakt",
+      "failed": "Verzoek mislukt",
+      "blocked": "Indienen geblokkeerd",
+      "pending": "Nog geen bevestigd resultaat"
+    },
+    "events": {
+      "api_failed": "API-verzoek mislukt",
+      "api_succeeded": "API-verzoek geslaagd",
+      "page_view": "Pagina geopend",
+      "booking_form_started": "Boekingsformulier gestart",
+      "booking_field_changed": "Formulierveld gewijzigd",
+      "booking_service_selected": "Dienstkeuze gewijzigd",
+      "booking_date_selected": "Afspraakdatum gekozen",
+      "booking_time_selected": "Afspraaktijd gekozen",
+      "booking_photos_selected": "Foto’s geselecteerd",
+      "booking_submit_clicked": "Boeking ingediend",
+      "booking_submit_blocked": "Boeking geblokkeerd door validatie",
+      "booking_failed": "Boeking mislukt",
+      "booking_succeeded": "Boeking ontvangen",
+      "frontend_error_shown": "Fout getoond aan klant",
+      "photo_upload_started": "Foto-upload gestart",
+      "photo_upload_failed": "Foto-upload mislukt",
+      "photo_upload_succeeded": "Foto’s geüpload",
+      "booking_left": "Boekingspagina verlaten",
+      "identity_verified": "Identiteit geverifieerd",
+      "appointment_created": "Afspraak aangemaakt",
+      "api_requested": "API-verzoek gestart"
+    }
   },
   "crane": {
     "title": "Plan uw kraanafspraak direct online",
@@ -585,6 +677,8 @@
     "catalogUnavailable": "Diensten en tarieven konden niet worden geladen. Probeer het later opnieuw.",
     "noBookableServices": "Er zijn momenteel geen diensten beschikbaar om online te boeken.",
     "submit": "Afspraak aanvragen",
+    "photosFailed": "Uw afspraak is ontvangen, maar de foto’s konden niet worden geüpload. Probeer hieronder alleen de foto’s opnieuw; uw afspraak wordt niet opnieuw ingediend. Houd deze pagina open totdat de upload is gelukt.",
+    "retryPhotos": "Foto’s opnieuw uploaden",
     "submitSuccess": "Afspraak aangevraagd",
     "submitFailed": "Aanvraag mislukt",
     "confirmSubmit": "Je aanvraag versturen? Je ontvangt binnen 24 uur een bevestiging per e-mail.",
@@ -692,7 +786,7 @@
     "addressLabel": "Bezoekadres",
     "phone": "0475 315 661",
     "phoneLabel": "Telefoon",
-    "email": "info@krekelberg-nautic.nl",
+    "email": "marketing@answer24.nl",
     "emailLabel": "E-mail",
     "hoursTitle": "Openingstijden",
     "hoursSubtitle": "Vaste weekplanning",
@@ -727,7 +821,7 @@
     "fSubmit": "Verstuur bericht",
     "fSending": "Wordt verzonden…",
     "fSent": "Bedankt. Uw bericht is ontvangen. Wij nemen zo snel mogelijk contact met u op.",
-    "fError": "Uw bericht kon niet worden verzonden. Probeer het opnieuw of bel ons: 0475 315 661.",
+    "fError": "Het verzenden is mislukt. Probeer opnieuw of neem telefonisch contact met ons op.",
     "fSelectTopic": "Kies een onderwerp…"
   },
   "verkoopPage": {
@@ -1306,7 +1400,8 @@
       "retry": "Opnieuw proberen",
       "all": "Alle",
       "yes": "Ja",
-      "no": "Nee"
+      "no": "Nee",
+      "permissionDenied": "Je hebt geen toestemming voor deze actie."
     },
     "dashboard": {
       "title": "Operatie",
@@ -1534,7 +1629,10 @@
         "source": "Bron",
         "status": "Status",
         "date": "Datum",
-        "confidence": "Betrouwbaarheid"
+        "confidence": "Betrouwbaarheid",
+        "invoiceNumber": "Factuurnr.",
+        "customer": "Klant",
+        "total": "Totaal"
       },
       "toasts": {
         "uploaded": "Factuur geüpload voor verwerking",
@@ -1589,7 +1687,13 @@
         "supplierCreated": "Leverancier aangemaakt",
         "supplierNameRequired": "Vul een naam in voor de leverancier",
         "iban": "IBAN",
-        "paymentTermsDays": "Betaaltermijn (dagen)"
+        "paymentTermsDays": "Betaaltermijn (dagen)",
+        "corrected": "Gecorrigeerd",
+        "saveCorrections": "Correcties opslaan",
+        "noCustomerLinked": "Geen klant gekoppeld",
+        "customerCreated": "Klant aangemaakt",
+        "createCustomer": "Klant aanmaken",
+        "processingLog": "Verwerkingslog"
       },
       "exportCsv": "Exporteer CSV",
       "photoCapture": "Foto maken",
@@ -1672,7 +1776,23 @@
         "successCount": "Geslaagd",
         "correctionCount": "Correcties",
         "averageConfidence": "Gem. vertrouwen"
-      }
+      },
+      "editExtraction": "Extractiesjabloon bewerken",
+      "newExtraction": "Extractiesjabloon",
+      "extractionNotice": "Dit sjabloon hoort bij import en OCR: veldzones en matchregels. De opmaak van gegenereerde facturen staat apart.",
+      "layout": "Factuuropmaak",
+      "layoutTitle": "Factuuropmaak",
+      "layoutSubtitle": "Opmaak voor factuur-PDF’s: logo, totalen, voettekst, voorwaarden en tags. Elke opslag bewaart een versie.",
+      "extractionBack": "Extractiesjablonen",
+      "layoutHint": "Veldzones voor OCR-import beheert u onder extractiesjablonen.",
+      "layoutLogo": "Logo tonen",
+      "layoutTotals": "Totalenblok tonen",
+      "layoutFooter": "Voettekst",
+      "layoutTerms": "Voorwaarden",
+      "layoutTags": "Dynamische tags",
+      "layoutVersions": "Bewaarde versies",
+      "missingTags": "Ontbrekende verplichte tags",
+      "uploadLogo": "Logo uploaden (PNG/JPG, max. 1 MB)"
     },
     "reminders": {
       "title": "Slimme herinneringen",
@@ -1751,7 +1871,8 @@
         "completed": "Herinnering afgerond",
         "dismissed": "Herinnering genegeerd",
         "ruleCreated": "Regel aangemaakt",
-        "ruleDeleted": "Regel verwijderd"
+        "ruleDeleted": "Regel verwijderd",
+        "ruleUpdated": "Regel bijgewerkt"
       },
       "statusAll": "Alle statussen",
       "statusPending": "In afwachting",
@@ -1782,7 +1903,17 @@
         "entityIdHint": "Bijv. een factuur- of contract-ID",
         "submit": "Versturen",
         "sent": "Testherinnering verstuurd"
-      }
+      },
+      "briefingTitle": "Vandaag — overzicht",
+      "briefing": {
+        "invoiceDue": "Facturen vervallen",
+        "invoicesOverdue": "Facturen achterstallig",
+        "contractsExpiring": "Contracten verlopen binnenkort",
+        "insuranceExpiring": "Verzekeringen verlopen",
+        "workOrdersOverdue": "Werkorders achterstallig",
+        "appointmentsToday": "Afspraken vandaag"
+      },
+      "editRule": "Regel bewerken"
     },
     "customers": {
       "title": "Klanten",
@@ -1801,7 +1932,8 @@
         "status": "Status",
         "lastLogin": "Laatste login",
         "email": "E-mail",
-        "phone": "Telefoon"
+        "phone": "Telefoon",
+        "city": "Stad / land"
       },
       "details": "Details",
       "total": "{count} klanten totaal",
@@ -1816,7 +1948,8 @@
       "confirmBlock": "{name} blokkeren? De klant wordt uitgelogd en kan niet meer inloggen.",
       "modal": {
         "title": "Nieuwe klant",
-        "subtitle": "Minimaal naam en e-mail voor snelle registratie."
+        "subtitle": "Minimaal naam en e-mail voor snelle registratie.",
+        "addressPlaceholder": "Zoek adres…"
       },
       "toasts": {
         "created": "Klant aangemaakt",
@@ -1839,7 +1972,11 @@
       "localeDefault": "Standaard",
       "fields": {
         "gender": "Geslacht",
-        "preferredLocale": "Voorkeurstaal"
+        "preferredLocale": "Voorkeurstaal",
+        "name": "Naam",
+        "email": "E-mail",
+        "phone": "Telefoon",
+        "company": "Bedrijf"
       },
       "gender": {
         "unspecified": "Niet opgegeven",
@@ -1942,7 +2079,19 @@
         "finance": "Financiën",
         "storage": "Stalling",
         "planning": "Planning"
-      }
+      },
+      "allVisibility": "Alle zichtbaarheid",
+      "sendMessage": "Bericht naar klant",
+      "datePresets": {
+        "today": "Vandaag",
+        "yesterday": "Gisteren",
+        "last7": "Afgelopen 7 dagen",
+        "thisMonth": "Deze maand"
+      },
+      "allPriorities": "Alle prioriteiten",
+      "allSources": "Alle bronnen",
+      "sourceTimeline": "Tijdlijn",
+      "sourceAudit": "Auditlog"
     },
     "productGroups": {
       "title": "Productgroepen",
@@ -1959,7 +2108,8 @@
         "group": "Groep",
         "code": "Code",
         "vat": "BTW",
-        "status": "Status"
+        "status": "Status",
+        "products": "Producten"
       },
       "fields": {
         "code": "Code",
@@ -2082,7 +2232,9 @@
         "openBalance": "Open saldo",
         "avgDuration": "Gem. duur",
         "days": "{count} dagen",
-        "byContractType": "Omzet per contracttype"
+        "byContractType": "Omzet per contracttype",
+        "expiring60": "Vervalt binnen 60 dagen",
+        "expiring90": "Vervalt binnen 90 dagen"
       },
       "topProductsTitle": "Topproducten",
       "slowProductsTitle": "Trage producten",
@@ -2129,7 +2281,9 @@
       },
       "toasts": {
         "created": "Dagafsluiting opgeslagen"
-      }
+      },
+      "cashReceivedToday": "Contante ontvangsten vandaag",
+      "cashReceivedNote": "Automatisch berekend uit kassabetalingen"
     },
     "states": {
       "errorTitle": "Er ging iets mis",
@@ -2253,6 +2407,7 @@
         "lengthCm": "Lengte (cm)",
         "widthCm": "Breedte (cm)",
         "locationCode": "Locatiecode",
+        "publicListingUrl": "Openbare advertentie-URL",
         "brand": "Merk",
         "model": "Model",
         "buildYear": "Bouwjaar",
@@ -2301,7 +2456,9 @@
         "updated": "Boot bijgewerkt",
         "updateFailed": "Bijwerken mislukt",
         "transferred": "Eigendom overgedragen",
-        "fileUploaded": "Bestand geüpload"
+        "fileUploaded": "Bestand geüpload",
+        "photoDeleted": "Foto verwijderd",
+        "docDeleted": "Document verwijderd"
       },
       "stats": {
         "daysInStorage": "Dagen in stalling",
@@ -2309,7 +2466,8 @@
         "totalBoats": "Totaal boten",
         "boatsInStorage": "In stalling",
         "activeWorkOrders": "Actieve werkorders",
-        "openBalance": "Openstaand saldo"
+        "openBalance": "Openstaand saldo",
+        "paid": "Betaald"
       },
       "photoFolders": {
         "arrival": "Aankomst",
@@ -2344,7 +2502,11 @@
       "statusWorkInProgress": "Werk in uitvoering",
       "statusRegistered": "Geregistreerd",
       "insuranceExpired": "Verzekering verlopen",
-      "insuranceExpiringSoon": "Verzekering verloopt over {days} dagen"
+      "insuranceExpiringSoon": "Verzekering verloopt over {days} dagen",
+      "openContract": "Open contract →",
+      "confirmDeletePhoto": "Foto definitief verwijderen?",
+      "confirmDeleteDoc": "Document definitief verwijderen?",
+      "status": "Status"
     },
     "kassa": {
       "title": "Kassa",
@@ -2583,7 +2745,12 @@
         "houseNumber": "Huisnummer",
         "postalCode": "Postcode",
         "city": "Stad",
-        "companyName": "Bedrijfsnaam (optioneel)"
+        "companyName": "Bedrijfsnaam (optioneel)",
+        "hall": "Hal",
+        "bok": "Bok",
+        "arrivalDate": "Aankomst",
+        "pickupDate": "Ophalen",
+        "daysStored": "Dagen opgeslagen"
       },
       "quickEdit": {
         "title": "Contract bijwerken",
@@ -2906,7 +3073,9 @@
         "storageExpiringTitle": "Stalling verloopt",
         "storageExpiringMessage": "Atalanta · over 9 dagen",
         "storageExpiringTime": "1 uur geleden"
-      }
+      },
+      "expandSidebar": "Zijbalk uitklappen",
+      "collapseSidebar": "Zijbalk inklappen"
     },
     "invoices": {
       "title": "Facturen",
@@ -3006,7 +3175,13 @@
         "title": "Nieuwe factuur",
         "subtitle": "Kies een klant om een handmatige factuur aan te maken.",
         "noCustomers": "Geen klanten gevonden. Pas je zoekopdracht aan of maak eerst een klant aan."
-      }
+      },
+      "provenanceLabel": "Bron",
+      "allDirections": "Verkoop en inkoop",
+      "sales": "Verkoop",
+      "purchase": "Inkoop",
+      "defaultTemplate": "Actieve standaardopmaak",
+      "payableBalance": "Te betalen leveranciers"
     },
     "invoiceDetail": {
       "fallbackTitle": "Factuur",
@@ -3112,7 +3287,16 @@
       "confirmMarkPaid": "Deze factuur handmatig als betaald markeren? Controleer het bedrag en de betaalmethode.",
       "creditedFor": "Creditnota voor",
       "creditNotes": "Creditnota's",
-      "backToContract": "Terug naar stallingscontract"
+      "backToContract": "Terug naar stallingscontract",
+      "tabs": {
+        "overview": "Overzicht",
+        "lines": "Factuurregels",
+        "payments": "Betalingen",
+        "documents": "Documenten",
+        "timeline": "Tijdlijn",
+        "audit": "Audit"
+      },
+      "originalDocument": "Origineel document"
     },
     "customerDetail": {
       "fallbackTitle": "Klant",
@@ -3202,7 +3386,16 @@
           "at_risk": "Risico",
           "critical": "Kritiek"
         }
-      }
+      },
+      "timelineTitlePlaceholder": "Onderwerp / titel",
+      "timelineNoBoat": "Geen boot",
+      "timelineHideCta": "Verberg knop",
+      "timelineAddCta": "+ CTA-knop",
+      "timelineCtaLabel": "Knoptekst (bijv. Betaal nu)",
+      "timelineCtaUrl": "Link-URL",
+      "commentPlaceholder": "Reageer…",
+      "commentSend": "Versturen",
+      "addComment": "+ Opmerking"
     },
     "calculator": {
       "title": "Calculator",
@@ -3307,7 +3500,10 @@
         "bulkDuplicated": "Geselecteerde records gedupliceerd",
         "confirmBulkArchive": "{count} record(s) archiveren?",
         "editingRecord": "Record bewerken",
-        "newRecord": "Nieuw"
+        "newRecord": "Nieuw",
+        "allUsers": "Alle gebruikers",
+        "updatedAt": "Bijgewerkt",
+        "edit": "Bewerken"
       },
       "pricing": {
         "title": "Prijzen beheren",
@@ -3327,7 +3523,9 @@
         "title": "Historie",
         "subtitle": "Alle opgeslagen calculator berekeningen",
         "emptyMessage": "Er zijn nog geen calculator records opgeslagen."
-      }
+      },
+      "catalogUnavailable": "Diensten konden niet worden geladen.",
+      "noAvailableServices": "Er zijn geen diensten beschikbaar voor de calculator."
     },
     "settings": {
       "title": "Instellingen",
@@ -3514,7 +3712,10 @@
         "scanBarcode": "Scan",
         "barcodeScanned": "Barcode gescand: {code}",
         "uploadImage": "Foto uploaden",
-        "uploadHint": "Sla het product eerst op om een foto te kunnen uploaden."
+        "uploadHint": "Sla het product eerst op om een foto te kunnen uploaden.",
+        "productGroup": "Productgroep",
+        "slug": "Slug (servicepagina)",
+        "productGroupNone": "Geen groep"
       },
       "sections": {
         "identity": "Identiteit",
@@ -3540,7 +3741,9 @@
         "deleted": "Product verwijderd",
         "deleteFailed": "Verwijderen mislukt",
         "updated": "Product bijgewerkt"
-      }
+      },
+      "auditLog": "Wijzigingslog",
+      "allGroups": "Alle groepen"
     },
     "payments": {
       "title": "Betalingen",
@@ -3595,7 +3798,10 @@
         "created": "Gebruiker aangemaakt",
         "createFailed": "Aanmaken mislukt",
         "activated": "Gebruiker geactiveerd",
-        "deactivated": "Gebruiker gedeactiveerd"
+        "deactivated": "Gebruiker gedeactiveerd",
+        "updated": "Gebruiker bijgewerkt",
+        "unblocked": "Gebruiker gedeblokkeerd",
+        "blocked": "Gebruiker geblokkeerd"
       },
       "confirmDeactivate": "Weet je zeker dat je {name} wilt deactiveren? Deze gebruiker kan daarna niet meer inloggen.",
       "searchPlaceholder": "Zoek op naam of e-mail",
@@ -3612,7 +3818,16 @@
         "male": "Man",
         "female": "Vrouw",
         "other": "Anders"
-      }
+      },
+      "unblock": "Deblokkeren",
+      "block": "Blokkeren",
+      "editModal": {
+        "title": "Gebruiker bewerken"
+      },
+      "confirmUnblock": "{name} deblokkeren?",
+      "confirmBlock": "{name} blokkeren?",
+      "blockReason": "Reden (optioneel)",
+      "blockReasonPlaceholder": "Bijv. misbruik, inactiviteit…"
     },
     "calendar": {
       "title": "Kalender",
@@ -4101,6 +4316,74 @@
       "advanced": "Geavanceerd",
       "customUrl": "Aangepast pad",
       "save": "Opslaan"
+    },
+    "productStats": {
+      "title": "Productstatistieken",
+      "subtitle": "Omzet, verkoopaantallen en marges per product",
+      "emptyTitle": "Geen statistieken",
+      "emptyMessage": "Nog geen verkoopdata beschikbaar.",
+      "topProducts": "Topproducten ({count})",
+      "slowProducts": "Traag lopend ({count})"
+    },
+    "auditLog": {
+      "columns": {
+        "field": "Veld",
+        "oldValue": "Oud",
+        "newValue": "Nieuw",
+        "user": "Door",
+        "at": "Datum"
+      }
+    },
+    "scanLogs": {
+      "title": "Scanlogboek",
+      "subtitle": "Elke barcodescan in de kassa: bron, resultaat, product en medewerker",
+      "stats": {
+        "total": "Totaal",
+        "matched": "Gevonden",
+        "notFound": "Niet gevonden"
+      },
+      "allSources": "Alle bronnen",
+      "allResults": "Alle resultaten",
+      "emptyTitle": "Geen scanlogs",
+      "emptyMessage": "Nog geen scans geregistreerd.",
+      "columns": {
+        "timestamp": "Tijdstip",
+        "barcode": "Barcode",
+        "source": "Bron",
+        "result": "Resultaat",
+        "product": "Product",
+        "fastScan": "Snelle scan",
+        "user": "Medewerker"
+      }
+    },
+    "tasks": {
+      "toasts": {
+        "completed": "Taak afgerond"
+      },
+      "columns": {
+        "title": "Taak",
+        "customer": "Klant",
+        "entity": "Entiteit",
+        "priority": "Prioriteit",
+        "dueAt": "Deadline",
+        "status": "Status"
+      },
+      "complete": "Afronden",
+      "done": "Afgerond",
+      "title": "Taken",
+      "subtitle": "Automatisch aangemaakte opvolgtaken vanuit herinneringen",
+      "stats": {
+        "open": "Open",
+        "inProgress": "In uitvoering",
+        "done": "Afgerond"
+      },
+      "statusAll": "Alle statussen",
+      "statusOpen": "Open",
+      "statusInProgress": "In uitvoering",
+      "statusDone": "Afgerond",
+      "statusCancelled": "Geannuleerd",
+      "emptyTitle": "Geen taken",
+      "emptyMessage": "Er zijn nog geen taken aangemaakt."
     }
   },
   "planning": {
@@ -4161,6 +4444,8 @@
     "fieldAssignee": "Medewerker",
     "unassigned": "Niet toegewezen",
     "selectPlaceholder": "Selecteer…",
+    "selectCustomerFirst": "Selecteer eerst een klant",
+    "noCustomerBoats": "Deze klant heeft geen boten",
     "conflictTitle": "Mogelijke conflicten gevonden",
     "conflictConfirmAnyway": "Toch doorgaan en deze afspraak inplannen",
     "selectMode": "Selecteren",
@@ -4178,12 +4463,29 @@
     "statusCompleted": "Voltooid"
   },
   "cms": {
+    "sessionExpired": "Sessie verlopen",
+    "draftRetained": "Je niet-opgeslagen wijzigingen blijven hier bewaard. Log in op een nieuw tabblad en hervat daarna het bewerken op dit tabblad.",
+    "signInAgain": "Opnieuw inloggen",
+    "resumeEditing": "Bewerken hervatten",
+    "discardDraft": "Wijzigingen verwerpen",
+    "sessionNotRestored": "Log in met hetzelfde account en CMS-rechten om verder te gaan.",
+    "editCertificationBadge": "Certificeringsbadge bewerken",
+    "certificationTitle": "Titel",
+    "certificationSubtitle": "Ondertitel",
+    "autoTranslate": "Automatisch vertalen naar {languages} met ChatGPT",
+    "translating": "Vertalen…",
+    "savedWithTranslations": "Tekst en vertalingen opgeslagen",
+    "savedWithoutTranslations": "Tekst opgeslagen; automatisch vertalen is mislukt.",
+    "translationFailed": "Vertalen is mislukt. Er zijn geen wijzigingen opgeslagen.",
     "edit": "Bewerken",
     "enterEdit": "Bewerkmodus inschakelen",
     "exitEdit": "Bewerkmodus afsluiten",
     "editingOn": "Bewerken aan",
     "toolbarLabel": "CMS-werkbalk",
     "editText": "Tekst bewerken",
+    "editHiswa": "HISWA-kaart bewerken",
+    "hiswaTitle": "Titel",
+    "hiswaDescription": "Beschrijving",
     "editImage": "Afbeelding bewerken",
     "editCta": "Knop bewerken",
     "invalidCtaLink": "Controleer het type en de bestemming van de knop.",
@@ -4215,6 +4517,7 @@
     "imageUploaded": "Afbeelding geüpload",
     "uploadImage": "Afbeelding uploaden",
     "imageFormats": "Gebruik een JPG-, PNG- of WEBP-afbeelding.",
+    "imageSizeLimit": "Maximale afbeeldingsgrootte: 10 MiB.",
     "imageDropHint": "Sleep hier een JPG-, PNG- of WEBP-bestand naartoe.",
     "localeHint": "Alleen gewijzigde talen worden opgeslagen.",
     "textPlaceholder": "Voer tekst in…",
@@ -4240,6 +4543,186 @@
       "tagline": "Footer-slogan",
       "facebook": "Facebook-URL",
       "instagram": "Instagram-URL"
+    },
+    "allTranslations": "Alle teksten",
+    "searchTranslations": "Zoek tekst of sleutel"
+  },
+  "settingsHub": {
+    "search": "Instellingen zoeken",
+    "reminderRules": "Herinneringsregels beheren",
+    "paymentHealth": "Betaalverbinding",
+    "integrationHealth": "Integraties instellen en controleren",
+    "untested": "Niet getest",
+    "setupRequired": "Configuratie vereist",
+    "pos_methods": "Betaalmethoden kassa",
+    "online_methods": "Online betaalmethoden",
+    "mailbox": "Factuurmailbox",
+    "ocrModel": "OCR-model",
+    "whatsappEnabled": "WhatsApp inschakelen",
+    "transactionId": "Bestaande Signhost-transactie (UUID)",
+    "runDiagnostic": "Opgeslagen configuratie testen",
+    "openWorkflow": "Werkproces openen",
+    "integrations": {
+      "email": "Email",
+      "mailbox": "Factuurmailbox",
+      "ocr": "OCR",
+      "whatsapp": "WhatsApp",
+      "signhost": "Signhost"
+    },
+    "mollieSetup": "Stel MOLLIE_TEST_KEY en MOLLIE_LIVE_KEY in op de server. Sla de gekozen modus op en test daarna de opgeslagen configuratie."
+  },
+  "globalUx": {
+    "pricing": {
+      "product": "Product",
+      "range": "Bereik (cm)",
+      "price": "Prijs incl. BTW",
+      "vat": "BTW",
+      "type": "Type",
+      "channel": "Kanaal",
+      "active": "Actief",
+      "yes": "Ja",
+      "no": "Nee",
+      "from": "Van (cm)",
+      "to": "Tot (cm)",
+      "priceEuro": "Prijs incl. BTW (€)",
+      "vatRate": "BTW-tarief (%)",
+      "fixed": "Vast bedrag",
+      "per_meter": "Per meter",
+      "on_request": "Op aanvraag",
+      "manual": "Handmatig",
+      "all": "Alle kanalen",
+      "kassa": "Kassa",
+      "portal": "Klantportaal",
+      "stalling": "Stalling",
+      "tariffTitle": "Tarieven per lengteklasse",
+      "addTariff": "Tarief toevoegen",
+      "emptyTariffs": "Geen tarieven gevonden.",
+      "length": "Lengte",
+      "exclVat": "Excl. BTW",
+      "inclVat": "Incl. BTW",
+      "status": "Status",
+      "inactive": "Inactief",
+      "editTariff": "Tarief bewerken",
+      "newTariff": "Nieuw tarief",
+      "fromMeters": "Van (meter)",
+      "toMeters": "Tot (meter, 999 = onbeperkt)",
+      "priceExclOptional": "Prijs excl. BTW (€, optioneel)",
+      "autoVat": "Automatisch op basis van BTW",
+      "deleteTariff": "Tarief verwijderen",
+      "confirmDelete": "Weet u zeker dat u dit tarief wilt verwijderen?",
+      "saving": "Opslaan…"
+    },
+    "searchFailed": "Producten laden mislukt. Probeer opnieuw.",
+    "servicesEmpty": "Er zijn momenteel geen diensten beschikbaar.",
+    "shortcutsFailed": "Snelkoppelingen konden niet worden geladen.",
+    "shortcutsFallback": "Standaard snelkoppelingen worden getoond.",
+    "serviceDetails": {
+      "afspuiten": {
+        "heroTitle": "Romp professioneel afspuiten",
+        "heroSubtitle": "Direct na het kranen reinigen wij uw romp met hogedruk. Een propere romp betekent minder weerstand, langere antifouling-werking en een betere staat van uw schip.",
+        "priceFootnote": "Prijzen per lengteklasse, inclusief BTW. De definitieve prijs volgt uit de exacte lengte van uw boot.",
+        "badge": "Afspuiten / pressure washing",
+        "description": "Onze afspuitinstallatie verwijdert algen, slib en aanslag tot diep in de structuur. Wij werken milieuvriendelijk met gefilterde afvoer. Optioneel breiden wij de service uit met inspectie van de rompzijden en advies voor antifouling.",
+        "feature1Title": "Direct na het kranen",
+        "feature1Description": "Vuil is dan nog niet uitgedroogd — het beste reinigingsresultaat.",
+        "feature2Title": "Gefilterde afvoer",
+        "feature2Description": "Wij vangen aanslag op volgens milieuvergunning.",
+        "feature3Title": "Optioneel rompinspectie",
+        "feature3Description": "Visuele check op blaarvorming en osmose.",
+        "feature4Title": "Snel droog",
+        "feature4Description": "Klaar voor antifouling of stalling binnen 24 uur.",
+        "feature5Title": "Vakkundig team",
+        "feature5Description": "Onze afspuiters werken al jaren met dezelfde schepen.",
+        "feature6Title": "Alle scheepstypes",
+        "feature6Description": "Motor, zeil, sloep — wij stemmen druk en techniek af.",
+        "faq1Question": "Hoe lang duurt het afspuiten?",
+        "faq1Answer": "Gemiddeld 15 tot 30 minuten, afhankelijk van lengte en mate van aanslag.",
+        "faq2Question": "Kan ik het afspuiten combineren met andere diensten?",
+        "faq2Answer": "Ja, we raden aan het te combineren met kranen en eventueel antifouling. Vraag onze werf naar de mogelijkheden.",
+        "faq3Question": "Wat gebeurt er met het opgevangen vuil?",
+        "faq3Answer": "Wij voeren dit af conform onze milieuvergunning bij een gecertificeerd afvalbedrijf.",
+        "faq4Question": "Is de service ook in het hoogseizoen beschikbaar?",
+        "faq4Answer": "Ja, maar planning vol — boek minimaal 2 weken vooruit in maart-mei en oktober-november."
+      },
+      "winterstalling": {
+        "heroTitle": "Veilige winterstalling",
+        "heroSubtitle": "Binnen- en buitenstalling op een verzekerd werfterrein, ruim 10.000 m² in Roermond. Wij behandelen uw schip alsof het ons eigen schip is.",
+        "priceFootnote": "Winterberging-tarief per lengteklasse, inclusief BTW (incl. 2× kranen en afspuiten). De definitieve prijs volgt uit de exacte lengte van uw boot.",
+        "badge": "Winterstalling",
+        "description": "Krekelberg Nautic biedt winter- en zomerstalling met optionele winterklaar service. U bepaalt zelf of u tijdens de stalling werkzaamheden wilt uitvoeren of die aan onze monteurs overlaat. Verzekering en 24/7 cameratoezicht zijn standaard inbegrepen.",
+        "feature1Title": "Binnen- en buitenoptie",
+        "feature1Description": "Beide met overdekking voor mast en zonwering.",
+        "feature2Title": "Verzekerd terrein",
+        "feature2Description": "Volledig verzekerde locatie met cameratoezicht.",
+        "feature3Title": "Toegang tijdens openingstijden",
+        "feature3Description": "Werk zelf of bezoek uw boot wanneer u wilt.",
+        "feature4Title": "Stroomaansluiting",
+        "feature4Description": "Optioneel beschikbaar op verzoek.",
+        "feature5Title": "Onderhoud op locatie",
+        "feature5Description": "Externe monteurs welkom onder werfvoorwaarden.",
+        "feature6Title": "Voor- en najaar combineren",
+        "feature6Description": "Kranen en afspuiten in één arrangement.",
+        "faq1Question": "Wanneer start het stallingsseizoen?",
+        "faq1Answer": "Winterstalling loopt van 1 november tot 30 april. Zomerstalling is mogelijk van 1 mei tot 31 oktober.",
+        "faq2Question": "Kan ik tussentijds werkzaamheden uitvoeren?",
+        "faq2Answer": "Ja. Tijdens openingstijden bent u welkom op het werfterrein, met toegang tot werkruimtes en water/stroom.",
+        "faq3Question": "Is mijn boot tijdens stalling verzekerd?",
+        "faq3Answer": "Ons werfterrein is verzekerd. Wij raden aan uw eigen casco-verzekering te behouden.",
+        "faq4Question": "Hoe wordt mijn boot op de bok geplaatst?",
+        "faq4Answer": "Wij stellen per scheepstype de juiste bokken in. U ontvangt een foto van de plaatsing."
+      },
+      "weekje_op_wal": {
+        "heroTitle": "Weekje op wal",
+        "heroSubtitle": "Haal uw boot uit het water en neem een week de tijd voor onderhoud op onze werf. We bespreken vooraf de planning en mogelijkheden voor uw schip.",
+        "description": "Met een weekje op wal heeft u rustig de tijd om aan uw boot te werken. Bespreek met ons de gewenste periode, het kranen en de faciliteiten die u nodig heeft. Onze werf biedt mogelijkheden voor zelfwerkzaamheden en hulp van onze monteurs op afspraak.",
+        "priceFootnote": "Tarieven per lengteklasse, inclusief BTW. Neem contact op voor beschikbaarheid en afspraken over de inhoud van het arrangement.",
+        "feature1Title": "Een week op de wal",
+        "feature1Description": "Plan tijd om uw boot rustig onder handen te nemen.",
+        "feature2Title": "Onderhoud op uw tempo",
+        "feature2Description": "Bespreek vooraf welke werkzaamheden u wilt uitvoeren.",
+        "feature3Title": "Werffaciliteiten",
+        "feature3Description": "Vraag naar de beschikbare werkruimtes, stroom en water.",
+        "feature4Title": "Hulp op afspraak",
+        "feature4Description": "Bespreek vooraf of onze monteurs u kunnen ondersteunen.",
+        "feature5Title": "Planning in overleg",
+        "feature5Description": "Stem de gewenste periode en het kranen met ons af.",
+        "feature6Title": "Prijs op lengteklasse",
+        "feature6Description": "Bekijk de indicatieve tarieven op basis van de lengte van uw boot.",
+        "faq1Question": "Hoe reserveer ik een weekje op wal?",
+        "faq1Answer": "Neem contact met ons op om de gewenste periode en de planning van het kranen te bespreken.",
+        "faq2Question": "Kan ik zelf werkzaamheden uitvoeren?",
+        "faq2Answer": "Ja, zelfwerkzaamheden zijn mogelijk binnen de werfvoorwaarden. Bespreek vooraf welke faciliteiten u nodig heeft.",
+        "faq3Question": "Kan ik hulp krijgen van een monteur?",
+        "faq3Answer": "Onze monteurs kunnen op afspraak ondersteunen. Neem vooraf contact op om de mogelijkheden te bespreken.",
+        "faq4Question": "Hoe wordt het tarief bepaald?",
+        "faq4Answer": "Het tarief is afhankelijk van de lengteklasse van uw boot. De getoonde tarieven zijn indicatief; neem contact op voor de afspraken en beschikbaarheid."
+      },
+      "zelf_werken": {
+        "heroTitle": "Werk zelf op de werf",
+        "heroSubtitle": "Combineer onze faciliteiten met uw eigen vakmanschap. Onze werf is uitgerust voor zelf-doe schippers met werkruimtes, gereedschap en advies.",
+        "badge": "Zelf werken aan uw boot",
+        "description": "U mag zelfstandig werken aan uw eigen schip op onze werf binnen de werfvoorwaarden. Wij stellen werkruimtes, stroom en water beschikbaar; onze monteurs zijn paraat voor vragen of specialistisch werk. Externe monteurs zijn welkom mits aangemeld.",
+        "feature1Title": "Werkruimtes met stroom",
+        "feature1Description": "Verlichte plekken met stopcontacten 230V.",
+        "feature2Title": "Water & perslucht",
+        "feature2Description": "Beschikbaar op vaste tappunten.",
+        "feature3Title": "Hijswerktuig op afspraak",
+        "feature3Description": "Onze 30-tons kraan voor zware onderdelen.",
+        "feature4Title": "Externe monteurs welkom",
+        "feature4Description": "Met geldige WA-verzekering en VCA.",
+        "feature5Title": "Materiaal-shop",
+        "feature5Description": "Schroeven, verf, lijmen en olie ter plekke.",
+        "feature6Title": "Toiletten & koffie",
+        "feature6Description": "Voorzieningen voor lange werkdagen.",
+        "faq1Question": "Welke werkzaamheden mag ik zelf uitvoeren?",
+        "faq1Answer": "Onderhoud, schilderen, polijsten en kleine reparaties. Voor laswerk en accu/gas-installaties geldt aanmelding vooraf.",
+        "faq2Question": "Mag ik mijn eigen monteur meenemen?",
+        "faq2Answer": "Ja, mits hij/zij een WA-verzekering en geldige VCA kan tonen. Aanmelden via de receptie.",
+        "faq3Question": "Zijn er specifieke regels?",
+        "faq3Answer": "Afzettingen en milieuregels gelden altijd. Geen open vuur, geen vuil afval op de grond, en eindig met opgeruimde werkplek.",
+        "faq4Question": "Kan ik onderdelen laten bezorgen?",
+        "faq4Answer": "Ja, leveranciers kunnen direct op de werf afleveren. Wij melden u via SMS zodra het pakket binnen is."
+      }
     }
   }
 }

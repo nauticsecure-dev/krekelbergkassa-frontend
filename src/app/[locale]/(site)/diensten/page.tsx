@@ -1,4 +1,5 @@
 'use client';
+import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -96,11 +97,10 @@ export default function DienstenPage() {
 
   // Trello #100: drive the service overview from the shared product DB, falling
   // back to the static SECTIONS content when the API is empty or unreachable.
-  const catalogQuery = useQuery([], () =>
+  const catalogQuery = useQuery([locale], () =>
     serviceCatalogService
-      .services()
-      .then((res) => res.services)
-      .catch(() => null),
+      .services(undefined, locale)
+.then((res) => res.services),
   );
   const liveGroups = React.useMemo(
     () => groupLiveServices(catalogQuery.data ?? undefined),
@@ -112,7 +112,7 @@ export default function DienstenPage() {
       {/* ───────── Hero ───────── */}
       <section className="relative isolate overflow-hidden bg-navy-950">
         <div className="absolute inset-0 overflow-hidden">
-          <EditableImage
+          <EditableImage defaultStyle={{gradient:'right',gradient_start:0.9,gradient_middle:0.7,gradient_end:0.35}}
             blockKey="diensten.hero.image"
             page={CMS_PAGE}
             fallbackSrc="/img/krek/boot-kranen.webp"
@@ -120,10 +120,7 @@ export default function DienstenPage() {
             className="h-full w-full"
           />
         </div>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/70 to-navy-950/35"
-        />
+
         <div className="container-wide pointer-events-none relative pb-20 pt-16 text-white sm:pb-28 sm:pt-24 lg:pb-32 lg:pt-28">
           <Badge tone="sand" dot className="pointer-events-auto mb-4">
             <EditableText blockKey="diensten.hero.badge" page={CMS_PAGE} section="hero">
@@ -143,16 +140,18 @@ export default function DienstenPage() {
 
           {/* Anchor nav */}
           <div className="pointer-events-auto mt-8 flex w-fit flex-wrap gap-2">
-            {SECTIONS.map((s) => (
+            {liveGroups ? liveGroups.map((group) => (
+              <a key={group.key} href={'#service-' + group.key} className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-sand-100">{group.name}</a>
+            )) : catalogQuery.error ? SECTIONS.map((s) => (
               <a
                 key={s.key}
                 href={`#${s.key}`}
                 className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-sand-100 backdrop-blur transition hover:bg-white/10"
               >
                 <s.icon className="h-3.5 w-3.5 text-gold-300" />
-                {t(`werf.s.${s.key}.title`)}
+                <TranslatedText textKey={`werf.s.${s.key}.title`} />
               </a>
-            ))}
+            )) : null}
           </div>
         </div>
       </section>
@@ -173,20 +172,20 @@ export default function DienstenPage() {
             <div className="space-y-14">
               <div className="mx-auto max-w-2xl text-center">
                 <Badge tone="gold" className="mb-3">
-                  {t('servicePage.pricesBadge')}
+                  <TranslatedText textKey={'servicePage.pricesBadge'} />
                 </Badge>
                 <h2 className="heading-display text-3xl text-navy-900">
-                  {t('servicePage.overviewTitle')}
+                  <TranslatedText textKey={'servicePage.overviewTitle'} />
                 </h2>
                 <p className="mt-2 text-sm text-navy-500">
-                  {t('servicePage.overviewSubtitle')}
+                  <TranslatedText textKey={'servicePage.overviewSubtitle'} />
                 </p>
               </div>
               {liveGroups.map((group) => (
                 <LiveServiceGroup key={group.key} group={group} locale={locale} t={t} />
               ))}
             </div>
-          ) : (
+          ) : catalogQuery.error ? (
             SECTIONS.map((s, i) => (
               <ServiceBlock
                 key={s.key}
@@ -196,7 +195,7 @@ export default function DienstenPage() {
                 t={t}
               />
             ))
-          )}
+          ) : <p role="status" className="py-8 text-center text-navy-500">{t(catalogQuery.loading ? 'adminNew.common.loading' : 'globalUx.servicesEmpty')}</p>}
         </div>
       </section>
 
@@ -222,7 +221,7 @@ export default function DienstenPage() {
             href={`/${locale}/faq`}
             className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-navy-900 hover:text-marine-700"
           >
-            {t('werf.allFaq')} <ArrowRight className="h-3.5 w-3.5" />
+            <TranslatedText textKey={'werf.allFaq'} /> <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
         <div className="space-y-2">
@@ -241,7 +240,7 @@ export default function DienstenPage() {
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
                 >
                   <span className="text-sm font-semibold text-navy-900">
-                    {t(`werf.faq.${id}.q`)}
+                    <TranslatedText textKey={`werf.faq.${id}.q`} />
                   </span>
                   <span
                     className={cn(
@@ -359,25 +358,28 @@ function ServiceBlock({
       id={section.key}
       className="grid scroll-mt-24 gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center"
     >
-      <div
+      <EditableImage
+        blockKey={`diensten.service.${section.key}.image`}
+        page={CMS_PAGE}
+        fallbackSrc={section.image}
+        alt={t(`werf.s.${section.key}.title`)}
         className={cn(
           'aspect-[5/4] w-full overflow-hidden rounded-2xl bg-cover bg-center shadow-card',
           flip && 'lg:order-2'
         )}
-        style={{ backgroundImage: `url(${section.image})` }}
       />
       <div className={cn(flip && 'lg:order-1')}>
         <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-marine-50 text-marine-700">
           <Icon className="h-5 w-5" />
         </div>
         <h2 className="heading-display text-3xl text-navy-900 sm:text-4xl">
-          {t(`werf.s.${section.key}.title`)}
+          <TranslatedText textKey={`werf.s.${section.key}.title`} />
         </h2>
         <p className="mt-4 leading-relaxed text-navy-600">
-          {t(`werf.s.${section.key}.p1`)}
+          <TranslatedText textKey={`werf.s.${section.key}.p1`} />
         </p>
         <p className="mt-3 leading-relaxed text-navy-600">
-          {t(`werf.s.${section.key}.p2`)}
+          <TranslatedText textKey={`werf.s.${section.key}.p2`} />
         </p>
         <ul className="mt-5 grid gap-2 sm:grid-cols-2">
           {(['b1', 'b2', 'b3', 'b4'] as const).map((b) => (
@@ -386,7 +388,7 @@ function ServiceBlock({
                 aria-hidden
                 className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500"
               />
-              {t(`werf.s.${section.key}.${b}`)}
+              <TranslatedText textKey={`werf.s.${section.key}.${b}`} />
             </li>
           ))}
         </ul>
@@ -394,18 +396,18 @@ function ServiceBlock({
           {isExternal ? (
             <a href={primaryHref} target="_blank" rel="noreferrer">
               <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                {t(`werf.s.${section.key}.cta`)}
+                <TranslatedText textKey={`werf.s.${section.key}.cta`} />
               </Button>
             </a>
           ) : (
             <Link href={primaryHref}>
               <Button variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                {t(`werf.s.${section.key}.cta`)}
+                <TranslatedText textKey={`werf.s.${section.key}.cta`} />
               </Button>
             </Link>
           )}
           <Link href={`/${locale}${section.href}`}>
-            <Button variant="outline">{t('werf.more')}</Button>
+            <Button variant="outline"><TranslatedText textKey={'werf.more'} /></Button>
           </Link>
         </div>
       </div>
@@ -423,14 +425,14 @@ function LiveServiceGroup({
   t: (key: string) => string;
 }) {
   return (
-    <article className="scroll-mt-24">
+    <article id={'service-' + group.key} className="scroll-mt-24">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <h3 className="heading-display text-2xl text-navy-900 sm:text-3xl">{group.name}</h3>
         <Link
           href={`/${locale}/kraanafspraak`}
           className="inline-flex items-center gap-1 text-sm font-semibold text-navy-900 hover:text-marine-700"
         >
-          {t('werf.ctaPlan')} <ArrowRight className="h-3.5 w-3.5" />
+          <TranslatedText textKey={'werf.ctaPlan'} /> <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
       <div className="grid gap-5 md:grid-cols-2">
@@ -441,7 +443,7 @@ function LiveServiceGroup({
           return (
             <Card key={svc.code} className="flex flex-col p-6">
               <h4 className="text-base font-semibold text-navy-900">
-                {svc.name ?? svc.code}
+                {svc.slug ? <Link href={`/${locale}/diensten/${encodeURIComponent(svc.slug)}`} className="hover:text-marine-700">{svc.name ?? svc.code}</Link> : svc.name ?? svc.code}
               </h4>
               {svc.description ? (
                 <p className="mt-1.5 text-sm leading-relaxed text-navy-500">

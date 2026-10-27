@@ -105,6 +105,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
         `/${locale}/admin/instellingen`,
       ],
     },
+    ...(can('settings.financial.view') && !can('settings.view') ? [{href: `/${locale}/admin/instellingen`, icon: Settings, label: t('admin.sidebar.settings')}] : []),
     ...(isSuperAdmin
       ? [
           {
@@ -173,7 +174,8 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
             type="button"
             onClick={onToggleCollapse}
             className="rounded-md p-1.5 text-sand-100/50 hover:bg-white/5 hover:text-white"
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={t(collapsed ? 'adminNew.shell.expandSidebar' : 'adminNew.shell.collapseSidebar')}
+            aria-expanded={!collapsed}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>

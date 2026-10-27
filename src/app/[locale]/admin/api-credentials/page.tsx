@@ -1,4 +1,5 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -187,7 +188,7 @@ export default function ApiCredentialsPage() {
               <option value="">{t('adminNew.credentials.allEnvironments')}</option>
               {ENVIRONMENTS.map((env) => (
                 <option key={env} value={env}>
-                  {t(`adminNew.credentials.environments.${env}`)}
+                  {tEnum(t, 'adminNew.credentials.environments', env)}
                 </option>
               ))}
             </AdminSelect>
@@ -326,7 +327,7 @@ export default function ApiCredentialsPage() {
               >
                 {ENVIRONMENTS.map((env) => (
                   <option key={env} value={env}>
-                    {t(`adminNew.credentials.environments.${env}`)}
+                    {tEnum(t, 'adminNew.credentials.environments', env)}
                   </option>
                 ))}
               </SearchSelect>

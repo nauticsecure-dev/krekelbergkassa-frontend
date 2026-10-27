@@ -32,6 +32,7 @@ type SearchSelectProps = {
   emptyLabel?: string;
   loading?: boolean;
   error?: string | null;
+  onSearchChange?: (query: string) => void;
 };
 
 function nodeText(node: React.ReactNode): string {
@@ -123,6 +124,7 @@ export function SearchSelect({
   emptyLabel,
   loading = false,
   error,
+  onSearchChange,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
 }: SearchSelectProps) {
@@ -135,6 +137,7 @@ export function SearchSelect({
   const searchRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
+  React.useEffect(() => { onSearchChange?.(query); }, [query, onSearchChange]);
   const [active, setActive] = React.useState(0);
   const [invalid, setInvalid] = React.useState(false);
   const [uncontrolled, setUncontrolled] = React.useState(toValue(defaultValue));
@@ -153,7 +156,7 @@ export function SearchSelect({
     .join('\u0001');
   const filtered = React.useMemo(() => {
     const needle = normalize(query.trim());
-    if (!needle) return options;
+    if (!needle || onSearchChange) return options;
     return options.filter((option) => {
       const label = normalize(option.label);
       const optionValue = normalize(option.value);
@@ -161,7 +164,7 @@ export function SearchSelect({
     });
     // optionSignature tracks the option values without resetting highlight on every parent render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [optionSignature, query]);
+  }, [optionSignature, query, onSearchChange]);
   const filteredRef = React.useRef(filtered);
   filteredRef.current = filtered;
 
@@ -407,7 +410,7 @@ export function SearchSelect({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
-        aria-invalid={invalid || Boolean(error) || undefined}
+        aria-describedby={invalid || error ? `${controlId}-error` : undefined}
         title={buttonLabel || undefined}
         className={cn(
           'input-base flex items-center justify-between gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60',
@@ -444,6 +447,7 @@ export function SearchSelect({
         <input
           tabIndex={-1}
           aria-hidden="true"
+          aria-invalid={invalid || Boolean(error) || undefined}
           name={name}
           value={current}
           required={required}
@@ -457,8 +461,8 @@ export function SearchSelect({
           className="pointer-events-none absolute h-px w-px opacity-0"
         />
       ) : null}
-      {error ? <p className="mt-1 text-xs text-rose-600">{error}</p> : null}
-      {invalid && !error ? <p className="mt-1 text-xs text-rose-600">{resolvedRequired}</p> : null}
+      {error ? <p id={`${controlId}-error`} className="mt-1 text-xs text-rose-600">{error}</p> : null}
+      {invalid && !error ? <p id={`${controlId}-error`} className="mt-1 text-xs text-rose-600">{resolvedRequired}</p> : null}
       {menu}
     </div>
   );

@@ -5,19 +5,13 @@ import * as React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { appointmentsService, boatsService, calendarService, customersService, usersService } from '@/lib/services';
+import { appointmentsService, boatsService, customersService, serviceCatalogService } from '@/lib/services';
+import { usePermission } from '@/lib/permissions';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import type { AdminUser, Boat, BoatLocation, Customer } from '@/lib/api-types';
-
-const SERVICES: { code: string; labelKey: string }[] = [
-  { code: 'kraan', labelKey: 'planning.serviceCrane' },
-  { code: 'afspuiten', labelKey: 'planning.serviceWash' },
-  { code: 'stalling', labelKey: 'planning.serviceStorage' },
-  { code: 'winterberging', labelKey: 'planning.serviceWinter' },
-];
+import type { Boat, Customer } from '@/lib/api-types';
 
 type Props = {
   open: boolean;
@@ -37,12 +31,15 @@ export function AppointmentCreateModal({
   onCreated,
 }: Props) {
   const { t } = useIntl();
+  const { can } = usePermission();
+  const canManage = can('planning.manage');
   const { push } = useToast();
   const [customerSearch, setCustomerSearch] = React.useState('');
   const [debouncedSearch, setDebouncedSearch] = React.useState('');
   const [customerId, setCustomerId] = React.useState('');
+  const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [boatId, setBoatId] = React.useState('');
-  const [serviceCode, setServiceCode] = React.useState('kraan');
+  const [serviceCode, setServiceCode] = React.useState('');
   const [date, setDate] = React.useState(defaultDate);
   const [startTime, setStartTime] = React.useState(defaultStart);
   const [duration, setDuration] = React.useState(String(defaultDuration || 60));
@@ -58,71 +55,57 @@ export function AppointmentCreateModal({
 
   const customersQuery = useQuery<{ data: Customer[] }>(
     [open, debouncedSearch],
-    async () => (open ? customersService.list({ search: debouncedSearch || undefined, per_page: 50 }) : { data: [] }),
-    { immediate: false }
+    async () => (open ? customersService.list({ search: debouncedSearch || undefined, per_page: 50 }) : { data: [] })
   );
   const boatsQuery = useQuery<{ data: Boat[] }>(
     [open, customerId],
-    async () => (open && customerId ? boatsService.list({ customer_id: customerId, per_page: 100 }) : { data: [] }),
-    { immediate: false }
+    async () => (open && customerId ? boatsService.list({ customer_id: customerId, per_page: 100 }) : { data: [] })
   );
-  const locationsQuery = useQuery<BoatLocation[]>(
-    [open],
-    async () => (open ? calendarService.locations() : []),
-    { immediate: false }
-  );
-  const staffQuery = useQuery<{ data: AdminUser[] }>(
-    [open],
-    async () => (open ? usersService.list({ per_page: 100 }) : { data: [] }),
-    { immediate: false }
-  );
+  const optionsQuery = useQuery([open, canManage], () => open && canManage ? appointmentsService.options() : Promise.resolve({ locations: [], employees: [] }));
+  const catalogQuery = useQuery([open, canManage], () => open && canManage ? serviceCatalogService.services() : Promise.resolve({ services: [] }));
+  const services = Array.from(new Map((catalogQuery.data?.services ?? [])
+    .filter((service) => service.visibility?.booking)
+    .map((service) => [service.service_code || service.code, service])).values());
+  const selectedService = services.find((service) => (service.service_code || service.code) === serviceCode);
 
   React.useEffect(() => {
     if (!open) return;
     setCustomerSearch('');
     setCustomerId('');
+    setSelectedCustomer(null);
     setBoatId('');
-    setServiceCode('kraan');
+    setServiceCode('');
     setDate(defaultDate);
     setStartTime(defaultStart.slice(0, 5) || '09:00');
     setDuration(String(defaultDuration || 60));
     setLocationId('');
     setAssignee('');
     setConflicts(null);
-    void customersQuery.refetch();
-    void locationsQuery.refetch();
-    void staffQuery.refetch();
     // Defaults are applied only when the dialog opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
-
-  React.useEffect(() => {
-    if (open) void customersQuery.refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch]);
-
-  React.useEffect(() => {
-    if (open && customerId) void boatsQuery.refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customerId, open]);
 
   React.useEffect(() => {
     setConflicts(null);
   }, [date, startTime, duration, locationId, serviceCode]);
 
   const create = useMutation(appointmentsService.create);
-  const customers = customersQuery.data?.data ?? [];
-  const boats = boatsQuery.data?.data ?? [];
-  const locations = locationsQuery.data ?? [];
-  const staff = (staffQuery.data?.data ?? []).filter((user) =>
-    ['staff', 'admin', 'manager'].includes(user.role)
-  );
+  const customerResults = customersQuery.data?.data ?? [];
+  const customers = selectedCustomer && !customerResults.some((customer) => customer.id === selectedCustomer.id)
+    ? [selectedCustomer, ...customerResults] : customerResults;
+  // A previous customer's response must never remain selectable during a new lookup.
+  const boats = (boatsQuery.data?.data ?? []).filter((boat) => boat.customer_id === customerId);
+  const locations = optionsQuery.data?.locations ?? [];
+  const staff = optionsQuery.data?.employees ?? [];
   const hasConflicts = (conflicts?.length ?? 0) > 0;
-  const canSubmit = Boolean(customerId && boatId && date && startTime && serviceCode);
+  const canSubmit = Boolean(canManage && customerId && boats.some((boat) => boat.id === boatId)
+    && !boatsQuery.loading && !boatsQuery.error && date && startTime && selectedService
+    && Number.isInteger(Number(duration)) && Number(duration) >= 15 && Number(duration) <= 1440);
 
   const submit = async () => {
     if (!canSubmit) return;
-    const location = locations.find((item) => item.id === locationId);
+    const boat = boats.find((item) => item.id === boatId);
+    const location = locations.find((item) => locationId ? item.id === locationId : item.code === boat?.location_code);
     const durationMinutes = Number(duration) || 60;
     if (conflicts === null) {
       setChecking(true);
@@ -131,7 +114,6 @@ export function AppointmentCreateModal({
           date,
           start_time: startTime.slice(0, 5),
           duration_minutes: durationMinutes,
-          location_id: locationId || null,
         });
         setConflicts(res.conflicts ?? []);
         if (res.has_conflicts) {
@@ -155,6 +137,7 @@ export function AppointmentCreateModal({
         service_codes: [serviceCode],
         date,
         start_time: startTime.slice(0, 5),
+        duration_minutes: durationMinutes,
         location_code: location?.code || null,
         assigned_to_user_id: assignee || null,
       });
@@ -167,46 +150,48 @@ export function AppointmentCreateModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose} size="lg" className="p-6">
+    <Modal open={open && canManage} onClose={onClose} size="lg" className="overflow-y-auto p-6">
       <h3 className="font-display text-xl text-navy-900">{t('planning.createTitle')}</h3>
       <p className="mt-1 text-sm text-navy-500">{t('planning.createSubtitle')}</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm sm:col-span-2">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldCustomer')}</span>
-          <input
-            className="input-base mb-2"
-            value={customerSearch}
-            placeholder={t('adminNew.common.search')}
-            onChange={(event) => setCustomerSearch(event.target.value)}
-          />
           <SearchSelect
             className="input-base w-full"
+            aria-label={t('planning.fieldCustomer')}
+            placeholder={t('planning.selectPlaceholder')}
+            searchPlaceholder={t('adminNew.common.search')}
+            onSearchChange={setCustomerSearch}
+            loading={customersQuery.loading}
+            error={customersQuery.error}
             value={customerId}
             onChange={(event) => {
               setCustomerId(event.target.value);
+              setSelectedCustomer(customers.find((customer) => customer.id === event.target.value) ?? null);
               setBoatId('');
+              boatsQuery.setData(null);
             }}
-          >
-            <option value="">{t('planning.selectPlaceholder')}</option>
-            {customers.map((customer) => (
-              <option key={customer.id} value={customer.id}>{customer.name}</option>
-            ))}
-          </SearchSelect>
+            options={customers.map((customer) => ({ value: customer.id, label: customer.name }))}
+          />
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldBoat')}</span>
-          <SearchSelect className="input-base w-full" value={boatId} onChange={(event) => setBoatId(event.target.value)}>
-            <option value="">{t('planning.selectPlaceholder')}</option>
-            {boats.map((boat) => (
-              <option key={boat.id} value={boat.id}>{boat.name}</option>
-            ))}
-          </SearchSelect>
+          <SearchSelect className="input-base w-full" value={boatId} onChange={(event) => setBoatId(event.target.value)}
+            aria-label={t('planning.fieldBoat')}
+            disabled={!customerId || boatsQuery.loading}
+            loading={boatsQuery.loading}
+            error={boatsQuery.error}
+            placeholder={!customerId ? t('planning.selectCustomerFirst') : boatsQuery.loading ? t('planning.loading') : t('planning.selectPlaceholder')}
+            emptyLabel={t('planning.noCustomerBoats')}
+            options={boats.map((boat) => ({ value: boat.id, label: boat.name }))}
+          />
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldService')}</span>
           <SearchSelect className="input-base w-full" value={serviceCode} onChange={(event) => setServiceCode(event.target.value)}>
-            {SERVICES.map((service) => (
-              <option key={service.code} value={service.code}>{t(service.labelKey)}</option>
+            <option value="">{t('planning.selectPlaceholder')}</option>
+            {services.map((service) => (
+              <option key={service.code} value={service.service_code || service.code}>{service.name || service.code}</option>
             ))}
           </SearchSelect>
         </label>
@@ -234,11 +219,13 @@ export function AppointmentCreateModal({
           label={t('planning.fieldDuration')}
           type="number"
           min={15}
+          max={1440}
           step={15}
           value={duration}
           onChange={(event) => setDuration(event.target.value)}
         />
       </div>
+      {catalogQuery.error || optionsQuery.error ? <p role="alert" className="mt-3 text-sm text-red-700">{catalogQuery.error || optionsQuery.error}</p> : null}
       {hasConflicts ? (
         <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
           <div className="font-semibold">{t('planning.conflictTitle')}</div>

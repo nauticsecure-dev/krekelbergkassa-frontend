@@ -1,4 +1,5 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -25,6 +26,7 @@ export default function CalculatorPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
 
+  const [pricingDate, setPricingDate] = React.useState('');
   const [lengthCm, setLengthCm] = React.useState('880');
   const [contractType, setContractType] = React.useState('winter');
   const [selectedServices, setSelectedServices] = React.useState<string[]>(['afspuiten']);
@@ -61,15 +63,13 @@ export default function CalculatorPage() {
   const customers = useQuery(['calculator-customers'], () =>
     customersService.list({ per_page: 100 })
   );
-  const serviceCatalog = useQuery(['calculator-service-catalog'], () =>
-    serviceCatalogService.services()
+  const serviceCatalog = useQuery(['calculator-service-catalog', locale, pricingDate], () =>
+    serviceCatalogService.services(undefined, locale, { audience: 'calculator', date: pricingDate || undefined })
   );
   const availableServiceIds = React.useMemo(() => {
     const services = serviceCatalog.data?.services ?? [];
-    return SERVICE_IDS.filter((id) => services.some((service) =>
-      service.visibility?.calculator !== false &&
-      [service.code, service.service_code, service.slug].includes(id)
-    ));
+    return [...new Set(services.filter((service) => service.visibility?.calculator && service.service_code)
+      .map((service) => service.service_code!))];
   }, [serviceCatalog.data]);
   React.useEffect(() => {
     if (!serviceCatalog.data) return;
@@ -170,6 +170,7 @@ export default function CalculatorPage() {
     try {
       const rec = await pricingService.calculatorRecord(id);
       const payload = (rec.payload ?? rec) as Record<string, unknown>;
+      setPricingDate(String(payload.date ?? ''));
       if (payload.length_cm != null) setLengthCm(String(payload.length_cm));
       if (payload.contract_type) setContractType(String(payload.contract_type));
       const svcs = (payload.services ?? payload.service_codes) as unknown;
@@ -190,6 +191,11 @@ export default function CalculatorPage() {
       });
     }
   };
+
+  React.useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('record_id');
+    if (id) void loadRecord(id);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Trello #68: create an offerte/factuur directly from a records row.
   const createFromRecord = async (id: string, mode: 'quote' | 'invoice') => {
@@ -337,6 +343,7 @@ export default function CalculatorPage() {
     try {
       const payload = {
         length_cm: Number(lengthCm),
+        date: pricingDate || undefined,
         contract_type: contractType,
         services: selectedServices,
         customer_id: customerId || undefined,
@@ -345,8 +352,8 @@ export default function CalculatorPage() {
         // Trello #68: update the open record in place instead of creating a new one.
         ...(editingRecordId ? { calculator_record_id: editingRecordId } : {}),
       };
-      const [calc, prev] = await Promise.all([calculate.mutate(payload), preview.mutate(payload)]);
-      setResult({ ...calc, preview: prev });
+      const prev = await preview.mutate(payload);
+      setResult({ ...prev, preview: prev });
       void records.refetch();
     } catch (err) {
       push({
@@ -530,6 +537,7 @@ export default function CalculatorPage() {
           icon={Calculator}
         >
           <div className="grid gap-4 sm:grid-cols-2">
+            <Input label="Prijsdatum" type="date" value={pricingDate} onChange={(e) => setPricingDate(e.target.value)} />
             <Input
               label={t('adminNew.calculator.lengthCm')}
               value={lengthCm}
@@ -584,7 +592,7 @@ export default function CalculatorPage() {
                         : 'surface-float-hover border-navy-100 bg-white text-navy-700 hover:border-marine-200'
                     )}
                   >
-                    {t(`adminNew.calculator.servicesMap.${service}`)}
+                    {serviceCatalog.data?.services.find((item) => item.service_code === service)?.name ?? service}
                   </button>
                 );
               })}
@@ -728,7 +736,7 @@ export default function CalculatorPage() {
               {dynamicServiceTypes.map((s) => (
                 <option key={s} value={s}>
                   {SERVICE_IDS.includes(s)
-                    ? t(`adminNew.calculator.servicesMap.${s}`)
+                    ? tEnum(t, 'adminNew.calculator.servicesMap', s)
                     : s}
                 </option>
               ))}

@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useCms } from '@/components/cms/CmsProvider';
 import { ImageEditModal } from '@/components/cms/CmsModals';
+import { CmsImage } from '@/components/cms/CmsImage';
 
 interface LogoProps {
   variant?: 'dark' | 'light';
@@ -23,7 +24,7 @@ export function Logo({ variant = 'dark', className, editable = true }: LogoProps
   const fg = variant === 'dark' ? 'text-navy-900' : 'text-white';
   const sub = variant === 'dark' ? 'text-navy-500' : 'text-sand-100/80';
   const { t } = useIntl();
-  const { canEdit, editMode, getMedia } = useCms();
+  const { isCmsEditing, getMedia } = useCms();
   const [open, setOpen] = React.useState(false);
 
   const block = getMedia(SITE_LOGO_BLOCK_KEY);
@@ -32,14 +33,15 @@ export function Logo({ variant = 'dark', className, editable = true }: LogoProps
   if (block?.image_url) stickyCmsSrc.current = block.image_url;
 
   const src = block?.image_url || stickyCmsSrc.current || SITE_LOGO_FALLBACK;
-  const altText = block?.alt || 'Krekelberg Nautic logo';
-  const showEditor = editable && canEdit && editMode;
+  const altText = block?.alt ?? 'Krekelberg Nautic logo';
+  const showEditor = editable && isCmsEditing;
   // Next/Image only allows known local paths; CMS URLs are often signed/S3.
   const useNextImage = src.startsWith('/');
 
   return (
     <div className={cn('flex items-center gap-2.5', className)} aria-label="Krekelberg Nautic">
       <span
+        title={block?.seo_title}
         className={cn('relative shrink-0', showEditor && 'cursor-pointer')}
         onClick={
           showEditor
@@ -51,7 +53,9 @@ export function Logo({ variant = 'dark', className, editable = true }: LogoProps
             : undefined
         }
       >
-        {useNextImage ? (
+        {block?.crop_data ? (
+          <span className="block h-11 w-[31px]"><CmsImage src={src} alt={altText} crop={block.crop_data} /></span>
+        ) : useNextImage ? (
           <Image
             src={src}
             alt={altText}
@@ -71,6 +75,8 @@ export function Logo({ variant = 'dark', className, editable = true }: LogoProps
           />
         )}
 
+        {(block?.overlay ?? 0) > 0 ? <span aria-hidden className="pointer-events-none absolute inset-0"
+          style={{ backgroundColor: `rgba(8, 19, 38, ${block?.overlay})` }} /> : null}
         {showEditor ? (
           <>
             <span
@@ -79,6 +85,7 @@ export function Logo({ variant = 'dark', className, editable = true }: LogoProps
             />
             <button
               type="button"
+              data-cms-edit
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

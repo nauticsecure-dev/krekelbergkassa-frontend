@@ -1,5 +1,6 @@
 'use client';
 
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -133,7 +134,7 @@ export function AdminGlobalSearch({
           return (
             <div key={section} className="mb-3">
               <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-navy-400">
-                {t(`adminNew.search.sections.${section}`)}
+                {tEnum(t, 'adminNew.search.sections', section)}
               </div>
               <ul>
                 {items.map((item, idx) => {

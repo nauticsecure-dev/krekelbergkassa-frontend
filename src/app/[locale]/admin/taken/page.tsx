@@ -1,5 +1,6 @@
 'use client';
 
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
 import { CheckCircle2, ClipboardList } from 'lucide-react';
@@ -213,7 +214,7 @@ export default function TakenPage() {
               {STATUS_GROUPS.filter((s) => grouped[s].length > 0).map((s) => (
                 <AdminSectionCard
                   key={s}
-                  title={`${t(`adminNew.tasks.status${s.charAt(0).toUpperCase() + s.slice(1).replace('_', '')}`, { defaultValue: s })} (${grouped[s].length})`}
+                  title={`${tEnum(t, 'taskStatuses', s, { defaultValue: s })} (${grouped[s].length})`}
                   icon={s === 'done' ? CheckCircle2 : ClipboardList}
                 >
                   <AdminTableCard>

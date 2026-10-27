@@ -39,10 +39,13 @@ import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
+import { usePermission } from '@/lib/permissions';
 
 export default function CustomersPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
+  const { can } = usePermission();
+  const canWrite = can('customers.write');
 
   const [query, setQuery] = React.useState('');
   const [language, setLanguage] = React.useState('');
@@ -52,7 +55,7 @@ export default function CustomersPage() {
   const [lastLogin, setLastLogin] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
-  useCreateMenuIntent(() => setShowCreate(true));
+  useCreateMenuIntent(() => { if (canWrite) setShowCreate(true); });
   const [form, setForm] = React.useState({
     name: '',
     email: '',
@@ -97,6 +100,7 @@ export default function CustomersPage() {
   const unblockCustomer = useMutation((id: string) => customersService.unblock(id));
 
   const onUnblock = async (id: string) => {
+    if (!canWrite) return;
     try {
       await unblockCustomer.mutate(id);
       push({ tone: 'success', title: t('adminNew.customers.toasts.unblocked') });
@@ -107,6 +111,7 @@ export default function CustomersPage() {
   };
 
   const onSendMagicLink = async (id: string) => {
+    if (!canWrite) return;
     try {
       await sendMagicLink.mutate(id);
       push({ tone: 'success', title: t('adminNew.customers.toasts.magicLinkSent') });
@@ -120,6 +125,7 @@ export default function CustomersPage() {
   };
 
   const onImpersonate = async (id: string) => {
+    if (!canWrite) return;
     try {
       await impersonateCustomer(id, locale);
     } catch (err) {
@@ -133,7 +139,7 @@ export default function CustomersPage() {
 
   const submitCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!canWrite || !form.name.trim()) return;
     try {
       const hasAddress =
         form.street || form.house_number || form.postal_code || form.city || form.country;
@@ -239,9 +245,9 @@ export default function CustomersPage() {
           description={t('adminNew.customers.subtitle')}
           icon={Users}
           action={
-            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+            canWrite ? <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
               {t('adminNew.customers.new')}
-            </Button>
+            </Button> : null
           }
         >
         <div className="mb-4 flex flex-wrap items-end gap-2">
@@ -337,9 +343,9 @@ export default function CustomersPage() {
               title={t('adminNew.customers.emptyTitle')}
               message={t('adminNew.customers.emptyMessage')}
               action={
-                <Button variant="outline" size="sm" onClick={() => setShowCreate(true)}>
+                canWrite ? <Button variant="outline" size="sm" onClick={() => setShowCreate(true)}>
                   {t('adminNew.customers.new')}
-                </Button>
+                </Button> : null
               }
             />
           ) : null}
@@ -417,6 +423,7 @@ export default function CustomersPage() {
                     </AdminTableCell>
                     <AdminTableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {canWrite ? <>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -454,6 +461,7 @@ export default function CustomersPage() {
                             {t('adminNew.customers.block')}
                           </Button>
                         )}
+                        </> : null}
                         <AdminLinkButton href={adminRecordHref(locale, 'klanten', customer)}>
                           {t('adminNew.customers.details')}
                         </AdminLinkButton>
@@ -469,7 +477,7 @@ export default function CustomersPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
+      <Modal open={showCreate && canWrite} onClose={() => setShowCreate(false)} size="md">
         <form onSubmit={submitCreate}>
           <AdminModalHeader
             title={t('adminNew.customers.modal.title')}
@@ -610,11 +618,11 @@ export default function CustomersPage() {
         </form>
       </Modal>
 
-      <Modal open={!!blockTarget} onClose={() => { setBlockTarget(null); setBlockReason(''); }} size="sm">
+      <Modal open={!!blockTarget && canWrite} onClose={() => { setBlockTarget(null); setBlockReason(''); }} size="sm">
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            if (!blockTarget) return;
+            if (!blockTarget || !canWrite) return;
             try {
               await blockCustomer.mutate({ id: blockTarget.id, reason: blockReason || undefined });
               push({ tone: 'success', title: t('adminNew.customers.toasts.blocked') });
@@ -657,10 +665,10 @@ export default function CustomersPage() {
       </Modal>
 
       <AdminConfirmModal
-        open={!!impersonateTarget}
+        open={!!impersonateTarget && canWrite}
         onClose={() => setImpersonateTarget(null)}
         onConfirm={async () => {
-          if (!impersonateTarget) return;
+          if (!impersonateTarget || !canWrite) return;
           await onImpersonate(impersonateTarget.id);
           setImpersonateTarget(null);
         }}

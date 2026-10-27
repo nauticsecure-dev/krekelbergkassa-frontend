@@ -1,8 +1,10 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
+import { adminRecordHref } from '@/config/admin-routes';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, CreditCard, Download, FileText, Mail, Printer, Receipt, RefreshCw, Send, User, Users, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
@@ -24,7 +26,7 @@ import { Input } from '@/components/ui/Input';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { InvoiceStatusBadge, PaymentStatusBadge } from '@/components/admin/StatusBadge';
-import { adminService, auditService, invoicesService, paginatedRows, productGroupsService } from '@/lib/services';
+import { adminService, auditService, invoicesService, invoiceImportsService, paginatedRows, productGroupsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { centsToEuro, formatCurrency, formatDate, formatDateTime, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -171,11 +173,19 @@ export default function InvoiceDetailPage() {
     });
   };
 
-  const printPdf = () => {
-    if (!invoice?.pdf_url) return;
-    const win = window.open(invoice.pdf_url, '_blank', 'noopener,noreferrer');
-    if (win) win.addEventListener('load', () => win.print());
-  };
+  const openPdf = (print = false) => void action(t('adminNew.invoiceDetail.actions.openPdf'), async () => {
+    const result = await invoicesService.getPdf(invoiceId);
+    if (result.signed_url) {
+      const win = window.open(result.signed_url, '_blank', 'noopener,noreferrer');
+      if (print && win) win.addEventListener('load', () => win.print());
+    } else { setPdfGenerating(true); }
+  });
+  const printPdf = () => openPdf(true);
+  const openOriginal = () => void action(t('adminNew.invoiceDetail.originalDocument', { defaultValue: 'Origineel document' }), async () => {
+    if (!invoice?.source_id) return;
+    const result = await invoiceImportsService.sourcePdf(invoice.source_id);
+    if (result.signed_url) window.open(result.signed_url, '_blank', 'noopener,noreferrer');
+  });
 
   const downloadPdf = () =>
     action(t('adminNew.invoiceDetail.toasts.pdfDownloaded'), async () => {
@@ -201,6 +211,7 @@ export default function InvoiceDetailPage() {
               variant="outline"
               size="sm"
               leftIcon={<Mail className="h-4 w-4" />}
+              disabled={invoice?.direction === 'purchase' || invoice?.invoice_status !== 'draft'}
               onClick={() => setConfirmSend(true)}
             >
               {t('adminNew.invoiceDetail.actions.send')}
@@ -209,6 +220,7 @@ export default function InvoiceDetailPage() {
               variant="outline"
               size="sm"
               leftIcon={<CreditCard className="h-4 w-4" />}
+              disabled={invoice?.direction === 'purchase' || invoice?.invoice_status !== 'final' || invoice?.outstanding_cents <= 0}
               onClick={() => setShowMarkPaid(true)}
             >
               {t('adminNew.invoiceDetail.actions.markPaid')}
@@ -216,6 +228,7 @@ export default function InvoiceDetailPage() {
             <Button
               variant="gold"
               size="sm"
+              disabled={invoice?.direction === 'purchase' || invoice?.invoice_status !== 'final' || invoice?.outstanding_cents <= 0}
               leftIcon={<Send className="h-4 w-4" />}
               onClick={() =>
                 void action(
@@ -415,7 +428,7 @@ export default function InvoiceDetailPage() {
                 title={dossierTab === 'factuurregels' ? t('adminNew.invoiceDetail.tabs.lines', { defaultValue: 'Factuurregels' }) : t('adminNew.invoiceDetail.overviewTitle')}
                 description={`${t('adminNew.invoiceDetail.source')}: ${invoice.source}`}
                 icon={Receipt}
-                action={<InvoiceStatusBadge status={invoice.status} isOverdue={invoice.is_overdue} />}
+                action={<InvoiceStatusBadge status={invoice.invoice_status ?? invoice.status} isOverdue={invoice.is_overdue} />}
               >
                 <div className="space-y-5">
                   {dossierTab === 'overzicht' ? (
@@ -509,7 +522,7 @@ export default function InvoiceDetailPage() {
                 <div className="space-y-4">
                   <div>
                     <div className="text-sm font-semibold text-navy-900">
-                      {invoice.customer?.name ?? '-'}
+                      {invoice.supplier_name ?? invoice.customer?.name ?? String(invoice.customer_snapshot?.name ?? '-')}
                     </div>
                     <div className="text-xs text-navy-500">{invoice.customer?.email ?? '-'}</div>
                   </div>
@@ -550,6 +563,8 @@ export default function InvoiceDetailPage() {
                   <div className="space-y-2">
                     {dossierTab === 'documenten' ? (
                     <>
+                    {invoice.source_type === 'invoice_import' ? <Button variant="outline" size="sm" fullWidth onClick={openOriginal}>{t('adminNew.invoiceDetail.originalDocument', { defaultValue: 'Origineel document' })}</Button> : null}
+                    {invoice.direction !== 'purchase' ? <>
                     <div className="rounded-xl border border-navy-100/70 bg-white p-2">
                       <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-widest text-navy-400">
                         {t('adminNew.invoiceDetail.pdfActions')}
@@ -577,7 +592,7 @@ export default function InvoiceDetailPage() {
                       ) : (
                         <div className="grid grid-cols-2 gap-2">
                           <a
-                            href={invoice.pdf_url}
+                            href="#" onClick={(event) => { event.preventDefault(); openPdf(); }}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm font-medium text-navy-800 transition hover:bg-sand-50"
@@ -635,6 +650,7 @@ export default function InvoiceDetailPage() {
                     >
                       {t('adminNew.invoiceDetail.actions.regeneratePdf')}
                     </Button>
+                    </> : null}
                     </>
                     ) : null}
                     {dossierTab === 'overzicht' ? (
@@ -681,6 +697,11 @@ export default function InvoiceDetailPage() {
                 description={t('adminNew.invoiceDetail.noPayments')}
                 icon={CreditCard}
               >
+                {invoice.supplier_payable ? <div className="mb-4 space-y-2 rounded-lg border border-navy-100 p-3">
+                  <Link href={adminRecordHref(locale, 'leveranciers', { id: invoice.supplier_payable.supplier_id, public_id: invoice.supplier_payable.supplier_public_id, slug: invoice.supplier_payable.supplier_slug })} className="font-semibold text-marine-700">{invoice.supplier_name ?? t('adminNew.invoices.purchase')}</Link>
+                  <PaymentStatusBadge status={invoice.supplier_payable.status} />
+                  <p>{invoice.supplier_payable.payment_reference ?? '—'} · {formatDateTime(invoice.supplier_payable.paid_at)}</p>
+                </div> : null}
                 <div className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                   {(invoice.payments ?? []).length ? (
                     (invoice.payments ?? []).map((payment) => (
@@ -987,7 +1008,7 @@ export default function InvoiceDetailPage() {
                         : 'border-navy-200 bg-white text-navy-700 hover:bg-sand-50')
                     }
                   >
-                    {t(`adminNew.invoiceDetail.creditModal.${mode}`)}
+                    {tEnum(t, 'adminNew.invoiceDetail.creditModal', mode)}
                   </button>
                 ))}
               </div>

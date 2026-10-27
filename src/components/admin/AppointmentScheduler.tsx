@@ -47,6 +47,7 @@ type Props = {
   view: CalendarView;
   date: string;
   onViewDateChange: (next: { view: CalendarView; date: string }) => void;
+  canManage: boolean;
   onMove: (change: SchedulerMove) => void;
   onSelect: (selection: SchedulerSelection) => void;
   onEventClick: (id: string) => void;
@@ -67,6 +68,7 @@ export function AppointmentScheduler({
   events,
   view,
   date,
+  canManage,
   onViewDateChange,
   onMove,
   onSelect,
@@ -80,8 +82,8 @@ export function AppointmentScheduler({
     const api = calendarRef.current?.getApi();
     if (!api || skipSync.current) return;
     const desired = fcViewName(view);
-    const start = localDateKey(api.view.activeStart);
-    const end = localDateKey(api.view.activeEnd);
+    const start = localDateKey(api.view.currentStart);
+    const end = localDateKey(api.view.currentEnd);
     const coversDate = date >= start && date < end;
     if (api.view.type !== desired) {
       api.changeView(desired, date);
@@ -94,8 +96,8 @@ export function AppointmentScheduler({
 
   const publishRange = React.useCallback((arg: DatesSetArg) => {
     const nextView = viewFromFc(arg.view.type);
-    const visibleStart = localDateKey(arg.start);
-    const visibleEnd = localDateKey(arg.end);
+    const visibleStart = localDateKey(arg.view.currentStart);
+    const visibleEnd = localDateKey(arg.view.currentEnd);
     const anchor = date >= visibleStart && date < visibleEnd
       ? date
       : localDateKey(arg.view.currentStart);
@@ -108,6 +110,7 @@ export function AppointmentScheduler({
   }, [date, onViewDateChange, view]);
 
   const publishMove = (info: EventDropArg | EventResizeDoneArg) => {
+    if (!canManage) { info.revert(); return; }
     const start = info.event.start;
     const end = info.event.end;
     if (!start || !end) {
@@ -156,10 +159,10 @@ export function AppointmentScheduler({
         fixedWeekCount
         dayMaxEvents={4}
         navLinks
-        editable
-        eventDurationEditable
+        editable={canManage}
+        eventDurationEditable={canManage}
         eventOverlap={() => true}
-        selectable
+        selectable={canManage && view !== 'month'}
         selectMirror
         weekends
         events={events}
@@ -171,6 +174,7 @@ export function AppointmentScheduler({
           onEventClick(info.event.id);
         }}
         select={(info) => {
+          if (!canManage) return;
           onSelect(selectionFromRange(info.start, info.end));
           info.view.calendar.unselect();
         }}

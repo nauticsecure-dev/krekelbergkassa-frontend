@@ -1,5 +1,6 @@
 'use client';
 
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
 import { LayoutGrid, List, Package, Pencil, Plus, Trash2 } from 'lucide-react';
@@ -24,6 +25,7 @@ import { Badge } from '@/components/ui/Badge';
 import { paginatedRows, productsService, productGroupsService } from '@/lib/services';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
+import { usePermission } from '@/lib/permissions';
 import { useIntl } from '@/i18n/IntlProvider';
 import { formatCurrency, intlLocale } from '@/lib/format';
 import { productPriceInclEuros } from '@/lib/products';
@@ -32,6 +34,8 @@ import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function ProductsPage() {
   const { locale, t } = useIntl();
+  const { can } = usePermission();
+  const canWrite = can('products.write');
   const { push } = useToast();
   const [query, setQuery] = React.useState('');
   const [groupFilter, setGroupFilter] = React.useState('');
@@ -66,11 +70,12 @@ export default function ProductsPage() {
   const categoryLabel = (category: string | null | undefined) => {
     if (!category) return '—';
     const key = `adminNew.products.categories.${category}`;
-    const label = t(key);
+    const label = tEnum(t, 'adminNew.products.categories', category);
     return label === key ? category : label;
   };
 
   const onDelete = async (id: string) => {
+    if (!canWrite) return;
     try {
       await deleteProduct.mutate(id);
       await products.refetch();
@@ -90,8 +95,8 @@ export default function ProductsPage() {
         title={t('adminNew.products.title')}
         subtitle={t('adminNew.products.subtitle')}
         rightSlot={
-          <Link href={`/${locale}/admin/producten/nieuw`}>
-            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+          <Link aria-disabled={!canWrite} tabIndex={canWrite ? undefined : -1} href={canWrite ? `/${locale}/admin/producten/nieuw` : `/${locale}/admin/producten`}>
+            <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
               {t('adminNew.products.new')}
             </Button>
           </Link>
@@ -275,7 +280,7 @@ export default function ProductsPage() {
                               {t('adminNew.common.view')}
                             </Button>
                           </Link>
-                          <Button
+                          <Button disabled={!canWrite}
                             size="sm"
                             variant="ghost"
                             leftIcon={<Trash2 className="h-3.5 w-3.5" />}
@@ -300,7 +305,7 @@ export default function ProductsPage() {
       </AdminContent>
 
       <AdminConfirmModal
-        open={!!deleteTarget}
+        open={!!deleteTarget && canWrite}
         onClose={() => setDeleteTarget(null)}
         onConfirm={async () => {
           if (!deleteTarget) return;

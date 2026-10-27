@@ -1,4 +1,5 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -105,11 +106,11 @@ export default function RemindersPage() {
     raw ? raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : '';
   const entityLabel = (raw: string) => {
     const key = ENTITY_LABEL_KEYS[raw];
-    const label = key ? t(`adminNew.reminders.entityLabels.${key}`) : '';
+    const label = key ? tEnum(t, 'adminNew.reminders.entityLabels', key) : '';
     return label && !label.startsWith('adminNew.') ? label : humanize(raw);
   };
   const triggerLabel = (raw: string) => {
-    const label = raw ? t(`adminNew.reminders.triggerLabels.${raw}`) : '';
+    const label = raw ? tEnum(t, 'adminNew.reminders.triggerLabels', raw) : '';
     return label && !label.startsWith('adminNew.') ? label : humanize(raw);
   };
 

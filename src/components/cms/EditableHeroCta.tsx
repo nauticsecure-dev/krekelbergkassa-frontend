@@ -1,4 +1,5 @@
 'use client';
+import { CTA_ROUTES, isCtaRoute } from './cta-routes';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -10,7 +11,7 @@ import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useIntl } from '@/i18n/IntlProvider';
 import { cmsService } from '@/lib/services';
-import { useCms, EDITABLE_LOCALE_TAGS, type LocaleTag } from './CmsProvider';
+import { initialEditorLocale, useCms, useCmsEditorOpen, type LocaleTag } from './CmsProvider';
 
 type CtaLinkType = 'internal' | 'external' | 'phone' | 'email' | 'anchor';
 type CtaStyle = 'primary' | 'secondary';
@@ -49,6 +50,10 @@ function parseConfig(value: string, fallbackHref: string, locale: string): CtaCo
     }
   } catch {
     // Older blocks may contain a plain URL rather than the structured format.
+    if (value.trim()) {
+      const legacy = configFromHref(value.trim(), locale);
+      if (isValidDestination(legacy)) return legacy;
+    }
   }
   return configFromHref(fallbackHref, locale);
 }
@@ -89,7 +94,7 @@ function isValidDestination(config: CtaConfig): boolean {
   if (config.link_type === 'internal') {
     const rawRoute = config.route.trim();
     const route = rawRoute.replace(/^\/+/, '');
-    return !rawRoute.startsWith('//') &&
+    return isCtaRoute(route) && !rawRoute.startsWith('//') &&
       !route.split('/').includes('..') &&
       !/^https?:/i.test(route);
   }
@@ -135,31 +140,31 @@ export function EditableHeroCta({
 }) {
   const { t, locale } = useIntl();
   const { push, pushError } = useToast();
-  const { isCmsEditing, localeTag, getText, saveText } = useCms();
+  const { isCmsEditing, retainCmsDrafts, localeTag, editorLocales, getText, saveText } = useCms();
   const configKey = `${blockKey}.link`;
   const labelKey = labelBlockKey ?? `${blockKey}.label`;
   const config = React.useMemo(
     () => parseConfig(getText(configKey, ''), href, locale),
     [configKey, getText, href, locale],
   );
-  const text = getText(labelKey, label);
-  const [open, setOpen] = React.useState(false);
+  const text = getText(labelKey, label).trim() || label;
+  const [open, setOpen] = useCmsEditorOpen();
   const [saving, setSaving] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
   const [labels, setLabels] = React.useState<Partial<Record<LocaleTag, string>>>({});
   const [baseLabels, setBaseLabels] = React.useState<Partial<Record<LocaleTag, string>>>({});
   const [draft, setDraft] = React.useState<CtaConfig>(config);
-  const editing = isCmsEditing;
+  const editing = isCmsEditing || retainCmsDrafts;
   const destination = resolveHref(config, locale);
 
   React.useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    setActive(localeTag);
+    setActive(initialEditorLocale(localeTag, editorLocales));
     setDraft(config);
     setLoading(true);
-    void Promise.all(EDITABLE_LOCALE_TAGS.map(async (tag) => {
+    void Promise.all(editorLocales.map(async (tag) => {
       const response = await cmsService.pageContent(page, tag).catch(() => null) as
         | { content_blocks?: Array<{ key?: string; value?: string }> }
         | null;
@@ -176,7 +181,7 @@ export function EditableHeroCta({
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [open, localeTag, config, page, labelKey, label, pushError, t]);
+  }, [open, localeTag, config, page, labelKey, label, pushError, t, editorLocales]);
 
   const onSave = async () => {
     if (draft.enabled && !isValidDestination(draft)) {
@@ -186,7 +191,7 @@ export function EditableHeroCta({
     setSaving(true);
     try {
       const changedLabels: Partial<Record<LocaleTag, string>> = {};
-      for (const tag of EDITABLE_LOCALE_TAGS) {
+      for (const tag of editorLocales) {
         if ((labels[tag] ?? '') !== (baseLabels[tag] ?? '')) changedLabels[tag] = labels[tag] ?? '';
       }
       if (Object.keys(changedLabels).length) {
@@ -216,7 +221,11 @@ export function EditableHeroCta({
   if (editing) {
     return (
       <>
-        <div className="group/cms pointer-events-auto relative inline-flex cursor-text">
+        <div
+          data-cms-block={blockKey}
+          className="group/cms pointer-events-auto relative inline-flex cursor-text"
+          onClick={(event) => { event.preventDefault(); event.stopPropagation(); setOpen(true); }}
+        >
           <div
             className={buttonClassName({
               variant: config.enabled ? buttonVariant : 'gold',
@@ -230,7 +239,8 @@ export function EditableHeroCta({
           </div>
           <button
             type="button"
-            onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
+            data-cms-edit
+            style={!isCmsEditing ? { display: 'none' } : undefined}
             onClick={(event) => { event.preventDefault(); event.stopPropagation(); setOpen(true); }}
             aria-label={t('cms.editCta')}
             title={t('cms.editCta')}
@@ -266,7 +276,7 @@ export function EditableHeroCta({
   const labelContent = (
     <>
       {leftIcon ? <span className="-ml-0.5">{leftIcon}</span> : null}
-      <span>{text}</span>
+      <span className="whitespace-pre-line">{text}</span>
       {icon ? <span className="-mr-0.5">{icon}</span> : null}
     </>
   );
@@ -311,6 +321,10 @@ function CtaEditModal({
   onSave: () => void;
 }) {
   const { t } = useIntl();
+  const { editorLocales } = useCms();
+  React.useEffect(() => {
+    if (editorLocales.length && !editorLocales.includes(active)) setActive(editorLocales[0]);
+  }, [active, editorLocales, setActive]);
   const set = <K extends keyof CtaConfig>(key: K, value: CtaConfig[K]) =>
     setConfig((prev) => ({ ...prev, [key]: value }));
 
@@ -320,9 +334,9 @@ function CtaEditModal({
         <h2 className="text-lg font-semibold text-navy-900">{t('cms.editCta')}</h2>
         <p className="mt-1 text-sm text-navy-500">{t('cms.ctaDescription')}</p>
       </div>
-      <div className="space-y-4 overflow-y-auto px-6 py-5">
+      <fieldset disabled={loading || saving} className="min-w-0 space-y-4 overflow-y-auto px-6 py-5">
         <div className="flex gap-2" role="tablist" aria-label={t('cms.ctaLabel')}>
-          {EDITABLE_LOCALE_TAGS.map((tag) => (
+          {editorLocales.map((tag) => (
             <button
               key={tag}
               type="button"
@@ -339,7 +353,7 @@ function CtaEditModal({
         </div>
         <label className="block space-y-1 text-sm font-medium text-navy-700">
           {t('cms.ctaLabel')}
-          <input className={inputClass} value={labels[active] ?? ''} onChange={(e) => onLabelChange(e.target.value)} />
+          <textarea rows={2} className={inputClass} value={labels[active] ?? ''} onChange={(e) => onLabelChange(e.target.value)} />
         </label>
         <label className="block space-y-1 text-sm font-medium text-navy-700">
           {t('cms.ctaLinkType')}
@@ -358,12 +372,14 @@ function CtaEditModal({
         {config.link_type === 'internal' ? (
           <label className="block space-y-1 text-sm font-medium text-navy-700">
             {t('cms.ctaRoute')}
-            <input
+            <SearchSelect
               className={inputClass}
               value={config.route}
               onChange={(e) => set('route', e.target.value)}
-              placeholder="contact"
-            />
+            >
+              {!isCtaRoute(config.route) && <option value={config.route} disabled>Select a valid page</option>}
+              {CTA_ROUTES.map(route => <option key={route} value={route}>{route || 'Home'}</option>)}
+            </SearchSelect>
           </label>
         ) : (
           <label className="block space-y-1 text-sm font-medium text-navy-700">
@@ -397,7 +413,7 @@ function CtaEditModal({
           {t('cms.ctaEnabled')}
         </label>
         {loading ? <p className="text-xs text-navy-400">{t('cms.loadingLocales')}</p> : null}
-      </div>
+      </fieldset>
       <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
         <Button variant="ghost" onClick={onClose} disabled={saving}>{t('cms.cancel')}</Button>
         <Button variant="primary" onClick={onSave} disabled={saving || loading}>{t('cms.save')}</Button>

@@ -1,14 +1,28 @@
 'use client';
 
 import Link from 'next/link';
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, FileUp, FileText } from 'lucide-react';
 import { AdminContent, AdminSectionCard } from '@/components/admin/AdminUi';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { Button } from '@/components/ui/Button';
 import { useIntl } from '@/i18n/IntlProvider';
+import { useAuth } from '@/lib/auth-context';
+import { usePermission } from '@/lib/permissions';
+import { LoadingState } from '@/components/admin/DataState';
 
 export default function NewInvoicePage() {
   const { locale, t } = useIntl();
+  const { loading } = useAuth();
+  const { can } = usePermission();
+  const router = useRouter();
+  const canCreate = can('invoice.create');
+  React.useEffect(() => {
+    if (!loading && !canCreate) router.replace(`/${locale}/admin`);
+  }, [loading, canCreate, locale, router]);
+
+  if (loading || !canCreate) return <AdminContent><LoadingState label={t('adminNew.common.loading')} /></AdminContent>;
 
   return (
     <>

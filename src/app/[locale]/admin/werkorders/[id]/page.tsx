@@ -1,4 +1,7 @@
 'use client';
+import { adminRecordHref } from '@/config/admin-routes';
+
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -81,7 +84,7 @@ function workOrderTypeLabel(
   const fromMeta = metaTypes?.find((o) => o.value === type)?.label;
   if (fromMeta) return fromMeta;
   const key = `adminNew.workOrders.types.${type}`;
-  const translated = t(key);
+  const translated = tEnum(t, 'adminNew.workOrders.types', type);
   if (translated !== key) return translated;
   return TYPE_LABELS[type] ?? type;
 }
@@ -448,7 +451,7 @@ export default function WorkOrderDetailPage() {
                       </div>
                       {boatId ? (
                         <Link
-                          href={`/${locale}/admin/boten/${boatId}`}
+                          href={adminRecordHref(locale, 'boten', { ...((order?.boat ?? {}) as Record<string, unknown>), id: boatId })}
                           className="mt-1 inline-flex text-sm font-semibold text-marine-700 hover:text-marine-900"
                         >
                           {t('adminNew.boats.title')} →
@@ -633,7 +636,7 @@ export default function WorkOrderDetailPage() {
                     >
                       {['before', 'during', 'after', 'damage', 'inspection'].map((f) => (
                         <option key={f} value={f}>
-                          {t(`adminNew.workOrders.photoFolders.${f}`)}
+                          {tEnum(t, 'adminNew.workOrders.photoFolders', f)}
                         </option>
                       ))}
                     </SearchSelect>

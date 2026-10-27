@@ -41,7 +41,9 @@ export function useQuery<T>(
 
   React.useEffect(() => {
     if (options?.immediate === false) return;
-    void refetch();
+    // refetch exposes failures to explicit callers; this effect has already
+    // recorded the error in state and must not create an unhandled rejection.
+    void refetch().catch(() => undefined);
     return () => {
       generationRef.current += 1;
     };

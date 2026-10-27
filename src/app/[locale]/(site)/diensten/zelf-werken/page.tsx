@@ -1,3 +1,5 @@
+'use client';
+import { useIntl } from '@/i18n/IntlProvider';
 import { ServicePage } from '@/components/site/ServicePage';
 import { EditableText } from '@/components/cms/EditableText';
 import { EditableImage } from '@/components/cms/EditableImage';
@@ -5,6 +7,7 @@ import { EditableImage } from '@/components/cms/EditableImage';
 const CMS_PAGE = 'diensten/zelf-werken';
 
 export default function ZelfWerkenPage() {
+  const { t } = useIntl();
   return (
     <ServicePage
       cmsPage={CMS_PAGE}
@@ -14,8 +17,7 @@ export default function ZelfWerkenPage() {
           page={CMS_PAGE}
           section="hero"
         >
-          Werk zelf op de werf
-        </EditableText>
+          {t('globalUx.serviceDetails.zelf_werken.heroTitle')}</EditableText>
       }
       editableDescription={
         <EditableText
@@ -24,38 +26,37 @@ export default function ZelfWerkenPage() {
           section="hero"
           type="long_text"
         >
-          Combineer onze faciliteiten met uw eigen vakmanschap. Onze werf is uitgerust voor zelf-doe schippers met werkruimtes, gereedschap en advies.
-        </EditableText>
+          {t('globalUx.serviceDetails.zelf_werken.heroSubtitle')}</EditableText>
       }
       editableHeroImage={
-        <EditableImage
+        <EditableImage defaultStyle={{gradient:'right',gradient_start:.85,gradient_middle:0.65,gradient_end:.3}}
           blockKey="diensten.zelf-werken.hero.image"
           page={CMS_PAGE}
           fallbackSrc="/img/krek/werf-hero.webp"
-          alt="Zelf werken op de werf bij Krekelberg Nautic"
+          alt={t('globalUx.serviceDetails.zelf_werken.heroTitle')}
         />
       }
       adminProductSlug="zelf-werken"
       catalogSlug="zelf-werken"
-      badge="Zelf werken aan uw boot"
-      title="Werk zelf op de werf"
-      subtitle="Combineer onze faciliteiten met uw eigen vakmanschap. Onze werf is uitgerust voor zelf-doe schippers met werkruimtes, gereedschap en advies."
-      description="U mag zelfstandig werken aan uw eigen schip op onze werf binnen de werfvoorwaarden. Wij stellen werkruimtes, stroom en water beschikbaar; onze monteurs zijn paraat voor vragen of specialistisch werk. Externe monteurs zijn welkom mits aangemeld."
+      badge={t('globalUx.serviceDetails.zelf_werken.badge')}
+      title={t('globalUx.serviceDetails.zelf_werken.heroTitle')}
+      subtitle={t('globalUx.serviceDetails.zelf_werken.heroSubtitle')}
+      description={t('globalUx.serviceDetails.zelf_werken.description')}
       heroImage="/img/krek/werf-hero.webp"
       inlineImage="/img/krek/halverhuur.webp"
       features={[
-        { title: 'Werkruimtes met stroom', desc: 'Verlichte plekken met stopcontacten 230V.' },
-        { title: 'Water & perslucht', desc: 'Beschikbaar op vaste tappunten.' },
-        { title: 'Hijswerktuig op afspraak', desc: 'Onze 30-tons kraan voor zware onderdelen.' },
-        { title: 'Externe monteurs welkom', desc: 'Met geldige WA-verzekering en VCA.' },
-        { title: 'Materiaal-shop', desc: 'Schroeven, verf, lijmen en olie ter plekke.' },
-        { title: 'Toiletten & koffie', desc: 'Voorzieningen voor lange werkdagen.' },
+        { title: t('globalUx.serviceDetails.zelf_werken.feature1Title'), desc: t('globalUx.serviceDetails.zelf_werken.feature1Description') },
+        { title: t('globalUx.serviceDetails.zelf_werken.feature2Title'), desc: t('globalUx.serviceDetails.zelf_werken.feature2Description') },
+        { title: t('globalUx.serviceDetails.zelf_werken.feature3Title'), desc: t('globalUx.serviceDetails.zelf_werken.feature3Description') },
+        { title: t('globalUx.serviceDetails.zelf_werken.feature4Title'), desc: t('globalUx.serviceDetails.zelf_werken.feature4Description') },
+        { title: t('globalUx.serviceDetails.zelf_werken.feature5Title'), desc: t('globalUx.serviceDetails.zelf_werken.feature5Description') },
+        { title: t('globalUx.serviceDetails.zelf_werken.feature6Title'), desc: t('globalUx.serviceDetails.zelf_werken.feature6Description') },
       ]}
       faqs={[
-        { q: 'Welke werkzaamheden mag ik zelf uitvoeren?', a: 'Onderhoud, schilderen, polijsten en kleine reparaties. Voor laswerk en accu/gas-installaties geldt aanmelding vooraf.' },
-        { q: 'Mag ik mijn eigen monteur meenemen?', a: 'Ja, mits hij/zij een WA-verzekering en geldige VCA kan tonen. Aanmelden via de receptie.' },
-        { q: 'Zijn er specifieke regels?', a: 'Afzettingen en milieuregels gelden altijd. Geen open vuur, geen vuil afval op de grond, en eindig met opgeruimde werkplek.' },
-        { q: 'Kan ik onderdelen laten bezorgen?', a: 'Ja, leveranciers kunnen direct op de werf afleveren. Wij melden u via SMS zodra het pakket binnen is.' },
+        { q: t('globalUx.serviceDetails.zelf_werken.faq1Question'), a: t('globalUx.serviceDetails.zelf_werken.faq1Answer') },
+        { q: t('globalUx.serviceDetails.zelf_werken.faq2Question'), a: t('globalUx.serviceDetails.zelf_werken.faq2Answer') },
+        { q: t('globalUx.serviceDetails.zelf_werken.faq3Question'), a: t('globalUx.serviceDetails.zelf_werken.faq3Answer') },
+        { q: t('globalUx.serviceDetails.zelf_werken.faq4Question'), a: t('globalUx.serviceDetails.zelf_werken.faq4Answer') },
       ]}
     />
   );

@@ -1,8 +1,9 @@
+import { adminRecordHref } from '@/config/admin-routes';
 import type { Invoice } from '@/lib/api-types';
 
 type ProvenanceInvoice = Pick<
   Invoice,
-  'source' | 'source_type' | 'source_id' | 'stalling_contract_id' | 'stalling_contract'
+  'supplier_payable' | 'id' | 'customer' | 'source' | 'source_type' | 'source_id' | 'stalling_contract_id' | 'stalling_contract'
 >;
 
 export function invoiceProvenance(
@@ -15,7 +16,7 @@ export function invoiceProvenance(
   if (type === 'stalling_contract' && id) {
     const number = invoice.stalling_contract?.contract_number;
     return {
-      href: `/${locale}/admin/stalling/${id}`,
+      href: adminRecordHref(locale, 'stalling', invoice.stalling_contract ?? { id }),
       label: number ? `Stallingcontract ${number}` : 'Stallingcontract',
     };
   }
@@ -27,16 +28,32 @@ export function invoiceProvenance(
     };
   }
 
+  if (type === 'supplier_payable' && invoice.supplier_payable?.supplier_id) {
+    return { href: adminRecordHref(locale, 'leveranciers', { id: invoice.supplier_payable.supplier_id, public_id: invoice.supplier_payable.supplier_public_id, slug: invoice.supplier_payable.supplier_slug }), label: 'Leveranciersfactuur' };
+  }
+
+  if (type === 'appointment' && id) {
+    return { href: `/${locale}/admin/afspraken?appointment_id=${encodeURIComponent(id)}`, label: 'Afspraak' };
+  }
+
+  if (type === 'work_order' && id) {
+    return { href: `/${locale}/admin/werkorders/${encodeURIComponent(id)}`, label: 'Werkorder' };
+  }
+
+  if (type === 'wallet' && invoice.customer) {
+    return { href: adminRecordHref(locale, 'klanten', invoice.customer), label: 'Rekeningoverzicht' };
+  }
+
   if (type === 'calculator_record' && id) {
     return {
-      href: `/${locale}/admin/calculator`,
+      href: `/${locale}/admin/calculator?record_id=${encodeURIComponent(id)}`,
       label: 'Calculator',
     };
   }
 
   if (type === 'kassa_transaction' || type === 'kassa' || type === 'kassa_payment_session' || invoice.source === 'kassa') {
     return {
-      href: `/${locale}/admin/kassa`,
+      href: `/${locale}/admin/verkopen/${encodeURIComponent(invoice.id)}`,
       label: 'Kassa-transactie',
     };
   }

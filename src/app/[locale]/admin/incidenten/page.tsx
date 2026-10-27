@@ -1,4 +1,5 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -206,7 +207,7 @@ export default function IncidentsPage() {
               <option value="">{t('adminNew.incidents.allStatuses')}</option>
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {t(`adminNew.incidents.statuses.${s}`)}
+                  {tEnum(t, 'adminNew.incidents.statuses', s)}
                 </option>
               ))}
             </AdminSelect>
@@ -220,7 +221,7 @@ export default function IncidentsPage() {
               <option value="">{t('adminNew.incidents.allSeverities')}</option>
               {SEVERITIES.map((s) => (
                 <option key={s} value={s}>
-                  {t(`adminNew.incidents.severities.${s}`)}
+                  {tEnum(t, 'adminNew.incidents.severities', s)}
                 </option>
               ))}
             </AdminSelect>
@@ -276,12 +277,12 @@ export default function IncidentsPage() {
                         </AdminTableCell>
                         <AdminTableCell>
                           <Badge tone={severityTone(severity)}>
-                            {t(`adminNew.incidents.severities.${severity}`)}
+                            {tEnum(t, 'adminNew.incidents.severities', severity)}
                           </Badge>
                         </AdminTableCell>
                         <AdminTableCell>
                           <Badge tone={statusTone(status)}>
-                            {t(`adminNew.incidents.statuses.${status}`)}
+                            {tEnum(t, 'adminNew.incidents.statuses', status)}
                           </Badge>
                         </AdminTableCell>
                         <AdminTableCell>{String(incident.category ?? '—')}</AdminTableCell>
@@ -324,7 +325,7 @@ export default function IncidentsPage() {
               >
                 {SEVERITIES.map((s) => (
                   <option key={s} value={s}>
-                    {t(`adminNew.incidents.severities.${s}`)}
+                    {tEnum(t, 'adminNew.incidents.severities', s)}
                   </option>
                 ))}
               </SearchSelect>
@@ -378,10 +379,10 @@ export default function IncidentsPage() {
             {activeIncident ? (
               <div className="mt-2 flex flex-wrap gap-2">
                 <Badge tone={severityTone(String(activeIncident.severity ?? 'low'))}>
-                  {t(`adminNew.incidents.severities.${String(activeIncident.severity ?? 'low')}`)}
+                  {tEnum(t, 'adminNew.incidents.severities', String(activeIncident.severity ?? 'low'))}
                 </Badge>
                 <Badge tone={statusTone(String(activeIncident.status ?? 'open'))}>
-                  {t(`adminNew.incidents.statuses.${String(activeIncident.status ?? 'open')}`)}
+                  {tEnum(t, 'adminNew.incidents.statuses', String(activeIncident.status ?? 'open'))}
                 </Badge>
                 {activeIncident.category ? (
                   <Badge tone="navy">{String(activeIncident.category)}</Badge>
@@ -431,7 +432,7 @@ export default function IncidentsPage() {
                 >
                   {STATUSES.map((s) => (
                     <option key={s} value={s}>
-                      {t(`adminNew.incidents.statuses.${s}`)}
+                      {tEnum(t, 'adminNew.incidents.statuses', s)}
                     </option>
                   ))}
                 </SearchSelect>

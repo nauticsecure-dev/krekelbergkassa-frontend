@@ -1,0 +1,16 @@
+✔ copy review finds JSX text and accessible labels without CSS/comments or translated copy (217.7644ms)
+✔ copy review follows conditional copy but ignores style bodies and spacing entities (3.5616ms)
+✔ AST finds multiline, const-prefix and conditional calls without parsing comments (4.2686ms)
+✔ fallbacks and empty values cannot conceal absent FR translations (1.4885ms)
+✔ dynamic families check union parity and remain explicitly unresolved (1.5599ms)
+✔ unknown branches, missing families and out-of-scope constants never claim coverage (2.6954ms)
+✔ bounded enum calls check every supported key in every locale (1.1863ms)
+✔ unknown, empty and runtime enum families still fail the strict gate (1.1292ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1212.3214

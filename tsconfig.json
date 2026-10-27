@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -13,12 +17,38 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "e2e"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next-journey-tests/types/**/*.ts",
+    ".next-cms-regression/types/**/*.ts",
+    ".next-dev/types/**/*.ts",
+    ".next-all-tests/types/**/*.ts",
+    ".next-isolated-live/types/**/*.ts",
+    ".next-home-cms/types/**/*.ts",
+    ".next-admin-audit/types/**/*.ts",
+    ".next-cms-session-safety/types/**/*.ts",
+    ".next-global-ux/types/**/*.ts",
+    ".next-erp/types/**/*.ts",
+    ".next-global-ux-live/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "artifacts/admin-audit/snapshot",
+    "e2e"
+  ]
 }

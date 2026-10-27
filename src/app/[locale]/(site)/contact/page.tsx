@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import { intlLocale } from '@/lib/format';
@@ -17,7 +18,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClassName } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
 import { companyInfo, openingHoursRows } from "@/lib/company";
 import { contentService } from "@/lib/services";
@@ -26,18 +27,29 @@ import { cn } from "@/lib/cn";
 import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
-import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
+import { EditSafeLink } from "@/components/cms/EditSafeLink";
+
 
 const CMS_PAGE = "contact";
-const MAPS_URL = companyInfo.mapsUrl;
-const MAPS_EMBED = companyInfo.mapsEmbed;
+
 
 export default function ContactPage() {
   const { t, locale } = useIntl();
   useRegisterCmsPage(CMS_PAGE);
 
   const localeTag = intlLocale(locale);
-  const language = locale === "en" ? "en" : locale === "de" ? "de" : "nl";
+  const language = ['nl', 'en', 'de', 'fr'].includes(locale) ? locale : 'nl';
+  const contactQuery = useQuery(['contact-company'], () => contentService.contact());
+  const company = contactQuery.data?.company;
+  const phone = company?.phone ?? companyInfo.phone;
+  const phoneHref = 'tel:' + phone.replace(/\(0\)/g, '').replace(/[^+\d]/g, '');
+  const email = company?.email ?? companyInfo.email;
+  const address = company?.address
+    ? [company.address.street, company.address.postal_code, company.address.city].filter(Boolean).join(', ')
+    : companyInfo.address;
+  const mapsQuery = encodeURIComponent(address);
+  const mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + mapsQuery;
+  const mapsEmbed = 'https://maps.google.com/maps?q=' + mapsQuery + '&z=14&output=embed';
 
   const hoursQuery = useQuery([localeTag], () =>
     contentService.openingHours(localeTag).catch(() => null),
@@ -83,23 +95,8 @@ export default function ContactPage() {
             </EditableText>
           </p>
           <div className="pointer-events-none mt-8 flex w-fit flex-wrap gap-3">
-            <EditableHeroCta
-              page={CMS_PAGE}
-              blockKey="contact.hero.cta_primary"
-              label={t("contactPage.ctaCall")}
-              href={companyInfo.phoneHref}
-              variant="gold"
-              leftIcon={<Phone className="h-4 w-4" />}
-            />
-            <EditableHeroCta
-              page={CMS_PAGE}
-              blockKey="contact.hero.cta_secondary"
-              label={t("contactPage.ctaMail")}
-              href={`mailto:${t("contactPage.email")}`}
-              variant="outline"
-              className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-              leftIcon={<Mail className="h-4 w-4" />}
-            />
+            <EditSafeLink href={phoneHref} className={buttonClassName({ variant: 'gold', size: 'lg', className: 'pointer-events-auto' })}><Phone className="h-4 w-4" /><EditableText blockKey="contact.hero.cta_primary.label" page={CMS_PAGE}>{t('contactPage.ctaCall')}</EditableText></EditSafeLink>
+            <EditSafeLink href={`mailto:${email}`} className={buttonClassName({ variant: 'outline', size: 'lg', className: 'pointer-events-auto border-white/30 bg-white/5 text-white hover:bg-white/10' })}><Mail className="h-4 w-4" /><EditableText blockKey="contact.hero.cta_secondary.label" page={CMS_PAGE}>{t('contactPage.ctaMail')}</EditableText></EditSafeLink>
           </div>
         </div>
       </section>
@@ -108,24 +105,24 @@ export default function ContactPage() {
         <ContactCard
           icon={MapPin}
           label={<EditableText blockKey="contact.card.address.label" page={CMS_PAGE} section="cards">{t("contactPage.addressLabel")}</EditableText>}
-          value={<EditableText blockKey="contact.card.address.value" page={CMS_PAGE} section="cards">{t("contactPage.address")}</EditableText>}
+          value={address}
           actionLabel={t("contactPage.ctaRoute")}
-          actionHref={MAPS_URL}
+          actionHref={mapsUrl}
           external
         />
         <ContactCard
           icon={Phone}
           label={<EditableText blockKey="contact.card.phone.label" page={CMS_PAGE} section="cards">{t("contactPage.phoneLabel")}</EditableText>}
-          value={<EditableText blockKey="contact.card.phone.value" page={CMS_PAGE} section="cards">{t("contactPage.phone")}</EditableText>}
+          value={phone}
           actionLabel={t("contactPage.ctaCall")}
-          actionHref={companyInfo.phoneHref}
+          actionHref={phoneHref}
         />
         <ContactCard
           icon={Mail}
           label={<EditableText blockKey="contact.card.email.label" page={CMS_PAGE} section="cards">{t("contactPage.emailLabel")}</EditableText>}
-          value={<EditableText blockKey="contact.card.email.value" page={CMS_PAGE} section="cards">{t("contactPage.email")}</EditableText>}
+          value={email}
           actionLabel={t("contactPage.ctaMail")}
-          actionHref={`mailto:${t("contactPage.email")}`}
+          actionHref={`mailto:${email}`}
         />
       </section>
 
@@ -137,10 +134,10 @@ export default function ContactPage() {
             </span>
             <div>
               <Badge tone="navy" className="mb-1">
-                {t("contactPage.hoursTitle")}
+                <TranslatedText textKey={"contactPage.hoursTitle"} />
               </Badge>
               <div className="text-xs text-navy-500">
-                {t("contactPage.hoursSubtitle")}
+                <TranslatedText textKey={"contactPage.hoursSubtitle"} />
               </div>
             </div>
             {liveStatus && (
@@ -185,7 +182,7 @@ export default function ContactPage() {
                     {h.label}
                     {h.is_today && (
                       <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-marine-600">
-                        {t("contactPage.today")}
+                        <TranslatedText textKey={"contactPage.today"} />
                       </span>
                     )}
                   </span>
@@ -214,7 +211,7 @@ export default function ContactPage() {
         <Card className="overflow-hidden p-0">
           <iframe
             title="Google Maps · Krekelberg Nautic"
-            src={MAPS_EMBED}
+            src={mapsEmbed}
             className="h-full min-h-[420px] w-full"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
@@ -310,11 +307,14 @@ function ContactForm({
   t: (key: string) => string;
 }) {
   const [status, setStatus] = React.useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [validationErrors, setValidationErrors] = React.useState<string[]>([]);
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [subjectKey, setSubjectKey] = React.useState("");
   const [message, setMessage] = React.useState("");
+
+  const submission = React.useRef<{ payload: string; id: string } | null>(null);
 
   const canSubmit = Boolean(subjectKey) && status !== "sending";
 
@@ -324,9 +324,11 @@ function ContactForm({
       setStatus("error");
       return;
     }
+    if (status === "sending") return;
+    setValidationErrors([]);
     setStatus("sending");
     try {
-      const result = await contentService.submitContact({
+      const payload = {
         name,
         email,
         phone: phone || undefined,
@@ -335,14 +337,26 @@ function ContactForm({
         language,
         source_page: typeof window !== "undefined" ? window.location.href : undefined,
         source_locale: localeTag,
-      });
+      };
+      const serialized = JSON.stringify(payload);
+      if (!submission.current) {
+        try { submission.current = JSON.parse(sessionStorage.getItem('contact-submission') || 'null'); } catch { /* storage unavailable */ }
+      }
+      if (submission.current?.payload !== serialized) {
+        submission.current = { payload: serialized, id: crypto.randomUUID() };
+      }
+      try { sessionStorage.setItem('contact-submission', JSON.stringify(submission.current)); } catch { /* storage unavailable */ }
+      const result = await contentService.submitContact({ ...payload, submission_id: submission.current.id });
       // Only treat an explicit ok payload as success; never assume 2xx alone.
       if (result?.message === "ok") {
+        try { sessionStorage.removeItem('contact-submission'); } catch { /* storage unavailable */ }
         setStatus("sent");
       } else {
         setStatus("error");
       }
-    } catch {
+    } catch (err) {
+      const errors = (err as { data?: { errors?: Record<string, string[]> } }).data?.errors;
+      setValidationErrors(errors ? Object.values(errors).flat() : []);
       setStatus("error");
     }
   }
@@ -350,7 +364,7 @@ function ContactForm({
   if (status === "sent") {
     return (
       <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-        {t("contactPage.fSent")}
+        <TranslatedText textKey={"contactPage.fSent"} />
       </div>
     );
   }
@@ -359,13 +373,15 @@ function ContactForm({
     <form onSubmit={handleSubmit} className="mt-5 grid gap-3 sm:grid-cols-2">
       {status === "error" && (
         <div className="sm:col-span-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          {t("contactPage.fError")}
+          <TranslatedText textKey={"contactPage.fError"} />
+          {validationErrors.map((error, index) => <p key={index}>{error}</p>)}
         </div>
       )}
       <FormField label={t("contactPage.fName")}>
         <input
           className="input-base"
           required
+          maxLength={255}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -375,6 +391,7 @@ function ContactForm({
           type="email"
           className="input-base"
           required
+          maxLength={255}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -406,6 +423,7 @@ function ContactForm({
           className="input-base min-h-[110px] resize-y"
           required
           minLength={10}
+          maxLength={5000}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />

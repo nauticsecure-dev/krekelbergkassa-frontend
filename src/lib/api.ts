@@ -7,6 +7,7 @@ import {
   setPortalToken,
 } from './auth-storage';
 import { queueOfflineChange } from './offline-sync';
+import { getAnonymousSessionId, getJourneyKey, getJourneySessionId } from './session';
 
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? '/api';
@@ -121,6 +122,15 @@ export async function apiResult<T = unknown>(
   // Trello #104: send a correlation id (reuse one if the caller set it).
   const requestId = opts.requestId ?? headers.get('X-Request-Id') ?? generateRequestId();
   headers.set('X-Request-Id', requestId);
+  if (typeof window !== 'undefined') {
+    const anonymous = getAnonymousSessionId();
+    const session = getJourneySessionId();
+    const key = getJourneyKey();
+    if (anonymous) headers.set('X-Anonymous-Session-Id', anonymous);
+    if (session) headers.set('X-Session-Id', session);
+    if (key) headers.set('X-Journey-Key', key);
+    headers.set('X-Journey-Page', window.location.pathname);
+  }
 
   if (opts.auth !== false) {
     const token = getAuthToken();
@@ -221,6 +231,9 @@ export async function apiResult<T = unknown>(
         method: opts.method ?? 'GET',
         payload: opts.body ?? null,
       });
+    }
+    if (err instanceof Error) {
+      throw { status: 0, message: err.message, requestId } satisfies ApiError;
     }
     throw err;
   }

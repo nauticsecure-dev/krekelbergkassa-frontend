@@ -1,0 +1,36 @@
+
+Running 23 tests using 2 workers
+
+(node:29432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7428) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7428) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\contracts\configuration-hub.spec.ts:6:5 › Finance can reach financial settings with scoped permissions (32ms)
+  ok  2 tests\contracts\cms.spec.ts:9:5 › CMS requests use the API base once and encode block keys (39ms)
+  ok  3 tests\contracts\configuration-hub.spec.ts:15:5 › runtime locale routing follows active languages and configured default (27ms)
+  ok  4 tests\contracts\cms.spec.ts:32:5 › translation results must contain every requested nonempty string (31ms)
+  ok  5 tests\contracts\enum-translations.spec.ts:4:5 › bounded labels translate supported values and normalized full keys (9ms)
+  ok  6 tests\contracts\cms.spec.ts:53:5 › checked translates before saving all languages (11ms)
+  ok  7 tests\contracts\enum-translations.spec.ts:12:5 › unknown API values and prototype names never become translation keys (18ms)
+  ok  8 tests\contracts\cms.spec.ts:60:5 › unchecked saves only the edited language (10ms)
+  ok  9 tests\contracts\global-ux.spec.ts:9:5 › empty shortcut configuration survives reload; failures alone use defaults (11ms)
+  ok 10 tests\contracts\cms.spec.ts:67:5 › manual translations survive and existing unedited languages are refreshed (8ms)
+  ok 12 tests\contracts\cms.spec.ts:78:7 › rejected translation saves source only without merging partial output (8ms)
+  ok 13 tests\contracts\cms.spec.ts:78:7 › partial translation saves source only without merging partial output (7ms)
+  ok 14 tests\contracts\cms.spec.ts:91:7 › save failure rejects without returning success (translation fails: true) (6ms)
+  ok 11 tests\contracts\global-ux.spec.ts:18:5 › readable links retain locale, public ID, encoded slug and query (118ms)
+  ok 15 tests\contracts\cms.spec.ts:91:7 › save failure rejects without returning success (translation fails: false) (6ms)
+  ok 16 tests\contracts\global-ux.spec.ts:32:5 › custom shortcut destinations cannot escape named routes (13ms)
+  ok 17 tests\contracts\cms.spec.ts:100:5 › no changes makes no save and failed translation does not claim a save (7ms)
+  ok 18 tests\contracts\global-ux.spec.ts:40:5 › canonical employee and finance roles follow API permissions, with separate technical administration (24ms)
+  ok 19 tests\contracts\permissions.spec.ts:6:5 › employees can reach pricing and product editors with their API read permissions (11ms)
+  ok 21 tests\contracts\permissions.spec.ts:14:5 › an authoritative empty list never restores role privileges (60ms)
+  ok 22 tests\contracts\permissions.spec.ts:23:5 › unauthenticated and customer sessions cannot use global creation actions (58ms)
+  ok 23 tests\contracts\permissions.spec.ts:30:5 › explicit permissions override role fallbacks, with any-of and wildcard support (12ms)
+  ok 20 tests\contracts\global-ux.spec.ts:59:5 › service content and pricing labels exist in every supported locale (735ms)
+
+  23 passed (2.9s)

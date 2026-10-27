@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false
+  },
+  "include": [
+    "../../next-env.d.ts",
+    "../../src/components/cms/**/*.tsx",
+    "../../src/lib/auth-context.tsx",
+    "../../tests/browser/cms-session-safety.spec.ts",
+    "../../playwright.cms-safety.config.ts"
+  ],
+  "exclude": [
+    "../../node_modules"
+  ]
+}

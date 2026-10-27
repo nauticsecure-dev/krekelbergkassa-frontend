@@ -1,4 +1,21 @@
 {
+  "contactSubjects": {
+    "title": "Contact subjects",
+    "description": "Manage contact form subjects, translations and email recipients.",
+    "key": "Key",
+    "category": "Category",
+    "label": "Label",
+    "recipient": "Recipient",
+    "fallback": "Empty: use the default contact address (company settings or explicit override).",
+    "order": "Order",
+    "active": "Active",
+    "inactive": "Inactive",
+    "add": "New subject",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Subject saved.",
+    "retry": "Retry"
+  },
   "adminModules": {
     "overview": {
       "todayAppointments": "Today's appointments",
@@ -52,7 +69,7 @@
         "quickActions": "Quick actions",
         "crane": "Crane appointment",
         "craneDesc": "Open the crane booking page.",
-        "tabCalendar": "Calendar",
+        "tabCalendar": "Availability & opening hours",
         "tabAppointments": "Appointments",
         "tabToday": "Today",
         "tabWeek": "Week",
@@ -409,7 +426,7 @@
     "heroBadge": "Brokerage · Storage · DIY yard",
     "heroTitle": "Yacht yard & brokerage in Roermond",
     "heroSubtitle": "From craning and storage to sales support and DIY maintenance — Krekelberg Nautic delivers everything your vessel needs at one professional location on the Maasplassen.",
-    "heroPrimary": "Book a crane slot",
+    "heroPrimary": "Sell your boat",
     "heroSecondary": "View yard services",
     "ctaCrane": "Plan a crane slot",
     "ctaListings": "View boats for sale",
@@ -564,7 +581,82 @@
     "copyright": "© {year} Krekelberg Nautic — All rights reserved.",
     "address": "Hertenerweg 2, 6049AA Herten",
     "phone": "0475 315 661",
-    "email": "info@krekelberg-nautic.nl"
+    "email": "marketing@answer24.nl"
+  },
+  "journey": {
+    "page": "Page",
+    "eventType": "Event type",
+    "likelyIntent": "Likely intent",
+    "confidence": {
+      "low": "Low confidence",
+      "medium": "Medium confidence",
+      "high": "High confidence"
+    },
+    "title": "Activity / Journey",
+    "description": "Public journeys, API outcomes and verified business results.",
+    "search": "Name, page or request",
+    "intent": "Intent",
+    "endpoint": "API endpoint",
+    "status": "Minimum HTTP status",
+    "from": "From",
+    "to": "To",
+    "errorsOnly": "Errors only",
+    "abandonedOnly": "Abandoned flows",
+    "loading": "Loading journey…",
+    "retry": "Retry",
+    "lost": "Potential lost opportunities",
+    "failedRequests": "failed requests",
+    "abandonedSessions": "abandoned sessions",
+    "abandonmentRule": "Abandoned: form started, no later appointment, and no activity for 30 minutes. Counts may overlap.",
+    "sessionCounts": "Distinct sessions per stage; conversion from page visit to appointment:",
+    "clearRequest": "Show complete journey",
+    "silent": "Possible silent failure",
+    "activity": "Activity",
+    "empty": "No journey events match these filters.",
+    "intents": {
+      "all": "All intents",
+      "crane_booking": "Crane booking",
+      "sell_boat": "Sell boat",
+      "winter_storage": "Winter storage",
+      "buy_boat": "Buy boat"
+    },
+    "stages": {
+      "visited": "Visited booking page",
+      "started": "Started form",
+      "service_selected": "Selected service",
+      "photos_selected": "Selected photos",
+      "submitted": "Submitted",
+      "created": "Appointment created"
+    },
+    "outcomes": {
+      "created": "Appointment created",
+      "failed": "Request failed",
+      "blocked": "Submission blocked",
+      "pending": "No verified result yet"
+    },
+    "events": {
+      "api_failed": "API failed",
+      "api_succeeded": "API succeeded",
+      "page_view": "Page opened",
+      "booking_form_started": "Booking form started",
+      "booking_field_changed": "Form field changed",
+      "booking_service_selected": "Service selection changed",
+      "booking_date_selected": "Booking date selected",
+      "booking_time_selected": "Booking time selected",
+      "booking_photos_selected": "Photos selected",
+      "booking_submit_clicked": "Booking submitted",
+      "booking_submit_blocked": "Booking blocked by validation",
+      "booking_failed": "Booking failed",
+      "booking_succeeded": "Booking received",
+      "frontend_error_shown": "Error shown to customer",
+      "photo_upload_started": "Photo upload started",
+      "photo_upload_failed": "Photo upload failed",
+      "photo_upload_succeeded": "Photos uploaded",
+      "booking_left": "Booking page left",
+      "identity_verified": "Identity verified",
+      "appointment_created": "Appointment created",
+      "api_requested": "API requested"
+    }
   },
   "crane": {
     "title": "Book your crane appointment online",
@@ -590,6 +682,8 @@
     "catalogUnavailable": "Services and prices could not be loaded. Please try again later.",
     "noBookableServices": "There are currently no services available to book online.",
     "submit": "Request appointment",
+    "photosFailed": "Your appointment was received, but the photos could not be uploaded. Retry the photos here; your appointment will not be submitted again. Keep this page open until the upload succeeds.",
+    "retryPhotos": "Retry photo upload",
     "submitSuccess": "Appointment requested",
     "submitFailed": "Request failed",
     "confirmSubmit": "Submit this appointment request? You will receive a confirmation by email within 24 hours.",
@@ -697,7 +791,7 @@
     "addressLabel": "Visiting address",
     "phone": "0475 315 661",
     "phoneLabel": "Phone",
-    "email": "info@krekelberg-nautic.nl",
+    "email": "marketing@answer24.nl",
     "emailLabel": "E-mail",
     "hoursTitle": "Opening hours",
     "hoursHighSeason": "High season (April — October)",
@@ -723,7 +817,7 @@
     "fSubmit": "Send message",
     "fSending": "Sending…",
     "fSent": "Thank you. Your message has been received. We will get back to you as soon as possible.",
-    "fError": "Your message could not be sent. Please try again or call us: 0475 315 661.",
+    "fError": "Delivery failed. Please retry or contact us by phone.",
     "fSelectTopic": "Choose a topic…",
     "hoursSubtitle": "Fixed weekly schedule",
     "monday": "Monday",
@@ -1311,7 +1405,8 @@
       "retry": "Try again",
       "all": "All",
       "yes": "Yes",
-      "no": "No"
+      "no": "No",
+      "permissionDenied": "You do not have permission for this action."
     },
     "dashboard": {
       "title": "Operations",
@@ -1398,7 +1493,8 @@
         "status": "Status",
         "lastLogin": "Last login",
         "email": "Email",
-        "phone": "Phone"
+        "phone": "Phone",
+        "city": "City / country"
       },
       "details": "Details",
       "total": "{count} customers total",
@@ -1413,7 +1509,8 @@
       "confirmBlock": "Block {name}? They will be signed out and cannot log in.",
       "modal": {
         "title": "New customer",
-        "subtitle": "Name and email are enough for quick registration."
+        "subtitle": "Name and email are enough for quick registration.",
+        "addressPlaceholder": "Search address…"
       },
       "toasts": {
         "created": "Customer created",
@@ -1436,7 +1533,11 @@
       "localeDefault": "Default",
       "fields": {
         "gender": "Gender",
-        "preferredLocale": "Preferred language"
+        "preferredLocale": "Preferred language",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "company": "Company"
       },
       "gender": {
         "unspecified": "Unspecified",
@@ -1539,7 +1640,19 @@
         "finance": "Finance",
         "storage": "Storage",
         "planning": "Planning"
-      }
+      },
+      "allVisibility": "All visibility",
+      "sendMessage": "Message customer",
+      "datePresets": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last7": "Last 7 days",
+        "thisMonth": "This month"
+      },
+      "allPriorities": "All priorities",
+      "allSources": "All sources",
+      "sourceTimeline": "Timeline",
+      "sourceAudit": "Audit log"
     },
     "productGroups": {
       "title": "Product groups",
@@ -1556,7 +1669,8 @@
         "group": "Group",
         "code": "Code",
         "vat": "VAT",
-        "status": "Status"
+        "status": "Status",
+        "products": "Products"
       },
       "fields": {
         "code": "Code",
@@ -1679,7 +1793,9 @@
         "openBalance": "Open balance",
         "avgDuration": "Avg. duration",
         "days": "{count} days",
-        "byContractType": "Revenue by contract type"
+        "byContractType": "Revenue by contract type",
+        "expiring60": "Expires within 60 days",
+        "expiring90": "Expires within 90 days"
       },
       "topProductsTitle": "Top products",
       "slowProductsTitle": "Slow products",
@@ -1726,7 +1842,9 @@
       },
       "toasts": {
         "created": "Cash close saved"
-      }
+      },
+      "cashReceivedToday": "Cash received today",
+      "cashReceivedNote": "Calculated automatically from register payments"
     },
     "states": {
       "errorTitle": "Something went wrong",
@@ -1850,6 +1968,7 @@
         "lengthCm": "Length (cm)",
         "widthCm": "Width (cm)",
         "locationCode": "Location code",
+        "publicListingUrl": "Public listing URL",
         "brand": "Brand",
         "model": "Model",
         "buildYear": "Build year",
@@ -1884,7 +2003,9 @@
         "updated": "Boat updated",
         "updateFailed": "Update failed",
         "transferred": "Ownership transferred",
-        "fileUploaded": "File uploaded"
+        "fileUploaded": "File uploaded",
+        "photoDeleted": "Photo deleted",
+        "docDeleted": "Document deleted"
       },
       "editTitle": "Edit boat",
       "editSubtitle": "Update length, location and other details",
@@ -1906,7 +2027,8 @@
         "totalBoats": "Total boats",
         "boatsInStorage": "In storage",
         "activeWorkOrders": "Active work orders",
-        "openBalance": "Open balance"
+        "openBalance": "Open balance",
+        "paid": "Paid"
       },
       "photoFolders": {
         "arrival": "Arrival",
@@ -1941,7 +2063,11 @@
       "statusWorkInProgress": "Work in progress",
       "statusRegistered": "Registered",
       "insuranceExpired": "Insurance expired",
-      "insuranceExpiringSoon": "Insurance expires in {days} days"
+      "insuranceExpiringSoon": "Insurance expires in {days} days",
+      "openContract": "Open contract →",
+      "confirmDeletePhoto": "Permanently delete this photo?",
+      "confirmDeleteDoc": "Permanently delete this document?",
+      "status": "Status"
     },
     "kassa": {
       "title": "Cash Desk",
@@ -2180,7 +2306,12 @@
         "houseNumber": "House number",
         "postalCode": "Postal code",
         "city": "City",
-        "companyName": "Company name (optional)"
+        "companyName": "Company name (optional)",
+        "hall": "Hall",
+        "bok": "Cradle",
+        "arrivalDate": "Arrival",
+        "pickupDate": "Collection",
+        "daysStored": "Days stored"
       },
       "quickEdit": {
         "title": "Update contract",
@@ -2503,7 +2634,9 @@
         "storageExpiringTitle": "Storage expiring",
         "storageExpiringMessage": "Atalanta · in 9 days",
         "storageExpiringTime": "1 hour ago"
-      }
+      },
+      "expandSidebar": "Expand sidebar",
+      "collapseSidebar": "Collapse sidebar"
     },
     "invoices": {
       "title": "Invoices",
@@ -2603,7 +2736,13 @@
         "title": "New invoice",
         "subtitle": "Choose a customer to create a manual invoice.",
         "noCustomers": "No customers found. Adjust your search or create a customer first."
-      }
+      },
+      "provenanceLabel": "Source",
+      "allDirections": "Sales and purchases",
+      "sales": "Sales",
+      "purchase": "Purchases",
+      "defaultTemplate": "Active default layout",
+      "payableBalance": "Supplier balance payable"
     },
     "invoiceDetail": {
       "fallbackTitle": "Invoice",
@@ -2709,7 +2848,16 @@
       "confirmMarkPaid": "Mark this invoice as paid manually? Verify the amount and payment method.",
       "creditedFor": "Credit note for",
       "creditNotes": "Credit notes",
-      "backToContract": "Back to storage contract"
+      "backToContract": "Back to storage contract",
+      "tabs": {
+        "overview": "Overview",
+        "lines": "Invoice lines",
+        "payments": "Payments",
+        "documents": "Documents",
+        "timeline": "Timeline",
+        "audit": "Audit"
+      },
+      "originalDocument": "Original document"
     },
     "customerDetail": {
       "fallbackTitle": "Customer",
@@ -2799,7 +2947,16 @@
           "at_risk": "At risk",
           "critical": "Critical"
         }
-      }
+      },
+      "timelineTitlePlaceholder": "Subject / title",
+      "timelineNoBoat": "No boat",
+      "timelineHideCta": "Hide button",
+      "timelineAddCta": "+ Action button",
+      "timelineCtaLabel": "Button text (e.g. Pay now)",
+      "timelineCtaUrl": "Link URL",
+      "commentPlaceholder": "Write a comment…",
+      "commentSend": "Send",
+      "addComment": "+ Comment"
     },
     "calculator": {
       "title": "Calculator",
@@ -2910,7 +3067,10 @@
         "bulkDuplicated": "Selected records duplicated",
         "confirmBulkArchive": "Archive {count} record(s)?",
         "editingRecord": "Editing record",
-        "newRecord": "New"
+        "newRecord": "New",
+        "allUsers": "All users",
+        "updatedAt": "Updated",
+        "edit": "Edit"
       },
       "pricing": {
         "title": "Manage pricing",
@@ -2924,7 +3084,9 @@
         "filtered": "Filtered",
         "clearFilter": "Clear filters"
       },
-      "manageServices": "Services beheren"
+      "manageServices": "Services beheren",
+      "catalogUnavailable": "Could not load services.",
+      "noAvailableServices": "No services are available for the calculator."
     },
     "settings": {
       "title": "Settings",
@@ -3111,7 +3273,10 @@
         "scanBarcode": "Scan",
         "barcodeScanned": "Barcode scanned: {code}",
         "uploadImage": "Upload photo",
-        "uploadHint": "Save the product first to upload a photo."
+        "uploadHint": "Save the product first to upload a photo.",
+        "productGroup": "Product group",
+        "slug": "Slug (service page)",
+        "productGroupNone": "No group"
       },
       "sections": {
         "identity": "Identity",
@@ -3137,7 +3302,9 @@
         "deleted": "Product deleted",
         "deleteFailed": "Delete failed",
         "updated": "Product updated"
-      }
+      },
+      "auditLog": "Change log",
+      "allGroups": "All groups"
     },
     "payments": {
       "title": "Payments",
@@ -3192,7 +3359,10 @@
         "created": "User created",
         "createFailed": "Create failed",
         "activated": "User activated",
-        "deactivated": "User deactivated"
+        "deactivated": "User deactivated",
+        "updated": "User updated",
+        "unblocked": "User unblocked",
+        "blocked": "User blocked"
       },
       "confirmDeactivate": "Are you sure you want to deactivate {name}? They will no longer be able to sign in.",
       "searchPlaceholder": "Search by name or email",
@@ -3209,7 +3379,16 @@
         "male": "Male",
         "female": "Female",
         "other": "Other"
-      }
+      },
+      "unblock": "Unblock",
+      "block": "Block",
+      "editModal": {
+        "title": "Edit user"
+      },
+      "confirmUnblock": "Unblock {name}?",
+      "confirmBlock": "Block {name}?",
+      "blockReason": "Reason (optional)",
+      "blockReasonPlaceholder": "e.g. misuse, inactivity…"
     },
     "calendar": {
       "title": "Calendar",
@@ -3439,7 +3618,10 @@
         "source": "Source",
         "status": "Status",
         "date": "Date",
-        "confidence": "Confidence"
+        "confidence": "Confidence",
+        "invoiceNumber": "Invoice no.",
+        "customer": "Customer",
+        "total": "Total"
       },
       "toasts": {
         "uploaded": "Invoice uploaded for processing",
@@ -3491,7 +3673,13 @@
         "supplierCreated": "Supplier created",
         "supplierNameRequired": "Enter a name for the supplier",
         "iban": "IBAN",
-        "paymentTermsDays": "Payment terms (days)"
+        "paymentTermsDays": "Payment terms (days)",
+        "corrected": "Corrected",
+        "saveCorrections": "Save corrections",
+        "noCustomerLinked": "No customer linked",
+        "customerCreated": "Customer created",
+        "createCustomer": "Create customer",
+        "processingLog": "Processing log"
       },
       "dropzoneTitle": "Sleep bestanden hierheen",
       "dropzoneHint": "PDF of afbeelding — tot 50 bestanden tegelijk",
@@ -3577,7 +3765,23 @@
         "successCount": "Succeeded",
         "correctionCount": "Corrections",
         "averageConfidence": "Avg. confidence"
-      }
+      },
+      "editExtraction": "Edit extraction template",
+      "newExtraction": "Extraction template",
+      "extractionNotice": "This template controls import and OCR field zones and matching rules. Generated invoice layouts are managed separately.",
+      "layout": "Invoice layout",
+      "layoutTitle": "Invoice layout",
+      "layoutSubtitle": "Layout for invoice PDFs: logo, totals, footer, terms and tags. Each save retains a version.",
+      "extractionBack": "Extraction templates",
+      "layoutHint": "Manage OCR import field zones under extraction templates.",
+      "layoutLogo": "Show logo",
+      "layoutTotals": "Show totals",
+      "layoutFooter": "Footer",
+      "layoutTerms": "Terms",
+      "layoutTags": "Dynamic tags",
+      "layoutVersions": "Saved versions",
+      "missingTags": "Missing required tags",
+      "uploadLogo": "Upload logo (PNG/JPG, max. 1 MB)"
     },
     "workOrders": {
       "title": "Work orders",
@@ -3764,7 +3968,8 @@
         "completed": "Reminder completed",
         "dismissed": "Reminder dismissed",
         "ruleCreated": "Rule created",
-        "ruleDeleted": "Rule deleted"
+        "ruleDeleted": "Rule deleted",
+        "ruleUpdated": "Rule updated"
       },
       "statusAll": "All statuses",
       "statusPending": "Pending",
@@ -3795,7 +4000,17 @@
         "entityIdHint": "e.g. an invoice or contract ID",
         "submit": "Send",
         "sent": "Test reminder sent"
-      }
+      },
+      "briefingTitle": "Today’s overview",
+      "briefing": {
+        "invoiceDue": "Invoices due",
+        "invoicesOverdue": "Overdue invoices",
+        "contractsExpiring": "Contracts expiring soon",
+        "insuranceExpiring": "Insurance expiring",
+        "workOrdersOverdue": "Overdue work orders",
+        "appointmentsToday": "Today’s appointments"
+      },
+      "editRule": "Edit rule"
     },
     "suppliers": {
       "title": "Suppliers",
@@ -4106,6 +4321,74 @@
       "advanced": "Advanced",
       "customUrl": "Custom path",
       "save": "Save"
+    },
+    "productStats": {
+      "title": "Product statistics",
+      "subtitle": "Revenue, sales volumes and margins by product",
+      "emptyTitle": "No statistics",
+      "emptyMessage": "No sales data available yet.",
+      "topProducts": "Top products ({count})",
+      "slowProducts": "Slow-moving products ({count})"
+    },
+    "auditLog": {
+      "columns": {
+        "field": "Field",
+        "oldValue": "Old",
+        "newValue": "New",
+        "user": "By",
+        "at": "Date"
+      }
+    },
+    "scanLogs": {
+      "title": "Scan log",
+      "subtitle": "Every register barcode scan: source, result, product and staff member",
+      "stats": {
+        "total": "Total",
+        "matched": "Matched",
+        "notFound": "Not found"
+      },
+      "allSources": "All sources",
+      "allResults": "All results",
+      "emptyTitle": "No scan logs",
+      "emptyMessage": "No scans recorded yet.",
+      "columns": {
+        "timestamp": "Time",
+        "barcode": "Barcode",
+        "source": "Source",
+        "result": "Result",
+        "product": "Product",
+        "fastScan": "Fast scan",
+        "user": "Staff member"
+      }
+    },
+    "tasks": {
+      "toasts": {
+        "completed": "Task completed"
+      },
+      "columns": {
+        "title": "Task",
+        "customer": "Customer",
+        "entity": "Entity",
+        "priority": "Priority",
+        "dueAt": "Due date",
+        "status": "Status"
+      },
+      "complete": "Complete",
+      "done": "Completed",
+      "title": "Tasks",
+      "subtitle": "Follow-up tasks automatically created by reminders",
+      "stats": {
+        "open": "Open",
+        "inProgress": "In progress",
+        "done": "Completed"
+      },
+      "statusAll": "All statuses",
+      "statusOpen": "Open",
+      "statusInProgress": "In progress",
+      "statusDone": "Completed",
+      "statusCancelled": "Cancelled",
+      "emptyTitle": "No tasks",
+      "emptyMessage": "No tasks have been created yet."
     }
   },
   "planning": {
@@ -4166,6 +4449,8 @@
     "fieldAssignee": "Employee",
     "unassigned": "Unassigned",
     "selectPlaceholder": "Select…",
+    "selectCustomerFirst": "Select a customer first",
+    "noCustomerBoats": "This customer has no boats",
     "conflictTitle": "Possible conflicts found",
     "conflictConfirmAnyway": "Continue and schedule this appointment anyway",
     "selectMode": "Select",
@@ -4183,12 +4468,29 @@
     "statusCompleted": "Completed"
   },
   "cms": {
+    "sessionExpired": "Session expired",
+    "draftRetained": "Your unsaved changes are kept here. Sign in in a new tab, then resume editing in this tab.",
+    "signInAgain": "Sign in again",
+    "resumeEditing": "Resume editing",
+    "discardDraft": "Discard changes",
+    "sessionNotRestored": "Sign in with the same account and CMS permission to resume.",
+    "editCertificationBadge": "Edit certification badge",
+    "certificationTitle": "Title",
+    "certificationSubtitle": "Subtitle",
+    "autoTranslate": "Automatically translate into {languages} with ChatGPT",
+    "translating": "Translating…",
+    "savedWithTranslations": "Text and translations saved",
+    "savedWithoutTranslations": "Text saved; automatic translation failed.",
+    "translationFailed": "Translation failed. No changes were saved.",
     "edit": "Edit",
     "enterEdit": "Enable edit mode",
     "exitEdit": "Exit edit mode",
     "editingOn": "Editing on",
     "toolbarLabel": "CMS toolbar",
     "editText": "Edit text",
+    "editHiswa": "Edit HISWA card",
+    "hiswaTitle": "Title",
+    "hiswaDescription": "Description",
     "editImage": "Edit image",
     "editCta": "Edit button",
     "invalidCtaLink": "Check the button destination and destination type.",
@@ -4220,6 +4522,7 @@
     "imageUploaded": "Image uploaded",
     "uploadImage": "Upload image",
     "imageFormats": "Use a JPG, PNG or WEBP image.",
+    "imageSizeLimit": "Maximum image size: 10 MiB.",
     "imageDropHint": "Drop a JPG, PNG or WEBP file here.",
     "localeHint": "Only changed languages are saved.",
     "textPlaceholder": "Enter text…",
@@ -4245,6 +4548,186 @@
       "tagline": "Footer tagline",
       "facebook": "Facebook URL",
       "instagram": "Instagram URL"
+    },
+    "allTranslations": "All text",
+    "searchTranslations": "Search text or key"
+  },
+  "settingsHub": {
+    "search": "Search settings",
+    "reminderRules": "Edit reminder rules",
+    "paymentHealth": "Payment connection",
+    "integrationHealth": "Integration health and setup",
+    "untested": "Not tested",
+    "setupRequired": "Setup required",
+    "pos_methods": "POS payment methods",
+    "online_methods": "Online payment methods",
+    "mailbox": "Invoice mailbox",
+    "ocrModel": "OCR model",
+    "whatsappEnabled": "Enable WhatsApp",
+    "transactionId": "Existing Signhost transaction UUID",
+    "runDiagnostic": "Test saved configuration",
+    "openWorkflow": "Open workflow",
+    "integrations": {
+      "email": "Email",
+      "mailbox": "Invoice mailbox",
+      "ocr": "OCR",
+      "whatsapp": "WhatsApp",
+      "signhost": "Signhost"
+    },
+    "mollieSetup": "Configure MOLLIE_TEST_KEY and MOLLIE_LIVE_KEY on the server. Save the selected mode, then test the saved configuration."
+  },
+  "globalUx": {
+    "pricing": {
+      "product": "Product",
+      "range": "Range (cm)",
+      "price": "Price incl. VAT",
+      "vat": "VAT",
+      "type": "Type",
+      "channel": "Channel",
+      "active": "Active",
+      "yes": "Yes",
+      "no": "No",
+      "from": "From (cm)",
+      "to": "To (cm)",
+      "priceEuro": "Price incl. VAT (€)",
+      "vatRate": "VAT rate (%)",
+      "fixed": "Fixed amount",
+      "per_meter": "Per metre",
+      "on_request": "On request",
+      "manual": "Manual",
+      "all": "All channels",
+      "kassa": "POS",
+      "portal": "Customer portal",
+      "stalling": "Storage",
+      "tariffTitle": "Rates by length class",
+      "addTariff": "Add rate",
+      "emptyTariffs": "No rates found.",
+      "length": "Length",
+      "exclVat": "Excl. VAT",
+      "inclVat": "Incl. VAT",
+      "status": "Status",
+      "inactive": "Inactive",
+      "editTariff": "Edit rate",
+      "newTariff": "New rate",
+      "fromMeters": "From (metres)",
+      "toMeters": "To (metres, 999 = unlimited)",
+      "priceExclOptional": "Price excl. VAT (€, optional)",
+      "autoVat": "Automatic based on VAT",
+      "deleteTariff": "Delete rate",
+      "confirmDelete": "Are you sure you want to delete this rate?",
+      "saving": "Saving…"
+    },
+    "searchFailed": "Could not load products. Please try again.",
+    "servicesEmpty": "No services are currently available.",
+    "shortcutsFailed": "Could not load shortcuts.",
+    "shortcutsFallback": "Default shortcuts are shown.",
+    "serviceDetails": {
+      "afspuiten": {
+        "heroTitle": "Professional hull pressure washing",
+        "heroSubtitle": "We pressure wash your hull immediately after lifting. A clean hull reduces drag, extends antifouling performance and keeps your boat in better condition.",
+        "priceFootnote": "Prices by length class, including VAT. The final price depends on the exact length of your boat.",
+        "badge": "Pressure washing",
+        "description": "Our pressure washing system removes algae, sludge and deposits deep in the surface. Filtered drainage protects the environment. Optional hull inspections and antifouling advice are available.",
+        "feature1Title": "Immediately after lifting",
+        "feature1Description": "Dirt has not dried out yet, giving the best cleaning result.",
+        "feature2Title": "Filtered drainage",
+        "feature2Description": "We collect deposits in accordance with our environmental permit.",
+        "feature3Title": "Optional hull inspection",
+        "feature3Description": "Visual checks for blistering and osmosis.",
+        "feature4Title": "Dries quickly",
+        "feature4Description": "Ready for antifouling or storage within 24 hours.",
+        "feature5Title": "Experienced team",
+        "feature5Description": "Our team has worked on the same boats for many years.",
+        "feature6Title": "All boat types",
+        "feature6Description": "Motorboats, sailing boats and launches: we adjust pressure and technique.",
+        "faq1Question": "How long does pressure washing take?",
+        "faq1Answer": "Usually 15 to 30 minutes, depending on length and the amount of fouling.",
+        "faq2Question": "Can I combine pressure washing with other services?",
+        "faq2Answer": "Yes, we recommend combining it with lifting and, if needed, antifouling. Ask our yard about the options.",
+        "faq3Question": "What happens to the collected waste?",
+        "faq3Answer": "A certified waste contractor disposes of it in accordance with our environmental permit.",
+        "faq4Question": "Is the service available in peak season?",
+        "faq4Answer": "Yes, but slots fill up. Book at least two weeks ahead in March–May and October–November."
+      },
+      "winterstalling": {
+        "heroTitle": "Safe winter storage",
+        "heroSubtitle": "Indoor and outdoor storage on an insured yard of over 10,000 m² in Roermond. We care for your boat as if it were our own.",
+        "priceFootnote": "Winter storage prices by length class, including VAT, two lifts and pressure washing. The final price depends on your boat’s exact length.",
+        "badge": "Winter storage",
+        "description": "Krekelberg Nautic offers winter and summer storage with optional winter preparation. Work on your boat yourself or leave maintenance to our mechanics. Insurance and 24/7 camera surveillance are included as standard.",
+        "feature1Title": "Indoor and outdoor options",
+        "feature1Description": "Both with cover for masts and sun protection.",
+        "feature2Title": "Insured yard",
+        "feature2Description": "A fully insured location with camera surveillance.",
+        "feature3Title": "Access during opening hours",
+        "feature3Description": "Work on or visit your boat during opening hours.",
+        "feature4Title": "Electricity connection",
+        "feature4Description": "Available on request as an option.",
+        "feature5Title": "On-site maintenance",
+        "feature5Description": "External mechanics are welcome under our yard conditions.",
+        "feature6Title": "Combine spring and autumn",
+        "feature6Description": "Lifting and pressure washing in one package.",
+        "faq1Question": "When does the storage season start?",
+        "faq1Answer": "Winter storage runs from 1 November to 30 April. Summer storage is available from 1 May to 31 October.",
+        "faq2Question": "Can I carry out maintenance during storage?",
+        "faq2Answer": "Yes. During opening hours you can access the yard, work areas, water and electricity.",
+        "faq3Question": "Is my boat insured during storage?",
+        "faq3Answer": "Our yard is insured. We recommend keeping your own hull insurance.",
+        "faq4Question": "How is my boat placed on its cradle?",
+        "faq4Answer": "We adjust the cradles to your boat type. You receive a photo of its placement."
+      },
+      "weekje_op_wal": {
+        "heroTitle": "A week ashore",
+        "heroSubtitle": "Lift your boat out of the water and spend a week maintaining it at our yard. We discuss the schedule and options for your boat in advance.",
+        "description": "A week ashore gives you time to work on your boat. Discuss your preferred dates, lifting and facilities with us. Our yard supports DIY maintenance and help from our mechanics by appointment.",
+        "priceFootnote": "Prices by length class, including VAT. Contact us for availability and to agree what the package includes.",
+        "feature1Title": "One week ashore",
+        "feature1Description": "Set aside time to give your boat some attention.",
+        "feature2Title": "Maintenance at your pace",
+        "feature2Description": "Discuss your planned work with us in advance.",
+        "feature3Title": "Yard facilities",
+        "feature3Description": "Ask about work areas, electricity and water.",
+        "feature4Title": "Help by appointment",
+        "feature4Description": "Discuss in advance whether our mechanics can help.",
+        "feature5Title": "Planning together",
+        "feature5Description": "Agree your preferred dates and lifting schedule with us.",
+        "feature6Title": "Pricing by length class",
+        "feature6Description": "View indicative prices based on your boat’s length.",
+        "faq1Question": "How do I book a week ashore?",
+        "faq1Answer": "Contact us to discuss your preferred dates and lifting schedule.",
+        "faq2Question": "Can I do the work myself?",
+        "faq2Answer": "Yes, DIY maintenance is possible under the yard conditions. Discuss the facilities you need in advance.",
+        "faq3Question": "Can a mechanic help me?",
+        "faq3Answer": "Our mechanics can help by appointment. Contact us in advance to discuss the options.",
+        "faq4Question": "How is the price calculated?",
+        "faq4Answer": "The price depends on your boat’s length class. Displayed prices are indicative; contact us to agree the details and availability."
+      },
+      "zelf_werken": {
+        "heroTitle": "Work on your boat at our yard",
+        "heroSubtitle": "Combine our facilities with your own skills. Our yard supports DIY boat owners with work areas, tools and advice.",
+        "badge": "DIY boat maintenance",
+        "description": "You can work on your own boat at our yard under the yard conditions. We provide work areas, electricity and water. Our mechanics can answer questions or carry out specialist work. External mechanics are welcome if registered.",
+        "feature1Title": "Work areas with electricity",
+        "feature1Description": "Lit spaces with 230V sockets.",
+        "feature2Title": "Water and compressed air",
+        "feature2Description": "Available at fixed supply points.",
+        "feature3Title": "Lifting equipment by appointment",
+        "feature3Description": "Our 30-tonne crane handles heavy components.",
+        "feature4Title": "External mechanics welcome",
+        "feature4Description": "With valid liability insurance and VCA certification.",
+        "feature5Title": "Materials shop",
+        "feature5Description": "Screws, paint, adhesives and oil on site.",
+        "feature6Title": "Toilets and coffee",
+        "feature6Description": "Facilities for long working days.",
+        "faq1Question": "What work can I carry out myself?",
+        "faq1Answer": "Maintenance, painting, polishing and small repairs. Welding and battery or gas installation work must be registered in advance.",
+        "faq2Question": "Can I bring my own mechanic?",
+        "faq2Answer": "Yes, with liability insurance and valid VCA certification. Register at reception.",
+        "faq3Question": "Are there specific rules?",
+        "faq3Answer": "Always follow barriers and environmental rules. No open flames or waste on the ground. Leave the work area tidy.",
+        "faq4Question": "Can I have parts delivered?",
+        "faq4Answer": "Yes, suppliers can deliver directly to the yard. We notify you by text message when your package arrives."
+      }
     }
   }
 }

@@ -3,6 +3,7 @@ import { LegalPage } from '@/components/site/LegalPage';
 export default function VoorwaardenPage() {
   return (
     <LegalPage
+      page="voorwaarden"
       badge="Algemene voorwaarden"
       title="Algemene voorwaarden"
       subtitle="De algemene voorwaarden van Krekelberg Nautic B.V., van toepassing op alle diensten en overeenkomsten."

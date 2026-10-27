@@ -1,4 +1,7 @@
 'use client';
+import { adminRecordHref } from '@/config/admin-routes';
+
+import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -318,7 +321,7 @@ export default function TimelinePage() {
                 active={activePreset === id}
                 onClick={() => applyPreset(id)}
               >
-                {t(`adminNew.timeline.presets.${id}`, { defaultValue: id })}
+                {tEnum(t, 'adminNew.timeline.presets', id, { defaultValue: id })}
               </AdminFilterPill>
             ))}
           </div>
@@ -336,7 +339,7 @@ export default function TimelinePage() {
                     : 'rounded-full border border-navy-200 px-3 py-1 text-xs font-medium text-navy-500 hover:bg-sand-50'
                 }
               >
-                {t(`adminNew.timeline.datePresets.${id}`, { defaultValue: id })}
+                {tEnum(t, 'adminNew.timeline.datePresets', id, { defaultValue: id })}
               </button>
             ))}
             {(from || to) && (
@@ -483,7 +486,7 @@ export default function TimelinePage() {
                         <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-navy-400">
                           {customer?.name ? (
                             <Link
-                              href={`/${locale}/admin/klanten/${String(customer.id)}`}
+                              href={adminRecordHref(locale, 'klanten', customer)}
                               className="flex items-center gap-0.5 hover:text-marine-700"
                             >
                               <User className="h-3 w-3" />
@@ -492,7 +495,7 @@ export default function TimelinePage() {
                           ) : null}
                           {boat?.name ? (
                             <Link
-                              href={`/${locale}/admin/boten/${String(boat.id)}`}
+                              href={adminRecordHref(locale, 'boten', boat)}
                               className="flex items-center gap-0.5 hover:text-marine-700"
                             >
                               <Ship className="h-3 w-3" />

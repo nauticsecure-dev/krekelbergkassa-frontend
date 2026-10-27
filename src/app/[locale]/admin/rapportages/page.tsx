@@ -1,5 +1,8 @@
 'use client';
+import { adminRecordHref } from '@/config/admin-routes';
 
+
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
 import {
@@ -219,7 +222,7 @@ export default function ReportsPage() {
             <AdminSelect value={period} onChange={(v) => { setPeriod(v); setDateFrom(''); setDateTo(''); }}>
               {PRESETS.map((p) => (
                 <option key={p} value={p}>
-                  {t(`adminNew.reports.presets.${p}`)}
+                  {tEnum(t, 'adminNew.reports.presets', p)}
                 </option>
               ))}
             </AdminSelect>
@@ -582,7 +585,7 @@ export default function ReportsPage() {
                       return (
                         <div key={i} className="flex items-center justify-between rounded-md px-2 py-1 text-sm">
                           {custId ? (
-                            <Link href={`/${locale}/admin/klanten/${custId}`} className="text-navy-800 hover:text-marine-700 hover:underline">
+                            <Link href={adminRecordHref(locale, 'klanten', { ...c, id: custId })} className="text-navy-800 hover:text-marine-700 hover:underline">
                               {custName}
                             </Link>
                           ) : (

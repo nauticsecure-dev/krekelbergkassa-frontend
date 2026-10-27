@@ -1,5 +1,6 @@
 'use client';
 
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
 import { Banknote, BookOpen, Building2, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
@@ -147,7 +148,7 @@ export default function AccountingPage() {
                 onClick={() => setPayStatus(s)}
                 className={`rounded-full px-3 py-1 text-xs font-semibold transition ${payStatus === s ? 'bg-navy-900 text-white' : 'bg-navy-50 text-navy-600 hover:bg-navy-100'}`}
               >
-                {s ? t(`adminNew.status.${s}`) : t('adminNew.common.all')}
+                {s ? tEnum(t, 'adminNew.status', s) : t('adminNew.common.all')}
               </button>
             ))}
           </div>
