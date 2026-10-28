@@ -24,6 +24,13 @@ function localeFromPath(pathname: string): string {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  // Enforce this before rewrites, including encoded paths. A catch-all route
+  // alone runs after rewrites and cannot protect the backend network boundary.
+  let decodedPath = pathname;
+  try { decodedPath = decodeURIComponent(decodeURIComponent(pathname)).toLowerCase(); } catch { /* Invalid paths fail below. */ }
+  if (/^\/api\/v1\/(?:admin\/)?quality(?:\/|$)/i.test(decodedPath)) {
+    return new NextResponse(null, { status: 404, headers: { 'Cache-Control': 'private, no-store' } });
+  }
 
   if (
     pathname.startsWith('/_next') ||

@@ -1518,14 +1518,14 @@ export default function KassaPage() {
           })()}
 
           {/* Results */}
-          <div>
-            <div className="mb-3 flex items-baseline gap-2">
-              <h2 className="text-lg font-semibold text-navy-900">
+          <div className="min-w-0 rounded-2xl border border-navy-100/70 bg-sand-50/60 p-3 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="min-w-0 break-words text-lg font-semibold text-navy-900">
                 {t("adminNew.kassa.resultsTitle", { category: categoryLabel })}
               </h2>
               {!productsQuery.loading ? (
-                <span className="text-sm font-medium text-emerald-600">
-                  ({t("adminNew.kassa.matchCount", { count: resultCount })})
+                <span className="rounded-full border border-marine-100 bg-white px-3 py-1 text-xs font-semibold text-marine-700">
+                  {t("adminNew.kassa.matchCount", { count: resultCount })}
                 </span>
               ) : null}
             </div>
@@ -1541,7 +1541,7 @@ export default function KassaPage() {
                 message={t("adminNew.kassa.emptyProductsMessage")}
               />
             ) : usingRanges ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(min(100%,9rem),1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,11rem),1fr))] sm:gap-4">
                 {rangeTiles.map((rule) => {
                   const product =
                     allProducts.find((p) => p.id === rule.product_id) ??
@@ -1566,7 +1566,7 @@ export default function KassaPage() {
                 })}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(min(100%,9rem),1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,11rem),1fr))] sm:gap-4">
                 {visibleProducts.slice(0, 24).map((product) => {
                   const ruleMatch =
                     matchingRule && matchingRule.product_id === product.id
@@ -1583,42 +1583,44 @@ export default function KassaPage() {
                     product.group?.name ?? null,
                   ].filter(Boolean) as string[];
                   return (
-                    <div key={product.id} className="relative h-full">
-                      {isHot ? (
+                    <CatalogTile
+                      key={product.id}
+                      actions={<>
+                        {isHot ? (
                         <span
-                          className="absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow"
-                          title={t("adminNew.kassa.hotProduct", { count: heatCount })}
+                            className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-600"
+                            title={t("adminNew.kassa.hotProduct", { count: heatCount })}
+                          >
+                            <Zap className="h-3 w-3" />
+                            {heatCount}
+                          </span>
+                        ) : null}
+                        {/* Trello #80: quick edit pencil → product detail */}
+                        <Link
+                          href={adminRecordHref(locale, 'producten', product)}
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label={t("adminNew.kassa.editProduct")}
+                          className="ml-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-navy-500 transition hover:bg-marine-50 hover:text-marine-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marine-500"
                         >
-                          <Zap className="h-2.5 w-2.5" />
-                          {heatCount}
-                        </span>
-                      ) : null}
-                      {/* Trello #80: quick edit pencil → product detail */}
-                      <Link
-                        href={adminRecordHref(locale, 'producten', product)}
-                        onClick={(e) => e.stopPropagation()}
-                        aria-label={t("adminNew.kassa.editProduct")}
-                        className="absolute right-1.5 top-1.5 z-10 rounded-full bg-white/80 p-1 text-navy-400 transition hover:scale-110 hover:text-marine-600"
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </Link>
-                      <button
-                        type="button"
-                        aria-pressed={fav}
-                        aria-label={t("adminNew.kassa.favouriteToggle")}
-                        onClick={() => toggleFavorite(product.id)}
-                        className="absolute bottom-1.5 right-1.5 z-10 rounded-full bg-white/70 p-1 transition hover:scale-110"
-                      >
-                        <Star
-                          className={cn(
-                            "h-3.5 w-3.5",
-                            fav
-                              ? "fill-gold-400 text-gold-500"
-                              : "text-navy-200",
-                          )}
-                        />
-                      </button>
-                      <CatalogTile
+                          <Pencil className="h-4 w-4" />
+                        </Link>
+                        <button
+                          type="button"
+                          aria-pressed={fav}
+                          aria-label={t("adminNew.kassa.favouriteToggle")}
+                          onClick={() => toggleFavorite(product.id)}
+                          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition hover:bg-gold-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marine-500"
+                        >
+                          <Star
+                            className={cn(
+                              "h-4 w-4",
+                              fav
+                                ? "fill-gold-400 text-gold-500"
+                                : "text-navy-400",
+                            )}
+                          />
+                        </button>
+                      </>}
                         title={product.name}
                         subtitle={product.code}
                         meta={metaBits.length ? metaBits.join(" · ") : undefined}
@@ -1638,7 +1640,6 @@ export default function KassaPage() {
                         highlighted={!!ruleMatch}
                         onClick={() => addProduct(product, ruleMatch)}
                       />
-                    </div>
                   );
                 })}
               </div>
@@ -2953,6 +2954,7 @@ function CatalogTile({
   image,
   displayIcon,
   displayColor,
+  actions,
   onClick,
 }: {
   title: string;
@@ -2965,93 +2967,77 @@ function CatalogTile({
   image?: string | null;
   displayIcon?: string | null;
   displayColor?: string | null;
+  actions?: React.ReactNode;
   onClick: () => void;
 }) {
   const tileAccent = displayColor || accent;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={!selected ? { borderLeftColor: tileAccent } : undefined}
+    <div
       className={cn(
-        "group relative flex h-full flex-col justify-between gap-2 rounded-xl border p-3 text-left transition w-full",
+        "group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-shadow hover:shadow-md",
         selected
-          ? "border-marine-500 bg-marine-500 text-white shadow-sm"
+          ? "border-marine-500 ring-1 ring-marine-500"
           : cn(
-              "border-l-4 border-navy-100/80 bg-white hover:-translate-y-0.5 hover:border-marine-200 hover:shadow-card",
+              "border-navy-100 hover:border-marine-300",
               highlighted && "ring-2 ring-marine-300",
             ),
       )}
     >
-      <div className="flex items-start justify-between gap-1">
+      <span className="h-1 w-full shrink-0" style={{ backgroundColor: tileAccent }} />
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "flex min-h-[11rem] w-full min-w-0 flex-1 flex-col gap-3 p-3 text-left sm:min-h-[12rem] sm:p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-marine-500",
+          selected ? "bg-marine-50/70" : "hover:bg-sand-50/50",
+        )}
+      >
+        <div className="flex w-full items-center justify-between gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-sand-50 ring-1 ring-navy-100">
+            {image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={image} alt="" className="h-full w-full object-cover" />
+            ) : displayIcon ? (
+              <span className="text-2xl" style={{ color: tileAccent }}>{displayIcon}</span>
+            ) : (
+              <Ship className="h-6 w-6" style={{ color: tileAccent }} />
+            )}
+          </span>
+          <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full", selected ? "bg-marine-600 text-white" : "bg-marine-50 text-marine-600")}>
+            {selected ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          </span>
+        </div>
         <div className="min-w-0">
           <div
-            className={cn(
-              "text-sm font-semibold leading-tight",
-              selected ? "text-white" : "text-navy-900",
-            )}
+            className="break-words text-sm font-semibold leading-snug text-navy-900 [overflow-wrap:anywhere]"
           >
             {title}
           </div>
           {subtitle ? (
             <div
-              className={cn(
-                "mt-0.5 truncate text-xs",
-                selected ? "text-white/80" : "text-navy-400",
-              )}
+              className="mt-1 break-words text-xs text-navy-500 [overflow-wrap:anywhere]"
             >
               {subtitle}
             </div>
           ) : null}
         </div>
-        {selected ? (
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/25">
-            <Check className="h-3 w-3" />
-          </span>
-        ) : image ? (
-          <span className="h-8 w-8 shrink-0 overflow-hidden rounded-md ring-1 ring-navy-100">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image} alt="" className="h-full w-full object-cover" />
-          </span>
-        ) : displayIcon ? (
-          <span
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-lg ring-1 ring-navy-100"
-            style={{ backgroundColor: displayColor ? `${displayColor}22` : undefined }}
-          >
-            {displayIcon}
-          </span>
-        ) : (
-          <span
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md ring-1 ring-navy-100"
-            style={{ backgroundColor: tileAccent ? `${tileAccent}22` : '#e8edf3' }}
-          >
-            <Ship
-              className="h-4 w-4 shrink-0 transition text-navy-300 group-hover:text-marine-400"
-            />
-          </span>
-        )}
-      </div>
-      <div>
-        {meta ? (
+        <div className="mt-auto w-full min-w-0 border-t border-navy-100/70 pt-3">
+          {meta ? (
+            <div
+              className="mb-1 break-words text-xs text-navy-500 [overflow-wrap:anywhere]"
+            >
+              {meta}
+            </div>
+          ) : null}
           <div
-            className={cn(
-              "mb-0.5 truncate text-[11px]",
-              selected ? "text-white/80" : "text-navy-400",
-            )}
+            className="break-words text-xl font-bold tabular-nums tracking-tight text-marine-800 [overflow-wrap:anywhere]"
           >
-            {meta}
+            {price}
           </div>
-        ) : null}
-        <div
-          className={cn(
-            "text-base font-bold",
-            selected ? "text-white" : "text-marine-700",
-          )}
-        >
-          {price}
         </div>
-      </div>
-    </button>
+      </button>
+      {actions ? <div className="flex items-center gap-1 border-t border-navy-100/70 px-3 py-1">{actions}</div> : null}
+    </div>
   );
 }
 

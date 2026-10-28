@@ -27,6 +27,12 @@ if (process.env.E2E_LOW_MEMORY === '1' && fs.existsSync(path.join(dir, '.next/BU
   const handle = app.getRequestHandler();
   app.prepare().then(() => {
     http.createServer((request, response) => {
+      let decoded = request.url.split('?')[0];
+      try { decoded = decodeURIComponent(decodeURIComponent(decoded)); } catch {}
+      if (/^\/api\/v1\/(?:admin\/)?quality(?:\/|$)/i.test(decoded)) {
+        response.writeHead(404, { 'Cache-Control': 'private, no-store' }).end();
+        return;
+      }
       if (!request.url.startsWith('/api/')) return handle(request, response);
       const target = new URL(request.url, process.env.API_PROXY_TARGET);
       if (target.protocol !== 'http:' || !['127.0.0.1', 'localhost'].includes(target.hostname)) {

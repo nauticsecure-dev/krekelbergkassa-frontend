@@ -934,7 +934,7 @@ export const pricingService = {
   // Trello #107: makelaardij (brokerage) tariff table + preview.
   async brokerageTariffs() {
     const res = await api<unknown>('/v1/pricing/brokerage-tariffs');
-    return asArray<BrokerageTariff>(res);
+    return asArray<BrokerageTariff>(maybeResource<unknown>(res, 'tariffs'));
   },
   createBrokerageTariff(payload: Record<string, unknown>) {
     return api<BrokerageTariff>('/v1/pricing/brokerage-tariffs', {
@@ -1865,7 +1865,7 @@ export const calendarService = {
   },
   async locations() {
     const res = await api<unknown>('/v1/admin/calendar/locations');
-    return asArray<BoatLocation>(res);
+    return asArray<BoatLocation>(maybeResource<unknown>(res, 'locations'));
   },
   createLocation(payload: Record<string, unknown>) {
     return api<BoatLocation>('/v1/admin/calendar/locations', {
