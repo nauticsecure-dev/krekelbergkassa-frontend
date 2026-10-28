@@ -1,6 +1,8 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
+import InvoiceLayoutTemplatePage from '../layout/page';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, History, ScanText } from 'lucide-react';
@@ -15,6 +17,11 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+
+function EditorRouter() {
+  const params = useSearchParams();
+  return params.has('id') || params.has('importId') || params.get('mode') === 'extraction' ? <EditorInner /> : <InvoiceLayoutTemplatePage />;
+}
 
 function EditorInner() {
   const { locale, t } = useIntl();
@@ -157,7 +164,7 @@ function EditorInner() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.templates.fieldsMeta.documentType')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
@@ -172,7 +179,7 @@ function EditorInner() {
                 <option value="contract">Contract</option>
                 <option value="document">Overig document</option>
                 <option value="unknown">Onbekend</option>
-              </select>
+              </SearchSelect>
             </div>
             <Input
               label={t('adminNew.templates.fieldsMeta.supplierEmail')}
@@ -239,7 +246,7 @@ function EditorInner() {
 export default function TemplateEditorPage() {
   return (
     <React.Suspense fallback={<AdminContent><LoadingState label="…" /></AdminContent>}>
-      <EditorInner />
+      <EditorRouter />
     </React.Suspense>
   );
 }

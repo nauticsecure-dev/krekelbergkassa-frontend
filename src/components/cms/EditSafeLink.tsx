@@ -32,7 +32,7 @@ export function EditSafeLink({
   button?: CtaButton;
   'aria-label'?: string;
 }) {
-  const { isCmsEditing } = useCms();
+  const { isCmsEditing, retainCmsDrafts } = useCms();
   const look = button
     ? buttonClassName({
         variant: button.variant,
@@ -50,9 +50,20 @@ export function EditSafeLink({
     </>
   );
 
-  if (isCmsEditing) {
+  if (isCmsEditing || retainCmsDrafts) {
     return (
-      <div className={cn(look, 'cursor-text')} aria-label={ariaLabel}>
+      <div
+        className={cn(look, 'pointer-events-auto cursor-text')}
+        aria-label={ariaLabel}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          // Padding and icons belong to the same editable link as its label.
+          // Child editors stop propagation themselves, so this only handles
+          // clicks on the surrounding surface.
+          event.currentTarget.querySelector<HTMLButtonElement>('button[data-cms-edit]')?.click();
+        }}
+      >
         {content}
       </div>
     );

@@ -1,0 +1,305 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-audit.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/remaining-scenarios",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/remaining-scenarios-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node --v8-pool-size=1 scripts/admin-audit-server.cjs",
+      "env": {
+        "NEXT_DIST_DIR": ".next-admin-audit",
+        "NEXT_PUBLIC_API_URL": "/api",
+        "API_PROXY_TARGET": "http://127.0.0.1:9",
+        "RAYON_NUM_THREADS": "1",
+        "NEXT_FONT_GOOGLE_MOCKED_RESPONSES": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\fixtures\\journey-fonts.cjs"
+      },
+      "url": "http://localhost:3047/sw.js",
+      "timeout": 300000,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "admin-review.spec.ts",
+      "file": "admin-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "kassa: empty page renders without overflow or JavaScript errors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 41987,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:42:10.680Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-b4e9ae1b26cd691ee067",
+          "file": "admin-review.spec.ts",
+          "line": 54,
+          "column": 7
+        },
+        {
+          "title": "kalender: empty page renders without overflow or JavaScript errors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8610,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:42:52.861Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-b6827b4a0d3443f43840",
+          "file": "admin-review.spec.ts",
+          "line": 54,
+          "column": 7
+        },
+        {
+          "title": "audit: empty page renders without overflow or JavaScript errors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7885,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:43:01.500Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-50002ec91200d41ed267",
+          "file": "admin-review.spec.ts",
+          "line": 54,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "pricing-permissions.spec.ts",
+      "file": "pricing-permissions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "employee reaches filtered rules, saves cents, and reloads the updated tariff",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11868,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:43:09.429Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6833bd831a931f145980-4acc8978030d3ac07a0a",
+          "file": "pricing-permissions.spec.ts",
+          "line": 34,
+          "column": 5
+        },
+        {
+          "title": "public Winterstalling pricing link respects pricing.update (true)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9297,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:43:21.326Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6833bd831a931f145980-09cd7f5380e935ddda5e",
+          "file": "pricing-permissions.spec.ts",
+          "line": 48,
+          "column": 7
+        },
+        {
+          "title": "public Winterstalling pricing link respects pricing.update (false)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2731,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:43:30.654Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6833bd831a931f145980-05b3b309b7145eeff78f",
+          "file": "pricing-permissions.spec.ts",
+          "line": 48,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-27T03:42:03.825Z",
+    "duration": 90357.91500000001,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

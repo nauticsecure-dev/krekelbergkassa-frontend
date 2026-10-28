@@ -4,6 +4,7 @@ import { companyInfo } from '@/lib/company';
 export default function PrivacyPage() {
   return (
     <LegalPage
+      page="privacy"
       badge="Privacyverklaring"
       title="Hoe wij omgaan met uw gegevens"
       subtitle="Wij gaan zorgvuldig om met de persoonsgegevens van onze klanten en zakelijke partners. Lees hieronder hoe wij dat doen."

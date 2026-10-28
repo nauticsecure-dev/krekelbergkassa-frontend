@@ -1,16 +1,19 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { Star } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminContent, AdminSectionCard } from '@/components/admin/AdminUi';
+import { ErrorState, LoadingState } from '@/components/admin/DataState';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { Button } from '@/components/ui/Button';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { dashboardShortcutsService, type DashboardShortcut } from '@/lib/services';
 import { adminRouteCatalog } from '@/config/admin-routes';
 import { useIntl } from '@/i18n/IntlProvider';
 
-const ROLES = ['admin', 'employee', 'finance'] as const;
+const ROLES = ['super_admin', 'admin', 'employee', 'finance'] as const;
 const ICONS = ['Star', 'CreditCard', 'Warehouse', 'FileText', 'Calculator', 'Receipt'];
 const LOCALES = ['nl', 'en', 'de', 'fr'] as const;
 
@@ -19,6 +22,12 @@ export default function DashboardShortcutsPage() {
   const query = useQuery([], () => dashboardShortcutsService.manage());
   const [rows, setRows] = React.useState<DashboardShortcut[]>([]);
   const [notice, setNotice] = React.useState<string | null>(null);
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  async function perform(action: () => Promise<void>) {
+    setBusy(true); setError(null);
+    try { await action(); } catch (err) { setError(getApiErrorMessage(err)); } finally { setBusy(false); }
+  }
   const [savingId, setSavingId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -78,7 +87,6 @@ export default function DashboardShortcutsPage() {
     if (target < 0 || target >= next.length) return;
     const [item] = next.splice(index, 1);
     next.splice(target, 0, item);
-    setRows(next);
     const result = await dashboardShortcutsService.reorder(next.map((row) => row.id));
     setRows(result.data);
   }
@@ -93,6 +101,9 @@ export default function DashboardShortcutsPage() {
     <>
       <AdminPageHeader title={t('adminNew.shortcuts.title')} subtitle={t('adminNew.shortcuts.subtitle')} />
       <AdminContent>
+        {error ? <ErrorState message={error} /> : null}
+        {query.loading ? <LoadingState label={t('adminNew.common.loading')} /> : null}
+        {query.error && query.errorStatus !== 403 ? <ErrorState message={query.error} onRetry={() => void query.refetch().catch(() => undefined)} /> : null}
         {query.errorStatus === 403 ? (
           <AdminSectionCard title={t('adminNew.shortcuts.title')} icon={Star}>
             <p className="text-sm text-navy-600">{t('adminNew.shortcuts.forbidden')}</p>
@@ -103,11 +114,11 @@ export default function DashboardShortcutsPage() {
             icon={Star}
             description={notice ?? undefined}
             action={
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => void reset()}>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" disabled={busy || query.loading || !!query.error} onClick={() => void perform(reset)}>
                   {t('adminNew.shortcuts.reset')}
                 </Button>
-                <Button type="button" variant="gold" onClick={() => void createShortcut()}>
+                <Button type="button" variant="gold" disabled={busy || query.loading || !!query.error} onClick={() => void perform(createShortcut)}>
                   {t('adminNew.shortcuts.create')}
                 </Button>
               </div>
@@ -120,14 +131,14 @@ export default function DashboardShortcutsPage() {
                   className="rounded-xl border border-navy-100 p-4"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    void save(row);
+                    void perform(() => save(row));
                   }}
                 >
                   <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => void move(index, -1)} aria-label={t('adminNew.shortcuts.moveUp')}>
+                    <Button type="button" variant="outline" size="sm" disabled={busy || index === 0} onClick={() => void perform(() => move(index, -1))} aria-label={t('adminNew.shortcuts.moveUp')}>
                       {t('adminNew.shortcuts.moveUp')}
                     </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => void move(index, 1)} aria-label={t('adminNew.shortcuts.moveDown')}>
+                    <Button type="button" variant="outline" size="sm" disabled={busy || index === rows.length - 1} onClick={() => void perform(() => move(index, 1))} aria-label={t('adminNew.shortcuts.moveDown')}>
                       {t('adminNew.shortcuts.moveDown')}
                     </Button>
                     <label className="ml-auto flex items-center gap-2 text-sm text-navy-700">
@@ -146,19 +157,19 @@ export default function DashboardShortcutsPage() {
                     </label>
                     <label className="text-sm text-navy-700">
                       {t('adminNew.shortcuts.route')}
-                      <select className="input-base mt-1 w-full" value={row.route_key} onChange={(event) => patchRow(row.id, { route_key: event.target.value })}>
+                      <SearchSelect className="input-base mt-1 w-full" value={row.route_key} onChange={(event) => patchRow(row.id, { route_key: event.target.value })}>
                         {routes.map((routeKey) => (
                           <option key={routeKey} value={routeKey}>{routeKey}</option>
                         ))}
-                      </select>
+                      </SearchSelect>
                     </label>
                     <label className="text-sm text-navy-700">
                       {t('adminNew.shortcuts.label')}
-                      <select className="input-base mt-1 w-full" value={row.icon} onChange={(event) => patchRow(row.id, { icon: event.target.value })}>
+                      <SearchSelect className="input-base mt-1 w-full" value={row.icon} onChange={(event) => patchRow(row.id, { icon: event.target.value })}>
                         {ICONS.map((icon) => (
                           <option key={icon} value={icon}>{icon}</option>
                         ))}
-                      </select>
+                      </SearchSelect>
                     </label>
                     {LOCALES.map((code) => (
                       <label key={code} className="text-sm text-navy-700">
@@ -207,10 +218,10 @@ export default function DashboardShortcutsPage() {
                     </label>
                   </details>
                   <div className="mt-3 flex gap-2">
-                    <Button type="submit" variant="gold" disabled={savingId === row.id}>
+                    <Button type="submit" variant="gold" disabled={busy || savingId === row.id}>
                       {t('adminNew.shortcuts.save')}
                     </Button>
-                    <Button type="button" variant="outline" onClick={() => void remove(row.id)}>
+                    <Button type="button" variant="outline" disabled={busy} onClick={() => void perform(() => remove(row.id))}>
                       {t('admin.common.delete', { defaultValue: 'Verwijderen' })}
                     </Button>
                   </div>

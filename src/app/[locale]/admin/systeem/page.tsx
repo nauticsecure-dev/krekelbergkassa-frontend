@@ -1,4 +1,6 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import {
@@ -119,7 +121,7 @@ export default function SystemPage() {
       await repair.refetch();
       push({
         tone: 'success',
-        title: successKey ? t(successKey) : t('adminNew.system.toasts.actionDone'),
+        title: successKey ? tEnum(t, 'adminNew.system.toasts', successKey) : t('adminNew.system.toasts.actionDone'),
       });
     } catch (err) {
       push({
@@ -496,7 +498,7 @@ export default function SystemPage() {
                         title={
                           <span className="flex items-center gap-2">
                             <span className="capitalize">{String(run.type ?? 'backup')}</span>
-                            <Badge tone={tone}>{t(`adminNew.backups.status.${status}`)}</Badge>
+                            <Badge tone={tone}>{tEnum(t, 'adminNew.backups.status', status)}</Badge>
                           </span>
                         }
                         subtitle={
@@ -600,14 +602,14 @@ export default function SystemPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.backups.fields.type')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={backupType}
                 onChange={(e) => setBackupType(e.target.value)}
               >
                 <option value="database">{t('adminNew.backups.types.database')}</option>
                 <option value="full">{t('adminNew.backups.types.full')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
@@ -646,7 +648,7 @@ function HealthMetric({
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
   const meta = healthStatusMeta(check.status);
-  const statusLabel = t(`adminNew.system.status.${meta.kind}`);
+  const statusLabel = tEnum(t, 'adminNew.system.status', meta.kind);
   const hint =
     check.latency_ms != null
       ? t('adminNew.system.status.latency', { ms: String(check.latency_ms) })

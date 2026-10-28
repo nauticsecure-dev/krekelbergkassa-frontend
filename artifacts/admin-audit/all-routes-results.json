@@ -1,0 +1,3312 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-audit.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/all-routes",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/all-routes-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node --v8-pool-size=1 scripts/admin-audit-server.cjs",
+      "env": {
+        "NEXT_DIST_DIR": ".next-admin-audit",
+        "NEXT_PUBLIC_API_URL": "/api",
+        "API_PROXY_TARGET": "http://127.0.0.1:9",
+        "RAYON_NUM_THREADS": "1",
+        "NEXT_FONT_GOOGLE_MOCKED_RESPONSES": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\fixtures\\journey-fonts.cjs"
+      },
+      "url": "http://localhost:3047/sw.js",
+      "timeout": 300000,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "admin-audit.spec.ts",
+      "file": "admin-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "route failure boundary: /admin/afspraken",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28659,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:08:20.660Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9hZnNwcmFrZW4iLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2Fmc3ByYWtlbj92aWV3PXdlZWsmZGF0ZT0yMDI2LTEwLTI3IiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJBZnNwcmFrZW5wbGFubmluZ1xuXG5QbGFuIGFmc3ByYWtlbiBwZXIgZGFnLCB3ZWVrIGVuIG1hYW5kXG5cbjAgQUZTUFJBS0VOXG4wXG5JTiBBRldBQ0hUSU5HXG4wXG5WQU5EQUFHXG4wXG5BZnNwcmFrZW5wbGFubmluZ1xuXG5UaWpkc2NoZW1hIG1ldCB1cmVuIGVuIGRhZ2VuLiBTbGVlcCBlZW4gYWZzcHJhYWsgb20gaGVtIHRlIHZlcnBsYWF0c2VuLlxuXG5EYXR1bVxuU3RhdHVzXG5BbGxlIHN0YXR1c3NlblxuRGllbnN0XG5EaWVuc3RcbkxvY2F0aWUgLyBrcmFhblxuTG9jYXRpZSAvIGtyYWFuXG5NZWRld2Vya2VyXG5NZWRld2Vya2VyXG5BZnNwcmFhayBhYW5tYWtlblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV8wMzY5NGM5MmU3ZWM0ZDBhYWU3Mylcbk9wbmlldXcgcHJvYmVyZW5cblZhbmRhYWdcbjI2IE9rdCDigJMgMSBOb3YgMjAyNlxuRGFnXG5XZWVrXG5NYWFuZFxuXHRcbk1hIDI2LTEwXG5cdFxuRGkgMjctMTBcblx0XG5XbyAyOC0xMFxuXHRcbkRvIDI5LTEwXG5cdFxuVnIgMzAtMTBcblx0XG5aYSAzMS0xMFxuXHRcblpvIDEtMTFcblxuXG4wNzowMFxuXHRcblx0XG5cbjA4OjAwXG5cdFxuXHRcblxuMDk6MDBcblx0XG5cdFxuXG4xMDowMFxuXHRcblx0XG5cbjExOjAwXG5cdFxuXHRcblxuMTI6MDBcblx0XG5cdFxuXG4xMzowMFxuXHRcblx0XG5cbjE0OjAwXG5cdFxuXHRcblxuMTU6MDBcblx0XG5cdFxuXG4xNjowMFxuXHRcblx0XG5cbjE3OjAwXG5cdFxuXHRcblxuMTg6MDBcblx0XG5cdFxuXG4xOTowMFxuXHRcblx0XG5cdFxuXHRcblx0XG5cdFxuXHRcblx0XG5cdFxuV2Vya29yZGVyc1xuXG5XZXJrb3JkZXJzIHRvbmVuXG5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfMDhjNTYzOWEwMjgwNDk3ZDg5NTUpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-afspraken-admin-audit\\attachments\\page-evidence-dcf5c6defdfab4cf30871711186b0b1ca9c0be42.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-7ac1b4b569e53fe58e44",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/api-credentials",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5153,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:08:49.687Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9hcGktY3JlZGVudGlhbHMiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2FwaS1jcmVkZW50aWFscyIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiQVBJLWNyZWRlbnRpYWxzXG5cbkJlaGVlciBlbiBiZWtpamsgQVBJLXNsZXV0ZWxzIHZhbiBleHRlcm5lIGRpZW5zdGVuLlxuXG5OaWV1d2UgY3JlZGVudGlhbFxuQVBJLWNyZWRlbnRpYWxzXG5cbkJlaGVlciBlbiBiZWtpamsgQVBJLXNsZXV0ZWxzIHZhbiBleHRlcm5lIGRpZW5zdGVuLlxuXG5BbGxlIGRpZW5zdGVuXG5BbGxlIG9tZ2V2aW5nZW5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfYmQ4YjQ2ZTU0MjNmNDNiNmI0OWIpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-api-credentials-admin-audit\\attachments\\page-evidence-293782058a3117d468d26d74fa36bdd61b41f0fd.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-506cce48454e5b99014b",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/audit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5882,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:08:54.881Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9hdWRpdCIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vYXVkaXQiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkF1ZGl0XG5cbkNvbnRyb2xlbG9nIHZvb3IgYmV2ZWlsaWdpbmcsIGJldGFsaW5nZW4sIGZhY3R1cmVuLCBrbGFudGVuIGVuIHN5bmNcblxuMCBFVkVOVFNcbjBcbkdFQkVVUlRFTklTVFlQRVNcbjBcbkVOVElURUlUU1RZUEVTXG4wXG5SRUNFTlRFIEFDVElWSVRFSVRcbjBcbkFjdGl2aXRlaXQgLyBLbGFudHJlaXNcblxuUHVibGlla2Uga2xhbnRyZWl6ZW4sIEFQSS1yZXN1bHRhdGVuIGVuIGJldmVzdGlnZGUgYWZzcHJha2VuLlxuXG5OYWFtLCBwYWdpbmEgb2YgdmVyem9la1xuSW50ZW50aWVcbkFsbGUgaW50ZW50aWVzXG5LcmFhbmFmc3ByYWFrXG5Cb290IHZlcmtvcGVuXG5XaW50ZXJzdGFsbGluZ1xuQm9vdCBrb3BlblxuQVBJLWVpbmRwdW50XG5NaW5pbWFsZSBIVFRQLXN0YXR1c1xuUGFnaW5hXG5HZWJldXJ0ZW5pc3R5cGVcbkFsbGVcblBhZ2luYSBnZW9wZW5kXG5Cb2VraW5nc2Zvcm11bGllciBnZXN0YXJ0XG5Cb2VraW5nIGluZ2VkaWVuZFxuQm9la2luZyBtaXNsdWt0XG5Cb2VraW5nIGdlYmxva2tlZXJkIGRvb3IgdmFsaWRhdGllXG5Gb3V0IGdldG9vbmQgYWFuIGtsYW50XG5Gb3RvLXVwbG9hZCBtaXNsdWt0XG5BUEktdmVyem9layBtaXNsdWt0XG5BZnNwcmFhayBhYW5nZW1hYWt0XG5WYW5cblRvdFxuQWxsZWVuIGZvdXRlblxuQWZnZWJyb2tlbiBmb3JtdWxpZXJlblxuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9jZDQ5MTViYmFiYzI0MGFkOWYwMikgXG5PcG5pZXV3IHByb2JlcmVuXG5BdWRpdFxuXG5Db250cm9sZWxvZyB2b29yIGJldmVpbGlnaW5nLCBiZXRhbGluZ2VuLCBmYWN0dXJlbiwga2xhbnRlbiBlbiBzeW5jXG5cbkFsbGUgb25kZXJkZWxlblxuQWxsZSBlbnRpdHkgdHlwZXNcbkFsbGUgcmVzdWx0YXRlblxuVmFuYWZcblRvdFxuVGVjaG5pc2NoZSBldmVudHMgdG9uZW5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfM2U3NDc3MGQ5ZTU0NDkzYWE0MjgpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-audit-admin-audit\\attachments\\page-evidence-2928036ef35adc1f6e10c7fb41b56ae0e910d1e5.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-21a43be97ec4d15a1684",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/beheer/dashboard-shortcuts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4656,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:00.792Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9iZWhlZXIvZGFzaGJvYXJkLXNob3J0Y3V0cyIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vYmVoZWVyL2Rhc2hib2FyZC1zaG9ydGN1dHMiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkRhc2hib2FyZGtub3BwZW5cblxuS2llcyB3ZWxrZSBzbmVsa29wcGVsaW5nZW4gb3AgaGV0IGRhc2hib2FyZCBzdGFhbiwgcGVyIHJvbC5cblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9jMTkxN2NkMmNhZmM0ZWExODc1Mylcbk9wbmlldXcgcHJvYmVyZW5cbkRhc2hib2FyZGtub3BwZW5cblN0YW5kYWFyZCBoZXJzdGVsbGVuXG5OaWV1d2Uga25vcCIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure--7225c--beheer-dashboard-shortcuts-admin-audit\\attachments\\page-evidence-ab7f25116e683c8ea561983bca19e8cf3917ad47.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-cd2b8512d6f061fb1867",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/beheer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5319,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:05.473Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9iZWhlZXIiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2JlaGVlciIsImluamVjdGVkRXJyb3JWaXNpYmxlIjpmYWxzZSwidGV4dCI6IkJlaGVlclxuXG5CZWhlZXIgZ2VicnVpa2VycyBlbiBpbnN0ZWxsaW5nZW4uIFRlY2huaXNjaGUgc3lzdGVlbWZ1bmN0aWVzIHppam4gYWxsZWVuIGJlc2NoaWtiYWFyIHZvb3Igc3lzdGVlbWJlaGVlcmRlcnMuXG5cbkNPTkZJR1VSQVRJRVxuR2VicnVpa2Vyc1xuQmVoZWVyIHRvZWdhbmcgZW4gbWVkZXdlcmtlcnNhY2NvdW50cy5cbkluc3RlbGxpbmdlblxuQmVoZWVyIGJlZHJpamZzLSBlbiBhcHBsaWNhdGllLWluc3RlbGxpbmdlbi5cbkRhc2hib2FyZGtub3BwZW5cbktpZXMgd2Vsa2Ugc25lbGtvcHBlbGluZ2VuIG9wIGhldCBkYXNoYm9hcmQgc3RhYW4sIHBlciByb2wuXG5TWVNURUVNQkVIRUVSXG5BdWRpdFxuQmVraWprIHRlY2huaXNjaGUgd2lqemlnaW5nc3JlZ2lzdHJhdGllcy5cbkJldmVpbGlnaW5nXG5CZWhlZXIgYmV2ZWlsaWdpbmdzaW5zdGVsbGluZ2VuLlxuQVBJLWNyZWRlbnRpYWxzXG5CZWhlZXIgZ2Vrb3BwZWxkZSBBUEktdG9lZ2FuZy5cbkluY2lkZW50ZW5cbkJla2lqayBzeXN0ZWVtaW5jaWRlbnRlbi5cblN5c3RlZW1cbk9wZW4gdGVjaG5pc2NoZSBzeXN0ZWVtc3RhdHVzIGVuIHRha2VuLiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-beheer-admin-audit\\attachments\\page-evidence-e4a1c4ab40d8d860c210efb0205bfbf7b661e918.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-63fc26c8b2fbd66f541d",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/betalingen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4484,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:10.820Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9iZXRhbGluZ2VuIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9iZXRhbGluZ2VuIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJCZXRhbGluZ2VuXG5cbk92ZXJ6aWNodCB2YW4gTW9sbGllLSBlbiBrYXNzYWJldGFsaW5nZW4uIE1hcmtlZXIgZWVuIGJldGFsaW5nIGFscyB2ZXJ3ZXJrdCB6b2RyYSBqZSBkZXplIGhlYnQgZ2Vjb250cm9sZWVyZCB0ZWdlbiBqZSBib2VraG91ZGluZy5cblxuQmV0YWxpbmdlblxuXG5PdmVyemljaHQgdmFuIE1vbGxpZS0gZW4ga2Fzc2FiZXRhbGluZ2VuLiBNYXJrZWVyIGVlbiBiZXRhbGluZyBhbHMgdmVyd2Vya3Qgem9kcmEgamUgZGV6ZSBoZWJ0IGdlY29udHJvbGVlcmQgdGVnZW4gamUgYm9la2hvdWRpbmcuXG5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfMjhhNmM4MGU5NjEwNDQ1OWJmMWYpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-betalingen-admin-audit\\attachments\\page-evidence-1b6e1347283bbb2d80d36bdf09376ed929f14f94.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-d850c246a779e246ebf7",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/beveiliging",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4653,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:15.327Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9iZXZlaWxpZ2luZyIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vYmV2ZWlsaWdpbmciLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkJldmVpbGlnaW5nXG5cbkJldmVpbGlnaW5nc3N0YXR1cyBlbiB2ZXJkYWNodGUgYWN0aXZpdGVpdCBpbiDDqcOpbiBvb2dvcHNsYWcuXG5cblZlcm5pZXV3ZW5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfNGZhZDAxMjE2NmYwNDU0NWFlODkpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-beveiliging-admin-audit\\attachments\\page-evidence-4304c6b9a2bcc03f4f2ed989a66fbb88a32f2208.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-975a794c4098ea4ca8ca",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/boekhouding",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5201,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:20.006Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9ib2VraG91ZGluZyIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vYm9la2hvdWRpbmciLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkJvZWtob3VkaW5nXG5cbk9temV0LCBrb3N0ZW4sIGJ0dyBlbiBjcmVkaXRldXJlbiBpbiDDqcOpbiBvb2dvcHNsYWcuXG5cbuKAk1xuTGV2ZXJhbmNpZXJzXG5PTVpFVFxu4oKswqAwLDAwXG5LT1NURU5cbuKCrMKgMCwwMFxuT1BFTlNUQUFOREUgQ1JFRElURVVSRU5cbuKCrMKgMCwwMFxuVEUgQkVUQUxFTiBCVFdcbuKCrMKgMCwwMFxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV8zZTI1M2FkM2JlZGY0OTZhYTM5Nilcbk9wbmlldXcgcHJvYmVyZW5cbkNyZWRpdGV1cmVuXG5cbk9wZW5zdGFhbmRlIGxldmVyYW5jaWVyc2ZhY3R1cmVuIGRpZSBvcCBiZXRhbGluZyB3YWNodGVuLlxuXG5BbGxlXG5PcGVuXG5CZXRhYWxkXG5BY2h0ZXJzdGFsbGlnXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzM2YTcwY2Y2ODk4MDQ5ODY4NzNkKVxuT3BuaWV1dyBwcm9iZXJlblxuR3Jvb3Rib2Vrb3ZlcnppY2h0XG5cblRvdGFsZW4gcGVyIGdyb290Ym9la3Jla2VuaW5nLlxuXG5Ob2cgZ2VlbiBncm9vdGJvZWtnZWdldmVucyBiZXNjaGlrYmFhci4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-boekhouding-admin-audit\\attachments\\page-evidence-e78271fcd79b1c650a3896fe28eb741a3c56887b.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-ccadfbaf52b3efd73bd1",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/boten/[id]/[slug]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5249,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:25.235Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9ib3Rlbi9baWRdL1tzbHVnXSIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vYm90ZW4vYXVkaXQtbWlzc2luZy1yZWNvcmQvYXVkaXQtcmVjb3JkIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJCb3RlblxuXG5Wb2xsZWRpZyBib290ZG9zc2llciBtZXQgc3RhbGxpbmcsIGZhY3R1cmVuIGVuIGF1ZGl0bG9nXG5cblRlcnVnXG5FaWdlbmFhciB3aWp6aWdlblxuQmV3ZXJrZW5cbkRBR0VOIElOIFNUQUxMSU5HXG7igJRcbk9NWkVUXG7igqzCoDAsMDBcbldFUktPUkRFUlNcbjBcbkZBQ1RVUkVOXG4wXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzdmNmM0NTVjMjE3YzQ0NzBiOTZkKVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-boten-id-slug--admin-audit\\attachments\\page-evidence-eae664eec5d3573b9da07c694528bd4875e5a7fa.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-9c977a01b785e3b390a8",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/boten/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4139,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:30.511Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9ib3Rlbi9baWRdIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9ib3Rlbi9hdWRpdC1taXNzaW5nLXJlY29yZCIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiQm90ZW5cblxuVm9sbGVkaWcgYm9vdGRvc3NpZXIgbWV0IHN0YWxsaW5nLCBmYWN0dXJlbiBlbiBhdWRpdGxvZ1xuXG5UZXJ1Z1xuRWlnZW5hYXIgd2lqemlnZW5cbkJld2Vya2VuXG5EQUdFTiBJTiBTVEFMTElOR1xu4oCUXG5PTVpFVFxu4oKswqAwLDAwXG5XRVJLT1JERVJTXG4wXG5GQUNUVVJFTlxuMFxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9hODk0N2E1ZDk3ZjA0MWQyYTA5ZClcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-boten-id--admin-audit\\attachments\\page-evidence-1569e0e591ef74923872561eda4f69e33557663c.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-cf4ee7d2f234d676d197",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/boten",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7321,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:34.680Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9ib3RlbiIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vYm90ZW4iLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkJvdGVuXG5cbkJlaGVlciBib3RlbiwgbGVuZ3RlcyBlbiBsb2NhdGllcyB2b29yIHN0YWxsaW5nIGVuIGZhY3R1cmF0aWVcblxuVE9UQUFMIEJPVEVOXG4wXG5JTiBTVEFMTElOR1xuMFxuQUNUSUVWRSBXRVJLT1JERVJTXG4wXG5PUEVOU1RBQU5EIFNBTERPXG7igqzCoDAsMDBcbkJvdGVuXG5cbkJlaGVlciBib3RlbiwgbGVuZ3RlcyBlbiBsb2NhdGllcyB2b29yIHN0YWxsaW5nIGVuIGZhY3R1cmF0aWVcblxuTmlldXdlIGJvb3RcbkFsbGUgc3RhdHVzc2VuXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzU2YTc2OGRlOWU4OTQ2MzZhOGI0KVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-boten-admin-audit\\attachments\\page-evidence-b9bb81ecfe589a3410249021abd4e5299b7b460a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-1c76ccb21c3847c6f7bd",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/bundels",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9463,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:42.031Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9idW5kZWxzIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9idW5kZWxzIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJCdW5kZWxzXG5cblN0ZWwgcHJvZHVjdHBha2tldHRlbiBzYW1lbiB2b29yIHNuZWxsZSB2ZXJrb29wXG5cbk5pZXV3ZSBidW5kZWxcbkJ1bmRlbHNcblxuU3RlbCBwcm9kdWN0cGFra2V0dGVuIHNhbWVuIHZvb3Igc25lbGxlIHZlcmtvb3BcblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV83MzU1NzZjODQ3ZGQ0NGFhYmI0MClcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-bundels-admin-audit\\attachments\\page-evidence-0feeea548c81f30319b32bad7494b84bc6b64cc9.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-f20d2710b6b4ce7e6b70",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/calculator/history",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8256,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:51.519Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9jYWxjdWxhdG9yL2hpc3RvcnkiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2NhbGN1bGF0b3IiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6ZmFsc2UsInRleHQiOiJESUVOU1RFTiAmIFBSSUpaRU5cblxuQ2FsY3VsYXRvclxuXG5Db25zaXN0ZW50ZSBwcmlqc2JlcmVrZW5pbmcgdm9vciBrYXNzYSwgc3RhbGxpbmcgZW4gdmVya29vcFxuXG5FeHBvcnRlZXIgQ1NWXG5QcmlqemVuIGJld2Vya2VuXG5CT09UTEVOR1RFIChDTSlcbjg4MCBjbVxuU0VSVklDRVNcbjFcblRPVEFMRSBQUklKU1xu4oCUXG5LTEFOVCAoT1BUSU9ORUVMIFZPT1IgQkVSRUtFTklORylcbjBcbkNhbGN1bGF0b3JcblxuQ29uc2lzdGVudGUgcHJpanNiZXJla2VuaW5nIHZvb3Iga2Fzc2EsIHN0YWxsaW5nIGVuIHZlcmtvb3BcblxuQm9vdGxlbmd0ZSAoY20pXG5Db250cmFjdCB0eXBlXG5XaW50ZXJcblNlcnZpY2VzXG5cbkRpZW5zdGVuIGtvbmRlbiBuaWV0IHdvcmRlbiBnZWxhZGVuLlxuXG5LbGFudCAob3B0aW9uZWVsIHZvb3IgYmVyZWtlbmluZylcblNlbGVjdGVlciBrbGFudFxuQmVyZWtlbiBwcmlqc1xuTWFhayBvZmZlcnRlXG5NYWFrIGZhY3R1dXJcbk5pZXV3ZSBrbGFudFxuUmVzdWx0YWF0XG5cbk5vZyBnZWVuIGJlcmVrZW5pbmcgdWl0Z2V2b2VyZC5cblxuTm9nIGdlZW4gYmVyZWtlbmluZyB1aXRnZXZvZXJkLlxuQ2FsY3VsYXRvciByZWNvcmRzXG5cbkVsa2Ugb3BnZXNsYWdlbiBiZXJla2VuaW5nIOKAlCBvcGVuIG9tIHZlcmRlciB0ZSBnYWFuLCBvbSB0ZSB6ZXR0ZW4gb2YgdGUgZHVwbGljZXJlbi5cblxuQWxsZSBrbGFudGVuXG5BbGxlIGRpZW5zdGVuXG5BbGxlIGdlYnJ1aWtlcnNcbkFsbGUgc3RhdHVzc2VuXG5PZmZlcnRlOiBhbGxlXG5GYWN0dXVyOiBhbGxlXG5BYW5nZW1hYWt0ICh2YW4vdG90KVxuQmlqZ2V3ZXJrdCAodmFuL3RvdClcblRvdGFhbGJlZHJhZyAo4oKsKVxuTm9nIGdlZW4gb3BnZXNsYWdlbiBiZXJla2VuaW5nZW4uIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-calculator-history-admin-audit\\attachments\\page-evidence-4391db88f6a2a2d9793b3a0f07e1b2c92ac3b968.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-80882ce045ba6fd8a482",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/calculator",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10695,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:09:59.802Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9jYWxjdWxhdG9yIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9jYWxjdWxhdG9yIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOmZhbHNlLCJ0ZXh0IjoiRElFTlNURU4gJiBQUklKWkVOXG5cbkNhbGN1bGF0b3JcblxuQ29uc2lzdGVudGUgcHJpanNiZXJla2VuaW5nIHZvb3Iga2Fzc2EsIHN0YWxsaW5nIGVuIHZlcmtvb3BcblxuRXhwb3J0ZWVyIENTVlxuUHJpanplbiBiZXdlcmtlblxuQk9PVExFTkdURSAoQ00pXG44ODAgY21cblNFUlZJQ0VTXG4xXG5UT1RBTEUgUFJJSlNcbuKAlFxuS0xBTlQgKE9QVElPTkVFTCBWT09SIEJFUkVLRU5JTkcpXG4wXG5DYWxjdWxhdG9yXG5cbkNvbnNpc3RlbnRlIHByaWpzYmVyZWtlbmluZyB2b29yIGthc3NhLCBzdGFsbGluZyBlbiB2ZXJrb29wXG5cbkJvb3RsZW5ndGUgKGNtKVxuQ29udHJhY3QgdHlwZVxuV2ludGVyXG5TZXJ2aWNlc1xuXG5EaWVuc3RlbiBrb25kZW4gbmlldCB3b3JkZW4gZ2VsYWRlbi5cblxuS2xhbnQgKG9wdGlvbmVlbCB2b29yIGJlcmVrZW5pbmcpXG5TZWxlY3RlZXIga2xhbnRcbkJlcmVrZW4gcHJpanNcbk1hYWsgb2ZmZXJ0ZVxuTWFhayBmYWN0dXVyXG5OaWV1d2Uga2xhbnRcblJlc3VsdGFhdFxuXG5Ob2cgZ2VlbiBiZXJla2VuaW5nIHVpdGdldm9lcmQuXG5cbk5vZyBnZWVuIGJlcmVrZW5pbmcgdWl0Z2V2b2VyZC5cbkNhbGN1bGF0b3IgcmVjb3Jkc1xuXG5FbGtlIG9wZ2VzbGFnZW4gYmVyZWtlbmluZyDigJQgb3BlbiBvbSB2ZXJkZXIgdGUgZ2Fhbiwgb20gdGUgemV0dGVuIG9mIHRlIGR1cGxpY2VyZW4uXG5cbkFsbGUga2xhbnRlblxuQWxsZSBkaWVuc3RlblxuQWxsZSBnZWJydWlrZXJzXG5BbGxlIHN0YXR1c3NlblxuT2ZmZXJ0ZTogYWxsZVxuRmFjdHV1cjogYWxsZVxuQWFuZ2VtYWFrdCAodmFuL3RvdClcbkJpamdld2Vya3QgKHZhbi90b3QpXG5Ub3RhYWxiZWRyYWcgKOKCrClcbk5vZyBnZWVuIG9wZ2VzbGFnZW4gYmVyZWtlbmluZ2VuLiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-calculator-admin-audit\\attachments\\page-evidence-92ae3107433d627facfcc83b494878461cd69796.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-399e49413e266e03f185",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/calculator/pricing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 29405,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:10:10.526Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9jYWxjdWxhdG9yL3ByaWNpbmciLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2NhbGN1bGF0b3IvcHJpY2luZyIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiUHJpanplbiBiZWhlcmVuXG5cblByaWNpbmcgcnVsZXMgcGVyIGJvb3RsZW5ndGUgZW4gZGllbnN0XG5cblRlcnVnXG5OaWV1d1xuUHJpanplbiBiZWhlcmVuXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzhjN2Y5ZGFiNDM3ZTRiYjVhYzk4KVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-calculator-pricing-admin-audit\\attachments\\page-evidence-440084358c6d017edeb32acde3e641469044f07b.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-b65b441754b1412f8582",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/contracten",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42585,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:10:39.974Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9jb250cmFjdGVuIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9zdGFsbGluZyIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiU3RhbGxpbmdcblxuQmVoZWVyIGNpcmNhIDIwMCBib3RlbiBtZXQgc3RhdHVzLCBwYWlkLXVudGlsIGVuIG9wZW4gc2FsZG9cblxuTmlldXcgY29udHJhY3RcbjAgQ09OVFJBQ1RFTlxuMFxuQUNIVEVSU1RBTExJR1xuMFxuT1BFTiBTQUxET1xu4oKswqAwLDAwXG5TdGFsbGluZ1xuXG5CZWhlZXIgY2lyY2EgMjAwIGJvdGVuIG1ldCBzdGF0dXMsIHBhaWQtdW50aWwgZW4gb3BlbiBzYWxkb1xuXG5TVEFUVVNcbkFsbGUgc3RhdHVzc2VuXG5UWVBFXG5BbGxlIHR5cGVzXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxX2U5ZGM3Mjk0NzM4ZjQ2NTFhOWJmKVxuT3BuaWV1dyBwcm9iZXJlblxuQXVkaXQgbG9nXG5cblJlY2VudGUgd2lqemlnaW5nZW4gYWFuIHN0YWxsaW5nIGNvbnRyYWN0ZW5cblxuR2VlbiBhdWRpdCBldmVudHNcbkVyIHppam4gbm9nIGdlZW4gc3RhbGxpbmcgd2lqemlnaW5nZW4gZ2Vsb2dkLiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-contracten-admin-audit\\attachments\\page-evidence-cc65abc3b200686df5b39001e301bcd63d8a1aef.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-ddde1924e55543dc8cde",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/diensten-prijzen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16631,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:11:22.606Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9kaWVuc3Rlbi1wcmlqemVuIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9kaWVuc3Rlbi1wcmlqemVuIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOmZhbHNlLCJ0ZXh0IjoiRGllbnN0ZW4gJiBQcmlqemVuXG5cbkJlaGVlciBkaWVuc3RlbiBlbiBwcmlqc3JlZ2VscyBlbiBvcGVuIGRlIGNhbGN1bGF0b3IgdmFudWl0IMOpw6luIGNlbnRyYWxlIHBsZWsuXG5cbkNBVEFMT0dVUyBFTiBQUklKU0JFSEVFUlxuRGllbnN0ZW5cbkJlaGVlciBwcm9kdWN0ZW4gZW4gZGllbnN0ZW4gZGllIGluIGRlIHdvcmtmbG93cyB3b3JkZW4gZ2VicnVpa3QuXG5Qcmlqc3JlZ2Vsc1xuQmVoZWVyIGNlbnRyYWxlIGNhbGN1bGF0b3ItIGVuIHNlcnZpY2V0YXJpZXZlbi5cblByb2R1Y3Rncm9lcGVuXG5PcmRlbiBkaWVuc3RlbiBlbiBwcm9kdWN0ZW4gaW4gZ3JvZXBlbi5cbkJ1bmRlbHNcbkJlaGVlciBzYW1lbmdlc3RlbGRlIHByb2R1Y3QtIGVuIHNlcnZpY2VidW5kZWxzLlxuQ2FsY3VsYXRvclxuQmVyZWtlbiBwcmlqemVuIG9wIGJhc2lzIHZhbiBkZSBjZW50cmFsZSBwcmlqc3JlZ2Vscy4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-diensten-prijzen-admin-audit\\attachments\\page-evidence-f6bf0261e35d337103323107dc4832ed4e01f145.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-261c4bfcbc37c93df625",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/diensten",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 24497,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:11:39.284Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9kaWVuc3RlbiIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vZGllbnN0ZW4iLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6ZmFsc2UsInRleHQiOiJEaWVuc3RlbiAmIFRhcmlldmVuXG5cbk92ZXJ6aWNodCB2YW4gYWxsZSBzZXJ2aWNlcGFnaW5hJ3Mg4oCUIHByb2R1Y3RlbiwgemljaHRiYWFyaGVpZCBlbiBsaXZlIHRhcmlldmVuXG5cblNlcnZpY2UgY2F0YWxvZ1xuUEFHSU5BXHRTVEFUVVNcdFBST0RVQ1RFTiBHRVZPTkRFTlx0VEFSSUVGUkVHRUxTXHRaSUNIVEJBQVJIRUlEXHTCoFxuXG5BZnNwdWl0ZW5cbi9kaWVuc3Rlbi9hZnNwdWl0ZW5cblx0U3RhdGlzY2hlIGZhbGxiYWNrXHQwXHTigJRcdFxu4oiSd2Vic2l0ZVxu4oiSa2Fzc2Fcblx0XG5CZWtpamtcblByb2R1Y3RcblRhcmlldmVuXG5cblxuV2ludGVyc3RhbGxpbmdcbi9kaWVuc3Rlbi93aW50ZXJzdGFsbGluZ1xuXHRTdGF0aXNjaGUgZmFsbGJhY2tcdDBcdOKAlFx0XG7iiJJ3ZWJzaXRlXG7iiJJrYXNzYVxuXHRcbkJla2lqa1xuUHJvZHVjdFxuVGFyaWV2ZW5cblxuXG5aZWxmIHdlcmtlblxuL2RpZW5zdGVuL3plbGYtd2Vya2VuXG5cdFN0YXRpc2NoZSBmYWxsYmFja1x0MFx04oCUXHRcbuKIkndlYnNpdGVcbuKIkmthc3NhXG5cdFxuQmVraWprXG5Qcm9kdWN0XG5UYXJpZXZlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-diensten-admin-audit\\attachments\\page-evidence-3f03e2f55dcf3eda299119a9f74414744d122365.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-4243c4d083ffd69e0f48",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/documenten",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 29040,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:12:03.841Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9kb2N1bWVudGVuIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9mYWN0dXJlbi9pbXBvcnQiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkZhY3R1dXIgaW1wb3J0XG5cblVwbG9hZCBlbiB2ZXJ3ZXJrIGlua29tZW5kZSBmYWN0dXJlbiBhdXRvbWF0aXNjaFxuXG5UZXJ1Z1xuRXh0cmFjdGllc2phYmxvbmVuXG5FeHBvcnRlZXIgQ1NWXG5Gb3RvIG1ha2VuXG5QREYgdXBsb2FkZW5cbkJhdGNoIHVwbG9hZGVuXG5cblNsZWVwIGJlc3RhbmRlbiBoaWVyaGVlblxuXG5QREYgb2YgYWZiZWVsZGluZyDigJQgdG90IDUwIGJlc3RhbmRlbiB0ZWdlbGlqa1xuXG5QREYgdXBsb2FkZW5cbkJhdGNoIHVwbG9hZGVuXG5JbXBvcnQgd2FjaHRyaWpcbkFsbGUgc3RhdHVzc2VuXG5BbGxlIGJyb25uZW5cbkFsbGUgdHlwZXNcbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfM2ZhMTQ5ZGY1Y2QyNGJhYWExZDIpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-documenten-admin-audit\\attachments\\page-evidence-9164babab39bbcedaeb8946ec13c9188845ae032.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-b78c5d5830817395728d",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/facturen/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8633,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:12:32.918Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mYWN0dXJlbi9baWRdIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9mYWN0dXJlbi9hdWRpdC1taXNzaW5nLXJlY29yZCIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiRmFjdHV1clxuXG5GYWN0dXVyZGV0YWlsc1xuXG5WZXJzdHVyZW5cbk1hcmtlZXIgYmV0YWFsZFxuTW9sbGllIGxpbmtcblRPVEFBTFxu4oKswqAwLDAwXG5PUEVOU1RBQU5EXG7igqzCoDAsMDBcbkJFVEFMSU5HIFRJTUVMSU5FXG4wXG5IRVJJTk5FUklORyBISVNUT1JJRVxuMFxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9mMzU1YmZjY2E5M2E0NGExYjhjYSlcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-facturen-id--admin-audit\\attachments\\page-evidence-498b51aaa34a4683974ec1f3b5f418e89b0dfeab.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-9a3067507aaa986cb029",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/facturen/import/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10952,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:12:41.588Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mYWN0dXJlbi9pbXBvcnQvW2lkXSIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vZmFjdHVyZW4vaW1wb3J0L2F1ZGl0LW1pc3NpbmctcmVjb3JkIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJJbXBvcnRiZW9vcmRlbGluZ1xuVGVydWdcblZlbGRlbiB0YWdnZW5cbkdvZWRrZXVyZW5cbkFmd2lqemVuXG5TVEFUVVNcbnVwbG9hZGVkXG5CRVRST1VXQkFBUkhFSURcbuKAlFxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9hMThmNzZhNjkzZGY0ZGI3ODExNilcbk9wbmlldXcgcHJvYmVyZW5cbkJyb25kb2N1bWVudFxuVWl0em9vbWVuXG5Jbnpvb21lblxuRHJhYWllblxuMTAwJVxuXG5HZWVuIGJyb25kb2N1bWVudCBiZXNjaGlrYmFhci5cblxuR2XDq3h0cmFoZWVyZGUgdmVsZGVuXG5MRVZFUkFOQ0lFUlxuRE9DVU1FTlROVU1NRVJcbkZBQ1RVVVJEQVRVTVxuVE9UQUFMXG5CVFdcbkdlZW4gbGV2ZXJhbmNpZXIgZ2Vrb3BwZWxkIGFhbiBkZXplIGltcG9ydC5cbkxldmVyYW5jaWVyIGFhbm1ha2VuXG5HZWVuIGtsYW50IGdla29wcGVsZFxuS2xhbnQgYWFubWFrZW5cblxuRG9vcmJlbGFzdGVuIGFhbiBrbGFudFxuXG5NYWFrdCBlZW4ga2xhbnRmYWN0dXVyIGFhbiBiaWogZ29lZGtldXJpbmdcblxuUmVnZWxzXG5cbkdlZW4gcmVnZWxzIGdlw6t4dHJhaGVlcmQuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-facturen-import-id--admin-audit\\attachments\\page-evidence-26d0c5a30003ce10a5ba9e9663f4529bb7414ca4.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-d229f47cbff0277bc7d7",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/facturen/import",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8051,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:12:52.572Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mYWN0dXJlbi9pbXBvcnQiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2ZhY3R1cmVuL2ltcG9ydCIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiRmFjdHV1ciBpbXBvcnRcblxuVXBsb2FkIGVuIHZlcndlcmsgaW5rb21lbmRlIGZhY3R1cmVuIGF1dG9tYXRpc2NoXG5cblRlcnVnXG5FeHRyYWN0aWVzamFibG9uZW5cbkV4cG9ydGVlciBDU1ZcbkZvdG8gbWFrZW5cblBERiB1cGxvYWRlblxuQmF0Y2ggdXBsb2FkZW5cblxuU2xlZXAgYmVzdGFuZGVuIGhpZXJoZWVuXG5cblBERiBvZiBhZmJlZWxkaW5nIOKAlCB0b3QgNTAgYmVzdGFuZGVuIHRlZ2VsaWprXG5cblBERiB1cGxvYWRlblxuQmF0Y2ggdXBsb2FkZW5cbkltcG9ydCB3YWNodHJpalxuQWxsZSBzdGF0dXNzZW5cbkFsbGUgYnJvbm5lblxuQWxsZSB0eXBlc1xuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV82OTBjNGIyZDYxOWM0MzI5OTdkOClcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-facturen-import-admin-audit\\attachments\\page-evidence-6f45a8d3c3c56ff6ca7f659a81757a747d402a87.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-038afa57e7eaca2ddcb9",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/facturen/nieuw/handmatig",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9588,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:13:00.664Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mYWN0dXJlbi9uaWV1dy9oYW5kbWF0aWciLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2ZhY3R1cmVuL25pZXV3L2hhbmRtYXRpZyIsImluamVjdGVkRXJyb3JWaXNpYmxlIjpmYWxzZSwidGV4dCI6IkhhbmRtYXRpZyBtYWtlblxuXG5TdGVsIGVlbiBmYWN0dXVyIG9wIG1ldCBlZW4ga2xhbnQgZW4gZWlnZW4gZmFjdHV1cnJlZ2Vscy5cblxuVGVydWdcbktsYW50XG5cblpvZWsgb3AgbmFhbSwgZS1tYWlsLCB0ZWxlZm9vbiBvZiBiZWRyaWpmIChtaW5pbWFhbCAyIHRla2VucylcblxuTmlldXdlIGtsYW50IGFhbm1ha2VuXG5GYWN0dXVyYWRyZXNcbkZhY3R1dXJnZWdldmVuc1xuQWN0aWV2ZSBzdGFuZGFhcmRvcG1hYWtcbkJldGFhbG1ldGhvZGVcbkVVUiDigJQgRXVyb1xuRmFjdHV1cnJlZ2Vsc1xuVnJpamUgZmFjdHV1cnJlZ2VsIHRvZXZvZWdlblxuU3VidG90YWFsIGV4Y2wuIGJ0d1xu4oKswqAwLDAwXG5CdHcgdG90YWFsXG7igqzCoDAsMDBcblRvdGFhbFxu4oKswqAwLDAwXG5PcG1lcmtpbmdlblxuT3BtZXJraW5nIG9wIGZhY3R1dXJcbkludGVybmUgbm90aXRpZVxuQW5udWxlcmVuXG5GYWN0dXVyIG9wc2xhYW4gYWxzIGNvbmNlcHQiLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure--643f3-in-facturen-nieuw-handmatig-admin-audit\\attachments\\page-evidence-2d0a288cabfc9f20c817ca075d3b6ab907ceacb2.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-dd8a6463afc860ff3819",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/facturen/nieuw",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5893,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:13:10.310Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mYWN0dXJlbi9uaWV1dyIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vZmFjdHVyZW4vbmlldXciLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6ZmFsc2UsInRleHQiOiJOaWV1d2UgZmFjdHV1clxuXG5LaWVzIGhvZSB1IGRlIGZhY3R1dXIgd2lsdCBhYW5tYWtlbi5cblxuVGVydWcgbmFhciBmYWN0dXJlblxuSG9lIHdpbHQgdSBiZWdpbm5lbj9cblxuSW1wb3J0ZWVyIGVlbiBiZXN0YWFuZGUgZmFjdHV1ciBvZiBzdGVsIGVlbiBuaWV1d2UgZmFjdHV1ciBoYW5kbWF0aWcgb3AuXG5cblBERiBpbXBvcnRlcmVuXG5cblVwbG9hZCBoZXQgZG9jdW1lbnQgbmFhciBkZSBpbXBvcnR3YWNodHJpaiBvbSBkZSBnZWdldmVucyB0ZSBsYXRlbiB1aXRsZXplbiBlbiB0ZSBjb250cm9sZXJlbi5cblxuTmFhciBQREYtaW1wb3J0XG5IYW5kbWF0aWcgbWFrZW5cblxuU3RlbCBlZW4gZmFjdHV1ciBvcCBtZXQgZWVuIGtsYW50IGVuIGVpZ2VuIGZhY3R1dXJyZWdlbHMuXG5cbkhhbmRtYXRpZ2UgZmFjdHV1ciBzdGFydGVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-facturen-nieuw-admin-audit\\attachments\\page-evidence-0f0c513d2c33e0065a20486bac33e5e4c20bdeb4.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-197337ad53c873d3cba2",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/facturen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4908,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:13:16.238Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mYWN0dXJlbiIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vZmFjdHVyZW4iLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkZhY3R1cmVuXG5cbkZpbmFuY2llZWwgb3ZlcnppY2h0IG92ZXIga2Fzc2EsIHN0YWxsaW5nLCBjYWxjdWxhdG9yIGVuIGhhbmRtYXRpZ2UgZmFjdHVyZW5cblxuT1BFTiBGQUNUVVJFTlxu4oCUXG5BQ0hURVJTVEFMTElHXG7igJRcbkJFVEFBTERcbuKAlFxuT1BFTiBTQUxET1xu4oCUXG5URSBCRVRBTEVOIExFVkVSQU5DSUVSU1xu4oCUXG5GYWN0dXJlblxuXG5GaW5hbmNpZWVsIG92ZXJ6aWNodCBvdmVyIGthc3NhLCBzdGFsbGluZywgY2FsY3VsYXRvciBlbiBoYW5kbWF0aWdlIGZhY3R1cmVuXG5cbkZhY3R1dXIgaW1wb3J0XG5OaWV1d2UgZmFjdHV1clxuQWxsZSBiZXRhYWxzdGF0dXNzZW5cbk9wZW4gc2FsZG9cbk9wZW5cbkdlZGVlbHRlbGlqayBiZXRhYWxkXG5BY2h0ZXJzdGFsbGlnXG5CZXRhYWxkXG5PcCByZWtlbmluZ1xuQWxsZSBiZXRhYWxzdGF0dXNzZW5cbkFsbGUgZmFjdHV1cnN0YXR1c3NlblxuVmVya29vcCBlbiBpbmtvb3BcbkFsbGUgYnJvbm5lblxuQWxsZSBncm9lcGVuXG5BbGxlIG1ldGhvZGVuXG7igJNcbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfYTY3ZDcwY2MyYWFiNDJjOWI0OWQpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-facturen-admin-audit\\attachments\\page-evidence-1fa985fa332eaccc964ed144e11ae6e8d1fd5b37.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-0429b4fe0fa08dc81c89",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/facturen/templates/editor",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7334,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:13:21.191Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mYWN0dXJlbi90ZW1wbGF0ZXMvZWRpdG9yIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9mYWN0dXJlbi90ZW1wbGF0ZXMvZWRpdG9yIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJGYWN0dXVyb3BtYWFrXG5cbk9wbWFhayB2b29yIGZhY3R1dXItUERG4oCZczogbG9nbywgdG90YWxlbiwgdm9ldHRla3N0LCB2b29yd2FhcmRlbiBlbiB0YWdzLiBFbGtlIG9wc2xhZyBiZXdhYXJ0IGVlbiB2ZXJzaWUuXG5cbkV4dHJhY3RpZXNqYWJsb25lblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9iZjZmZWE5ZDU0ZTg0N2E3OWFkMSlcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure--617dc-n-facturen-templates-editor-admin-audit\\attachments\\page-evidence-2dcd6a1f5a96fac86b5cb3b72222896f0ab23f8b.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-039fbf9f572d298c2248",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/facturen/templates/layout",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10775,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:13:28.572Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mYWN0dXJlbi90ZW1wbGF0ZXMvbGF5b3V0IiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9mYWN0dXJlbi90ZW1wbGF0ZXMvbGF5b3V0IiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJGYWN0dXVyb3BtYWFrXG5cbk9wbWFhayB2b29yIGZhY3R1dXItUERG4oCZczogbG9nbywgdG90YWxlbiwgdm9ldHRla3N0LCB2b29yd2FhcmRlbiBlbiB0YWdzLiBFbGtlIG9wc2xhZyBiZXdhYXJ0IGVlbiB2ZXJzaWUuXG5cbkV4dHJhY3RpZXNqYWJsb25lblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV8xMmM5MDY0MjYzNzc0NjZhODFjMSlcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure--89952-n-facturen-templates-layout-admin-audit\\attachments\\page-evidence-dea7ef8740b0cad04b76684664fef4d19f7e9915.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-01ee046c9a25b0809538",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/facturen/templates",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13672,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:13:39.383Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mYWN0dXJlbi90ZW1wbGF0ZXMiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2ZhY3R1cmVuL3RlbXBsYXRlcyIsImluamVjdGVkRXJyb3JWaXNpYmxlIjpmYWxzZSwidGV4dCI6IkV4dHJhY3RpZXNqYWJsb25lblxuXG5UYWcgdmVsZGVuIG9wIGVlbiBkb2N1bWVudCB6b2RhdCB0b2Vrb21zdGlnZSBpbXBvcnRzIGF1dG9tYXRpc2NoIHdvcmRlbiB1aXRnZWxlemVuXG5cbkZhY3R1dXIgaW1wb3J0XG5GYWN0dXVyb3BtYWFrXG5FeHRyYWN0aWVzamFibG9vblxuRS1tYWlsIGltcG9ydFxuXG5TdHV1ciBsZXZlcmFuY2llcnNmYWN0dXJlbiBkb29yIGVuIHplIHdvcmRlbiBhdXRvbWF0aXNjaCBpbXBvcnRzXG5cbkRvb3JzdHV1cmFkcmVzXG5mYWN0dXJlbkBhbnN3ZXIyNC5ubFxuXG5TdHV1ciBQREYncyBoaWVyaGVlbiBkb29yIG9mIGxhYXQgbGV2ZXJhbmNpZXJzIHplIGhpZXJoZWVuIHN0dXJlbjsgcGFzc2VuZGUgc2phYmxvbmVuIGxlemVuIGRlIGRhdGEgdWl0IGVuIG1ha2VuIGVlbiByZXZpZXctaXRlbS5cblxuU2phYmxvbmVuXG5cbkhlcmJydWlrYmFyZSBnZXRhZ2RlIGRvY3VtZW50aW5kZWxpbmdlbiBlbiBodW4gT0NSLW1ldHJpY3NcblxuTm9nIGdlZW4gc2phYmxvbmVuXG5NYWFrIGVlbiBzamFibG9vbiBvbSBoZXQgc3lzdGVlbSB0ZSBsZXJlbiB3YWFyIGVsa2Ugd2FhcmRlIHN0YWF0LiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-facturen-templates-admin-audit\\attachments\\page-evidence-c2968f315a7309006d78235e520be9a340b50de3.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-3419d9aba9a372c1be65",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/financieel",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6004,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:13:53.089Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9maW5hbmNpZWVsIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9maW5hbmNpZWVsIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJGaW5hbmNpZWVsXG5cbkNlbnRyYWFsIG92ZXJ6aWNodCB2b29yIHZlcmtvb3BmYWN0dXJlbiwgYmV0YWxpbmdlbiwgbGV2ZXJhbmNpZXJzIGVuIHJhcHBvcnRhZ2VzLlxuXG5PUEVOU1RBQU5EXG5OaWV0IGdlbGFkZW5cbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfODU0YmYyMTkyMmI2NDU5YjhhMzkpXG5URSBMQUFUXG5OaWV0IGdlbGFkZW5cbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfODU0YmYyMTkyMmI2NDU5YjhhMzkpXG5OT0cgVEUgQkVUQUxFTlxuTmlldCBnZWxhZGVuXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzg1NGJmMjE5MjJiNjQ1OWI4YTM5KVxuT01aRVQgREVaRSBNQUFORFxuTmlldCBnZWxhZGVuXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzg1NGJmMjE5MjJiNjQ1OWI4YTM5KVxuSU5LT09QIERFWkUgTUFBTkRcbk5pZXQgZ2VsYWRlblxuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV84NTRiZjIxOTIyYjY0NTliOGEzOSlcblNORUxBQ1RJRVNcbkZhY3R1dXJcblpvZWsgZW4gYmVoZWVyIGZhY3R1cmVuIHVpdCBhbGxlIHdvcmtmbG93cy5cbklua29vcGZhY3R1cmVuXG5JbXBvcnRlZXIgZW4gdmVyd2VyayBsZXZlcmFuY2llcnNmYWN0dXJlbi5cbkJldGFsaW5nIHJlZ2lzdHJlcmVuXG5CZWtpamsgZ2VyZWdpc3RyZWVyZGUgYmV0YWxpbmdlbiBlbiBiZXRhYWxzdGF0dXNzZW4uXG5GSU5BTkNJRUVMIE9WRVJaSUNIVFxuVmVya29vcGZhY3R1cmVuXG5ab2VrIGVuIGJlaGVlciBmYWN0dXJlbiB1aXQgYWxsZSB3b3JrZmxvd3MuXG5CZXRhbGluZ2VuXG5CZWtpamsgZ2VyZWdpc3RyZWVyZGUgYmV0YWxpbmdlbiBlbiBiZXRhYWxzdGF0dXNzZW4uXG5SYXBwb3J0YWdlc1xuRmluYW5jacOrbGUgcmFwcG9ydGFnZXMgZW4gb3ZlcnppY2h0ZW4uXG5JTktPT1AgRU4gQk9FS0hPVURJTkdcbklua29vcGZhY3R1cmVuXG5JbXBvcnRlZXIgZW4gdmVyd2VyayBsZXZlcmFuY2llcnNmYWN0dXJlbi5cbkNyZWRpdGV1cmVuIGVuIGxldmVyYW5jaWVyc1xuQmVoZWVyIGxldmVyYW5jaWVyc2dlZ2V2ZW5zIGVuIG9wZW5zdGFhbmRlIHBvc3Rlbi5cbkJvZWtob3VkaW5nXG5PcGVuIGRlIGJvZWtob3Vka3VuZGlnZSBvdmVyemljaHRlbi5cbkRlYml0ZXVyZW5cblZpbmQga2xhbnRyZWtlbmluZ2VuIGVuIGtsYW50ZmFjdHVyZW4uIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-financieel-admin-audit\\attachments\\page-evidence-ab09d19fc947ad1447a2c7e8390c9a8112d1ddf9.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-ce4acec689337d6016ae",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/forms/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7948,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:13:59.129Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mb3Jtcy9baWRdIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9mb3Jtcy9hdWRpdC1taXNzaW5nLXJlY29yZCIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiRm9ybXVsaWVyIGJ1aWxkZXJcblxuMCB2cmFnZW4gwrdcblxuVGVydWdcblZSQUdFTlxuMFxuVkVSU1RVVVJEXG4wXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzMzMjFjY2NjYjE1NDQ0MjI4NDJlKVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-forms-id--admin-audit\\attachments\\page-evidence-1d50fb8159a3cc32bfe1a7dff4b8e835a43f8e77.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-34bce185c01a4a26fc3d",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/forms",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6280,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:14:07.107Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9mb3JtcyIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vZm9ybXMiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkZvcm11bGllcmVuICYgQ2hlY2tsaXN0c1xuXG5CZWhlZXIgZHluYW1pc2NoZSBmb3JtdWxpZXJlbiwgY2hlY2tsaXN0cyBlbiBpbnNwZWN0aWVzXG5cbk5pZXV3IGZvcm11bGllclxuRk9STVVMSUVSRU5cbjBcbkFDVElFRlxuMFxuQ09OQ0VQVFxuMFxuRm9ybXVsaWVyIHRlbXBsYXRlc1xuQWxsZSBjYXRlZ29yaWXDq25cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfNDY0YmZiMTUxNjI2NGZjN2IyODMpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-forms-admin-audit\\attachments\\page-evidence-5a86c43cb8ac241caeb0de62a159cd622a6dcfa6.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-02d6fac8aa664a45bc82",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/gebruikers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6590,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:14:13.410Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9nZWJydWlrZXJzIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9nZWJydWlrZXJzIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJHZWJydWlrZXJzXG5cbkJlaGVlciBzdGFmZi0gZW4gYWRtaW5hY2NvdW50c1xuXG5HZWJydWlrZXJzXG5cbkJlaGVlciBzdGFmZi0gZW4gYWRtaW5hY2NvdW50c1xuXG5OaWV1d2UgZ2VicnVpa2VyXG5BbGxlIHJvbGxlblxuQWxsZSBzdGF0dXNzZW5cbkFsbGUgdGFsZW5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfYzkwMDJiOGY4ZmViNGIxZjgxYmQpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-gebruikers-admin-audit\\attachments\\page-evidence-245df1f24fc8771974e91dfd26836e5459a1e44f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-4b1c10329319b7447691",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/incidenten",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6147,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:14:20.029Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9pbmNpZGVudGVuIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9pbmNpZGVudGVuIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJJbmNpZGVudGVuXG5cblJlZ2lzdHJlZXIgZW4gdm9sZyBiZXZlaWxpZ2luZ3MtIGVuIG9wZXJhdGlvbmVsZSBpbmNpZGVudGVuLlxuXG5OaWV1dyBpbmNpZGVudFxuSW5jaWRlbnRlblxuXG5SZWdpc3RyZWVyIGVuIHZvbGcgYmV2ZWlsaWdpbmdzLSBlbiBvcGVyYXRpb25lbGUgaW5jaWRlbnRlbi5cblxuQWxsZSBzdGF0dXNzZW5cbkFsbGUgZXJuc3RuaXZlYXVzXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzA0ZTdmNjU5MDY5ODQ4ZTRiMzY3KVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-incidenten-admin-audit\\attachments\\page-evidence-d9bf4dddc7d21848d31b645fa044166dfb70ca56.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-4f0958fe4790f6eb36bb",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/instellingen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7317,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:14:26.209Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9pbnN0ZWxsaW5nZW4iLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2luc3RlbGxpbmdlbiIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiSW5zdGVsbGluZ2VuXG5cbkJlZHJpamZzZ2VnZXZlbnMsIGZhY3R1cmF0aWUsIGJldGFsaW5nZW4gZW4gdGFsZW5cblxuQkVEUklKRlxu4oCUXG5GQUNUVVJBVElFXG5FVVJcbkJFVEFMSU5HRU5cbkxpdmVcblRBTEVOXG40XG5JbnN0ZWxsaW5nZW4gem9la2VuXG5IZXJpbm5lcmluZ3NyZWdlbHMgYmVoZXJlblxuQmV0YWFsdmVyYmluZGluZzogTmlldCBnZXRlc3RcbkludGVncmF0aWVzIGluc3RlbGxlbiBlbiBjb250cm9sZXJlblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9kNTJkYjFiM2FlOGU0MmEzOTk5OClcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-instellingen-admin-audit\\attachments\\page-evidence-355511dabaa08366751f066fb34c8b485286230a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-f7e265e66f5434af94f3",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/kalender",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6037,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:14:33.552Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9rYWxlbmRlciIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4va2FsZW5kZXIiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkthbGVuZGVyXG5cbk9wZW5pbmdzdGlqZGVuLCB1aXR6b25kZXJpbmdlbiBlbiBib290bG9jYXRpZXNcblxuTmlldXdlIGxvY2F0aWVcbk9QRU4gREFHRU5cbjBcbkRhZ2VuIG1ldCB2YXN0ZSBvcGVuaW5nc3RpamRlblxuVUlUWk9OREVSSU5HRU5cbjBcbkdlcGxhbmRlIHVpdHpvbmRlcmluZ2VuXG5MVU5DSFBBVVpFXG7igJRcbkdlZW4gbHVuY2hwYXV6ZSBpbmdlc3RlbGRcbkJPT1RMT0NBVElFU1xuMFxuMCBnZWJsb2trZWVyZFxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9iZmIwOGM3MzRmOGQ0NGEyOTFlNylcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-kalender-admin-audit\\attachments\\page-evidence-240ad25c77f08b0f961c61ff4ca48549b76f987f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-78c5d915f49c589a65bb",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/kassa/dagafsluiting",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6342,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:14:39.615Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9rYXNzYS9kYWdhZnNsdWl0aW5nIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9rYXNzYS9kYWdhZnNsdWl0aW5nIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOmZhbHNlLCJ0ZXh0IjoiRGFnYWZzbHVpdGluZ1xuXG5UZWwgZGUga2Fzc2FsYWRlIGFhbiBoZXQgZWluZGUgdmFuIGRlIGRhZ1xuXG5SYXBwb3J0YWdlc1xuTmlldXdlIGRhZ2Fmc2x1aXRpbmdcbkJlZ2lua2FzXG7igqxcblVpdGJldGFhbGQgY29udGFudFxu4oKsXG5HZXRlbGQgY29udGFudFxu4oKsXG5Ob3RpdGllXG5EYWdhZnNsdWl0aW5nIG9wc2xhYW5cblJlY2VudGUgYWZzbHVpdGluZ2VuXG5Ob2cgZ2VlbiBhZnNsdWl0aW5nZW5cblJlZ2lzdHJlZXIgamUgZWVyc3RlIGRhZ2Fmc2x1aXRpbmcuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-kassa-dagafsluiting-admin-audit\\attachments\\page-evidence-4286d9c33e53be0b110b3bad0bf45fb41c93f3f9.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-98a6f5beb2ca931e67d5",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/kassa",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 74736,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:14:45.988Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9rYXNzYSIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4va2Fzc2EiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6ZmFsc2UsInRleHQiOiJLYXNzYVxuXG5TbmVsbGUgY2hlY2tvdXQgbWV0IHNsaW0gem9la2VuIGVuIHJlYWx0aW1lIGJlcmVrZW5pbmdcblxuV0lOS0VMTUFORFxuMFxuVE9UQUFMXG7igqzCoDAsMDBcblBST0RVQ1RFTlxuMFxuUkVDRU5URSBWRVJLT1BFTlxuMFxuL1xuS2xhbnQgc2VsZWN0ZXJlblxuTmlldXdlIGtsYW50IHRvZXZvZWdlblxuXG5TbmVsdG9ldHNlbjogLyB6b2VrZW4gwrcgRjIga2xhbnQgwrcgRjQgYWZyZWtlbmVuIMK3IEY4IHdpbmtlbHdhZ2VuIGxlZ2VuXG5cbuKcqCBBSSBab2VrZW5cblNuZWwgc2Nhbm5lblxuQWxsZVxuU25lbCB0b2V2b2VnZW5cblNjYW4gYmFyY29kZVxuUHJvZHVjdGVuIGJlaGVyZW5cbkZpbHRlclxuQWFuYmV2b2xlblxuQWxsZSByZXN1bHRhdGVuXG4oMCByZXN1bHRhdGVuKVxuR2VlbiBwcm9kdWN0ZW5cblBhcyBqZSB6b2VrdGVybSBhYW4gb2Ygdm9lZyBwcmljaW5nIHJ1bGVzIHRvZS5cbkxBQVRTVEUgVkVSS09PUFxu4oCUXG5UT1RBQUwgVkFOREFBR1xu4oKswqAwLDAwXG5BQU5UQUwgVFJBTlNBQ1RJRVNcbjBcblJlY2VudGUgdmVya29wZW5cbkFsbGUgdmVya29wZW5cblxuTm9nIGdlZW4gcmVjZW50ZSB2ZXJrb3Blbi5cblxuV2lua2VsbWFuZFxuMFxuVm9lZyBwcm9kdWN0ZW4gdG9lIHZvb3IgY2hlY2tvdXQuXG5Ub3RhYWwgZXhjbC5cbuKCrMKgMCwwMFxuQlRXICgyMSUpXG7igqzCoDAsMDBcblRvdGFhbFxu4oKswqAwLDAwXG5PcG1lcmtpbmcgdG9ldm9lZ2VuXG5XaW5rZWx3YWdlbiBsZWdlblxuS2xhbnRcbktsYW50IHNlbGVjdGVyZW5cbk5pZXV3ZSBrbGFudCB0b2V2b2VnZW5cbkFsbGUga2xhbnRlblxuXG5FciB3b3JkdCBhdXRvbWF0aXNjaCBlZW4gYWNjb3VudCBhYW5nZW1hYWt0IGVuIGRlIGZhY3R1dXIgd29yZHQgZ2VtYWlsZC5cblxuQmV0YWFsbWV0aG9kZVxuQ29udGFudFxuUElOXG5DcmVkaXRjYXJkXG5PcCBmYWN0dXVyXG5BYW5iZXRhbGluZ1xuTW9sbGllIFFSXG5NYWFrIG9mZmVydGVcblRvdGFhbCBhYW5wYXNzZW4gLyBrb3J0aW5nXG5BZnJla2VuZW5cbuKCrMKgMCwwMCIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-kassa-admin-audit\\attachments\\page-evidence-199fdad949d3686e62a6e7e74f38e438fd4bfdfb.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-f88e771948907991213e",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/klanten/[id]/[slug]",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 78370,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('main')\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for locator('main')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('main')\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for locator('main')\u001b[22m\n\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:27:24",
+                    "location": {
+                      "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                      "column": 24,
+                      "line": 27
+                    },
+                    "snippet": "  25 |     await page.goto(`/nl${entry.route.replaceAll('[id]', 'audit-missing-record').replaceAll('[slug]', 'audit-record')}`);\n  26 |     const main = page.locator('main');\n> 27 |     await expect(main).toBeVisible();\n     |                        ^\n  28 |     await expect.poll(() => main.innerText()).not.toBe('');\n  29 |     await expect(main.locator('.animate-pulse, .animate-spin')).toHaveCount(0);\n  30 |     // Observe whether this route surfaces the injected error. A rendered heading alone"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                        "column": 24,
+                        "line": 27
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('main')\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for locator('main')\u001b[22m\n\n\n  25 |     await page.goto(`/nl${entry.route.replaceAll('[id]', 'audit-missing-record').replaceAll('[slug]', 'audit-record')}`);\n  26 |     const main = page.locator('main');\n> 27 |     await expect(main).toBeVisible();\n     |                        ^\n  28 |     await expect.poll(() => main.innerText()).not.toBe('');\n  29 |     await expect(main.locator('.animate-pulse, .animate-spin')).toHaveCount(0);\n  30 |     // Observe whether this route surfaces the injected error. A rendered heading alone\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:27:24"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:16:00.750Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-klanten-id-slug--admin-audit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-klanten-id-slug--admin-audit\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                    "column": 24,
+                    "line": 27
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-6e73b8d00962faf74e94",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/klanten/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7681,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:17:24.705Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9rbGFudGVuL1tpZF0iLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2tsYW50ZW4vYXVkaXQtbWlzc2luZy1yZWNvcmQiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IktsYW50XG5JbXBlcnNvbmVyZW5cbktsYW50IGJld2Vya2VuXG5OaWV1d2UgZmFjdHV1clxuQk9URU5cbjBcblNUQUxMSU5HIENPTlRSQUNURU5cbjBcbkZBQ1RVUkVOXG4wXG5PUEVOIFNBTERPXG7igqzCoDAsMDBcbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfNWEzNWYxY2MxMDQ5NDE5ZGFjMjcpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-klanten-id--admin-audit\\attachments\\page-evidence-145e8cb83d6a4d64e1b10236dff3f666ec1c0be4.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-59ddd49592f41015cd30",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/klanten/[id]/timeline",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13999,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:17:32.760Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9rbGFudGVuL1tpZF0vdGltZWxpbmUiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2tsYW50ZW4vYXVkaXQtbWlzc2luZy1yZWNvcmQvdGltZWxpbmUiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IlRpamRsaWpuXG5cbkJlcmljaHRlbiwgaGVyaW5uZXJpbmdlbiBlbiBwb3J0YWwgYWN0aXZpdGVpdFxuXG5UZXJ1Z1xuVGlqZGxpam5cblxuQmVyaWNodGVuLCBoZXJpbm5lcmluZ2VuIGVuIHBvcnRhbCBhY3Rpdml0ZWl0XG5cbkludGVyblxuWmljaHRiYWFyIHZvb3Iga2xhbnRcbm5vcm1hbFxuUGxhYXRzZW5cbkFsbGUgemljaHRiYWFyaGVpZFxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9iZjgwMDAxMzlhMGE0MDllYjcyNylcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-klanten-id-timeline-admin-audit\\attachments\\page-evidence-5cb6f16b8cf09ab257177d40d9b8f8e90695f2f7.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-049c955722d6ce5c518b",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/klanten",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8470,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:17:46.791Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9rbGFudGVuIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9rbGFudGVuIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJLTEFOVEVOXG5cbktsYW50ZW5cblxuQ2VudHJhYWwga2xhbnRvdmVyemljaHQgdm9vciBrYXNzYSwgc3RhbGxpbmcgZW4gZmFjdHVyYXRpZVxuXG5HZWJydWlrZXJzXG4wIEtMQU5URU4gVE9UQUFMXG4wXG4wIFJFU1VMVEFURU5cbjBcbkUtTUFJTFxuMFxuWk9FS0VO4oCmXG7igJRcbktsYW50ZW5cblxuQ2VudHJhYWwga2xhbnRvdmVyemljaHQgdm9vciBrYXNzYSwgc3RhbGxpbmcgZW4gZmFjdHVyYXRpZVxuXG5OaWV1d2Uga2xhbnRcbkFsbGUgdGFsZW5cbkFsbGUgc3RhdHVzc2VuXG5BbGxlIGFhbm1lbGRpbmdlblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9lOGY3YjBlZmQ5ZGI0YWJiOGNmMSlcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-klanten-admin-audit\\attachments\\page-evidence-f33daa9537146b37909e976c992dc5f869c2a994.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-321f86a0ffdf98ca17ed",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/leveranciers/[id]/[slug]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13177,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:17:55.295Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9sZXZlcmFuY2llcnMvW2lkXS9bc2x1Z10iLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2xldmVyYW5jaWVycy9hdWRpdC1taXNzaW5nLXJlY29yZC9hdWRpdC1yZWNvcmQiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IkxldmVyYW5jaWVyc1xuVGVydWdcbkJUVy1OVU1NRVJcbuKAlFxuQkVUQUFMVEVSTUlKTlxu4oCUXG5QUk9EVUNUS09QUEVMSU5HRU5cbjBcbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfMTRmYWQyMTNhYzk3NDZiZGE1MzQpXG5PcG5pZXV3IHByb2JlcmVuXG5MZXZlcmFuY2llcmdlZ2V2ZW5zXG5FLU1BSUxcbuKAlFxuVEVMRUZPT05cbuKAlFxuQlRXLU5VTU1FUlxu4oCUXG5CRVRBQUxURVJNSUpOIChEQUdFTilcbuKAlFxuU1RBTkRBQVJEIEdST09UQk9FS1JFS0VOSU5HXG7igJRcblByb2R1Y3Rrb3BwZWxpbmdlblxuXG5Lb3BwZWwgbGV2ZXJhbmNpZXItU0tV4oCZcyBhYW4gamUgcHJvZHVjdGVuIHZvb3IgYXV0b21hdGlzY2hlIG1hdGNoaW5nLlxuXG5Lb3BwZWxpbmcgdG9ldm9lZ2VuXG5HZWVuIGtvcHBlbGluZ2VuXG5Wb2VnIGVlbiBrb3BwZWxpbmcgdG9lIHpvZGF0IGltcG9ydHMgZGUgcmVnZWxzIHZhbiBkZXplIGxldmVyYW5jaWVyIGF1dG9tYXRpc2NoIG1hdGNoZW4uIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure--03e19-admin-leveranciers-id-slug--admin-audit\\attachments\\page-evidence-2e0be6e1ebfac9da4929034b98f4e6251df232cc.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-5836d2933b843fb11210",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/leveranciers/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4731,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:18:08.509Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9sZXZlcmFuY2llcnMvW2lkXSIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vbGV2ZXJhbmNpZXJzL2F1ZGl0LW1pc3NpbmctcmVjb3JkIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJMZXZlcmFuY2llcnNcblRlcnVnXG5CVFctTlVNTUVSXG7igJRcbkJFVEFBTFRFUk1JSk5cbuKAlFxuUFJPRFVDVEtPUFBFTElOR0VOXG4wXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxX2MyMTZlMDA4NGIzNTQzMzlhZTMzKVxuT3BuaWV1dyBwcm9iZXJlblxuTGV2ZXJhbmNpZXJnZWdldmVuc1xuRS1NQUlMXG7igJRcblRFTEVGT09OXG7igJRcbkJUVy1OVU1NRVJcbuKAlFxuQkVUQUFMVEVSTUlKTiAoREFHRU4pXG7igJRcblNUQU5EQUFSRCBHUk9PVEJPRUtSRUtFTklOR1xu4oCUXG5Qcm9kdWN0a29wcGVsaW5nZW5cblxuS29wcGVsIGxldmVyYW5jaWVyLVNLVeKAmXMgYWFuIGplIHByb2R1Y3RlbiB2b29yIGF1dG9tYXRpc2NoZSBtYXRjaGluZy5cblxuS29wcGVsaW5nIHRvZXZvZWdlblxuR2VlbiBrb3BwZWxpbmdlblxuVm9lZyBlZW4ga29wcGVsaW5nIHRvZSB6b2RhdCBpbXBvcnRzIGRlIHJlZ2VscyB2YW4gZGV6ZSBsZXZlcmFuY2llciBhdXRvbWF0aXNjaCBtYXRjaGVuLiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-leveranciers-id--admin-audit\\attachments\\page-evidence-b2e3f5635511a558e8a79fb429998ae45ea8d793.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-a517e0e8cca190a0778a",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/leveranciers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8861,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:18:13.840Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9sZXZlcmFuY2llcnMiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL2xldmVyYW5jaWVycyIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiTGV2ZXJhbmNpZXJzXG5cbkJlaGVlciBsZXZlcmFuY2llcnMsIHByb2R1Y3Rrb3BwZWxpbmdlbiBlbiBncm9vdGJvZWtzdGFuZGFhcmRlbi5cblxuQm9la2hvdWRpbmdcbk5pZXV3ZSBsZXZlcmFuY2llclxuTGV2ZXJhbmNpZXJzXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzc5OWNlZDZlZDMxZTQyN2E4NmQ4KVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-leveranciers-admin-audit\\attachments\\page-evidence-807e10a33cf443a4b7bc6dc4e226a9740648ea26.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-4c4ad1d07d899c45a2d5",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/makelaardij",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10599,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:18:22.727Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9tYWtlbGFhcmRpaiIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vbWFrZWxhYXJkaWoiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6ZmFsc2UsInRleHQiOiJNYWtlbGFhcmRpalxuXG5FZW4gY2VudHJhbGUgaW5nYW5nIHZvb3IgdmVya29vcGRvc3NpZXJzLCBib3Rlbiwga2xhbnRjb250YWN0ZW4gZW4gdGFyaWV2ZW4uXG5cbk1BS0VMQUFSRElKXG5WZXJrb29wZG9zc2llcnNcbkJla2lqayByZWNlbnRlIHZlcmtvcGVuIGVuIGJpamJlaG9yZW5kZSBmYWN0dXJlbi5cbkJvdGVuIGluIHZlcmtvb3Bcbk9wZW4gaGV0IGNlbnRyYWxlIGJvdGVucmVnaXN0ZXIuXG5MZWFkcyBlbiBhYW52cmFnZW5cbkVyIGlzIG5vZyBnZWVuIGFmem9uZGVybGlqayByZWdpc3RlciB2b29yIG1ha2VsYWFyZGlqbGVhZHMuXG5UYXJpZXZlblxuQmVoZWVyIG1ha2VsYWFyZGlqdGFyaWV2ZW4uIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-makelaardij-admin-audit\\attachments\\page-evidence-6ee79ca2b9e09a35028d7226c32ea4345d97720b.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-546366a3fff508d1994f",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/ocr-review",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11955,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:18:33.360Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9vY3ItcmV2aWV3IiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9mYWN0dXJlbi9pbXBvcnQ/c3RhdHVzPXJldmlld19yZXF1aXJlZCIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiRmFjdHV1ciBpbXBvcnRcblxuVXBsb2FkIGVuIHZlcndlcmsgaW5rb21lbmRlIGZhY3R1cmVuIGF1dG9tYXRpc2NoXG5cblRlcnVnXG5FeHRyYWN0aWVzamFibG9uZW5cbkV4cG9ydGVlciBDU1ZcbkZvdG8gbWFrZW5cblBERiB1cGxvYWRlblxuQmF0Y2ggdXBsb2FkZW5cblxuU2xlZXAgYmVzdGFuZGVuIGhpZXJoZWVuXG5cblBERiBvZiBhZmJlZWxkaW5nIOKAlCB0b3QgNTAgYmVzdGFuZGVuIHRlZ2VsaWprXG5cblBERiB1cGxvYWRlblxuQmF0Y2ggdXBsb2FkZW5cbkltcG9ydCB3YWNodHJpalxuQWxsZSBzdGF0dXNzZW5cbkFsbGUgYnJvbm5lblxuQWxsZSB0eXBlc1xuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV8zYjc0YjZkNmQ2YTY0YjQxYjFjMSlcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-ocr-review-admin-audit\\attachments\\page-evidence-c2fbb9cc623b7f3f5fe4fbed60ded5e511023618.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-96315d9240ec7a8de2ce",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/ocr/templates",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12985,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:18:45.365Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9vY3IvdGVtcGxhdGVzIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9mYWN0dXJlbi90ZW1wbGF0ZXMiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6ZmFsc2UsInRleHQiOiJFeHRyYWN0aWVzamFibG9uZW5cblxuVGFnIHZlbGRlbiBvcCBlZW4gZG9jdW1lbnQgem9kYXQgdG9la29tc3RpZ2UgaW1wb3J0cyBhdXRvbWF0aXNjaCB3b3JkZW4gdWl0Z2VsZXplblxuXG5GYWN0dXVyIGltcG9ydFxuRmFjdHV1cm9wbWFha1xuRXh0cmFjdGllc2phYmxvb25cbkUtbWFpbCBpbXBvcnRcblxuU3R1dXIgbGV2ZXJhbmNpZXJzZmFjdHVyZW4gZG9vciBlbiB6ZSB3b3JkZW4gYXV0b21hdGlzY2ggaW1wb3J0c1xuXG5Eb29yc3R1dXJhZHJlc1xuZmFjdHVyZW5AYW5zd2VyMjQubmxcblxuU3R1dXIgUERGJ3MgaGllcmhlZW4gZG9vciBvZiBsYWF0IGxldmVyYW5jaWVycyB6ZSBoaWVyaGVlbiBzdHVyZW47IHBhc3NlbmRlIHNqYWJsb25lbiBsZXplbiBkZSBkYXRhIHVpdCBlbiBtYWtlbiBlZW4gcmV2aWV3LWl0ZW0uXG5cblNqYWJsb25lblxuXG5IZXJicnVpa2JhcmUgZ2V0YWdkZSBkb2N1bWVudGluZGVsaW5nZW4gZW4gaHVuIE9DUi1tZXRyaWNzXG5cbk5vZyBnZWVuIHNqYWJsb25lblxuTWFhayBlZW4gc2phYmxvb24gb20gaGV0IHN5c3RlZW0gdGUgbGVyZW4gd2FhciBlbGtlIHdhYXJkZSBzdGFhdC4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-ocr-templates-admin-audit\\attachments\\page-evidence-dd93c07713683735a6b4f2d16b7634ffad41c48f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-a33b03d29d900b6f3b26",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10482,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:18:58.387Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbiIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4iLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IktSRUtFTEJFUkcgTkFVVElDXG5cbk9wZXJhdGlvbmVlbCBvdmVyemljaHRcblxuQWxsZXMgd2F0IHZhbmRhYWcgYWFuZGFjaHQgbm9kaWcgaGVlZnRcblxuQWZzcHJhYWsgYWFubWFrZW5cbk9QRU4gRkFDVFVSRU5cbuKAlFxu4oCUIGFjaHRlcnN0YWxsaWdcbkFDVElFVkUgU1RBTExJTkdcbuKAlFxu4oCUIGxvcGVuIGJpbm5lbmtvcnQgYWZcbktBU1NBIE9NWkVUXG7igJRcblZhbmRhYWdcbkxBR0UgVk9PUlJBQURcbuKAlFxuUHJvZHVjdGVuIG9uZGVyIG1pbmltdW12b29ycmFhZFxuU1lOQyBTVEFUVVNcbuKAlFxuU3luYyBmb3V0XG5Nb2dlbGlqayBnZW1pc3RlIGthbnNlblxuXG5LcmFhbmFmc3ByYWFrXG5cbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfMjIzZjcxYzEwOGFjNGY1ZTgzNDApXG5cbkFjdGl2aXRlaXQgLyBLbGFudHJlaXMg4oaSXG5BZnNwcmFrZW4gdmFuZGFhZ1xu4oCUXG5LcmFhbm9wZHJhY2h0ZW5cbuKAlFxuQWZsb3BlbmRlIHN0YWxsaW5nICgzMCBkYWdlbilcbuKAlFxuQWNodGVyc3RhbGxpZ2UgZmFjdHVyZW5cbuKAlFxuTmlldXdlIGtsYW50ZW4gdmFuZGFhZ1xu4oCUXG5OaWV1d2UgbWFrZWxhYXJkaWpsZWFkc1xuR2VlbiBsZWFkcmVnaXN0ZXJcblNuZWxsZSBhY3RpZXNcblxuQWxsZXMgd2F0IHZhbmRhYWcgYWFuZGFjaHQgbm9kaWcgaGVlZnRcblxuU25lbGtvcHBlbGluZ2VuIGtvbmRlbiBuaWV0IHdvcmRlbiBnZWxhZGVuLiBTdGFuZGFhcmQgc25lbGtvcHBlbGluZ2VuIHdvcmRlbiBnZXRvb25kLlxuXG5LYXNzYVxuU3RhbGxpbmcgb3B2b2xnZW5cbkZhY3R1cmVuIG9wdm9sZ2VuXG5QcmlqcyBiZXJla2VuZW5cbkNhbGN1bGF0b3JcblxuQmVyZWtlbiBkaXJlY3QgZWVuIHByaWpzIHVpdCBkZSBjZW50cmFsZSBwcmlqc3JlZ2Vscy5cblxuRElFTlNUXG5XaW50ZXJcbkJPT1RMRU5HVEUgKENNKVxuQmVyZWtlbiBwcmlqc1xuT3BlbiB2b2xsZWRpZ2UgY2FsY3VsYXRvciDihpJcblNsaW1tZSBoZXJpbm5lcmluZ2VuXG5cbk92ZXJ6aWNodCB2YW4gZ2VwbGFuZGUgZW4gYWNodGVyc3RhbGxpZ2Uga2xhbnRoZXJpbm5lcmluZ2VuXG5cbk9wZW5zdGFhbmRlIGZhY3R1cmVuXG7igJRcbkNvbnRyYWN0ZW4gdmVybG9wZW5cbuKAlFxuV2Vya29yZGVycyBkdWVcbuKAlFxuUmVjZW50ZSBhY3Rpdml0ZWl0XG5cbkJlbGFuZ3JpamtlIHJlY2VudGUgZ2ViZXVydGVuaXNzZW4uXG5cbk9wZW5lbiDihpJcblxuQWN0aXZpdGVpdCBrb24gbmlldCB3b3JkZW4gZ2VsYWRlbi5cblxuT3BuaWV1dyBwcm9iZXJlblxuS2FzdmVyc2NoaWwgdmFuZGFhZ1xuXG5WZXJzY2hpbCB1aXQgZGUgbGFhdHN0ZSBkYWdhZnNsdWl0aW5nLlxuXG5Ob2cgZ2VlbiBkYWdhZnNsdWl0aW5nIHZhbmRhYWcuXG5cbk5hYXIgZGFnYWZzbHVpdGluZyDihpIiLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-admin-audit\\attachments\\page-evidence-803cdf46521c153da1ae12ffc3f28fdc37046267.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-f0e155a088eb1f20d684",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/planning",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10624,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:19:08.908Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9wbGFubmluZyIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vcGxhbm5pbmciLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IlBsYW5uaW5nXG5cbkJlaGVlciBhZnNwcmFrZW4sIGthbGVuZGVyYmVzY2hpa2JhYXJoZWlkIGVuIHdlcmZ3ZXJrIHZhbnVpdCDDqcOpbiBwbGVrLlxuXG5BZnNwcmFha1xuS3JhYW5hZnNwcmFha1xuQmVzY2hpa2JhYXJoZWlkICYgb3BlbmluZ3N0aWpkZW5cbkFmc3ByYWtlblxuVmFuZGFhZ1xuV2Vla1xuV2VyZnBsYW5uaW5nXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxX2U1MjE0YjFjZjBlYTQ3YzU4ZWI1KVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-planning-admin-audit\\attachments\\page-evidence-90decc61f512c80aa47dc280528b354050ea7f8f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-0ed498103cbcb1ac30d0",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/product-groepen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8034,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:19:19.569Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9wcm9kdWN0LWdyb2VwZW4iLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL3Byb2R1Y3QtZ3JvZXBlbiIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiUHJvZHVjdGdyb2VwZW5cblxuQmVoZWVyIGdyb2VwZW4sIGtsZXVyZW4gZW4gQlRXIHZvb3Iga2Fzc2EgZW4gcmFwcG9ydGFnZVxuXG5OaWV1d2UgZ3JvZXBcblByb2R1Y3Rncm9lcGVuXG5cbkJlaGVlciBncm9lcGVuLCBrbGV1cmVuIGVuIEJUVyB2b29yIGthc3NhIGVuIHJhcHBvcnRhZ2VcblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9lNGEwODgwNTdjNjM0NmE1ODZjOClcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-product-groepen-admin-audit\\attachments\\page-evidence-0887a17cac7d97a58f3b984e8d4d7d75a4a90620.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-a3d3aa94bdb5103f0a58",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/product-stats",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7180,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:19:27.630Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9wcm9kdWN0LXN0YXRzIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9wcm9kdWN0LXN0YXRzIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJQcm9kdWN0c3RhdGlzdGlla2VuXG5cbk9temV0LCB2ZXJrb29wYWFudGFsbGVuIGVuIG1hcmdlcyBwZXIgcHJvZHVjdFxuXG5QUk9EVUNURU5cbjBcblRPUCBWRVJLT1BFUlNcbjBcblRSQUFHIExPUEVORFxuMFxuT216ZXRcbkFsbGUgZ3JvZXBlblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9jMTc4OWNjMWZjZGM0N2JmOTI2ZClcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-product-stats-admin-audit\\attachments\\page-evidence-2b6691b6e94b62ccf8af1852036e436e7fb27aec.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-cb24f0ecbe8a9bcf8765",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/producten/[id]/[slug]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13536,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:19:34.844Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9wcm9kdWN0ZW4vW2lkXS9bc2x1Z10iLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL3Byb2R1Y3Rlbi9hdWRpdC1taXNzaW5nLXJlY29yZC9hdWRpdC1yZWNvcmQiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IlByb2R1Y3RcblxuTGFkZW7igKZcblxuVGVydWcgbmFhciBvdmVyemljaHRcbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfZjY5NTg2OTBlZjQyNDI3N2FiNjApXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-producten-id-slug--admin-audit\\attachments\\page-evidence-d9fea7cfd9a58a9676492bfca874f895082b1291.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-04d90f93188648173fa4",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/producten/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7474,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:19:48.417Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9wcm9kdWN0ZW4vW2lkXSIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vcHJvZHVjdGVuL2F1ZGl0LW1pc3NpbmctcmVjb3JkIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJQcm9kdWN0XG5cbkxhZGVu4oCmXG5cblRlcnVnIG5hYXIgb3ZlcnppY2h0XG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxX2QyMTc4NzFhMDc1NjQ2ZjdhZjZjKVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-producten-id--admin-audit\\attachments\\page-evidence-10cc131b77728e156dfda1954117c2ef26f49679.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-f31957b10b2e40c6b601",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/producten/nieuw",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8475,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:19:55.923Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9wcm9kdWN0ZW4vbmlldXciLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL3Byb2R1Y3Rlbi9uaWV1dyIsImluamVjdGVkRXJyb3JWaXNpYmxlIjpmYWxzZSwidGV4dCI6Ik5pZXV3IHByb2R1Y3RcblxuVm9sbGVkaWcgcHJvZHVjdGZvcm11bGllciBtZXQgcHJpanMsIGNhdGVnb3JpZSBlbiBrYXNzYS1pbnN0ZWxsaW5nZW5cblxuVGVydWcgbmFhciBvdmVyemljaHRcbk5pZXV3IHByb2R1Y3RcbklERU5USVRFSVRcbkNvZGVcbk5hYW1cblNsdWcgKHNlcnZpY2VwYWdpbmEpXG5PbXNjaHJpanZpbmdcbkFjdGllZlxuQ0xBU1NJRklDQVRJRVxuQ2F0ZWdvcmllXG5HZWVuIGNhdGVnb3JpZVxuU2VydmljZSBjb2RlXG5HZWVuIHNlcnZpY2UgY29kZVxuUHJvZHVjdGdyb2VwXG5HZWVuIGdyb2VwXG5UYWdzXG5BbGlhc3NlblxuUFJJSlpFTlxuUHJpanMgZXhjbC4gQlRXXG5CVFdcblByaWpzIGluY2wuIEJUV1xu4oKswqAwLDAwXG5Jbmtvb3BwcmlqcyAo4oKsKVxuVm9vcnJhYWRcbk1pbmltYWxlIHZvb3JyYWFkXG5LQVNTQSAmIFZPT1JSQUFEXG5CYXJjb2RlXG5TY2FuXG5ab2VrY29kZVxuU0tVXG5MZXZlcmFuY2llclxuS2xldXJcbkFmYmVlbGRpbmcgVVJMXG5Gb3RvIHVwbG9hZGVuXG5cblNsYSBoZXQgcHJvZHVjdCBlZXJzdCBvcCBvbSBlZW4gZm90byB0ZSBrdW5uZW4gdXBsb2FkZW4uXG5cblpJQ0hUQkFBUkhFSURcblRvbmVuIGluIGthc3NhXG5Ub25lbiBvcCB3ZWJzaXRlXG5Ub25lbiBpbiBjYWxjdWxhdG9yXG5Ub25lbiBiaWogYm9la2luZ2VuXG5Bbm51bGVyZW5cbk9wc2xhYW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-producten-nieuw-admin-audit\\attachments\\page-evidence-b2ddd41cc218dd4554cc1c7fd9f852bcd563f93c.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-e33215e3ece8d1aea13d",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/producten",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13341,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:20:04.428Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9wcm9kdWN0ZW4iLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL3Byb2R1Y3RlbiIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiUHJvZHVjdGVuXG5cbkJlaGVlciBwcm9kdWN0Y2F0YWxvZ3VzIHZvb3Iga2Fzc2EgZW4gZmFjdHVyYXRpZVxuXG5OaWV1dyBwcm9kdWN0XG5Qcm9kdWN0ZW5cblxuQmVoZWVyIHByb2R1Y3RjYXRhbG9ndXMgdm9vciBrYXNzYSBlbiBmYWN0dXJhdGllXG5cbkFsbGUgZ3JvZXBlblxuQWxsZSBwcm9kdWN0ZW5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfNDUzNDc5MTA4NzZkNDI5YWEyNmUpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-producten-admin-audit\\attachments\\page-evidence-15d0f88389f882b6a60a4e5f6424e68036a934e7.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-d682ee63846f68ba7537",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/rapportages",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 52262,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:20:17.799Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9yYXBwb3J0YWdlcyIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vcmFwcG9ydGFnZXMiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IlJhcHBvcnRhZ2VzXG5cbk9temV0LCBCVFcsIG9temV0IHBlciBncm9lcCBlbiBiZXRhYWxtZXRob2RlblxuXG5EZXplIG1hYW5kXG7igJNcbkRhZ2Fmc2x1aXRpbmdcbkFmZHJ1a2tlblxuRXhwb3J0ZWVyIENTVlxuT01aRVRcbuKCrMKgMCwwMFxuT05UVkFOR0VOXG7igqzCoDAsMDBcbk9QRU5TVEFBTkRcbuKCrMKgMCwwMFxuQlJVVE9NQVJHRVxu4oCUXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzIyZGNlNmVlMThkZjQ0NDRiZmE1KVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-rapportages-admin-audit\\attachments\\page-evidence-088d1cc6e2af909ba42bb62a564ed53987fc05f3.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-065114b56b902a2fd40a",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/reminders",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16355,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:21:10.098Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9yZW1pbmRlcnMiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL3JlbWluZGVycyIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiU2xpbW1lIGhlcmlubmVyaW5nZW5cblxuT3ZlcnppY2h0IHZhbiBnZXBsYW5kZSBlbiBhY2h0ZXJzdGFsbGlnZSBrbGFudGhlcmlubmVyaW5nZW5cblxuUmVnZWxzIG51IHVpdHZvZXJlblxuVkFOREFBRyBURSBET0VOXG4wXG5HRVBMQU5EXG4wXG5BQ0hURVJTVEFMTElHXG4wXG5BRkdFSEFOREVMRFxuMFxuVmFuZGFhZyDigJQgb3ZlcnppY2h0XG5GQUNUVVJFTiBWRVJWQUxMRU5cbjBcbkZBQ1RVUkVOIEFDSFRFUlNUQUxMSUdcbjBcbkNPTlRSQUNURU4gVkVSTE9QRU4gQklOTkVOS09SVFxuMFxuVkVSWkVLRVJJTkdFTiBWRVJMT1BFTlxuMFxuV0VSS09SREVSUyBBQ0hURVJTVEFMTElHXG4wXG5BRlNQUkFLRU4gVkFOREFBR1xuMFxuSGVyaW5uZXJpbmdlblxuXG5PcGVuIGhlcmlubmVyaW5nZW4gZGllIGFjdGllIHZlcmVpc2VuXG5cbkFsbGUgc3RhdHVzc2VuXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzdhMmIyODFhODAyNTRlMDQ4NzBiKVxuT3BuaWV1dyBwcm9iZXJlblxuQXV0b21hdGlzZXJpbmdzcmVnZWxzXG5cblJlZ2VscyBkaWUgYXV0b21hdGlzY2ggaGVyaW5uZXJpbmdlbiBhYW5tYWtlblxuXG5OaWV1d2UgcmVnZWxcbk5vZyBnZWVuIHJlZ2Vsc1xuVm9lZyBlZW4gcmVnZWwgdG9lIG9tIGhlcmlubmVyaW5nZW4gdGUgYXV0b21hdGlzZXJlbi4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-reminders-admin-audit\\attachments\\page-evidence-2f7d00976cd8daf98906084cdb2b9e8fa990df86.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-5f99467359088fb9a5e2",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/scan-logs",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8013,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:21:26.532Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9zY2FuLWxvZ3MiLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL3NjYW4tbG9ncyIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiU2NhbmxvZ2JvZWtcblxuRWxrZSBiYXJjb2Rlc2NhbiBpbiBkZSBrYXNzYTogYnJvbiwgcmVzdWx0YWF0LCBwcm9kdWN0IGVuIG1lZGV3ZXJrZXJcblxuVE9UQUFMXG4wXG5HRVZPTkRFTlxuMFxuTklFVCBHRVZPTkRFTlxuMFxuU2NhbmxvZ2JvZWtcbkFsbGUgYnJvbm5lblxuQWxsZSByZXN1bHRhdGVuXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzExOGViZmU1Y2FjOTRiMDNiMGNlKVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-scan-logs-admin-audit\\attachments\\page-evidence-1e0526d5939a20dce243baeaa1ff24f7af9e6d84.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-ecbc7725906c44703101",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/stalling/[id]/[slug]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6526,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:21:34.592Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9zdGFsbGluZy9baWRdL1tzbHVnXSIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vc3RhbGxpbmcvYXVkaXQtbWlzc2luZy1yZWNvcmQvYXVkaXQtcmVjb3JkIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJTdGFsbGluZ1xuXG5CZWhlZXIgY2lyY2EgMjAwIGJvdGVuIG1ldCBzdGF0dXMsIHBhaWQtdW50aWwgZW4gb3BlbiBzYWxkb1xuXG5CZXdlcmtlblxuVGVydWdcblRZUEVcbuKAlFxuTE9DQVRJRSAvIEJPS1xu4oCUXG5QQUlEIFVOVElMXG7igJRcblNUQVRVU1xu4oCUXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzQwOWQzOTk5NThiNzRkYTBhMzY4KVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-stalling-id-slug--admin-audit\\attachments\\page-evidence-92bac07dc010309f82569e35ba1d82030d83b65f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-e7ff6bc80d452b166c66",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/stalling/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4925,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:21:41.143Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9zdGFsbGluZy9baWRdIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9zdGFsbGluZy9hdWRpdC1taXNzaW5nLXJlY29yZCIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiU3RhbGxpbmdcblxuQmVoZWVyIGNpcmNhIDIwMCBib3RlbiBtZXQgc3RhdHVzLCBwYWlkLXVudGlsIGVuIG9wZW4gc2FsZG9cblxuQmV3ZXJrZW5cblRlcnVnXG5UWVBFXG7igJRcbkxPQ0FUSUUgLyBCT0tcbuKAlFxuUEFJRCBVTlRJTFxu4oCUXG5TVEFUVVNcbuKAlFxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV8xNDE5ODhjZDBlZDY0YjljYjQzZSlcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-stalling-id--admin-audit\\attachments\\page-evidence-017c85ed679f79c91ce60edb30e55b5726e26289.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-9657282ffdaf6626fa2f",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/stalling",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6496,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:21:46.099Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9zdGFsbGluZyIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vc3RhbGxpbmciLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IlN0YWxsaW5nXG5cbkJlaGVlciBjaXJjYSAyMDAgYm90ZW4gbWV0IHN0YXR1cywgcGFpZC11bnRpbCBlbiBvcGVuIHNhbGRvXG5cbk5pZXV3IGNvbnRyYWN0XG4wIENPTlRSQUNURU5cbjBcbkFDSFRFUlNUQUxMSUdcbjBcbk9QRU4gU0FMRE9cbuKCrMKgMCwwMFxuU3RhbGxpbmdcblxuQmVoZWVyIGNpcmNhIDIwMCBib3RlbiBtZXQgc3RhdHVzLCBwYWlkLXVudGlsIGVuIG9wZW4gc2FsZG9cblxuU1RBVFVTXG5BbGxlIHN0YXR1c3NlblxuVFlQRVxuQWxsZSB0eXBlc1xuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV8yOTI0MGJkZjUwNjg0Y2FlYWM0ZSlcbk9wbmlldXcgcHJvYmVyZW5cbkF1ZGl0IGxvZ1xuXG5SZWNlbnRlIHdpanppZ2luZ2VuIGFhbiBzdGFsbGluZyBjb250cmFjdGVuXG5cbkdlZW4gYXVkaXQgZXZlbnRzXG5FciB6aWpuIG5vZyBnZWVuIHN0YWxsaW5nIHdpanppZ2luZ2VuIGdlbG9nZC4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-stalling-admin-audit\\attachments\\page-evidence-c0ff751ac3e7c05e02ca00092bc34963ca278140.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-5cb0bc41b3b809aa9eab",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/sync",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11594,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:21:52.626Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9zeW5jIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9zeW5jIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOmZhbHNlLCJ0ZXh0IjoiSU5URUdSQVRJRSAmIERBVEFTWU5DXG5cbk9mZmxpbmUgLyBTeW5jIHN0YXR1c1xuXG5aaWUgcGVuZGluZyB3aWp6aWdpbmdlbiwgZm91dGVuIGVuIGxhYXRzdGUgc3luY2hyb25pc2F0aWUgcGVyIGFwcGFyYWF0XG5cblZlcm5pZXV3ZW5cblN5bmMgYWxsZXNcblZFUkJJTkRJTkdcblN5bmMgZm91dFxuUEVORElOR1xuMFxuTUlTTFVLVFxuMFxuTEFBVFNURSBTWU5DXG7igJRcblBlbmRpbmcgd2lqemlnaW5nZW5cblxuWmllIHBlbmRpbmcgd2lqemlnaW5nZW4sIGZvdXRlbiBlbiBsYWF0c3RlIHN5bmNocm9uaXNhdGllIHBlciBhcHBhcmFhdFxuXG5HZWVuIHBlbmRpbmcgb2ZmbGluZSB3aWp6aWdpbmdlbi5cbkdlcmVnaXN0cmVlcmRlIHN5bmMgZGV2aWNlc1xuXG5BcHBhcmF0ZW4gZGllIG9mZmxpbmUgd2lqemlnaW5nZW4gc3luY2hyb25pc2VyZW5cblxuTm9nIGdlZW4gc3luYyBkZXZpY2VzIGJlc2NoaWtiYWFyLiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-sync-admin-audit\\attachments\\page-evidence-e72e79625d03e084b01669a2ebf56b889de27183.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-4d5b06759b51be6317c9",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/systeem",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7927,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:22:04.253Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9zeXN0ZWVtIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9zeXN0ZWVtIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOmZhbHNlLCJ0ZXh0IjoiU3lzdGVlbVxuXG5IZWFsdGggY2hlY2tzIGVuIHJlcGFpciB0b29scyB2b29yIGFkbWluc1xuXG5WZXJuaWV1d2VuXG5BTEdFTUVFTlxuU3RvcmluZ1xuREFUQUJBU0VcblN0b3JpbmdcblFVRVVFXG5TdG9yaW5nXG5NT0xMSUVcblN0b3Jpbmdcbk1BSUxcblN0b3JpbmdcblNUT1JBR0VcblN0b3JpbmdcbldFQkhPT0tTXG5TdG9yaW5nXG5CZXRhbGluZ2VuXG5cbjAgbWlzbWF0Y2hlZCBiZXRhbGluZ2VuXG5cblN5bmMgTW9sbGllIHN0YXR1c1xuV2ViaG9va3NcblxuMCBtaXNsdWt0ZSB3ZWJob29rc1xuXG5TeW5jIGNvbmZsaWN0c1xuXG4wIHN5bmMgY29uZmxpY3RzXG5cbkZhY3R1cmVuXG5GYWN0dXVyLUlEXG5FLW1haWwgb3BuaWV1dyB2ZXJzdHVyZW5cblBERiBvcG5pZXV3IGdlbmVyZXJlblxuQmV0YWxpbmctSURcbldlYmhvb2sgb3BuaWV1d1xuS2xhbnRlblxuSG9vZmRrbGFudC1JRFxuRHVwbGljYWF0IGtsYW50LUlEXG5SZWRlbiAobWluLiA1IHRla2VucylcbktsYW50ZW4gc2FtZW52b2VnZW5cbklkZW1wb3RlbmN5XG5JZGVtcG90ZW5jeSBrZXlcbk9wem9la2VuXG5CYWNrLXVwc1xuXG5SZWNlbnRlIGJhY2stdXB0YWtlbiBlbiBoYW5kbWF0aWdlIGJhY2stdXBzLlxuXG5OdSBiYWNrLXVwIG1ha2VuXG5Ob2cgZ2VlbiBiYWNrLXVwcyB1aXRnZXZvZXJkLiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-systeem-admin-audit\\attachments\\page-evidence-e74b0e1101261ddefa0c1e6b424e23b219d22137.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-8e60b143d161bacf8bed",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/systeembeheer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8747,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:22:12.205Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi9zeXN0ZWVtYmVoZWVyIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi9zeXN0ZWVtYmVoZWVyIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOmZhbHNlLCJ0ZXh0IjoiU3lzdGVlbVxuXG5IZWFsdGggY2hlY2tzIGVuIHJlcGFpciB0b29scyB2b29yIGFkbWluc1xuXG5WZXJuaWV1d2VuXG5BTEdFTUVFTlxuU3RvcmluZ1xuREFUQUJBU0VcblN0b3JpbmdcblFVRVVFXG5TdG9yaW5nXG5NT0xMSUVcblN0b3Jpbmdcbk1BSUxcblN0b3JpbmdcblNUT1JBR0VcblN0b3JpbmdcbldFQkhPT0tTXG5TdG9yaW5nXG5CZXRhbGluZ2VuXG5cbjAgbWlzbWF0Y2hlZCBiZXRhbGluZ2VuXG5cblN5bmMgTW9sbGllIHN0YXR1c1xuV2ViaG9va3NcblxuMCBtaXNsdWt0ZSB3ZWJob29rc1xuXG5TeW5jIGNvbmZsaWN0c1xuXG4wIHN5bmMgY29uZmxpY3RzXG5cbkZhY3R1cmVuXG5GYWN0dXVyLUlEXG5FLW1haWwgb3BuaWV1dyB2ZXJzdHVyZW5cblBERiBvcG5pZXV3IGdlbmVyZXJlblxuQmV0YWxpbmctSURcbldlYmhvb2sgb3BuaWV1d1xuS2xhbnRlblxuSG9vZmRrbGFudC1JRFxuRHVwbGljYWF0IGtsYW50LUlEXG5SZWRlbiAobWluLiA1IHRla2VucylcbktsYW50ZW4gc2FtZW52b2VnZW5cbklkZW1wb3RlbmN5XG5JZGVtcG90ZW5jeSBrZXlcbk9wem9la2VuXG5CYWNrLXVwc1xuXG5SZWNlbnRlIGJhY2stdXB0YWtlbiBlbiBoYW5kbWF0aWdlIGJhY2stdXBzLlxuXG5OdSBiYWNrLXVwIG1ha2VuXG5Ob2cgZ2VlbiBiYWNrLXVwcyB1aXRnZXZvZXJkLiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-systeembeheer-admin-audit\\attachments\\page-evidence-c809b53bcbbaaa788f2addde3eaeb07d47eed4ae.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-56dec5d03ae9b52cc3d7",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/taken",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9902,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:22:20.980Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi90YWtlbiIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vdGFrZW4iLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IlRha2VuXG5cbkF1dG9tYXRpc2NoIGFhbmdlbWFha3RlIG9wdm9sZ3Rha2VuIHZhbnVpdCBoZXJpbm5lcmluZ2VuXG5cbk9QRU5cbjBcbklOIFVJVFZPRVJJTkdcbjBcbkFGR0VST05EXG4wXG5BbGxlIHN0YXR1c3NlblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV80NTc5M2ZmNDk0OGI0NjRjYjRjYilcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-taken-admin-audit\\attachments\\page-evidence-7a7d3939546e7697bd3dc0bb0c81e95c2583d0b9.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-4cb0ffc1fc069f596092",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/tarieven/makelaardij",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12357,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:22:30.918Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi90YXJpZXZlbi9tYWtlbGFhcmRpaiIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vdGFyaWV2ZW4vbWFrZWxhYXJkaWoiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6Ik1ha2VsYWFyZGlqLXRhcmlldmVuXG5cbk1hYW5kZWxpamtzZSBtYWtlbGFhcmRpai1zdGFsbGluZ2tvc3RlbiBwZXIgYm9vdGxlbmd0ZVxuXG5OaWV1dyB0YXJpZWZcbk1ha2VsYWFyZGlqLXRhcmlldmVuXG5cbkJvdGVuIHRlIGtvb3Aga3JpamdlbiA2IG1hYW5kZW4gZ3JhdGlzLCBkYWFybmEgZWVuIG1hYW5kdGFyaWVmIG9wIGJhc2lzIHZhbiBsZW5ndGUuXG5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfOWFkM2E3YjdkNzcwNDRmY2JlYTUpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure--0c3cf--admin-tarieven-makelaardij-admin-audit\\attachments\\page-evidence-1ebd3fae46a513027f69c022bfeac7711f57f08f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-ff5d068b9b622b2cd761",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/timeline",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14586,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:22:43.306Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi90aW1lbGluZSIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vdGltZWxpbmUiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IlRpamRsaWpuXG5cbkXDqW4gZmVlZCB2YW4gYWxsZXMgd2F0IGVyIG9wIGhldCBwbGF0Zm9ybSBnZWJldXJ0XG5cbkJlcmljaHQgbmFhciBrbGFudFxuQWN0aXZpdGVpdGVuZmVlZFxuXG5BdWRpdC1nZWJldXJ0ZW5pc3NlbiBlbiBtb2R1bGUtYWN0aXZpdGVpdCBvcCDDqcOpbiBwbGVrXG5cbkFsbGVzXG51cmdlbnRcbkZpbmFuY2nDq25cblN0YWxsaW5nXG5QbGFubmluZ1xuaW50ZXJuYWxcbmF1ZGl0XG5WYW5kYWFnXG5HaXN0ZXJlblxuQWZnZWxvcGVuIDcgZGFnZW5cbkRlemUgbWFhbmRcbkFsbGUgY2F0ZWdvcmllw6tuXG5BbGxlIHByaW9yaXRlaXRlblxuQWxsZSB6aWNodGJhYXJoZWlkXG5BbGxlIGJyb25uZW5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfNGJkOGQ4YzcxNGRhNGRlM2E5YzkpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-timeline-admin-audit\\attachments\\page-evidence-ae5c221237560c13d998500aba6ae03f2e635c54.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-9cacd95465981d4bf858",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/verkopen/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9977,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:22:57.920Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi92ZXJrb3Blbi9baWRdIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi92ZXJrb3Blbi9hdWRpdC1taXNzaW5nLXJlY29yZCIsImluamVjdGVkRXJyb3JWaXNpYmxlIjp0cnVlLCJ0ZXh0IjoiVmVya29wZW5cbkVyIGdpbmcgaWV0cyBtaXNcbkF1ZGl0IGluamVjdGVkIHNlcnZpY2UgZmFpbHVyZSAocmVmOiByZXFfMDAwYjg0OWE4MDdkNGU3NjhlMWUpXG5PcG5pZXV3IHByb2JlcmVuIiwiZXJyb3JzIjpbXX0="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-verkopen-id--admin-audit\\attachments\\page-evidence-c172e9d0d1b22edfc2758e225dd9e5385994083a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-ab5f31cd8449646c3a68",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/verkopen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9788,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:23:07.927Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi92ZXJrb3BlbiIsImxvY2FsZSI6Im5sIiwiZmluYWxVUkwiOiJodHRwOi8vbG9jYWxob3N0OjMwNDcvbmwvYWRtaW4vdmVya29wZW4iLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IlZlcmtvcGVuXG5cblJlY2VudGUga2Fzc2F2ZXJrb3BlbiBlbiBodW4gZmFjdHVyZW5cblxuS2Fzc2FcbjAgVkVSS09QRU5cbjBcblRPVEFBTFxu4oKswqAwLDAwXG5SZWNlbnRlIHZlcmtvcGVuXG5cbkVsa2UgdHJhbnNhY3RpZSB2ZXJ3ZXJrdCBvcCBkZSBrYXNzYVxuXG5FciBnaW5nIGlldHMgbWlzXG5BdWRpdCBpbmplY3RlZCBzZXJ2aWNlIGZhaWx1cmUgKHJlZjogcmVxXzhlMTZmZjBlYzY4YTQ3NGI4NjA2KVxuT3BuaWV1dyBwcm9iZXJlbiIsImVycm9ycyI6W119"
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-verkopen-admin-audit\\attachments\\page-evidence-bd955c64d88740622aa37f44d9b27f909eee0e83.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-d45b56d74f959a24bd5f",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/werkorders/[id]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9763,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:23:17.745Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi93ZXJrb3JkZXJzL1tpZF0iLCJsb2NhbGUiOiJubCIsImZpbmFsVVJMIjoiaHR0cDovL2xvY2FsaG9zdDozMDQ3L25sL2FkbWluL3dlcmtvcmRlcnMvYXVkaXQtbWlzc2luZy1yZWNvcmQiLCJpbmplY3RlZEVycm9yVmlzaWJsZSI6dHJ1ZSwidGV4dCI6IldlcmtvcmRlcnMgYXVkaXQtbWlzc2luZy1yZWNvcmRcblxuUGxhbiBlbiB2b2xnIHdlcmt6YWFtaGVkZW4gcGVyIGJvb3RcblxuU1RBVFVTXG5uZXdcblBSSU9SSVRFSVRcbm5vcm1hbFxuREVBRExJTkVcbuKAlFxuVE9FR0VXRVpFTiBBQU5cbk5pZXQgdG9lZ2V3ZXplblxuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV9iOWVjYmJmYWQzOGU0ZWQ0OTM5Nylcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-werkorders-id--admin-audit\\attachments\\page-evidence-3a53df3c1a2e01492aa87b13c0d2ea226a71b200.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-bab74a19ac73705a0aab",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        },
+        {
+          "title": "route failure boundary: /admin/werkorders",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11212,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T03:23:27.537Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "route-observation",
+                      "contentType": "application/json",
+                      "body": "eyJyb3V0ZSI6Ii9hZG1pbi93ZXJrb3JkZXJzIiwibG9jYWxlIjoibmwiLCJmaW5hbFVSTCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzA0Ny9ubC9hZG1pbi93ZXJrb3JkZXJzIiwiaW5qZWN0ZWRFcnJvclZpc2libGUiOnRydWUsInRleHQiOiJXZXJrb3JkZXJzXG5cblBsYW4gZW4gdm9sZyB3ZXJremFhbWhlZGVuIHBlciBib290XG5cbk5pZXV3ZSB3ZXJrb3JkZXJcbk9QRU5cbjBcblRFIExBQVRcbjBcbkFGR0VST05EXG4wXG5VUkVOXG4wdVxuWm9la2VuXG5GaWx0ZXJlblxuV2Vya29yZGVyc1xuRXIgZ2luZyBpZXRzIG1pc1xuQXVkaXQgaW5qZWN0ZWQgc2VydmljZSBmYWlsdXJlIChyZWY6IHJlcV84NjFhNzVlYjk5YTU0ZmI1YmEwZilcbk9wbmlldXcgcHJvYmVyZW4iLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "page-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-werkorders-admin-audit\\attachments\\page-evidence-0146aebcf1b389196c1b7ac5bb457b520fce537a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-fcf406747fd1ab94d8fd",
+          "file": "admin-audit.spec.ts",
+          "line": 21,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-27T03:08:12.668Z",
+    "duration": 934986.061,
+    "expected": 70,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

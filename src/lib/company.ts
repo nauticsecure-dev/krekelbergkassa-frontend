@@ -22,8 +22,8 @@ export const companyInfo = {
   phoneHref: 'tel:+31475315661',
 
   // Email
-  email: 'info@krekelberg-nautic.nl',
-  emailHref: 'mailto:info@krekelberg-nautic.nl',
+  email: 'marketing@answer24.nl',
+  emailHref: 'mailto:marketing@answer24.nl',
 
   // Google Maps
   mapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${MAPS_QUERY}`,

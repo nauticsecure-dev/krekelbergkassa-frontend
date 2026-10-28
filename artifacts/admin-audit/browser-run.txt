@@ -1,0 +1,271 @@
+[WebServer] (node:25144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:20296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:22708) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 85 tests using 1 worker
+
+(node:3748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4868) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/afspraken (59.6s)
+[WebServer] (node:7620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:16196) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/api-credentials (7.2s)
+[WebServer] (node:29156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok  3 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/audit (8.7s)
+[WebServer] (node:9228) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok  4 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/beheer/dashboard-shortcuts (36.6s)
+[WebServer] (node:19592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok  5 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/beheer (18.7s)
+[WebServer] (node:17604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok  6 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/betalingen (40.7s)
+[WebServer] (node:18068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok  7 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/beveiliging (21.7s)
+[WebServer] (node:25884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  x   8 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/boekhouding (43.8s)
+(node:5328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:6984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/boten/[id] (26.5s)
+[WebServer] (node:25796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 10 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/boten (19.5s)
+[WebServer] (node:21028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/bundels (11.7s)
+[WebServer] (node:7532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:20296) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+[WebServer] Failed to proxy http://localhost/krekelbergkassa/krekelbergkassa-backend/public/api/v1/i18n/locales AggregateError [ECONNREFUSED]: 
+[WebServer]     at internalConnectMultiple (node:net:1430:18)
+[WebServer]     at afterConnectMultiple (node:net:2099:7) {
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   [errors]: [
+[WebServer]     Error: connect ECONNREFUSED ::1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '::1',
+[WebServer]       port: 80
+[WebServer]     },
+[WebServer]     Error: connect ECONNREFUSED 127.0.0.1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '127.0.0.1',
+[WebServer]       port: 80
+[WebServer]     }
+[WebServer]   ]
+[WebServer] }
+[WebServer] AggregateError [ECONNREFUSED]: 
+[WebServer]     at internalConnectMultiple (node:net:1430:18)
+[WebServer]     at afterConnectMultiple (node:net:2099:7) {
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   [errors]: [
+[WebServer]     Error: connect ECONNREFUSED ::1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '::1',
+[WebServer]       port: 80
+[WebServer]     },
+[WebServer]     Error: connect ECONNREFUSED 127.0.0.1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '127.0.0.1',
+[WebServer]       port: 80
+[WebServer]     }
+[WebServer]   ]
+[WebServer] }
+[WebServer] (node:28380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  x  12 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/calculator/history (37.1s)
+(node:9000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:1424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 13 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/calculator (35.1s)
+[WebServer] Failed to proxy http://localhost/krekelbergkassa/krekelbergkassa-backend/public/api/v1/i18n/locales AggregateError [ECONNREFUSED]: 
+[WebServer]     at internalConnectMultiple (node:net:1430:18)
+[WebServer]     at afterConnectMultiple (node:net:2099:7) {
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   [errors]: [
+[WebServer]     Error: connect ECONNREFUSED ::1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '::1',
+[WebServer]       port: 80
+[WebServer]     },
+[WebServer]     Error: connect ECONNREFUSED 127.0.0.1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '127.0.0.1',
+[WebServer]       port: 80
+[WebServer]     }
+[WebServer]   ]
+[WebServer] }
+[WebServer] AggregateError [ECONNREFUSED]: 
+[WebServer]     at internalConnectMultiple (node:net:1430:18)
+[WebServer]     at afterConnectMultiple (node:net:2099:7) {
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   [errors]: [
+[WebServer]     Error: connect ECONNREFUSED ::1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '::1',
+[WebServer]       port: 80
+[WebServer]     },
+[WebServer]     Error: connect ECONNREFUSED 127.0.0.1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '127.0.0.1',
+[WebServer]       port: 80
+[WebServer]     }
+[WebServer]   ]
+[WebServer] }
+[WebServer] (node:17480) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 14 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/calculator/pricing (31.7s)
+[WebServer] Failed to proxy http://localhost/krekelbergkassa/krekelbergkassa-backend/public/api/v1/i18n/locales AggregateError [ECONNREFUSED]: 
+[WebServer]     at internalConnectMultiple (node:net:1430:18)
+[WebServer]     at afterConnectMultiple (node:net:2099:7) {
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   [errors]: [
+[WebServer]     Error: connect ECONNREFUSED ::1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '::1',
+[WebServer]       port: 80
+[WebServer]     },
+[WebServer]     Error: connect ECONNREFUSED 127.0.0.1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '127.0.0.1',
+[WebServer]       port: 80
+[WebServer]     }
+[WebServer]   ]
+[WebServer] }
+[WebServer] AggregateError [ECONNREFUSED]: 
+[WebServer]     at internalConnectMultiple (node:net:1430:18)
+[WebServer]     at afterConnectMultiple (node:net:2099:7) {
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   [errors]: [
+[WebServer]     Error: connect ECONNREFUSED ::1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '::1',
+[WebServer]       port: 80
+[WebServer]     },
+[WebServer]     Error: connect ECONNREFUSED 127.0.0.1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '127.0.0.1',
+[WebServer]       port: 80
+[WebServer]     }
+[WebServer]   ]
+[WebServer] }
+[WebServer] (node:4164) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] Failed to proxy http://localhost/krekelbergkassa/krekelbergkassa-backend/public/api/v1/i18n/locales AggregateError [ECONNREFUSED]: 
+[WebServer]     at internalConnectMultiple (node:net:1430:18)
+[WebServer]     at afterConnectMultiple (node:net:2099:7) {
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   [errors]: [
+[WebServer]     Error: connect ECONNREFUSED ::1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '::1',
+[WebServer]       port: 80
+[WebServer]     },
+[WebServer]     Error: connect ECONNREFUSED 127.0.0.1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '127.0.0.1',
+[WebServer]       port: 80
+[WebServer]     }
+[WebServer]   ]
+[WebServer] }
+[WebServer] AggregateError [ECONNREFUSED]: 
+[WebServer]     at internalConnectMultiple (node:net:1430:18)
+[WebServer]     at afterConnectMultiple (node:net:2099:7) {
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   [errors]: [
+[WebServer]     Error: connect ECONNREFUSED ::1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '::1',
+[WebServer]       port: 80
+[WebServer]     },
+[WebServer]     Error: connect ECONNREFUSED 127.0.0.1:80
+[WebServer]         at createConnectionError (node:net:2062:14)
+[WebServer]         at afterConnectMultiple (node:net:2092:16) {
+[WebServer]       errno: -4078,
+[WebServer]       code: 'ECONNREFUSED',
+[WebServer]       syscall: 'connect',
+[WebServer]       address: '127.0.0.1',
+[WebServer]       port: 80
+[WebServer]     }
+[WebServer]   ]
+[WebServer] }
+[WebServer] memory allocation of [WebServer] 118784 bytes failed

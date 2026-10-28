@@ -1,4 +1,4 @@
-export type Role = 'customer' | 'staff' | 'admin' | 'manager' | 'super_admin' | 'guest';
+export type Role = 'customer' | 'employee' | 'staff' | 'admin' | 'manager' | 'super_admin' | 'finance' | 'guest';
 
 export interface SessionUser {
   id: string;
@@ -65,6 +65,8 @@ export interface Customer {
 export type BoatType = 'motor' | 'sail' | 'rib' | 'trailer' | 'other';
 
 export interface Boat {
+  public_listing_url?: string | null;
+  public_url?: string | null;
   id: string;
   public_id?: string | null;
   slug?: string | null;
@@ -202,6 +204,13 @@ export interface Invoice {
   source: 'kassa' | 'stalling' | 'manual' | 'calculator' | 'appointment' | 'brokerage' | 'import' | string;
   source_type?: string | null;
   source_id?: string | null;
+  invoice_status?: 'draft' | 'final' | 'credited' | 'cancelled';
+  direction?: 'sales' | 'purchase';
+  supplier_name?: string | null;
+  supplier_payable_id?: string | null;
+  supplier_payable?: { id: string; supplier_id: string; supplier_public_id?: string | null; supplier_slug?: string | null; status: string; paid_at?: string | null; payment_reference?: string | null } | null;
+  template_id?: string | null;
+  template_version?: number | null;
   status: string;
   payment_status?: string | null;
   reference?: string | null;
@@ -232,7 +241,7 @@ export interface Invoice {
   customer?: Customer;
   lines?: InvoiceLine[];
   payments?: Payment[];
-  stalling_contract?: StallingContract | null;
+  stalling_contract?: Pick<StallingContract, 'id' | 'public_id' | 'slug' | 'contract_number'> | null;
   // Trello #107: link back from an invoice to its originating stalling contract,
   // and label deposit/final/brokerage invoices.
   stalling_contract_id?: string | null;
@@ -280,6 +289,8 @@ export interface Product {
 }
 
 export interface PricingRule {
+  included_service_codes?: string[];
+  duration_minutes?: number;
   id: string;
   product_id: string;
   product_name?: string | null;
@@ -431,6 +442,9 @@ export interface AuditLog {
   api_endpoint?: string | null;
   http_status?: number | null;
   correlation_id?: string | null;
+  group_id?: string | null;
+  group_size?: number;
+  can_view_details?: boolean;
   endpoint?: string | null;
   method?: string | null;
   severity?: string | null;
@@ -477,15 +491,16 @@ export interface AppSettings {
     default_due_days: number;
     currency: string;
     default_vat_rate: number;
-    reminder_first_days: number;
-    reminder_second_days: number;
-    reminder_final_days: number;
+    reminder_source: 'rules';
   };
   payments: {
     provider: string;
     connected: boolean;
     test_mode: boolean;
     enabled_methods: string[];
+    pos_methods: string[];
+    online_methods: string[];
+    key_configured: boolean;
   };
   locales: {
     default_locale: string;

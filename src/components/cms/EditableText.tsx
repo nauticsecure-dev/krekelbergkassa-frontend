@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Pencil } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useIntl } from '@/i18n/IntlProvider';
-import { useCms } from './CmsProvider';
+import { useCms, useCmsEditorOpen } from './CmsProvider';
 import { TextEditModal } from './CmsModals';
 
 type AsTag = keyof React.JSX.IntrinsicElements;
@@ -69,9 +69,9 @@ export function EditableText({
   className,
   children,
 }: EditableTextProps) {
-  const { isCmsEditing, getText } = useCms();
+  const { isCmsEditing, retainCmsDrafts, getText } = useCms();
   const { t } = useIntl();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useCmsEditorOpen();
 
   const fallbackText = React.useMemo(() => childrenToText(children), [children]);
   const stored = getText(blockKey, '');
@@ -83,7 +83,7 @@ export function EditableText({
   // the public site is unchanged until a first edit upserts the key.
   const content: React.ReactNode = stored ? stored : children;
 
-  if (!isCmsEditing) {
+  if (!isCmsEditing && !retainCmsDrafts) {
     return <Tag className={className}>{content}</Tag>;
   }
 
@@ -97,37 +97,32 @@ export function EditableText({
   };
 
   return (
-    <Wrap
-      className={cn(
-        'group/cms pointer-events-auto relative cursor-text',
-        block ? 'block' : 'inline-block',
-      )}
-      onPointerDown={stopNav}
-      onMouseDown={stopNav}
-      onTouchStart={stopNav}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') stopNav(event);
-      }}
-      onClick={openEditor}
-    >
-      <Tag className={cn('outline-dashed outline-1 outline-gold-400/60', className)}>
-        {content}
-      </Tag>
-      <button
-        type="button"
-        onPointerDown={stopNav}
-        onMouseDown={stopNav}
-        onTouchStart={stopNav}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') openEditor(event);
-        }}
+    <>
+      <Wrap
+        data-cms-block={blockKey}
+        className={cn(
+          'group/cms pointer-events-auto relative cursor-text',
+          block ? 'block' : 'inline-block',
+        )}
         onClick={openEditor}
-        aria-label={t('cms.editText')}
-        title={t('cms.editText')}
-        className="absolute -right-1 -top-1 z-20 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white opacity-0 shadow-md transition focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 group-hover/cms:opacity-100"
       >
-        <Pencil className="h-3.5 w-3.5" />
-      </button>
+        <Tag className={cn('outline-dashed outline-1 outline-gold-400/60', className)}>
+          {content}
+        </Tag>
+        <button
+          type="button"
+          data-cms-edit
+          style={!isCmsEditing ? { display: 'none' } : undefined}
+          onClick={openEditor}
+          aria-label={t('cms.editText')}
+          title={t('cms.editText')}
+          className="absolute -right-1 -top-1 z-20 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+      </Wrap>
+      {/* Keep portal events outside the editable surface so typing and selecting
+          text in the dialog cannot activate the trigger or cancel input focus. */}
       <TextEditModal
         open={open}
         onClose={() => setOpen(false)}
@@ -137,6 +132,6 @@ export function EditableText({
         type={type}
         fallbackText={fallbackText}
       />
-    </Wrap>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
@@ -150,7 +151,7 @@ export default function PortalWorkOrdersPage() {
               className="w-full rounded-xl border border-navy-200 bg-white py-2.5 pl-9 pr-3 text-sm text-navy-900 placeholder:text-navy-400 focus:border-marine-400 focus:outline-none focus:ring-2 focus:ring-marine-200"
             />
           </div>
-          <select
+          <SearchSelect
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="rounded-xl border border-navy-200 bg-white px-3 py-2.5 text-sm text-navy-900 focus:border-marine-400 focus:outline-none focus:ring-2 focus:ring-marine-200"
@@ -160,7 +161,7 @@ export default function PortalWorkOrdersPage() {
                 {s.label}
               </option>
             ))}
-          </select>
+          </SearchSelect>
         </div>
 
         <PortalSectionCard

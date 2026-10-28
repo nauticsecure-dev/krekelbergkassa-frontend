@@ -1,5 +1,6 @@
 import { api, apiResult } from '@/lib/api';
 import { getDeviceId } from '@/lib/device';
+import { getAuthToken, getPortalToken } from '@/lib/auth-storage';
 import type {
   AdminUser,
   AdminWallet,
@@ -468,6 +469,8 @@ export const invoicesService = {
       overdue_count: number;
       paid_count: number;
       open_balance_cents: number;
+      payable_balance_cents: number;
+      total_count: number;
     }>('/v1/invoices/summary', { query });
   },
   stats() {
@@ -557,7 +560,7 @@ export const invoicesService = {
     });
   },
   getPdf(id: string) {
-    return api<string>(`/v1/invoices/${id}/pdf`);
+    return api<{ status: string; signed_url?: string }>(`/v1/invoices/${id}/pdf`);
   },
   getPdfDownload(id: string) {
     return api<Blob>(`/v1/invoices/${id}/pdf/download`);
@@ -744,6 +747,7 @@ function pricingChannel(
 
 function buildCalculatePayload(payload: {
   length_cm: number;
+  date?: string;
   service_code?: string;
   service_codes?: string[];
   services?: string[];
@@ -762,6 +766,7 @@ function buildCalculatePayload(payload: {
   }
   return {
     length_cm: payload.length_cm,
+    date: payload.date,
     service_code,
     channel: pricingChannel(payload.channel, {
       serviceCodes,
@@ -778,6 +783,7 @@ function buildCalculatePayload(payload: {
 
 function buildPreviewPayload(payload: {
   length_cm: number;
+  date?: string;
   service_code?: string;
   service_codes?: string[];
   services?: string[];
@@ -787,13 +793,16 @@ function buildPreviewPayload(payload: {
   channel?: string;
   persist?: boolean | null;
   status?: string | null;
+  calculator_record_id?: string | null;
 }) {
   const service_codes = pricingServiceCodes(payload);
   if (!service_codes.length) {
     throw new Error('service_codes is required');
   }
   return {
+    calculator_record_id: payload.calculator_record_id,
     length_cm: payload.length_cm,
+    date: payload.date,
     service_codes,
     channel: pricingChannel(payload.channel, {
       serviceCodes: service_codes,
@@ -809,6 +818,7 @@ function buildPreviewPayload(payload: {
 export const pricingService = {
   calculate(payload: {
     length_cm: number;
+    date?: string;
     service_code?: string;
     services?: string[];
     service_codes?: string[];
@@ -828,6 +838,7 @@ export const pricingService = {
   },
   preview(payload: {
     length_cm: number;
+    date?: string;
     service_code?: string;
     services?: string[];
     service_codes?: string[];
@@ -837,6 +848,7 @@ export const pricingService = {
     channel?: string;
     persist?: boolean | null;
     status?: string | null;
+  calculator_record_id?: string | null;
   }) {
     return api<Record<string, unknown>>('/v1/pricing/preview', {
       method: 'POST',
@@ -844,7 +856,7 @@ export const pricingService = {
     });
   },
   // Trello #107: lightweight product-code price preview for the contract modal.
-  previewProduct(params: { product_code: string; entity_id?: string; entity_type?: string }) {
+  previewProduct(params: { date?: string; product_code: string; entity_id?: string; entity_type?: string }) {
     return api<Record<string, unknown>>('/v1/pricing/product-preview', {
       query: params,
     });
@@ -1126,7 +1138,15 @@ export const i18nService = {
   },
 };
 
+export interface IntegrationDiagnostic { ok: boolean; status: string; message: string; checked_at: string; }
+export interface IntegrationSettings {
+  configuration: {inbound_address: string | null; ocr_model: string; whatsapp_enabled: boolean};
+  health: Record<string, {configured: boolean; setup: string; description: string; path: string; last_test: IntegrationDiagnostic | null}>;
+}
 export const settingsService = {
+  integrations() { return api<IntegrationSettings>('/v1/admin/settings/integrations'); },
+  updateIntegrations(body: IntegrationSettings['configuration']) { return api<IntegrationSettings>('/v1/admin/settings/integrations', {method: 'PATCH', body}); },
+  testIntegration(name: string, transaction_id?: string) { return api<IntegrationDiagnostic>(`/v1/admin/settings/integrations/${name}/test`, {method: 'POST', body: {transaction_id}}); },
   get() {
     return api<AppSettings>('/v1/admin/settings');
   },
@@ -1134,7 +1154,6 @@ export const settingsService = {
     return api<{ message: string; settings: AppSettings }>('/v1/admin/settings', {
       method: 'PUT',
       body: { settings },
-      queueWhenOffline: true,
     });
   },
   company() {
@@ -1144,7 +1163,6 @@ export const settingsService = {
     return api<AppSettings['company']>('/v1/admin/settings/company', {
       method: 'PATCH',
       body: payload,
-      queueWhenOffline: true,
     });
   },
   invoicing() {
@@ -1154,7 +1172,6 @@ export const settingsService = {
     return api<AppSettings['invoicing']>('/v1/admin/settings/invoicing', {
       method: 'PATCH',
       body: payload,
-      queueWhenOffline: true,
     });
   },
   payments() {
@@ -1164,7 +1181,6 @@ export const settingsService = {
     return api<AppSettings['payments']>('/v1/admin/settings/payments', {
       method: 'PATCH',
       body: payload,
-      queueWhenOffline: true,
     });
   },
   testMollie() {
@@ -1179,7 +1195,6 @@ export const settingsService = {
     return api<AppSettings['locales']>('/v1/admin/settings/locales', {
       method: 'PATCH',
       body: payload,
-      queueWhenOffline: true,
     });
   },
   key(key: string) {
@@ -1188,7 +1203,6 @@ export const settingsService = {
   deleteKey(key: string) {
     return api<{ message: string }>(`/v1/admin/settings/key/${encodeURIComponent(key)}`, {
       method: 'DELETE',
-      queueWhenOffline: true,
     });
   },
 };
@@ -1646,8 +1660,12 @@ export const appointmentsService = {
     status?: string;
     assigned_to?: string;
     location_id?: string;
+    service_code?: string;
   }) {
     return api<{ data: Appointment[] }>('/v1/appointments/calendar', { query });
+  },
+  options() {
+    return api<{ locations: BoatLocation[]; employees: Array<{ id: string; name: string }> }>('/v1/appointments/options');
   },
   get(id: string) {
     return api<Appointment>(`/v1/appointments/${id}`);
@@ -1689,12 +1707,11 @@ export const appointmentsService = {
     return api<Appointment>(`/v1/appointments/${id}/schedule`, {
       method: 'POST',
       body: payload,
-      queueWhenOffline: true,
     });
   },
   // Trello #99: admin-created appointment.
   create(payload: Record<string, unknown>) {
-    return api<Appointment>('/v1/appointments', { method: 'POST', body: payload, queueWhenOffline: true });
+    return api<Appointment>('/v1/appointments', { method: 'POST', body: payload });
   },
   // Trello #99: planning dashboard counters (today / tomorrow / pending / completed-this-week).
   stats(query?: Record<string, string | number | boolean | undefined>) {
@@ -1723,10 +1740,30 @@ export const appointmentsService = {
   },
 };
 
+export interface BookingQuoteLine {
+  service_code: string;
+  product_id: string | null;
+  price_incl_vat: number;
+  duration_minutes: number;
+  included_by?: string;
+  is_manual: boolean;
+  is_on_request: boolean;
+}
+export interface BookingQuote {
+  services: BookingQuoteLine[];
+  total_incl_vat: number;
+  total_duration_minutes: number;
+  requires_manual_price: boolean;
+  requires_on_request: boolean;
+}
 export const bookingService = {
-  slots(params: { date: string; length_cm: number; service_codes: string[] }) {
+  preview(payload: { date?: string; length_cm: number; service_codes: string[] }) {
+    return api<BookingQuote>('/v1/booking/preview', { auth: false, method: 'POST', body: payload });
+  },
+  slots(params: { date: string; length_cm: number; service_codes: string[] }, opts?: { requestId?: string }) {
     return api<BookingSlotsResponse>('/v1/booking/slots', {
       auth: false,
+      requestId: opts?.requestId,
       query: {
         date: params.date,
         length_cm: params.length_cm,
@@ -1734,10 +1771,11 @@ export const bookingService = {
       },
     });
   },
-  calendar(from: string, to: string) {
+  calendar(from: string, to: string, opts?: { requestId?: string }) {
     return api<BookingCalendarResponse>('/v1/booking/calendar', {
       auth: false,
       query: { from, to },
+      requestId: opts?.requestId,
     });
   },
   book(payload: {
@@ -2228,7 +2266,7 @@ export const extractionTemplatesService = {
 };
 
 export interface InvoiceLayoutBlocks {
-  logo?: { enabled?: boolean; align?: string };
+  logo?: { enabled?: boolean; align?: string; file_id?: string };
   header?: { title?: string; show_number?: boolean; show_dates?: boolean };
   lines?: { show_description?: boolean; show_quantity?: boolean; show_unit_price?: boolean; show_vat?: boolean };
   totals?: { show_subtotal?: boolean; show_vat?: boolean; show_total?: boolean };
@@ -2244,11 +2282,16 @@ export interface InvoiceLayoutTemplate {
   version: number;
   active: boolean;
   blocks: InvoiceLayoutBlocks;
+  warnings?: string[];
   snapshots?: Array<{ version: number; blocks: InvoiceLayoutBlocks; saved_at?: string }>;
   updated_at?: string | null;
 }
 
 export const invoiceLayoutTemplatesService = {
+  uploadLogo(id: string, file: File) {
+    const body = new FormData(); body.append('file', file);
+    return api<InvoiceLayoutTemplate>(`/v1/invoice-layout-templates/${id}/logo`, { method: 'POST', body });
+  },
   async list() {
     const res = await api<unknown>('/v1/invoice-layout-templates');
     return asArray<InvoiceLayoutTemplate>(res);
@@ -2468,11 +2511,17 @@ export const adminHealthService = {
 export const governanceService = {
   // Pillar 8 — frontend journey tracking (batched).
   trackEvent(events: Array<Record<string, unknown>>) {
-    return api<{ tracked: number }>('/v1/track-event', {
+    return api<{ tracked: number; accepted?: number }>('/v1/track-event', {
       method: 'POST',
       body: { events },
-      queueWhenOffline: true,
-    }).catch(() => ({ tracked: 0 }));
+      headers: !getAuthToken() && getPortalToken() ? { 'X-Portal-Token': getPortalToken()! } : undefined,
+      keepalive: true,
+    }).then((result) => {
+      if ((result.accepted ?? result.tracked) !== events.length) {
+        throw { status: 503, message: 'Tracking batch was not fully persisted.' };
+      }
+      return result;
+    });
   },
   // Pillar 15 — API credential vault.
   async apiCredentials(query?: Record<string, string | number | boolean | undefined>) {
@@ -2627,7 +2676,7 @@ export interface FaqContent {
   contact: {
     show_chat: boolean;
     chat_label?: string | null;
-    company?: Record<string, unknown>;
+    company?: Pick<AppSettings['company'], 'name' | 'email' | 'phone' | 'address'>;
   };
 }
 
@@ -2656,6 +2705,8 @@ export interface OpeningHoursResponse {
 
 // Trello #112: Inline CMS / Visual Editor — public read + admin upsert endpoints.
 export const cmsService = {
+  mediaLibrary() { return api<{data: Array<{id: string; filename: string; url: string; usage: Array<{key: string; page: string}>}>}>('/v1/admin/cms/media-library'); },
+  deleteLibraryMedia(id: string) { return api('/v1/admin/cms/media-library/'+encodeURIComponent(id), {method:'DELETE'}); },
   // Public: fetch all editable content/media/seo/global blocks for a page.
   pageContent(page: string, locale?: string) {
     return api<Record<string, unknown>>('/v1/cms/page-content', {
@@ -2731,6 +2782,7 @@ export const contentService = {
     });
   },
   submitContact(body: {
+    submission_id?: string;
     name: string;
     email: string;
     phone?: string;
@@ -2762,6 +2814,7 @@ export const contentService = {
 // Trello #98 / #100: public service catalog — diensten pages read tariffs
 // from the single product DB instead of the static front-end table.
 export interface ServiceCatalogTariff {
+  price_excl_vat?: number;
   range_from_cm: number;
   range_to_cm: number;
   range_label: string;
@@ -2775,6 +2828,11 @@ export interface ServiceCatalogTariff {
   is_on_request: boolean;
 }
 export interface ServiceCatalogService {
+  id?: string;
+  public_id?: string;
+  short_description?: string | null;
+  long_description?: string | null;
+  image_url?: string | null;
   code: string;
   slug?: string;
   service_code?: string;
@@ -2790,13 +2848,13 @@ export interface ServiceCatalogPage {
   services: ServiceCatalogService[];
 }
 export const serviceCatalogService = {
-  page(slug: string) {
-    return api<ServiceCatalogPage>(`/v1/service-catalog/pages/${slug}`, { auth: false });
+  page(slug: string, locale?: string) {
+    return api<ServiceCatalogPage>(`/v1/service-catalog/pages/${encodeURIComponent(slug)}`, { auth: false, query: { locale } });
   },
-  services(group?: string) {
+  services(group?: string, locale?: string, options?: { audience?: 'public' | 'booking' | 'calculator'; date?: string }) {
     return api<{ services: ServiceCatalogService[] }>('/v1/service-catalog/services', {
-      auth: false,
-      query: group ? { group } : undefined,
+      auth: options?.audience === 'calculator',
+      query: { group, locale, ...options },
     });
   },
 };

@@ -1,3 +1,5 @@
+'use client';
+import { useIntl } from '@/i18n/IntlProvider';
 import { ServicePage } from '@/components/site/ServicePage';
 import { EditableText } from '@/components/cms/EditableText';
 import { EditableImage } from '@/components/cms/EditableImage';
@@ -5,6 +7,7 @@ import { EditableImage } from '@/components/cms/EditableImage';
 const CMS_PAGE = 'diensten/winterstalling';
 
 export default function WinterstallingPage() {
+  const { t } = useIntl();
   return (
     <ServicePage
       cmsPage={CMS_PAGE}
@@ -14,8 +17,7 @@ export default function WinterstallingPage() {
           page={CMS_PAGE}
           section="hero"
         >
-          Veilige winterstalling
-        </EditableText>
+          {t('globalUx.serviceDetails.winterstalling.heroTitle')}</EditableText>
       }
       editableDescription={
         <EditableText
@@ -24,40 +26,39 @@ export default function WinterstallingPage() {
           section="hero"
           type="long_text"
         >
-          Binnen- en buitenstalling op een verzekerd werfterrein, ruim 10.000 m² in Roermond. Wij behandelen uw schip alsof het ons eigen schip is.
-        </EditableText>
+          {t('globalUx.serviceDetails.winterstalling.heroSubtitle')}</EditableText>
       }
       editableHeroImage={
-        <EditableImage
+        <EditableImage defaultStyle={{gradient:'right',gradient_start:.85,gradient_middle:0.65,gradient_end:.3}}
           blockKey="diensten.winterstalling.hero.image"
           page={CMS_PAGE}
           fallbackSrc="/img/krek/winterstalling.webp"
-          alt="Winterstalling op het werfterrein van Krekelberg Nautic"
+          alt={t('globalUx.serviceDetails.winterstalling.heroTitle')}
         />
       }
       adminProductSlug="STALL-WINTER"
       catalogSlug="winterstalling"
       catalogServiceCode="STALL-WINTER"
-      priceFootnote="Winterberging-tarief per lengteklasse, inclusief BTW (incl. 2× kranen en afspuiten). De definitieve prijs volgt uit de exacte lengte van uw boot."
-      badge="Winterstalling"
-      title="Veilige winterstalling"
-      subtitle="Binnen- en buitenstalling op een verzekerd werfterrein, ruim 10.000 m² in Roermond. Wij behandelen uw schip alsof het ons eigen schip is."
-      description="Krekelberg Nautic biedt winter- en zomerstalling met optionele winterklaar service. U bepaalt zelf of u tijdens de stalling werkzaamheden wilt uitvoeren of die aan onze monteurs overlaat. Verzekering en 24/7 cameratoezicht zijn standaard inbegrepen."
+      priceFootnote={t('globalUx.serviceDetails.winterstalling.priceFootnote')}
+      badge={t('globalUx.serviceDetails.winterstalling.badge')}
+      title={t('globalUx.serviceDetails.winterstalling.heroTitle')}
+      subtitle={t('globalUx.serviceDetails.winterstalling.heroSubtitle')}
+      description={t('globalUx.serviceDetails.winterstalling.description')}
       heroImage="/img/krek/winterstalling.webp"
       inlineImage="/img/krek/winterberging.webp"
       features={[
-        { title: 'Binnen- en buitenoptie', desc: 'Beide met overdekking voor mast en zonwering.' },
-        { title: 'Verzekerd terrein', desc: 'Volledig verzekerde locatie met cameratoezicht.' },
-        { title: 'Toegang tijdens openingstijden', desc: 'Werk zelf of bezoek uw boot wanneer u wilt.' },
-        { title: 'Stroomaansluiting', desc: 'Optioneel beschikbaar op verzoek.' },
-        { title: 'Onderhoud op locatie', desc: 'Externe monteurs welkom onder werfvoorwaarden.' },
-        { title: 'Voor- en najaar combineren', desc: 'Kranen en afspuiten in één arrangement.' },
+        { title: t('globalUx.serviceDetails.winterstalling.feature1Title'), desc: t('globalUx.serviceDetails.winterstalling.feature1Description') },
+        { title: t('globalUx.serviceDetails.winterstalling.feature2Title'), desc: t('globalUx.serviceDetails.winterstalling.feature2Description') },
+        { title: t('globalUx.serviceDetails.winterstalling.feature3Title'), desc: t('globalUx.serviceDetails.winterstalling.feature3Description') },
+        { title: t('globalUx.serviceDetails.winterstalling.feature4Title'), desc: t('globalUx.serviceDetails.winterstalling.feature4Description') },
+        { title: t('globalUx.serviceDetails.winterstalling.feature5Title'), desc: t('globalUx.serviceDetails.winterstalling.feature5Description') },
+        { title: t('globalUx.serviceDetails.winterstalling.feature6Title'), desc: t('globalUx.serviceDetails.winterstalling.feature6Description') },
       ]}
       faqs={[
-        { q: 'Wanneer start het stallingsseizoen?', a: 'Winterstalling loopt van 1 november tot 30 april. Zomerstalling is mogelijk van 1 mei tot 31 oktober.' },
-        { q: 'Kan ik tussentijds werkzaamheden uitvoeren?', a: 'Ja. Tijdens openingstijden bent u welkom op het werfterrein, met toegang tot werkruimtes en water/stroom.' },
-        { q: 'Is mijn boot tijdens stalling verzekerd?', a: 'Ons werfterrein is verzekerd. Wij raden aan uw eigen casco-verzekering te behouden.' },
-        { q: 'Hoe wordt mijn boot op de bok geplaatst?', a: 'Wij stellen per scheepstype de juiste bokken in. U ontvangt een foto van de plaatsing.' },
+        { q: t('globalUx.serviceDetails.winterstalling.faq1Question'), a: t('globalUx.serviceDetails.winterstalling.faq1Answer') },
+        { q: t('globalUx.serviceDetails.winterstalling.faq2Question'), a: t('globalUx.serviceDetails.winterstalling.faq2Answer') },
+        { q: t('globalUx.serviceDetails.winterstalling.faq3Question'), a: t('globalUx.serviceDetails.winterstalling.faq3Answer') },
+        { q: t('globalUx.serviceDetails.winterstalling.faq4Question'), a: t('globalUx.serviceDetails.winterstalling.faq4Answer') },
       ]}
     />
   );

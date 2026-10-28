@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -30,19 +31,23 @@ import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { usePermission } from '@/lib/permissions';
 import { useIntl } from '@/i18n/IntlProvider';
 import { centsToEuro, formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 export default function BoatsPage() {
   const { locale, t } = useIntl();
+  const { can } = usePermission();
+  const canWrite = can('boats.write');
+  const canDelete = can('boats.delete');
   const dateLocale = intlLocale(locale);
   const { push } = useToast();
   const [query, setQuery] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [showCreate, setShowCreate] = React.useState(false);
-  useCreateMenuIntent(() => setShowCreate(true));
+  useCreateMenuIntent(() => { if (canWrite) setShowCreate(true); });
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
   const emptyCreateForm = {
     customer_id: '',
@@ -79,6 +84,7 @@ export default function BoatsPage() {
 
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     try {
       await createBoat.mutate({
         customer_id: form.customer_id,
@@ -115,6 +121,7 @@ export default function BoatsPage() {
   };
 
   const onDelete = async (id: string) => {
+    if (!canDelete) return;
     try {
       await deleteBoat.mutate(id);
       await boats.refetch();
@@ -172,7 +179,7 @@ export default function BoatsPage() {
           description={t('adminNew.boats.subtitle')}
           icon={Ship}
           action={
-            <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+            <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
               {t('adminNew.boats.new')}
             </Button>
           }
@@ -309,7 +316,7 @@ export default function BoatsPage() {
                             {t('adminNew.common.edit')}
                           </Button>
                         </Link>
-                        <Button
+                        <Button disabled={!canDelete}
                           variant="ghost"
                           size="sm"
                           leftIcon={<Trash2 className="h-3.5 w-3.5" />}
@@ -328,7 +335,7 @@ export default function BoatsPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} size="lg">
+      <Modal open={showCreate && canWrite} onClose={() => setShowCreate(false)} size="lg">
         <form onSubmit={onCreate}>
           <AdminModalHeader title={t('adminNew.boats.new')} />
           <AdminModalBody>
@@ -336,7 +343,7 @@ export default function BoatsPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.boats.columns.owner')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={form.customer_id}
                 onChange={(e) => setForm((prev) => ({ ...prev, customer_id: e.target.value }))}
@@ -348,7 +355,7 @@ export default function BoatsPage() {
                     {customer.name}
                   </option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <Input
               label={t('adminNew.common.name')}
@@ -360,7 +367,7 @@ export default function BoatsPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.boats.columns.type')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={form.type}
                 onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
@@ -370,7 +377,7 @@ export default function BoatsPage() {
                 <option value="rib">RIB</option>
                 <option value="trailer">Trailer</option>
                 <option value="other">{t('adminNew.boats.type.other')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Input
@@ -456,7 +463,7 @@ export default function BoatsPage() {
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
+            <Button disabled={!canWrite} type="button" variant="ghost" onClick={() => setShowCreate(false)}>
               {t('adminNew.common.cancel')}
             </Button>
             <Button type="submit" variant="gold" disabled={createBoat.loading}>
@@ -467,7 +474,7 @@ export default function BoatsPage() {
       </Modal>
 
       <AdminConfirmModal
-        open={!!deleteTarget}
+        open={!!deleteTarget && canDelete}
         onClose={() => setDeleteTarget(null)}
         onConfirm={async () => {
           if (!deleteTarget) return;

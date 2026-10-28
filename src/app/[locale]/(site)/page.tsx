@@ -12,7 +12,6 @@ import {
   MapPin,
   Phone,
   Ship,
-  ShieldCheck,
   Warehouse,
   Wrench,
 } from "lucide-react";
@@ -25,7 +24,7 @@ import { useCms, useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
 import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
-import { EditSafeLink } from "@/components/cms/EditSafeLink";
+import { EditableCertificationBadge } from "@/components/cms/EditableCertificationBadge";
 
 const CMS_PAGE = "home";
 
@@ -79,7 +78,7 @@ export default function HomePage() {
       {/* ---------- Hero ---------- */}
       <section className="relative isolate overflow-hidden bg-navy-950">
         <div className="absolute inset-0 overflow-hidden">
-          <EditableImage
+          <EditableImage defaultStyle={{gradient:'right',gradient_start:0.95,gradient_middle:0.75,gradient_end:0.35}}
             blockKey="home.hero.image"
             page={CMS_PAGE}
             fallbackSrc="/img/krek/werf-hero.webp"
@@ -87,10 +86,7 @@ export default function HomePage() {
             className="h-full w-full"
           />
         </div>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/75 to-navy-950/35"
-        />
+
         <div className="container-wide pointer-events-none relative pb-24 pt-20 text-white sm:pb-32 sm:pt-28 lg:pb-40 lg:pt-36">
           <Badge tone="sand" dot className="pointer-events-auto mb-5">
             <EditableText blockKey="home.hero.badge" page={CMS_PAGE} section="hero">
@@ -112,7 +108,7 @@ export default function HomePage() {
               page={CMS_PAGE}
               blockKey="home.hero.cta_primary"
               label={t("home.heroPrimary")}
-              href={`/${locale}/kraanafspraak`}
+              href={`/${locale}/verkoop`}
               variant="gold"
               rightIcon={<ArrowRight className="h-4 w-4" />}
             />
@@ -178,13 +174,17 @@ export default function HomePage() {
               </EditableText>
             </p>
           </div>
-          <Link
+          <EditableHeroCta
+            page={CMS_PAGE}
+            blockKey="home.services.all"
+            labelBlockKey="i18n.home.servicesAll"
+            section="services"
+            label={t("home.servicesAll")}
             href={`/${locale}/diensten`}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-navy-700 hover:text-marine-700"
-          >
-            {t("home.servicesAll")}
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+            variant="ghost"
+            size="sm"
+            rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
+          />
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -266,19 +266,7 @@ export default function HomePage() {
                 className="h-full w-full"
               />
             </div>
-            <div className="absolute -bottom-6 -right-6 hidden rounded-xl bg-white p-5 shadow-elev lg:block">
-              <ShieldCheck className="h-6 w-6 text-gold-500" />
-              <div className="mt-2 text-xs font-semibold uppercase tracking-widest text-navy-500">
-                <EditableText blockKey="home.werf.cert" page={CMS_PAGE} section="werf">
-                  {t("home.werf.cert")}
-                </EditableText>
-              </div>
-              <div className="text-sm font-semibold text-navy-900">
-                <EditableText blockKey="home.werf.cert_sub" page={CMS_PAGE} section="werf">
-                  HISWA · 1976
-                </EditableText>
-              </div>
-            </div>
+            <EditableCertificationBadge />
           </div>
           <div>
             <Badge tone="marine" className="mb-3">
@@ -329,19 +317,27 @@ export default function HomePage() {
               ))}
             </ul>
             <div className="mt-7 flex flex-wrap gap-3">
-              <EditSafeLink
+              <EditableHeroCta
+                page={CMS_PAGE}
+                blockKey="home.werf.cta"
+                labelBlockKey="home.werf.cta"
+                section="werf"
+                label={t("home.werf.cta")}
                 href={`/${locale}/diensten`}
-                button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
-              >
-                <EditableText blockKey="home.werf.cta" page={CMS_PAGE} section="werf">
-                  {t("home.werf.cta")}
-                </EditableText>
-              </EditSafeLink>
-              <EditSafeLink href={`/${locale}/kraanafspraak`} button={{ variant: "outline" }}>
-                <EditableText blockKey="home.werf.book" page={CMS_PAGE} section="werf">
-                  {t("home.werf.book")}
-                </EditableText>
-              </EditSafeLink>
+                variant="primary"
+                size="md"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              />
+              <EditableHeroCta
+                page={CMS_PAGE}
+                blockKey="home.werf.book"
+                labelBlockKey="home.werf.book"
+                section="werf"
+                label={t("home.werf.book")}
+                href={`/${locale}/kraanafspraak`}
+                variant="outline"
+                size="md"
+              />
             </div>
           </div>
         </div>
@@ -385,20 +381,27 @@ export default function HomePage() {
                 <Mini big="100%" label={t("home.sale.statTrust")} />
               </div>
               <div className="mt-7 flex flex-wrap gap-3">
-                <EditSafeLink
-                  href="https://www.schepenkring.nl/aanbod-boten/?kantoor=Roermond"
-                  external
-                  button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
-                >
-                  <EditableText blockKey="home.sale.cta" page={CMS_PAGE} section="sale">
-                    {t("home.sale.cta")}
-                  </EditableText>
-                </EditSafeLink>
-                <EditSafeLink href={`/${locale}/verkoop`} button={{ variant: "outline" }}>
-                  <EditableText blockKey="home.sale.sell" page={CMS_PAGE} section="sale">
-                    {t("home.sale.sell")}
-                  </EditableText>
-                </EditSafeLink>
+                <EditableHeroCta
+                page={CMS_PAGE}
+                blockKey="home.sale.cta"
+                labelBlockKey="home.sale.cta"
+                section="sale"
+                label={t("home.sale.cta")}
+                href="https://www.schepenkring.nl/aanbod-boten/?kantoor=Roermond"
+                variant="primary"
+                size="md"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              />
+                <EditableHeroCta
+                page={CMS_PAGE}
+                blockKey="home.sale.sell"
+                labelBlockKey="home.sale.sell"
+                section="sale"
+                label={t("home.sale.sell")}
+                href={`/${locale}/verkoop`}
+                variant="outline"
+                size="md"
+              />
               </div>
             </div>
           </div>
@@ -446,14 +449,17 @@ export default function HomePage() {
               </li>
             </ul>
             <div className="mt-5 flex flex-wrap gap-3">
-              <EditSafeLink
+              <EditableHeroCta
+                page={CMS_PAGE}
+                blockKey="home.contact.cta"
+                labelBlockKey="home.contact.cta"
+                section="contact"
+                label={t("home.contact.cta")}
                 href={`/${locale}/contact`}
-                button={{ variant: "primary", rightIcon: <ArrowRight className="h-4 w-4" /> }}
-              >
-                <EditableText blockKey="home.contact.cta" page={CMS_PAGE} section="contact">
-                  {t("home.contact.cta")}
-                </EditableText>
-              </EditSafeLink>
+                variant="primary"
+                size="md"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              />
             </div>
           </div>
         </Card>
@@ -490,28 +496,28 @@ export default function HomePage() {
               </p>
             </div>
             <div className="pointer-events-none flex flex-wrap gap-3 lg:justify-end">
-              <EditSafeLink
+              <EditableHeroCta
+                page={CMS_PAGE}
+                blockKey="home.cta.primary"
+                labelBlockKey="home.cta.primary"
+                section="cta"
+                label={t("home.cta.primary")}
                 href={`/${locale}/kraanafspraak`}
-                className="pointer-events-auto"
-                button={{ variant: "gold", size: "lg", rightIcon: <ArrowRight className="h-4 w-4" /> }}
-              >
-                <EditableText blockKey="home.cta.primary" page={CMS_PAGE} section="cta">
-                  {t("home.cta.primary")}
-                </EditableText>
-              </EditSafeLink>
-              <EditSafeLink
+                variant="gold"
+                size="lg"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              />
+              <EditableHeroCta
+                page={CMS_PAGE}
+                blockKey="home.cta.secondary"
+                labelBlockKey="home.cta.secondary"
+                section="cta"
+                label={t("home.cta.secondary")}
                 href={`/${locale}/contact`}
-                className="pointer-events-auto"
-                button={{
-                  variant: "outline",
-                  size: "lg",
-                  className: "border-white/30 bg-white/5 text-white hover:bg-white/10",
-                }}
-              >
-                <EditableText blockKey="home.cta.secondary" page={CMS_PAGE} section="cta">
-                  {t("home.cta.secondary")}
-                </EditableText>
-              </EditSafeLink>
+                variant="outline"
+                size="lg"
+                className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+              />
             </div>
           </div>
         </div>

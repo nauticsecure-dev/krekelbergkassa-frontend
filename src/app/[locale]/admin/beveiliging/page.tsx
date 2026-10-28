@@ -1,5 +1,6 @@
 'use client';
 
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import {
   AlertTriangle,
@@ -108,7 +109,7 @@ export default function SecurityDashboardPage() {
               icon={ShieldCheck}
               action={
                 <Badge tone={status.tone}>
-                  {t(`adminNew.security.status.${status.kind}`)}
+                  {tEnum(t, 'adminNew.security.status', status.kind)}
                 </Badge>
               }
             >
@@ -133,7 +134,7 @@ export default function SecurityDashboardPage() {
                 return (
                   <AdminMetric
                     key={panel.key}
-                    label={t(`adminNew.security.panels.${panel.labelKey}`)}
+                    label={tEnum(t, 'adminNew.security.panels', panel.labelKey)}
                     value={value}
                     icon={panel.icon}
                     tone={tone}

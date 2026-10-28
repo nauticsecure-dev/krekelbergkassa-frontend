@@ -3,9 +3,10 @@
 import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { useIntl } from '@/i18n/IntlProvider';
+import { IntlProvider, useIntl } from '@/i18n/IntlProvider';
 import { cmsService } from '@/lib/services';
 import { locales } from '@/i18n/config';
+import { CmsSessionRecovery } from './CmsSessionRecovery';
 
 // ---------------------------------------------------------------------------
 // Trello #112 — Inline CMS / Visual Editor
@@ -36,6 +37,11 @@ const APP_TO_TAG: Record<AppLocale, LocaleTag> = {
 /** Tabs shown in the edit modals follow the app's configured render locales. */
 export const EDITABLE_LOCALE_TAGS: LocaleTag[] = locales.map((locale) => APP_TO_TAG[locale]);
 
+/** Start editors on an enabled tab, even when viewing a disabled edit locale. */
+export function initialEditorLocale(locale: LocaleTag, enabled: readonly LocaleTag[]): LocaleTag {
+  return enabled.includes(locale) ? locale : enabled[0] ?? locale;
+}
+
 /** Map the active app locale to the backend locale tag used for reads. */
 export function appLocaleToTag(locale: string): LocaleTag {
   return APP_TO_TAG[(locale as AppLocale)] ?? 'nl-NL';
@@ -54,13 +60,29 @@ export interface FocalPoint {
   y: number;
 }
 
+export interface ImageStyle {
+  brightness?: number; contrast?: number; saturation?: number;
+  alignment?: 'left' | 'center' | 'right'; gradient?: 'none' | 'right' | 'bottom';
+  gradient_start?: number; gradient_middle?: number; gradient_end?: number;
+}
 export interface MediaBlock {
   key: string;
   image_url: string;
   alt: string;
   seo_title?: string;
+  file_id?: string | null;
+  mobile_file_id?: string | null;
+  mobile_image_url?: string | null;
+  src_set?: string | null;
+  image_dimensions?: {width: number; height: number} | null;
+  mobile_image_dimensions?: {width: number; height: number} | null;
+  mobile_src_set?: string | null;
+  mobile_focal_point?: FocalPoint | null;
+  mobile_crop_data?: MediaBlock['crop_data'];
+  image_style?: ImageStyle | null;
   focal_point: FocalPoint;
   overlay: number;
+  crop_data?: { x: number; y: number; width: number; height: number; unit?: 'percent' } | null;
 }
 
 export interface SeoData {
@@ -74,6 +96,7 @@ export interface SeoData {
 export type GlobalValue = string | Partial<Record<LocaleTag, string>>;
 
 interface PageContentResponse {
+  editor_locales?: string[];
   page?: string;
   locale?: string;
   content_blocks?: ContentBlock[];
@@ -104,6 +127,9 @@ export interface SaveMediaMetaArgs {
   focal_y?: number;
   overlay?: number;
   crop_data?: unknown;
+  file_id?: string | null; mobile_file_id?: string | null;
+  image_style?: ImageStyle; mobile_focal_point?: FocalPoint;
+  mobile_crop_data?: MediaBlock['crop_data'];
 }
 
 export interface SaveSeoArgs {
@@ -113,6 +139,7 @@ export interface SaveSeoArgs {
 }
 
 interface CmsContextValue {
+  editorLocales: LocaleTag[];
   /** True when the signed-in user holds the `cms.manage` permission. */
   canEdit: boolean;
   /** Whether inline edit mode is currently active. */
@@ -122,6 +149,8 @@ interface CmsContextValue {
    * False while navigating, before the page registers, or after it unmounts.
    */
   isCmsEditing: boolean;
+  /** Keep already-open drafts mounted while the editor signs in again. */
+  retainCmsDrafts: boolean;
   setEditMode: (on: boolean) => void;
   toggleEditMode: () => void;
 
@@ -158,6 +187,7 @@ interface CmsContextValue {
   saveMediaMeta: (key: string, args: SaveMediaMetaArgs) => Promise<void>;
   saveSeo: (slug: string, args: SaveSeoArgs) => Promise<void>;
   saveGlobal: (key: string, value: GlobalValue) => Promise<void>;
+  guardCms: <T>(fn: () => Promise<T>) => Promise<T>;
 }
 
 const CmsContext = React.createContext<CmsContextValue | null>(null);
@@ -213,12 +243,14 @@ function resolveGlobal(value: GlobalValue | undefined, tag: LocaleTag): string |
 }
 
 export function CmsProvider({ children }: { children: React.ReactNode }) {
-  const { user, signOut } = useAuth();
-  const { locale: rawLocale } = useIntl();
+  const { user, sessionVerified, invalidateSession } = useAuth();
+  const { locale: rawLocale, messages } = useIntl();
   const locale = rawLocale as AppLocale;
   const localeTag = appLocaleToTag(locale);
 
-  const canEdit = !!user?.permissions?.includes('cms.manage');
+  const [editorLocales, setEditorLocales] = React.useState<LocaleTag[]>(EDITABLE_LOCALE_TAGS);
+  const [expiredEditor, setExpiredEditor] = React.useState<string | null>(null);
+  const canEdit = sessionVerified && !!user?.permissions?.includes('cms.manage');
 
   // Wraps every CMS write call: if the server returns 401 the stored token has
   // been invalidated (server deploy / token rotation). Clear the local session
@@ -232,20 +264,24 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           typeof err === 'object' && err !== null &&
           'status' in err && (err as { status: number }).status === 401
         ) {
-          void signOut();
+          setExpiredEditor(String(user?.id ?? ''));
+          invalidateSession();
           throw { ...(err as object), message: 'Sessie verlopen — log opnieuw in' };
         }
         throw err;
       }
     },
-    [signOut],
+    [invalidateSession, user?.id],
   );
 
   const pathname = usePathname();
   const [editMode, setEditModeState] = React.useState(false);
-  const [currentPage, setCurrentPage] = React.useState<string | null>(null);
-  const [pageRoute, setPageRoute] = React.useState<string | null>(null);
-  const isCmsEditing = canEdit && editMode && pageRoute === pathname && !!currentPage;
+  const [registration, setRegistration] = React.useState<{ slug: string; route: string } | null>(null);
+  const currentPage = registration?.route === pathname ? registration.slug : null;
+  const activePage = React.useRef(currentPage);
+  activePage.current = currentPage;
+  const retainCmsDrafts = expiredEditor !== null && !!currentPage;
+  const isCmsEditing = canEdit && editMode && !!currentPage && !retainCmsDrafts;
   const [readyPages, setReadyPages] = React.useState<Record<string, boolean>>({});
 
   // Keyed block stores. Maps keep last-write-wins semantics simple.
@@ -253,6 +289,14 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [media, setMedia] = React.useState<Record<string, MediaBlock>>({});
   const [seo, setSeo] = React.useState<SeoData | null>(null);
   const [globals, setGlobals] = React.useState<Record<string, GlobalValue>>({});
+  const activeLocale = React.useRef(localeTag);
+  const previousLocale = React.useRef(localeTag);
+  activeLocale.current = localeTag;
+  React.useEffect(() => {
+    if (previousLocale.current === localeTag) return;
+    previousLocale.current = localeTag;
+    setContent({}); setMedia({}); setSeo(null); setReadyPages({});
+  }, [localeTag]);
 
   // Editing is meaningless without permission — force it off if it flips.
   const setEditMode = React.useCallback(
@@ -264,8 +308,12 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     [canEdit],
   );
   React.useEffect(() => {
-    if (!canEdit) setEditModeState(false);
-  }, [canEdit]);
+    if (!canEdit && expiredEditor === null) setEditModeState(false);
+  }, [canEdit, expiredEditor]);
+  React.useEffect(() => {
+    if (canEdit && expiredEditor === String(user?.id)) setExpiredEditor(null);
+  }, [canEdit, expiredEditor, user?.id]);
+  React.useEffect(() => { setExpiredEditor(null); }, [pathname]);
 
   const mergeContentBlocks = React.useCallback((blocks: ContentBlock[] | undefined) => {
     if (!blocks?.length) return;
@@ -290,13 +338,18 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     async (slug: string) => {
       try {
         const res = (await cmsService.pageContent(slug, localeTag)) as PageContentResponse;
+        if (activeLocale.current !== localeTag) return;
+        if (res.editor_locales) {
+          const active = EDITABLE_LOCALE_TAGS.filter(tag => res.editor_locales!.includes(tag));
+          setEditorLocales(previous => JSON.stringify(previous) === JSON.stringify(active) ? previous : active);
+        }
         mergeContentBlocks(res?.content_blocks);
         mergeMediaBlocks(res?.media_blocks);
         writePageCache(slug, localeTag, {
           content_blocks: res?.content_blocks ?? [],
           media_blocks: res?.media_blocks ?? [],
         });
-        if (res?.seo) {
+        if (res?.seo && activePage.current === slug) {
           setSeo({
             title: res.seo.title ?? '',
             description: res.seo.description ?? '',
@@ -306,12 +359,20 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           });
         }
         if (res?.global_settings) {
-          setGlobals((prev) => ({ ...prev, ...res.global_settings }));
+          setGlobals((prev) => {
+            const next = { ...prev };
+            for (const [key, value] of Object.entries(res.global_settings ?? {})) {
+              const existing = prev[key];
+              next[key] = typeof existing === 'object' && typeof value === 'string'
+                ? { ...existing, [localeTag]: value } : value;
+            }
+            return next;
+          });
         }
       } catch {
         // Public render must never break — silently keep the fallbacks / cache.
       } finally {
-        setReadyPages((prev) => ({ ...prev, [slug]: true }));
+        if (activeLocale.current === localeTag) setReadyPages((prev) => ({ ...prev, [slug]: true }));
       }
     },
     [localeTag, mergeContentBlocks, mergeMediaBlocks],
@@ -321,20 +382,21 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     (pageSlug: string, route: string) => {
       const slug = pageSlug.trim();
       if (!slug || !route) return;
+      const routeSlug = route.replace(/^\/(nl|en|de|fr)(?:\/|$)/, '').replace(/\/$/, '') || 'home';
+      if (slug !== routeSlug) return;
       // Seed last-known blocks before paint so heroes do not flash fallbackSrc.
       const cached = readPageCache(slug, localeTag);
       if (cached?.content_blocks?.length) mergeContentBlocks(cached.content_blocks);
       if (cached?.media_blocks?.length) mergeMediaBlocks(cached.media_blocks);
-      setCurrentPage(slug);
-      setPageRoute(route);
+      setRegistration({ slug, route });
+      setSeo(null);
     },
     [localeTag, mergeContentBlocks, mergeMediaBlocks],
   );
 
   const unregisterPage = React.useCallback((pageSlug: string, route: string) => {
     const slug = pageSlug.trim();
-    setCurrentPage((prev) => (prev === slug ? null : prev));
-    setPageRoute((prev) => (prev === route ? null : prev));
+    setRegistration((prev) => prev?.slug === slug && prev.route === route ? null : prev);
   }, []);
 
   const isPageReady = React.useCallback(
@@ -404,13 +466,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   // --- Save helpers (optimistic) -------------------------------------------
 
   const assertWritablePage = React.useCallback((page?: string) => {
-    if (!canEdit || !editMode || pageRoute !== pathname || !currentPage) {
+    if (!isCmsEditing) {
       throw new Error('CMS edit is not active for this page.');
     }
     if (page && page !== 'global' && page !== currentPage) {
       throw new Error('CMS write does not match the current page.');
     }
-  }, [canEdit, editMode, pageRoute, pathname, currentPage]);
+  }, [isCmsEditing, currentPage]);
 
   const saveText = React.useCallback(
     (key: string, args: SaveContentArgs) =>
@@ -422,7 +484,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           type: args.type ?? 'short_text',
           value_by_locale: args.value_by_locale,
         });
-        if (args.page === 'global') {
+        if (args.page === 'global' && /^(company|footer|header|social|cta|maps)\./.test(key)) {
           let merged: GlobalValue = args.value_by_locale;
           setGlobals((prev) => {
             const existing = prev[key];
@@ -436,6 +498,14 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         }
         const optimistic = args.value_by_locale[localeTag];
         if (optimistic != null) {
+          // Registration replays this cache before the network responds. Keep it
+          // in step with saves so a reload cannot briefly restore the old text.
+          const cached = readPageCache(args.page, localeTag) ?? {};
+          const block = { key, type: args.type ?? 'short_text', value: optimistic };
+          writePageCache(args.page, localeTag, {
+            ...cached,
+            content_blocks: [...(cached.content_blocks ?? []).filter((b) => b.key !== key), block],
+          });
           setContent((prev) => ({
             ...prev,
             [key]: { key, type: args.type ?? prev[key]?.type ?? 'short_text', value: optimistic },
@@ -453,11 +523,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         const fd = new FormData();
         fd.append('image', file);
         if (pageSlug) fd.append('page', pageSlug);
-        const res = (await cmsService.uploadMediaBlock(key, fd)) as { image_url?: string };
+        const res = (await cmsService.uploadMediaBlock(key, fd)) as Partial<MediaBlock>;
         const url = res?.image_url ?? '';
         if (url) {
           setMedia((prev) => {
             const next: MediaBlock = {
+              ...prev[key],
+              ...res,
               key,
               image_url: url,
               alt: prev[key]?.alt ?? '',
@@ -477,7 +549,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     (key: string, args: SaveMediaMetaArgs) =>
       guardCms(async () => {
         assertWritablePage(args.page);
-        await cmsService.saveMediaBlock(key, {
+        const saved = await cmsService.saveMediaBlock(key, {
+          ...args,
           page: args.page || currentPage || undefined,
           alt_by_locale: args.alt_by_locale,
           seo_title_by_locale: args.seo_title_by_locale,
@@ -487,10 +560,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           crop_data: args.crop_data,
         });
         setMedia((prev) => {
-          const existing = prev[key];
-          if (!existing) return prev;
+          const existing = prev[key] ?? { key, image_url: '', alt: '', focal_point: { x: 50, y: 50 }, overlay: 0 };
           const next: MediaBlock = {
             ...existing,
+            ...(saved as Partial<MediaBlock>),
             alt: args.alt_by_locale?.[localeTag] ?? existing.alt,
             seo_title: args.seo_title_by_locale?.[localeTag] ?? existing.seo_title,
             focal_point: {
@@ -539,9 +612,11 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   const value = React.useMemo<CmsContextValue>(
     () => ({
+      editorLocales,
       canEdit,
       editMode,
       isCmsEditing,
+      retainCmsDrafts,
       setEditMode,
       toggleEditMode,
       locale,
@@ -561,11 +636,14 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       saveMediaMeta,
       saveSeo,
       saveGlobal,
+      guardCms,
     }),
     [
+      editorLocales,
       canEdit,
       editMode,
       isCmsEditing,
+      retainCmsDrafts,
       setEditMode,
       toggleEditMode,
       locale,
@@ -585,16 +663,38 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       saveMediaMeta,
       saveSeo,
       saveGlobal,
+      guardCms,
     ],
   );
 
-  return <CmsContext.Provider value={value}>{children}</CmsContext.Provider>;
+  const translationOverrides = React.useMemo(() => Object.fromEntries(
+    Object.values(content).filter((block) => block.key.startsWith('i18n.'))
+      .map((block) => [block.key.slice(5), block.value]),
+  ), [content]);
+  return <CmsContext.Provider value={value}>
+    <IntlProvider locale={locale} messages={messages} overrides={translationOverrides}>
+      {children}
+      {retainCmsDrafts && <CmsSessionRecovery onDiscard={() => { setExpiredEditor(null); setEditModeState(false); }} />}
+    </IntlProvider>
+  </CmsContext.Provider>;
 }
 
 export function useCms(): CmsContextValue {
   const ctx = React.useContext(CmsContext);
   if (!ctx) throw new Error('useCms must be used inside CmsProvider');
   return ctx;
+}
+
+/** Close page dialogs on navigation/permission loss, retaining a failed save. */
+export function useCmsEditorOpen() {
+  const pathname = usePathname();
+  const { currentPage, isCmsEditing, retainCmsDrafts } = useCms();
+  const [open, setOpen] = React.useState(false);
+  React.useEffect(() => { setOpen(false); }, [pathname, currentPage]);
+  React.useEffect(() => {
+    if (!isCmsEditing && !retainCmsDrafts) setOpen(false);
+  }, [isCmsEditing, retainCmsDrafts]);
+  return [open, setOpen] as const;
 }
 
 /**

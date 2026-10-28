@@ -59,7 +59,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     !!user &&
     isAdminPath(pathname) &&
     !superAdminDenied &&
-    !canAccessAdminRoute(user.role, pathname);
+    !canAccessAdminRoute(user.role, pathname, user.permissions);
 
   const resolvingAuth = loading || (sessionHint && !user);
 

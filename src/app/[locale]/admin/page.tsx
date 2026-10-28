@@ -40,6 +40,7 @@ import {
   dashboardShortcutsService,
 } from '@/lib/services';
 import type { DashboardShortcut } from '@/lib/services';
+import { dashboardShortcutRows } from '@/lib/dashboard-shortcuts';
 import { adminHref } from '@/config/admin-routes';
 import { centsToEuro, formatCurrency, intlLocale } from '@/lib/format';
 import { normalizeRemindersSummary } from '@/lib/reminders-summary';
@@ -48,13 +49,28 @@ import { useMutation } from '@/lib/hooks/useAsync';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { pricingTotalInclEuros } from '@/lib/pricing-result';
+import { useAuth } from '@/lib/auth-context';
 import { usePermission } from '@/lib/permissions';
+import { JourneyOpportunityCard } from '@/components/admin/JourneyOpportunityCard';
 
 const SHORTCUT_PERMISSION: Record<string, string> = {
   'admin.kassa.index': 'kassa.view',
   'admin.stalling.index': 'stalling.view',
   'admin.invoices.index': 'invoice.view',
   'admin.calculator.index': 'pricing.view',
+  'admin.stalling.create': 'stalling.write',
+  'admin.invoices.create': 'invoice.create',
+  'admin.customers.index': 'customers.view',
+  'admin.customers.create': 'customers.write',
+  'admin.boats.index': 'boats.view',
+  'admin.boats.create': 'boats.write',
+  'admin.planning.index': 'planning.view',
+  'admin.planning.create': 'planning.manage',
+  'admin.payments.index': 'payment.view',
+  'admin.brokerage.index': 'settings.update',
+  'admin.finance.index': 'invoice.view',
+  'admin.products.create': 'products.write',
+  'admin.suppliers.create': 'products.write',
 };
 
 const SHORTCUT_ICONS: Record<string, LucideIcon> = {
@@ -77,18 +93,14 @@ export default function AdminDashboardPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const { can } = usePermission();
-  const shortcutsQuery = useQuery([], async () => {
-    try {
-      return await dashboardShortcutsService.list();
-    } catch {
-      return { data: [] as DashboardShortcut[] };
-    }
-  });
+  const { user } = useAuth();
+  const shortcutsQuery = useQuery([user?.id, user?.role, user?.permissions?.join('|')], () => dashboardShortcutsService.list());
   const showWorkOrders = can('work_orders.view');
-  const shortcuts = (shortcutsQuery.data?.data?.length ? shortcutsQuery.data.data : FALLBACK_SHORTCUTS)
+  const shortcuts = dashboardShortcutRows(shortcutsQuery.data, !!shortcutsQuery.error, FALLBACK_SHORTCUTS)
     .filter((shortcut) => {
       const permission = SHORTCUT_PERMISSION[shortcut.route_key];
-      return !permission || can(permission);
+      const allowedRole = !shortcut.role_names?.length || shortcut.role_names.includes(user?.role ?? '');
+      return allowedRole && !!permission && can(permission);
     });
   const dateLocale = intlLocale(locale);
   const sync = useSyncStatus();
@@ -295,6 +307,7 @@ export default function AdminDashboardPage() {
       />
 
       <AdminContent>
+        <JourneyOpportunityCard />
         <div className="grid min-w-0 gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
           <Link href={`/${locale}/admin/afspraken`} className="block">
             <AdminStatusStrip label={t('adminModules.overview.todayAppointments')} value={data?.todayAppointments ?? '—'} tone="marine" />
@@ -326,6 +339,7 @@ export default function AdminDashboardPage() {
             icon={Sparkles}
           >
             <div className="grid min-w-0 gap-3 grid-cols-1 sm:grid-cols-2">
+              {shortcutsQuery.error ? <p role="status" className="text-sm text-amber-700">{t('globalUx.shortcutsFailed')} {t('globalUx.shortcutsFallback')}</p> : null}
               {shortcuts.map((shortcut) => {
                 const Icon = SHORTCUT_ICONS[shortcut.icon] ?? Sparkles;
                 return (

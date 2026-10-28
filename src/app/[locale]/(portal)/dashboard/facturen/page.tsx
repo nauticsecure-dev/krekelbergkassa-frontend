@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import {
@@ -331,7 +332,7 @@ export default function PortalInvoicesPage() {
               <label className="block text-xs font-semibold uppercase tracking-wide text-navy-400">
                 {t('adminNew.portal.invoices.paymentMethod')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={payMethod}
                 onChange={(e) => setPayMethod(e.target.value)}
@@ -340,7 +341,7 @@ export default function PortalInvoicesPage() {
                 <option value="creditcard">{t('adminNew.kassa.payment.creditcard')}</option>
                 <option value="bancontact">Bancontact</option>
                 <option value="banktransfer">{t('adminNew.portal.invoices.bankTransfer')}</option>
-              </select>
+              </SearchSelect>
             </PortalModalBody>
             <PortalModalFooter>
               <Button variant="outline" onClick={() => setPayOpen(false)}>

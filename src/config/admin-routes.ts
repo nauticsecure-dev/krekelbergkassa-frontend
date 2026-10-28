@@ -29,9 +29,10 @@ const byKey = new Map(adminRouteCatalog.map((entry) => [entry.key, entry.path]))
 
 export function adminHref(locale: string, routeKey: string, customUrl?: string | null): string {
   const path = byKey.get(routeKey as AdminRouteKey);
-  if (path) return `/${locale}/${path}`;
-  if (customUrl && customUrl.startsWith('/') && !customUrl.startsWith('//')) {
-    return `/${locale}${customUrl}`;
+  if (path) {
+    const base = '/' + path.split('?')[0];
+    if (customUrl && customUrl.split(/[?#]/)[0] === base && !/[\\\x00-\x20]/.test(customUrl)) return '/' + locale + customUrl;
+    return '/' + locale + '/' + path;
   }
   return `/${locale}/admin`;
 }
@@ -41,10 +42,12 @@ export type AdminEntitySection = 'producten' | 'klanten' | 'boten' | 'stalling' 
 export function adminRecordHref(
   locale: string,
   section: AdminEntitySection,
-  record: { id?: string | null; public_id?: string | null; slug?: string | null },
+  record: { id?: unknown; public_id?: unknown; slug?: unknown },
   suffix = '',
 ): string {
-  const key = record.public_id || record.id || '';
-  const slug = record.public_id && record.slug ? `/${encodeURIComponent(record.slug)}` : '';
-  return `/${locale}/admin/${section}/${key}${slug}${suffix}`;
+  const key = typeof record.public_id === 'string' && record.public_id ? record.public_id : typeof record.id === 'string' ? record.id : '';
+  // These names belong to existing child pages (for example a customer's timeline).
+  const reserved = new Set(['timeline', 'nieuw', 'edit', 'editor', 'import']);
+  const slug = record.public_id && typeof record.slug === 'string' && record.slug && !reserved.has(record.slug.toLowerCase()) ? `/${encodeURIComponent(record.slug)}` : '';
+  return `/${locale}/admin/${section}/${encodeURIComponent(key)}${slug}${suffix}`;
 }

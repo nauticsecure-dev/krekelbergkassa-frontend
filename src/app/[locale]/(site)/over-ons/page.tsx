@@ -2,7 +2,6 @@
 
 import {
   ArrowRight,
-  Award,
   Clock,
   Heart,
   Leaf,
@@ -18,6 +17,7 @@ import { useIntl } from "@/i18n/IntlProvider";
 import { companyInfo } from "@/lib/company";
 import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
+import { EditableHiswaCard } from "@/components/cms/EditableHiswaCard";
 import { EditableImage } from "@/components/cms/EditableImage";
 import { EditableHeroCta } from "@/components/cms/EditableHeroCta";
 import { EditSafeLink } from "@/components/cms/EditSafeLink";
@@ -71,7 +71,7 @@ export default function OverOnsPage() {
       {/* ───────── Hero ───────── */}
       <section className="relative isolate overflow-hidden bg-navy-950">
         <div className="absolute inset-0 overflow-hidden">
-          <EditableImage
+          <EditableImage defaultStyle={{gradient:'right',gradient_start:0.9,gradient_middle:0.7,gradient_end:0.4}}
             blockKey="over-ons.hero.image"
             page={CMS_PAGE}
             fallbackSrc="/img/krek/jachthaven.webp"
@@ -79,10 +79,7 @@ export default function OverOnsPage() {
             className="h-full w-full"
           />
         </div>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/70 to-navy-950/40"
-        />
+
         <div className="container-wide pointer-events-none relative pb-20 pt-16 text-white sm:pb-28 sm:pt-24 lg:pb-32 lg:pt-28">
           <Badge tone="sand" dot className="pointer-events-auto mb-4">
             <EditableText blockKey="over-ons.hero.badge" page={CMS_PAGE} section="hero">
@@ -173,21 +170,7 @@ export default function OverOnsPage() {
                 {t("over.story2")}
               </EditableText>
             </p>
-            <div className="mt-6 flex items-center gap-3 rounded-xl border border-navy-100 bg-sand-50/50 p-4">
-              <Award className="h-5 w-5 shrink-0 text-gold-600" />
-              <div>
-                <div className="text-sm font-semibold text-navy-900">
-                  <EditableText blockKey="over-ons.hiswa.title" page={CMS_PAGE} section="story">
-                    {t("over.hiswaTitle")}
-                  </EditableText>
-                </div>
-                <div className="text-xs text-navy-500">
-                  <EditableText blockKey="over-ons.hiswa.desc" page={CMS_PAGE} section="story" type="paragraph">
-                    {t("over.hiswaDesc")}
-                  </EditableText>
-                </div>
-              </div>
-            </div>
+            <EditableHiswaCard />
           </div>
         </div>
       </section>

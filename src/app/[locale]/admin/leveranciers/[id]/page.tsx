@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -163,12 +164,12 @@ export default function SupplierDetailPage() {
             <Input label={t('adminNew.suppliers.mapColumns.description')} value={mapForm.supplier_description} onChange={(e) => setMapForm({ ...mapForm, supplier_description: e.target.value })} />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.suppliers.mapColumns.product')}</label>
-              <select className="input-base w-full" value={mapForm.product_id} onChange={(e) => setMapForm({ ...mapForm, product_id: e.target.value })} required>
+              <SearchSelect className="input-base w-full" value={mapForm.product_id} onChange={(e) => setMapForm({ ...mapForm, product_id: e.target.value })} required>
                 <option value="">{t('adminNew.suppliers.selectProduct')}</option>
                 {productOptions.map((p, i) => (
                   <option key={str(p, 'id') || i} value={str(p, 'id')}>{str(p, 'name')}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
           </AdminModalBody>
           <AdminModalFooter>

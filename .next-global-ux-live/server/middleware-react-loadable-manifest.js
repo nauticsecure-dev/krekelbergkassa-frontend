@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST="{\"components\\\\admin\\\\AppointmentsPage.tsx -> @/components/admin/AppointmentScheduler\":{\"id\":\"components\\\\admin\\\\AppointmentsPage.tsx -> @/components/admin/AppointmentScheduler\",\"files\":[\"static/chunks/_app-pages-browser_src_components_admin_AppointmentScheduler_tsx.js\"]}}"

@@ -1,5 +1,6 @@
 'use client';
 
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -283,7 +284,7 @@ export default function StallingDetailPage() {
                         <span className="flex items-center gap-2">
                           {labelKey ? (
                             <span className="rounded-full bg-marine-50 px-2 py-0.5 text-[11px] font-semibold text-marine-700">
-                              {t(`adminNew.stalling.invoiceLabels.${labelKey}`)}
+                              {tEnum(t, 'adminNew.stalling.invoiceLabels', labelKey)}
                             </span>
                           ) : null}
                           <span className="font-semibold text-navy-900">{str(inv, 'invoice_number') || str(inv, 'id')}</span>

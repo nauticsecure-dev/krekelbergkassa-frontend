@@ -1,0 +1,9 @@
+{
+  "/[locale]/admin/page": "app/[locale]/admin/page.js",
+  "/[locale]/admin/afspraken/page": "app/[locale]/admin/afspraken/page.js",
+  "/[locale]/admin/facturen/nieuw/page": "app/[locale]/admin/facturen/nieuw/page.js",
+  "/[locale]/admin/facturen/page": "app/[locale]/admin/facturen/page.js",
+  "/[locale]/admin/boten/page": "app/[locale]/admin/boten/page.js",
+  "/[locale]/admin/leveranciers/page": "app/[locale]/admin/leveranciers/page.js",
+  "/[locale]/admin/stalling/page": "app/[locale]/admin/stalling/page.js"
+}

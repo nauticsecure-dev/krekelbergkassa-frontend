@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -38,18 +39,24 @@ export function AdminSplitLayout({
   children,
   sidebarWidth = '24rem',
   sidebar = 'end',
+  breakpoint = 'lg',
   className,
 }: {
   children: React.ReactNode;
   sidebarWidth?: string;
   sidebar?: 'start' | 'end';
+  breakpoint?: 'lg' | 'xl';
   className?: string;
 }) {
   return (
     <div
       className={cn(
         'grid min-w-0 grid-cols-1 gap-5 [&>*]:min-w-0',
-        sidebar === 'start'
+        breakpoint === 'xl'
+          ? sidebar === 'start'
+            ? 'xl:grid-cols-[var(--admin-split-side)_minmax(0,1fr)]'
+            : 'xl:grid-cols-[minmax(0,1fr)_var(--admin-split-side)]'
+          : sidebar === 'start'
           ? 'lg:grid-cols-[var(--admin-split-side)_minmax(0,1fr)]'
           : 'lg:grid-cols-[minmax(0,1fr)_var(--admin-split-side)]',
         className,
@@ -202,13 +209,13 @@ export function AdminSelect({
   className?: string;
 }) {
   return (
-    <select
+    <SearchSelect
       className={cn('input-base w-full lg:w-auto lg:min-w-[180px]', className)}
       value={value}
       onChange={(e) => onChange(e.target.value)}
     >
       {children}
-    </select>
+    </SearchSelect>
   );
 }
 

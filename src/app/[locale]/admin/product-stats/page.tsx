@@ -1,4 +1,6 @@
 'use client';
+import { adminRecordHref } from '@/config/admin-routes';
+
 
 import * as React from 'react';
 import { BarChart3, TrendingDown, TrendingUp } from 'lucide-react';
@@ -109,7 +111,7 @@ export default function ProductStatsPage() {
           ) : (
             <>
               <AdminSectionCard
-                title={t('adminNew.productStats.topProducts', { defaultValue: `Top producten (${topRows.length})` })}
+                title={t('adminNew.productStats.topProducts', { count: topRows.length })}
                 icon={TrendingUp}
               >
                 <AdminTableCard>
@@ -140,7 +142,7 @@ export default function ProductStatsPage() {
                             <AdminTableCell className="text-xs font-bold text-navy-400">{i + 1}</AdminTableCell>
                             <AdminTableCell>
                               <Link
-                                href={`/${locale}/admin/producten/${String(row.product_id ?? row.id ?? '')}`}
+                                href={adminRecordHref(locale, 'producten', { ...row, id: row.product_id ?? row.id })}
                                 className="font-semibold text-marine-700 hover:text-marine-900"
                               >
                                 {String(row.name ?? row.product_name ?? '—')}
@@ -179,7 +181,7 @@ export default function ProductStatsPage() {
 
               {slowRows.length > 0 ? (
                 <AdminSectionCard
-                  title={t('adminNew.productStats.slowProducts', { defaultValue: `Traag lopend (${slowRows.length})` })}
+                  title={t('adminNew.productStats.slowProducts', { count: slowRows.length })}
                   icon={TrendingDown}
                 >
                   <AdminTableCard>
@@ -197,7 +199,7 @@ export default function ProductStatsPage() {
                           <AdminTableRow key={String(row.product_id ?? row.id ?? i)}>
                             <AdminTableCell>
                               <Link
-                                href={`/${locale}/admin/producten/${String(row.product_id ?? row.id ?? '')}`}
+                                href={adminRecordHref(locale, 'producten', { ...row, id: row.product_id ?? row.id })}
                                 className="font-semibold text-marine-700 hover:text-marine-900"
                               >
                                 {String(row.name ?? row.product_name ?? '—')}

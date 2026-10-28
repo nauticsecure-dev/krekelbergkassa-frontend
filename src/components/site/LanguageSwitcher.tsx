@@ -6,6 +6,7 @@ import { Check, ChevronDown } from "lucide-react";
 import Cookies from "js-cookie";
 import { Locale, localeLabels, locales } from "@/i18n/config";
 import { useIntl } from "@/i18n/IntlProvider";
+import { api } from "@/lib/api";
 import { Flag } from "@/components/ui/Flag";
 import { cn } from "@/lib/cn";
 
@@ -23,6 +24,15 @@ export function LanguageSwitcher({
   const { locale } = useIntl();
   const router = useRouter();
   const pathname = usePathname();
+  const [activeLocales, setActiveLocales] = React.useState<readonly Locale[]>(locales);
+  React.useEffect(() => {
+    let alive = true;
+    api<{supported_locales: {code: string; enabled: boolean}[]}>('/v1/i18n/locales', {auth: false}).then(data => {
+      const active = data.supported_locales.filter(item => item.enabled).map(item => item.code.split('-')[0]).filter((code): code is Locale => locales.includes(code as Locale));
+      if (alive && active.length) setActiveLocales(active);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, [pathname]);
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -34,7 +44,8 @@ export function LanguageSwitcher({
     });
     const parts = pathname.split("/");
     parts[1] = target;
-    router.push(parts.join("/") || `/${target}`);
+    const suffix = window.location.search + window.location.hash;
+    router.push((parts.join("/") || `/${target}`) + suffix);
     setOpen(false);
   };
 
@@ -81,7 +92,7 @@ export function LanguageSwitcher({
             Taal · Sprache · Language
           </div>
           <ul role="listbox" className="py-1">
-            {locales.map((l) => {
+            {activeLocales.map((l) => {
               const active = l === locale;
               return (
                 <li key={l}>

@@ -41,17 +41,19 @@ export function IntlProvider({
   locale,
   messages,
   children,
+  overrides = {},
 }: {
   locale: Locale;
   messages: Dict;
   children: React.ReactNode;
+  overrides?: Record<string, string>;
 }) {
   const value = useMemo<IntlContextValue>(
     () => ({
       locale,
       messages,
       t: (path, vars) => {
-        const v = getByPath(messages, path);
+        const v = overrides[path] ?? getByPath(messages, path);
         if (typeof v === 'string') return interpolate(v, vars);
         const fallback = vars?.defaultValue;
         return interpolate(
@@ -60,7 +62,7 @@ export function IntlProvider({
         );
       },
     }),
-    [locale, messages]
+    [locale, messages, overrides]
   );
   return <IntlContext.Provider value={value}>{children}</IntlContext.Provider>;
 }

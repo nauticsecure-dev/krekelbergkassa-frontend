@@ -1,5 +1,6 @@
 'use client';
 
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -99,6 +100,13 @@ function GlobalTopbar({
   const { t, locale } = useIntl();
   const { user } = useAuth();
   const pathname = usePathname();
+  const [hash, setHash] = React.useState('');
+  React.useEffect(() => {
+    const update = () => setHash(window.location.hash);
+    update();
+    window.addEventListener('hashchange', update);
+    return () => window.removeEventListener('hashchange', update);
+  }, [pathname]);
   const boatId = getAdminBoatId(pathname, locale);
   const productId = getAdminProductId(pathname, locale);
   const boatDossier = useQuery(
@@ -106,6 +114,13 @@ function GlobalTopbar({
     () => boatId ? boatsService.dossier(boatId) : Promise.resolve(null),
     { immediate: Boolean(boatId) },
   );
+  const refetchBoatDossier = boatDossier.refetch;
+  React.useEffect(() => {
+    if (!boatId) return;
+    const update = () => { void refetchBoatDossier().catch(() => undefined); };
+    window.addEventListener('boat-listing-updated', update);
+    return () => window.removeEventListener('boat-listing-updated', update);
+  }, [boatId, refetchBoatDossier]);
   const productRecord = useQuery(
     [productId ?? ''],
     () => productId ? productsService.get(productId) : Promise.resolve(null),
@@ -116,6 +131,7 @@ function GlobalTopbar({
     locale,
     boatDossier.loading ? null : getPublicBoatPath(boatDossier.data),
     productRecord.loading ? null : getPublicProductPath(productRecord.data),
+    hash,
   );
   const { requestLogout } = useConfirmLogout();
   const { bellOpen, menuOpen, toggleBell, toggleMenu, closeAll } = useShellDropdowns();
@@ -216,7 +232,7 @@ function GlobalTopbar({
                     onClick={() => setCreateOpen(false)}
                     className="block px-4 py-2.5 text-sm text-navy-700 hover:bg-sand-50"
                   >
-                    {t(item.labelKey)}
+                    {tEnum(t, 'adminModules.create', item.labelKey)}
                   </Link>
                 ))}
               </div>
@@ -390,17 +406,20 @@ function getPublicPageForAdminPath(
   locale: string,
   publicBoatPath: string | null,
   publicProductPath: string | null,
+  hash: string,
 ): { href: string; contextual: boolean; boat?: boolean } {
   const adminPrefix = `/${locale}/admin`;
   const adminPath = pathname.startsWith(adminPrefix)
     ? pathname.slice(adminPrefix.length) || '/'
     : '/';
-  const boatPath = adminPath.match(/^\/boten\/[^/]+$/) ? publicBoatPath : null;
-  const productMatch = adminPath.match(/^\/producten\/([^/]+)$/);
+  const boatPath = adminPath.match(/^\/boten\/[^/]+(?:\/[^/]+)?$/) ? publicBoatPath : null;
+  const productMatch = adminPath.match(/^\/producten\/([^/]+)(?:\/[^/]+)?$/);
   const productPath = productMatch && productMatch[1] !== 'nieuw' ? publicProductPath : null;
   const publicPath = boatPath
     ?? productPath
-    ?? (adminPath === '/diensten'
+    ?? (adminPath === '/instellingen' && hash === '#contact_subjects'
+      ? '/contact'
+      : adminPath === '/diensten'
       ? '/diensten'
       : adminPath === '/stalling' || adminPath.startsWith('/stalling/')
         ? '/diensten/winterstalling'
@@ -408,7 +427,7 @@ function getPublicPageForAdminPath(
 
   return publicPath
     ? {
-        href: localizePublicPath(publicPath, locale),
+        href: publicPath.startsWith('https://') ? publicPath : localizePublicPath(publicPath, locale),
         contextual: true,
         boat: Boolean(boatPath),
       }
@@ -421,7 +440,7 @@ function getAdminBoatId(pathname: string, locale: string): string | null {
 }
 
 function getAdminProductId(pathname: string, locale: string): string | null {
-  const match = pathname.match(new RegExp(`^/${locale}/admin/producten/([^/]+)$`));
+  const match = pathname.match(new RegExp(`^/${locale}/admin/producten/([^/]+)(?:/[^/]+)?$`));
   const id = match?.[1];
   return id && id !== 'nieuw' ? id : null;
 }
@@ -436,12 +455,14 @@ function getPublicBoatPath(dossier: Record<string, unknown> | null | undefined):
   const boat = dossier?.boat;
   if (!boat || typeof boat !== 'object') return null;
   const record = boat as Record<string, unknown>;
-  const publicPath = internalPath(record.public_path)
-    ?? internalPath(record.public_url)
-    ?? internalPath(record.frontend_url);
-  if (publicPath) return publicPath;
-  const slug = typeof record.slug === 'string' ? record.slug.trim() : '';
-  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug) ? `/boten/${slug}` : null;
+  const url = record.public_url;
+  if (typeof url !== 'string') return null;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' && !parsed.username && !parsed.password ? parsed.href : null;
+  } catch {
+    return null;
+  }
 }
 
 function getPublicProductPath(
@@ -473,12 +494,35 @@ function MobileDrawer({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const { t } = useIntl();
+  const panel = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    panel.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const closeOnDesktop = () => { if (desktop.matches) onClose(); };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => {
+      desktop.removeEventListener('change', closeOnDesktop);
+      previous?.focus();
+    };
+  }, [open, onClose]);
   return (
     <div
       className={cn(
         'fixed inset-0 z-50 lg:hidden',
-        open ? 'pointer-events-auto' : 'pointer-events-none'
+        open ? 'pointer-events-auto' : 'hidden'
       )}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') { event.stopPropagation(); onClose(); }
+        if (event.key !== 'Tab') return;
+        const controls = Array.from(panel.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), [tabindex="0"]') ?? []);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }}
     >
       <div
         className={cn(
@@ -488,6 +532,10 @@ function MobileDrawer({
         onClick={onClose}
       />
       <div
+        ref={panel}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('header.mainMenu')}
         className={cn(
           'absolute left-0 top-0 h-full w-72 bg-navy-950 text-sand-100 shadow-elev transition-transform duration-200',
           open ? 'translate-x-0' : '-translate-x-full'
@@ -497,6 +545,7 @@ function MobileDrawer({
           <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
             <Logo variant="light" editable={false} />
             <button
+              aria-label={t('adminNew.common.close')}
               onClick={onClose}
               className="rounded-md p-2 text-sand-100/70 hover:bg-white/5 hover:text-white"
             >

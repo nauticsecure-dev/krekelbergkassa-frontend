@@ -8,8 +8,17 @@
     "start": "next start -p 3030",
     "lint": "next lint",
     "check:admin-i18n": "node scripts/check-admin-i18n.mjs",
+    "audit:admin": "node scripts/audit-admin-pages.mjs",
+    "verify:admin": "node scripts/verify-admin-batches.mjs",
+    "report:admin": "node scripts/report-admin-verification.mjs",
     "screenshots": "node scripts/screenshot.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:contracts": "playwright test --config playwright.contracts.config.ts",
+    "test:ui": "playwright test --config playwright.ui.config.ts",
+    "test:i18n": "node --test scripts/admin-i18n-audit.test.mjs",
+    "check:admin-i18n:strict": "node scripts/check-admin-i18n.mjs --strict-dynamic",
+    "check:types": "tsc --project tsconfig.check.json",
+    "test:global-ux": "playwright test --config playwright.global-ux.config.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",

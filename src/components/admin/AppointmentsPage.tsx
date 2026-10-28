@@ -1,4 +1,6 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import dynamic from 'next/dynamic';
@@ -24,7 +26,8 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { appointmentsService, workOrdersService } from '@/lib/services';
+import { appointmentsService, workOrdersService, serviceCatalogService } from '@/lib/services';
+import { usePermission } from '@/lib/permissions';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -109,6 +112,10 @@ export default function AppointmentsPage({ embedded = false }: { embedded?: bool
 }
 
 function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean }) {
+  const { can } = usePermission();
+  const canManage = can('planning.manage');
+  const canWrite = can('planning.write');
+  const canViewWorkOrders = can('work_orders.view');
   const { t, locale } = useIntl();
   const { push } = useToast();
   const router = useRouter();
@@ -118,11 +125,17 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
   searchParamsRef.current = searchParams;
   const dateLocale = intlLocale(locale);
 
-  const view = normalizeView(searchParams.get('view'));
-  const date = normalizeDateKey(searchParams.get('date'));
+  const planningTab = embedded ? searchParams.get('tab') : null;
+  const view = planningTab === 'vandaag' ? 'day' : planningTab === 'week' ? 'week' : normalizeView(searchParams.get('view'));
+  const date = normalizeDateKey(planningTab === 'vandaag' ? null : searchParams.get('date'));
   const statusParam = searchParams.get('status') ?? '';
   const status = (STATUS_OPTIONS as readonly string[]).includes(statusParam) ? statusParam : '';
   const createOpen = searchParams.get('create') === '1';
+  const serviceCode = searchParams.get('service_code') ?? '';
+  const locationId = searchParams.get('location_id') ?? '';
+  const employeeId = searchParams.get('assigned_to') ?? '';
+  const options = useQuery(['appointment-options'], () => appointmentsService.options());
+  const catalog = useQuery(['appointment-services', locale], () => serviceCatalogService.services());
   const [draft, setDraft] = React.useState<SchedulerSelection | null>(null);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = React.useState<string | null>(null);
@@ -153,24 +166,30 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
   const inclusiveTo = localDateKey(addDays(parseDateKey(range.to), -1));
 
   const appointments = useQuery(
-    ['afspraken-calendar', range.from, range.to, status],
+    ['afspraken-calendar', range.from, range.to, status, serviceCode, locationId, employeeId],
     () => appointmentsService.calendar({
       from: range.from,
       to: range.to,
       status: status || undefined,
+      service_code: serviceCode || undefined,
+      location_id: locationId || undefined,
+      assigned_to: employeeId || undefined,
     })
   );
   const stats = useQuery(['afspraken-stats'], () => appointmentsService.stats());
   const workOrders = useQuery(
-    ['afspraken-work-orders', range.from, inclusiveTo],
-    () => workOrdersService.list({ due_from: range.from, due_to: inclusiveTo, per_page: 100 })
+    ['afspraken-work-orders', range.from, inclusiveTo, canViewWorkOrders],
+    () => canViewWorkOrders ? workOrdersService.list({ due_from: range.from, due_to: inclusiveTo, per_page: 100 }) : Promise.resolve({ data: [] })
   );
 
   const rows = React.useMemo(() => appointments.data?.data ?? [], [appointments.data?.data]);
-  const rowsRef = React.useRef(rows);
-  rowsRef.current = rows;
-  const events = React.useMemo(() => rows.map(appointmentToEvent), [rows]);
-  const selected = rows.find((row) => row.id === selectedId) ?? null;
+  const events = React.useMemo(() => rows.map((row) => appointmentToEvent(row, canManage)), [rows, canManage]);
+  const sourceId = searchParams.get('appointment_id');
+  const sourceAppointment = useQuery(['source-appointment', sourceId], () => sourceId ? appointmentsService.get(sourceId) : Promise.resolve(null));
+  React.useEffect(() => {
+    if (sourceAppointment.data) setSelectedId(sourceAppointment.data.id);
+  }, [sourceAppointment.data]);
+  const selected = rows.find((row) => row.id === selectedId) ?? (sourceAppointment.data?.id === selectedId ? sourceAppointment.data : null);
   const workOrderRows = (workOrders.data?.data ?? []) as Array<Record<string, unknown>>;
 
   const confirm = useMutation(appointmentsService.confirm);
@@ -190,10 +209,12 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
   ).length);
 
   const refresh = async () => {
-    await Promise.all([appointments.refetch(), stats.refetch()]);
+    // A failed refresh must not revert a move already accepted by the server.
+    await Promise.allSettled([appointments.refetch(), stats.refetch(), ...(sourceId ? [sourceAppointment.refetch()] : [])]);
   };
 
   const onConfirm = async (id: string) => {
+    if (!canManage) return;
     try {
       await confirm.mutate(id);
       await refresh();
@@ -204,6 +225,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
   };
 
   const onCancel = async (id: string) => {
+    if (!canManage) return;
     try {
       await cancel.mutate(id);
       await refresh();
@@ -215,6 +237,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
   };
 
   const onAdvance = async (id: string, nextStatus: string) => {
+    if (!canWrite) return;
     try {
       await updateStatus.mutate({ id, next: nextStatus });
       await refresh();
@@ -229,7 +252,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
   };
 
   const onMove = async (change: SchedulerMove) => {
-    const row = rowsRef.current.find((item) => item.id === change.id);
+    if (!canManage) { change.revert(); return; }
     const startDate = localDateKey(change.start);
     const endDate = localDateKey(new Date(change.end.getTime() - 1));
     const duration = Math.round((change.end.getTime() - change.start.getTime()) / 60000);
@@ -243,7 +266,6 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
         date: startDate,
         start_time: formatLocalTime(change.start),
         duration_minutes: duration,
-        location_id: row?.location_id ?? null,
         ignore_appointment_id: change.id,
       });
       if (conflicts.has_conflicts) {
@@ -275,6 +297,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
   };
 
   const openCreate = (selection?: SchedulerSelection) => {
+    if (!canManage) return;
     setDraft(selection ?? {
       date,
       startTime: '09:00',
@@ -348,7 +371,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
               <label className="sr-only" htmlFor="appointment-status-filter">
                 {t('adminNew.appointments.columns.status')}
               </label>
-              <select
+              <SearchSelect
                 id="appointment-status-filter"
                 className="input-base w-full min-w-0 sm:w-auto sm:min-w-[180px]"
                 value={status}
@@ -356,18 +379,34 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
               >
                 <option value="">{t('adminNew.appointments.allStatuses')}</option>
                 {STATUS_OPTIONS.map((option) => (
-                  <option key={option} value={option}>{t(statusLabelKey(option))}</option>
+                  <option key={option} value={option}>{tEnum(t, 'appointmentStatuses', statusLabelKey(option))}</option>
                 ))}
-              </select>
+              </SearchSelect>
+              {[
+                { key: 'service_code', label: t('planning.fieldService'), value: serviceCode,
+                  items: Array.from(new Map((catalog.data?.services ?? []).map((s) => [s.service_code || s.code, { id: s.service_code || s.code, name: s.name || s.code }])).values()) },
+                { key: 'location_id', label: t('planning.fieldLocation'), value: locationId,
+                  items: (options.data?.locations ?? []).map((l) => ({ id: l.id, name: l.code })) },
+                { key: 'assigned_to', label: t('planning.fieldAssignee'), value: employeeId, items: options.data?.employees ?? [] },
+              ].map((filter) => (
+                <label key={filter.key} className="text-sm text-navy-700">
+                  <span className="sr-only">{filter.label}</span>
+                  <SearchSelect aria-label={filter.label} className="input-base w-full sm:w-48" value={filter.value}
+                    onChange={(event) => updateUrl({ [filter.key]: event.target.value || null })}>
+                    <option value="">{filter.label}</option>
+                    {filter.items.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </SearchSelect>
+                </label>
+              ))}
             </div>
-            <Button
+            {canManage && <Button
               variant="gold"
               className="w-full shrink-0 sm:ml-auto sm:w-auto"
               leftIcon={<Plus className="h-4 w-4" />}
               onClick={() => openCreate()}
             >
               {t('planning.createAppointment')}
-            </Button>
+            </Button>}
           </AdminToolbar>
 
           {appointments.error ? (
@@ -386,6 +425,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
               events={events}
               view={view}
               date={date}
+              canManage={canManage}
               onViewDateChange={onViewDateChange}
               onMove={(change) => void onMove(change)}
               onSelect={openCreate}
@@ -394,7 +434,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
           </div>
         </AdminSectionCard>
 
-        <AdminSectionCard
+        {canViewWorkOrders && <AdminSectionCard
           title={t('adminNew.workOrders.overlay.title')}
           description={t('adminNew.workOrders.overlay.toggle')}
           icon={Wrench}
@@ -436,11 +476,11 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
                 ))}
             </ul>
           )}
-        </AdminSectionCard>
+        </AdminSectionCard>}
       </AdminContent>
 
       <AppointmentCreateModal
-        open={createOpen}
+        open={createOpen && canManage}
         defaultDate={draft?.date || date}
         defaultStart={draft?.startTime || '09:00'}
         defaultDuration={draft?.durationMinutes || 60}
@@ -493,6 +533,7 @@ function AppointmentDetailModal({
   onCancel: (id: string) => void;
 }) {
   const { t } = useIntl();
+  const { can } = usePermission();
   const isPending = appointment ? ['pending_manual_review', 'requested'].includes(appointment.status) : false;
   const nextStep = appointment?.next_status ?? null;
   const canCancel = appointment ? !['completed', 'cancelled', 'no_show'].includes(appointment.status) : false;
@@ -507,7 +548,7 @@ function AppointmentDetailModal({
               <p className="mt-1 text-sm text-navy-500">{appointment.customer?.name ?? '—'}</p>
             </div>
             <Badge tone={appointmentStatusTone(appointment.status)}>
-              {appointment.status_label ?? t(statusLabelKey(appointment.status))}
+              {appointment.status_label ?? tEnum(t, 'appointmentStatuses', statusLabelKey(appointment.status))}
             </Badge>
           </div>
           <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
@@ -535,16 +576,16 @@ function AppointmentDetailModal({
             ) : null}
           </dl>
           <div className="mt-6 flex flex-wrap justify-end gap-2">
-            {isPending ? (
+            {isPending && can('planning.manage') ? (
               <Button size="sm" variant="secondary" leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />} onClick={() => onConfirm(appointment.id)}>
                 {t('adminNew.appointments.confirm')}
               </Button>
-            ) : nextStep ? (
+            ) : nextStep && !isPending && can('planning.write') ? (
               <Button size="sm" variant="secondary" leftIcon={<CircleCheck className="h-3.5 w-3.5" />} onClick={() => onAdvance(appointment.id, nextStep)}>
                 {nextStep.replace(/_/g, ' ')}
               </Button>
             ) : null}
-            {canCancel ? (
+            {canCancel && can('planning.manage') ? (
               <Button size="sm" variant="ghost" leftIcon={<XCircle className="h-3.5 w-3.5" />} onClick={() => onCancel(appointment.id)}>
                 {t('adminNew.appointments.cancel')}
               </Button>

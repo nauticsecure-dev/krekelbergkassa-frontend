@@ -1,5 +1,6 @@
 'use client';
 
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import {
   BarChart3,
@@ -58,7 +59,7 @@ export function KassaAnalyticsDashboard({
                 active={period === p}
                 onClick={() => onPeriodChange(p)}
               >
-                {t(`adminNew.kassa.analytics.periods.${p}`)}
+                {tEnum(t, 'adminNew.kassa.analytics.periods', p)}
               </AdminFilterPill>
             ))}
           </div>
@@ -94,7 +95,7 @@ export function KassaAnalyticsDashboard({
             />
           </AdminMetricGrid>
 
-          <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+          <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] [&>*]:min-w-0">
             <div className="rounded-xl border border-navy-100 bg-gradient-to-b from-white to-sand-50/50 p-4">
               <div className="mb-4 flex items-center justify-between">
                 <h4 className="text-sm font-semibold text-navy-900">

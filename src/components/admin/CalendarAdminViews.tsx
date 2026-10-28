@@ -196,7 +196,7 @@ export function ExceptionsStrip({
   openLabel: string;
   emptyTitle: string;
   emptyMessage: string;
-  onAdd: () => void;
+  onAdd?: () => void;
   addLabel: string;
   dateLocale?: string;
 }) {
@@ -206,9 +206,9 @@ export function ExceptionsStrip({
         <CalendarDays className="mb-3 h-8 w-8 text-navy-300" />
         <p className="text-sm font-semibold text-navy-800">{emptyTitle}</p>
         <p className="mt-1 max-w-sm text-xs text-navy-500">{emptyMessage}</p>
-        <Button size="sm" variant="outline" className="mt-4" onClick={onAdd}>
+        {onAdd ? <Button size="sm" variant="outline" className="mt-4" onClick={onAdd}>
           {addLabel}
-        </Button>
+        </Button> : null}
       </div>
     );
   }
@@ -318,7 +318,7 @@ export function LocationCardGrid({
   openLabel,
 }: {
   locations: BoatLocation[];
-  onEdit: (row: BoatLocation) => void;
+  onEdit?: (row: BoatLocation) => void;
   editLabel: string;
   blockedLabel: string;
   openLabel: string;
@@ -370,14 +370,14 @@ export function LocationCardGrid({
             <p className="mt-2 line-clamp-2 text-xs text-navy-500">{row.notes}</p>
           ) : null}
 
-          <Button
+          {onEdit ? <Button
             size="sm"
             variant="ghost"
             className="mt-3 w-full opacity-80 group-hover:opacity-100"
             onClick={() => onEdit(row)}
           >
             {editLabel}
-          </Button>
+          </Button> : null}
         </article>
       ))}
     </div>

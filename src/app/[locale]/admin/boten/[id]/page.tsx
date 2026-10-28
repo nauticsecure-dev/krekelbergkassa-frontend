@@ -1,4 +1,6 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -52,6 +54,7 @@ export default function BoatDossierPage() {
   const [showTransfer, setShowTransfer] = React.useState(false);
   const [transferForm, setTransferForm] = React.useState({ customer_id: '', transfer_reason: '', ownership_notes: '' });
   const emptyForm = {
+    public_listing_url: '',
     name: '',
     length_cm: '',
     width_cm: '',
@@ -102,6 +105,7 @@ export default function BoatDossierPage() {
     const b = dossier.data?.boat as Record<string, unknown> | undefined;
     if (!b) return;
     setForm({
+      public_listing_url: String(b.public_listing_url ?? ''),
       name: String(b.name ?? ''),
       length_cm: b.length_cm != null ? String(b.length_cm) : '',
       width_cm: b.width_cm != null ? String(b.width_cm) : '',
@@ -193,6 +197,7 @@ export default function BoatDossierPage() {
     e.preventDefault();
     try {
       await updateBoat.mutate({
+        public_listing_url: form.public_listing_url || null,
         name: form.name,
         type: form.type,
         length_cm: form.length_cm ? Number(form.length_cm) : null,
@@ -217,6 +222,7 @@ export default function BoatDossierPage() {
       });
       setShowEdit(false);
       await dossier.refetch();
+      window.dispatchEvent(new Event('boat-listing-updated'));
       push({ tone: 'success', title: t('adminNew.boats.toasts.updated') });
     } catch (err) {
       push({
@@ -481,11 +487,11 @@ export default function BoatDossierPage() {
                 icon={Camera}
                 action={
                   <div className="flex items-center gap-2">
-                    <select className="input-base h-8 py-0 text-xs" value={photoFolder} onChange={(e) => setPhotoFolder(e.target.value)}>
+                    <SearchSelect className="input-base h-8 py-0 text-xs" value={photoFolder} onChange={(e) => setPhotoFolder(e.target.value)}>
                       {['arrival', 'inspection', 'maintenance', 'damage', 'departure'].map((f) => (
-                        <option key={f} value={f}>{t(`adminNew.boats.photoFolders.${f}`)}</option>
+                        <option key={f} value={f}>{tEnum(t, 'adminNew.boats.photoFolders', f)}</option>
                       ))}
-                    </select>
+                    </SearchSelect>
                     <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { void onUpload('photo', e.target.files?.[0]); e.target.value = ''; }} />
                     <Button size="sm" variant="outline" leftIcon={<Upload className="h-3.5 w-3.5" />} disabled={uploadPhoto.loading} onClick={() => photoInputRef.current?.click()}>
                       {t('adminNew.common.add')}
@@ -517,7 +523,7 @@ export default function BoatDossierPage() {
                         return (
                           <details key={folder} open className="mb-4">
                             <summary className="mb-2 flex cursor-pointer items-center gap-2 text-sm font-semibold text-navy-700 hover:text-navy-900">
-                              <span>{t(`adminNew.boats.photoFolders.${folder}`, { defaultValue: folder })}</span>
+                              <span>{tEnum(t, 'adminNew.boats.photoFolders', folder, { defaultValue: folder })}</span>
                               <span className="rounded-full bg-navy-100 px-1.5 py-0.5 text-[10px] font-semibold text-navy-500">{items.length}</span>
                               {earliest ? <span className="ml-auto text-xs font-normal text-navy-400">{new Date(earliest).toLocaleDateString(dateLocale)}</span> : null}
                             </summary>
@@ -557,11 +563,11 @@ export default function BoatDossierPage() {
                 icon={FileText}
                 action={
                   <div className="flex items-center gap-2">
-                    <select className="input-base h-8 py-0 text-xs" value={docCategory} onChange={(e) => setDocCategory(e.target.value)}>
+                    <SearchSelect className="input-base h-8 py-0 text-xs" value={docCategory} onChange={(e) => setDocCategory(e.target.value)}>
                       {['insurance', 'registration', 'ce_certificate', 'purchase_agreement', 'survey', 'other'].map((c) => (
-                        <option key={c} value={c}>{t(`adminNew.boats.docCategories.${c}`)}</option>
+                        <option key={c} value={c}>{tEnum(t, 'adminNew.boats.docCategories', c)}</option>
                       ))}
-                    </select>
+                    </SearchSelect>
                     <input ref={docInputRef} type="file" className="hidden" onChange={(e) => { void onUpload('document', e.target.files?.[0]); e.target.value = ''; }} />
                     <Button size="sm" variant="outline" leftIcon={<Upload className="h-3.5 w-3.5" />} disabled={uploadDoc.loading} onClick={() => docInputRef.current?.click()}>
                       {t('adminNew.common.add')}
@@ -579,7 +585,7 @@ export default function BoatDossierPage() {
                         <li key={fileId} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
                           <span className="min-w-0 flex-1 truncate text-navy-800">
                             {String(d.filename ?? d.name ?? `#${i + 1}`)}
-                            {d.category ? <span className="ml-2 text-xs text-navy-400">{t(`adminNew.boats.docCategories.${String(d.category)}`)}</span> : null}
+                            {d.category ? <span className="ml-2 text-xs text-navy-400">{tEnum(t, 'adminNew.boats.docCategories', String(d.category))}</span> : null}
                             {d.version ? <span className="ml-2 text-xs text-navy-400">v{String(d.version)}</span> : null}
                           </span>
                           <div className="flex shrink-0 items-center gap-2">
@@ -663,7 +669,7 @@ export default function BoatDossierPage() {
                             ) : null}
                           </div>
                           <div className="mt-3">
-                            <Link href={`/${locale}/admin/stalling/${String(c.id)}`} className="text-xs font-semibold text-marine-700 hover:text-marine-900">
+                            <Link href={adminRecordHref(locale, 'stalling', c)} className="text-xs font-semibold text-marine-700 hover:text-marine-900">
                               {t('adminNew.boats.openContract', { defaultValue: 'Open contract →' })}
                             </Link>
                           </div>
@@ -779,6 +785,7 @@ export default function BoatDossierPage() {
         <form onSubmit={onSave}>
           <AdminModalHeader title={t('adminNew.boats.editTitle')} subtitle={t('adminNew.boats.editSubtitle')} />
           <AdminModalBody>
+            <Input label={t('adminNew.boats.fields.publicListingUrl')} type="url" value={form.public_listing_url} onChange={(e) => setForm({ ...form, public_listing_url: e.target.value })} />
             <Input label={t('adminNew.common.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
             <div className="grid gap-3 sm:grid-cols-2">
               <Input label={t('adminNew.boats.fields.brand')} value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
@@ -861,12 +868,12 @@ export default function BoatDossierPage() {
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.boats.newOwner')}</label>
-              <select className="input-base w-full" value={transferForm.customer_id} onChange={(e) => setTransferForm({ ...transferForm, customer_id: e.target.value })} required>
+              <SearchSelect className="input-base w-full" value={transferForm.customer_id} onChange={(e) => setTransferForm({ ...transferForm, customer_id: e.target.value })} required>
                 <option value="">{t('adminNew.kassa.selectCustomer')}</option>
                 {(customers.data?.data ?? []).map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <Input label={t('adminNew.boats.transferReason')} value={transferForm.transfer_reason} onChange={(e) => setTransferForm({ ...transferForm, transfer_reason: e.target.value })} placeholder="sale" />
             <div>

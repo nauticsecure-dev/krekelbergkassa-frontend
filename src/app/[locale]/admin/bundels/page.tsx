@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { Layers, Minus, Package, Plus, Trash2 } from 'lucide-react';
@@ -316,7 +317,7 @@ export default function BundlesPage() {
                 <div className="space-y-2">
                   {form.items.map((it, idx) => (
                     <div key={idx} className="flex items-center gap-2">
-                      <select
+                      <SearchSelect
                         className="input-base flex-1"
                         value={it.product_id}
                         onChange={(e) => patchItem(idx, { product_id: e.target.value })}
@@ -326,7 +327,7 @@ export default function BundlesPage() {
                             {p.name}
                           </option>
                         ))}
-                      </select>
+                      </SearchSelect>
                       <div className="flex items-center gap-1">
                         <button
                           type="button"

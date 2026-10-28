@@ -38,23 +38,6 @@ export default function InvoicesPageWrapper() {
   );
 }
 
-function paymentStatusFor(invoice: {
-  outstanding_cents: number;
-  total_amount_cents: number;
-  due_date: string | null;
-  payment_status?: string | null;
-}) {
-  const outstanding = Number(invoice.outstanding_cents);
-  const total = Number(invoice.total_amount_cents);
-  if (total > 0 && outstanding <= 0) return 'paid';
-  const paid = total - outstanding;
-  if (paid > 0 && outstanding > 0) return 'partial';
-  const today = new Date().toLocaleDateString('sv-SE');
-  if (invoice.due_date && invoice.due_date.slice(0, 10) < today && outstanding > 0) return 'overdue';
-  if (invoice.payment_status === 'partially_paid') return 'partial';
-  return 'open';
-}
-
 function InvoicesPage() {
   const { locale, t } = useIntl();
   const pathname = usePathname();
@@ -62,8 +45,12 @@ function InvoicesPage() {
   const searchParams = useSearchParams();
   const dateLocale = intlLocale(locale);
   const search = searchParams.get('search') ?? '';
-  const status = searchParams.get('status') ?? '';
-  const paymentStatus = searchParams.get('payment_status') ?? '';
+  const legacyStatus = searchParams.get('status') ?? '';
+  const status = searchParams.get('invoice_status') ?? (['open', 'paid', 'partially_paid', 'overdue'].includes(legacyStatus) ? 'final' : legacyStatus === 'voided' ? 'cancelled' : legacyStatus);
+  const direction = searchParams.get('direction') ?? '';
+  const customerId = searchParams.get('customer_id') ?? '';
+  const rawPaymentStatus = searchParams.get('payment_status') ?? (['paid', 'partially_paid', 'overdue'].includes(legacyStatus) ? legacyStatus : '');
+  const paymentStatus = rawPaymentStatus === 'partially_paid' ? 'partial' : rawPaymentStatus;
   const source = searchParams.get('source') ?? '';
   const productGroup = searchParams.get('product_group') ?? '';
   const paymentMethod = searchParams.get('payment_method') ?? '';
@@ -91,11 +78,13 @@ function InvoicesPage() {
   );
 
   const invoices = useQuery(
-    [search, status, paymentStatus, source, productGroup, paymentMethod, dateFrom, dateTo, sortBy, sortDir, page],
+    [search, status, direction, customerId, paymentStatus, source, productGroup, paymentMethod, dateFrom, dateTo, sortBy, sortDir, page],
     () =>
       invoicesService.list({
         search: search || undefined,
-        status: status || undefined,
+        invoice_status: status || undefined,
+        direction: direction || undefined,
+        customer_id: customerId || undefined,
         payment_status: paymentStatus || undefined,
         source: source || undefined,
         product_group: productGroup || undefined,
@@ -111,7 +100,9 @@ function InvoicesPage() {
 
   const statFilters = {
     search: search || undefined,
-    status: status || undefined,
+    invoice_status: status || undefined,
+        direction: direction || undefined,
+        customer_id: customerId || undefined,
     source: source || undefined,
     product_group: productGroup || undefined,
     payment_method: paymentMethod || undefined,
@@ -128,10 +119,11 @@ function InvoicesPage() {
   const overdueCount = summary.data?.overdue_count;
   const paidCount = summary.data?.paid_count;
   const openBalance = summary.data?.open_balance_cents ?? 0;
-  const paymentFilterHref = (value: string) => {
+  const paymentFilterHref = (value: string, ledgerDirection?: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value) params.set('payment_status', value);
     else params.delete('payment_status');
+    if (ledgerDirection) params.set('direction', ledgerDirection);
     params.delete('page');
     return `/${locale}/admin/facturen${params.size ? `?${params.toString()}` : ''}`;
   };
@@ -183,9 +175,16 @@ function InvoicesPage() {
             label: t('adminNew.invoices.metrics.openBalance'),
             value: summary.error ? '—' : formatCurrency(openBalance / 100, dateLocale),
             tone: 'gold',
-            active: paymentStatus === 'open',
+            active: paymentStatus === 'outstanding',
             loading: summary.loading,
-            href: paymentFilterHref('open'),
+            href: paymentFilterHref('outstanding', 'sales'),
+          },
+          {
+            label: t('adminNew.invoices.payableBalance', { defaultValue: 'Te betalen leveranciers' }),
+            value: summary.error ? '—' : formatCurrency((summary.data?.payable_balance_cents ?? 0) / 100, dateLocale),
+            tone: 'navy',
+            loading: summary.loading,
+            href: paymentFilterHref('outstanding', 'purchase'),
           },
         ]}
       />
@@ -223,6 +222,7 @@ function InvoicesPage() {
             <div className="flex flex-wrap gap-2">
               {[
                 { value: '', label: t('adminNew.invoices.allPaymentStatuses') },
+                { value: 'outstanding', label: t('adminNew.invoices.metrics.openBalance') },
                 { value: 'open', label: t('adminNew.status.open') },
                 { value: 'partial', label: t('adminNew.status.partial', { defaultValue: 'Gedeeltelijk betaald' }) },
                 { value: 'overdue', label: t('adminNew.status.overdue') },
@@ -258,6 +258,7 @@ function InvoicesPage() {
             onChange={(value) => updateFilters({ payment_status: value || null, page: null })}
           >
             <option value="">{t('adminNew.invoices.allPaymentStatuses', { defaultValue: 'Alle betaalstatussen' })}</option>
+            <option value="outstanding">{t('adminNew.invoices.metrics.openBalance')}</option>
             <option value="open">{t('adminNew.status.open')}</option>
             <option value="partial">{t('adminNew.status.partial', { defaultValue: 'Gedeeltelijk betaald' })}</option>
             <option value="overdue">{t('adminNew.status.overdue')}</option>
@@ -266,13 +267,19 @@ function InvoicesPage() {
           <AdminSelect
             value={status}
             onChange={(value) => {
-              updateFilters({ status: value || null, page: null });
+              updateFilters({ invoice_status: value || null, status: null, page: null });
             }}
           >
             <option value="">{t('adminNew.invoices.invoiceStates', { defaultValue: 'Alle factuurstatussen' })}</option>
+            <option value="final">{t('adminNew.status.final', { defaultValue: 'Definitief' })}</option>
             <option value="draft">{t('adminNew.status.draft')}</option>
             <option value="credited">{t('adminNew.status.credited')}</option>
             <option value="cancelled">{t('adminNew.status.cancelled')}</option>
+          </AdminSelect>
+          <AdminSelect value={direction} onChange={(value) => updateFilters({ direction: value || null, page: null })}>
+            <option value="">{t('adminNew.invoices.allDirections', { defaultValue: 'Verkoop en inkoop' })}</option>
+            <option value="sales">{t('adminNew.invoices.sales', { defaultValue: 'Verkoop' })}</option>
+            <option value="purchase">{t('adminNew.invoices.purchase', { defaultValue: 'Inkoop' })}</option>
           </AdminSelect>
           <AdminSelect
             value={source}
@@ -407,15 +414,15 @@ function InvoicesPage() {
                   return (
                     <AdminTableRow key={invoice.id}>
                       <AdminTableCell>
-                        <div className="font-semibold text-navy-900">{invoice.invoice_number}</div>
+                        <div className="font-semibold text-navy-900">{invoice.direction === 'purchase' ? invoice.reference || invoice.invoice_number : invoice.invoice_number}</div>
                         <div className="text-xs text-navy-500">{formatDate(invoice.created_at, dateLocale)}</div>
                       </AdminTableCell>
                       <AdminTableCell>
-                        <div className="font-medium text-navy-900">{invoice.customer?.name ?? '—'}</div>
+                        <div className="font-medium text-navy-900">{invoice.supplier_name ?? invoice.customer?.name ?? String(invoice.customer_snapshot?.name ?? '—')}</div>
                         <div className="text-xs text-navy-500">{invoice.customer?.email ?? '—'}</div>
                       </AdminTableCell>
                       <AdminTableCell>
-                        <div className="capitalize">{invoice.source}</div>
+                        <div className="capitalize">{invoice.source}</div><div className="text-xs text-navy-500">{invoice.direction === 'purchase' ? t('adminNew.invoices.purchase', { defaultValue: 'Inkoop' }) : t('adminNew.invoices.sales', { defaultValue: 'Verkoop' })}</div>
                         {provenance ? (
                           <Link href={provenance.href} className="mt-1 block text-sm font-medium text-marine-700 hover:underline">
                             {t('adminNew.invoices.provenanceLabel', { defaultValue: 'Bron' })}: {provenance.label}
@@ -437,12 +444,10 @@ function InvoicesPage() {
                       <AdminTableCell>{firstMethod ?? '—'}</AdminTableCell>
                       <AdminTableCell>{formatDate(invoice.paid_at, dateLocale)}</AdminTableCell>
                       <AdminTableCell>
-                        <InvoiceStatusBadge status={invoice.status} />
+                        <InvoiceStatusBadge status={invoice.invoice_status ?? invoice.status} />
                       </AdminTableCell>
                       <AdminTableCell>
-                        <PaymentStatusBadge
-                          status={paymentStatusFor(invoice)}
-                        />
+                        {invoice.payment_status ? <><PaymentStatusBadge status={invoice.payment_status} />{invoice.is_overdue && invoice.payment_status === 'partial' ? <PaymentStatusBadge status="overdue" /> : null}</> : '—'}
                       </AdminTableCell>
                       <AdminTableCell className="text-right">
                         <AdminLinkButton href={`/${locale}/admin/facturen/${invoice.id}`}>

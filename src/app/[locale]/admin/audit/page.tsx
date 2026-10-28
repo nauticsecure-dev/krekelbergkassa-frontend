@@ -1,5 +1,6 @@
 'use client';
 
+import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -25,6 +26,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
 import { auditService } from '@/lib/services';
+import { JourneyPanel } from '@/components/admin/JourneyPanel';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { useIntl } from '@/i18n/IntlProvider';
 import { formatDateTime, intlLocale } from '@/lib/format';
@@ -137,6 +139,7 @@ function AuditPageContent() {
   const severity = searchParams.get('severity') ?? '';
   const dateFrom = searchParams.get('date_from') ?? '';
   const dateTo = searchParams.get('date_to') ?? '';
+  const groupId = searchParams.get('group_id') ?? '';
   const technical = searchParams.get('include_technical') === '1' || searchParams.get('technical') === '1';
   const page = Math.max(1, Number(searchParams.get('page') ?? 1) || 1);
   const [selectedLog, setSelectedLog] = React.useState<AuditLog | null>(null);
@@ -152,7 +155,7 @@ function AuditPageContent() {
   }, [pathname, router, searchParams]);
 
   const logs = useQuery(
-    [search, entityType, category, severity, dateFrom, dateTo, technical, page],
+    [search, entityType, category, severity, dateFrom, dateTo, technical, page, groupId],
     () => auditService.logs({
       search: search || undefined,
       entity_type: entityType || undefined,
@@ -161,6 +164,7 @@ function AuditPageContent() {
       date_from: dateFrom || undefined,
       date_to: dateTo || undefined,
       include_technical: technical,
+      group_id: groupId || undefined,
       page,
       per_page: 30,
     })
@@ -205,6 +209,7 @@ function AuditPageContent() {
       />
 
       <AdminContent>
+        <JourneyPanel />
         <AdminSectionCard
           title={t('adminNew.audit.title')}
           description={t('adminNew.audit.subtitle')}
@@ -222,7 +227,7 @@ function AuditPageContent() {
             >
               <option value="">{t('adminNew.audit.allCategories')}</option>
               {CATEGORY_KEYS.filter((item) => item !== 'technical' || technical).map((item) => (
-                <option key={item} value={item}>{t(`adminNew.audit.categories.${item}`)}</option>
+                <option key={item} value={item}>{tEnum(t, 'adminNew.audit.categories', item)}</option>
               ))}
             </AdminSelect>
             <AdminSelect
@@ -245,7 +250,7 @@ function AuditPageContent() {
             >
               <option value="">{t('adminNew.audit.allSeverities')}</option>
               {(['success', 'warning', 'error', 'critical', 'info'] as Severity[]).map((item) => (
-                <option key={item} value={item}>{t(`adminNew.audit.severity.${item}`)}</option>
+                <option key={item} value={item}>{tEnum(t, 'adminNew.audit.severity', item)}</option>
               ))}
             </AdminSelect>
             <label className="flex items-center gap-2 text-sm text-navy-700">
@@ -287,6 +292,14 @@ function AuditPageContent() {
             </p>
           ) : null}
 
+          {groupId ? (
+            <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
+              <span className="break-all">Request: {groupId}</span>
+              <Button variant="ghost" size="sm" onClick={() => updateFilters({ group_id: null, page: null })}>
+                {t('adminNew.common.clear')}
+              </Button>
+            </div>
+          ) : null}
           <div className="overflow-x-auto rounded-xl border border-navy-100">
             {logs.loading ? <div className="p-6"><LoadingState label={t('adminNew.audit.loading')} /></div> : null}
             {!logs.loading && logs.error ? (
@@ -327,10 +340,16 @@ function AuditPageContent() {
                           >
                             {log.title || log.action}
                           </button>
+                          {log.group_id && (log.group_size ?? 1) > 1 ? (
+                            <button type="button" className="ml-2 text-xs text-marine-700 hover:underline"
+                              onClick={() => updateFilters({ group_id: log.group_id ?? null, page: null })}>
+                              {t('adminNew.audit.events', { count: log.group_size ?? 1 })}
+                            </button>
+                          ) : null}
                           <p className="mt-1 max-w-lg text-xs text-navy-500">
                             {changes.length
                               ? t('adminNew.audit.changeSummary', { count: changes.length })
-                              : t(`adminNew.audit.categories.${categoryKey}`)}
+                              : tEnum(t, 'adminNew.audit.categories', categoryKey)}
                           </p>
                         </td>
                         <td className="px-4 py-3">
@@ -360,7 +379,7 @@ function AuditPageContent() {
                           <Badge tone={tone}>
                             <span className="inline-flex items-center gap-1">
                               <StateIcon className="h-3 w-3" />
-                              {t(`adminNew.audit.severity.${state}`)}
+                              {tEnum(t, 'adminNew.audit.severity', state)}
                             </span>
                           </Badge>
                         </td>
@@ -430,7 +449,7 @@ function AuditDetailsModal({
         <Badge tone={tone}>
           <span className="inline-flex items-center gap-1">
             <StateIcon className="h-3 w-3" />
-            {t(`adminNew.audit.severity.${severity}`)}
+            {tEnum(t, 'adminNew.audit.severity', severity)}
           </span>
         </Badge>
       </div>
@@ -471,8 +490,8 @@ function AuditDetailsModal({
         {changes.length ? (
           <div className="overflow-hidden rounded-lg border border-navy-100">
             {changes.map((change) => (
-              <div key={change.key} className="grid gap-2 border-b border-navy-100 p-3 last:border-0 sm:grid-cols-[1fr_1fr_auto_1fr]">
-                <strong className="capitalize text-navy-800">{change.key}</strong>
+              <div key={change.key} className="grid min-w-0 gap-2 border-b border-navy-100 p-3 last:border-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_minmax(0,1fr)]">
+                <strong className="break-all capitalize text-navy-800">{change.key}</strong>
                 <span className="break-all text-rose-700">{change.before}</span>
                 <span className="text-navy-400">→</span>
                 <span className="break-all text-emerald-700">{change.after}</span>
@@ -484,7 +503,7 @@ function AuditDetailsModal({
         )}
       </section>
 
-      <section className="mt-5">
+      {log.can_view_details !== false ? <section className="mt-5">
         <button
           type="button"
           onClick={() => setTechnicalOpen((open) => !open)}
@@ -507,7 +526,7 @@ function AuditDetailsModal({
             <TechnicalDetail label="Browser" value={log.user_agent} />
           </dl>
         ) : null}
-      </section>
+      </section> : null}
     </Modal>
   );
 }

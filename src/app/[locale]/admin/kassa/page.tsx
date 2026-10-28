@@ -1,4 +1,6 @@
 "use client";
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from "react";
 import Link from "next/link";
@@ -37,6 +39,7 @@ import * as LucideIcons from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import {
   AdminContent,
+  AdminSplitLayout,
   AdminModalBody,
   AdminModalFooter,
   AdminModalHeader,
@@ -63,6 +66,7 @@ import { formatCurrency, intlLocale } from "@/lib/format";
 import { productPriceExclEuros, productPriceInclEuros } from "@/lib/products";
 import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { usePermission } from '@/lib/permissions';
 import { useIntl } from "@/i18n/IntlProvider";
 import { useToast } from "@/components/ui/ToastProvider";
 import { getDeviceId } from "@/lib/device";
@@ -133,6 +137,10 @@ function categoryMeta(
 }
 
 export default function KassaPage() {
+  const { can } = usePermission();
+  const canCheckout = can('kassa.checkout');
+  const canRefund = can('kassa.refund');
+  const canWriteCustomer = can('customers.write');
   const { locale, t } = useIntl();
   const { push } = useToast();
   const localeTag =
@@ -844,6 +852,7 @@ export default function KassaPage() {
 
   const handleCreateCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWriteCustomer) return;
     try {
       const created = await createCustomer.mutate({
         name: newCustomer.name,
@@ -899,6 +908,7 @@ export default function KassaPage() {
   // Trello #72: QR flow uses a payment session (no invoice up front); the
   // webhook finalizes the invoice once Mollie confirms payment.
   const startQrSession = async () => {
+    if (!canCheckout) return;
     if (!cart.length) {
       push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
       return;
@@ -1010,6 +1020,7 @@ export default function KassaPage() {
   const handleCheckout = async (
     mode: "standard" | "split" | "qr" | "on_account" = "standard",
   ) => {
+    if (!canCheckout) return;
     if (mode === "qr") {
       await startQrSession();
       return;
@@ -1099,6 +1110,7 @@ export default function KassaPage() {
   };
 
   const handleQuote = async () => {
+    if (!canCheckout) return;
     if (!cart.length) {
       push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
       return;
@@ -1191,7 +1203,8 @@ export default function KassaPage() {
         ]}
       />
 
-      <AdminContent className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
+      <AdminContent>
+        <AdminSplitLayout sidebarWidth="25rem" breakpoint="xl" className="items-start">
         {/* Top bar: primary search + customer (Trello #62 layout) */}
         <div className="col-span-full space-y-3 rounded-2xl border border-marine-200/60 bg-gradient-to-br from-white to-sand-50/80 p-4 shadow-card">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
@@ -1228,7 +1241,7 @@ export default function KassaPage() {
                 </span>
                 <UserPlus className="h-4 w-4 text-marine-600" />
               </button>
-              <Button
+              <Button disabled={!canWriteCustomer}
                 variant="outline"
                 size="sm"
                 className="shrink-0 py-3"
@@ -1396,7 +1409,7 @@ export default function KassaPage() {
             </span>
             <label className="relative ml-auto inline-flex items-center">
               <ArrowDownUp className="pointer-events-none absolute left-3 h-4 w-4 text-navy-400" />
-              <select
+              <SearchSelect
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortKey)}
                 className="input-base cursor-pointer py-2 pl-9 pr-8 text-sm"
@@ -1412,7 +1425,7 @@ export default function KassaPage() {
                   {t("adminNew.kassa.sort.priceDesc")}
                 </option>
                 <option value="name">{t("adminNew.kassa.sort.name")}</option>
-              </select>
+              </SearchSelect>
             </label>
           </div>
 
@@ -1747,7 +1760,7 @@ export default function KassaPage() {
                             {formatCurrency(euros, localeTag)}
                           </span>
                           {sale.id ? (
-                            <button
+                            <button disabled={!canRefund}
                               type="button"
                               onClick={() => {
                                 setRefundSaleId(sale.id);
@@ -1941,7 +1954,7 @@ export default function KassaPage() {
               <ScanLine className="h-4 w-4 rotate-90 text-navy-300" />
             </button>
             <div className="mt-2 flex items-center gap-3 text-sm">
-              <button
+              <button disabled={!canWriteCustomer}
                 type="button"
                 onClick={() => setShowCustomerModal(true)}
                 className="inline-flex items-center gap-1.5 font-semibold text-marine-700 hover:text-marine-900"
@@ -1951,7 +1964,7 @@ export default function KassaPage() {
               </button>
               {customerId ? (
                 <Link
-                  href={`/${locale}/admin/klanten/${customerId}`}
+                  href={adminRecordHref(locale, 'klanten', selectedCustomer ?? { id: customerId })}
                   className="inline-flex items-center gap-1 font-semibold text-navy-500 hover:text-navy-800"
                 >
                   {t("adminNew.kassa.viewCustomer")}
@@ -2005,7 +2018,7 @@ export default function KassaPage() {
                 fullWidth
                 leftIcon={<QrCode className="h-4 w-4" />}
                 onClick={() => setCheckoutConfirm("qr")}
-                disabled={checkout.loading}
+                disabled={!canCheckout || (checkout.loading)}
               >
                 {t("adminNew.kassa.qrPayment")}
               </Button>
@@ -2014,7 +2027,7 @@ export default function KassaPage() {
                 size="sm"
                 fullWidth
                 onClick={handleQuote}
-                disabled={quote.loading}
+                disabled={!canCheckout || (quote.loading)}
               >
                 {quote.loading
                   ? t("adminNew.kassa.calculating")
@@ -2066,7 +2079,7 @@ export default function KassaPage() {
                 paymentMethod === "invoice" ? "on_account" : "standard",
               )
             }
-            disabled={checkout.loading || cart.length === 0}
+            disabled={!canCheckout || (checkout.loading || cart.length === 0)}
             className="flex w-full items-center justify-between rounded-2xl bg-marine-600 px-5 py-4 text-left font-semibold text-white shadow-elev transition hover:bg-marine-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="flex items-center gap-2 text-base">
@@ -2078,6 +2091,7 @@ export default function KassaPage() {
             <span className="text-xl font-bold">{money(totalCents)}</span>
           </button>
         </div>
+        </AdminSplitLayout>
       </AdminContent>
 
       {/* Mobile cart bar */}
@@ -2140,7 +2154,7 @@ export default function KassaPage() {
         <AdminModalBody>
           {splitPayments.map((row, idx) => (
             <div key={idx} className="grid grid-cols-2 gap-2">
-              <select
+              <SearchSelect
                 className="input-base"
                 value={row.method}
                 onChange={(e) =>
@@ -2157,7 +2171,7 @@ export default function KassaPage() {
                 <option value="creditcard">{t("adminNew.kassa.payment.creditcard")}</option>
                 <option value="bancontact">Bancontact</option>
                 <option value="banktransfer">{t("adminNew.kassa.payment.banktransfer")}</option>
-              </select>
+              </SearchSelect>
               <Input
                 type="number"
                 step="0.01"
@@ -2178,7 +2192,7 @@ export default function KassaPage() {
           <Button variant="ghost" onClick={() => setShowSplitModal(false)}>
             {t("adminNew.common.cancel")}
           </Button>
-          <Button variant="gold" onClick={() => setCheckoutConfirm("split")}>
+          <Button disabled={!canCheckout} variant="gold" onClick={() => setCheckoutConfirm("split")}>
             {t("adminNew.kassa.checkout")}
           </Button>
         </AdminModalFooter>
@@ -2685,7 +2699,7 @@ export default function KassaPage() {
               />
             </AdminModalBody>
             <AdminModalFooter>
-              <Button type="button" variant="ghost" onClick={() => setEditingCustomerId(null)}>
+              <Button disabled={!canWriteCustomer} type="button" variant="ghost" onClick={() => setEditingCustomerId(null)}>
                 {t("adminNew.common.cancel")}
               </Button>
               <Button type="submit" variant="primary" disabled={updateCustomer.loading}>
@@ -2740,7 +2754,7 @@ export default function KassaPage() {
                         {c.phone ? ` · ${c.phone}` : ""}
                       </span>
                     </button>
-                    <button
+                    <button disabled={!canWriteCustomer}
                       type="button"
                       title={t("adminNew.common.edit")}
                       onClick={() => {
@@ -2777,7 +2791,7 @@ export default function KassaPage() {
                   {t("adminNew.kassa.allCustomers")}
                 </Button>
               </Link>
-              <Button
+              <Button disabled={!canWriteCustomer}
                 type="button"
                 variant="outline"
                 leftIcon={<Plus className="h-4 w-4" />}
@@ -2794,7 +2808,7 @@ export default function KassaPage() {
       </Modal>
 
       <AdminConfirmModal
-        open={!!checkoutConfirm}
+        open={canCheckout && !!checkoutConfirm}
         onClose={() => setCheckoutConfirm(null)}
         onConfirm={async () => {
           if (!checkoutConfirm) return;
@@ -2814,12 +2828,12 @@ export default function KassaPage() {
         loading={checkout.loading}
       />
 
-      <Modal open={!!refundSaleId} onClose={() => setRefundSaleId(null)} size="sm">
+      <Modal open={canRefund && !!refundSaleId} onClose={() => setRefundSaleId(null)} size="sm">
         <form
           className="p-6"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!refundSaleId) return;
+            if (!canRefund || !refundSaleId) return;
             void (async () => {
               try {
                 await refundSaleMutation.mutate({ id: refundSaleId, reason: refundReason, method: refundMethod });
@@ -2852,7 +2866,7 @@ export default function KassaPage() {
                         : 'border-navy-200 bg-white text-navy-700 hover:bg-sand-50')
                     }
                   >
-                    {t(`adminNew.invoiceDetail.paymentMethods.${m}`)}
+                    {tEnum(t, 'adminNew.invoiceDetail.paymentMethods', m)}
                   </button>
                 ))}
               </div>
@@ -2871,7 +2885,7 @@ export default function KassaPage() {
             </div>
           </div>
           <div className="mt-5 flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setRefundSaleId(null)}>
+            <Button disabled={!canRefund} type="button" variant="ghost" onClick={() => setRefundSaleId(null)}>
               {t('adminNew.common.cancel')}
             </Button>
             <Button

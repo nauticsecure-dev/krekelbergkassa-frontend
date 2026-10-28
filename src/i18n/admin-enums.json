@@ -1,0 +1,405 @@
+{
+  "taskStatuses": {
+    "open": "adminNew.tasks.statusOpen",
+    "in_progress": "adminNew.tasks.statusInProgress",
+    "done": "adminNew.tasks.statusDone",
+    "cancelled": "adminNew.tasks.statusCancelled"
+  },
+  "appointmentStatuses": {
+    "adminNew.appointments.statusPending": "adminNew.appointments.statusPending",
+    "adminNew.appointments.statusConfirmed": "adminNew.appointments.statusConfirmed",
+    "adminNew.appointments.statusPlanned": "adminNew.appointments.statusPlanned",
+    "adminNew.appointments.statusStarted": "adminNew.appointments.statusStarted",
+    "adminNew.appointments.statusCompleted": "adminNew.appointments.statusCompleted",
+    "adminNew.appointments.statusCancelled": "adminNew.appointments.statusCancelled",
+    "adminNew.appointments.columns.status": "adminNew.appointments.columns.status"
+  },
+  "adminNew.credentials.environments": {
+    "production": "adminNew.credentials.environments.production",
+    "staging": "adminNew.credentials.environments.staging",
+    "development": "adminNew.credentials.environments.development"
+  },
+  "adminNew.audit.categories": {
+    "finance": "adminNew.audit.categories.finance",
+    "cash": "adminNew.audit.categories.cash",
+    "customers": "adminNew.audit.categories.customers",
+    "boats": "adminNew.audit.categories.boats",
+    "storage": "adminNew.audit.categories.storage",
+    "planning": "adminNew.audit.categories.planning",
+    "brokerage": "adminNew.audit.categories.brokerage",
+    "settings": "adminNew.audit.categories.settings",
+    "integrations": "adminNew.audit.categories.integrations",
+    "security": "adminNew.audit.categories.security",
+    "system": "adminNew.audit.categories.system",
+    "technical": "adminNew.audit.categories.technical"
+  },
+  "adminNew.audit.severity": {
+    "info": "adminNew.audit.severity.info",
+    "success": "adminNew.audit.severity.success",
+    "warning": "adminNew.audit.severity.warning",
+    "error": "adminNew.audit.severity.error",
+    "critical": "adminNew.audit.severity.critical"
+  },
+  "adminNew.security.status": {
+    "ok": "adminNew.security.status.ok",
+    "warning": "adminNew.security.status.warning",
+    "critical": "adminNew.security.status.critical"
+  },
+  "adminNew.security.panels": {
+    "failedLogins24h": "adminNew.security.panels.failedLogins24h",
+    "failedLogins1h": "adminNew.security.panels.failedLogins1h",
+    "lockedUsers": "adminNew.security.panels.lockedUsers",
+    "suspiciousIps": "adminNew.security.panels.suspiciousIps",
+    "apiActionFailures1h": "adminNew.security.panels.apiActionFailures1h",
+    "criticalQueueFailures24h": "adminNew.security.panels.criticalQueueFailures24h",
+    "adminsWithoutMfa": "adminNew.security.panels.adminsWithoutMfa",
+    "credentialsExpiring7d": "adminNew.security.panels.credentialsExpiring7d"
+  },
+  "adminNew.status": {
+    "paid": "adminNew.status.paid",
+    "overdue": "adminNew.status.overdue",
+    "partial": "adminNew.status.partial",
+    "final": "adminNew.status.final",
+    "credited": "adminNew.status.credited",
+    "cancelled": "adminNew.status.cancelled",
+    "draft": "adminNew.status.draft",
+    "open": "adminNew.status.open",
+    "failed": "adminNew.status.failed",
+    "expiring": "adminNew.status.expiring",
+    "checkedOut": "adminNew.status.checkedOut"
+  },
+  "adminNew.boats.photoFolders": {
+    "arrival": "adminNew.boats.photoFolders.arrival",
+    "inspection": "adminNew.boats.photoFolders.inspection",
+    "maintenance": "adminNew.boats.photoFolders.maintenance",
+    "damage": "adminNew.boats.photoFolders.damage",
+    "departure": "adminNew.boats.photoFolders.departure"
+  },
+  "adminNew.boats.docCategories": {
+    "insurance": "adminNew.boats.docCategories.insurance",
+    "registration": "adminNew.boats.docCategories.registration",
+    "ce_certificate": "adminNew.boats.docCategories.ce_certificate",
+    "purchase_agreement": "adminNew.boats.docCategories.purchase_agreement",
+    "survey": "adminNew.boats.docCategories.survey",
+    "other": "adminNew.boats.docCategories.other"
+  },
+  "adminNew.calculator.servicesMap": {
+    "afspuiten": "adminNew.calculator.servicesMap.afspuiten",
+    "kranen": "adminNew.calculator.servicesMap.kranen",
+    "stalling": "adminNew.calculator.servicesMap.stalling",
+    "hal": "adminNew.calculator.servicesMap.hal"
+  },
+  "adminNew.invoiceDetail.creditModal": {
+    "title": "adminNew.invoiceDetail.creditModal.title",
+    "subtitle": "adminNew.invoiceDetail.creditModal.subtitle",
+    "scope": "adminNew.invoiceDetail.creditModal.scope",
+    "full": "adminNew.invoiceDetail.creditModal.full",
+    "partial": "adminNew.invoiceDetail.creditModal.partial",
+    "amount": "adminNew.invoiceDetail.creditModal.amount",
+    "reason": "adminNew.invoiceDetail.creditModal.reason",
+    "reasonPlaceholder": "adminNew.invoiceDetail.creditModal.reasonPlaceholder",
+    "confirm": "adminNew.invoiceDetail.creditModal.confirm",
+    "sendEmail": "adminNew.invoiceDetail.creditModal.sendEmail"
+  },
+  "adminNew.incidents.statuses": {
+    "open": "adminNew.incidents.statuses.open",
+    "investigating": "adminNew.incidents.statuses.investigating",
+    "identified": "adminNew.incidents.statuses.identified",
+    "monitoring": "adminNew.incidents.statuses.monitoring",
+    "resolved": "adminNew.incidents.statuses.resolved"
+  },
+  "adminNew.incidents.severities": {
+    "low": "adminNew.incidents.severities.low",
+    "medium": "adminNew.incidents.severities.medium",
+    "high": "adminNew.incidents.severities.high",
+    "critical": "adminNew.incidents.severities.critical"
+  },
+  "adminNew.invoiceDetail.paymentMethods": {
+    "cash": "adminNew.invoiceDetail.paymentMethods.cash",
+    "pin": "adminNew.invoiceDetail.paymentMethods.pin",
+    "banktransfer": "adminNew.invoiceDetail.paymentMethods.banktransfer",
+    "manual": "adminNew.invoiceDetail.paymentMethods.manual"
+  },
+  "adminNew.customerDetail.health.labels": {
+    "excellent": "adminNew.customerDetail.health.labels.excellent",
+    "good": "adminNew.customerDetail.health.labels.good",
+    "fair": "adminNew.customerDetail.health.labels.fair",
+    "poor": "adminNew.customerDetail.health.labels.poor",
+    "at_risk": "adminNew.customerDetail.health.labels.at_risk",
+    "critical": "adminNew.customerDetail.health.labels.critical"
+  },
+  "adminNew.products.categories": {
+    "stalling": "adminNew.products.categories.stalling",
+    "repair": "adminNew.products.categories.repair",
+    "retail": "adminNew.products.categories.retail",
+    "other": "adminNew.products.categories.other"
+  },
+  "adminNew.reports.presets": {
+    "today": "adminNew.reports.presets.today",
+    "yesterday": "adminNew.reports.presets.yesterday",
+    "last_7_days": "adminNew.reports.presets.last_7_days",
+    "last_30_days": "adminNew.reports.presets.last_30_days",
+    "this_month": "adminNew.reports.presets.this_month",
+    "previous_month": "adminNew.reports.presets.previous_month",
+    "q1": "adminNew.reports.presets.q1",
+    "q2": "adminNew.reports.presets.q2",
+    "q3": "adminNew.reports.presets.q3",
+    "q4": "adminNew.reports.presets.q4",
+    "this_year": "adminNew.reports.presets.this_year",
+    "previous_year": "adminNew.reports.presets.previous_year"
+  },
+  "adminNew.reminders.entityLabels": {
+    "storage_contract": "adminNew.reminders.entityLabels.storage_contract",
+    "invoice": "adminNew.reminders.entityLabels.invoice",
+    "work_order": "adminNew.reminders.entityLabels.work_order",
+    "insurance": "adminNew.reminders.entityLabels.insurance",
+    "planning": "adminNew.reminders.entityLabels.planning"
+  },
+  "adminNew.reminders.triggerLabels": {
+    "overdue_after": "adminNew.reminders.triggerLabels.overdue_after",
+    "due_before": "adminNew.reminders.triggerLabels.due_before",
+    "expires_before": "adminNew.reminders.triggerLabels.expires_before",
+    "inactive_after": "adminNew.reminders.triggerLabels.inactive_after"
+  },
+  "adminNew.stalling.invoiceLabels": {
+    "deposit": "adminNew.stalling.invoiceLabels.deposit",
+    "final": "adminNew.stalling.invoiceLabels.final",
+    "brokerage": "adminNew.stalling.invoiceLabels.brokerage",
+    "invoice": "adminNew.stalling.invoiceLabels.invoice"
+  },
+  "adminNew.stalling.type": {
+    "winter": "adminNew.stalling.type.winter",
+    "summer": "adminNew.stalling.type.summer",
+    "year": "adminNew.stalling.type.year",
+    "week": "adminNew.stalling.type.week"
+  },
+  "adminNew.system.toasts": {
+    "actionDone": "adminNew.system.toasts.actionDone",
+    "conflictResolved": "adminNew.system.toasts.conflictResolved",
+    "customersMerged": "adminNew.system.toasts.customersMerged"
+  },
+  "adminNew.backups.status": {
+    "completed": "adminNew.backups.status.completed",
+    "success": "adminNew.backups.status.success",
+    "running": "adminNew.backups.status.running",
+    "failed": "adminNew.backups.status.failed",
+    "pending": "adminNew.backups.status.pending",
+    "unknown": "adminNew.backups.status.unknown"
+  },
+  "adminNew.system.status": {
+    "healthy": "adminNew.system.status.healthy",
+    "degraded": "adminNew.system.status.degraded",
+    "error": "adminNew.system.status.error",
+    "unknown": "adminNew.system.status.unknown",
+    "conflict": "adminNew.system.status.conflict",
+    "latency": "adminNew.system.status.latency"
+  },
+  "adminNew.timeline.presets": {
+    "all": "adminNew.timeline.presets.all",
+    "myTasks": "adminNew.timeline.presets.myTasks",
+    "finance": "adminNew.timeline.presets.finance",
+    "storage": "adminNew.timeline.presets.storage",
+    "planning": "adminNew.timeline.presets.planning"
+  },
+  "adminNew.timeline.datePresets": {
+    "today": "adminNew.timeline.datePresets.today",
+    "yesterday": "adminNew.timeline.datePresets.yesterday",
+    "last7": "adminNew.timeline.datePresets.last7",
+    "thisMonth": "adminNew.timeline.datePresets.thisMonth"
+  },
+  "adminNew.workOrders.types": {
+    "maintenance": "adminNew.workOrders.types.maintenance",
+    "repair": "adminNew.workOrders.types.repair",
+    "inspection": "adminNew.workOrders.types.inspection",
+    "winterizing": "adminNew.workOrders.types.winterizing",
+    "cleaning": "adminNew.workOrders.types.cleaning",
+    "antifouling": "adminNew.workOrders.types.antifouling",
+    "engine": "adminNew.workOrders.types.engine",
+    "electrical": "adminNew.workOrders.types.electrical",
+    "rigging": "adminNew.workOrders.types.rigging",
+    "hull": "adminNew.workOrders.types.hull",
+    "warranty": "adminNew.workOrders.types.warranty",
+    "other": "adminNew.workOrders.types.other"
+  },
+  "adminNew.workOrders.photoFolders": {
+    "before": "adminNew.workOrders.photoFolders.before",
+    "during": "adminNew.workOrders.photoFolders.during",
+    "after": "adminNew.workOrders.photoFolders.after",
+    "damage": "adminNew.workOrders.photoFolders.damage",
+    "inspection": "adminNew.workOrders.photoFolders.inspection"
+  },
+  "adminNew.search.sections": {
+    "customers": "adminNew.search.sections.customers",
+    "boats": "adminNew.search.sections.boats",
+    "invoices": "adminNew.search.sections.invoices",
+    "products": "adminNew.search.sections.products",
+    "stalling": "adminNew.search.sections.stalling",
+    "calculator_records": "adminNew.search.sections.calculator_records"
+  },
+  "adminModules.create": {
+    "customer": "adminModules.create.customer",
+    "boat": "adminModules.create.boat",
+    "appointment": "adminModules.create.appointment",
+    "stalling": "adminModules.create.stalling",
+    "invoice": "adminModules.create.invoice",
+    "brokerage": "adminModules.create.brokerage",
+    "supplier": "adminModules.create.supplier",
+    "service": "adminModules.create.service"
+  },
+  "planning": {
+    "badge": "planning.badge",
+    "titleStaff": "planning.titleStaff",
+    "titleCustomer": "planning.titleCustomer",
+    "subtitleStaff": "planning.subtitleStaff",
+    "subtitleCustomer": "planning.subtitleCustomer",
+    "thisWeek": "planning.thisWeek",
+    "loading": "planning.loading",
+    "prevWeek": "planning.prevWeek",
+    "nextWeek": "planning.nextWeek",
+    "today": "planning.today",
+    "newAppointment": "planning.newAppointment",
+    "realtimeStaff": "planning.realtimeStaff",
+    "realtimeCustomer": "planning.realtimeCustomer",
+    "rescheduled": "planning.rescheduled",
+    "dragHint": "planning.dragHint",
+    "appointment": "planning.appointment",
+    "confirm": "planning.confirm",
+    "markComplete": "planning.markComplete",
+    "cancel": "planning.cancel",
+    "cancelConfirm": "planning.cancelConfirm",
+    "cancelReason": "planning.cancelReason",
+    "confirmed": "planning.confirmed",
+    "completed": "planning.completed",
+    "cancelled": "planning.cancelled",
+    "actionFailed": "planning.actionFailed",
+    "customerHint": "planning.customerHint",
+    "statToday": "planning.statToday",
+    "statTomorrow": "planning.statTomorrow",
+    "statPending": "planning.statPending",
+    "statCompletedWeek": "planning.statCompletedWeek",
+    "filterAllEmployees": "planning.filterAllEmployees",
+    "filterAllServices": "planning.filterAllServices",
+    "serviceCrane": "planning.serviceCrane",
+    "serviceWash": "planning.serviceWash",
+    "serviceStorage": "planning.serviceStorage",
+    "serviceWinter": "planning.serviceWinter",
+    "viewWeek": "planning.viewWeek",
+    "viewMonth": "planning.viewMonth",
+    "viewDay": "planning.viewDay",
+    "viewAgenda": "planning.viewAgenda",
+    "agendaEmpty": "planning.agendaEmpty",
+    "createAppointment": "planning.createAppointment",
+    "createTitle": "planning.createTitle",
+    "createSubtitle": "planning.createSubtitle",
+    "createConfirm": "planning.createConfirm",
+    "created": "planning.created",
+    "checking": "planning.checking",
+    "fieldCustomer": "planning.fieldCustomer",
+    "fieldBoat": "planning.fieldBoat",
+    "fieldService": "planning.fieldService",
+    "fieldLocation": "planning.fieldLocation",
+    "fieldDate": "planning.fieldDate",
+    "fieldStartTime": "planning.fieldStartTime",
+    "fieldDuration": "planning.fieldDuration",
+    "fieldAssignee": "planning.fieldAssignee",
+    "unassigned": "planning.unassigned",
+    "selectPlaceholder": "planning.selectPlaceholder",
+    "conflictTitle": "planning.conflictTitle",
+    "conflictConfirmAnyway": "planning.conflictConfirmAnyway",
+    "selectMode": "planning.selectMode",
+    "exitSelect": "planning.exitSelect",
+    "export": "planning.export",
+    "bulkSelected": "planning.bulkSelected",
+    "bulkAssign": "planning.bulkAssign",
+    "bulkAssignPlaceholder": "planning.bulkAssignPlaceholder",
+    "bulkSetStatus": "planning.bulkSetStatus",
+    "bulkStatusPlaceholder": "planning.bulkStatusPlaceholder",
+    "bulkCancel": "planning.bulkCancel",
+    "bulkClear": "planning.bulkClear",
+    "bulkDone": "planning.bulkDone",
+    "statusConfirmed": "planning.statusConfirmed",
+    "statusCompleted": "planning.statusCompleted"
+  },
+  "adminNew.calendar.days": {
+    "0": "adminNew.calendar.days.0",
+    "1": "adminNew.calendar.days.1",
+    "2": "adminNew.calendar.days.2",
+    "3": "adminNew.calendar.days.3",
+    "4": "adminNew.calendar.days.4",
+    "5": "adminNew.calendar.days.5",
+    "6": "adminNew.calendar.days.6"
+  },
+  "adminNew.templates.fields": {
+    "invoice_number": "adminNew.templates.fields.invoice_number",
+    "invoice_date": "adminNew.templates.fields.invoice_date",
+    "due_date": "adminNew.templates.fields.due_date",
+    "supplier": "adminNew.templates.fields.supplier",
+    "subtotal": "adminNew.templates.fields.subtotal",
+    "vat": "adminNew.templates.fields.vat",
+    "total": "adminNew.templates.fields.total",
+    "iban": "adminNew.templates.fields.iban",
+    "line_items": "adminNew.templates.fields.line_items"
+  },
+  "journey.events": {
+    "api_failed": "journey.events.api_failed",
+    "api_succeeded": "journey.events.api_succeeded",
+    "page_view": "journey.events.page_view",
+    "booking_form_started": "journey.events.booking_form_started",
+    "booking_field_changed": "journey.events.booking_field_changed",
+    "booking_service_selected": "journey.events.booking_service_selected",
+    "booking_date_selected": "journey.events.booking_date_selected",
+    "booking_time_selected": "journey.events.booking_time_selected",
+    "booking_photos_selected": "journey.events.booking_photos_selected",
+    "booking_submit_clicked": "journey.events.booking_submit_clicked",
+    "booking_submit_blocked": "journey.events.booking_submit_blocked",
+    "booking_failed": "journey.events.booking_failed",
+    "booking_succeeded": "journey.events.booking_succeeded",
+    "frontend_error_shown": "journey.events.frontend_error_shown",
+    "photo_upload_started": "journey.events.photo_upload_started",
+    "photo_upload_failed": "journey.events.photo_upload_failed",
+    "photo_upload_succeeded": "journey.events.photo_upload_succeeded",
+    "booking_left": "journey.events.booking_left",
+    "identity_verified": "journey.events.identity_verified",
+    "appointment_created": "journey.events.appointment_created",
+    "api_requested": "journey.events.api_requested"
+  },
+  "journey.intents": {
+    "all": "journey.intents.all",
+    "crane_booking": "journey.intents.crane_booking",
+    "sell_boat": "journey.intents.sell_boat",
+    "winter_storage": "journey.intents.winter_storage",
+    "buy_boat": "journey.intents.buy_boat"
+  },
+  "journey.confidence": {
+    "low": "journey.confidence.low",
+    "medium": "journey.confidence.medium",
+    "high": "journey.confidence.high"
+  },
+  "journey.stages": {
+    "visited": "journey.stages.visited",
+    "started": "journey.stages.started",
+    "service_selected": "journey.stages.service_selected",
+    "photos_selected": "journey.stages.photos_selected",
+    "submitted": "journey.stages.submitted",
+    "created": "journey.stages.created"
+  },
+  "journey.outcomes": {
+    "created": "journey.outcomes.created",
+    "failed": "journey.outcomes.failed",
+    "blocked": "journey.outcomes.blocked",
+    "pending": "journey.outcomes.pending"
+  },
+  "adminNew.kassa.analytics.periods": {
+    "today": "adminNew.kassa.analytics.periods.today",
+    "7d": "adminNew.kassa.analytics.periods.7d",
+    "30d": "adminNew.kassa.analytics.periods.30d",
+    "month": "adminNew.kassa.analytics.periods.month"
+  },
+  "settingsHub.integrations": {
+    "email": "settingsHub.integrations.email",
+    "mailbox": "settingsHub.integrations.mailbox",
+    "ocr": "settingsHub.integrations.ocr",
+    "whatsapp": "settingsHub.integrations.whatsapp",
+    "signhost": "settingsHub.integrations.signhost"
+  }
+}

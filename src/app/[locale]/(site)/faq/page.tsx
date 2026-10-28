@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import * as React from "react";
 import Link from "next/link";
@@ -118,10 +119,10 @@ export default function FaqPage() {
               Klantenservice
             </Badge>
             <h1 className="heading-display text-4xl text-white sm:text-5xl">
-              {t("faq.title")}
+              <TranslatedText textKey={"faq.title"} />
             </h1>
             <p className="mt-4 max-w-xl text-sand-100/85">
-              {t("faq.subtitle")}
+              <TranslatedText textKey={"faq.subtitle"} />
             </p>
             <div className="mt-6 max-w-md">
               <Input
@@ -152,7 +153,7 @@ export default function FaqPage() {
         <aside className="space-y-4">
           <Card className="p-5">
             <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-navy-400">
-              {t("faq.categories")}
+              <TranslatedText textKey={"faq.categories"} />
             </div>
             <ul className="space-y-1">
               {CATEGORIES.map((c) => {
@@ -197,9 +198,9 @@ export default function FaqPage() {
           <Card className="overflow-hidden bg-marine-500 text-white">
             <div className="p-5">
               <div className="text-xs font-semibold uppercase tracking-widest text-marine-100">
-                {t("faq.helpTitle")}
+                <TranslatedText textKey={"faq.helpTitle"} />
               </div>
-              <p className="mt-2 text-sm text-marine-50">{t("faq.helpDesc")}</p>
+              <p className="mt-2 text-sm text-marine-50"><TranslatedText textKey={"faq.helpDesc"} /></p>
               <div className="mt-4 space-y-2 text-sm">
                 <a
                   href={companyInfo.phoneHref}
@@ -221,7 +222,7 @@ export default function FaqPage() {
                   fullWidth
                   rightIcon={<ArrowRight className="h-4 w-4" />}
                 >
-                  {t("faq.contactBtn")}
+                  <TranslatedText textKey={"faq.contactBtn"} />
                 </Button>
               </Link>
             </div>
@@ -291,10 +292,10 @@ export default function FaqPage() {
         <div className="grid items-center gap-6 rounded-2xl bg-navy-900 px-8 py-10 text-white sm:px-12 lg:grid-cols-[1.5fr_1fr]">
           <div>
             <h3 className="heading-display text-2xl text-white sm:text-3xl">
-              {t("faq.readyTitle")}
+              <TranslatedText textKey={"faq.readyTitle"} />
             </h3>
             <p className="mt-2 max-w-xl text-sand-100/80">
-              {t("faq.readyDesc")}
+              <TranslatedText textKey={"faq.readyDesc"} />
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href={`/${locale}/contact`}>
@@ -303,15 +304,15 @@ export default function FaqPage() {
                   size="lg"
                   rightIcon={<ArrowRight className="h-4 w-4" />}
                 >
-                  {t("faq.contactBtn")}
+                  <TranslatedText textKey={"faq.contactBtn"} />
                 </Button>
               </Link>
             </div>
           </div>
           <div className="grid gap-3 text-sm">
-            <Row icon={Phone}>{t("footer.phone")}</Row>
+            <Row icon={Phone}><TranslatedText textKey={"footer.phone"} /></Row>
             <Row icon={Mail}>info@krekelberg-nautic.nl</Row>
-            <Row icon={MapPin}>{t("footer.address")}</Row>
+            <Row icon={MapPin}><TranslatedText textKey={"footer.address"} /></Row>
           </div>
         </div>
       </section>

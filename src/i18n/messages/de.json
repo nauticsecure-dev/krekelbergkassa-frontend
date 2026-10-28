@@ -1,4 +1,21 @@
 {
+  "contactSubjects": {
+    "title": "Kontaktbetreffs",
+    "description": "Betreffs, Übersetzungen und E-Mail-Empfänger des Kontaktformulars verwalten.",
+    "key": "Schlüssel",
+    "category": "Kategorie",
+    "label": "Bezeichnung",
+    "recipient": "Empfänger",
+    "fallback": "Leer: Standardkontaktadresse verwenden (Firmeneinstellungen oder explizite Überschreibung).",
+    "order": "Reihenfolge",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "add": "Neuer Betreff",
+    "save": "Speichern",
+    "saving": "Wird gespeichert…",
+    "saved": "Betreff gespeichert.",
+    "retry": "Erneut versuchen"
+  },
   "adminModules": {
     "overview": {
       "todayAppointments": "Termine heute",
@@ -52,7 +69,7 @@
         "quickActions": "Schnellaktionen",
         "crane": "Krantermin",
         "craneDesc": "Kran-Buchungsseite öffnen.",
-        "tabCalendar": "Kalender",
+        "tabCalendar": "Verfügbarkeit & Öffnungszeiten",
         "tabAppointments": "Termine",
         "tabToday": "Heute",
         "tabWeek": "Woche",
@@ -409,7 +426,7 @@
     "heroBadge": "Yachtmakler · Lagerung · DIY-Werft",
     "heroTitle": "Jachtwerft & Yachtmakler in Roermond",
     "heroSubtitle": "Von Kran und Lagerung bis Verkaufsvermittlung und Selbstwartung – Krekelberg Nautic bietet alles für Ihr Schiff an einem professionellen Standort an den Maasplassen.",
-    "heroPrimary": "Krantermin buchen",
+    "heroPrimary": "Verkaufen Sie Ihr Boot",
     "heroSecondary": "Werftleistungen ansehen",
     "ctaCrane": "Krantermin planen",
     "ctaListings": "Bootsangebot ansehen",
@@ -559,7 +576,82 @@
     "copyright": "© {year} Krekelberg Nautic — Alle Rechte vorbehalten.",
     "address": "Hertenerweg 2, 6049AA Herten",
     "phone": "0475 315 661",
-    "email": "info@krekelberg-nautic.nl"
+    "email": "marketing@answer24.nl"
+  },
+  "journey": {
+    "page": "Seite",
+    "eventType": "Ereignistyp",
+    "likelyIntent": "Wahrscheinliche Absicht",
+    "confidence": {
+      "low": "Geringe Sicherheit",
+      "medium": "Mittlere Sicherheit",
+      "high": "Hohe Sicherheit"
+    },
+    "title": "Aktivität / Kundenreise",
+    "description": "Öffentliche Kundenreisen, API-Ergebnisse und bestätigte Termine.",
+    "search": "Name, Seite oder Anfrage",
+    "intent": "Absicht",
+    "endpoint": "API-Endpunkt",
+    "status": "Minimaler HTTP-Status",
+    "from": "Von",
+    "to": "Bis",
+    "errorsOnly": "Nur Fehler",
+    "abandonedOnly": "Abgebrochene Formulare",
+    "loading": "Kundenreise wird geladen…",
+    "retry": "Erneut versuchen",
+    "lost": "Möglicherweise verlorene Chancen",
+    "failedRequests": "fehlgeschlagene Anfragen",
+    "abandonedSessions": "abgebrochene Sitzungen",
+    "abandonmentRule": "Abgebrochen: Formular gestartet, kein späterer Termin und 30 Minuten ohne Aktivität. Zahlen können sich überschneiden.",
+    "sessionCounts": "Eindeutige Sitzungen pro Schritt; Konversion vom Seitenbesuch zum Termin:",
+    "clearRequest": "Gesamte Kundenreise anzeigen",
+    "silent": "Möglicher unbemerkter Fehler",
+    "activity": "Aktivität",
+    "empty": "Keine Ereignisse für diese Filter.",
+    "intents": {
+      "all": "Alle Absichten",
+      "crane_booking": "Krantermin",
+      "sell_boat": "Boot verkaufen",
+      "winter_storage": "Winterlager",
+      "buy_boat": "Boot kaufen"
+    },
+    "stages": {
+      "visited": "Buchungsseite besucht",
+      "started": "Formular gestartet",
+      "service_selected": "Leistung gewählt",
+      "photos_selected": "Fotos gewählt",
+      "submitted": "Eingereicht",
+      "created": "Termin erstellt"
+    },
+    "outcomes": {
+      "created": "Termin erstellt",
+      "failed": "Anfrage fehlgeschlagen",
+      "blocked": "Einreichen blockiert",
+      "pending": "Noch kein bestätigtes Ergebnis"
+    },
+    "events": {
+      "api_failed": "API-Anfrage fehlgeschlagen",
+      "api_succeeded": "API-Anfrage erfolgreich",
+      "page_view": "Seite geöffnet",
+      "booking_form_started": "Buchungsformular gestartet",
+      "booking_field_changed": "Formularfeld geändert",
+      "booking_service_selected": "Leistungsauswahl geändert",
+      "booking_date_selected": "Datum gewählt",
+      "booking_time_selected": "Uhrzeit gewählt",
+      "booking_photos_selected": "Fotos gewählt",
+      "booking_submit_clicked": "Buchung eingereicht",
+      "booking_submit_blocked": "Buchung durch Validierung blockiert",
+      "booking_failed": "Buchung fehlgeschlagen",
+      "booking_succeeded": "Buchung empfangen",
+      "frontend_error_shown": "Fehler dem Kunden angezeigt",
+      "photo_upload_started": "Foto-Upload gestartet",
+      "photo_upload_failed": "Foto-Upload fehlgeschlagen",
+      "photo_upload_succeeded": "Fotos hochgeladen",
+      "booking_left": "Buchungsseite verlassen",
+      "identity_verified": "Identität bestätigt",
+      "appointment_created": "Termin erstellt",
+      "api_requested": "API-Anfrage gestartet"
+    }
   },
   "crane": {
     "title": "Krantermin online buchen",
@@ -585,6 +677,8 @@
     "catalogUnavailable": "Leistungen und Preise konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
     "noBookableServices": "Derzeit sind keine Leistungen online buchbar.",
     "submit": "Termin anfragen",
+    "photosFailed": "Ihr Termin wurde empfangen, aber die Fotos konnten nicht hochgeladen werden. Versuchen Sie nur die Fotos erneut; Ihr Termin wird nicht erneut eingereicht. Lassen Sie diese Seite geöffnet, bis der Upload erfolgreich ist.",
+    "retryPhotos": "Fotos erneut hochladen",
     "submitSuccess": "Termin angefragt",
     "submitFailed": "Anfrage fehlgeschlagen",
     "confirmSubmit": "Diese Terminanfrage absenden? Sie erhalten innerhalb von 24 Stunden eine Bestätigung per E-Mail.",
@@ -691,7 +785,7 @@
     "addressLabel": "Besuchsadresse",
     "phone": "0475 315 661",
     "phoneLabel": "Telefon",
-    "email": "info@krekelberg-nautic.nl",
+    "email": "marketing@answer24.nl",
     "emailLabel": "E-Mail",
     "hoursTitle": "Öffnungszeiten",
     "hoursHighSeason": "Hochsaison (April — Oktober)",
@@ -717,7 +811,7 @@
     "fSubmit": "Nachricht senden",
     "fSending": "Wird gesendet…",
     "fSent": "Vielen Dank. Ihre Nachricht ist eingegangen. Wir melden uns so schnell wie möglich bei Ihnen.",
-    "fError": "Ihre Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut oder rufen Sie uns an: 0475 315 661.",
+    "fError": "Der Versand ist fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie uns telefonisch.",
     "fSelectTopic": "Thema auswählen…",
     "hoursSubtitle": "Fester Wochenplan",
     "monday": "Montag",
@@ -1305,7 +1399,8 @@
       "retry": "Erneut versuchen",
       "all": "Alle",
       "yes": "Ja",
-      "no": "Nein"
+      "no": "Nein",
+      "permissionDenied": "Du hast keine Berechtigung für diese Aktion."
     },
     "dashboard": {
       "title": "Betrieb",
@@ -1392,7 +1487,8 @@
         "status": "Status",
         "lastLogin": "Letzter Login",
         "email": "E-Mail",
-        "phone": "Telefon"
+        "phone": "Telefon",
+        "city": "Stadt / Land"
       },
       "details": "Details",
       "total": "{count} Kunden gesamt",
@@ -1407,7 +1503,8 @@
       "confirmBlock": "{name} sperren? Der Kunde wird abgemeldet und kann sich nicht mehr anmelden.",
       "modal": {
         "title": "Neuer Kunde",
-        "subtitle": "Name und E-Mail reichen für die schnelle Erfassung."
+        "subtitle": "Name und E-Mail reichen für die schnelle Erfassung.",
+        "addressPlaceholder": "Adresse suchen…"
       },
       "toasts": {
         "created": "Kunde erstellt",
@@ -1430,7 +1527,11 @@
       "localeDefault": "Standard",
       "fields": {
         "gender": "Geschlecht",
-        "preferredLocale": "Bevorzugte Sprache"
+        "preferredLocale": "Bevorzugte Sprache",
+        "name": "Name",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "company": "Unternehmen"
       },
       "gender": {
         "unspecified": "Keine Angabe",
@@ -1533,7 +1634,19 @@
         "finance": "Finanzen",
         "storage": "Lager",
         "planning": "Planung"
-      }
+      },
+      "allVisibility": "Alle Sichtbarkeiten",
+      "sendMessage": "Kunden benachrichtigen",
+      "datePresets": {
+        "today": "Heute",
+        "yesterday": "Gestern",
+        "last7": "Letzte 7 Tage",
+        "thisMonth": "Diesen Monat"
+      },
+      "allPriorities": "Alle Prioritäten",
+      "allSources": "Alle Quellen",
+      "sourceTimeline": "Zeitverlauf",
+      "sourceAudit": "Prüfprotokoll"
     },
     "productGroups": {
       "title": "Produktgruppen",
@@ -1550,7 +1663,8 @@
         "group": "Gruppe",
         "code": "Code",
         "vat": "MwSt.",
-        "status": "Status"
+        "status": "Status",
+        "products": "Produkte"
       },
       "fields": {
         "code": "Code",
@@ -1673,7 +1787,9 @@
         "openBalance": "Offener Saldo",
         "avgDuration": "Durchschn. Dauer",
         "days": "{count} Tage",
-        "byContractType": "Umsatz nach Vertragstyp"
+        "byContractType": "Umsatz nach Vertragstyp",
+        "expiring60": "Läuft innerhalb von 60 Tagen ab",
+        "expiring90": "Läuft innerhalb von 90 Tagen ab"
       },
       "topProductsTitle": "Top-Produkte",
       "slowProductsTitle": "Langsame Produkte",
@@ -1720,7 +1836,9 @@
       },
       "toasts": {
         "created": "Tagesabschluss gespeichert"
-      }
+      },
+      "cashReceivedToday": "Heutige Bareinnahmen",
+      "cashReceivedNote": "Automatisch aus Kassenzahlungen berechnet"
     },
     "states": {
       "errorTitle": "Etwas ist schiefgelaufen",
@@ -1844,6 +1962,7 @@
         "lengthCm": "Länge (cm)",
         "widthCm": "Breite (cm)",
         "locationCode": "Standortcode",
+        "publicListingUrl": "URL des öffentlichen Inserats",
         "brand": "Marke",
         "model": "Modell",
         "buildYear": "Baujahr",
@@ -1878,7 +1997,9 @@
         "updated": "Boot aktualisiert",
         "updateFailed": "Aktualisierung fehlgeschlagen",
         "transferred": "Eigentum übertragen",
-        "fileUploaded": "Datei hochgeladen"
+        "fileUploaded": "Datei hochgeladen",
+        "photoDeleted": "Foto gelöscht",
+        "docDeleted": "Dokument gelöscht"
       },
       "editTitle": "Boot bearbeiten",
       "editSubtitle": "Länge, Standort und andere Angaben korrigieren",
@@ -1900,7 +2021,8 @@
         "totalBoats": "Boote gesamt",
         "boatsInStorage": "Eingelagert",
         "activeWorkOrders": "Aktive Arbeitsaufträge",
-        "openBalance": "Offener Saldo"
+        "openBalance": "Offener Saldo",
+        "paid": "Bezahlt"
       },
       "photoFolders": {
         "arrival": "Ankunft",
@@ -1935,7 +2057,11 @@
       "statusWorkInProgress": "In Arbeit",
       "statusRegistered": "Registriert",
       "insuranceExpired": "Versicherung abgelaufen",
-      "insuranceExpiringSoon": "Versicherung läuft in {days} Tagen ab"
+      "insuranceExpiringSoon": "Versicherung läuft in {days} Tagen ab",
+      "openContract": "Vertrag öffnen →",
+      "confirmDeletePhoto": "Foto endgültig löschen?",
+      "confirmDeleteDoc": "Dokument endgültig löschen?",
+      "status": "Status"
     },
     "kassa": {
       "title": "Kasse",
@@ -2174,7 +2300,12 @@
         "houseNumber": "Hausnummer",
         "postalCode": "Postleitzahl",
         "city": "Stadt",
-        "companyName": "Firmenname (optional)"
+        "companyName": "Firmenname (optional)",
+        "hall": "Halle",
+        "bok": "Lagerbock",
+        "arrivalDate": "Ankunft",
+        "pickupDate": "Abholung",
+        "daysStored": "Lagertage"
       },
       "quickEdit": {
         "title": "Vertrag aktualisieren",
@@ -2497,7 +2628,9 @@
         "storageExpiringTitle": "Lagerung läuft ab",
         "storageExpiringMessage": "Atalanta · in 9 Tagen",
         "storageExpiringTime": "vor 1 Stunde"
-      }
+      },
+      "expandSidebar": "Seitenleiste ausklappen",
+      "collapseSidebar": "Seitenleiste einklappen"
     },
     "invoices": {
       "title": "Rechnungen",
@@ -2597,7 +2730,13 @@
         "title": "Neue Rechnung",
         "subtitle": "Wählen Sie einen Kunden für eine manuelle Rechnung.",
         "noCustomers": "Keine Kunden gefunden. Suche anpassen oder zuerst einen Kunden anlegen."
-      }
+      },
+      "provenanceLabel": "Quelle",
+      "allDirections": "Verkauf und Einkauf",
+      "sales": "Verkauf",
+      "purchase": "Einkauf",
+      "defaultTemplate": "Aktives Standardlayout",
+      "payableBalance": "Offene Lieferantenverbindlichkeiten"
     },
     "invoiceDetail": {
       "fallbackTitle": "Rechnung",
@@ -2703,7 +2842,16 @@
       "confirmMarkPaid": "Diese Rechnung manuell als bezahlt markieren? Betrag und Zahlungsmethode prüfen.",
       "creditedFor": "Gutschrift für",
       "creditNotes": "Gutschriften",
-      "backToContract": "Zurück zum Lagervertrag"
+      "backToContract": "Zurück zum Lagervertrag",
+      "tabs": {
+        "overview": "Übersicht",
+        "lines": "Rechnungspositionen",
+        "payments": "Zahlungen",
+        "documents": "Dokumente",
+        "timeline": "Zeitverlauf",
+        "audit": "Prüfprotokoll"
+      },
+      "originalDocument": "Originaldokument"
     },
     "customerDetail": {
       "fallbackTitle": "Kunde",
@@ -2793,7 +2941,16 @@
           "at_risk": "Risiko",
           "critical": "Kritisch"
         }
-      }
+      },
+      "timelineTitlePlaceholder": "Betreff / Titel",
+      "timelineNoBoat": "Kein Boot",
+      "timelineHideCta": "Schaltfläche ausblenden",
+      "timelineAddCta": "+ Aktionsschaltfläche",
+      "timelineCtaLabel": "Schaltflächentext (z. B. Jetzt bezahlen)",
+      "timelineCtaUrl": "Link-URL",
+      "commentPlaceholder": "Kommentar schreiben…",
+      "commentSend": "Senden",
+      "addComment": "+ Kommentar"
     },
     "calculator": {
       "title": "Rechner",
@@ -2904,7 +3061,10 @@
         "bulkDuplicated": "Ausgewählte Datensätze dupliziert",
         "confirmBulkArchive": "{count} Datensatz/Datensätze archivieren?",
         "editingRecord": "Datensatz bearbeiten",
-        "newRecord": "Neu"
+        "newRecord": "Neu",
+        "allUsers": "Alle Benutzer",
+        "updatedAt": "Aktualisiert",
+        "edit": "Bearbeiten"
       },
       "pricing": {
         "title": "Preise verwalten",
@@ -2918,7 +3078,9 @@
         "filtered": "Gefiltert",
         "clearFilter": "Filter löschen"
       },
-      "manageServices": "Services beheren"
+      "manageServices": "Services beheren",
+      "catalogUnavailable": "Dienste konnten nicht geladen werden.",
+      "noAvailableServices": "Für den Rechner sind keine Dienste verfügbar."
     },
     "settings": {
       "title": "Einstellungen",
@@ -3105,7 +3267,10 @@
         "scanBarcode": "Scannen",
         "barcodeScanned": "Barcode gescannt: {code}",
         "uploadImage": "Foto hochladen",
-        "uploadHint": "Speichern Sie das Produkt zuerst, um ein Foto hochzuladen."
+        "uploadHint": "Speichern Sie das Produkt zuerst, um ein Foto hochzuladen.",
+        "productGroup": "Produktgruppe",
+        "slug": "Slug (Serviceseite)",
+        "productGroupNone": "Keine Gruppe"
       },
       "sections": {
         "identity": "Identität",
@@ -3131,7 +3296,9 @@
         "deleted": "Produkt gelöscht",
         "deleteFailed": "Löschen fehlgeschlagen",
         "updated": "Produkt aktualisiert"
-      }
+      },
+      "auditLog": "Änderungsprotokoll",
+      "allGroups": "Alle Gruppen"
     },
     "payments": {
       "title": "Zahlungen",
@@ -3186,7 +3353,10 @@
         "created": "Benutzer erstellt",
         "createFailed": "Erstellen fehlgeschlagen",
         "activated": "Benutzer aktiviert",
-        "deactivated": "Benutzer deaktiviert"
+        "deactivated": "Benutzer deaktiviert",
+        "updated": "Benutzer aktualisiert",
+        "unblocked": "Benutzer entsperrt",
+        "blocked": "Benutzer gesperrt"
       },
       "confirmDeactivate": "Möchten Sie {name} wirklich deaktivieren? Dieser Benutzer kann sich danach nicht mehr anmelden.",
       "searchPlaceholder": "Nach Name oder E-Mail suchen",
@@ -3203,7 +3373,16 @@
         "male": "Männlich",
         "female": "Weiblich",
         "other": "Divers"
-      }
+      },
+      "unblock": "Entsperren",
+      "block": "Sperren",
+      "editModal": {
+        "title": "Benutzer bearbeiten"
+      },
+      "confirmUnblock": "{name} entsperren?",
+      "confirmBlock": "{name} sperren?",
+      "blockReason": "Grund (optional)",
+      "blockReasonPlaceholder": "z. B. Missbrauch, Inaktivität…"
     },
     "calendar": {
       "title": "Kalender",
@@ -3433,7 +3612,10 @@
         "source": "Quelle",
         "status": "Status",
         "date": "Datum",
-        "confidence": "Konfidenz"
+        "confidence": "Konfidenz",
+        "invoiceNumber": "Rechnungsnr.",
+        "customer": "Kunde",
+        "total": "Gesamt"
       },
       "toasts": {
         "uploaded": "Rechnung zur Verarbeitung hochgeladen",
@@ -3485,7 +3667,13 @@
         "supplierCreated": "Lieferant angelegt",
         "supplierNameRequired": "Geben Sie einen Namen für den Lieferanten ein",
         "iban": "IBAN",
-        "paymentTermsDays": "Zahlungsziel (Tage)"
+        "paymentTermsDays": "Zahlungsziel (Tage)",
+        "corrected": "Korrigiert",
+        "saveCorrections": "Korrekturen speichern",
+        "noCustomerLinked": "Kein Kunde verknüpft",
+        "customerCreated": "Kunde erstellt",
+        "createCustomer": "Kunden erstellen",
+        "processingLog": "Verarbeitungsprotokoll"
       },
       "dropzoneTitle": "Sleep bestanden hierheen",
       "dropzoneHint": "PDF of afbeelding — tot 50 bestanden tegelijk",
@@ -3571,7 +3759,23 @@
         "successCount": "Erfolgreich",
         "correctionCount": "Korrekturen",
         "averageConfidence": "Durchschn. Konfidenz"
-      }
+      },
+      "editExtraction": "Extraktionsvorlage bearbeiten",
+      "newExtraction": "Extraktionsvorlage",
+      "extractionNotice": "Diese Vorlage steuert Import, OCR-Feldbereiche und Zuordnungsregeln. Das Layout erzeugter Rechnungen wird separat verwaltet.",
+      "layout": "Rechnungslayout",
+      "layoutTitle": "Rechnungslayout",
+      "layoutSubtitle": "Layout für Rechnungs-PDFs: Logo, Summen, Fußzeile, Bedingungen und Tags. Jeder Speichervorgang bewahrt eine Version.",
+      "extractionBack": "Extraktionsvorlagen",
+      "layoutHint": "OCR-Importfeldbereiche werden unter Extraktionsvorlagen verwaltet.",
+      "layoutLogo": "Logo anzeigen",
+      "layoutTotals": "Summen anzeigen",
+      "layoutFooter": "Fußzeile",
+      "layoutTerms": "Bedingungen",
+      "layoutTags": "Dynamische Tags",
+      "layoutVersions": "Gespeicherte Versionen",
+      "missingTags": "Fehlende Pflichtfelder",
+      "uploadLogo": "Logo hochladen (PNG/JPG, max. 1 MB)"
     },
     "workOrders": {
       "title": "Arbeitsaufträge",
@@ -3758,7 +3962,8 @@
         "completed": "Erinnerung abgeschlossen",
         "dismissed": "Erinnerung verworfen",
         "ruleCreated": "Regel erstellt",
-        "ruleDeleted": "Regel gelöscht"
+        "ruleDeleted": "Regel gelöscht",
+        "ruleUpdated": "Regel aktualisiert"
       },
       "statusAll": "Alle Status",
       "statusPending": "Ausstehend",
@@ -3789,7 +3994,17 @@
         "entityIdHint": "z. B. eine Rechnungs- oder Vertrags-ID",
         "submit": "Senden",
         "sent": "Test-Erinnerung gesendet"
-      }
+      },
+      "briefingTitle": "Heutige Übersicht",
+      "briefing": {
+        "invoiceDue": "Fällige Rechnungen",
+        "invoicesOverdue": "Überfällige Rechnungen",
+        "contractsExpiring": "Bald ablaufende Verträge",
+        "insuranceExpiring": "Ablaufende Versicherungen",
+        "workOrdersOverdue": "Überfällige Arbeitsaufträge",
+        "appointmentsToday": "Heutige Termine"
+      },
+      "editRule": "Regel bearbeiten"
     },
     "suppliers": {
       "title": "Lieferanten",
@@ -4100,6 +4315,74 @@
       "advanced": "Erweitert",
       "customUrl": "Eigener Pfad",
       "save": "Speichern"
+    },
+    "productStats": {
+      "title": "Produktstatistiken",
+      "subtitle": "Umsatz, Verkaufsmengen und Margen je Produkt",
+      "emptyTitle": "Keine Statistiken",
+      "emptyMessage": "Noch keine Verkaufsdaten verfügbar.",
+      "topProducts": "Topprodukte ({count})",
+      "slowProducts": "Langsam verkaufte Produkte ({count})"
+    },
+    "auditLog": {
+      "columns": {
+        "field": "Feld",
+        "oldValue": "Alt",
+        "newValue": "Neu",
+        "user": "Von",
+        "at": "Datum"
+      }
+    },
+    "scanLogs": {
+      "title": "Scanprotokoll",
+      "subtitle": "Jeder Barcode-Scan an der Kasse: Quelle, Ergebnis, Produkt und Mitarbeiter",
+      "stats": {
+        "total": "Gesamt",
+        "matched": "Gefunden",
+        "notFound": "Nicht gefunden"
+      },
+      "allSources": "Alle Quellen",
+      "allResults": "Alle Ergebnisse",
+      "emptyTitle": "Keine Scanprotokolle",
+      "emptyMessage": "Noch keine Scans erfasst.",
+      "columns": {
+        "timestamp": "Zeitpunkt",
+        "barcode": "Barcode",
+        "source": "Quelle",
+        "result": "Ergebnis",
+        "product": "Produkt",
+        "fastScan": "Schnellscan",
+        "user": "Mitarbeiter"
+      }
+    },
+    "tasks": {
+      "toasts": {
+        "completed": "Aufgabe abgeschlossen"
+      },
+      "columns": {
+        "title": "Aufgabe",
+        "customer": "Kunde",
+        "entity": "Entität",
+        "priority": "Priorität",
+        "dueAt": "Frist",
+        "status": "Status"
+      },
+      "complete": "Abschließen",
+      "done": "Abgeschlossen",
+      "title": "Aufgaben",
+      "subtitle": "Automatisch aus Erinnerungen erstellte Folgeaufgaben",
+      "stats": {
+        "open": "Offen",
+        "inProgress": "In Bearbeitung",
+        "done": "Abgeschlossen"
+      },
+      "statusAll": "Alle Status",
+      "statusOpen": "Offen",
+      "statusInProgress": "In Bearbeitung",
+      "statusDone": "Abgeschlossen",
+      "statusCancelled": "Abgebrochen",
+      "emptyTitle": "Keine Aufgaben",
+      "emptyMessage": "Es wurden noch keine Aufgaben erstellt."
     }
   },
   "planning": {
@@ -4160,6 +4443,8 @@
     "fieldAssignee": "Mitarbeiter",
     "unassigned": "Nicht zugewiesen",
     "selectPlaceholder": "Auswählen…",
+    "selectCustomerFirst": "Zuerst einen Kunden auswählen",
+    "noCustomerBoats": "Dieser Kunde hat keine Boote",
     "conflictTitle": "Mögliche Konflikte gefunden",
     "conflictConfirmAnyway": "Trotzdem fortfahren und diesen Termin planen",
     "selectMode": "Auswählen",
@@ -4177,12 +4462,29 @@
     "statusCompleted": "Abgeschlossen"
   },
   "cms": {
+    "sessionExpired": "Sitzung abgelaufen",
+    "draftRetained": "Deine ungespeicherten Änderungen bleiben hier erhalten. Melde dich in einem neuen Tab an und setze die Bearbeitung hier fort.",
+    "signInAgain": "Erneut anmelden",
+    "resumeEditing": "Bearbeitung fortsetzen",
+    "discardDraft": "Änderungen verwerfen",
+    "sessionNotRestored": "Melde dich mit demselben Konto und CMS-Berechtigung an.",
+    "editCertificationBadge": "Zertifizierungsabzeichen bearbeiten",
+    "certificationTitle": "Titel",
+    "certificationSubtitle": "Untertitel",
+    "autoTranslate": "Mit ChatGPT automatisch ins {languages} übersetzen",
+    "translating": "Wird übersetzt…",
+    "savedWithTranslations": "Text und Übersetzungen gespeichert",
+    "savedWithoutTranslations": "Text gespeichert; automatische Übersetzung fehlgeschlagen.",
+    "translationFailed": "Übersetzung fehlgeschlagen. Es wurden keine Änderungen gespeichert.",
     "edit": "Bearbeiten",
     "enterEdit": "Bearbeitungsmodus aktivieren",
     "exitEdit": "Bearbeitungsmodus beenden",
     "editingOn": "Bearbeiten an",
     "toolbarLabel": "CMS-Leiste",
     "editText": "Text bearbeiten",
+    "editHiswa": "HISWA-Karte bearbeiten",
+    "hiswaTitle": "Titel",
+    "hiswaDescription": "Beschreibung",
     "editImage": "Bild bearbeiten",
     "editCta": "Schaltfläche bearbeiten",
     "invalidCtaLink": "Bitte Zieltyp und Ziel der Schaltfläche prüfen.",
@@ -4214,6 +4516,7 @@
     "imageUploaded": "Bild hochgeladen",
     "uploadImage": "Bild hochladen",
     "imageFormats": "Verwenden Sie ein JPG-, PNG- oder WEBP-Bild.",
+    "imageSizeLimit": "Maximale Bildgröße: 10 MiB.",
     "imageDropHint": "Ziehen Sie eine JPG-, PNG- oder WEBP-Datei hierher.",
     "localeHint": "Nur geänderte Sprachen werden gespeichert.",
     "textPlaceholder": "Text eingeben…",
@@ -4239,6 +4542,186 @@
       "tagline": "Footer-Slogan",
       "facebook": "Facebook-URL",
       "instagram": "Instagram-URL"
+    },
+    "allTranslations": "Alle Texte",
+    "searchTranslations": "Text oder Schlüssel suchen"
+  },
+  "settingsHub": {
+    "search": "Einstellungen suchen",
+    "reminderRules": "Erinnerungsregeln bearbeiten",
+    "paymentHealth": "Zahlungsverbindung",
+    "integrationHealth": "Integrationen einrichten und prüfen",
+    "untested": "Nicht getestet",
+    "setupRequired": "Einrichtung erforderlich",
+    "pos_methods": "Kassenzahlungsarten",
+    "online_methods": "Online-Zahlungsarten",
+    "mailbox": "Rechnungspostfach",
+    "ocrModel": "OCR-Modell",
+    "whatsappEnabled": "WhatsApp aktivieren",
+    "transactionId": "Vorhandene Signhost-Transaktion (UUID)",
+    "runDiagnostic": "Gespeicherte Konfiguration testen",
+    "openWorkflow": "Arbeitsablauf öffnen",
+    "integrations": {
+      "email": "Email",
+      "mailbox": "Rechnungspostfach",
+      "ocr": "OCR",
+      "whatsapp": "WhatsApp",
+      "signhost": "Signhost"
+    },
+    "mollieSetup": "MOLLIE_TEST_KEY und MOLLIE_LIVE_KEY auf dem Server einrichten. Modus speichern und anschließend die gespeicherte Konfiguration testen."
+  },
+  "globalUx": {
+    "pricing": {
+      "product": "Produkt",
+      "range": "Bereich (cm)",
+      "price": "Preis inkl. MwSt.",
+      "vat": "MwSt.",
+      "type": "Typ",
+      "channel": "Kanal",
+      "active": "Aktiv",
+      "yes": "Ja",
+      "no": "Nein",
+      "from": "Von (cm)",
+      "to": "Bis (cm)",
+      "priceEuro": "Preis inkl. MwSt. (€)",
+      "vatRate": "MwSt.-Satz (%)",
+      "fixed": "Festbetrag",
+      "per_meter": "Pro Meter",
+      "on_request": "Auf Anfrage",
+      "manual": "Manuell",
+      "all": "Alle Kanäle",
+      "kassa": "Kasse",
+      "portal": "Kundenportal",
+      "stalling": "Lagerung",
+      "tariffTitle": "Tarife nach Längenklasse",
+      "addTariff": "Tarif hinzufügen",
+      "emptyTariffs": "Keine Tarife gefunden.",
+      "length": "Länge",
+      "exclVat": "Ohne MwSt.",
+      "inclVat": "Inkl. MwSt.",
+      "status": "Status",
+      "inactive": "Inaktiv",
+      "editTariff": "Tarif bearbeiten",
+      "newTariff": "Neuer Tarif",
+      "fromMeters": "Von (Meter)",
+      "toMeters": "Bis (Meter, 999 = unbegrenzt)",
+      "priceExclOptional": "Preis ohne MwSt. (€, optional)",
+      "autoVat": "Automatisch anhand der MwSt.",
+      "deleteTariff": "Tarif löschen",
+      "confirmDelete": "Möchten Sie diesen Tarif wirklich löschen?",
+      "saving": "Wird gespeichert…"
+    },
+    "searchFailed": "Produkte konnten nicht geladen werden. Bitte erneut versuchen.",
+    "servicesEmpty": "Derzeit sind keine Dienstleistungen verfügbar.",
+    "shortcutsFailed": "Verknüpfungen konnten nicht geladen werden.",
+    "shortcutsFallback": "Standardverknüpfungen werden angezeigt.",
+    "serviceDetails": {
+      "afspuiten": {
+        "heroTitle": "Professionelle Rumpfreinigung",
+        "heroSubtitle": "Direkt nach dem Kranen reinigen wir Ihren Rumpf mit Hochdruck. Ein sauberer Rumpf verringert den Widerstand, verlängert die Wirkung des Antifoulings und erhält den Zustand Ihres Bootes.",
+        "priceFootnote": "Preise nach Längenklasse, inklusive MwSt. Der endgültige Preis richtet sich nach der genauen Länge Ihres Bootes.",
+        "badge": "Hochdruckreinigung",
+        "description": "Unsere Anlage entfernt Algen, Schlamm und Ablagerungen gründlich. Gefiltertes Abwasser schont die Umwelt. Optional bieten wir eine Rumpfinspektion und Beratung zum Antifouling.",
+        "feature1Title": "Direkt nach dem Kranen",
+        "feature1Description": "Der Schmutz ist noch nicht eingetrocknet: für das beste Reinigungsergebnis.",
+        "feature2Title": "Gefiltertes Abwasser",
+        "feature2Description": "Wir sammeln Ablagerungen gemäß unserer Umweltgenehmigung.",
+        "feature3Title": "Optionale Rumpfinspektion",
+        "feature3Description": "Sichtprüfung auf Blasenbildung und Osmose.",
+        "feature4Title": "Schnell trocken",
+        "feature4Description": "Innerhalb von 24 Stunden bereit für Antifouling oder Einlagerung.",
+        "feature5Title": "Erfahrenes Team",
+        "feature5Description": "Unser Team betreut dieselben Boote seit vielen Jahren.",
+        "feature6Title": "Alle Bootstypen",
+        "feature6Description": "Motorboot, Segelboot oder Schaluppe: Wir passen Druck und Technik an.",
+        "faq1Question": "Wie lange dauert die Hochdruckreinigung?",
+        "faq1Answer": "Meist 15 bis 30 Minuten, je nach Länge und Bewuchs.",
+        "faq2Question": "Kann ich die Reinigung mit anderen Leistungen kombinieren?",
+        "faq2Answer": "Ja, wir empfehlen die Kombination mit Kranen und bei Bedarf Antifouling. Fragen Sie unsere Werft nach den Möglichkeiten.",
+        "faq3Question": "Was passiert mit dem aufgefangenen Schmutz?",
+        "faq3Answer": "Ein zertifizierter Entsorgungsbetrieb entsorgt ihn gemäß unserer Umweltgenehmigung.",
+        "faq4Question": "Ist der Service in der Hochsaison verfügbar?",
+        "faq4Answer": "Ja, doch die Termine sind schnell belegt. Buchen Sie von März bis Mai und Oktober bis November mindestens zwei Wochen im Voraus."
+      },
+      "winterstalling": {
+        "heroTitle": "Sicheres Winterlager",
+        "heroSubtitle": "Innen- und Außenlager auf einem versicherten Werftgelände mit über 10.000 m² in Roermond. Wir behandeln Ihr Boot wie unser eigenes.",
+        "priceFootnote": "Winterlagerpreise nach Längenklasse, inklusive MwSt., zweimal Kranen und Hochdruckreinigung. Der endgültige Preis richtet sich nach der genauen Bootslänge.",
+        "badge": "Winterlager",
+        "description": "Krekelberg Nautic bietet Winter- und Sommerlager mit optionaler Wintervorbereitung. Arbeiten Sie selbst am Boot oder überlassen Sie die Wartung unseren Mechanikern. Versicherung und Kameraüberwachung rund um die Uhr sind standardmäßig enthalten.",
+        "feature1Title": "Innen- und Außenlager",
+        "feature1Description": "Beide mit Abdeckung für Mast und Sonnenschutz.",
+        "feature2Title": "Versichertes Gelände",
+        "feature2Description": "Vollständig versicherter Standort mit Kameraüberwachung.",
+        "feature3Title": "Zugang während der Öffnungszeiten",
+        "feature3Description": "Arbeiten Sie an Ihrem Boot oder besuchen Sie es während der Öffnungszeiten.",
+        "feature4Title": "Stromanschluss",
+        "feature4Description": "Optional auf Anfrage verfügbar.",
+        "feature5Title": "Wartung vor Ort",
+        "feature5Description": "Externe Mechaniker sind unter den Werftbedingungen willkommen.",
+        "feature6Title": "Frühjahr und Herbst kombinieren",
+        "feature6Description": "Kranen und Reinigung in einem Paket.",
+        "faq1Question": "Wann beginnt die Lagersaison?",
+        "faq1Answer": "Das Winterlager läuft vom 1. November bis 30. April. Sommerlager ist vom 1. Mai bis 31. Oktober möglich.",
+        "faq2Question": "Kann ich während der Lagerung Wartungsarbeiten ausführen?",
+        "faq2Answer": "Ja. Während der Öffnungszeiten haben Sie Zugang zum Gelände, zu Arbeitsbereichen, Wasser und Strom.",
+        "faq3Question": "Ist mein Boot während der Lagerung versichert?",
+        "faq3Answer": "Unser Gelände ist versichert. Wir empfehlen, Ihre eigene Kaskoversicherung beizubehalten.",
+        "faq4Question": "Wie wird mein Boot aufgebockt?",
+        "faq4Answer": "Wir passen die Böcke an Ihren Bootstyp an. Sie erhalten ein Foto der Aufstellung."
+      },
+      "weekje_op_wal": {
+        "heroTitle": "Eine Woche an Land",
+        "heroSubtitle": "Holen Sie Ihr Boot aus dem Wasser und nehmen Sie sich eine Woche Zeit für die Wartung auf unserer Werft. Planung und Möglichkeiten besprechen wir vorab.",
+        "description": "Eine Woche an Land gibt Ihnen Zeit für Arbeiten am Boot. Besprechen Sie Zeitraum, Kranen und benötigte Einrichtungen mit uns. Unsere Werft ermöglicht Eigenarbeiten und Unterstützung durch Mechaniker nach Terminvereinbarung.",
+        "priceFootnote": "Preise nach Längenklasse, inklusive MwSt. Fragen Sie nach Verfügbarkeit und vereinbaren Sie den Umfang des Pakets.",
+        "feature1Title": "Eine Woche an Land",
+        "feature1Description": "Planen Sie Zeit für die Pflege Ihres Bootes ein.",
+        "feature2Title": "Wartung in Ihrem Tempo",
+        "feature2Description": "Besprechen Sie geplante Arbeiten im Voraus.",
+        "feature3Title": "Werfteinrichtungen",
+        "feature3Description": "Fragen Sie nach Arbeitsbereichen, Strom und Wasser.",
+        "feature4Title": "Hilfe nach Terminvereinbarung",
+        "feature4Description": "Klären Sie vorab, ob unsere Mechaniker helfen können.",
+        "feature5Title": "Gemeinsame Planung",
+        "feature5Description": "Stimmen Sie Zeitraum und Krantermine mit uns ab.",
+        "feature6Title": "Preis nach Längenklasse",
+        "feature6Description": "Sehen Sie Richtpreise entsprechend Ihrer Bootslänge.",
+        "faq1Question": "Wie buche ich eine Woche an Land?",
+        "faq1Answer": "Kontaktieren Sie uns, um Zeitraum und Krantermine zu besprechen.",
+        "faq2Question": "Kann ich selbst Arbeiten ausführen?",
+        "faq2Answer": "Ja, Eigenarbeiten sind im Rahmen der Werftbedingungen möglich. Besprechen Sie benötigte Einrichtungen vorab.",
+        "faq3Question": "Kann mir ein Mechaniker helfen?",
+        "faq3Answer": "Unsere Mechaniker helfen nach Terminvereinbarung. Kontaktieren Sie uns vorab, um die Möglichkeiten zu besprechen.",
+        "faq4Question": "Wie wird der Preis berechnet?",
+        "faq4Answer": "Der Preis richtet sich nach der Längenklasse Ihres Bootes. Angezeigte Preise sind Richtwerte. Kontaktieren Sie uns für Absprachen und Verfügbarkeit."
+      },
+      "zelf_werken": {
+        "heroTitle": "Selbst auf der Werft arbeiten",
+        "heroSubtitle": "Verbinden Sie unsere Einrichtungen mit Ihrem handwerklichen Können. Unsere Werft bietet Arbeitsbereiche, Werkzeuge und Beratung für Bootseigner.",
+        "badge": "Selbst am Boot arbeiten",
+        "description": "Sie dürfen unter den Werftbedingungen selbst an Ihrem Boot arbeiten. Wir stellen Arbeitsbereiche, Strom und Wasser bereit. Unsere Mechaniker helfen bei Fragen und Spezialarbeiten. Externe Mechaniker sind nach Anmeldung willkommen.",
+        "feature1Title": "Arbeitsbereiche mit Strom",
+        "feature1Description": "Beleuchtete Plätze mit 230-V-Steckdosen.",
+        "feature2Title": "Wasser und Druckluft",
+        "feature2Description": "An festen Versorgungsstellen verfügbar.",
+        "feature3Title": "Hebegeräte nach Terminvereinbarung",
+        "feature3Description": "Unser 30-Tonnen-Kran hebt schwere Bauteile.",
+        "feature4Title": "Externe Mechaniker willkommen",
+        "feature4Description": "Mit gültiger Haftpflichtversicherung und VCA-Zertifizierung.",
+        "feature5Title": "Materialverkauf",
+        "feature5Description": "Schrauben, Farben, Klebstoffe und Öl vor Ort.",
+        "feature6Title": "Toiletten und Kaffee",
+        "feature6Description": "Einrichtungen für lange Arbeitstage.",
+        "faq1Question": "Welche Arbeiten darf ich selbst ausführen?",
+        "faq1Answer": "Wartung, Lackieren, Polieren und kleinere Reparaturen. Schweißarbeiten sowie Batterie- und Gasinstallationen müssen vorab angemeldet werden.",
+        "faq2Question": "Darf ich meinen eigenen Mechaniker mitbringen?",
+        "faq2Answer": "Ja, mit Haftpflichtversicherung und gültiger VCA-Zertifizierung. Bitte an der Rezeption anmelden.",
+        "faq3Question": "Gibt es besondere Regeln?",
+        "faq3Answer": "Absperrungen und Umweltregeln gelten immer. Kein offenes Feuer und kein Abfall auf dem Boden. Hinterlassen Sie einen aufgeräumten Arbeitsplatz.",
+        "faq4Question": "Kann ich Teile liefern lassen?",
+        "faq4Answer": "Ja, Lieferanten können direkt an die Werft liefern. Wir informieren Sie per SMS, sobald das Paket angekommen ist."
+      }
     }
   }
 }

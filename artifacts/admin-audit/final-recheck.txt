@@ -1,0 +1,118 @@
+[WebServer] (node:22156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:17656) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17656) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:22156) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Failed to proxy http://localhost:3047/nl/admin/klanten/audit-missing-record Error: socket hang up
+[WebServer]     at Socket.socketCloseListener (node:_http_client:739:27)
+[WebServer]     at Socket.emit (node:events:526:24)
+[WebServer]     at TCP.<anonymous> (node:net:362:12) {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+[WebServer] Error: socket hang up
+[WebServer]     at Socket.socketCloseListener (node:_http_client:739:27)
+[WebServer]     at Socket.emit (node:events:526:24)
+[WebServer]     at TCP.<anonymous> (node:net:362:12) {
+[WebServer]   code: 'ECONNRESET'
+[WebServer] }
+  x  1 [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/klanten/[id]/[slug] (1.5m)
+(node:6788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] Failed to proxy http://127.0.0.1:9/api/v1/i18n/locales Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:9
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2021:16) {
+[WebServer]   errno: -4078,
+[WebServer]   code: 'ECONNREFUSED',
+[WebServer]   syscall: 'connect',
+[WebServer]   address: '127.0.0.1',
+[WebServer]   port: 9
+[WebServer] }
+[WebServer] (node:10388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [admin-audit] › tests\browser\admin-audit.spec.ts:42:7 › fr: dashboard sidebar and KPI responsive evidence (55.0s)
+
+
+  1) [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/klanten/[id]/[slug] 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('main')
+    Expected: visible
+    Timeout: 45000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 45000ms[22m
+    [2m  - waiting for locator('main')[22m
+
+
+      25 |     await page.goto(`/nl${entry.route.replaceAll('[id]', 'audit-missing-record').replaceAll('[slug]', 'audit-record')}`);
+      26 |     const main = page.locator('main');
+    > 27 |     await expect(main).toBeVisible();
+         |                        ^
+      28 |     await expect.poll(() => main.innerText()).not.toBe('');
+      29 |     await expect(main.locator('.animate-pulse, .animate-spin')).toHaveCount(0);
+      30 |     // Observe whether this route surfaces the injected error. A rendered heading alone
+        at C:\wamp64\www\krekelbergkassa\krekelbergkassa-frontend\tests\browser\admin-audit.spec.ts:27:24
+
+    Error Context: artifacts\admin-audit\final-recheck\admin-audit-route-failure-boundary-admin-klanten-id-slug--admin-audit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\admin-audit\final-recheck\admin-audit-route-failure-boundary-admin-klanten-id-slug--admin-audit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\admin-audit\final-recheck\admin-audit-route-failure-boundary-admin-klanten-id-slug--admin-audit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [admin-audit] › tests\browser\admin-audit.spec.ts:21:7 › route failure boundary: /admin/klanten/[id]/[slug] 
+  1 passed (3.6m)

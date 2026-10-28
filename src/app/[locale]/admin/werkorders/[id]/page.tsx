@@ -1,4 +1,8 @@
 'use client';
+import { adminRecordHref } from '@/config/admin-routes';
+
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -80,7 +84,7 @@ function workOrderTypeLabel(
   const fromMeta = metaTypes?.find((o) => o.value === type)?.label;
   if (fromMeta) return fromMeta;
   const key = `adminNew.workOrders.types.${type}`;
-  const translated = t(key);
+  const translated = tEnum(t, 'adminNew.workOrders.types', type);
   if (translated !== key) return translated;
   return TYPE_LABELS[type] ?? type;
 }
@@ -447,7 +451,7 @@ export default function WorkOrderDetailPage() {
                       </div>
                       {boatId ? (
                         <Link
-                          href={`/${locale}/admin/boten/${boatId}`}
+                          href={adminRecordHref(locale, 'boten', { ...((order?.boat ?? {}) as Record<string, unknown>), id: boatId })}
                           className="mt-1 inline-flex text-sm font-semibold text-marine-700 hover:text-marine-900"
                         >
                           {t('adminNew.boats.title')} →
@@ -625,17 +629,17 @@ export default function WorkOrderDetailPage() {
                 icon={ImageIcon}
                 action={
                   <div className="flex items-center gap-2">
-                    <select
+                    <SearchSelect
                       className="input-base h-8 py-0 text-xs"
                       value={photoFolder}
                       onChange={(e) => setPhotoFolder(e.target.value)}
                     >
                       {['before', 'during', 'after', 'damage', 'inspection'].map((f) => (
                         <option key={f} value={f}>
-                          {t(`adminNew.workOrders.photoFolders.${f}`)}
+                          {tEnum(t, 'adminNew.workOrders.photoFolders', f)}
                         </option>
                       ))}
-                    </select>
+                    </SearchSelect>
                     <input
                       ref={photoInputRef}
                       type="file"
@@ -693,7 +697,7 @@ export default function WorkOrderDetailPage() {
                 action={
                   <>
                     <div className="flex items-center gap-2">
-                      <select
+                      <SearchSelect
                         className="input-base h-8 py-0 text-xs"
                         value={docFolder}
                         onChange={(e) => setDocFolder(e.target.value)}
@@ -701,7 +705,7 @@ export default function WorkOrderDetailPage() {
                         {DOCUMENT_FOLDERS.map((f) => (
                           <option key={f} value={f}>{f}</option>
                         ))}
-                      </select>
+                      </SearchSelect>
                       <input
                         ref={docInputRef}
                         type="file"
@@ -892,7 +896,7 @@ export default function WorkOrderDetailPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.workOrders.detail.assignee')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value)}
@@ -903,7 +907,7 @@ export default function WorkOrderDetailPage() {
                     {tech.name}
                   </option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
           </AdminModalBody>
           <AdminModalFooter>
@@ -966,19 +970,19 @@ export default function WorkOrderDetailPage() {
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.type')}</label>
-              <select className="input-base w-full" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}>
                 {(types.length ? types : Object.keys(TYPE_LABELS).map((v) => ({ value: v, label: TYPE_LABELS[v] }))).map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.priority')}</label>
-              <select className="input-base w-full" value={editForm.priority} onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.priority} onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}>
                 {['low', 'normal', 'high', 'urgent', 'emergency'].map((p) => (
                   <option key={p} value={p}>{p}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Input
@@ -1023,7 +1027,7 @@ export default function WorkOrderDetailPage() {
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">Status</label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={waitingStatus}
                 onChange={(e) => setWaitingStatus(e.target.value)}
@@ -1031,7 +1035,7 @@ export default function WorkOrderDetailPage() {
                 {WAITING_STATUSES.map((ws) => (
                   <option key={ws.value} value={ws.value}>{ws.label}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
           </AdminModalBody>
           <AdminModalFooter>

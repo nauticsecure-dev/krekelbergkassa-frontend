@@ -1,4 +1,5 @@
 'use client';
+import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import * as React from 'react';
 import Script from 'next/script';
@@ -11,15 +12,12 @@ import Link from 'next/link';
 import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
 import { EditableText } from '@/components/cms/EditableText';
 import {
-  Anchor,
   ArrowRight,
   CalendarDays,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
-  Droplets,
-  Hammer,
   Image as ImageIcon,
   MapPin,
   Pencil,
@@ -109,66 +107,27 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 const CMS_PAGE = 'kraanafspraak';
 
+const toLocalDateKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 interface CraneService {
   code: string;
   label: string;
   icon: typeof Ship;
-  catalogServiceCodes: string[];
 }
 
-const SERVICES: CraneService[] = [
-  { code: 'kranen_uit',  label: 'Kranen uit het water',    icon: Ship,     catalogServiceCodes: ['kranen', 'kranen_uit'] },
-  { code: 'kranen_in',   label: 'Kranen in het water',     icon: Anchor,   catalogServiceCodes: ['kranen', 'kranen_in'] },
-  { code: 'afspuiten',   label: 'Romp afspuiten',          icon: Droplets, catalogServiceCodes: ['afspuiten'] },
-  { code: 'antifouling', label: 'Antifouling controle',    icon: Sparkles, catalogServiceCodes: ['antifouling'] },
-  { code: 'transport',   label: 'Bok transport',           icon: Hammer,   catalogServiceCodes: ['transport'] },
-  { code: 'plaats',      label: 'Plaatsing winterstalling',icon: Hammer,   catalogServiceCodes: ['plaats', 'winterstalling'] },
-];
-
-function catalogServiceFor(
-  service: CraneService,
-  catalogServices: ServiceCatalogService[] | null,
-) {
-  return catalogServices?.find((item) =>
-    item.visibility?.booking !== false &&
-    service.catalogServiceCodes.some((code) =>
-      item.service_code === code || item.code === code || item.slug === code
-    )
-  );
+function catalogServiceFor(service: CraneService, services: ServiceCatalogService[] | null) {
+  return services?.find((item) => item.service_code === service.code);
 }
 
-function catalogTariffForLength(
-  service: ServiceCatalogService | undefined,
-  lengthCm: number,
-) {
-  if (!service?.tariffs?.length) return undefined;
-  const cm = Math.max(0, Math.round(lengthCm));
-  const tariffs = service.tariffs
-    .slice()
-    .sort((a, b) => a.range_from_cm - b.range_from_cm);
-  return tariffs.find((item) => cm >= item.range_from_cm && cm <= item.range_to_cm)
-    ?? (cm < tariffs[0].range_from_cm ? tariffs[0] : tariffs[tariffs.length - 1]);
-}
-
-function servicePriceForLength(
-  s: CraneService,
-  lengthCm: number,
-  catalogServices: ServiceCatalogService[] | null,
-): number | null {
-  const catalogService = catalogServiceFor(s, catalogServices);
-  const tariff = catalogTariffForLength(catalogService, lengthCm);
-  if (!tariff || tariff.is_on_request) return null;
-  return tariff.price_incl_vat_euros
-    ?? (tariff.price_incl_vat != null ? tariff.price_incl_vat / 100 : null);
-}
-
-function serviceDurationForLength(
-  service: CraneService,
-  lengthCm: number,
-  catalogServices: ServiceCatalogService[] | null,
-) {
-  const catalogService = catalogServiceFor(service, catalogServices);
-  return catalogTariffForLength(catalogService, lengthCm)?.duration_minutes ?? null;
+function standalonePrice(service: ServiceCatalogService | undefined, lengthCm: number) {
+  const tariff = service?.tariffs?.find((rule) => lengthCm >= rule.range_from_cm && lengthCm <= rule.range_to_cm);
+  if (!tariff || !['fixed', 'per_meter'].includes(tariff.price_type)) return null;
+  if (tariff.price_type === 'per_meter') {
+    const excl = Math.round((tariff.price_excl_vat ?? 0) * lengthCm / 100);
+    return (excl + Math.round(excl * Number(tariff.vat_rate ?? 21) / 100)) / 100;
+  }
+  return tariff.price_incl_vat != null ? tariff.price_incl_vat / 100 : null;
 }
 
 const DUTCH_DAYS   = ['ma','di','wo','do','vr','za','zo'];
@@ -196,18 +155,6 @@ export default function KraanAfspraakPage() {
   const canManageProducts = canAccessAdmin(user?.role, isDemo);
   const currencyLocale = intlLocale(locale);
   useRegisterCmsPage(CMS_PAGE);
-  const catalogQuery = useQuery(
-    [],
-    async () => (await serviceCatalogService.services()).services,
-  );
-  const catalogServices = catalogQuery.data;
-  const bookableServices = React.useMemo(
-    () => catalogServices
-      ? SERVICES.filter((service) => catalogServiceFor(service, catalogServices))
-      : [],
-    [catalogServices],
-  );
-
   const today = React.useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -216,6 +163,17 @@ export default function KraanAfspraakPage() {
 
   const [view, setView]                     = React.useState(() => new Date(today));
   const [picked, setPicked]                 = React.useState<Date | null>(null);
+  const pricingDate = picked ? toLocalDateKey(picked) : undefined;
+  const catalogQuery = useQuery(
+    ['booking-catalog', locale, pricingDate],
+    async () => (await serviceCatalogService.services(undefined, locale, { audience: 'booking', date: pricingDate })).services,
+  );
+  const catalogServices = catalogQuery.data;
+  const bookableServices = React.useMemo<CraneService[]>(
+    () => (catalogServices ?? []).filter((item) => item.visibility?.booking && item.service_code).map((item) => ({
+      code: item.service_code!, label: item.name ?? item.code, icon: Ship,
+    })), [catalogServices],
+  );
   const [time, setTime]                     = React.useState<string | null>(null);
   const [selectedServices, setSelectedServices] = React.useState<string[]>(['afspuiten']);
   const [submitting, setSubmitting]         = React.useState(false);
@@ -229,6 +187,29 @@ export default function KraanAfspraakPage() {
   const [submitError, setSubmitError]       = React.useState<string | null>(null);
   const [fieldErrors, setFieldErrors]       = React.useState<Partial<Record<BookingField, string>>>({});
   const [images, setImages]                 = React.useState<File[]>([]);
+  const [photoRetry, setPhotoRetry] = React.useState<{ appointmentId: string; requestId: string } | null>(null);
+  const [uploadingPhotos, setUploadingPhotos] = React.useState(false);
+  const photoUploadLock = React.useRef(false);
+  const submitLock = React.useRef(false);
+  const journeyStarted = React.useRef(false);
+  const journeyCompleted = React.useRef(false);
+  const changedFields = React.useRef(new Set<string>());
+
+  const startJourney = () => {
+    if (journeyStarted.current) return;
+    journeyStarted.current = true;
+    trackEvent('booking_form_started');
+  };
+
+  React.useEffect(() => {
+    const onLeave = () => {
+      if (!journeyStarted.current || journeyCompleted.current) return;
+      trackEvent('booking_left');
+      void flushTrackEvents();
+    };
+    window.addEventListener('pagehide', onLeave);
+    return () => { window.removeEventListener('pagehide', onLeave); onLeave(); };
+  }, []);
   const [googleLoaded, setGoogleLoaded]     = React.useState(false);
   const [googleError, setGoogleError]       = React.useState(
     () => !process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
@@ -242,12 +223,20 @@ export default function KraanAfspraakPage() {
     input.readOnly = false;
   }, []);
 
-  if (typeof window !== 'undefined') {
-    (window as Window & { gm_authFailure?: () => void }).gm_authFailure = () => {
+  React.useEffect(() => {
+    const mapsWindow = window as Window & { gm_authFailure?: () => void };
+    const previousHandler = mapsWindow.gm_authFailure;
+    const onAuthFailure = () => {
       setGoogleError(true);
       releaseStreetField();
     };
-  }
+    mapsWindow.gm_authFailure = onAuthFailure;
+    return () => {
+      if (mapsWindow.gm_authFailure === onAuthFailure) {
+        mapsWindow.gm_authFailure = previousHandler;
+      }
+    };
+  }, [releaseStreetField]);
 
   React.useEffect(() => {
     if (!googleError) return;
@@ -290,6 +279,11 @@ export default function KraanAfspraakPage() {
     });
 
   const setField = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    startJourney();
+    if (!changedFields.current.has(key)) {
+      changedFields.current.add(key);
+      trackEvent('booking_field_changed', { metadata: { field: key } });
+    }
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
     if (
       key === 'voornaam' || key === 'email' || key === 'length' ||
@@ -349,9 +343,9 @@ export default function KraanAfspraakPage() {
       setForm(prev => ({
         ...prev,
         ...(street ? { straat: street } : {}),
-        ...(houseNumber ? { huisnummer: houseNumber } : {}),
-        ...(postalCode ? { postcode: formatPostalCode(postalCode) } : {}),
-        ...(city ? { stad: city } : {}),
+        huisnummer: houseNumber,
+        postcode: formatPostalCode(postalCode),
+        stad: city,
       }));
       setFieldErrors(prev => {
         const next = { ...prev };
@@ -379,24 +373,38 @@ export default function KraanAfspraakPage() {
   const monthLabel = `${DUTCH_MONTHS[view.getMonth()]} ${view.getFullYear()}`;
   const lengthCm   = Number(form.length || 0);
   const lengthM    = lengthCm / 100;
-  const toLocalDateKey = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 
   React.useEffect(() => {
     const from = new Date(view.getFullYear(), view.getMonth(), 1);
     const to   = new Date(view.getFullYear(), view.getMonth() + 1, 0);
+    const requestId = generateRequestId();
+    const props = { request_id: requestId, intent: 'crane_booking', api_method: 'GET', api_endpoint: '/v1/booking/calendar' };
+    let current = true;
+    trackEvent('api_requested', props);
     void bookingService
-      .calendar(toLocalDateKey(from), toLocalDateKey(to))
+      .calendar(toLocalDateKey(from), toLocalDateKey(to), { requestId })
       .then(res => {
+        trackEvent('api_succeeded', { ...props, http_status: 200 });
+        if (!current) return;
         const map: Record<string, boolean> = {};
         for (const day of res.days) map[day.date.slice(0, 10)] = day.is_open;
         setOpenDays(map);
       })
-      .catch(() => setOpenDays({}));
-  }, [view]);
+      .catch((error) => {
+        trackEvent('api_failed', { ...props, http_status: getApiErrorStatus(error) });
+        if (!current) return;
+        setOpenDays({});
+        push({ tone: 'error', title: t('crane.slotsLoadFailed') });
+        trackEvent('frontend_error_shown', { ...props, metadata: { reason: 'calendar_unavailable' } });
+        void flushTrackEvents();
+      });
+    return () => { current = false; };
+  }, [view, push, t]);
 
   React.useEffect(() => {
     if (!picked || !selectedServices.length || !lengthCm) {
+      setLoadingSlots(false);
       setTimeSlots([]);
       setSlotsError(null);
       setSlotsErrorMessage(null);
@@ -408,9 +416,15 @@ export default function KraanAfspraakPage() {
     setSlotsErrorMessage(null);
     setTime(null);
     const dateKey = toLocalDateKey(picked);
+    const requestId = generateRequestId();
+    const props = { request_id: requestId, intent: 'crane_booking', api_method: 'GET', api_endpoint: '/v1/booking/slots' };
+    let current = true;
+    trackEvent('api_requested', { ...props, metadata: { date: dateKey, service_codes: selectedServices } });
     void bookingService
-      .slots({ date: dateKey, length_cm: Math.max(100, lengthCm), service_codes: selectedServices })
+      .slots({ date: dateKey, length_cm: Math.max(100, lengthCm), service_codes: selectedServices }, { requestId })
       .then(res => {
+        trackEvent('api_succeeded', { ...props, http_status: 200 });
+        if (!current) return;
         if (res.is_open) {
           setTimeSlots(res.slots);
           setSlotsError(null);
@@ -422,14 +436,21 @@ export default function KraanAfspraakPage() {
         }
       })
       .catch((err) => {
+        trackEvent('api_failed', { ...props, http_status: getApiErrorStatus(err) });
+        if (!current) return;
         setTimeSlots([]);
         setSlotsError('error');
         setSlotsErrorMessage(getApiErrorMessage(err, t('crane.slotsLoadFailed')));
+        trackEvent('frontend_error_shown', { ...props, metadata: { reason: 'slots_unavailable' } });
+        void flushTrackEvents();
       })
-      .finally(() => setLoadingSlots(false));
+      .finally(() => { if (current) setLoadingSlots(false); });
+    return () => { current = false; };
   }, [picked, selectedServices, lengthCm, t]);
 
   const toggleService = (code: string) => {
+    startJourney();
+    trackEvent('booking_service_selected', { metadata: { service_code: code, selected: !selectedServices.includes(code) } });
     clearFieldError('service');
     setSelectedServices((cur) => (cur.includes(code) ? cur.filter((c) => c !== code) : [...cur, code]));
   };
@@ -440,18 +461,16 @@ export default function KraanAfspraakPage() {
     setSelectedServices((current) => current.filter((code) => availableCodes.has(code)));
   }, [bookableServices, catalogServices]);
 
-  const selectedBookableServices = bookableServices.filter((service) =>
-    selectedServices.includes(service.code)
+  const selectedBookableServices = bookableServices.filter((service) => selectedServices.includes(service.code));
+  const quote = useQuery(
+    ['booking-quote', pricingDate, lengthCm, selectedServices.join(',')],
+    async () => selectedServices.length && lengthCm > 0
+      ? bookingService.preview({ date: pricingDate, length_cm: lengthCm, service_codes: selectedServices })
+      : null,
   );
-  const totalDuration = selectedBookableServices.reduce((sum, service) => {
-    return sum + (serviceDurationForLength(service, lengthCm, catalogServices) ?? 0);
-  }, 0);
-  const selectedPrices = selectedBookableServices.map((service) =>
-    servicePriceForLength(service, lengthCm, catalogServices)
-  );
-  const finalPrice = selectedPrices.length && selectedPrices.every((price) => price != null)
-    ? selectedPrices.reduce<number>((sum, price) => sum + (price ?? 0), 0)
-    : null;
+  const totalDuration = quote.data?.total_duration_minutes ?? 0;
+  const finalPrice = quote.data && !quote.loading && !quote.error && !quote.data.requires_manual_price && !quote.data.requires_on_request
+    ? quote.data.total_incl_vat / 100 : null;
 
   const isPast       = (d: Date) => d.getTime() < today.getTime();
   const isOtherMonth = (d: Date) => d.getMonth() !== view.getMonth();
@@ -568,6 +587,8 @@ export default function KraanAfspraakPage() {
       if (f.type.startsWith('image/')) next.push(f);
     }
     setImages(next);
+    startJourney();
+    trackEvent('booking_photos_selected', { metadata: { photo_count: next.length } });
   };
 
   const removeImage = (idx: number) =>
@@ -603,7 +624,8 @@ export default function KraanAfspraakPage() {
   };
 
   const submit = async () => {
-    if (!canSubmit || !picked || !time) return;
+    if (submitLock.current || !canSubmit || !picked || !time) return;
+    submitLock.current = true;
     const requestId = generateRequestId();
     setSubmitError(null);
     setSubmitting(true);
@@ -612,8 +634,10 @@ export default function KraanAfspraakPage() {
       intent: 'crane_booking',
       api_method: 'POST',
       api_endpoint: '/v1/booking',
+      metadata: { service_codes: selectedServices, date: toLocalDateKey(picked), start_time: time, photo_count: images.length },
     });
     try {
+      trackEvent('api_requested', { request_id: requestId, intent: 'crane_booking', api_method: 'POST', api_endpoint: '/v1/booking' });
       const result = await bookingService.book({
         first_name:  form.voornaam,
         last_name:   form.achternaam,
@@ -645,26 +669,8 @@ export default function KraanAfspraakPage() {
       }, { requestId });
       const correlatedRequestId = result.requestId || requestId;
       const appointmentId = result.data?.appointment_id;
-
-      if (images.length && appointmentId) {
-        const fd = new FormData();
-        images.forEach(img => fd.append('photos[]', img));
-        try {
-          await bookingService.uploadBookingPhotos(appointmentId, fd, { requestId: correlatedRequestId });
-        } catch (photoErr) {
-          console.error('Booking photo upload failed', photoErr);
-          trackEvent('photo_upload_failed', {
-            request_id: correlatedRequestId,
-            intent: 'crane_booking',
-            entity_type: 'booking',
-            entity_id: appointmentId,
-            api_method: 'POST',
-            api_endpoint: `/v1/booking/${appointmentId}/photos`,
-            http_status: getApiErrorStatus(photoErr),
-            metadata: { message: getApiErrorMessage(photoErr) },
-          });
-        }
-      }
+      journeyCompleted.current = true;
+      if (images.length && appointmentId) await uploadPhotos(appointmentId, correlatedRequestId);
 
       trackEvent('booking_succeeded', {
         request_id: correlatedRequestId,
@@ -702,21 +708,54 @@ export default function KraanAfspraakPage() {
     } finally {
       flushTrackEvents();
       setSubmitting(false);
+      submitLock.current = false;
+    }
+  };
+
+  const uploadPhotos = async (appointmentId: string, bookingRequestId: string) => {
+    if (photoUploadLock.current) return;
+    photoUploadLock.current = true;
+    setUploadingPhotos(true);
+    const requestId = generateRequestId();
+    const props = {
+      request_id: requestId, intent: 'crane_booking', entity_type: 'appointment', entity_id: appointmentId,
+      api_method: 'POST', api_endpoint: `/v1/booking/${appointmentId}/photos`,
+      metadata: { booking_request_id: bookingRequestId, photo_count: images.length },
+    };
+    trackEvent('photo_upload_started', props);
+    try {
+      const fd = new FormData();
+      images.forEach((image) => fd.append('photos[]', image));
+      const result = await bookingService.uploadBookingPhotos(appointmentId, fd, { requestId });
+      trackEvent('photo_upload_succeeded', { ...props, http_status: result.status });
+      setPhotoRetry(null);
+    } catch (error) {
+      setPhotoRetry({ appointmentId, requestId: bookingRequestId });
+      trackEvent('photo_upload_failed', { ...props, http_status: getApiErrorStatus(error) || undefined });
+      trackEvent('frontend_error_shown', { ...props, metadata: { ...props.metadata, reason: 'photo_upload_failed' } });
+    } finally {
+      photoUploadLock.current = false;
+      setUploadingPhotos(false);
+      void flushTrackEvents();
     }
   };
 
   const onSubmitClick = () => {
     if (submitting || submitted) return;
+    startJourney();
     if (!canSubmit) {
+      const requestId = generateRequestId();
       const errors = collectClientErrors();
       const message = clientValidationMessage(errors) ?? t('crane.submitFailed');
       showSubmitError(message, errors);
       trackEvent('booking_submit_blocked', {
+        request_id: requestId,
         intent: 'crane_booking',
         api_method: 'POST',
         api_endpoint: '/v1/booking',
-        metadata: { reason: submitBlockReason() },
+        metadata: { reason: submitBlockReason(), service_codes: selectedServices, date: picked ? toLocalDateKey(picked) : null, start_time: time },
       });
+      trackEvent('frontend_error_shown', { request_id: requestId, intent: 'crane_booking', metadata: { reason: 'client_validation' } });
       flushTrackEvents();
       return;
     }
@@ -745,8 +784,23 @@ export default function KraanAfspraakPage() {
                   Bekijk uw afspraken
                 </Button>
               </Link>
-              <Button variant="outline" onClick={() => setSubmitted(false)}>Nieuwe aanvraag</Button>
+              <Button variant="outline" disabled={!!photoRetry} onClick={() => {
+                journeyStarted.current = false;
+                journeyCompleted.current = false;
+                changedFields.current.clear();
+                setImages([]);
+                setSubmitted(false);
+              }}>Nieuwe aanvraag</Button>
             </div>
+            {photoRetry ? (
+              <div role="alert" className="mt-5 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
+                <p><TranslatedText textKey={'crane.photosFailed'} /></p>
+                <Button className="mt-3" variant="outline" disabled={uploadingPhotos}
+                  onClick={() => void uploadPhotos(photoRetry.appointmentId, photoRetry.requestId)}>
+                  <TranslatedText textKey={'crane.retryPhotos'} />
+                </Button>
+              </div>
+            ) : null}
           </Card>
         </div>
       </div>
@@ -758,7 +812,7 @@ export default function KraanAfspraakPage() {
       {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
         <Script
           src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
-          onLoad={() => setGoogleLoaded(true)}
+          onReady={() => setGoogleLoaded(true)}
           onError={() => setGoogleError(true)}
         />
       ) : null}
@@ -827,15 +881,18 @@ export default function KraanAfspraakPage() {
 
               {/* Address — four full-width fields. Street is the Places search box. */}
               <SectionTitle icon={<MapPin className="h-4 w-4" />} className="mt-8">
-                {t('crane.address.title')}
+                <TranslatedText textKey={'crane.address.title'} />
               </SectionTitle>
               {googleError ? (
                 <p id="address-manual-hint" role="status" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                  {t('crane.address.manualFallback')}
+                  <TranslatedText textKey={'crane.address.manualFallback'} />
                 </p>
               ) : null}
-              <div className="mt-4 flex flex-col gap-4">
+              <div role="group" aria-label={t('crane.address.title')} className="mt-4 grid min-w-0 grid-cols-1 gap-5 [&_label]:text-base">
+                {/* Replace Google's input on failure so delayed provider code
+                    cannot disable or overwrite the manual address field. */}
                 <Input
+                  key={googleError ? 'manual-street' : 'google-street'}
                   ref={(el) => {
                     addressRef.current = el;
                     fieldRefs.current.straat = el;
@@ -846,7 +903,7 @@ export default function KraanAfspraakPage() {
                   placeholder={t('crane.address.streetPlaceholder')}
                   required
                   autoComplete="off"
-                  className="h-14 px-4 text-base"
+                  className="h-14 min-w-0 px-4 text-lg"
                   value={form.straat}
                   onChange={setField('straat')}
                   error={fieldErrors.straat}
@@ -862,7 +919,7 @@ export default function KraanAfspraakPage() {
                   placeholder={t('crane.address.housePlaceholder')}
                   required
                   autoComplete="off"
-                  className="h-14 px-4 text-base"
+                  className="h-14 min-w-0 px-4 text-lg"
                   value={form.huisnummer}
                   onChange={setField('huisnummer')}
                   error={fieldErrors.huisnummer}
@@ -876,7 +933,7 @@ export default function KraanAfspraakPage() {
                   placeholder={t('crane.address.postalPlaceholder')}
                   required
                   autoComplete="postal-code"
-                  className="h-14 px-4 text-base"
+                  className="h-14 min-w-0 px-4 text-lg"
                   value={form.postcode}
                   onChange={setField('postcode')}
                   error={fieldErrors.postcode}
@@ -890,7 +947,7 @@ export default function KraanAfspraakPage() {
                   placeholder={t('crane.address.cityPlaceholder')}
                   required
                   autoComplete="address-level2"
-                  className="h-14 px-4 text-base"
+                  className="h-14 min-w-0 px-4 text-lg"
                   value={form.stad}
                   onChange={setField('stad')}
                   error={fieldErrors.stad}
@@ -978,12 +1035,12 @@ export default function KraanAfspraakPage() {
               {/* Services */}
               {catalogQuery.error ? (
                 <p role="status" className="mt-2 text-xs text-amber-700">
-                  {t('crane.catalogUnavailable')}
+                  <TranslatedText textKey={'crane.catalogUnavailable'} />
                 </p>
               ) : null}
               {!catalogQuery.loading && !catalogQuery.error && bookableServices.length === 0 ? (
                 <p role="status" className="mt-2 text-xs text-navy-500">
-                  {t('crane.noBookableServices')}
+                  <TranslatedText textKey={'crane.noBookableServices'} />
                 </p>
               ) : null}
               <div
@@ -993,7 +1050,7 @@ export default function KraanAfspraakPage() {
               >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <SectionTitle icon={<Sparkles className="h-4 w-4" />}>
-                  {t('crane.services')}
+                  <TranslatedText textKey={'crane.services'} />
                 </SectionTitle>
                 {canManageProducts ? (
                   <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold">
@@ -1001,13 +1058,13 @@ export default function KraanAfspraakPage() {
                       href={`/${locale}/admin/producten`}
                       className="text-marine-700 underline-offset-2 hover:underline"
                     >
-                      {t('adminModules.hubs.servicesPricing.services')}
+                      <TranslatedText textKey={'adminModules.hubs.servicesPricing.services'} />
                     </Link>
                     <Link
                       href={`/${locale}/admin/calculator/pricing`}
                       className="text-marine-700 underline-offset-2 hover:underline"
                     >
-                      {t('adminModules.hubs.servicesPricing.rules')}
+                      <TranslatedText textKey={'adminModules.hubs.servicesPricing.rules'} />
                     </Link>
                   </div>
                 ) : null}
@@ -1017,9 +1074,12 @@ export default function KraanAfspraakPage() {
                   const Icon   = s.icon;
                   const active = selectedServices.includes(s.code);
                   const catalogService = catalogServiceFor(s, catalogServices);
-                  const productSearch = catalogService?.code ?? catalogService?.service_code ?? s.catalogServiceCodes[0];
-                  const price = servicePriceForLength(s, lengthCm, catalogServices);
-                  const duration = serviceDurationForLength(s, lengthCm, catalogServices);
+                  const productSearch = catalogService?.code ?? s.code;
+                  const line = quote.data?.services.find((item) => item.service_code === s.code);
+                  const price = active
+                    ? line && !quote.loading && !quote.error && !line.is_manual && !line.is_on_request ? line.price_incl_vat / 100 : null
+                    : standalonePrice(catalogService, lengthCm);
+                  const duration = line?.duration_minutes ?? null;
                   return (
                     <div key={s.code} className="flex items-stretch gap-2">
                       <button
@@ -1040,6 +1100,7 @@ export default function KraanAfspraakPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-semibold">{s.label}</div>
+                          {line?.included_by ? <div className="text-xs">Inbegrepen: {line.included_by}</div> : null}
                           <div className={cn('text-xs', active ? 'text-sand-100/80' : 'text-navy-400')}>
                             {duration != null ? `Ca. ${duration} min` : '—'}
                           </div>
@@ -1075,7 +1136,7 @@ export default function KraanAfspraakPage() {
               {/* Notes */}
               <div className="mt-8">
                 <label htmlFor="booking-notes" className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('crane.notes')}
+                  <TranslatedText textKey={'crane.notes'} />
                 </label>
                 <textarea
                   id="booking-notes"
@@ -1137,7 +1198,7 @@ export default function KraanAfspraakPage() {
               {/* Footer note */}
               <div className="mt-6 flex items-start gap-2 rounded-lg border border-marine-200/60 bg-marine-50 p-3 text-xs text-marine-800">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                {t('crane.footerNote')}
+                <TranslatedText textKey={'crane.footerNote'} />
               </div>
             </Card>
           </div>
@@ -1152,7 +1213,7 @@ export default function KraanAfspraakPage() {
             <Card className="p-5">
               <div className="mb-4 flex items-center justify-between">
                 <SectionTitle icon={<CalendarDays className="h-4 w-4" />}>
-                  {t('crane.availableDays')}
+                  <TranslatedText textKey={'crane.availableDays'} />
                 </SectionTitle>
                 <div className="flex items-center gap-1">
                   <button
@@ -1186,6 +1247,8 @@ export default function KraanAfspraakPage() {
                         clearFieldError('date');
                         clearFieldError('time');
                         setPicked(d);
+                        startJourney();
+                        trackEvent('booking_date_selected', { metadata: { date: toLocalDateKey(d) } });
                         setTime(null);
                       }}
                       className={cn(
@@ -1222,7 +1285,7 @@ export default function KraanAfspraakPage() {
                     role="alert"
                     className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 outline-none ring-rose-300 focus-visible:ring-2"
                   >
-                    {t('crane.dayClosed')}
+                    <TranslatedText textKey={'crane.dayClosed'} />
                   </p>
                 )}
                 {slotsError === 'error' && (
@@ -1250,6 +1313,8 @@ export default function KraanAfspraakPage() {
                           onClick={() => {
                             clearFieldError('time');
                             setTime(s);
+                            startJourney();
+                            trackEvent('booking_time_selected', { metadata: { start_time: s } });
                           }}
                           className={cn(
                             'rounded-md border px-2 py-1.5 text-xs font-medium transition',
@@ -1277,7 +1342,7 @@ export default function KraanAfspraakPage() {
             <Card className="overflow-visible">
               <div className="border-b border-navy-100 px-5 py-4">
                 <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-                  {t('crane.appointment')}
+                  <TranslatedText textKey={'crane.appointment'} />
                 </div>
               </div>
               <div className="space-y-3 px-5 py-4 text-sm">
@@ -1302,7 +1367,7 @@ export default function KraanAfspraakPage() {
               <div className="bg-navy-900 px-5 py-5 text-white">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium uppercase tracking-widest text-sand-100/70">
-                    {t('crane.estimate')}
+                    <TranslatedText textKey={'crane.estimate'} />
                   </span>
                   <span className="text-2xl font-semibold">
                     {finalPrice == null ? t('servicePage.onRequest') : `€${finalPrice.toFixed(2)}`}

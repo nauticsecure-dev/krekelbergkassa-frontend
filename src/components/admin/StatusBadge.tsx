@@ -13,7 +13,7 @@ export function InvoiceStatusBadge({
   const normalized = status.toLowerCase();
   if (normalized.includes('credit')) return <Badge tone="warning">{t('adminNew.status.credited')}</Badge>;
   if (normalized.includes('checked')) return <Badge tone="neutral">{t('adminNew.status.checkedOut')}</Badge>;
-  if (normalized.includes('cancel')) return <Badge tone="sand">{t('adminNew.status.cancelled')}</Badge>;
+  if (normalized.includes('cancel') || normalized === 'voided') return <Badge tone="sand">{t('adminNew.status.cancelled')}</Badge>;
   if (normalized.includes('draft')) return <Badge tone="navy">{t('adminNew.status.draft')}</Badge>;
   return <Badge tone="marine">{t('adminNew.status.final', { defaultValue: 'Definitief' })}</Badge>;
 }
@@ -21,7 +21,7 @@ export function InvoiceStatusBadge({
 export function PaymentStatusBadge({ status }: { status: string }) {
   const { t } = useIntl();
   const normalized = status.toLowerCase();
-  if (normalized.includes('paid') || normalized.includes('success')) {
+  if ((normalized.includes('paid') && !normalized.includes('partial')) || normalized.includes('success')) {
     return <Badge tone="success" dot>{t('adminNew.status.paid')}</Badge>;
   }
   if (normalized.includes('overdue')) {

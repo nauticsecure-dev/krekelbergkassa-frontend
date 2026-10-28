@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import { intlLocale } from '@/lib/format';
 
@@ -12,11 +13,12 @@ import { ErrorState, LoadingState } from '@/components/admin/DataState';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
-import { customersService, invoicesService, productsService } from '@/lib/services';
+import { customersService, invoicesService, productsService, invoiceLayoutTemplatesService } from '@/lib/services';
 import type { Customer, Product } from '@/lib/api-types';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { usePermission } from '@/lib/permissions';
 
 type InvoiceDraftLine = {
   product_id?: string;
@@ -42,15 +44,15 @@ const addDays = (date: string, days: number) => {
   return value.toISOString().slice(0, 10);
 };
 const euroToCents = (value: string) => Math.round((Number(value.replace(',', '.')) || 0) * 100);
-const lineSubtotalCents = (line: InvoiceDraftLine) =>
-  Math.round(
-    Number(line.quantity.replace(',', '.')) *
-      euroToCents(line.unit_price) *
-      (1 - Math.min(100, Math.max(0, Number(line.discount_percent.replace(',', '.')) || 0)) / 100)
-  );
+const lineSubtotalCents = (line: InvoiceDraftLine) => {
+  const gross = Math.round(Number(line.quantity.replace(',', '.')) * euroToCents(line.unit_price));
+  const discount = Math.min(100, Math.max(0, Number(line.discount_percent.replace(',', '.')) || 0));
+  return gross - Math.round(gross * discount / 100);
+};
 
 export default function ManualInvoicePage() {
   const { locale, t } = useIntl();
+  const { can } = usePermission();
   const router = useRouter();
   const { push } = useToast();
   const [customerSearch, setCustomerSearch] = React.useState('');
@@ -60,6 +62,8 @@ export default function ManualInvoicePage() {
   const [customerForm, setCustomerForm] = React.useState({ name: '', email: '', phone: '', company_name: '' });
   const [invoiceDate, setInvoiceDate] = React.useState(today);
   const [dueDate, setDueDate] = React.useState(() => addDays(today(), 14));
+  const [templateId, setTemplateId] = React.useState('');
+  const layouts = useQuery(['invoice-layouts'], () => invoiceLayoutTemplatesService.list());
   const [invoiceNumber, setInvoiceNumber] = React.useState('');
   const [reference, setReference] = React.useState('');
   const [currency, setCurrency] = React.useState('EUR');
@@ -125,6 +129,7 @@ export default function ManualInvoicePage() {
   };
 
   const createInlineCustomer = async () => {
+    if (!can('customers.write')) return;
     try {
       const customer = await createCustomer.mutate(customerForm);
       setSelectedCustomer(customer);
@@ -150,6 +155,7 @@ export default function ManualInvoicePage() {
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!can('invoice.create')) return;
     if (!selectedCustomer) {
       push({ tone: 'error', title: t('adminNew.invoices.selectCustomer') });
       return;
@@ -163,6 +169,7 @@ export default function ManualInvoicePage() {
       const invoice = await createInvoice.mutate({
         customer_id: selectedCustomer.id,
         source: 'manual',
+        template_id: templateId || undefined,
         invoice_number: invoiceNumber.trim() || undefined,
         invoice_date: invoiceDate,
         due_date: dueDate,
@@ -192,6 +199,10 @@ export default function ManualInvoicePage() {
     intlLocale(locale),
     { style: 'currency', currency }
   ).format(cents / 100);
+
+  if (!can('invoice.create')) {
+    return <AdminContent><ErrorState message={t('adminNew.common.permissionDenied')} /></AdminContent>;
+  }
 
   return (
     <>
@@ -245,10 +256,10 @@ export default function ManualInvoicePage() {
                 {customerQuery.length < 2 ? (
                   <p className="text-sm text-navy-500">{t('adminNew.invoices.customerSearchHint', { defaultValue: 'Zoek op naam, e-mail, telefoon of bedrijf (minimaal 2 tekens)' })}</p>
                 ) : null}
-                <Button type="button" variant="outline" leftIcon={<UserRoundPlus className="h-4 w-4" />} onClick={() => setCreateCustomerOpen((open) => !open)}>
+                {can('customers.write') ? <Button type="button" variant="outline" leftIcon={<UserRoundPlus className="h-4 w-4" />} onClick={() => setCreateCustomerOpen((open) => !open)}>
                   {t('adminNew.invoices.createCustomerInline', { defaultValue: 'Nieuwe klant aanmaken' })}
-                </Button>
-                {createCustomerOpen ? (
+                </Button> : null}
+                {createCustomerOpen && can('customers.write') ? (
                   <div className="rounded-xl border border-navy-200 bg-sand-50 p-4">
                     <AdminFormGrid>
                       <Input required value={customerForm.name} onChange={(e) => setCustomerForm((v) => ({ ...v, name: e.target.value }))} placeholder={t('adminNew.customers.fields.name', { defaultValue: 'Naam' })} />
@@ -274,16 +285,20 @@ export default function ManualInvoicePage() {
               <Input type="date" required value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} aria-label={t('adminNew.invoices.invoiceDate', { defaultValue: 'Factuurdatum' })} />
               <Input type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)} aria-label={t('adminNew.invoices.dueDate', { defaultValue: 'Vervaldatum' })} />
               <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} placeholder={t('adminNew.invoices.invoiceNumberOptional', { defaultValue: 'Factuurnummer (automatisch indien leeg)' })} />
+              <SearchSelect className="input-base" value={templateId} onChange={(e) => setTemplateId(e.target.value)} aria-label={t('adminNew.templates.layout', { defaultValue: 'Factuuropmaak' })}>
+                <option value="">{t('adminNew.invoices.defaultTemplate', { defaultValue: 'Actieve standaardopmaak' })}</option>
+                {(layouts.data ?? []).map((layout) => <option key={layout.id} value={layout.id}>{layout.name} · v{layout.version}</option>)}
+              </SearchSelect>
               <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder={t('adminNew.invoices.reference', { defaultValue: 'Referentie' })} />
-              <select className="input-base" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} aria-label={t('adminNew.invoices.paymentMethod', { defaultValue: 'Betaalmethode' })}>
+              <SearchSelect className="input-base" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} aria-label={t('adminNew.invoices.paymentMethod', { defaultValue: 'Betaalmethode' })}>
                 <option value="">{t('adminNew.invoices.paymentMethod', { defaultValue: 'Betaalmethode' })}</option>
                 <option value="banktransfer">{t('adminNew.invoiceDetail.paymentMethods.banktransfer')}</option>
                 <option value="pin">{t('adminNew.invoiceDetail.paymentMethods.pin')}</option>
                 <option value="cash">{t('adminNew.invoiceDetail.paymentMethods.cash')}</option>
-              </select>
-              <select className="input-base" value={currency} onChange={(e) => setCurrency(e.target.value)} aria-label={t('adminNew.invoices.currency', { defaultValue: 'Valuta' })}>
+              </SearchSelect>
+              <SearchSelect className="input-base" value={currency} onChange={(e) => setCurrency(e.target.value)} aria-label={t('adminNew.invoices.currency', { defaultValue: 'Valuta' })}>
                 <option value="EUR">EUR — Euro</option>
-              </select>
+              </SearchSelect>
             </AdminFormGrid>
           </AdminSectionCard>
 
@@ -300,14 +315,14 @@ export default function ManualInvoicePage() {
             </div>
             <div className="space-y-3">
               {lines.map((line, index) => (
-                <div key={`${index}-${line.product_id ?? 'custom'}`} className="grid gap-2 rounded-xl border border-navy-100 bg-white p-3 sm:grid-cols-2 lg:grid-cols-[minmax(180px,2fr)_90px_130px_100px_100px_auto]">
-                  <Input required value={line.description} onChange={(e) => updateLine(index, { description: e.target.value })} placeholder={t('adminNew.invoices.lineDescription', { defaultValue: 'Omschrijving' })} />
-                  <Input required type="number" min="0.001" step="0.001" value={line.quantity} onChange={(e) => updateLine(index, { quantity: e.target.value })} aria-label={t('adminNew.invoices.quantity', { defaultValue: 'Aantal' })} />
+                <AdminFormGrid key={`${index}-${line.product_id ?? 'custom'}`} className="rounded-xl border border-navy-100 bg-white p-3 lg:grid-cols-3">
+                  <Input required value={line.description} onChange={(e) => updateLine(index, { description: e.target.value })} aria-label={t('adminNew.invoices.lineDescription', { defaultValue: 'Omschrijving' })} placeholder={t('adminNew.invoices.lineDescription', { defaultValue: 'Omschrijving' })} />
+                  <Input required type="number" min="0.01" step="0.01" value={line.quantity} onChange={(e) => updateLine(index, { quantity: e.target.value })} aria-label={t('adminNew.invoices.quantity', { defaultValue: 'Aantal' })} />
                   <Input required type="number" min="0" step="0.01" value={line.unit_price} onChange={(e) => updateLine(index, { unit_price: e.target.value })} aria-label={t('adminNew.invoices.unitPriceExVat', { defaultValue: 'Prijs excl. btw' })} />
-                  <Input required type="number" min="0" max="100" step="0.01" value={line.vat_rate} onChange={(e) => updateLine(index, { vat_rate: e.target.value })} aria-label={t('adminNew.invoices.vatRate', { defaultValue: 'Btw %' })} />
+                  <Input required type="number" min="0" max="100" step="0.01" readOnly={Boolean(line.product_id)} value={line.vat_rate} onChange={(e) => updateLine(index, { vat_rate: e.target.value })} aria-label={t('adminNew.invoices.vatRate', { defaultValue: 'Btw %' })} />
                   <Input type="number" min="0" max="100" step="0.01" value={line.discount_percent} onChange={(e) => updateLine(index, { discount_percent: e.target.value })} aria-label={t('adminNew.invoices.discount', { defaultValue: 'Korting %' })} />
                   <Button type="button" variant="ghost" aria-label={t('adminNew.common.delete')} onClick={() => setLines((current) => current.length > 1 ? current.filter((_, i) => i !== index) : current)}><Trash2 className="h-4 w-4" /></Button>
-                </div>
+                </AdminFormGrid>
               ))}
             </div>
             <Button type="button" variant="outline" className="mt-3" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setLines((current) => [...current, newLine()])}>

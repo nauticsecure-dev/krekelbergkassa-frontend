@@ -1,4 +1,6 @@
 'use client';
+import { CTA_ROUTES } from './cta-routes';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Cropper, { type Area } from 'react-easy-crop';
@@ -9,11 +11,15 @@ import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { cn } from '@/lib/cn';
 import { cmsService } from '@/lib/services';
+import { saveTextDraft } from './text-save';
+import { normalizeHeaderDestination } from './header-destination';
 import {
   EDITABLE_LOCALE_TAGS,
+  initialEditorLocale,
   useCms,
   type GlobalValue,
   type LocaleTag,
+  type ImageStyle,
 } from './CmsProvider';
 
 // ---------------------------------------------------------------------------
@@ -37,9 +43,11 @@ function LocaleTabs({
   active: LocaleTag;
   onChange: (tag: LocaleTag) => void;
 }) {
+  const { editorLocales } = useCms();
+  React.useEffect(() => { if (editorLocales.length && !editorLocales.includes(active)) onChange(editorLocales[0]); }, [active, editorLocales, onChange]);
   return (
     <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Locale">
-      {EDITABLE_LOCALE_TAGS.map((tag) => (
+      {editorLocales.map((tag) => (
         <button
           key={tag}
           type="button"
@@ -133,7 +141,7 @@ export function TextEditModal({
 }) {
   const { t } = useIntl();
   const { push, pushError } = useToast();
-  const { saveText, getContentBlock, localeTag } = useCms();
+  const { saveText, getContentBlock, localeTag, editorLocales } = useCms();
 
   const [active, setActive]           = React.useState<LocaleTag>(localeTag);
   const [values, setValues]           = React.useState<ByTag>({});
@@ -141,60 +149,60 @@ export function TextEditModal({
   const [saving, setSaving]           = React.useState(false);
   const [autoTranslate, setAutoTranslate] = React.useState(false);
   const [translating, setTranslating] = React.useState(false);
+  const [loadingLocales, setLoadingLocales] = React.useState(false);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (!open) return;
     const stored = getContentBlock(blockKey)?.value ?? '';
     const seeded: ByTag = { [localeTag]: stored || fallbackText };
     setValues(seeded);
     setBase(seeded);
-    setActive(localeTag);
+    setActive(initialEditorLocale(localeTag, editorLocales));
     setAutoTranslate(false);
-  }, [open, blockKey, fallbackText, localeTag, getContentBlock]);
+    let cancelled = false;
+    setLoadingLocales(true);
+    void Promise.all(editorLocales.map(async (tag) => {
+      const response = await cmsService.pageContent(page, tag) as { content_blocks?: Array<{ key: string; value: string }> };
+      return [tag, response.content_blocks?.find((block) => block.key === blockKey)?.value ?? seeded[tag] ?? ''] as const;
+    })).then((entries) => {
+      if (cancelled) return;
+      const loaded = Object.fromEntries(entries);
+      setValues(loaded); setBase(loaded);
+    }).catch((error) => { if (!cancelled) pushError(error, t('cms.loadError')); })
+      .finally(() => { if (!cancelled) setLoadingLocales(false); });
+    return () => { cancelled = true; };
+    // Seed once per opening rather than resetting the draft on a CMS update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, blockKey, page, localeTag]);
 
   const isLong = type === 'rich_text' || type === 'long_text';
 
   // All locale tabs except the one currently being edited
-  const otherLocales = EDITABLE_LOCALE_TAGS.filter((tag) => tag !== active);
+  const otherLocales = editorLocales.filter((tag) => tag !== active);
 
   const onSave = async () => {
-    let currentValues = { ...values };
-
-    // Auto-translate: send the active locale text to all other locales
-    if (autoTranslate && currentValues[active]?.trim()) {
-      setTranslating(true);
-      try {
-        const res = await cmsService.translate({
-          text: currentValues[active]!,
-          source_locale: active,
-          target_locales: otherLocales,
-        });
-        // Merge translated values — don't overwrite locales the editor already filled in
-        for (const [locale, translated] of Object.entries(res.translations)) {
-          const tag = locale as LocaleTag;
-          if (!currentValues[tag]?.trim()) {
-            currentValues = { ...currentValues, [tag]: translated };
-          }
-        }
-        setValues(currentValues);
-        push({ tone: 'success', title: 'Vertaling gegenereerd' });
-      } catch {
-        push({ tone: 'info', title: 'Vertaling mislukt — tekst opgeslagen zonder vertaling' });
-      } finally {
-        setTranslating(false);
-      }
-    }
-
-    const value_by_locale = changedByLocale(currentValues, base);
-    if (Object.keys(value_by_locale).length === 0) {
-      onClose();
-      return;
-    }
+    if (saving || translating) return;
     setSaving(true);
     try {
-      await saveText(blockKey, { page, section, type, value_by_locale });
-      push({ tone: 'success', title: t('cms.saved') });
-      onClose();
+      const outcome = await saveTextDraft({
+        values, base, source: active, locales: editorLocales, autoTranslate,
+        translate: async (payload) => {
+          setTranslating(true);
+          try { return await cmsService.translate(payload); }
+          finally { setTranslating(false); }
+        },
+        save: (value_by_locale) => saveText(blockKey, { page, section, type, value_by_locale }),
+        onTranslated: setValues,
+      });
+      if (outcome !== 'unchanged') {
+        push({
+          tone: outcome.startsWith('translationFailed') ? 'info' : 'success',
+          title: t(outcome === 'translated' ? 'cms.savedWithTranslations'
+            : outcome === 'translationFailed' ? 'cms.savedWithoutTranslations'
+            : outcome === 'translationFailedUnchanged' ? 'cms.translationFailed' : 'cms.saved'),
+        });
+      }
+      if (outcome !== 'translationFailedUnchanged') onClose();
     } catch (err) {
       pushError(err, t('cms.saveError'));
     } finally {
@@ -202,15 +210,17 @@ export function TextEditModal({
     }
   };
 
-  const busy = saving || translating;
+  const submitting = saving || translating;
+  const busy = submitting || loadingLocales;
 
   return (
-    <Modal open={open} onClose={onClose} size="lg">
+    <Modal open={open} onClose={() => { if (!submitting) onClose(); }} size="lg">
       <ModalHeader title={t('cms.editText')} desc={blockKey} />
       <div className="space-y-4 overflow-y-auto px-6 py-5">
-        <LocaleTabs active={active} onChange={setActive} />
+        <LocaleTabs active={active} onChange={(tag) => { if (!busy) setActive(tag); }} />
         <textarea
           key={active}
+          disabled={busy}
           value={values[active] ?? ''}
           onChange={(e) => setValues((v) => ({ ...v, [active]: e.target.value }))}
           rows={isLong ? 8 : 3}
@@ -224,13 +234,13 @@ export function TextEditModal({
           <input
             type="checkbox"
             checked={autoTranslate}
+            disabled={busy}
             onChange={(e) => setAutoTranslate(e.target.checked)}
             className="h-4 w-4 cursor-pointer accent-navy-900"
           />
           <Languages className="h-4 w-4 shrink-0 text-navy-500" />
           <span>
-            Automatisch vertalen naar{' '}
-            <strong>{otherLocales.map((l) => TAG_LABEL[l]).join(', ')}</strong> via AI
+            {t('cms.autoTranslate', { languages: otherLocales.map((l) => TAG_LABEL[l]).join(', ') })}
           </span>
           {autoTranslate && (
             <span className="ml-auto rounded bg-gold-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold-700">
@@ -244,7 +254,7 @@ export function TextEditModal({
 
       {/* Footer — shows spinner while translating */}
       <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
-        <Button variant="ghost" onClick={onClose} disabled={busy}>
+        <Button variant="ghost" onClick={onClose} disabled={submitting}>
           {t('cms.cancel')}
         </Button>
         <Button
@@ -255,7 +265,7 @@ export function TextEditModal({
             busy ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined
           }
         >
-          {translating ? 'Vertalen…' : t('cms.save')}
+          {translating ? t('cms.translating') : t('cms.save')}
         </Button>
       </div>
     </Modal>
@@ -273,6 +283,7 @@ export function ImageEditModal({
   page,
   fallbackSrc,
   aspect = 16 / 9,
+  defaultStyle,
 }: {
   open: boolean;
   onClose: () => void;
@@ -282,10 +293,11 @@ export function ImageEditModal({
   fallbackSrc: string;
   /** Cropper aspect ratio (width/height). Defaults to 16/9 for hero images. */
   aspect?: number;
+  defaultStyle?: ImageStyle;
 }) {
   const { t } = useIntl();
   const { push, pushError } = useToast();
-  const { getMedia, uploadImage, saveMediaMeta, localeTag, currentPage } = useCms();
+  const { getMedia, uploadImage, saveMediaMeta, localeTag, currentPage, editorLocales, guardCms } = useCms();
   const resolvedPage = page || currentPage || undefined;
 
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
@@ -295,10 +307,22 @@ export function ImageEditModal({
   const [seoTitleBase, setSeoTitleBase] = React.useState<ByTag>({});
   const [previewSrc, setPreviewSrc] = React.useState(fallbackSrc);
   const [focal, setFocal] = React.useState({ x: 50, y: 50 });
+  const [imageStyle, setImageStyle] = React.useState<ImageStyle>({});
+  const [mobileFocal, setMobileFocal] = React.useState({ x: 50, y: 50 });
+  const [pendingMobileFile, setPendingMobileFile] = React.useState<File | null>(null);
+  const [mobileFileId, setMobileFileId] = React.useState<string | null>(null);
+  const [selectedFileId, setSelectedFileId] = React.useState<string | undefined>();
+  const [library, setLibrary] = React.useState<Array<{id: string; filename: string; url: string; usage: Array<{key: string; page: string}>}>>([]);
   const [overlay, setOverlay] = React.useState(0);
   const [crop, setCrop] = React.useState({ x: 0, y: 0 });
   const [zoom, setZoom] = React.useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = React.useState<Area | null>(null);
+  const [croppedArea, setCroppedArea] = React.useState<Area | null>(null);
+  const [initialCrop, setInitialCrop] = React.useState<Area | undefined>();
+  const [initialPixels, setInitialPixels] = React.useState<Area | undefined>();
+  const [pendingFile, setPendingFile] = React.useState<File | null>(null);
+  const [loadingMeta, setLoadingMeta] = React.useState(false);
+  const previewUrl = React.useRef<string | null>(null);
   const [uploading, setUploading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 
@@ -314,28 +338,88 @@ export function ImageEditModal({
     setPreviewSrc(block?.image_url || fallbackSrc);
     setFocal(block?.focal_point ?? { x: 50, y: 50 });
     setOverlay(block?.overlay ?? 0);
+    setImageStyle({ ...defaultStyle, ...block?.image_style });
+    setMobileFocal(block?.mobile_focal_point ?? {x:50,y:50});
+    setMobileFileId(block?.mobile_file_id ?? null);
+    setSelectedFileId(undefined);
+    void cmsService.mediaLibrary().then(r => setLibrary(r.data)).catch(error => pushError(error, t('cms.loadError')));
+    setPendingFile(null);
+    setPendingMobileFile(null);
+    setInitialCrop(block?.crop_data?.unit === 'percent' ? block.crop_data : undefined);
+    setInitialPixels(block?.crop_data && block.crop_data.unit !== 'percent' ? block.crop_data : undefined);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     setCroppedAreaPixels(null);
-    setActive(localeTag);
-  }, [open, blockKey, fallbackSrc, localeTag, getMedia]);
+    setCroppedArea(null);
+    setActive(initialEditorLocale(localeTag, editorLocales));
+    // Seed on opening; provider updates during Save must not reset the draft.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, blockKey, fallbackSrc, localeTag]);
 
-  const uploadFile = async (file?: File) => {
-    if (!file) return;
+  React.useEffect(() => {
+    if (!open || !resolvedPage) return;
+    let cancelled = false;
+    setLoadingMeta(true);
+    void Promise.all(editorLocales.map(async (tag) => {
+      const response = await cmsService.pageContent(resolvedPage, tag) as {
+        media_blocks?: Array<{ key: string; alt?: string; seo_title?: string }>;
+      };
+      return { tag, block: response.media_blocks?.find((item) => item.key === blockKey) };
+    })).then((entries) => {
+      if (cancelled) return;
+      const alts = Object.fromEntries(entries.map(({ tag, block }) => [tag, block?.alt ?? '']));
+      const titles = Object.fromEntries(entries.map(({ tag, block }) => [tag, block?.seo_title ?? '']));
+      setAltValues(alts);
+      setAltBase(alts);
+      setSeoTitleValues(titles);
+      setSeoTitleBase(titles);
+    }).catch((error) => {
+      if (!cancelled) pushError(error, t('cms.loadError'));
+    }).finally(() => {
+      if (!cancelled) setLoadingMeta(false);
+    });
+    return () => { cancelled = true; };
+    // The draft belongs to this modal opening, not subsequent provider updates.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, blockKey, resolvedPage, localeTag]);
+
+  React.useEffect(() => () => {
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+  }, []);
+  React.useEffect(() => {
+    if (!open && previewUrl.current) {
+      URL.revokeObjectURL(previewUrl.current);
+      previewUrl.current = null;
+      setPendingFile(null);
+    }
+  }, [open]);
+
+  const validateImage = (file: File) => {
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
       push({ tone: 'error', title: t('cms.uploadError'), message: t('cms.imageFormats') });
-      return;
+      return false;
     }
-    setUploading(true);
-    try {
-      const url = await uploadImage(blockKey, file, resolvedPage);
-      if (url) setPreviewSrc(url);
-      push({ tone: 'success', title: t('cms.imageUploaded') });
-    } catch (err) {
-      pushError(err, t('cms.uploadError'));
-    } finally {
-      setUploading(false);
+    if (file.size > 10 * 1024 * 1024) {
+      push({ tone: 'error', title: t('cms.uploadError'), message: t('cms.imageSizeLimit') });
+      return false;
     }
+    return true;
+  };
+
+  const uploadFile = async (file?: File) => {
+    if (!file || !validateImage(file)) return;
+    if (saving) return;
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    previewUrl.current = URL.createObjectURL(file);
+    setPendingFile(file);
+    setSelectedFileId(undefined);
+    setPreviewSrc(previewUrl.current);
+    setInitialCrop(undefined);
+    setInitialPixels(undefined);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedArea(null);
+    setCroppedAreaPixels(null);
   };
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -349,18 +433,37 @@ export function ImageEditModal({
   };
 
   const onSave = async () => {
+    if (saving || loadingMeta) return;
     setSaving(true);
     try {
+      if (pendingFile) {
+        setUploading(true);
+        await uploadImage(blockKey, pendingFile, resolvedPage);
+        setPendingFile(null);
+        setUploading(false);
+      }
+      let savedMobileFileId = mobileFileId;
+      if (pendingMobileFile) {
+        const data = new FormData(); data.append('image', pendingMobileFile); data.append('page', resolvedPage ?? ''); data.append('variant', 'mobile');
+        const result = await guardCms(() => cmsService.uploadMediaBlock(blockKey, data)) as {mobile_file_id: string};
+        savedMobileFileId = result.mobile_file_id; setMobileFileId(savedMobileFileId); setPendingMobileFile(null);
+      }
       const alt_by_locale = changedByLocale(altValues, altBase);
       const seo_title_by_locale = changedByLocale(seoTitleValues, seoTitleBase);
       await saveMediaMeta(blockKey, {
         page: resolvedPage,
+        file_id: selectedFileId,
+        mobile_file_id: savedMobileFileId,
+        mobile_focal_point: mobileFocal,
+        image_style: imageStyle,
         alt_by_locale: Object.keys(alt_by_locale).length ? alt_by_locale : undefined,
         seo_title_by_locale: Object.keys(seo_title_by_locale).length ? seo_title_by_locale : undefined,
         focal_x: focal.x,
         focal_y: focal.y,
         overlay,
-        crop_data: croppedAreaPixels
+        crop_data: croppedArea
+          ? { ...croppedArea, unit: 'percent' }
+          : croppedAreaPixels
           ? {
               x: croppedAreaPixels.x,
               y: croppedAreaPixels.y,
@@ -375,11 +478,12 @@ export function ImageEditModal({
       pushError(err, t('cms.saveError'));
     } finally {
       setSaving(false);
+      setUploading(false);
     }
   };
 
   return (
-    <Modal open={open} onClose={onClose} size="lg">
+    <Modal open={open} onClose={() => { if (!saving) onClose(); }} size="lg">
       <ModalHeader title={t('cms.editImage')} desc={blockKey} />
       <div className="space-y-5 overflow-y-auto px-6 py-5">
         {/* Focal-point picker */}
@@ -397,13 +501,16 @@ export function ImageEditModal({
             style={{ aspectRatio: String(aspect) }}
           >
             <Cropper
+              key={previewSrc}
               image={previewSrc}
               crop={crop}
               zoom={zoom}
               aspect={aspect}
               onCropChange={setCrop}
               onZoomChange={setZoom}
-              onCropComplete={(_area, pixels) => setCroppedAreaPixels(pixels)}
+              initialCroppedAreaPercentages={initialCrop}
+              initialCroppedAreaPixels={initialPixels}
+              onCropComplete={(area, pixels) => { setCroppedArea(area); setCroppedAreaPixels(pixels); }}
             />
           </div>
           <label className="mt-3 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-navy-500">
@@ -443,9 +550,62 @@ export function ImageEditModal({
               disabled={uploading}
             />
           </label>
-          <p className="mt-2 text-xs text-navy-400">{t('cms.imageDropHint')}</p>
+          <p className="mt-2 text-xs text-navy-400">{t('cms.imageDropHint')} {t('cms.imageSizeLimit')}</p>
         </div>
 
+        <fieldset disabled={saving} className="space-y-3">
+          <legend className="text-sm font-semibold">Media library</legend>
+          <SearchSelect className={fieldClass} aria-label="Existing image" value={selectedFileId ?? ''} onChange={e => {
+            const file = library.find(file => file.id === e.target.value);
+            if (!file) {
+              const block = getMedia(blockKey);
+              setSelectedFileId(undefined); setPreviewSrc(block?.image_url || fallbackSrc); setPendingFile(null);
+              setInitialCrop(block?.crop_data?.unit === 'percent' ? block.crop_data : undefined);
+              setInitialPixels(block?.crop_data && block.crop_data.unit !== 'percent' ? block.crop_data : undefined);
+              setCrop({x:0,y:0}); setZoom(1); setCroppedArea(null); setCroppedAreaPixels(null);
+              return;
+            }
+            setSelectedFileId(file.id); setPreviewSrc(file.url); setPendingFile(null);
+            setInitialCrop(undefined); setInitialPixels(undefined); setCrop({x:0,y:0}); setZoom(1);
+          }}>
+            <option value="">Keep current image</option>
+            {library.map(file => <option key={file.id} value={file.id}>{file.filename} ({file.usage.length} uses)</option>)}
+          </SearchSelect>
+          {selectedFileId && <p className="text-xs">{library.find(f => f.id === selectedFileId)?.usage.map(u => u.page || u.key).join(', ') || 'Unused image'}</p>}
+          {selectedFileId && library.find(f => f.id === selectedFileId)?.usage.length === 0 && <Button variant="ghost" onClick={async () => {
+            try { await cmsService.deleteLibraryMedia(selectedFileId); setLibrary(items => items.filter(f => f.id !== selectedFileId)); setSelectedFileId(undefined); setPreviewSrc(getMedia(blockKey)?.image_url || fallbackSrc); }
+            catch(error) { pushError(error, t('cms.saveError')); }
+          }}>Delete unused image</Button>}
+          <label className="block text-sm">Mobile image
+            <SearchSelect className={fieldClass} value={mobileFileId ?? ''} onChange={e => { setMobileFileId(e.target.value || null); setPendingMobileFile(null); }}>
+              <option value="">Use desktop image</option>
+              {library.map(file => <option key={file.id} value={file.id}>{file.filename}</option>)}
+            </SearchSelect>
+          </label>
+          <label className="block text-sm">Upload mobile image<input type="file" accept="image/jpeg,image/png,image/webp" disabled={saving || uploading} onChange={e => {
+            const file = e.target.files?.[0];
+            if (file && validateImage(file)) setPendingMobileFile(file);
+            e.target.value = '';
+          }} /></label>
+          {(['x','y'] as const).map(axis => <label key={axis} className="block text-sm">Desktop focal {axis}: {focal[axis]}
+            <input aria-label={'Desktop focal '+axis} className="w-full" type="range" min="0" max="100" value={focal[axis]} onChange={e => setFocal(v => ({...v,[axis]:Number(e.target.value)}))} />
+          </label>)}
+          {(['x','y'] as const).map(axis => <label key={axis} className="block text-sm">Mobile focal {axis}: {mobileFocal[axis]}
+            <input aria-label={'Mobile focal '+axis} className="w-full" type="range" min="0" max="100" value={mobileFocal[axis]} onChange={e => setMobileFocal(v => ({...v,[axis]:Number(e.target.value)}))} />
+          </label>)}
+          {(['brightness','contrast','saturation'] as const).map(field => <label key={field} className="block text-sm">{field}: {imageStyle[field] ?? 100}%
+            <input aria-label={field} className="w-full" type="range" min="0" max="200" value={imageStyle[field] ?? 100} onChange={e => setImageStyle(v => ({...v,[field]:Number(e.target.value)}))} />
+          </label>)}
+          <label className="block text-sm">Alignment<SearchSelect className={fieldClass} value={imageStyle.alignment ?? 'center'} onChange={e => setImageStyle(v => ({...v, alignment:e.target.value as ImageStyle['alignment']}))}>
+            {['left','center','right'].map(v => <option key={v} value={v}>{v}</option>)}
+          </SearchSelect></label>
+          <label className="block text-sm">Gradient<SearchSelect className={fieldClass} value={imageStyle.gradient ?? 'none'} onChange={e => setImageStyle(v => ({...v, gradient:e.target.value as ImageStyle['gradient']}))}>
+            {['none','right','bottom'].map(v => <option key={v} value={v}>{v}</option>)}
+          </SearchSelect></label>
+          {(['gradient_start','gradient_middle','gradient_end'] as const).map(field => <label key={field} className="block text-sm">{field.replace('_',' ')}
+            <input aria-label={field} className="w-full" type="range" min="0" max="1" step=".05" value={imageStyle[field] ?? 0} onChange={e => setImageStyle(v => ({...v,[field]:Number(e.target.value)}))} />
+          </label>)}
+        </fieldset>
         {/* Overlay slider */}
         <div>
           <label className="mb-1.5 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-navy-500">
@@ -478,6 +638,7 @@ export function ImageEditModal({
             key={active}
             type="text"
             value={altValues[active] ?? ''}
+            disabled={loadingMeta || saving}
             onChange={(e) => setAltValues((v) => ({ ...v, [active]: e.target.value }))}
             className={fieldClass}
             placeholder={t('cms.altPlaceholder')}
@@ -490,6 +651,7 @@ export function ImageEditModal({
             key={`seo-${active}`}
             type="text"
             value={seoTitleValues[active] ?? ''}
+            disabled={loadingMeta || saving}
             onChange={(e) => setSeoTitleValues((v) => ({ ...v, [active]: e.target.value }))}
             className={fieldClass}
             placeholder={t('cms.imageSeoTitle')}
@@ -497,7 +659,7 @@ export function ImageEditModal({
           />
         </div>
       </div>
-      <ModalFooter onCancel={onClose} onSave={onSave} saving={saving || uploading} />
+      <ModalFooter onCancel={onClose} onSave={onSave} saving={saving || uploading || loadingMeta} />
     </Modal>
   );
 }
@@ -519,7 +681,7 @@ export function SeoEditModal({
 }) {
   const { t } = useIntl();
   const { push, pushError } = useToast();
-  const { getSeo, saveSeo, localeTag } = useCms();
+  const { getSeo, saveSeo, localeTag, editorLocales } = useCms();
 
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
   const [titles, setTitles] = React.useState<ByTag>({});
@@ -539,8 +701,8 @@ export function SeoEditModal({
     setDescs(seedDesc);
     setDescBase(seedDesc);
     setRobots(seo?.robots ?? 'index,follow');
-    setActive(localeTag);
-  }, [open, localeTag, getSeo]);
+    setActive(initialEditorLocale(localeTag, editorLocales));
+  }, [open, localeTag, getSeo, editorLocales]);
 
   const onSave = async () => {
     if (!pageSlug) {
@@ -602,7 +764,7 @@ export function SeoEditModal({
           <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-500">
             {t('cms.robots')}
           </label>
-          <select
+          <SearchSelect
             value={robots}
             onChange={(e) => setRobots(e.target.value)}
             className={fieldClass}
@@ -613,7 +775,7 @@ export function SeoEditModal({
                 {opt}
               </option>
             ))}
-          </select>
+          </SearchSelect>
         </div>
         {!pageSlug ? (
           <p className="text-xs text-rose-500">{t('cms.noPageHint')}</p>
@@ -649,13 +811,15 @@ const GLOBAL_KEYS: GlobalKeyDef[] = [
 export function GlobalSettingsModal({
   open,
   onClose,
+  headerOnly = false,
 }: {
   open: boolean;
   onClose: () => void;
+  headerOnly?: boolean;
 }) {
   const { t } = useIntl();
   const { push, pushError } = useToast();
-  const { getGlobalRaw, saveGlobal, localeTag } = useCms();
+  const { getGlobalRaw, saveGlobal, localeTag, editorLocales } = useCms();
 
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
   // Plain string values, keyed by global key.
@@ -671,23 +835,26 @@ export function GlobalSettingsModal({
     for (const def of GLOBAL_KEYS) {
       const raw = getGlobalRaw(def.key);
       if (def.perLocale) {
-        nextMaps[def.key] = typeof raw === 'object' && raw ? { ...raw } : {};
+        nextMaps[def.key] = typeof raw === 'object' && raw ? { ...raw } :
+          Object.fromEntries(editorLocales.map((tag) => [tag, typeof raw === 'string' ? raw : def.key === 'header.cta.label' ? 'Stalling' : '']));
       } else {
         nextStrings[def.key] =
-          typeof raw === 'string' && raw !== ''
+          typeof raw === 'string' && (raw !== '' || def.key === 'header.cta.path')
             ? raw
             : (def.placeholder ?? '');
       }
     }
     setStrings(nextStrings);
     setMaps(nextMaps);
-    setActive(localeTag);
-  }, [open, localeTag, getGlobalRaw]);
+    setActive(initialEditorLocale(localeTag, editorLocales));
+  }, [open, localeTag, getGlobalRaw, editorLocales]);
 
   const onSave = async () => {
     setSaving(true);
     try {
-      for (const def of GLOBAL_KEYS) {
+      try { strings['header.cta.path'] = normalizeHeaderDestination(strings['header.cta.path'] ?? ''); }
+      catch { push({ tone: 'error', title: t('cms.invalidCtaLink') }); return; }
+      for (const def of GLOBAL_KEYS.filter((def) => !headerOnly || def.key.startsWith('header.cta.'))) {
         const value: GlobalValue = def.perLocale
           ? (maps[def.key] ?? {})
           : (strings[def.key] ?? '');
@@ -706,7 +873,7 @@ export function GlobalSettingsModal({
     <Modal open={open} onClose={onClose} size="lg">
       <ModalHeader title={t('cms.globalTitle')} desc={t('cms.globalDesc')} />
       <div className="space-y-4 overflow-y-auto px-6 py-5">
-        {GLOBAL_KEYS.map((def) => (
+        {GLOBAL_KEYS.filter((def) => !headerOnly || def.key.startsWith('header.cta.')).map((def) => (
           <div key={def.key}>
             <label className="mb-1.5 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-navy-500">
               {t(def.labelKey)}
@@ -735,6 +902,10 @@ export function GlobalSettingsModal({
                   aria-label={`${t(def.labelKey)} ${TAG_LABEL[active]}`}
                 />
               </>
+            ) : def.key === 'header.cta.path' ? (
+              <SearchSelect className={fieldClass} aria-label={t(def.labelKey)} value={strings[def.key] ?? ''} onChange={e => setStrings(s => ({...s,[def.key]:e.target.value}))}>
+                {CTA_ROUTES.map(route => <option key={route} value={route}>{route || 'Home'}</option>)}
+              </SearchSelect>
             ) : (
               <input
                 type="text"

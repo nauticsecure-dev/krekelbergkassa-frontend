@@ -1,4 +1,7 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
+import { AdminSplitLayout } from '@/components/admin/AdminUi';
 
 import * as React from 'react';
 import { FileUp, Trash2 } from 'lucide-react';
@@ -112,7 +115,7 @@ export function DocumentZoneEditor({
   const [totalPages, setTotalPages] = React.useState(1);
   const [selectedZone, setSelectedZone] = React.useState<number | null>(null);
 
-  const renderPage = async (buffer: ArrayBuffer, page: number, cancelled: { value: boolean }) => {
+  const renderPage = React.useCallback(async (buffer: ArrayBuffer, page: number, cancelled: { value: boolean }) => {
     setLoadingDoc(true);
     try {
       const { url, totalPages: tp } = await renderPdfPage(buffer, page);
@@ -125,7 +128,7 @@ export function DocumentZoneEditor({
     } finally {
       if (!cancelled.value) setLoadingDoc(false);
     }
-  };
+  }, [t]);
 
   // Load the supplied source document (image rendered directly, PDF rasterised).
   React.useEffect(() => {
@@ -149,7 +152,7 @@ export function DocumentZoneEditor({
       }
     })();
     return () => { cancelled.value = true; };
-  }, [sourceUrl, t]);
+  }, [sourceUrl, t, renderPage]);
 
   // Re-render when page changes
   const goToPage = async (page: number) => {
@@ -166,7 +169,7 @@ export function DocumentZoneEditor({
 
   const fieldLabel = (f: string) => {
     const key = `adminNew.templates.fields.${f}`;
-    const label = t(key);
+    const label = tEnum(t, 'adminNew.templates.fields', f);
     return label === key ? f : label;
   };
 
@@ -282,7 +285,7 @@ export function DocumentZoneEditor({
     onChange(zones.map((z, i) => (i === idx ? { ...z, field: f } : z)));
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_18rem]">
+    <AdminSplitLayout sidebarWidth="18rem" className="gap-4">
       <div>
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <Button
@@ -307,7 +310,7 @@ export function DocumentZoneEditor({
           />
           <label className="ml-auto flex items-center gap-2 text-sm">
             <span className="text-navy-500">{t('adminNew.templates.activeField')}</span>
-            <select
+            <SearchSelect
               className="input-base py-1 text-sm"
               value={field}
               onChange={(e) => setField(e.target.value)}
@@ -317,7 +320,7 @@ export function DocumentZoneEditor({
                   {fieldLabel(f)}
                 </option>
               ))}
-            </select>
+            </SearchSelect>
           </label>
         </div>
 
@@ -410,7 +413,7 @@ export function DocumentZoneEditor({
                   className="h-3 w-3 shrink-0 rounded-sm"
                   style={{ backgroundColor: ZONE_COLORS[z.field] ?? '#1f93b8' }}
                 />
-                <select
+                <SearchSelect
                   className="input-base flex-1 py-1 text-xs"
                   value={z.field}
                   onChange={(e) => setZoneField(idx, e.target.value)}
@@ -420,7 +423,7 @@ export function DocumentZoneEditor({
                       {fieldLabel(f)}
                     </option>
                   ))}
-                </select>
+                </SearchSelect>
                 <button
                   type="button"
                   onClick={() => removeZone(idx)}
@@ -434,6 +437,6 @@ export function DocumentZoneEditor({
           </ul>
         )}
       </div>
-    </div>
+    </AdminSplitLayout>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -159,7 +160,7 @@ export default function CustomerTimelinePage() {
                   </button>
                 ))}
               </div>
-              <select
+              <SearchSelect
                 className="input-base py-1.5 text-xs"
                 value={tlPriority}
                 onChange={(e) => setTlPriority(e.target.value as typeof tlPriority)}
@@ -167,9 +168,9 @@ export default function CustomerTimelinePage() {
                 {(['low', 'normal', 'high', 'urgent'] as const).map((p) => (
                   <option key={p} value={p}>{p}</option>
                 ))}
-              </select>
+              </SearchSelect>
               {(boats.data?.data?.length ?? 0) > 0 ? (
-                <select
+                <SearchSelect
                   className="input-base py-1.5 text-xs"
                   value={tlBoatId}
                   onChange={(e) => setTlBoatId(e.target.value)}
@@ -178,7 +179,7 @@ export default function CustomerTimelinePage() {
                   {boats.data!.data.map((b) => (
                     <option key={String(b.id)} value={String(b.id)}>{b.name}</option>
                   ))}
-                </select>
+                </SearchSelect>
               ) : null}
               <div className="ml-auto">
                 <Button

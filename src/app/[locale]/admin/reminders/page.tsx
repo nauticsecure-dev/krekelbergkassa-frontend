@@ -1,4 +1,6 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import {
@@ -104,11 +106,11 @@ export default function RemindersPage() {
     raw ? raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : '';
   const entityLabel = (raw: string) => {
     const key = ENTITY_LABEL_KEYS[raw];
-    const label = key ? t(`adminNew.reminders.entityLabels.${key}`) : '';
+    const label = key ? tEnum(t, 'adminNew.reminders.entityLabels', key) : '';
     return label && !label.startsWith('adminNew.') ? label : humanize(raw);
   };
   const triggerLabel = (raw: string) => {
-    const label = raw ? t(`adminNew.reminders.triggerLabels.${raw}`) : '';
+    const label = raw ? tEnum(t, 'adminNew.reminders.triggerLabels', raw) : '';
     return label && !label.startsWith('adminNew.') ? label : humanize(raw);
   };
 
@@ -537,7 +539,7 @@ export default function RemindersPage() {
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
                   {t('adminNew.reminders.ruleFields.entity')}
                 </label>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={rule.entity_type}
                   onChange={(e) => setRule({ ...rule, entity_type: e.target.value })}
@@ -547,13 +549,13 @@ export default function RemindersPage() {
                   <option value="work_order">{t('adminNew.reminders.entities.workOrder')}</option>
                   <option value="insurance">{t('adminNew.reminders.entities.insurance')}</option>
                   <option value="planning">{t('adminNew.reminders.entities.planning')}</option>
-                </select>
+                </SearchSelect>
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
                   {t('adminNew.reminders.ruleFields.trigger')}
                 </label>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={rule.trigger_type}
                   onChange={(e) => setRule({ ...rule, trigger_type: e.target.value })}
@@ -562,7 +564,7 @@ export default function RemindersPage() {
                   <option value="due_before">{t('adminNew.reminders.triggers.dueBefore')}</option>
                   <option value="expiring_before">{t('adminNew.reminders.triggers.expiresBefore')}</option>
                   <option value="inactive_after">{t('adminNew.reminders.triggers.inactiveAfter')}</option>
-                </select>
+                </SearchSelect>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -578,7 +580,7 @@ export default function RemindersPage() {
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
                   {t('adminNew.reminders.ruleFields.channel')}
                 </label>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={rule.channel}
                   onChange={(e) => setRule({ ...rule, channel: e.target.value })}
@@ -587,7 +589,7 @@ export default function RemindersPage() {
                   <option value="email">{t('adminNew.reminders.channels.email')}</option>
                   <option value="portal">{t('adminNew.reminders.channels.portal')}</option>
                   <option value="whatsapp">{t('adminNew.reminders.channels.whatsapp')}</option>
-                </select>
+                </SearchSelect>
               </div>
             </div>
             {reminderTypes.length > 0 ? (
@@ -595,7 +597,7 @@ export default function RemindersPage() {
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
                   {t('adminNew.reminders.ruleFields.reminderType')}
                 </label>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={rule.reminder_type}
                   onChange={(e) => setRule({ ...rule, reminder_type: e.target.value })}
@@ -606,7 +608,7 @@ export default function RemindersPage() {
                       {rt}
                     </option>
                   ))}
-                </select>
+                </SearchSelect>
               </div>
             ) : null}
             <Input

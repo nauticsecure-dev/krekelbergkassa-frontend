@@ -1,4 +1,6 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -24,6 +26,7 @@ export default function CalculatorPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
 
+  const [pricingDate, setPricingDate] = React.useState('');
   const [lengthCm, setLengthCm] = React.useState('880');
   const [contractType, setContractType] = React.useState('winter');
   const [selectedServices, setSelectedServices] = React.useState<string[]>(['afspuiten']);
@@ -60,15 +63,13 @@ export default function CalculatorPage() {
   const customers = useQuery(['calculator-customers'], () =>
     customersService.list({ per_page: 100 })
   );
-  const serviceCatalog = useQuery(['calculator-service-catalog'], () =>
-    serviceCatalogService.services()
+  const serviceCatalog = useQuery(['calculator-service-catalog', locale, pricingDate], () =>
+    serviceCatalogService.services(undefined, locale, { audience: 'calculator', date: pricingDate || undefined })
   );
   const availableServiceIds = React.useMemo(() => {
     const services = serviceCatalog.data?.services ?? [];
-    return SERVICE_IDS.filter((id) => services.some((service) =>
-      service.visibility?.calculator !== false &&
-      [service.code, service.service_code, service.slug].includes(id)
-    ));
+    return [...new Set(services.filter((service) => service.visibility?.calculator && service.service_code)
+      .map((service) => service.service_code!))];
   }, [serviceCatalog.data]);
   React.useEffect(() => {
     if (!serviceCatalog.data) return;
@@ -169,6 +170,7 @@ export default function CalculatorPage() {
     try {
       const rec = await pricingService.calculatorRecord(id);
       const payload = (rec.payload ?? rec) as Record<string, unknown>;
+      setPricingDate(String(payload.date ?? ''));
       if (payload.length_cm != null) setLengthCm(String(payload.length_cm));
       if (payload.contract_type) setContractType(String(payload.contract_type));
       const svcs = (payload.services ?? payload.service_codes) as unknown;
@@ -189,6 +191,11 @@ export default function CalculatorPage() {
       });
     }
   };
+
+  React.useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('record_id');
+    if (id) void loadRecord(id);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Trello #68: create an offerte/factuur directly from a records row.
   const createFromRecord = async (id: string, mode: 'quote' | 'invoice') => {
@@ -336,6 +343,7 @@ export default function CalculatorPage() {
     try {
       const payload = {
         length_cm: Number(lengthCm),
+        date: pricingDate || undefined,
         contract_type: contractType,
         services: selectedServices,
         customer_id: customerId || undefined,
@@ -344,8 +352,8 @@ export default function CalculatorPage() {
         // Trello #68: update the open record in place instead of creating a new one.
         ...(editingRecordId ? { calculator_record_id: editingRecordId } : {}),
       };
-      const [calc, prev] = await Promise.all([calculate.mutate(payload), preview.mutate(payload)]);
-      setResult({ ...calc, preview: prev });
+      const prev = await preview.mutate(payload);
+      setResult({ ...prev, preview: prev });
       void records.refetch();
     } catch (err) {
       push({
@@ -529,6 +537,7 @@ export default function CalculatorPage() {
           icon={Calculator}
         >
           <div className="grid gap-4 sm:grid-cols-2">
+            <Input label="Prijsdatum" type="date" value={pricingDate} onChange={(e) => setPricingDate(e.target.value)} />
             <Input
               label={t('adminNew.calculator.lengthCm')}
               value={lengthCm}
@@ -539,7 +548,7 @@ export default function CalculatorPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.calculator.contractType')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base"
                 value={contractType}
                 onChange={(e) => setContractType(e.target.value)}
@@ -548,7 +557,7 @@ export default function CalculatorPage() {
                 <option value="summer">{t('adminNew.stalling.type.summer')}</option>
                 <option value="year">{t('adminNew.stalling.type.year')}</option>
                 <option value="week">{t('adminNew.stalling.type.week')}</option>
-              </select>
+              </SearchSelect>
             </div>
           </div>
 
@@ -583,7 +592,7 @@ export default function CalculatorPage() {
                         : 'surface-float-hover border-navy-100 bg-white text-navy-700 hover:border-marine-200'
                     )}
                   >
-                    {t(`adminNew.calculator.servicesMap.${service}`)}
+                    {serviceCatalog.data?.services.find((item) => item.service_code === service)?.name ?? service}
                   </button>
                 );
               })}
@@ -594,7 +603,7 @@ export default function CalculatorPage() {
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
               {t('adminNew.calculator.customerOptional')}
             </label>
-            <select
+            <SearchSelect
               className="input-base"
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
@@ -605,7 +614,7 @@ export default function CalculatorPage() {
                   {customer.name}
                 </option>
               ))}
-            </select>
+            </SearchSelect>
           </div>
 
           {editingRecordId ? (
@@ -714,33 +723,33 @@ export default function CalculatorPage() {
               onChange={(e) => setRecSearch(e.target.value)}
               leftIcon={<Calculator className="h-4 w-4" />}
             />
-            <select className="input-base" value={recCustomer} onChange={(e) => setRecCustomer(e.target.value)}>
+            <SearchSelect className="input-base" value={recCustomer} onChange={(e) => setRecCustomer(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allCustomers')}</option>
               {(customers.data?.data ?? []).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
               ))}
-            </select>
-            <select className="input-base" value={recService} onChange={(e) => setRecService(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recService} onChange={(e) => setRecService(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allServices')}</option>
               {dynamicServiceTypes.map((s) => (
                 <option key={s} value={s}>
                   {SERVICE_IDS.includes(s)
-                    ? t(`adminNew.calculator.servicesMap.${s}`)
+                    ? tEnum(t, 'adminNew.calculator.servicesMap', s)
                     : s}
                 </option>
               ))}
-            </select>
-            <select className="input-base" value={recCreatedBy} onChange={(e) => setRecCreatedBy(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recCreatedBy} onChange={(e) => setRecCreatedBy(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allUsers', { defaultValue: 'Alle gebruikers' })}</option>
               {(adminUsers.data?.data ?? []).map((u) => (
                 <option key={String(u.id)} value={String(u.id)}>
                   {String(u.name ?? u.email ?? u.id)}
                 </option>
               ))}
-            </select>
-            <select className="input-base" value={recStatus} onChange={(e) => setRecStatus(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recStatus} onChange={(e) => setRecStatus(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.allStatuses')}</option>
               <option value="saved">{t('adminNew.calculator.records.statusSaved')}</option>
               <option value="draft">{t('adminNew.calculator.records.statusDraft')}</option>
@@ -749,17 +758,17 @@ export default function CalculatorPage() {
               <option value="paid">{t('adminNew.calculator.records.statusPaid')}</option>
               <option value="cancelled">{t('adminNew.calculator.records.statusCancelled')}</option>
               <option value="archived">{t('adminNew.calculator.records.statusArchived')}</option>
-            </select>
-            <select className="input-base" value={recHasQuote} onChange={(e) => setRecHasQuote(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recHasQuote} onChange={(e) => setRecHasQuote(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.quoteAny')}</option>
               <option value="yes">{t('adminNew.calculator.records.quoteYes')}</option>
               <option value="no">{t('adminNew.calculator.records.quoteNo')}</option>
-            </select>
-            <select className="input-base" value={recHasInvoice} onChange={(e) => setRecHasInvoice(e.target.value)}>
+            </SearchSelect>
+            <SearchSelect className="input-base" value={recHasInvoice} onChange={(e) => setRecHasInvoice(e.target.value)}>
               <option value="">{t('adminNew.calculator.records.invoiceAny')}</option>
               <option value="yes">{t('adminNew.calculator.records.invoiceYes')}</option>
               <option value="no">{t('adminNew.calculator.records.invoiceNo')}</option>
-            </select>
+            </SearchSelect>
           </div>
 
           <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">

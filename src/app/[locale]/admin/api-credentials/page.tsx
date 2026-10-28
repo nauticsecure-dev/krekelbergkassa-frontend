@@ -1,4 +1,6 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { Check, Copy, Eye, KeyRound, Plus, Trash2 } from 'lucide-react';
@@ -186,7 +188,7 @@ export default function ApiCredentialsPage() {
               <option value="">{t('adminNew.credentials.allEnvironments')}</option>
               {ENVIRONMENTS.map((env) => (
                 <option key={env} value={env}>
-                  {t(`adminNew.credentials.environments.${env}`)}
+                  {tEnum(t, 'adminNew.credentials.environments', env)}
                 </option>
               ))}
             </AdminSelect>
@@ -318,17 +320,17 @@ export default function ApiCredentialsPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.credentials.fields.environment')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={form.environment}
                 onChange={(e) => setForm((p) => ({ ...p, environment: e.target.value }))}
               >
                 {ENVIRONMENTS.map((env) => (
                   <option key={env} value={env}>
-                    {t(`adminNew.credentials.environments.${env}`)}
+                    {tEnum(t, 'adminNew.credentials.environments', env)}
                   </option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <Input
               label={t('adminNew.credentials.fields.keyValue')}

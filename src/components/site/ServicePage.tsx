@@ -1,4 +1,5 @@
 'use client';
+import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -9,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin } from '@/lib/auth-routes';
+import { usePermission } from '@/lib/permissions';
 import { useQuery } from '@/lib/hooks/useAsync';
 import { serviceCatalogService } from '@/lib/services';
 import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
@@ -59,12 +61,13 @@ export function ServicePage({
   const { t, locale } = useIntl();
   const { user, isDemo } = useAuth();
   const isAdmin = canAccessAdmin(user?.role, isDemo);
+  const { can } = usePermission();
 
   useRegisterCmsPage(cmsPage ?? '');
   const cta = primaryCta ?? { label: t('nav.bookCrane'), href: `/${locale}/kraanafspraak` };
 
-  const catalogQuery = useQuery([catalogSlug ?? ''], () =>
-    catalogSlug ? serviceCatalogService.page(catalogSlug) : Promise.resolve(null),
+  const catalogQuery = useQuery([catalogSlug ?? '', locale], () =>
+    catalogSlug ? serviceCatalogService.page(catalogSlug, locale) : Promise.resolve(null),
   );
   const liveRanges = React.useMemo(() => {
     const services = catalogQuery.data?.services ?? [];
@@ -101,7 +104,7 @@ export function ServicePage({
           </div>
         ) : p ? (
           <div className="absolute inset-0 overflow-hidden">
-            <EditableImage
+            <EditableImage defaultStyle={{gradient:'right',gradient_start:.85,gradient_middle:0.65,gradient_end:.3}}
               blockKey={`${p}.hero.image`}
               page={p}
               fallbackSrc={heroImage}
@@ -116,7 +119,6 @@ export function ServicePage({
             aria-hidden
           />
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/65 to-navy-950/30" aria-hidden />
         <div className="container-wide pointer-events-none relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
           <Badge tone="sand" className="pointer-events-auto mb-4" dot>
             {p ? (
@@ -172,7 +174,7 @@ export function ServicePage({
                   size="lg"
                   className="border-white/30 bg-white/5 text-white hover:bg-white/10"
                 >
-                  {t('servicePage.askQuestion')}
+                  <TranslatedText textKey={'servicePage.askQuestion'} />
                 </Button>
               </Link>
             )}
@@ -185,7 +187,7 @@ export function ServicePage({
         <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
             <Badge tone="gold" className="mb-3">
-              {t('servicePage.whatItIs')}
+              <TranslatedText textKey={'servicePage.whatItIs'} />
             </Badge>
             <p className="text-lg leading-relaxed text-navy-700">
               {p ? (
@@ -245,10 +247,10 @@ export function ServicePage({
           <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
               <Badge tone="navy" className="mb-3">
-                {t('servicePage.pricesBadge')}
+                <TranslatedText textKey={'servicePage.pricesBadge'} />
               </Badge>
-              <h2 className="heading-display text-3xl">{t('servicePage.pricesTitle')}</h2>
-              <p className="mt-1 text-sm text-navy-500">{t('servicePage.pricesDesc')}</p>
+              <h2 className="heading-display text-3xl"><TranslatedText textKey={'servicePage.pricesTitle'} /></h2>
+              <p className="mt-1 text-sm text-navy-500"><TranslatedText textKey={'servicePage.pricesDesc'} /></p>
             </div>
             <div className="flex items-center gap-2">
               {isAdmin && adminProductSlug ? (
@@ -256,18 +258,18 @@ export function ServicePage({
                   href={`/${locale}/admin/producten?search=${encodeURIComponent(adminProductSlug)}`}
                 >
                   <Button variant="outline" leftIcon={<Pencil className="h-4 w-4" />}>
-                    {t('servicePage.editService')}
+                    <TranslatedText textKey={'servicePage.editService'} />
                   </Button>
                 </Link>
               ) : null}
-              {isAdmin && (catalogServiceCode || adminProductSlug) ? (
+              {can('pricing.update') && (catalogServiceCode || adminProductSlug) ? (
                 <Link
                   href={`/${locale}/admin/calculator/pricing?product=${encodeURIComponent(
                     catalogServiceCode ?? adminProductSlug ?? '',
                   )}`}
                 >
                   <Button variant="outline" leftIcon={<Pencil className="h-4 w-4" />}>
-                    {t('servicePage.editPrices')}
+                    <TranslatedText textKey={'servicePage.editPrices'} />
                   </Button>
                 </Link>
               ) : null}
@@ -288,7 +290,7 @@ export function ServicePage({
               <Card key={r.label} className="flex items-center justify-between p-5">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-                    {t('servicePage.length')}
+                    <TranslatedText textKey={'servicePage.length'} />
                   </div>
                   <div className="text-base font-semibold text-navy-900">{r.label}</div>
                   {r.note ? (
@@ -299,7 +301,7 @@ export function ServicePage({
                   <div className="text-2xl font-semibold text-navy-900">{r.price}</div>
                   {r.showInclVat ? (
                     <div className="text-[11px] font-medium text-navy-400">
-                      {t('servicePage.inclVat', { rate: r.vatRate ?? 21 })}
+                      <TranslatedText textKey={'servicePage.inclVat'} vars={{ rate: r.vatRate ?? 21 }} />
                     </div>
                   ) : null}
                 </div>
@@ -308,7 +310,7 @@ export function ServicePage({
           </div>
           {showPricingWarning ? (
             <p role="status" className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              {t('servicePage.pricingUnavailable')}
+              <TranslatedText textKey={'servicePage.pricingUnavailable'} />
             </p>
           ) : null}
           {priceFootnote ? (
@@ -327,12 +329,12 @@ export function ServicePage({
       <section className="container-wide grid gap-10 py-16 lg:grid-cols-[1fr_2fr]">
         <div>
           <Badge tone="marine" className="mb-3">
-            {t('servicePage.faqBadge')}
+            <TranslatedText textKey={'servicePage.faqBadge'} />
           </Badge>
-          <h2 className="heading-display text-3xl">{t('servicePage.faqTitle')}</h2>
-          <p className="mt-2 text-sm text-navy-500">{t('servicePage.faqDesc')}</p>
+          <h2 className="heading-display text-3xl"><TranslatedText textKey={'servicePage.faqTitle'} /></h2>
+          <p className="mt-2 text-sm text-navy-500"><TranslatedText textKey={'servicePage.faqDesc'} /></p>
           <Link href={`/${locale}/contact`} className="mt-5 inline-block">
-            <Button variant="outline">{t('servicePage.askQuestion')}</Button>
+            <Button variant="outline"><TranslatedText textKey={'servicePage.askQuestion'} /></Button>
           </Link>
         </div>
         <div className="space-y-3">
@@ -400,7 +402,7 @@ export function ServicePage({
                   size="lg"
                   className="border-white/30 bg-white/5 text-white hover:bg-white/10"
                 >
-                  {t('servicePage.ctaContact')}
+                  <TranslatedText textKey={'servicePage.ctaContact'} />
                 </Button>
               </Link>
             </div>

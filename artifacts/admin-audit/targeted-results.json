@@ -1,0 +1,646 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-audit.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/targeted",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/targeted-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node --v8-pool-size=1 scripts/isolated-next-server.cjs 3047",
+      "env": {
+        "NEXT_DIST_DIR": ".next-admin-audit",
+        "NEXT_PUBLIC_API_URL": "/api",
+        "API_PROXY_TARGET": "http://127.0.0.1:9",
+        "RAYON_NUM_THREADS": "1",
+        "NEXT_FONT_GOOGLE_MOCKED_RESPONSES": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\fixtures\\journey-fonts.cjs"
+      },
+      "url": "http://localhost:3047/sw.js",
+      "timeout": 300000,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "admin-audit.spec.ts",
+      "file": "admin-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "nl: dashboard sidebar and KPI responsive evidence",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 195910,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                        "column": 136,
+                        "line": 56
+                      },
+                      "message": "Error: locator.click: Test timeout of 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Zijbalk uitklappen', exact: true })\u001b[22m\n\u001b[2m    2 × waiting for\" http://localhost:3047/nl/admin\" navigation to finish...\u001b[22m\n\u001b[2m      - navigated to \"http://localhost:3047/nl/admin\"\u001b[22m\n\n\n  54 |         await expect.poll(() => kpis.evaluate(e => getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width === 390 ? 1 : width === 1280 ? 3 : 5);\n  55 |         await page.screenshot({path:info.outputPath(`${locale}-${width}-${collapsed?'collapsed':'expanded'}.png`),fullPage:true});\n> 56 |         if (width !== 390 && collapsed) await page.getByRole('button', {name:label(locale,'adminNew.shell.expandSidebar'),exact:true}).click();\n     |                                                                                                                                        ^\n  57 |       }\n  58 |       if (width === 390) {\n  59 |         await page.getByRole('button', {name:label(locale,'header.mainMenu'),exact:true}).click();\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:56:136"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:47:26.725Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\targeted\\admin-audit-nl-dashboard-sidebar-and-KPI-responsive-evidence-admin-audit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\targeted\\admin-audit-nl-dashboard-sidebar-and-KPI-responsive-evidence-admin-audit\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-1ee5992c873e6515e4bd",
+          "file": "admin-audit.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "en: dashboard sidebar and KPI responsive evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 83124,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:51:30.880Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-49dd0c4ce849af6b574e",
+          "file": "admin-audit.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "de: dashboard sidebar and KPI responsive evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 81587,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:53:03.730Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-5814a2e669ad56451ecb",
+          "file": "admin-audit.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "fr: dashboard sidebar and KPI responsive evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18315,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:54:25.367Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-7fe8d5d18d020de748b3",
+          "file": "admin-audit.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "customer list write controls and create deep link (false)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12195,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:54:43.720Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-9b00f335d84875a31a6d",
+          "file": "admin-audit.spec.ts",
+          "line": 72,
+          "column": 7
+        },
+        {
+          "title": "customer list write controls and create deep link (true)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9074,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:54:55.953Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-0b322a04a727bba4afa0",
+          "file": "admin-audit.spec.ts",
+          "line": 72,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "admin-review.spec.ts",
+      "file": "admin-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "nl: manual invoice fields remain inside the viewport at mobile and desktop widths",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17044,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:55:05.097Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-652f446959b64e4512c6",
+          "file": "admin-review.spec.ts",
+          "line": 31,
+          "column": 7
+        },
+        {
+          "title": "en: manual invoice fields remain inside the viewport at mobile and desktop widths",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 26559,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:55:22.185Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-ba8fb16070b0880af246",
+          "file": "admin-review.spec.ts",
+          "line": 31,
+          "column": 7
+        },
+        {
+          "title": "de: manual invoice fields remain inside the viewport at mobile and desktop widths",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22933,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:55:48.779Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-2bc99ec551a20674dc9c",
+          "file": "admin-review.spec.ts",
+          "line": 31,
+          "column": 7
+        },
+        {
+          "title": "fr: manual invoice fields remain inside the viewport at mobile and desktop widths",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 34998,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:56:11.744Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-abd6763dff2372696ea7",
+          "file": "admin-review.spec.ts",
+          "line": 31,
+          "column": 7
+        },
+        {
+          "title": "manual invoice retains entered data when save fails, and submits cents once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12216,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:56:46.780Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-eb745849d0b9ae9a0d84",
+          "file": "admin-review.spec.ts",
+          "line": 70,
+          "column": 5
+        },
+        {
+          "title": "an admin cannot open the super-admin audit page directly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17656,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:56:59.036Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-2af8f1bf0585dadc190e",
+          "file": "admin-review.spec.ts",
+          "line": 94,
+          "column": 5
+        },
+        {
+          "title": "an invoice viewer cannot open the create form through a deep link",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4077,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:57:16.723Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-38040889e1c2cd3a74de",
+          "file": "admin-review.spec.ts",
+          "line": 101,
+          "column": 5
+        },
+        {
+          "title": "calendar empty state and provider error with retry render in the browser",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13458,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:57:20.843Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-3f55ad72ad66e1d05fe7",
+          "file": "admin-review.spec.ts",
+          "line": 108,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "pricing-permissions.spec.ts",
+      "file": "pricing-permissions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "read-only employee sees tariffs without mutation controls or a deep-link modal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8957,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T02:57:34.348Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6833bd831a931f145980-fd483e8a2e69d3ef3342",
+          "file": "pricing-permissions.spec.ts",
+          "line": 60,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-27T02:43:35.495Z",
+    "duration": 859156.185,
+    "expected": 14,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

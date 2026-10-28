@@ -3,6 +3,7 @@ import { LegalPage } from '@/components/site/LegalPage';
 export default function CookiesPage() {
   return (
     <LegalPage
+      page="cookies"
       badge="Cookies"
       title="Cookieverklaring"
       subtitle="Wij gebruiken cookies om uw ervaring te verbeteren. Hieronder leest u welke en waarom."

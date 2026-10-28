@@ -1,4 +1,6 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -41,6 +43,7 @@ import {
   type BrokeragePreview,
 } from '@/lib/services';
 import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
+import { usePermission } from '@/lib/permissions';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -48,6 +51,10 @@ import { useCreateMenuIntent } from '@/components/admin/useCreateMenuIntent';
 
 export default function StallingPage() {
   const { locale, t } = useIntl();
+  const { can } = usePermission();
+  const canWrite = can('stalling.write');
+  const canCreateBoat = can('boats.write');
+  const canCreateCustomer = can('customers.write');
   const { push } = useToast();
   const dateLocale = intlLocale(locale);
 
@@ -78,7 +85,7 @@ export default function StallingPage() {
   // Trello #73: click-to-edit cells for paid_until / bok_number.
   const [inlineEdit, setInlineEdit] = React.useState<{ id: string; field: 'paid_until' | 'bok_number'; value: string } | null>(null);
   const [showCreate, setShowCreate] = React.useState(false);
-  useCreateMenuIntent(() => setShowCreate(true));
+  useCreateMenuIntent(() => { if (canWrite) setShowCreate(true); });
   const [createForm, setCreateForm] = React.useState({
     boat_id: '',
     customer_id: '',
@@ -219,6 +226,7 @@ export default function StallingPage() {
 
   const onCreateBoat = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canCreateBoat) return;
     try {
       const created = await createBoat.mutate({
         name: newBoat.name,
@@ -242,6 +250,7 @@ export default function StallingPage() {
 
   const onCreateCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canCreateCustomer) return;
     try {
       const created = await createCustomer.mutate({
         name: newCustomer.name,
@@ -286,6 +295,7 @@ export default function StallingPage() {
   // Trello #73: quick-edit now changes ONLY the lifecycle status (payment status
   // is computed and cannot be set) and records an optional change note.
   const openEdit = (contract: StallingContract) => {
+    if (!canWrite) return;
     setEditTarget(contract);
     setEditLifecycle(contract.status ?? 'active');
     setEditLocation(contract.boat?.location_code ?? contract.location_code ?? '');
@@ -294,6 +304,7 @@ export default function StallingPage() {
 
   // Trello #73: full edit modal — change customer/boat/period/billing/notes.
   const openFullEdit = (contract: StallingContract) => {
+    if (!canWrite) return;
     setEditFullTarget(contract);
     setEditForm({
       customer_id: contract.customer?.id ?? '',
@@ -311,6 +322,7 @@ export default function StallingPage() {
 
   const onSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     if (!editTarget) return;
     const id = editTarget.id;
     try {
@@ -331,6 +343,7 @@ export default function StallingPage() {
 
   const onSaveFullEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     if (!editFullTarget) return;
     try {
       await updateContract.mutate({
@@ -358,6 +371,7 @@ export default function StallingPage() {
 
   // Trello #73: click-to-edit a single cell (paid_until / bok_number) inline.
   const saveInline = async () => {
+    if (!canWrite) return;
     if (!inlineEdit) return;
     try {
       await updateContract.mutate({ id: inlineEdit.id, payload: { [inlineEdit.field]: inlineEdit.value || null } });
@@ -388,6 +402,7 @@ export default function StallingPage() {
 
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     try {
       const created = await createContract.mutate({
         boat_id: createForm.boat_id,
@@ -477,7 +492,7 @@ export default function StallingPage() {
         title={t('adminNew.stalling.title')}
         subtitle={t('adminNew.stalling.subtitle')}
         rightSlot={
-          <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+          <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
             {t('adminNew.stalling.new')}
           </Button>
         }
@@ -648,7 +663,7 @@ export default function StallingPage() {
                           </Button>
                         </span>
                       ) : (
-                        <button
+                        <button disabled={!canWrite}
                           type="button"
                           onClick={() => setInlineEdit({ id: contract.id, field: 'paid_until', value: contract.paid_until ?? '' })}
                           title={t('adminNew.stalling.inline.editPaidUntil')}
@@ -688,7 +703,7 @@ export default function StallingPage() {
                             </Button>
                           </span>
                         ) : (
-                          <button
+                          <button disabled={!canWrite}
                             type="button"
                             onClick={() => setInlineEdit({ id: contract.id, field: 'bok_number', value: contract.bok_number ?? '' })}
                             title={t('adminNew.stalling.inline.editBok')}
@@ -700,7 +715,7 @@ export default function StallingPage() {
                       </div>
                     </AdminTableCell>
                     <AdminTableCell>
-                      <button
+                      <button disabled={!canWrite}
                         type="button"
                         onClick={() => openEdit(contract)}
                         aria-label={t('adminNew.stalling.quickEdit.editAria')}
@@ -721,7 +736,7 @@ export default function StallingPage() {
                             {t('adminNew.common.open')}
                           </Button>
                         </Link>
-                        <Button
+                        <Button disabled={!canWrite}
                           variant="outline"
                           size="sm"
                           leftIcon={<Pencil className="h-3.5 w-3.5" />}
@@ -862,20 +877,20 @@ export default function StallingPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
+      <Modal open={showCreate && canWrite} onClose={() => setShowCreate(false)} size="md">
         <form onSubmit={onCreate}>
           <AdminModalHeader title={t('adminNew.stalling.new')} subtitle={t('adminNew.stalling.createSubtitle')} />
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.boat')}</label>
               <div className="flex gap-2">
-                <select className="input-base w-full" value={createForm.boat_id} onChange={(e) => setCreateForm({ ...createForm, boat_id: e.target.value })} required>
+                <SearchSelect className="input-base w-full" value={createForm.boat_id} onChange={(e) => setCreateForm({ ...createForm, boat_id: e.target.value })} required>
                   <option value="">{t('adminNew.boats.selectCustomer')}</option>
                   {(boats.data?.data ?? []).map((b) => (
                     <option key={b.id} value={b.id}>{b.name}</option>
                   ))}
-                </select>
-                <Button type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewBoat(true)}>
+                </SearchSelect>
+                <Button disabled={!canCreateBoat} type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewBoat(true)}>
                   {t('adminNew.stalling.fields.newBoat')}
                 </Button>
               </div>
@@ -883,20 +898,20 @@ export default function StallingPage() {
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.customer')}</label>
               <div className="flex gap-2">
-                <select className="input-base w-full" value={createForm.customer_id} onChange={(e) => setCreateForm({ ...createForm, customer_id: e.target.value })}>
+                <SearchSelect className="input-base w-full" value={createForm.customer_id} onChange={(e) => setCreateForm({ ...createForm, customer_id: e.target.value })}>
                   <option value="">{t('adminNew.kassa.selectCustomer')}</option>
                   {(customers.data?.data ?? []).map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
-                </select>
-                <Button type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewCustomer(true)}>
+                </SearchSelect>
+                <Button disabled={!canCreateCustomer} type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewCustomer(true)}>
                   {t('adminNew.stalling.fields.newCustomer')}
                 </Button>
               </div>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.type')}</label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={createForm.type}
                 onChange={(e) => {
@@ -915,13 +930,13 @@ export default function StallingPage() {
                 <option value="summer">{t('adminNew.stalling.type.summer')}</option>
                 <option value="year">{t('adminNew.stalling.type.year')}</option>
                 <option value="week">{t('adminNew.stalling.type.week')}</option>
-              </select>
+              </SearchSelect>
             </div>
             {/* Trello #107: live price preview for the selected type + boat. */}
             {pricePreview ? (
               <div className="rounded-lg bg-sand-50 p-3 text-sm">
                 <span className="font-medium text-navy-900">
-                  {t(`adminNew.stalling.type.${createForm.type}`)}: {formatCurrency(pricePreview.total_incl_vat / 100, dateLocale)}
+                  {tEnum(t, 'adminNew.stalling.type', createForm.type)}: {formatCurrency(pricePreview.total_incl_vat / 100, dateLocale)}
                 </span>
                 {createForm.deposit_pct ? (
                   <span className="ml-3 text-navy-500">
@@ -952,10 +967,10 @@ export default function StallingPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.paymentRoute')}</label>
-              <select className="input-base w-full" value={createForm.payment_route} onChange={(e) => setCreateForm({ ...createForm, payment_route: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={createForm.payment_route} onChange={(e) => setCreateForm({ ...createForm, payment_route: e.target.value })}>
                 <option value="email">{t('adminNew.stalling.fields.payByEmail')}</option>
                 <option value="kassa">{t('adminNew.stalling.fields.payAtKassa')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <Input
               label={t('adminNew.stalling.fields.depositPct')}
@@ -987,7 +1002,7 @@ export default function StallingPage() {
             {(contractTemplates.data ?? []).length > 0 ? (
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">Contracttemplate</label>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={createForm.contract_template_id}
                   onChange={(e) => setCreateForm({ ...createForm, contract_template_id: e.target.value })}
@@ -996,7 +1011,7 @@ export default function StallingPage() {
                   {(contractTemplates.data ?? []).map((tpl) => (
                     <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
                   ))}
-                </select>
+                </SearchSelect>
               </div>
             ) : null}
             <label className="flex items-center gap-2 text-sm font-medium text-navy-800">
@@ -1064,14 +1079,14 @@ export default function StallingPage() {
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
+            <Button disabled={!canWrite} type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
             <Button type="submit" variant="gold" disabled={createContract.loading}>{t('adminNew.common.save')}</Button>
           </AdminModalFooter>
         </form>
       </Modal>
 
       {/* Trello #107: inline new-boat modal */}
-      <Modal open={showNewBoat} onClose={() => setShowNewBoat(false)} size="sm">
+      <Modal open={showNewBoat && canCreateBoat} onClose={() => setShowNewBoat(false)} size="sm">
         <form onSubmit={onCreateBoat}>
           <AdminModalHeader title={t('adminNew.stalling.fields.newBoat')} />
           <AdminModalBody>
@@ -1086,14 +1101,14 @@ export default function StallingPage() {
             <Input label={t('adminNew.stalling.fields.registration')} value={newBoat.registration_number} onChange={(e) => setNewBoat({ ...newBoat, registration_number: e.target.value })} />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowNewBoat(false)}>{t('adminNew.common.cancel')}</Button>
+            <Button disabled={!canCreateBoat} type="button" variant="ghost" onClick={() => setShowNewBoat(false)}>{t('adminNew.common.cancel')}</Button>
             <Button type="submit" variant="gold" disabled={createBoat.loading}>{t('adminNew.common.save')}</Button>
           </AdminModalFooter>
         </form>
       </Modal>
 
       {/* Trello #107: inline new-customer modal */}
-      <Modal open={showNewCustomer} onClose={() => setShowNewCustomer(false)} size="sm">
+      <Modal open={showNewCustomer && canCreateCustomer} onClose={() => setShowNewCustomer(false)} size="sm">
         <form onSubmit={onCreateCustomer}>
           <AdminModalHeader title={t('adminNew.stalling.fields.newCustomer')} />
           <AdminModalBody>
@@ -1113,7 +1128,7 @@ export default function StallingPage() {
             <Input label={t('adminNew.stalling.fields.companyName')} value={newCustomer.company_name} onChange={(e) => setNewCustomer({ ...newCustomer, company_name: e.target.value })} />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowNewCustomer(false)}>{t('adminNew.common.cancel')}</Button>
+            <Button disabled={!canCreateCustomer} type="button" variant="ghost" onClick={() => setShowNewCustomer(false)}>{t('adminNew.common.cancel')}</Button>
             <Button type="submit" variant="gold" disabled={createCustomer.loading}>{t('adminNew.common.save')}</Button>
           </AdminModalFooter>
         </form>
@@ -1142,7 +1157,7 @@ export default function StallingPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.stalling.quickEdit.lifecycleLabel')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={editLifecycle}
                 onChange={(e) => setEditLifecycle(e.target.value)}
@@ -1151,7 +1166,7 @@ export default function StallingPage() {
                 <option value="ended">{t('adminNew.stalling.lifecycle.ended')}</option>
                 <option value="checked_out">{t('adminNew.stalling.lifecycle.checkedOut')}</option>
                 <option value="cancelled">{t('adminNew.stalling.lifecycle.cancelled')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
@@ -1194,30 +1209,30 @@ export default function StallingPage() {
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.customer')}</label>
-              <select className="input-base w-full" value={editForm.customer_id} onChange={(e) => setEditForm({ ...editForm, customer_id: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.customer_id} onChange={(e) => setEditForm({ ...editForm, customer_id: e.target.value })}>
                 <option value="">{t('adminNew.kassa.selectCustomer')}</option>
                 {(customers.data?.data ?? []).map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.boat')}</label>
-              <select className="input-base w-full" value={editForm.boat_id} onChange={(e) => setEditForm({ ...editForm, boat_id: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.boat_id} onChange={(e) => setEditForm({ ...editForm, boat_id: e.target.value })}>
                 <option value="">{t('adminNew.boats.selectCustomer')}</option>
                 {(boats.data?.data ?? []).map((b) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.type')}</label>
-              <select className="input-base w-full" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}>
                 <option value="winter">{t('adminNew.stalling.type.winter')}</option>
                 <option value="summer">{t('adminNew.stalling.type.summer')}</option>
                 <option value="year">{t('adminNew.stalling.type.year')}</option>
                 <option value="week">{t('adminNew.stalling.type.week')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Input label={t('adminNew.stalling.fields.startDate')} type="date" value={editForm.start_date} onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })} />
@@ -1229,11 +1244,11 @@ export default function StallingPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.billingType')}</label>
-              <select className="input-base w-full" value={editForm.billing_type} onChange={(e) => setEditForm({ ...editForm, billing_type: e.target.value })}>
+              <SearchSelect className="input-base w-full" value={editForm.billing_type} onChange={(e) => setEditForm({ ...editForm, billing_type: e.target.value })}>
                 <option value="one_time">{t('adminNew.stalling.billing.oneTime')}</option>
                 <option value="monthly">{t('adminNew.stalling.billing.monthly')}</option>
                 <option value="yearly">{t('adminNew.stalling.billing.yearly')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.notes')}</label>

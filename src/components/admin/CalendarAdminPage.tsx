@@ -1,4 +1,6 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -13,6 +15,7 @@ import {
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import {
   AdminContent,
+  AdminSplitLayout,
   AdminModalBody,
   AdminModalFooter,
   AdminModalHeader,
@@ -36,6 +39,7 @@ import { useIntl } from '@/i18n/IntlProvider';
 import type { BoatLocation } from '@/lib/api-types';
 import { formatTimeRange, toTimeInputValue } from '@/lib/time';
 import { formatDate, intlLocale } from '@/lib/format';
+import { usePermission } from '@/lib/permissions';
 
 type ModalKind = 'regular' | 'exception' | 'lunch' | 'location' | 'editLocation' | null;
 
@@ -60,6 +64,8 @@ function monthRange(ref: Date): { from: string; to: string } {
 }
 
 export default function CalendarAdminPage({ embedded = false }: { embedded?: boolean }) {
+  const { can } = usePermission();
+  const canManage = can('planning.manage');
   const { t, locale } = useIntl();
   const { push } = useToast();
   const [modal, setModal] = React.useState<ModalKind>(null);
@@ -104,7 +110,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
   const workOrders = useQuery(
     ['calendar-work-orders', showWorkOrders, workOrderRange.from, workOrderRange.to],
     () =>
-      showWorkOrders
+      showWorkOrders && can('work_orders.view')
         ? workOrdersService
             .list({ due_from: workOrderRange.from, due_to: workOrderRange.to, per_page: 100 })
             .catch(() => null)
@@ -259,7 +265,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
   };
 
   const dayLabel = (day: number | null) =>
-    day == null ? '—' : t(`adminNew.calendar.days.${day}`);
+    day == null ? '—' : tEnum(t, 'adminNew.calendar.days', day);
 
   const regular = calendar.data?.regular_hours ?? [];
   const exceptions = calendar.data?.exceptions ?? [];
@@ -299,7 +305,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
       <AdminPageHeader
         title={t('adminNew.calendar.title')}
         subtitle={t('adminNew.calendar.subtitle')}
-        rightSlot={
+        rightSlot={canManage ?
           <Button
             variant="gold"
             size="sm"
@@ -307,7 +313,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
             onClick={() => setModal('location')}
           >
             {t('adminNew.calendar.newLocation')}
-          </Button>
+          </Button> : null
         }
         stats={[
           {
@@ -351,18 +357,18 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
         {calendar.loading ? (
           <LoadingState label={t('adminNew.calendar.loading')} />
         ) : calendar.error ? (
-          <ErrorState message={calendar.error} onRetry={() => void calendar.refetch()} />
+          <ErrorState message={calendar.error} onRetry={() => void calendar.refetch().catch(() => undefined)} />
         ) : (
           <div className="space-y-5">
-            <div className="grid gap-5 xl:grid-cols-[1fr_280px]">
+            <AdminSplitLayout sidebarWidth="280px" breakpoint="xl">
               <AdminSectionCard
                 title={t('adminNew.calendar.regularHours')}
                 description={t('adminNew.calendar.weekOverview')}
                 icon={CalendarDays}
-                action={
+                action={canManage ?
                   <Button size="sm" variant="outline" onClick={() => openRegularModal()}>
                     {t('adminNew.calendar.actions.setRegular')}
-                  </Button>
+                  </Button> : null
                 }
               >
                 {regular.length === 0 ? (
@@ -378,7 +384,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                     closedLabel={t('adminNew.calendar.closed')}
                     todayDay={todayDay}
                     todayLabel={t('adminNew.calendar.today')}
-                    onDayClick={openRegularModal}
+                    onDayClick={canManage ? openRegularModal : undefined}
                   />
                 )}
               </AdminSectionCard>
@@ -387,10 +393,10 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 title={t('adminNew.calendar.lunch')}
                 description={t('adminNew.calendar.lunchModal.subtitle')}
                 icon={UtensilsCrossed}
-                action={
+                action={canManage ?
                   <Button size="sm" variant="outline" onClick={() => setModal('lunch')}>
                     {t('adminNew.calendar.actions.setLunch')}
-                  </Button>
+                  </Button> : null
                 }
               >
                 <LunchTimeline
@@ -399,16 +405,16 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   noLunchLabel={t('adminNew.calendar.noLunch')}
                 />
               </AdminSectionCard>
-            </div>
+            </AdminSplitLayout>
 
             <AdminSectionCard
               title={t('adminNew.calendar.exceptions')}
               description={t('adminNew.calendar.exceptionsOverview')}
               icon={CalendarClock}
-              action={
+              action={canManage ?
                 <Button size="sm" variant="outline" onClick={() => setModal('exception')}>
                   {t('adminNew.calendar.actions.addException')}
-                </Button>
+                </Button> : null
               }
             >
               <ExceptionsStrip
@@ -417,7 +423,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 openLabel={t('adminNew.calendar.open')}
                 emptyTitle={t('adminNew.calendar.noExceptions')}
                 emptyMessage={t('adminNew.calendar.noExceptionsMessage')}
-                onAdd={() => setModal('exception')}
+                onAdd={canManage ? () => setModal('exception') : undefined}
                 addLabel={t('adminNew.calendar.actions.addException')}
                 dateLocale={dateLocale}
               />
@@ -427,7 +433,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
               title={t('adminNew.calendar.locations')}
               description={t('adminNew.calendar.locationsOverview')}
               icon={MapPin}
-              action={
+              action={canManage ?
                 <Button
                   size="sm"
                   variant="gold"
@@ -435,7 +441,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   onClick={() => setModal('location')}
                 >
                   {t('adminNew.calendar.newLocation')}
-                </Button>
+                </Button> : null
               }
             >
               {locations.loading ? (
@@ -448,7 +454,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
               ) : (
                 <LocationCardGrid
                   locations={locationRows}
-                  onEdit={openEditLocation}
+                  onEdit={canManage ? openEditLocation : undefined}
                   editLabel={t('adminNew.calendar.actions.edit')}
                   blockedLabel={t('adminNew.calendar.blocked')}
                   openLabel={t('adminNew.calendar.open')}
@@ -461,7 +467,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
               title={t('adminNew.workOrders.overlay.title')}
               description={t('adminNew.workOrders.overlay.description')}
               icon={Wrench}
-              action={
+              action={can('work_orders.view') ?
                 <label className="flex items-center gap-2 text-sm font-medium text-navy-700">
                   <input
                     type="checkbox"
@@ -469,7 +475,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                     onChange={(e) => setShowWorkOrders(e.target.checked)}
                   />
                   {t('adminNew.workOrders.overlay.toggle')}
-                </label>
+                </label> : null
               }
             >
               {!showWorkOrders ? (
@@ -526,7 +532,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 <span className="mb-1 block font-medium text-navy-700">
                   {t('adminNew.calendar.fields.dayOfWeek')}
                 </span>
-                <select
+                <SearchSelect
                   className="input-base"
                   value={regularForm.day_of_week}
                   onChange={(e) => setRegularForm(regularFormFromDay(Number(e.target.value)))}
@@ -536,7 +542,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                       {dayLabel(d)}
                     </option>
                   ))}
-                </select>
+                </SearchSelect>
               </label>
               <label className="flex items-center gap-2 text-sm text-navy-700">
                 <input
@@ -698,7 +704,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 <span className="mb-1 block font-medium text-navy-700">
                   {t('adminNew.calendar.columns.difficulty')}
                 </span>
-                <select
+                <SearchSelect
                   className="input-base"
                   value={locationForm.difficulty}
                   onChange={(e) => setLocationForm({ ...locationForm, difficulty: e.target.value })}
@@ -707,7 +713,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   <option value="medium">medium</option>
                   <option value="difficult">difficult</option>
                   <option value="hall">hall</option>
-                </select>
+                </SearchSelect>
               </label>
               <Input
                 label={t('adminNew.calendar.fields.extraMinutes')}
@@ -750,7 +756,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 <span className="mb-1 block font-medium text-navy-700">
                   {t('adminNew.calendar.columns.difficulty')}
                 </span>
-                <select
+                <SearchSelect
                   className="input-base"
                   value={editForm.difficulty}
                   onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
@@ -759,7 +765,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   <option value="medium">medium</option>
                   <option value="difficult">difficult</option>
                   <option value="hall">hall</option>
-                </select>
+                </SearchSelect>
               </label>
               <label className="flex items-center gap-2 text-sm text-navy-700">
                 <input

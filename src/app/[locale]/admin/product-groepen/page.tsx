@@ -1,4 +1,5 @@
 'use client';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import { Archive, Layers, Plus, Trash2 } from 'lucide-react';
@@ -338,7 +339,7 @@ export default function ProductGroupsPage() {
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
                   {t('adminNew.productGroups.fields.icon')}
                 </label>
-                <select
+                <SearchSelect
                   className="input-base w-full"
                   value={form.icon}
                   onChange={(e) => setForm({ ...form, icon: e.target.value })}
@@ -349,7 +350,7 @@ export default function ProductGroupsPage() {
                       {name}
                     </option>
                   ))}
-                </select>
+                </SearchSelect>
               </div>
               <Input
                 label={t('adminNew.productGroups.fields.sortOrder')}

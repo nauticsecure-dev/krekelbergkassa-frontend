@@ -1,7 +1,12 @@
 'use client';
+import Link from 'next/link';
+import { usePermission } from '@/lib/permissions';
+import { IntegrationSettingsPanel } from '@/components/admin/IntegrationSettingsPanel';
+import { ContactSubjectsEditor } from '@/components/cms/ContactSubjectsEditor';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
-import { Copy, Globe2, Mail, Save, ShieldCheck, Sliders, TestTube2 } from 'lucide-react';
+import { Globe2, Mail, Save, ShieldCheck, Sliders, TestTube2 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminContent, AdminSectionCard, AdminTabBar } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
@@ -16,23 +21,20 @@ import { useIntl } from '@/i18n/IntlProvider';
 
 export default function SettingsPage() {
   const { push } = useToast();
-  const { t } = useIntl();
+  const { t, locale } = useIntl();
+  const { can } = usePermission();
+  const operational = can('settings.view');
+  const canEdit = can(['settings.update', 'settings.financial.update']);
+  const [search, setSearch] = React.useState('');
 
   const [activeTab, setActiveTab] = React.useState<
-    'company' | 'invoicing' | 'payments' | 'locales' | 'email_ocr'
+    'company' | 'invoicing' | 'payments' | 'locales' | 'email_ocr' | 'contact_subjects'
   >('company');
-  const [copied, setCopied] = React.useState(false);
-
-  const copyText = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
-    } catch {
-      push({ tone: 'error', title: t('adminNew.common.operationFailed') });
-    }
-  };
-
+  React.useEffect(() => {
+    const tab = window.location.hash.slice(1);
+    if (['company', 'invoicing', 'payments', 'locales', 'email_ocr', 'contact_subjects'].includes(tab) && (operational || ['invoicing', 'payments'].includes(tab))) setActiveTab(tab as typeof activeTab);
+    else if (!operational) setActiveTab('invoicing');
+  }, [operational]);
   const settings = useQuery(['settings'], () => settingsService.get());
   const updateCompany = useMutation(settingsService.updateCompany);
   const updateInvoicing = useMutation(settingsService.updateInvoicing);
@@ -58,21 +60,19 @@ export default function SettingsPage() {
     default_due_days: '14',
     currency: 'EUR',
     default_vat_rate: '21',
-    reminder_first_days: '7',
-    reminder_second_days: '14',
-    reminder_final_days: '21',
   });
 
   const [paymentsForm, setPaymentsForm] = React.useState({
     provider: 'mollie',
     test_mode: true,
-    enabled_methods: 'cash,pin,invoice,ideal,creditcard',
+    pos_methods: [] as string[],
+    online_methods: [] as string[],
   });
 
   const [localeForm, setLocaleForm] = React.useState({
     default_locale: 'nl-NL',
     fallback_locale: 'en-GB',
-    supported_locales: 'nl-NL,en-GB,de-DE,fr-FR',
+    supported_locales: ['nl-NL','en-GB','de-DE','fr-FR'],
   });
 
   React.useEffect(() => {
@@ -95,19 +95,17 @@ export default function SettingsPage() {
       default_due_days: String(s.invoicing.default_due_days ?? 14),
       currency: s.invoicing.currency || 'EUR',
       default_vat_rate: String(s.invoicing.default_vat_rate ?? 21),
-      reminder_first_days: String(s.invoicing.reminder_first_days ?? 7),
-      reminder_second_days: String(s.invoicing.reminder_second_days ?? 14),
-      reminder_final_days: String(s.invoicing.reminder_final_days ?? 21),
     });
     setPaymentsForm({
       provider: s.payments.provider || 'mollie',
       test_mode: Boolean(s.payments.test_mode),
-      enabled_methods: (s.payments.enabled_methods || []).join(','),
+      pos_methods: s.payments.pos_methods || [],
+      online_methods: s.payments.online_methods || [],
     });
     setLocaleForm({
       default_locale: s.locales.default_locale || 'nl-NL',
       fallback_locale: s.locales.fallback_locale || 'en-GB',
-      supported_locales: (s.locales.supported_locales || []).join(','),
+      supported_locales: s.locales.supported_locales || [],
     });
   }, [settings.data]);
 
@@ -127,23 +125,6 @@ export default function SettingsPage() {
 
   // Trello #81 / #90: inbound mailbox, OCR model, Twilio/WhatsApp status.
   // These may not be strongly typed on AppSettings yet — read defensively.
-  const raw = (settings.data ?? {}) as Record<string, unknown>;
-  const emailOcr = (raw.email_ocr ?? raw.integrations ?? raw.ocr ?? {}) as Record<string, unknown>;
-  const pick = (...keys: string[]): string => {
-    for (const k of keys) {
-      const v = emailOcr[k] ?? raw[k];
-      if (v != null && v !== '') return String(v);
-    }
-    return '';
-  };
-  const inboundAddress = pick('inbound_email', 'inbound_mailbox', 'mailbox_address', 'import_email') ||
-    'facturen@import.krekelbergnautic.nl';
-  const ocrModel = pick('ocr_model', 'model', 'ocr_provider') || 'Mistral OCR';
-  const twilioConfigured = (() => {
-    const v = emailOcr.twilio_configured ?? emailOcr.whatsapp_configured ?? raw.twilio_configured ?? raw.whatsapp_configured;
-    if (v != null) return Boolean(v) && v !== 'false';
-    return Boolean(pick('twilio_account_sid', 'whatsapp_number', 'twilio_from'));
-  })();
 
   return (
     <>
@@ -167,14 +148,14 @@ export default function SettingsPage() {
           },
           {
             label: t('adminNew.settings.tabs.payments'),
-            value: paymentsForm.test_mode ? 'Test' : 'Live',
+            value: settings.data?.payments.test_mode ? 'Test' : 'Live',
             icon: TestTube2,
-            tone: paymentsForm.test_mode ? 'warning' : 'success',
+            tone: settings.data?.payments.test_mode ? 'warning' : 'success',
             loading: settings.loading,
           },
           {
             label: t('adminNew.settings.tabs.locales'),
-            value: localeForm.supported_locales.split(',').filter(Boolean).length,
+            value: localeForm.supported_locales.length,
             icon: Globe2,
             tone: 'navy',
             loading: settings.loading,
@@ -182,6 +163,12 @@ export default function SettingsPage() {
         ]}
       />
       <AdminContent>
+        <Input label={t('settingsHub.search')} value={search} onChange={e => setSearch(e.target.value)} />
+        <div className="my-4 flex flex-wrap gap-4 text-sm">
+          <Link href={`/${locale}/admin/reminders`} className="underline">{t('settingsHub.reminderRules')}</Link>
+          <button onClick={() => {setActiveTab('payments'); window.history.replaceState(null, '', '#payments');}} className="underline">{t('settingsHub.paymentHealth')}: {settings.data?.payments.connected ? t('adminNew.settings.payments.connected') : t('settingsHub.untested')}</button>
+          {operational ? <button onClick={() => {setActiveTab('email_ocr'); window.history.replaceState(null, '', '#email_ocr');}} className="underline">{t('settingsHub.integrationHealth')}</button> : null}
+        </div>
         {settings.loading ? (
           <LoadingState label={t('adminNew.settings.loading')} variant="detail" />
         ) : null}
@@ -193,17 +180,19 @@ export default function SettingsPage() {
           <>
             <AdminTabBar
               active={activeTab}
-              onChange={setActiveTab}
+              onChange={tab => {setActiveTab(tab); window.history.replaceState(null, '', '#'+tab); window.dispatchEvent(new HashChangeEvent('hashchange'));}}
               tabs={[
+                { id: 'contact_subjects' as const, label: t('contactSubjects.title'), icon: Mail },
                 { id: 'company' as const, label: t('adminNew.settings.tabs.company'), icon: ShieldCheck },
                 { id: 'invoicing' as const, label: t('adminNew.settings.tabs.invoicing'), icon: Sliders },
                 { id: 'payments' as const, label: t('adminNew.settings.tabs.payments'), icon: TestTube2 },
                 { id: 'locales' as const, label: t('adminNew.settings.tabs.locales'), icon: Globe2 },
                 { id: 'email_ocr' as const, label: t('adminNew.settings.tabs.emailOcr'), icon: Mail },
-              ]}
+              ].filter(tab => (operational || ['invoicing', 'payments'].includes(tab.id)) && (!search || (tab.label + ' ' + ({company:'company address contact iban kvk vat',invoicing:'invoice prefix currency tax due reminders',payments:'pos cash pin invoice online mollie ideal creditcard bancontact banktransfer test live',locales:'locale languages default fallback Nederlands English Deutsch Français',email_ocr:'email smtp mailbox ocr whatsapp signhost integrations',contact_subjects:'contact subjects'}[tab.id])).toLowerCase().includes(search.toLowerCase())))}
             />
 
-            {activeTab === 'company' ? (
+            {operational && activeTab === 'contact_subjects' ? <div className="rounded-xl bg-white p-6"><ContactSubjectsEditor /></div> : null}
+            {operational && activeTab === 'company' ? (
               <AdminSectionCard
                 title={t('adminNew.settings.company.title')}
                 description={t('adminNew.settings.tabs.company')}
@@ -268,6 +257,7 @@ export default function SettingsPage() {
                 <div className="mt-5 flex justify-end">
                   <Button
                     variant="gold"
+                    disabled={!canEdit}
                     leftIcon={<Save className="h-4 w-4" />}
                     onClick={() =>
                       void save(
@@ -333,34 +323,12 @@ export default function SettingsPage() {
                     }
                     type="number"
                   />
-                  <Input
-                    label={t('adminNew.settings.invoicing.reminderFirstDays')}
-                    value={invoicingForm.reminder_first_days}
-                    onChange={(e) =>
-                      setInvoicingForm((p) => ({ ...p, reminder_first_days: e.target.value }))
-                    }
-                    type="number"
-                  />
-                  <Input
-                    label={t('adminNew.settings.invoicing.reminderSecondDays')}
-                    value={invoicingForm.reminder_second_days}
-                    onChange={(e) =>
-                      setInvoicingForm((p) => ({ ...p, reminder_second_days: e.target.value }))
-                    }
-                    type="number"
-                  />
-                  <Input
-                    label={t('adminNew.settings.invoicing.reminderFinalDays')}
-                    value={invoicingForm.reminder_final_days}
-                    onChange={(e) =>
-                      setInvoicingForm((p) => ({ ...p, reminder_final_days: e.target.value }))
-                    }
-                    type="number"
-                  />
+                  <Link className="self-center text-sm underline" href={`/${locale}/admin/reminders`}>{t('settingsHub.reminderRules')}</Link>
                 </div>
                 <div className="mt-5 flex justify-end">
                   <Button
                     variant="gold"
+                    disabled={!canEdit}
                     leftIcon={<Save className="h-4 w-4" />}
                     onClick={() =>
                       void save(
@@ -370,9 +338,6 @@ export default function SettingsPage() {
                             default_due_days: Number(invoicingForm.default_due_days),
                             currency: invoicingForm.currency,
                             default_vat_rate: Number(invoicingForm.default_vat_rate),
-                            reminder_first_days: Number(invoicingForm.reminder_first_days),
-                            reminder_second_days: Number(invoicingForm.reminder_second_days),
-                            reminder_final_days: Number(invoicingForm.reminder_final_days),
                           }),
                         t('adminNew.settings.toasts.invoicingSaved')
                       )
@@ -398,13 +363,15 @@ export default function SettingsPage() {
                   </Badge>
                   <Badge tone="navy">{t('adminNew.settings.payments.secretsBackendOnly')}</Badge>
                 </div>
+                <p className="mt-3 text-sm text-navy-500">{t('settingsHub.mollieSetup')}</p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-navy-800">
                       {t('adminNew.settings.payments.provider')}
                     </label>
-                    <select
+                    <SearchSelect
                       className="input-base"
+                      disabled={!can('settings.update')}
                       value={paymentsForm.provider}
                       onChange={(e) =>
                         setPaymentsForm((p) => ({ ...p, provider: e.target.value }))
@@ -412,20 +379,15 @@ export default function SettingsPage() {
                     >
                       <option value="mollie">Mollie</option>
                       <option value="manual">Manual</option>
-                    </select>
+                    </SearchSelect>
                   </div>
-                  <Input
-                    label={t('adminNew.settings.payments.enabledMethods')}
-                    value={paymentsForm.enabled_methods}
-                    onChange={(e) =>
-                      setPaymentsForm((p) => ({ ...p, enabled_methods: e.target.value }))
-                    }
-                  />
+                  {(['pos_methods', 'online_methods'] as const).map(scope => <fieldset key={scope} className="space-y-2"><legend>{t(scope === 'pos_methods' ? 'settingsHub.pos_methods' : 'settingsHub.online_methods')}</legend>{(scope === 'pos_methods' ? ['cash','pin','invoice','manual','banktransfer','other'] : ['ideal','creditcard','bancontact','banktransfer']).map(method => <label key={method} className="mr-4 inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={paymentsForm[scope].includes(method)} onChange={e => setPaymentsForm(p => ({...p, [scope]: e.target.checked ? [...p[scope],method] : p[scope].filter(m => m !== method)}))} />{method}</label>)}</fieldset>)}
                 </div>
                 <div className="mt-3">
                   <label className="inline-flex items-center gap-2 text-sm text-navy-700">
                     <input
                       type="checkbox"
+                      disabled={!can('settings.update')}
                       checked={paymentsForm.test_mode}
                       onChange={(e) =>
                         setPaymentsForm((p) => ({ ...p, test_mode: e.target.checked }))
@@ -437,29 +399,28 @@ export default function SettingsPage() {
                 <div className="mt-5 flex flex-wrap justify-end gap-2">
                   <Button
                     variant="outline"
+                    disabled={!can('settings.update')}
                     leftIcon={<TestTube2 className="h-4 w-4" />}
                     onClick={() =>
                       void save(
-                        () => testMollie.mutate(),
+                        async () => { await testMollie.mutate(); },
                         t('adminNew.settings.toasts.mollieTestSuccess')
                       )
                     }
                   >
-                    {t('adminNew.settings.payments.testConnection')}
+                    {t('settingsHub.runDiagnostic')}
                   </Button>
                   <Button
                     variant="gold"
+                    disabled={!canEdit}
                     leftIcon={<Save className="h-4 w-4" />}
                     onClick={() =>
                       void save(
                         () =>
                           updatePayments.mutate({
-                            provider: paymentsForm.provider,
-                            test_mode: paymentsForm.test_mode,
-                            enabled_methods: paymentsForm.enabled_methods
-                              .split(',')
-                              .map((x) => x.trim())
-                              .filter(Boolean),
+                            ...(can('settings.update') ? {provider: paymentsForm.provider, test_mode: paymentsForm.test_mode} : {}),
+                            pos_methods: paymentsForm.pos_methods,
+                            online_methods: paymentsForm.online_methods,
                           }),
                         t('adminNew.settings.toasts.paymentsSaved')
                       )
@@ -471,40 +432,23 @@ export default function SettingsPage() {
               </AdminSectionCard>
             ) : null}
 
-            {activeTab === 'locales' ? (
+            {operational && activeTab === 'locales' ? (
               <AdminSectionCard
                 title={t('adminNew.settings.locales.title')}
                 description={t('adminNew.settings.tabs.locales')}
                 icon={Globe2}
               >
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Input
-                    label={t('adminNew.settings.locales.defaultLocale')}
-                    value={localeForm.default_locale}
-                    onChange={(e) =>
-                      setLocaleForm((p) => ({ ...p, default_locale: e.target.value }))
-                    }
-                  />
-                  <Input
-                    label={t('adminNew.settings.locales.fallbackLocale')}
-                    value={localeForm.fallback_locale}
-                    onChange={(e) =>
-                      setLocaleForm((p) => ({ ...p, fallback_locale: e.target.value }))
-                    }
-                  />
+                  <label className="text-sm">{t('adminNew.settings.locales.defaultLocale')}<select className="input-base mt-2" value={localeForm.default_locale} onChange={e => setLocaleForm(p => ({...p, default_locale:e.target.value}))}>{localeForm.supported_locales.map(code => <option key={code} value={code}>{code}</option>)}</select></label>
+                  <label className="text-sm">{t('adminNew.settings.locales.fallbackLocale')}<select className="input-base mt-2" value={localeForm.fallback_locale} onChange={e => setLocaleForm(p => ({...p, fallback_locale:e.target.value}))}>{localeForm.supported_locales.map(code => <option key={code} value={code}>{code}</option>)}</select></label>
                 </div>
                 <div className="mt-3">
-                  <Input
-                    label={t('adminNew.settings.locales.supportedLocales')}
-                    value={localeForm.supported_locales}
-                    onChange={(e) =>
-                      setLocaleForm((p) => ({ ...p, supported_locales: e.target.value }))
-                    }
-                  />
+                  <fieldset><legend>{t('adminNew.settings.locales.supportedLocales')}</legend>{[['nl-NL','Nederlands'],['en-GB','English'],['de-DE','Deutsch'],['fr-FR','Français']].map(([code,label]) => <label key={code} className="mr-4 inline-flex items-center gap-2"><input type="checkbox" checked={localeForm.supported_locales.includes(code)} disabled={code === localeForm.default_locale || code === localeForm.fallback_locale} onChange={e => setLocaleForm(p => ({...p,supported_locales: e.target.checked ? [...p.supported_locales,code] : p.supported_locales.filter(l=>l!==code)}))} />{label}</label>)}</fieldset>
                 </div>
                 <div className="mt-5 flex justify-end">
                   <Button
                     variant="gold"
+                    disabled={!canEdit}
                     leftIcon={<Save className="h-4 w-4" />}
                     onClick={() =>
                       void save(
@@ -512,10 +456,7 @@ export default function SettingsPage() {
                           updateLocales.mutate({
                             default_locale: localeForm.default_locale,
                             fallback_locale: localeForm.fallback_locale,
-                            supported_locales: localeForm.supported_locales
-                              .split(',')
-                              .map((x) => x.trim())
-                              .filter(Boolean),
+                            supported_locales: localeForm.supported_locales,
                           }),
                         t('adminNew.settings.toasts.localesSaved')
                       )
@@ -527,62 +468,7 @@ export default function SettingsPage() {
               </AdminSectionCard>
             ) : null}
 
-            {activeTab === 'email_ocr' ? (
-              <AdminSectionCard
-                title={t('adminNew.settings.emailOcr.title')}
-                description={t('adminNew.settings.emailOcr.subtitle')}
-                icon={Mail}
-              >
-                <div className="space-y-5">
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                      {t('adminNew.settings.emailOcr.inboundMailbox')}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        readOnly
-                        value={inboundAddress}
-                        className="input-base flex-1 bg-navy-50 text-navy-700"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        leftIcon={<Copy className="h-4 w-4" />}
-                        onClick={() => void copyText(inboundAddress)}
-                      >
-                        {copied ? t('adminNew.settings.emailOcr.copied') : t('adminNew.settings.emailOcr.copy')}
-                      </Button>
-                    </div>
-                    <p className="mt-1 text-xs text-navy-400">{t('adminNew.settings.emailOcr.inboundHint')}</p>
-                  </div>
-
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                      {t('adminNew.settings.emailOcr.ocrModel')}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <Badge tone="marine">{ocrModel}</Badge>
-                    </div>
-                    <p className="mt-1 text-xs text-navy-400">{t('adminNew.settings.emailOcr.ocrModelHint')}</p>
-                  </div>
-
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                      {t('adminNew.settings.emailOcr.whatsapp')}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <Badge tone={twilioConfigured ? 'success' : 'danger'} dot>
-                        {twilioConfigured
-                          ? t('adminNew.settings.emailOcr.configured')
-                          : t('adminNew.settings.emailOcr.notConfigured')}
-                      </Badge>
-                      <Badge tone="navy">{t('adminNew.settings.emailOcr.secretsBackendOnly')}</Badge>
-                    </div>
-                    <p className="mt-1 text-xs text-navy-400">{t('adminNew.settings.emailOcr.whatsappHint')}</p>
-                  </div>
-                </div>
-              </AdminSectionCard>
-            ) : null}
+            {operational && activeTab === 'email_ocr' ? <IntegrationSettingsPanel /> : null}
           </>
         ) : null}
       </AdminContent>

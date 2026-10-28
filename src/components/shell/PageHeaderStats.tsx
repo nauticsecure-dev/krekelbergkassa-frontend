@@ -115,7 +115,7 @@ export function PageHeaderStatsGrid({ stats }: { stats: PageHeaderStat[] }) {
   if (!stats.length) return null;
 
   return (
-    <div className={cn(
+    <div data-admin-kpis className={cn(
       'relative mt-4 grid min-w-0 gap-3 grid-cols-1 sm:grid-cols-2',
       stats.length >= 5
         ? 'xl:grid-cols-3 2xl:grid-cols-5'

@@ -1,3 +1,4 @@
+import { userCan } from './permission-check';
 import type { Role } from './auth-context';
 
 export const AUTH_PATHS = ['/login', '/signup', '/forgot-password'] as const;
@@ -91,8 +92,10 @@ export function defaultRedirectForRole(role: Role, locale: string): string {
   switch (role) {
     case 'admin':
     case 'super_admin':
+    case 'finance':
     case 'manager':
       return `/${locale}/admin`;
+    case 'employee':
     case 'staff':
       return `/${locale}/admin/kassa`;
     case 'customer':
@@ -113,8 +116,8 @@ export function defaultRedirectFromCookies(
 
 export function canAccessAdmin(role: Role | undefined, isDemo: boolean): boolean {
   if (!role) return false;
-  if (isDemo) return role === 'admin' || role === 'super_admin' || role === 'manager' || role === 'staff';
-  return role === 'admin' || role === 'super_admin' || role === 'manager' || role === 'staff';
+  if (isDemo) return role === 'admin' || role === 'super_admin' || role === 'manager' || role === 'finance' || role === 'employee' || role === 'staff';
+  return role === 'admin' || role === 'super_admin' || role === 'manager' || role === 'finance' || role === 'employee' || role === 'staff';
 }
 
 const SUPER_ADMIN_PREFIXES = [
@@ -134,15 +137,18 @@ export function isSuperAdminPath(pathname: string): boolean {
   );
 }
 
-export function canAccessAdminRoute(role: Role | undefined, pathname: string): boolean {
-  if (!role || role === 'customer' || role === 'guest') return false;
+export function canAccessAdminRoute(role: Role | undefined, pathname: string, permissions?: readonly string[] | null): boolean {
+  if (!canAccessAdmin(role, false)) return false;
   const path = stripLocale(pathname);
   const adminPath = path.replace(/^\/admin(?=\/|$)/, '') || '/';
+
+  if (adminPath === '/instellingen') return role === 'admin' || role === 'super_admin' || !!permissions?.some(p => ['*', 'settings.view', 'settings.financial.view'].includes(p));
+
+  if (adminPath === '/beheer/dashboard-shortcuts') return userCan({ role, permissions: permissions == null ? undefined : [...permissions] }, 'settings.update');
 
   const adminOnlyPrefixes = [
     '/beheer',
     '/gebruikers',
-    '/instellingen',
     '/audit',
     '/beveiliging',
     '/api-credentials',
@@ -159,29 +165,32 @@ export function canAccessAdminRoute(role: Role | undefined, pathname: string): b
     return role === 'admin' || role === 'super_admin';
   }
 
-  if (role === 'admin' || role === 'super_admin' || role === 'manager') return true;
-
-  const staffPrefixes = [
-    '/',
-    '/planning',
-    '/kalender',
-    '/afspraken',
-    '/werkorders',
-    '/kassa',
-    '/stalling',
-    '/klanten',
-    '/boten',
+  if (adminPath === '/') return canAccessAdmin(role, false);
+  const routes: [string, string | readonly string[]][] = [
+    ['/calculator', 'pricing.view'], ['/producten/nieuw', 'products.write'],
+    ['/producten', 'products.view'], ['/product-stats', 'products.view'],
+    ['/klanten', 'customers.view'], ['/boten', 'boats.view'],
+    ['/stalling', 'stalling.view'], ['/kassa', 'kassa.view'],
+    ['/facturen', 'invoice.view'], ['/betalingen', 'payment.view'],
+    ['/financieel', 'invoice.view'], ['/rapportages', 'reports.view'],
+    ['/werkorders', 'work_orders.view'], ['/planning', 'planning.view'],
+    ['/kalender', 'planning.view'], ['/afspraken', 'planning.view'],
+    ['/diensten-prijzen', 'products.view'], ['/diensten', 'products.view'],
+    ['/product-groepen', 'products.view'], ['/bundels', 'products.view'],
+    ['/makelaardij', 'settings.update'], ['/verkopen', 'settings.update'],
+    ['/reminders', 'reminders.view'], ['/leveranciers', ['products.view', 'invoice.view']],
   ];
-  return staffPrefixes.some((prefix) =>
-    prefix === '/'
-      ? adminPath === '/'
-      : adminPath === prefix || adminPath.startsWith(`${prefix}/`)
-  );
+  for (const [prefix, permission] of routes) {
+    if (adminPath === prefix || adminPath.startsWith(prefix + '/')) {
+      return userCan({ role, permissions: permissions == null ? undefined : [...permissions] }, permission);
+    }
+  }
+  return role === 'admin' || role === 'super_admin' || role === 'manager';
 }
 
-/** Work orders API is permission-gated — admin role cannot access /v1/work-orders. */
+/** Verified sessions must also check work_orders.view. */
 export function canAccessWorkOrders(role: Role | undefined): boolean {
-  return role === 'staff' || role === 'manager';
+  return userCan({ role }, 'work_orders.view');
 }
 
 export function isWorkOrdersPath(pathname: string): boolean {

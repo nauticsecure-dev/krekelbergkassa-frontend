@@ -105,7 +105,7 @@ function clock(value: string | null | undefined, fallback: string): string {
   return /^\d{2}:\d{2}$/.test(sliced) ? sliced : fallback;
 }
 
-export function appointmentToEvent(appointment: Appointment): EventInput {
+export function appointmentToEvent(appointment: Appointment, canManage = false): EventInput {
   const date = (appointment.appointment_date || '').slice(0, 10) || localDateKey(new Date());
   const startTime = clock(appointment.start_time, '09:00');
   let endTime = clock(appointment.end_time, '');
@@ -120,7 +120,7 @@ export function appointmentToEvent(appointment: Appointment): EventInput {
     endTime = `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
   }
   const colors = STATUS_COLORS[appointment.status] ?? { bg: '#e2e8f0', border: '#64748b', text: '#1e293b' };
-  const locked = appointmentIsLocked(appointment.status);
+  const locked = !canManage || appointmentIsLocked(appointment.status);
   return {
     id: appointment.id,
     title: eventTitle(appointment),

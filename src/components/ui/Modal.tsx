@@ -40,7 +40,10 @@ export function Modal({
   React.useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      // A native top-layer dialog (such as CMS session recovery) owns Escape.
+      // Its cancel handler may deliberately keep it open while preserving this
+      // underlying editor and its selected files/draft.
+      if (e.key === 'Escape' && !document.querySelector('dialog[open]')) onClose();
     };
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;

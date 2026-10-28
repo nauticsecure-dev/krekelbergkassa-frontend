@@ -61,13 +61,20 @@ export default function InvoiceLayoutTemplatePage() {
   const blocksFromForm = (): InvoiceLayoutBlocks => ({
     ...emptyBlocks(),
     ...(selected?.blocks ?? {}),
-    logo: { enabled: showLogo, align: 'left' },
+    logo: { ...selected?.blocks?.logo, enabled: showLogo, align: selected?.blocks?.logo?.align ?? 'left' },
     totals: { show_subtotal: showTotals, show_vat: showTotals, show_total: showTotals },
     footer: { text: footer },
     terms: { text: terms },
     tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean),
   });
 
+  const uploadLogo = async (file?: File) => {
+    if (!selected || !file) return;
+    try {
+      await invoiceLayoutTemplatesService.uploadLogo(selected.id, file);
+      await templates.refetch();
+    } catch (error) { push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(error) }); }
+  };
   const onSave = async () => {
     if (!name.trim()) {
       push({ tone: 'error', title: t('adminNew.templates.nameRequired') });
@@ -127,7 +134,9 @@ export default function InvoiceLayoutTemplatePage() {
                 ))}
               </div>
             ) : null}
+            {selected?.warnings?.length ? <p role="alert" className="mb-4 text-sm text-amber-800">{t('adminNew.templates.missingTags', { defaultValue: 'Ontbrekende verplichte tags' })}: {selected.warnings.join(', ')}</p> : null}
             <AdminFormGrid>
+              {selected ? <label className="text-sm text-navy-700">{t('adminNew.templates.uploadLogo', { defaultValue: 'Logo uploaden (PNG/JPG, max. 1 MB)' })}<input type="file" accept="image/png,image/jpeg" onChange={(e) => void uploadLogo(e.target.files?.[0])} /></label> : null}
               <Input label={t('adminNew.templates.fieldsMeta.name')} value={name} onChange={(e) => setName(e.target.value)} required />
               <label className="flex items-center gap-2 text-sm text-navy-700">
                 <input type="checkbox" checked={showLogo} onChange={(e) => setShowLogo(e.target.checked)} />

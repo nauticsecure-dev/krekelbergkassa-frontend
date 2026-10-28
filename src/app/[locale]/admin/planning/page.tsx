@@ -11,6 +11,7 @@ import { adminHref } from '@/config/admin-routes';
 import { useIntl } from '@/i18n/IntlProvider';
 import { localDateKey } from '@/lib/appointment-calendar';
 import { cn } from '@/lib/cn';
+import { usePermission } from '@/lib/permissions';
 
 const CalendarAdminPage = dynamic(() => import('@/components/admin/CalendarAdminPage'), {
   loading: () => <LoadingState />,
@@ -39,10 +40,12 @@ export default function PlanningHubPage() {
 
 function PlanningWorkspace() {
   const { locale, t } = useIntl();
+  const { can } = usePermission();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const tab = normalizeTab(searchParams.get('tab'));
+  const requestedTab = normalizeTab(searchParams.get('tab'));
+  const tab = requestedTab === 'werf' && !can('work_orders.view') ? 'kalender' : requestedTab;
   const prefix = 'adminModules.hubs.planning';
 
   const selectTab = (next: PlanningTab) => {
@@ -64,7 +67,7 @@ function PlanningWorkspace() {
     { id: 'afspraken', label: t(`${prefix}.tabAppointments`, { defaultValue: 'Afspraken' }) },
     { id: 'vandaag', label: t(`${prefix}.tabToday`, { defaultValue: 'Vandaag' }) },
     { id: 'week', label: t(`${prefix}.tabWeek`, { defaultValue: 'Week' }) },
-    { id: 'werf', label: t(`${prefix}.tabYard`, { defaultValue: 'Werfplanning' }) },
+    ...(can('work_orders.view') ? [{ id: 'werf' as const, label: t(`${prefix}.tabYard`, { defaultValue: 'Werfplanning' }) }] : []),
   ];
 
   return (
@@ -74,9 +77,9 @@ function PlanningWorkspace() {
         subtitle={t(`${prefix}.subtitle`)}
         rightSlot={
           <div className="flex flex-wrap gap-2">
-            <Link href={adminHref(locale, 'admin.planning.create')}>
+            {can('planning.manage') ? <Link href={adminHref(locale, 'admin.planning.create')}>
               <Button variant="gold" size="sm">{t('adminModules.create.appointment')}</Button>
-            </Link>
+            </Link> : null}
             <Link href={`/${locale}/kraanafspraak`}>
               <Button variant="outline" size="sm">{t(`${prefix}.crane`)}</Button>
             </Link>
@@ -107,7 +110,7 @@ function PlanningWorkspace() {
 
       {tab === 'kalender' ? <CalendarAdminPage embedded /> : null}
       {tab === 'afspraken' || tab === 'vandaag' || tab === 'week' ? <AppointmentsPage embedded /> : null}
-      {tab === 'werf' ? <WorkOrdersPage embedded /> : null}
+      {tab === 'werf' && can('work_orders.view') ? <WorkOrdersPage embedded /> : null}
     </>
   );
 }

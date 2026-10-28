@@ -1,4 +1,7 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
+import { JourneyPanel } from '@/components/admin/JourneyPanel';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -43,7 +46,7 @@ import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function CustomerDetailPage() {
   const params = useParams<{ id: string }>();
-  const customerId = params?.id;
+  const routeCustomerId = params?.id;
   const { locale, t } = useIntl();
   const { push } = useToast();
 
@@ -59,18 +62,20 @@ export default function CustomerDetailPage() {
   const [statementYear, setStatementYear] = React.useState(String(new Date().getFullYear()));
   const [statementMonth, setStatementMonth] = React.useState(String(new Date().getMonth() + 1));
 
-  const data = useQuery([customerId], async () => {
-    if (!customerId) throw new Error('Missing customer id');
-    const [customer, boats, stalling, invoices, files, wallet, timeline] = await Promise.all([
-      customersService.get(customerId),
-      boatsService.list({ customer_id: customerId, per_page: 100 }),
-      stallingService.list({ customer_id: customerId, per_page: 100 }),
-      invoicesService.list({ customer_id: customerId, per_page: 100 }),
+  const data = useQuery([routeCustomerId], async () => {
+    if (!routeCustomerId) throw new Error('Missing customer id');
+    // Resolve a readable public ID before sending UUID-only relationship filters.
+    const customer = await customersService.get(routeCustomerId);
+    const canonicalId = customer.id;
+    const [boats, stalling, invoices, files, wallet, timeline] = await Promise.all([
+      boatsService.list({ customer_id: canonicalId, per_page: 100 }),
+      stallingService.list({ customer_id: canonicalId, per_page: 100 }),
+      invoicesService.list({ customer_id: canonicalId, per_page: 100 }),
       filesService
-        .list({ entity_type: 'customer', entity_id: customerId, per_page: 100 })
+        .list({ entity_type: 'customer', entity_id: canonicalId, per_page: 100 })
         .catch(() => ({ data: [] })),
-      walletsService.get(customerId).catch(() => null),
-      adminService.timeline({ customer_id: customerId, per_page: 30 }).catch(() => ({ data: [] })),
+      walletsService.get(canonicalId).catch(() => null),
+      adminService.timeline({ customer_id: canonicalId, per_page: 30 }).catch(() => ({ data: [] })),
     ]);
 
     return {
@@ -83,6 +88,8 @@ export default function CustomerDetailPage() {
       timeline: timeline.data ?? [],
     };
   });
+
+  const customerId = data.data?.customer.id ?? '';
 
   // Trello #90: customer health score widget.
   const health = useQuery([customerId, 'health'], () =>
@@ -548,6 +555,7 @@ export default function CustomerDetailPage() {
                 </Link>
               </AdminSectionCard>
 
+              <JourneyPanel customerId={customerId} />
               {/* Trello #90: customer health score */}
               {(() => {
                 const h = health.data as Record<string, unknown> | null;
@@ -574,7 +582,7 @@ export default function CustomerDetailPage() {
                       <div className={`text-4xl font-bold ${tone === 'danger' ? 'text-rose-600' : tone === 'gold' ? 'text-amber-600' : 'text-marine-700'}`}>
                         {String(h.score)}
                       </div>
-                      <Badge tone={tone}>{t(`adminNew.customerDetail.health.labels.${label}`)}</Badge>
+                      <Badge tone={tone}>{tEnum(t, 'adminNew.customerDetail.health.labels', label)}</Badge>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-navy-600">
                       <span>{t('adminNew.customerDetail.health.recentPaid')}: <strong>{String(breakdown.recent_paid_invoices ?? 0)}</strong></span>
@@ -783,7 +791,7 @@ export default function CustomerDetailPage() {
                     ))}
                   </div>
                   {/* Priority */}
-                  <select
+                  <SearchSelect
                     className="input-base py-1.5 text-xs"
                     value={tlPriority}
                     onChange={(e) => setTlPriority(e.target.value as typeof tlPriority)}
@@ -791,10 +799,10 @@ export default function CustomerDetailPage() {
                     {(['low', 'normal', 'high', 'urgent'] as const).map((p) => (
                       <option key={p} value={p}>{p}</option>
                     ))}
-                  </select>
+                  </SearchSelect>
                   {/* Boat selector */}
                   {(data.data?.boats?.length ?? 0) > 0 ? (
-                    <select
+                    <SearchSelect
                       className="input-base py-1.5 text-xs"
                       value={tlBoatId}
                       onChange={(e) => setTlBoatId(e.target.value)}
@@ -803,7 +811,7 @@ export default function CustomerDetailPage() {
                       {data.data!.boats.map((b) => (
                         <option key={String(b.id)} value={String(b.id)}>{b.name}</option>
                       ))}
-                    </select>
+                    </SearchSelect>
                   ) : null}
                   {/* CTA toggle */}
                   <button
@@ -1009,7 +1017,7 @@ export default function CustomerDetailPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.customerDetail.preferredLocale')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={editForm.preferred_locale}
                 onChange={(e) => setEditForm((p) => ({ ...p, preferred_locale: e.target.value }))}
@@ -1018,13 +1026,13 @@ export default function CustomerDetailPage() {
                 <option value="en-GB">English (EN)</option>
                 <option value="de-DE">Deutsch (DE)</option>
                 <option value="fr-FR">Français (FR)</option>
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.customerDetail.gender')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base w-full"
                 value={editForm.gender}
                 onChange={(e) => setEditForm((p) => ({ ...p, gender: e.target.value }))}
@@ -1033,7 +1041,7 @@ export default function CustomerDetailPage() {
                 <option value="male">{t('adminNew.customerDetail.genderMale')}</option>
                 <option value="female">{t('adminNew.customerDetail.genderFemale')}</option>
                 <option value="other">{t('adminNew.customerDetail.genderOther')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <AddressAutocomplete
               label={t('adminNew.customerDetail.street')}
@@ -1109,7 +1117,7 @@ export default function CustomerDetailPage() {
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
                 {t('adminNew.customerDetail.boatType')}
               </label>
-              <select
+              <SearchSelect
                 className="input-base"
                 value={boatForm.type}
                 onChange={(e) => setBoatForm((p) => ({ ...p, type: e.target.value }))}
@@ -1119,7 +1127,7 @@ export default function CustomerDetailPage() {
                 <option value="rib">RIB</option>
                 <option value="trailer">Trailer</option>
                 <option value="other">{t('adminNew.boats.type.other')}</option>
-              </select>
+              </SearchSelect>
             </div>
             <Input
               label={t('adminNew.customerDetail.lengthCm')}

@@ -1,4 +1,6 @@
 'use client';
+import { tEnum } from '@/i18n/admin-enums';
+import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -63,7 +65,7 @@ function workOrderTypeLabel(
   const fromMeta = metaTypes?.find((o) => o.value === type)?.label;
   if (fromMeta) return fromMeta;
   const key = `adminNew.workOrders.types.${type}`;
-  const translated = t(key);
+  const translated = tEnum(t, 'adminNew.workOrders.types', type);
   if (translated !== key) return translated;
   return TYPE_LABELS[type] ?? type;
 }
@@ -229,7 +231,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
           <div className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-navy-100 bg-white p-4 sm:grid-cols-4">
             <div>
               <label className="mb-1 block text-xs font-medium text-navy-600">{t('adminNew.workOrders.columns.status')}</label>
-              <select
+              <SearchSelect
                 className="input-base w-full text-sm"
                 value={filterStatus}
                 onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
@@ -238,11 +240,11 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
                 {ALL_STATUSES.map((s) => (
                   <option key={s} value={s}>{s}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-navy-600">{t('adminNew.workOrders.columns.priority')}</label>
-              <select
+              <SearchSelect
                 className="input-base w-full text-sm"
                 value={filterPriority}
                 onChange={(e) => { setFilterPriority(e.target.value); setPage(1); }}
@@ -251,11 +253,11 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
                 {['low', 'normal', 'high', 'urgent', 'emergency'].map((p) => (
                   <option key={p} value={p}>{p}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-navy-600">{t('adminNew.workOrders.columns.type')}</label>
-              <select
+              <SearchSelect
                 className="input-base w-full text-sm"
                 value={filterType}
                 onChange={(e) => { setFilterType(e.target.value); setPage(1); }}
@@ -264,11 +266,11 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
                 {(types.length ? types : Object.keys(TYPE_LABELS).map((v) => ({ value: v, label: TYPE_LABELS[v] }))).map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-navy-600">{t('adminNew.workOrders.columns.assignee')}</label>
-              <select
+              <SearchSelect
                 className="input-base w-full text-sm"
                 value={filterAssignee}
                 onChange={(e) => { setFilterAssignee(e.target.value); setPage(1); }}
@@ -277,7 +279,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
                 {technicians.map((tech) => (
                   <option key={tech.id} value={tech.id}>{tech.name}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
           </div>
         ) : null}
@@ -356,7 +358,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
                           )}
                         </AdminTableCell>
                         <AdminTableCell>
-                          <select
+                          <SearchSelect
                             className="input-base py-1 text-xs"
                             value={String(row.status ?? 'new')}
                             onChange={(e) =>
@@ -369,7 +371,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
                             {ALL_STATUSES.map((s) => (
                               <option key={s} value={s}>{s}</option>
                             ))}
-                          </select>
+                          </SearchSelect>
                         </AdminTableCell>
                         <AdminTableCell>
                           <Badge tone={priorityTone(String(row.priority ?? 'normal'))}>
@@ -414,39 +416,39 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.boats.title')}</label>
-              <select className="input-base w-full" value={form.boat_id} onChange={(e) => setForm({ ...form, boat_id: e.target.value })} required>
+              <SearchSelect className="input-base w-full" value={form.boat_id} onChange={(e) => setForm({ ...form, boat_id: e.target.value })} required>
                 <option value="">{t('adminNew.boats.selectCustomer')}</option>
                 {(boats.data?.data ?? []).map((b) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.type')}</label>
-              <select className="input-base w-full" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} required>
+              <SearchSelect className="input-base w-full" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} required>
                 <option value="">{t('adminNew.workOrders.selectType')}</option>
                 {(types.length ? types : Object.keys(TYPE_LABELS).map((value) => ({ value, label: TYPE_LABELS[value] }))).map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
-              </select>
+              </SearchSelect>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.detail.priority')}</label>
-                <select className="input-base w-full" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
+                <SearchSelect className="input-base w-full" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
                   {['low', 'normal', 'high', 'urgent', 'emergency'].map((p) => (
                     <option key={p} value={p}>{p}</option>
                   ))}
-                </select>
+                </SearchSelect>
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.assignee')}</label>
-                <select className="input-base w-full" value={form.assigned_to_user_id} onChange={(e) => setForm({ ...form, assigned_to_user_id: e.target.value })}>
+                <SearchSelect className="input-base w-full" value={form.assigned_to_user_id} onChange={(e) => setForm({ ...form, assigned_to_user_id: e.target.value })}>
                   <option value="">{t('adminNew.workOrders.detail.unassigned')}</option>
                   {technicians.map((tech) => (
                     <option key={tech.id} value={tech.id}>{tech.name}</option>
                   ))}
-                </select>
+                </SearchSelect>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
