@@ -110,7 +110,7 @@ export default function SupplierDetailPage() {
             <Field label={t('adminNew.suppliers.fields.phone')} value={str(data, 'phone')} />
             <Field label={t('adminNew.suppliers.columns.vat')} value={str(data, 'vat_number')} />
             <Field label={t('adminNew.suppliers.fields.paymentTerms')} value={str(data, 'payment_terms_days')} />
-            <Field label={t('adminNew.suppliers.fields.ledgerAccount')} value={str(data, 'default_ledger_account', 'ledger_account')} />
+            <Field label={t('adminNew.suppliers.fields.ledgerAccount')} value={str(data, 'default_purchase_ledger', 'default_ledger_account', 'ledger_account')} />
           </div>
         </AdminSectionCard>
 

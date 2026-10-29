@@ -15,12 +15,14 @@ Decision, 27 October 2026: five KPI columns start at `2xl` (1536px), not `xl` (1
 
 ## Custom grid review
 
-| Source | Decision | Runtime evidence still required |
+| Source | Decision | Runtime evidence |
 | --- | --- | --- |
-| AdminUi / AdminSplitLayout | Shared primitive; allowed four responsive templates with minmax(0,1fr). | Both sidebar positions and lg/xl at populated widths. |
-| DocumentZoneEditor | Replaced fixed 1fr/18rem template with AdminSplitLayout, 18rem side. | Loaded document/zone drag and edit on mobile and desktop. |
-| KassaAnalyticsDashboard | Allowed chart ratio 1.4:1. Both tracks now minmax(0,...) with min-w-0 children. | Long payment labels and populated charts. |
-| audit/page | Allowed before/key/arrow/after diff, stacked below sm; shrinkable tracks. | Long populated before/after values in modal. |
-| kassa/page | Two compact amount/keypad rows (1fr/7rem and 8rem/1fr). Domain pattern allowed, but pending populated/mobile verification. | Long amount, discount and payment flows at 390px. |
+| AdminUi / AdminSplitLayout | Shared primitive; allowed four responsive templates with minmax(0,1fr). | Populated: kassa cart sidebar at xl (`end`) and dagafsluiting form sidebar at lg (`start`), widths 390/1280/1536. |
+| DocumentZoneEditor | Replaced fixed 1fr/18rem template with AdminSplitLayout, 18rem side. | Populated extraction template with zones + source image; drag edit checked at 390/1280/1536. |
+| KassaAnalyticsDashboard | Allowed chart ratio 1.4:1. Both tracks now minmax(0,...) with min-w-0 children. Long payment labels truncate. | Mounted on `/admin/kassa`; long method labels and populated series at 390/1280/1536. |
+| audit/page | Allowed before/key/arrow/after diff, stacked below sm; shrinkable tracks. | Long before/after values in detail modal at 390/1280/1536. |
+| kassa/page | Customer address rows use `minmax(0,1fr)` with 7rem/8rem companions. Domain pattern allowed. | Populated address modal + discount/payment cart at 390/1280; no viewport overflow. |
 
 Equal-column grids are allowed only when their children fit; source approval is not a responsive pass. The generated source matrix lists route-to-component ownership, including delegated modals. Any new arbitrary grid requires an entry here and browser evidence at 390, 1280, 1536px with desktop sidebar expanded/collapsed. Form, table and modal evidence must use realistic long data, not just an empty page.
+
+Browser scenarios: `tests/browser/admin-review.spec.ts` (populated kassa / cash-close / document zones / audit modal). Screenshots: `../_audit/global-ux-populated-layouts/`.

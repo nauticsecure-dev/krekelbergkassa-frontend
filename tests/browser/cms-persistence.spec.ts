@@ -79,8 +79,8 @@ for (const mobile of [false, true]) {
     await image.getByRole('button', { name: messages.editImage, exact: true }).click();
     await dialog.locator('input[type=file]').first().setInputFiles('public/img/krek/werf-hero.webp');
     await expect(dialog.locator('.reactEasyCrop_Image')).toBeVisible();
-    await dialog.getByRole('slider', { name: 'Zoom', exact: true }).focus();
-    await dialog.getByRole('slider', { name: 'Zoom', exact: true }).press('End');
+    await dialog.getByRole('slider', { name: messages.zoom, exact: true }).focus();
+    await dialog.getByRole('slider', { name: messages.zoom, exact: true }).press('End');
     await page.waitForTimeout(200);
     await dialog.getByRole('button', { name: messages.save, exact: true }).click();
     await expect(dialog).toHaveCount(0);

@@ -1,0 +1,22 @@
+'use client';
+import * as React from 'react';
+import { api } from '@/lib/api';
+import { useIntl } from '@/i18n/IntlProvider';
+import { signingCopy } from '@/i18n/signing';
+import { usePermission } from '@/lib/permissions';
+import { getApiErrorMessage } from '@/lib/api-error';
+import { Button } from '@/components/ui/Button';
+
+type Signing = {id:string;status:string;provider_id:string|null;source_file_id:string;failure_code:string|null;has_document:boolean;has_receipt:boolean};
+type State = {configured:boolean;test_mode:boolean;requests:Signing[]};
+export function ContractSigning({contractId,documents}:{contractId:string;documents:Record<string,unknown>[]}) {
+ const {locale}=useIntl(), c=signingCopy(locale),{can}=usePermission();
+ const [state,setState]=React.useState<State|null>(null),[error,setError]=React.useState(''),[busy,setBusy]=React.useState(false),[file,setFile]=React.useState(''),[provider,setProvider]=React.useState('');
+ const base=`/v1/stalling/${contractId}/signhost`;
+ const reload=React.useCallback(async()=>{setState(await api<State>(base));},[base]);
+ React.useEffect(()=>{let active=true;api<State>(base).then(data=>{if(active)setState(data);}).catch(e=>{if(active)setError(getApiErrorMessage(e));});return()=>{active=false;};},[base]);
+ async function action(path:string,body:Record<string,unknown>={}){setBusy(true);setError('');try{await api(base+path,{method:'POST',body,timeoutMs:90000});await reload();}catch(e){setError(getApiErrorMessage(e));await reload().catch(()=>{});}finally{setBusy(false);}}
+ async function download(row:Signing,kind:string){setBusy(true);setError('');try{const blob=await api<Blob>(`${base}/${row.id}/artifacts/${kind}`);const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`signhost-${kind}.pdf`;a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);}catch(e){setError(getApiErrorMessage(e));}finally{setBusy(false);}}
+ const pdfs=documents.filter(d=>d.mime_type==='application/pdf'||String(d.filename??d.name??'').toLowerCase().endsWith('.pdf'));
+ return <section className="my-5 rounded-2xl border border-navy-100 bg-white p-5" aria-label={c.title}><h2 className="font-semibold text-navy-900">{c.title}</h2>{error&&<p role="alert" className="my-2 text-sm text-red-700">{error}</p>}{!state?.configured?<p className="mt-2 text-sm text-navy-500">{c.disabled}</p>:<><p className="my-2 text-sm text-navy-500">{state.test_mode?c.test:c.live}</p>{can('stalling.write')&&<div className="my-3 flex flex-wrap gap-2"><select aria-label={c.select} value={file} onChange={e=>setFile(e.target.value)} className="max-w-full rounded border p-2"><option value="">{c.select}</option>{pdfs.map(d=><option key={String(d.file_id??d.id)} value={String(d.file_id??d.id)}>{String(d.filename??d.name??d.id)}</option>)}</select><Button disabled={busy||!file||(state.requests??[]).some(r=>!['REJECTED','EXPIRED','CANCELLED','FAILED'].includes(r.status))} onClick={()=>void action('',{file_id:file})}>{c.start}</Button></div>}{(state.requests??[]).map(row=><article key={row.id} className="my-3 rounded border border-navy-100 p-3"><p className="text-sm font-semibold">{row.status}</p><p className="break-all text-xs text-navy-500">{row.provider_id??row.id} {row.failure_code}</p>{row.status==='REVIEW_REQUIRED'&&<p className="my-2 text-sm">{c.review.replace('{id}',row.id)}</p>}<div className="mt-2 flex flex-wrap gap-2">{can('stalling.write')&&<>{row.provider_id&&row.status!=='SIGNED'&&<Button size="sm" disabled={busy} onClick={()=>void action(`/${row.id}/sync`)}>{c.sync}</Button>}{['RETRY_REQUIRED','PREPARED'].includes(row.status)&&<Button size="sm" disabled={busy} onClick={()=>void action('',{file_id:row.source_file_id})}>{c.retry}</Button>}{row.status==='PREPARED'&&<Button size="sm" disabled={busy} onClick={()=>void action(`/${row.id}/cancel`)}>{c.cancel}</Button>}{row.status==='REVIEW_REQUIRED'&&<><input aria-label={c.reconcile} value={provider} onChange={e=>setProvider(e.target.value)} className="rounded border p-1"/><Button size="sm" disabled={busy||!provider} onClick={()=>void action(`/${row.id}/reconcile`,{provider_id:provider})}>{c.reconcile}</Button></>}</>}{row.has_document&&<Button size="sm" disabled={busy} onClick={()=>void download(row,'document')}>{c.document}</Button>}{row.has_receipt&&<Button size="sm" disabled={busy} onClick={()=>void download(row,'receipt')}>{c.receipt}</Button>}</div></article>)}</>}</section>;
+}

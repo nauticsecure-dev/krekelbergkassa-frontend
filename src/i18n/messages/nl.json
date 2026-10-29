@@ -4545,29 +4545,126 @@
       "instagram": "Instagram-URL"
     },
     "allTranslations": "Alle teksten",
-    "searchTranslations": "Zoek tekst of sleutel"
+    "searchTranslations": "Zoek tekst of sleutel",
+    "zoom": "Zoom",
+    "mediaLibrary": "Mediabibliotheek",
+    "existingImage": "Bestaande afbeelding",
+    "keepCurrentImage": "Huidige afbeelding behouden",
+    "unusedImage": "Ongebruikte afbeelding",
+    "deleteUnusedImage": "Ongebruikte afbeelding verwijderen",
+    "mobileImage": "Mobiele afbeelding",
+    "useDesktopImage": "Desktopafbeelding gebruiken",
+    "uploadMobileImage": "Mobiele afbeelding uploaden",
+    "desktopFocal": "Desktopfocus {axis}",
+    "mobileFocal": "Mobiele focus {axis}",
+    "brightness": "Helderheid",
+    "contrast": "Contrast",
+    "saturation": "Verzadiging",
+    "alignment": "Uitlijning",
+    "alignLeft": "Links",
+    "alignCenter": "Midden",
+    "alignRight": "Rechts",
+    "gradient": "Verloop",
+    "gradientNone": "Geen",
+    "gradientRight": "Rechts",
+    "gradientBottom": "Onder",
+    "gradientStart": "Verloop start",
+    "gradientMiddle": "Verloop midden",
+    "gradientEnd": "Verloop eind",
+    "selectValidPage": "Selecteer een geldige pagina",
+    "homeRoute": "Home",
+    "placeholderEmail": "info@voorbeeld.nl",
+    "placeholderPhone": "+31 475 315661",
+    "placeholderAnchor": "diensten",
+    "placeholderUrl": "https://voorbeeld.nl"
   },
   "settingsHub": {
     "search": "Instellingen zoeken",
+    "subtitle": "Operationeel configuratiecentrum — bekijk, configureer, test en controleer.",
     "reminderRules": "Herinneringsregels beheren",
     "paymentHealth": "Betaalverbinding",
     "integrationHealth": "Integraties instellen en controleren",
     "untested": "Niet getest",
     "setupRequired": "Configuratie vereist",
-    "pos_methods": "Betaalmethoden kassa",
-    "online_methods": "Online betaalmethoden",
+    "pos_methods": "Kassa / handmatig",
+    "online_methods": "Online (Mollie)",
     "mailbox": "Factuurmailbox",
-    "ocrModel": "OCR-model",
+    "ocrModel": "OCR-model (geavanceerd)",
     "whatsappEnabled": "WhatsApp inschakelen",
     "transactionId": "Bestaande Signhost-transactie (UUID)",
     "runDiagnostic": "Opgeslagen configuratie testen",
     "openWorkflow": "Werkproces openen",
+    "tabs": {
+      "reminders": "Herinneringen",
+      "emailImport": "E-mail & Import",
+      "integrations": "Integraties"
+    },
+    "actions": {
+      "manage": "Beheren",
+      "configure": "Configureren"
+    },
+    "attention": {
+      "title": "Aandacht vereist"
+    },
+    "save": {
+      "saving": "Opslaan…",
+      "saved": "Opgeslagen",
+      "failed": "Kon niet opslaan"
+    },
+    "company": {
+      "description": "Eén bron van waarheid voor website, facturen, contracten, e-mails en templates.",
+      "addressSearch": "Adres zoeken (Google Places)",
+      "website": "Website",
+      "bic": "BIC",
+      "logoUrl": "Logo-URL"
+    },
+    "invoicing": {
+      "description": "Deze waarden sturen echte factuurgeneratie (vervaltermijn, BTW, valuta, nummering).",
+      "numbering": "Nummering",
+      "example": "Voorbeeld",
+      "creditPrefix": "Creditnota-prefix",
+      "bankInstructions": "Bankgegevens / instructies",
+      "paymentInstructions": "Betaalinstructies",
+      "openTemplates": "Template-editor openen",
+      "openInvoices": "Facturen openen"
+    },
+    "reminders": {
+      "description": "Herinneringen worden gestuurd door configureerbare regels (niet door vaste dagen in facturatie).",
+      "flowDue": "Vervaldatum",
+      "days": "dagen",
+      "final": "Laatste herinnering",
+      "rulesAuthoritative": "Pas dagen, kanalen, templates en stopvoorwaarden aan in de herinneringsregels. Wijzigingen gelden voor de scheduler.",
+      "openTemplates": "E-mail/template builder openen"
+    },
+    "payments": {
+      "description": "Scheiding tussen online Mollie-methoden en kassa/handmatige methoden. Secrets blijven op de server.",
+      "onlineHint": "Cash en PIN horen hier niet — die staan onder kassa.",
+      "posHint": "Contant, PIN, op rekening en split zijn kassa-methoden (niet Mollie).",
+      "testModeActive": "Mollie staat op TEST. Schakel pas naar LIVE na een geslaagde diagnostiek.",
+      "switchLive": "Overschakelen naar LIVE",
+      "confirmLive": "Bevestig: LIVE inschakelen"
+    },
+    "locales": {
+      "description": "In-/uitschakelen zonder vertalingen te verwijderen. Uitgeschakelde talen verdwijnen uit selector, portaal, CMS en templates.",
+      "disabledKept": "Vertalingen blijven bewaard",
+      "fallbackChain": "Fallback: gevraagde taal → geconfigureerde fallback → standaardtaal → NL",
+      "disableTitle": "{code} uitschakelen?",
+      "disableBody": "Deze taal verdwijnt uit de publieke taalkiezer, het klantportaal en template-editors. Bestaande vertalingen worden NIET verwijderd.",
+      "confirmDisable": "Uitschakelen",
+      "cannotDisableDefault": "Standaard- of fallback-taal kan niet worden uitgeschakeld."
+    },
     "integrations": {
-      "email": "Email",
+      "mollie": "Mollie",
+      "google_places": "Google Places",
+      "email": "E-mail",
       "mailbox": "Factuurmailbox",
-      "ocr": "OCR",
+      "ocr": "Documentherkenning",
       "whatsapp": "WhatsApp",
-      "signhost": "Signhost"
+      "signhost": "Signhost",
+      "description": "Gezondheid, configuratie en diagnostiek van externe koppelingen."
+    },
+    "rbac": {
+      "financeLimited": "Finance ziet financiële instellingen; bedrijfs- en integratiegeheimen vereisen operationele rechten."
     },
     "mollieSetup": "Stel MOLLIE_TEST_KEY en MOLLIE_LIVE_KEY in op de server. Sla de gekozen modus op en test daarna de opgeslagen configuratie."
   },

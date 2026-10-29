@@ -41,10 +41,13 @@ import { formatCurrency, formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { usePermission } from '@/lib/permissions';
 
 export default function BoatDossierPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
+  const { can } = usePermission();
+  const canWrite = can('boats.write');
   const params = useParams();
   const searchParams = useSearchParams();
   const id = String(params.id);
@@ -195,6 +198,7 @@ export default function BoatDossierPage() {
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     try {
       await updateBoat.mutate({
         public_listing_url: form.public_listing_url || null,
@@ -235,6 +239,7 @@ export default function BoatDossierPage() {
 
   const onTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     try {
       await transferBoat.mutate({
         customer_id: transferForm.customer_id,
@@ -286,12 +291,16 @@ export default function BoatDossierPage() {
                 {t('adminNew.common.back')}
               </Button>
             </Link>
-            <Button variant="outline" size="sm" leftIcon={<UserCog className="h-4 w-4" />} onClick={() => setShowTransfer(true)}>
-              {t('adminNew.boats.transfer')}
-            </Button>
-            <Button variant="gold" size="sm" onClick={() => setShowEdit(true)}>
-              {t('adminNew.common.edit')}
-            </Button>
+            {canWrite ? (
+              <Button variant="outline" size="sm" leftIcon={<UserCog className="h-4 w-4" />} onClick={() => setShowTransfer(true)}>
+                {t('adminNew.boats.transfer')}
+              </Button>
+            ) : null}
+            {canWrite ? (
+              <Button variant="gold" size="sm" onClick={() => setShowEdit(true)}>
+                {t('adminNew.common.edit')}
+              </Button>
+            ) : null}
           </div>
         }
         stats={[
@@ -781,7 +790,7 @@ export default function BoatDossierPage() {
         ) : null}
       </AdminContent>
 
-      <Modal open={showEdit} onClose={() => setShowEdit(false)} size="lg">
+      <Modal open={showEdit && canWrite} onClose={() => setShowEdit(false)} size="lg">
         <form onSubmit={onSave}>
           <AdminModalHeader title={t('adminNew.boats.editTitle')} subtitle={t('adminNew.boats.editSubtitle')} />
           <AdminModalBody>
@@ -862,7 +871,7 @@ export default function BoatDossierPage() {
         loading={deleteDocM.loading}
       />
 
-      <Modal open={showTransfer} onClose={() => setShowTransfer(false)} size="md">
+      <Modal open={showTransfer && canWrite} onClose={() => setShowTransfer(false)} size="md">
         <form onSubmit={onTransfer}>
           <AdminModalHeader title={t('adminNew.boats.transfer')} subtitle={t('adminNew.boats.transferSubtitle')} />
           <AdminModalBody>

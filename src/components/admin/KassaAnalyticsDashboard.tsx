@@ -145,11 +145,11 @@ export function KassaAnalyticsDashboard({
                     const pct = Math.round((slice.amount_cents / maxMethod) * 100);
                     return (
                       <div key={slice.method}>
-                        <div className="mb-1 flex items-center justify-between text-xs">
-                          <span className="font-semibold uppercase tracking-wide text-navy-700">
+                        <div className="mb-1 flex min-w-0 items-center justify-between gap-2 text-xs">
+                          <span className="min-w-0 truncate font-semibold uppercase tracking-wide text-navy-700" title={slice.method}>
                             {slice.method}
                           </span>
-                          <span className="text-navy-500">
+                          <span className="shrink-0 text-navy-500">
                             {formatCurrency(centsToEuro(slice.amount_cents), dateLocale)} · {slice.count}
                           </span>
                         </div>

@@ -50,6 +50,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
   const { requestLogout } = useConfirmLogout();
 
   const main: NavItem[] = [
+    { href: `${process.env.NEXT_PUBLIC_QUALITY_ASSIGNED_URL ?? 'http://localhost/krekelbergkassa/krekelbergkassa-backend/public/api/v1/quality/assigned'}?locale=${locale}`, icon: Wrench, label: ({nl:'Mijn QA-bevindingen',en:'My QA findings',de:'Meine QA-Befunde',fr:'Mes constats QA'} as Record<string,string>)[locale] ?? 'My QA findings' },
     { href: `/${locale}/admin`, icon: Home, label: t('adminModules.nav.overview') },
     {
       href: `/${locale}/admin/planning`,
@@ -108,6 +109,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
     ...(can('settings.financial.view') && !can('settings.view') ? [{href: `/${locale}/admin/instellingen`, icon: Settings, label: t('admin.sidebar.settings')}] : []),
     ...(isSuperAdmin
       ? [
+          { href: `${process.env.NEXT_PUBLIC_QUALITY_URL ?? 'http://localhost/krekelbergkassa/krekelbergkassa-backend/public/api/v1/admin/quality/portal'}?locale=${locale}`, icon: Wrench, label: 'Quality Center' } satisfies NavItem,
           {
             href: `/${locale}/admin/systeem`,
             icon: Wrench,

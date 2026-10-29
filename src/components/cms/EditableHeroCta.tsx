@@ -377,8 +377,8 @@ function CtaEditModal({
               value={config.route}
               onChange={(e) => set('route', e.target.value)}
             >
-              {!isCtaRoute(config.route) && <option value={config.route} disabled>Select a valid page</option>}
-              {CTA_ROUTES.map(route => <option key={route} value={route}>{route || 'Home'}</option>)}
+              {!isCtaRoute(config.route) && <option value={config.route} disabled>{t('cms.selectValidPage')}</option>}
+              {CTA_ROUTES.map(route => <option key={route} value={route}>{route || t('cms.homeRoute')}</option>)}
             </SearchSelect>
           </label>
         ) : (
@@ -388,7 +388,7 @@ function CtaEditModal({
               className={inputClass}
               value={config.url}
               onChange={(e) => set('url', e.target.value)}
-              placeholder={config.link_type === 'email' ? 'info@example.com' : config.link_type === 'phone' ? '+31 475 315661' : config.link_type === 'anchor' ? 'diensten' : 'https://example.com'}
+              placeholder={config.link_type === 'email' ? t('cms.placeholderEmail') : config.link_type === 'phone' ? t('cms.placeholderPhone') : config.link_type === 'anchor' ? t('cms.placeholderAnchor') : t('cms.placeholderUrl')}
             />
           </label>
         )}

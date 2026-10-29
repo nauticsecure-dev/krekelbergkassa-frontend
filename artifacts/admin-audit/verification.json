@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T03:45:44.957Z",
+  "generatedAt": "2026-10-29T03:49:36.509Z",
   "boundary": "Browser tests intercept HTTP; backend tests use SQLite in memory. Browser smoke proves neither CRUD persistence nor complete localization. Pending is unverified. Source signal counts are not test passes.",
   "environmentProblems": [
     "Initial broad browser run exhausted host memory. Later frozen-source runs supplied completed reports; earlier partial logs remain in attempt history.",
@@ -1692,6 +1692,164 @@
       "attachments": [],
       "file": "artifacts/admin-audit/remaining-scenarios-results.json",
       "history": []
+    },
+    {
+      "title": "boat list write controls and create deep link (false)",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/boat-crud-results.json",
+      "history": [
+        {
+          "status": "failed",
+          "report": "artifacts/admin-audit/browser-results.json",
+          "logOnly": false
+        },
+        {
+          "status": "passed",
+          "report": "artifacts/admin-audit/boat-crud-batch-results.json",
+          "logOnly": false
+        }
+      ]
+    },
+    {
+      "title": "boat list write controls and create deep link (true)",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/boat-crud-results.json",
+      "history": [
+        {
+          "status": "passed",
+          "report": "artifacts/admin-audit/boat-crud-batch-results.json",
+          "logOnly": false
+        }
+      ]
+    },
+    {
+      "title": "boat loading empty validation create and delete retain data then mutate",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/boat-crud-results.json",
+      "history": [
+        {
+          "status": "passed",
+          "report": "artifacts/admin-audit/boat-crud-batch-results.json",
+          "logOnly": false
+        }
+      ]
+    },
+    {
+      "title": "boat detail update modal saves and read-only hides mutations",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/boat-crud-results.json",
+      "history": [
+        {
+          "status": "passed",
+          "report": "artifacts/admin-audit/boat-crud-batch-results.json",
+          "logOnly": false
+        }
+      ]
+    },
+    {
+      "title": "supplier list write controls and create deep link (false)",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/supplier-crud-batch-results.json",
+      "history": []
+    },
+    {
+      "title": "supplier list write controls and create deep link (true)",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/supplier-crud-batch-results.json",
+      "history": []
+    },
+    {
+      "title": "supplier loading empty validation create and update retain data then mutate",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/supplier-crud-batch-results.json",
+      "history": []
+    },
+    {
+      "title": "product list write controls and create deep link (false)",
+      "status": "failed",
+      "errors": [
+        {
+          "location": {
+            "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+            "column": 102,
+            "line": 505
+          },
+          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Je hebt geen toestemming voor deze actie.', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Je hebt geen toestemming voor deze actie.', { exact: true })\u001b[22m\n\n\n  503 |       await expect(page.getByText(label('nl', 'adminNew.common.permissionDenied'), { exact: true })).toHaveCount(0);\n  504 |     } else {\n> 505 |       await expect(page.getByText(label('nl', 'adminNew.common.permissionDenied'), { exact: true })).toBeVisible();\n      |                                                                                                      ^\n  506 |       await expect(page.locator('form')).toHaveCount(0);\n  507 |     }\n  508 |     expect(mutations).toBe(0);\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:505:102"
+        }
+      ],
+      "attachments": [
+        {
+          "name": "error-context",
+          "contentType": "text/markdown",
+          "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\error-context.md"
+        },
+        {
+          "name": "trace",
+          "contentType": "application/zip",
+          "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\trace.zip"
+        }
+      ],
+      "file": "artifacts/admin-audit/product-crud-batch-results.json",
+      "history": []
+    },
+    {
+      "title": "product list write controls and create deep link (true)",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/product-crud-batch-results.json",
+      "history": []
+    },
+    {
+      "title": "product loading empty validation create and delete retain data then mutate",
+      "status": "timedOut",
+      "errors": [
+        {
+          "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+        },
+        {
+          "location": {
+            "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+            "column": 14,
+            "line": 590
+          },
+          "message": "Error: page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3030/nl/admin/producten\", waiting until \"load\"\u001b[22m\n\n\n  588 |   await expect.poll(() => page.url()).toContain('/admin/producten/');\n  589 |   expect(posts).toBe(2);\n> 590 |   await page.goto('/nl/admin/producten');\n      |              ^\n  591 |   await expect(page.locator('tbody')).toContainText('Audit Created Product');\n  592 |   await page.locator('main').getByRole('button', { name: label('nl', 'adminNew.common.delete'), exact: true }).click();\n  593 |   const confirm = page.getByRole('dialog');\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:590:14"
+        }
+      ],
+      "attachments": [
+        {
+          "name": "error-context",
+          "contentType": "text/markdown",
+          "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-loadin-f76b7-ete-retain-data-then-mutate\\error-context.md"
+        },
+        {
+          "name": "trace",
+          "contentType": "application/zip",
+          "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-loadin-f76b7-ete-retain-data-then-mutate\\trace.zip"
+        }
+      ],
+      "file": "artifacts/admin-audit/entity-crud-results.json",
+      "history": [
+        {
+          "status": "failed",
+          "report": "artifacts/admin-audit/product-crud-batch-results.json",
+          "logOnly": false
+        }
+      ]
     }
   ],
   "backend": [
@@ -1708,6 +1866,27 @@
       "scope": "customer reader list/detail allowed; create/update/block/unblock/login-link/impersonation/recompute/delete denied",
       "status": "passed",
       "cases": 1
+    },
+    {
+      "file": "../_audit/admin-boat-permissions.xml",
+      "route": "/admin/boten",
+      "scope": "boat reader list/detail/dossier allowed; create/update/transfer/delete denied; writer durable create/update/delete",
+      "status": "passed",
+      "cases": 2
+    },
+    {
+      "file": "../_audit/admin-supplier-permissions.xml",
+      "route": "/admin/leveranciers",
+      "scope": "supplier reader list/detail allowed; create/update/delete denied; writer durable create/update/delete",
+      "status": "passed",
+      "cases": 2
+    },
+    {
+      "file": "../_audit/admin-product-permissions.xml",
+      "route": "/admin/producten",
+      "scope": "product reader list/detail allowed; create/update/delete denied; writer durable create/update/delete",
+      "status": "passed",
+      "cases": 2
     }
   ],
   "pages": [
@@ -2354,8 +2533,8 @@
       ],
       "crud": {
         "create": "pending",
-        "read": "pending",
-        "update": "pending",
+        "read": "pass: dossier fixture detail",
+        "update": "pass: fixture PATCH name save/reload",
         "delete": "pending"
       },
       "validation": "pending",
@@ -2363,11 +2542,11 @@
       "error": "pass: injected 503 visible",
       "empty": "pending",
       "permissions": {
-        "ui": "pending",
-        "backend": "pending"
+        "ui": "partial: boats.write hides edit/transfer",
+        "backend": "partial: boat reader list/detail/dossier allowed; create/update/transfer/delete denied; writer durable create/update/delete"
       },
-      "modals": "pending",
-      "detail": "pending",
+      "modals": "partial: edit modal save/close",
+      "detail": "partial: dossier heading reflects update",
       "locales": {
         "nl": "smoke only",
         "en": "pending",
@@ -2393,14 +2572,19 @@
               "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-boten-id--admin-audit\\attachments\\page-evidence-1569e0e591ef74923872561eda4f69e33557663c.png"
             }
           ]
+        },
+        {
+          "title": "boat detail update modal saves and read-only hides mutations",
+          "status": "passed",
+          "report": "artifacts/admin-audit/boat-crud-results.json",
+          "attachments": []
         }
       ],
       "gaps": [
         "Populated detail, missing record, ownership and every detail action remain unverified unless explicitly listed.",
         "Pending CRUD operations require isolated backend fixtures and durable readback.",
         "Field/server validation not exercised for this route.",
-        "Delayed loading state not exercised; waiting for settled content is not loading-state verification.",
-        "Full button/action/entity permission matrix remains open."
+        "Delayed loading state not exercised; waiting for settled content is not loading-state verification."
       ],
       "observation": {
         "route": "/admin/boten/[id]",
@@ -2423,28 +2607,28 @@
         "src/i18n/IntlProvider.tsx"
       ],
       "crud": {
-        "create": "pending",
-        "read": "pending",
+        "create": "pass: stateful HTTP fixture create/list readback; database persistence pending",
+        "read": "pass: created fixture visible after refetch",
         "update": "pending",
-        "delete": "pending"
+        "delete": "pass: confirm modal delete/list empty readback; database persistence pending"
       },
-      "validation": "pending",
-      "loading": "pending",
-      "error": "pass: injected 503 visible",
-      "empty": "pending",
+      "validation": "partial: required name blocks POST, 422 surfaced, form retained",
+      "loading": "pass: held request shows skeleton",
+      "error": "pass: 422 and retry",
+      "empty": "pass: empty boat list",
       "permissions": {
-        "ui": "pending",
-        "backend": "pending"
+        "ui": "partial: boat read-only disables create/delete; write opens create intent",
+        "backend": "partial: boat reader list/detail/dossier allowed; create/update/transfer/delete denied; writer durable create/update/delete"
       },
-      "modals": "pending",
+      "modals": "partial: create, validation failure, delete confirm",
       "detail": "pending",
       "locales": {
-        "nl": "smoke only",
+        "nl": "partial: boat create/validation",
         "en": "pending",
         "de": "pending",
         "fr": "pending"
       },
-      "responsive": "pending",
+      "responsive": "partial: populated validation modal 390/1280",
       "smoke": "pass: NL, injected 503, no JS errors, loading settled",
       "evidence": [
         {
@@ -2463,13 +2647,28 @@
               "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-boten-admin-audit\\attachments\\page-evidence-b9bb81ecfe589a3410249021abd4e5299b7b460a.png"
             }
           ]
+        },
+        {
+          "title": "boat list write controls and create deep link (false)",
+          "status": "passed",
+          "report": "artifacts/admin-audit/boat-crud-results.json",
+          "attachments": []
+        },
+        {
+          "title": "boat list write controls and create deep link (true)",
+          "status": "passed",
+          "report": "artifacts/admin-audit/boat-crud-results.json",
+          "attachments": []
+        },
+        {
+          "title": "boat loading empty validation create and delete retain data then mutate",
+          "status": "passed",
+          "report": "artifacts/admin-audit/boat-crud-results.json",
+          "attachments": []
         }
       ],
       "gaps": [
-        "Pending CRUD operations require isolated backend fixtures and durable readback.",
-        "Field/server validation not exercised for this route.",
-        "Delayed loading state not exercised; waiting for settled content is not loading-state verification.",
-        "Full button/action/entity permission matrix remains open."
+        "Pending CRUD operations require isolated backend fixtures and durable readback."
       ],
       "observation": {
         "route": "/admin/boten",
@@ -4813,28 +5012,28 @@
         "src/i18n/IntlProvider.tsx"
       ],
       "crud": {
-        "create": "pending",
-        "read": "pending",
-        "update": "pending",
-        "delete": "pending"
+        "create": "pass: stateful HTTP fixture create/list readback; maps default_purchase_ledger",
+        "read": "pass: created fixture visible after refetch",
+        "update": "pass: fixture edit modal PATCH/list readback",
+        "delete": "pending: API delete exists; no list delete control"
       },
-      "validation": "pending",
-      "loading": "pending",
-      "error": "pass: injected 503 visible",
-      "empty": "pending",
+      "validation": "partial: required name blocks POST, 422 surfaced, form retained",
+      "loading": "pass: held request shows skeleton",
+      "error": "pass: 422 and retry",
+      "empty": "pass: empty supplier list",
       "permissions": {
-        "ui": "pending",
-        "backend": "pending"
+        "ui": "partial: products.write disables create/edit; write opens create intent",
+        "backend": "partial: supplier reader list/detail allowed; create/update/delete denied; writer durable create/update/delete"
       },
-      "modals": "pending",
+      "modals": "partial: create, validation failure, edit",
       "detail": "pending",
       "locales": {
-        "nl": "smoke only",
+        "nl": "partial: supplier create/validation",
         "en": "pending",
         "de": "pending",
         "fr": "pending"
       },
-      "responsive": "pending",
+      "responsive": "partial: populated validation modal 390/1280",
       "smoke": "pass: NL, injected 503, no JS errors, loading settled",
       "evidence": [
         {
@@ -4853,14 +5052,27 @@
               "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-leveranciers-admin-audit\\attachments\\page-evidence-807e10a33cf443a4b7bc6dc4e226a9740648ea26.png"
             }
           ]
+        },
+        {
+          "title": "supplier list write controls and create deep link (false)",
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-crud-batch-results.json",
+          "attachments": []
+        },
+        {
+          "title": "supplier list write controls and create deep link (true)",
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-crud-batch-results.json",
+          "attachments": []
+        },
+        {
+          "title": "supplier loading empty validation create and update retain data then mutate",
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-crud-batch-results.json",
+          "attachments": []
         }
       ],
-      "gaps": [
-        "Pending CRUD operations require isolated backend fixtures and durable readback.",
-        "Field/server validation not exercised for this route.",
-        "Delayed loading state not exercised; waiting for settled content is not loading-state verification.",
-        "Full button/action/entity permission matrix remains open."
-      ],
+      "gaps": [],
       "observation": {
         "route": "/admin/leveranciers",
         "locale": "nl",
@@ -5566,7 +5778,7 @@
       "empty": "pending",
       "permissions": {
         "ui": "pending",
-        "backend": "pending"
+        "backend": "partial: product reader list/detail allowed; create/update/delete denied; writer durable create/update/delete"
       },
       "modals": "pending",
       "detail": "pending",
@@ -5595,10 +5807,28 @@
               "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-producten-nieuw-admin-audit\\attachments\\page-evidence-b2ddd41cc218dd4554cc1c7fd9f852bcd563f93c.png"
             }
           ]
+        },
+        {
+          "title": "product list write controls and create deep link (false)",
+          "status": "failed",
+          "report": "artifacts/admin-audit/product-crud-batch-results.json",
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\error-context.md"
+            },
+            {
+              "name": "trace",
+              "contentType": "application/zip",
+              "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\trace.zip"
+            }
+          ]
         }
       ],
       "gaps": [
         "Injected service error was not visible verbatim; generic/fallback handling needs review.",
+        "product list write controls and create deep link (false): failed",
         "Pending CRUD operations require isolated backend fixtures and durable readback.",
         "Field/server validation not exercised for this route.",
         "Delayed loading state not exercised; waiting for settled content is not loading-state verification.",
@@ -5634,8 +5864,8 @@
       "error": "pass: injected 503 visible",
       "empty": "pending",
       "permissions": {
-        "ui": "pending",
-        "backend": "pending"
+        "ui": "partial: products.write disables create/delete; deep-link create gated",
+        "backend": "partial: product reader list/detail allowed; create/update/delete denied; writer durable create/update/delete"
       },
       "modals": "pending",
       "detail": "pending",
@@ -5664,13 +5894,36 @@
               "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\all-routes\\admin-audit-route-failure-boundary-admin-producten-admin-audit\\attachments\\page-evidence-15d0f88389f882b6a60a4e5f6424e68036a934e7.png"
             }
           ]
+        },
+        {
+          "title": "product list write controls and create deep link (false)",
+          "status": "failed",
+          "report": "artifacts/admin-audit/product-crud-batch-results.json",
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\error-context.md"
+            },
+            {
+              "name": "trace",
+              "contentType": "application/zip",
+              "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\trace.zip"
+            }
+          ]
+        },
+        {
+          "title": "product list write controls and create deep link (true)",
+          "status": "passed",
+          "report": "artifacts/admin-audit/product-crud-batch-results.json",
+          "attachments": []
         }
       ],
       "gaps": [
+        "product list write controls and create deep link (false): failed",
         "Pending CRUD operations require isolated backend fixtures and durable readback.",
         "Field/server validation not exercised for this route.",
-        "Delayed loading state not exercised; waiting for settled content is not loading-state verification.",
-        "Full button/action/entity permission matrix remains open."
+        "Delayed loading state not exercised; waiting for settled content is not loading-state verification."
       ],
       "observation": {
         "route": "/admin/producten",

@@ -4544,29 +4544,126 @@
       "instagram": "Instagram-URL"
     },
     "allTranslations": "Alle Texte",
-    "searchTranslations": "Text oder Schlüssel suchen"
+    "searchTranslations": "Text oder Schlüssel suchen",
+    "zoom": "Zoom",
+    "mediaLibrary": "Mediathek",
+    "existingImage": "Vorhandenes Bild",
+    "keepCurrentImage": "Aktuelles Bild behalten",
+    "unusedImage": "Unbenutztes Bild",
+    "deleteUnusedImage": "Unbenutztes Bild löschen",
+    "mobileImage": "Mobiles Bild",
+    "useDesktopImage": "Desktop-Bild verwenden",
+    "uploadMobileImage": "Mobiles Bild hochladen",
+    "desktopFocal": "Desktop-Fokus {axis}",
+    "mobileFocal": "Mobiler Fokus {axis}",
+    "brightness": "Helligkeit",
+    "contrast": "Kontrast",
+    "saturation": "Sättigung",
+    "alignment": "Ausrichtung",
+    "alignLeft": "Links",
+    "alignCenter": "Mitte",
+    "alignRight": "Rechts",
+    "gradient": "Verlauf",
+    "gradientNone": "Keiner",
+    "gradientRight": "Rechts",
+    "gradientBottom": "Unten",
+    "gradientStart": "Verlauf Start",
+    "gradientMiddle": "Verlauf Mitte",
+    "gradientEnd": "Verlauf Ende",
+    "selectValidPage": "Wählen Sie eine gültige Seite",
+    "homeRoute": "Startseite",
+    "placeholderEmail": "info@beispiel.de",
+    "placeholderPhone": "+31 475 315661",
+    "placeholderAnchor": "diensten",
+    "placeholderUrl": "https://beispiel.de"
   },
   "settingsHub": {
     "search": "Einstellungen suchen",
+    "subtitle": "Operatives Konfigurationszentrum — ansehen, konfigurieren, testen und prüfen.",
     "reminderRules": "Erinnerungsregeln bearbeiten",
     "paymentHealth": "Zahlungsverbindung",
     "integrationHealth": "Integrationen einrichten und prüfen",
     "untested": "Nicht getestet",
     "setupRequired": "Einrichtung erforderlich",
-    "pos_methods": "Kassenzahlungsarten",
-    "online_methods": "Online-Zahlungsarten",
+    "pos_methods": "Kasse / manuell",
+    "online_methods": "Online (Mollie)",
     "mailbox": "Rechnungspostfach",
-    "ocrModel": "OCR-Modell",
+    "ocrModel": "OCR-Modell (erweitert)",
     "whatsappEnabled": "WhatsApp aktivieren",
     "transactionId": "Vorhandene Signhost-Transaktion (UUID)",
     "runDiagnostic": "Gespeicherte Konfiguration testen",
     "openWorkflow": "Arbeitsablauf öffnen",
+    "tabs": {
+      "reminders": "Erinnerungen",
+      "emailImport": "E-Mail & Import",
+      "integrations": "Integrationen"
+    },
+    "actions": {
+      "manage": "Verwalten",
+      "configure": "Konfigurieren"
+    },
+    "attention": {
+      "title": "Aufmerksamkeit erforderlich"
+    },
+    "save": {
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "failed": "Speichern fehlgeschlagen"
+    },
+    "company": {
+      "description": "Eine Quelle der Wahrheit für Website, Rechnungen, Verträge, E-Mails und Vorlagen.",
+      "addressSearch": "Adresse suchen (Google Places)",
+      "website": "Website",
+      "bic": "BIC",
+      "logoUrl": "Logo-URL"
+    },
+    "invoicing": {
+      "description": "Diese Werte steuern die echte Rechnungserstellung (Frist, MwSt., Währung, Nummerierung).",
+      "numbering": "Nummerierung",
+      "example": "Beispiel",
+      "creditPrefix": "Gutschrift-Präfix",
+      "bankInstructions": "Bank- / Zahlungsdaten",
+      "paymentInstructions": "Zahlungsanweisungen",
+      "openTemplates": "Vorlageneditor öffnen",
+      "openInvoices": "Rechnungen öffnen"
+    },
+    "reminders": {
+      "description": "Erinnerungen laufen über konfigurierbare Regeln (nicht feste Rechnungstage).",
+      "flowDue": "Fälligkeitsdatum",
+      "days": "Tage",
+      "final": "Letzte Erinnerung",
+      "rulesAuthoritative": "Tage, Kanäle, Vorlagen und Stoppbedingungen in den Erinnerungsregeln anpassen. Änderungen gelten für den Scheduler.",
+      "openTemplates": "E-Mail-/Vorlagen-Builder öffnen"
+    },
+    "payments": {
+      "description": "Online-Mollie-Methoden getrennt von Kasse/manuell. Secrets bleiben auf dem Server.",
+      "onlineHint": "Bargeld und PIN gehören hier nicht hin — das sind Kassenmethoden.",
+      "posHint": "Bargeld, PIN, auf Rechnung und Split sind Kassenmethoden (nicht Mollie).",
+      "testModeActive": "Mollie ist auf TEST. Erst nach erfolgreicher Diagnose auf LIVE umschalten.",
+      "switchLive": "Auf LIVE umschalten",
+      "confirmLive": "Bestätigen: LIVE aktivieren"
+    },
+    "locales": {
+      "description": "Ein-/ausschalten ohne Übersetzungen zu löschen. Deaktivierte Sprachen verschwinden aus Selektor, Portal, CMS und Vorlagen.",
+      "disabledKept": "Übersetzungen bleiben erhalten",
+      "fallbackChain": "Fallback: angefragt → konfigurierter Fallback → Standard → NL",
+      "disableTitle": "{code} deaktivieren?",
+      "disableBody": "Diese Sprache verschwindet aus dem öffentlichen Selektor, Kundenportal und Vorlageneditoren. Bestehende Übersetzungen werden NICHT gelöscht.",
+      "confirmDisable": "Deaktivieren",
+      "cannotDisableDefault": "Standard- oder Fallback-Sprache kann nicht deaktiviert werden."
+    },
     "integrations": {
-      "email": "Email",
+      "mollie": "Mollie",
+      "google_places": "Google Places",
+      "email": "E-Mail",
       "mailbox": "Rechnungspostfach",
-      "ocr": "OCR",
+      "ocr": "Dokumentenerkennung",
       "whatsapp": "WhatsApp",
-      "signhost": "Signhost"
+      "signhost": "Signhost",
+      "description": "Status, Konfiguration und Diagnose externer Integrationen."
+    },
+    "rbac": {
+      "financeLimited": "Finance sieht finanzielle Einstellungen; Firmen- und Integrationsgeheimnisse erfordern operative Rechte."
     },
     "mollieSetup": "MOLLIE_TEST_KEY und MOLLIE_LIVE_KEY auf dem Server einrichten. Modus speichern und anschließend die gespeicherte Konfiguration testen."
   },

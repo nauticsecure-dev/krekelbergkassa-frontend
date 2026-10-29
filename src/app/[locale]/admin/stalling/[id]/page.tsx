@@ -20,6 +20,7 @@ import {
   Warehouse,
 } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
+import { ContractSigning } from '@/components/admin/ContractSigning';
 import {
   AdminContent,
   AdminModalBody,
@@ -427,6 +428,7 @@ export default function StallingDetailPage() {
             </div>
 
             {/* Audit Timeline */}
+            {str(contract, 'id') && <ContractSigning contractId={str(contract, 'id')} documents={documents} />}
             <AdminSectionCard title={t('admin.sidebar.audit')} icon={History} className="mt-5">
               {logs.loading ? (
                 <LoadingState label={t('adminNew.common.loading')} variant="table" />

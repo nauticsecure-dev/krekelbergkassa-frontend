@@ -80,7 +80,7 @@ export default function SuppliersPage() {
       phone: str(row, 'phone'),
       vat_number: str(row, 'vat_number'),
       payment_terms_days: str(row, 'payment_terms_days'),
-      default_ledger_account: str(row, 'default_ledger_account', 'ledger_account'),
+      default_ledger_account: str(row, 'default_purchase_ledger', 'default_ledger_account', 'ledger_account'),
     });
     setShowForm(true);
   };
@@ -94,7 +94,7 @@ export default function SuppliersPage() {
       phone: form.phone || undefined,
       vat_number: form.vat_number || undefined,
       payment_terms_days: form.payment_terms_days ? Number(form.payment_terms_days) : undefined,
-      default_ledger_account: form.default_ledger_account || undefined,
+      default_purchase_ledger: form.default_ledger_account || undefined,
     };
     try {
       if (editId) await updateM.mutate({ id: editId, body: payload });

@@ -8,6 +8,7 @@ import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminContent, AdminSectionCard } from '@/components/admin/AdminUi';
 import { Button } from '@/components/ui/Button';
 import { ProductForm, EMPTY_PRODUCT_FORM } from '@/components/admin/ProductForm';
+import { ErrorState } from '@/components/admin/DataState';
 import { useMutation } from '@/lib/hooks/useAsync';
 import { productsService } from '@/lib/services';
 import { formToPayload } from '@/lib/products';
@@ -15,16 +16,20 @@ import { getApiErrorMessage } from '@/lib/api-error';
 import { adminRecordHref } from '@/config/admin-routes';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { usePermission } from '@/lib/permissions';
 
 export default function NewProductPage() {
   const { locale, t } = useIntl();
   const router = useRouter();
   const { push } = useToast();
+  const { can } = usePermission();
+  const canWrite = can('products.write');
   const [form, setForm] = React.useState(EMPTY_PRODUCT_FORM);
   const createProduct = useMutation(productsService.create);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) return;
     try {
       const created = await createProduct.mutate(formToPayload(form));
       push({ tone: 'success', title: t('adminNew.products.toasts.created') });
@@ -37,6 +42,14 @@ export default function NewProductPage() {
       });
     }
   };
+
+  if (!canWrite) {
+    return (
+      <AdminContent>
+        <ErrorState message={t('adminNew.common.permissionDenied')} />
+      </AdminContent>
+    );
+  }
 
   return (
     <>

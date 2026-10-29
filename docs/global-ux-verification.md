@@ -20,6 +20,7 @@
 - Source and test TypeScript checks passed using a configuration that excludes generated Next build directories.
 - Strict translation audit passed with zero missing entries and zero unresolved runtime key patterns across NL/EN/DE/FR.
 - The 390px pricing form screenshot was visually inspected and the browser test verified no horizontal page overflow. Evidence: ../../_audit/global-ux/pricing-mobile.png.
+- Populated custom-layout responsive checks now cover AdminSplitLayout end/start, KassaAnalyticsDashboard, DocumentZoneEditor, audit before/after diffs, and kassa address/discount flows at 390/1280/1536. Evidence: ../../_audit/global-ux-populated-layouts/.
 
 Backend tests use SQLite in memory and fake outbound HTTP. Browser tests intercept application HTTP and do not prove provider behavior or database persistence; the backend tests cover persistence independently. No deployment, production build or live database backfill was performed.
 

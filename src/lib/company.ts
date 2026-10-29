@@ -1,6 +1,7 @@
-// Single source of truth for Krekelberg Nautic company contact data.
-// Do NOT hardcode address / phone / opening hours anywhere else — import from here.
-// (Trello cards 97 & 103: one global company config used everywhere, every language.)
+// Fallback company contact data for static/SSR surfaces.
+// Runtime source of truth is admin settings (DB via SettingService / /content/contact).
+// Prefer API-backed values when available; keep this module as offline fallback only.
+// Opening hours remain here until they are managed in settings.
 
 export type Locale = 'nl' | 'en' | 'de' | 'fr';
 

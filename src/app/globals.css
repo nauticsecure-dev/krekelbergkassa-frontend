@@ -21,6 +21,18 @@
     color: var(--foreground);
     font-feature-settings: 'cv11', 'ss01';
   }
+  /* CMS toolbar sits fixed bottom-right; leave clearance so edit controls stay clickable. */
+  html[data-cms-toolbar] {
+    --cms-toolbar-clearance: 5.5rem;
+  }
+  html[data-cms-toolbar] body {
+    padding-bottom: var(--cms-toolbar-clearance);
+  }
+  html[data-cms-toolbar] [data-cms-edit],
+  html[data-cms-toolbar] [data-cms-card],
+  html[data-cms-toolbar] [data-cms-badge] {
+    scroll-margin-bottom: calc(var(--cms-toolbar-clearance) + 1rem);
+  }
   ::selection {
     background: #1a2e48;
     color: #f5efe2;

@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/api';
 import { formatCurrency } from '@/lib/format';
+import { signingCopy } from '@/i18n/signing';
 
 interface ContractPreview {
   contract_number: string;
@@ -23,12 +24,15 @@ interface ContractPreview {
   already_signed: boolean;
   signed_at: string | null;
   contract_html: string | null;
+  signing_provider?: string;
+  signing_url?: string | null;
 }
 
 export default function SigningPage() {
   const params = useParams<{ token: string; locale: string }>();
   const { push } = useToast();
   const token = params.token;
+  const copy = signingCopy(params.locale);
 
   const [contract, setContract] = React.useState<ContractPreview | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -153,7 +157,7 @@ export default function SigningPage() {
         ) : null}
 
         {/* Signature form */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm">
+        {contract.signing_provider === 'signhost' ? <div className="rounded-2xl bg-white p-6 shadow-sm"><h2 className="mb-4 font-semibold">{copy.title}</h2>{contract.signing_url ? <a className="font-semibold text-marine-700 underline" href={contract.signing_url} rel="noreferrer">{copy.open}</a> : <p>{copy.waiting}</p>}</div> : <div className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-base font-semibold text-navy-900">Digitale handtekening</h2>
           <p className="mb-4 text-sm text-navy-600">
             Door uw naam en e-mailadres in te voeren en op &quot;Ondertekenen&quot; te klikken,
@@ -191,7 +195,7 @@ export default function SigningPage() {
               )}
             </Button>
           </form>
-        </div>
+        </div>}
       </div>
     </div>
   );
