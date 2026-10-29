@@ -471,6 +471,22 @@ export interface SyncDevice {
   created_at: string;
 }
 
+export interface SettingsAttentionItem {
+  code: string;
+  severity: 'warning' | 'danger' | string;
+  title: string;
+  href: string;
+  message: string;
+}
+
+export interface SettingsOverviewCard {
+  status: 'ok' | 'warning' | 'danger' | string;
+  title: string;
+  summary: string;
+  href: string;
+  action: 'manage' | 'configure' | string;
+}
+
 export interface AppSettings {
   company: {
     name: string;
@@ -478,7 +494,10 @@ export interface AppSettings {
     vat_number: string | null;
     email: string;
     phone: string | null;
+    website: string | null;
     iban: string | null;
+    bic: string | null;
+    logo_url: string | null;
     address: {
       street: string;
       postal_code: string;
@@ -488,9 +507,17 @@ export interface AppSettings {
   };
   invoicing: {
     invoice_prefix: string;
+    credit_prefix?: string;
+    numbering_pattern?: string;
+    credit_numbering_pattern?: string;
+    example_number?: string;
     default_due_days: number;
     currency: string;
     default_vat_rate: number;
+    bank_instructions?: string | null;
+    payment_instructions?: string | null;
+    invoice_template_id?: string | null;
+    invoice_email_template_id?: string | null;
     reminder_source: 'rules';
   };
   payments: {
@@ -507,6 +534,8 @@ export interface AppSettings {
     fallback_locale: string;
     supported_locales: string[];
   };
+  attention?: SettingsAttentionItem[];
+  overview?: Record<string, SettingsOverviewCard>;
 }
 
 export interface PortalCustomer {

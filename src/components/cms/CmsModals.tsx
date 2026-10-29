@@ -514,7 +514,7 @@ export function ImageEditModal({
             />
           </div>
           <label className="mt-3 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-navy-500">
-            Zoom
+            {t('cms.zoom')}
             <input
               type="range"
               min={1}
@@ -523,7 +523,7 @@ export function ImageEditModal({
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
               className="w-full accent-gold-500"
-              aria-label="Zoom"
+              aria-label={t('cms.zoom')}
             />
           </label>
           <p className="mt-1.5 text-xs text-navy-400">{t('cms.focalHint')}</p>
@@ -554,8 +554,8 @@ export function ImageEditModal({
         </div>
 
         <fieldset disabled={saving} className="space-y-3">
-          <legend className="text-sm font-semibold">Media library</legend>
-          <SearchSelect className={fieldClass} aria-label="Existing image" value={selectedFileId ?? ''} onChange={e => {
+          <legend className="text-sm font-semibold">{t('cms.mediaLibrary')}</legend>
+          <SearchSelect className={fieldClass} aria-label={t('cms.existingImage')} value={selectedFileId ?? ''} onChange={e => {
             const file = library.find(file => file.id === e.target.value);
             if (!file) {
               const block = getMedia(blockKey);
@@ -568,42 +568,60 @@ export function ImageEditModal({
             setSelectedFileId(file.id); setPreviewSrc(file.url); setPendingFile(null);
             setInitialCrop(undefined); setInitialPixels(undefined); setCrop({x:0,y:0}); setZoom(1);
           }}>
-            <option value="">Keep current image</option>
-            {library.map(file => <option key={file.id} value={file.id}>{file.filename} ({file.usage.length} uses)</option>)}
+            <option value="">{t('cms.keepCurrentImage')}</option>
+            {library.map(file => <option key={file.id} value={file.id}>{file.filename} ({file.usage.length})</option>)}
           </SearchSelect>
-          {selectedFileId && <p className="text-xs">{library.find(f => f.id === selectedFileId)?.usage.map(u => u.page || u.key).join(', ') || 'Unused image'}</p>}
+          {selectedFileId && <p className="text-xs">{library.find(f => f.id === selectedFileId)?.usage.map(u => u.page || u.key).join(', ') || t('cms.unusedImage')}</p>}
           {selectedFileId && library.find(f => f.id === selectedFileId)?.usage.length === 0 && <Button variant="ghost" onClick={async () => {
             try { await cmsService.deleteLibraryMedia(selectedFileId); setLibrary(items => items.filter(f => f.id !== selectedFileId)); setSelectedFileId(undefined); setPreviewSrc(getMedia(blockKey)?.image_url || fallbackSrc); }
             catch(error) { pushError(error, t('cms.saveError')); }
-          }}>Delete unused image</Button>}
-          <label className="block text-sm">Mobile image
+          }}>{t('cms.deleteUnusedImage')}</Button>}
+          <label className="block text-sm">{t('cms.mobileImage')}
             <SearchSelect className={fieldClass} value={mobileFileId ?? ''} onChange={e => { setMobileFileId(e.target.value || null); setPendingMobileFile(null); }}>
-              <option value="">Use desktop image</option>
+              <option value="">{t('cms.useDesktopImage')}</option>
               {library.map(file => <option key={file.id} value={file.id}>{file.filename}</option>)}
             </SearchSelect>
           </label>
-          <label className="block text-sm">Upload mobile image<input type="file" accept="image/jpeg,image/png,image/webp" disabled={saving || uploading} onChange={e => {
+          <label className="block text-sm">{t('cms.uploadMobileImage')}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={saving || uploading} onChange={e => {
             const file = e.target.files?.[0];
             if (file && validateImage(file)) setPendingMobileFile(file);
             e.target.value = '';
           }} /></label>
-          {(['x','y'] as const).map(axis => <label key={axis} className="block text-sm">Desktop focal {axis}: {focal[axis]}
-            <input aria-label={'Desktop focal '+axis} className="w-full" type="range" min="0" max="100" value={focal[axis]} onChange={e => setFocal(v => ({...v,[axis]:Number(e.target.value)}))} />
+          {(['x','y'] as const).map(axis => {
+            const label = t('cms.desktopFocal', { axis });
+            return <label key={axis} className="block text-sm">{label}: {focal[axis]}
+              <input aria-label={label} className="w-full" type="range" min="0" max="100" value={focal[axis]} onChange={e => setFocal(v => ({...v,[axis]:Number(e.target.value)}))} />
+            </label>;
+          })}
+          {(['x','y'] as const).map(axis => {
+            const label = t('cms.mobileFocal', { axis });
+            return <label key={axis} className="block text-sm">{label}: {mobileFocal[axis]}
+              <input aria-label={label} className="w-full" type="range" min="0" max="100" value={mobileFocal[axis]} onChange={e => setMobileFocal(v => ({...v,[axis]:Number(e.target.value)}))} />
+            </label>;
+          })}
+          {([
+            ['brightness', 'cms.brightness'],
+            ['contrast', 'cms.contrast'],
+            ['saturation', 'cms.saturation'],
+          ] as const).map(([field, labelKey]) => <label key={field} className="block text-sm">{t(labelKey)}: {imageStyle[field] ?? 100}%
+            <input aria-label={t(labelKey)} className="w-full" type="range" min="0" max="200" value={imageStyle[field] ?? 100} onChange={e => setImageStyle(v => ({...v,[field]:Number(e.target.value)}))} />
           </label>)}
-          {(['x','y'] as const).map(axis => <label key={axis} className="block text-sm">Mobile focal {axis}: {mobileFocal[axis]}
-            <input aria-label={'Mobile focal '+axis} className="w-full" type="range" min="0" max="100" value={mobileFocal[axis]} onChange={e => setMobileFocal(v => ({...v,[axis]:Number(e.target.value)}))} />
-          </label>)}
-          {(['brightness','contrast','saturation'] as const).map(field => <label key={field} className="block text-sm">{field}: {imageStyle[field] ?? 100}%
-            <input aria-label={field} className="w-full" type="range" min="0" max="200" value={imageStyle[field] ?? 100} onChange={e => setImageStyle(v => ({...v,[field]:Number(e.target.value)}))} />
-          </label>)}
-          <label className="block text-sm">Alignment<SearchSelect className={fieldClass} value={imageStyle.alignment ?? 'center'} onChange={e => setImageStyle(v => ({...v, alignment:e.target.value as ImageStyle['alignment']}))}>
-            {['left','center','right'].map(v => <option key={v} value={v}>{v}</option>)}
+          <label className="block text-sm">{t('cms.alignment')}<SearchSelect className={fieldClass} value={imageStyle.alignment ?? 'center'} onChange={e => setImageStyle(v => ({...v, alignment:e.target.value as ImageStyle['alignment']}))}>
+            <option value="left">{t('cms.alignLeft')}</option>
+            <option value="center">{t('cms.alignCenter')}</option>
+            <option value="right">{t('cms.alignRight')}</option>
           </SearchSelect></label>
-          <label className="block text-sm">Gradient<SearchSelect className={fieldClass} value={imageStyle.gradient ?? 'none'} onChange={e => setImageStyle(v => ({...v, gradient:e.target.value as ImageStyle['gradient']}))}>
-            {['none','right','bottom'].map(v => <option key={v} value={v}>{v}</option>)}
+          <label className="block text-sm">{t('cms.gradient')}<SearchSelect className={fieldClass} value={imageStyle.gradient ?? 'none'} onChange={e => setImageStyle(v => ({...v, gradient:e.target.value as ImageStyle['gradient']}))}>
+            <option value="none">{t('cms.gradientNone')}</option>
+            <option value="right">{t('cms.gradientRight')}</option>
+            <option value="bottom">{t('cms.gradientBottom')}</option>
           </SearchSelect></label>
-          {(['gradient_start','gradient_middle','gradient_end'] as const).map(field => <label key={field} className="block text-sm">{field.replace('_',' ')}
-            <input aria-label={field} className="w-full" type="range" min="0" max="1" step=".05" value={imageStyle[field] ?? 0} onChange={e => setImageStyle(v => ({...v,[field]:Number(e.target.value)}))} />
+          {([
+            ['gradient_start', 'cms.gradientStart'],
+            ['gradient_middle', 'cms.gradientMiddle'],
+            ['gradient_end', 'cms.gradientEnd'],
+          ] as const).map(([field, labelKey]) => <label key={field} className="block text-sm">{t(labelKey)}
+            <input aria-label={t(labelKey)} className="w-full" type="range" min="0" max="1" step=".05" value={imageStyle[field] ?? 0} onChange={e => setImageStyle(v => ({...v,[field]:Number(e.target.value)}))} />
           </label>)}
         </fieldset>
         {/* Overlay slider */}

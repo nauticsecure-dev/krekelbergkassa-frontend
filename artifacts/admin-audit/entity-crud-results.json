@@ -1,0 +1,262 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.boat-crud.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/entity-crud",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/entity-crud-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "admin-audit.spec.ts",
+      "file": "admin-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "product list write controls and create deep link (false)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 95204,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                        "column": 16,
+                        "line": 487
+                      },
+                      "message": "Error: page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3030/nl/admin/producten\", waiting until \"load\"\u001b[22m\n\n\n  485 |       });\n  486 |     });\n> 487 |     await page.goto('/nl/admin/producten');\n      |                ^\n  488 |     await expect(page.locator('tbody')).toContainText('Audit Product');\n  489 |     const create = page.getByRole('button', { name: label('nl', 'adminNew.products.new'), exact: true });\n  490 |     const remove = page.locator('main').getByRole('button', { name: label('nl', 'adminNew.common.delete'), exact: true });\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:487:16"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T03:45:30.724Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-27efb3123e7879e7d312",
+          "file": "admin-audit.spec.ts",
+          "line": 466,
+          "column": 7
+        },
+        {
+          "title": "product list write controls and create deep link (true)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 95236,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                        "column": 16,
+                        "line": 487
+                      },
+                      "message": "Error: page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3030/nl/admin/producten\", waiting until \"load\"\u001b[22m\n\n\n  485 |       });\n  486 |     });\n> 487 |     await page.goto('/nl/admin/producten');\n      |                ^\n  488 |     await expect(page.locator('tbody')).toContainText('Audit Product');\n  489 |     const create = page.getByRole('button', { name: label('nl', 'adminNew.products.new'), exact: true });\n  490 |     const remove = page.locator('main').getByRole('button', { name: label('nl', 'adminNew.common.delete'), exact: true });\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:487:16"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T03:47:09.187Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-18c28--and-create-deep-link-true-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-18c28--and-create-deep-link-true-\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-b612d49b5a5064979270",
+          "file": "admin-audit.spec.ts",
+          "line": 466,
+          "column": 7
+        },
+        {
+          "title": "product empty validation create and delete retain data then mutate",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 95252,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                        "column": 14,
+                        "line": 561
+                      },
+                      "message": "Error: page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3030/nl/admin/producten\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  559 |     return route.fulfill({ json: { data: [], meta: { total: 0, current_page: 1, last_page: 1, per_page: 20 } } });\n  560 |   });\n> 561 |   await page.goto('/nl/admin/producten', { waitUntil: 'domcontentloaded' });\n      |              ^\n  562 |   await expect(page.getByText(label('nl', 'adminNew.products.emptyTitle'), { exact: true })).toBeVisible();\n  563 |   await page.goto('/nl/admin/producten/nieuw', { waitUntil: 'domcontentloaded' });\n  564 |   const form = page.locator('form');\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:561:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T03:48:47.498Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-empty--23a4c-ete-retain-data-then-mutate\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-empty--23a4c-ete-retain-data-then-mutate\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-c8d3cc4e53e93caabf4e",
+          "file": "admin-audit.spec.ts",
+          "line": 514,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T03:45:27.939Z",
+    "duration": 295497.829,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

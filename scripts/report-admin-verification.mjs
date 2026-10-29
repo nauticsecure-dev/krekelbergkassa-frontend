@@ -52,6 +52,10 @@ for (const locale of ['nl','en','de','fr']) {
  mark('/admin/facturen/nieuw/handmatig',`${locale}: manual invoice fields remain inside the viewport at mobile and desktop widths`,row=>{row.locales[locale]='partial: locale renders, fields/viewport verified; wording quality not established';row.responsive='partial: manual form 390/1280';});
 }
 for (const route of ['kassa','kalender','audit']) mark(`/admin/${route}`,`${route}: empty page renders without overflow or JavaScript errors`,row=>{row.responsive='partial: empty fixture 390/1440';row.empty='pass: empty fixture renders';});
+mark('/admin/kassa','populated kassa POS, analytics charts and address grids stay inside the viewport',row=>{row.responsive='pass: populated POS/analytics/address grids 390/1280/1536';row.detail='partial: analytics + cart + customer address grids';});
+mark('/admin/kassa/dagafsluiting','AdminSplitLayout start sidebar (cash close) holds populated history at lg and xl',row=>{row.responsive='pass: populated split-start 390/1280/1536';row.crud.read='partial: populated cash closure history fixture';});
+mark('/admin/facturen/templates/editor','DocumentZoneEditor loaded zones and drag stay inside the viewport',row=>{row.responsive='pass: populated zone editor 390/1280/1536';row.detail='partial: loaded zones + drag';});
+mark('/admin/audit','audit detail modal wraps long before/after values without page overflow',row=>{row.responsive='pass: populated audit diff modal 390/1280/1536';row.modals='partial: long before/after diff modal';});
 mark('/admin/facturen/nieuw/handmatig','manual invoice retains entered data when save fails, and submits cents once',row=>{row.crud.create='partial: correct cents payload once, failed-save retention; success pending';row.error='pass: failed save visible and form retained';});
 mark('/admin/facturen/nieuw/handmatig','an invoice viewer cannot open the create form through a deep link',row=>row.permissions.ui='partial: invoice.view cannot open create form');
 mark('/admin/audit','an admin cannot open the super-admin audit page directly',row=>row.permissions.ui='partial: admin denied super-admin page');
@@ -63,18 +67,45 @@ for(const write of [false,true]) mark('/admin/klanten',`customer list write cont
 mark('/admin/klanten','customer loading empty validation and create modal retain data then save',row=>{
  row.loading='pass: held request shows skeleton';row.empty='pass: empty customer list';row.validation='partial: required name blocks POST, 422 surfaced, form retained';row.error='pass: 422 and retry';row.crud.create='pass: stateful HTTP fixture create/list readback; database persistence pending';row.crud.read='pass: created fixture visible after refetch';row.modals='partial: create, validation failure, save and close';row.responsive='partial: populated validation modal 390/1280';row.locales.nl='partial: customer create/validation';
 });
+for(const write of [false,true]) mark('/admin/boten',`boat list write controls and create deep link (${write})`,row=>row.permissions.ui='partial: boat read-only disables create/delete; write opens create intent');
+mark('/admin/boten','boat loading empty validation create and delete retain data then mutate',row=>{
+ row.loading='pass: held request shows skeleton';row.empty='pass: empty boat list';row.validation='partial: required name blocks POST, 422 surfaced, form retained';row.error='pass: 422 and retry';row.crud.create='pass: stateful HTTP fixture create/list readback; database persistence pending';row.crud.read='pass: created fixture visible after refetch';row.crud.delete='pass: confirm modal delete/list empty readback; database persistence pending';row.modals='partial: create, validation failure, delete confirm';row.responsive='partial: populated validation modal 390/1280';row.locales.nl='partial: boat create/validation';
+});
+mark('/admin/boten/[id]','boat detail update modal saves and read-only hides mutations',row=>{
+ row.crud.update='pass: fixture PATCH name save/reload';row.crud.read='pass: dossier fixture detail';row.permissions.ui='partial: boats.write hides edit/transfer';row.modals='partial: edit modal save/close';row.detail='partial: dossier heading reflects update';
+});
+for(const write of [false,true]) mark('/admin/leveranciers',`supplier list write controls and create deep link (${write})`,row=>row.permissions.ui='partial: products.write disables create/edit; write opens create intent');
+mark('/admin/leveranciers','supplier loading empty validation create and update retain data then mutate',row=>{
+ row.loading='pass: held request shows skeleton';row.empty='pass: empty supplier list';row.validation='partial: required name blocks POST, 422 surfaced, form retained';row.error='pass: 422 and retry';row.crud.create='pass: stateful HTTP fixture create/list readback; maps default_purchase_ledger';row.crud.read='pass: created fixture visible after refetch';row.crud.update='pass: fixture edit modal PATCH/list readback';row.crud.delete='pending: API delete exists; no list delete control';row.modals='partial: create, validation failure, edit';row.responsive='partial: populated validation modal 390/1280';row.locales.nl='partial: supplier create/validation';
+});
+for(const write of [false,true]) mark('/admin/producten',`product list write controls and create deep link (${write})`,row=>row.permissions.ui='partial: products.write disables create/delete; deep-link create gated');
+mark('/admin/producten/nieuw',`product list write controls and create deep link (false)`,row=>row.permissions.ui='partial: RequireAuth redirects create deep-link without products.write');
+mark('/admin/producten/nieuw','product empty validation create and delete retain data then mutate',row=>{
+ row.validation='partial: required name blocks POST, 422 surfaced, form retained';row.error='pass: 422 and retry';row.crud.create='pass: stateful HTTP fixture create';row.responsive='partial: create form 390/1280';row.locales.nl='partial: product create/validation';
+});
+mark('/admin/producten','product empty validation create and delete retain data then mutate',row=>{
+ row.empty='pass: empty product list';row.crud.read='pass: created fixture visible after list refetch';row.crud.delete='pass: confirm modal delete/list empty readback';row.modals='partial: delete confirm';
+});
 const backend = [
  {file:'../_audit/admin-layout-backend.xml',route:'/admin/calculator/pricing',scope:'pricing CRUD, validation, read-only denial, durable SQLite readback and audit'},
  {file:'../_audit/admin-customer-permissions.xml',route:'/admin/klanten',scope:'customer reader list/detail allowed; create/update/block/unblock/login-link/impersonation/recompute/delete denied'},
+ {file:'../_audit/admin-boat-permissions.xml',route:'/admin/boten',scope:'boat reader list/detail/dossier allowed; create/update/transfer/delete denied; writer durable create/update/delete'},
+ {file:'../_audit/admin-supplier-permissions.xml',route:'/admin/leveranciers',scope:'supplier reader list/detail allowed; create/update/delete denied; writer durable create/update/delete'},
+ {file:'../_audit/admin-product-permissions.xml',route:'/admin/producten',scope:'product reader list/detail allowed; create/update/delete denied; writer durable create/update/delete'},
 ];
 const gateFile=`${directory}/final-gates.json`;
 const gateCodes=fs.existsSync(gateFile)?JSON.parse(fs.readFileSync(gateFile,'utf8').replace(/^\uFEFF/,'')):{};
+const gateKey=route=>({ '/admin/klanten':'customerPermissions', '/admin/calculator/pricing':'pricingPermissions', '/admin/boten':'boatPermissions', '/admin/leveranciers':'supplierPermissions', '/admin/producten':'productPermissions' }[route]);
 for(const item of backend) if(fs.existsSync(item.file)) {
  const xml=fs.readFileSync(item.file,'utf8');const failures=/<failure\b|<error\b/.test(xml); const cases=(xml.match(/<testcase\b/g)??[]).length;
  item.status=cases&&!failures?'passed':'failed';item.cases=cases;
- const code=gateCodes[item.route==='/admin/klanten'?'customerPermissions':'pricingPermissions'];
+ const code=gateCodes[gateKey(item.route)];
  if(code!==undefined&&code!==0)item.status='failed';
- if(item.status==='passed')page(item.route).permissions.backend=`partial: ${item.scope}`;
+ if(item.status==='passed') {
+  page(item.route).permissions.backend=`partial: ${item.scope}`;
+  if(item.route==='/admin/boten') page('/admin/boten/[id]').permissions.backend=`partial: ${item.scope}`;
+  if(item.route==='/admin/producten') page('/admin/producten/nieuw').permissions.backend=`partial: ${item.scope}`;
+ }
  else page(item.route).gaps.push(`Backend ${item.file}: ${item.status}`);
 }
 for(const row of pages) {

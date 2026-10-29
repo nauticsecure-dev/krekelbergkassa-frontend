@@ -4550,29 +4550,126 @@
       "instagram": "Instagram URL"
     },
     "allTranslations": "Tous les textes",
-    "searchTranslations": "Rechercher un texte ou une clé"
+    "searchTranslations": "Rechercher un texte ou une clé",
+    "zoom": "Zoom",
+    "mediaLibrary": "Bibliothèque multimédia",
+    "existingImage": "Image existante",
+    "keepCurrentImage": "Conserver l’image actuelle",
+    "unusedImage": "Image inutilisée",
+    "deleteUnusedImage": "Supprimer l’image inutilisée",
+    "mobileImage": "Image mobile",
+    "useDesktopImage": "Utiliser l’image bureau",
+    "uploadMobileImage": "Téléverser une image mobile",
+    "desktopFocal": "Focus bureau {axis}",
+    "mobileFocal": "Focus mobile {axis}",
+    "brightness": "Luminosité",
+    "contrast": "Contraste",
+    "saturation": "Saturation",
+    "alignment": "Alignement",
+    "alignLeft": "Gauche",
+    "alignCenter": "Centre",
+    "alignRight": "Droite",
+    "gradient": "Dégradé",
+    "gradientNone": "Aucun",
+    "gradientRight": "Droite",
+    "gradientBottom": "Bas",
+    "gradientStart": "Début du dégradé",
+    "gradientMiddle": "Milieu du dégradé",
+    "gradientEnd": "Fin du dégradé",
+    "selectValidPage": "Sélectionnez une page valide",
+    "homeRoute": "Accueil",
+    "placeholderEmail": "info@exemple.fr",
+    "placeholderPhone": "+31 475 315661",
+    "placeholderAnchor": "diensten",
+    "placeholderUrl": "https://exemple.fr"
   },
   "settingsHub": {
     "search": "Rechercher un paramètre",
+    "subtitle": "Centre de configuration opérationnel — voir, configurer, tester et vérifier.",
     "reminderRules": "Modifier les règles de rappel",
     "paymentHealth": "Connexion de paiement",
     "integrationHealth": "Configuration et état des intégrations",
     "untested": "Non testé",
     "setupRequired": "Configuration requise",
-    "pos_methods": "Moyens de paiement en caisse",
-    "online_methods": "Moyens de paiement en ligne",
+    "pos_methods": "Caisse / manuel",
+    "online_methods": "En ligne (Mollie)",
     "mailbox": "Boîte de réception des factures",
-    "ocrModel": "Modèle OCR",
+    "ocrModel": "Modèle OCR (avancé)",
     "whatsappEnabled": "Activer WhatsApp",
     "transactionId": "Transaction Signhost existante (UUID)",
     "runDiagnostic": "Tester la configuration enregistrée",
     "openWorkflow": "Ouvrir le processus",
+    "tabs": {
+      "reminders": "Rappels",
+      "emailImport": "E-mail & Import",
+      "integrations": "Intégrations"
+    },
+    "actions": {
+      "manage": "Gérer",
+      "configure": "Configurer"
+    },
+    "attention": {
+      "title": "Attention requise"
+    },
+    "save": {
+      "saving": "Enregistrement…",
+      "saved": "Enregistré",
+      "failed": "Échec de l'enregistrement"
+    },
+    "company": {
+      "description": "Source unique pour le site, les factures, contrats, e-mails et modèles.",
+      "addressSearch": "Rechercher une adresse (Google Places)",
+      "website": "Site web",
+      "bic": "BIC",
+      "logoUrl": "URL du logo"
+    },
+    "invoicing": {
+      "description": "Ces valeurs pilotent la génération réelle des factures (délai, TVA, devise, numérotation).",
+      "numbering": "Numérotation",
+      "example": "Exemple",
+      "creditPrefix": "Préfixe avoir",
+      "bankInstructions": "Coordonnées bancaires",
+      "paymentInstructions": "Instructions de paiement",
+      "openTemplates": "Ouvrir l'éditeur de modèles",
+      "openInvoices": "Ouvrir les factures"
+    },
+    "reminders": {
+      "description": "Les rappels sont pilotés par des règles configurables (pas des jours fixes de facturation).",
+      "flowDue": "Date d'échéance",
+      "days": "jours",
+      "final": "Dernier rappel",
+      "rulesAuthoritative": "Modifiez jours, canaux, modèles et conditions d'arrêt dans les règles de rappel. Les changements s'appliquent au planificateur.",
+      "openTemplates": "Ouvrir le générateur d'e-mails/modèles"
+    },
+    "payments": {
+      "description": "Séparez les méthodes Mollie en ligne des méthodes caisse/manuel. Les secrets restent sur le serveur.",
+      "onlineHint": "Espèces et PIN n'appartiennent pas ici — ce sont des méthodes caisse.",
+      "posHint": "Espèces, PIN, à compte et split sont des méthodes caisse (pas Mollie).",
+      "testModeActive": "Mollie est en TEST. Passez en LIVE uniquement après un diagnostic réussi.",
+      "switchLive": "Passer en LIVE",
+      "confirmLive": "Confirmer : activer LIVE"
+    },
+    "locales": {
+      "description": "Activer/désactiver sans supprimer les traductions. Les langues désactivées quittent sélecteur, portail, CMS et modèles.",
+      "disabledKept": "Traductions conservées",
+      "fallbackChain": "Fallback : demandé → fallback configuré → défaut → NL",
+      "disableTitle": "Désactiver {code} ?",
+      "disableBody": "Cette langue disparaîtra du sélecteur public, du portail client et des éditeurs de modèles. Les traductions existantes ne sont PAS supprimées.",
+      "confirmDisable": "Désactiver",
+      "cannotDisableDefault": "La langue par défaut ou de secours ne peut pas être désactivée."
+    },
     "integrations": {
-      "email": "Email",
+      "mollie": "Mollie",
+      "google_places": "Google Places",
+      "email": "E-mail",
       "mailbox": "Boîte de réception des factures",
-      "ocr": "OCR",
+      "ocr": "Reconnaissance de documents",
       "whatsapp": "WhatsApp",
-      "signhost": "Signhost"
+      "signhost": "Signhost",
+      "description": "Santé, configuration et diagnostics des intégrations externes."
+    },
+    "rbac": {
+      "financeLimited": "Finance voit les paramètres financiers ; secrets entreprise/intégrations nécessitent des droits opérationnels."
     },
     "mollieSetup": "Configurez MOLLIE_TEST_KEY et MOLLIE_LIVE_KEY sur le serveur. Enregistrez le mode choisi, puis testez la configuration enregistrée."
   },

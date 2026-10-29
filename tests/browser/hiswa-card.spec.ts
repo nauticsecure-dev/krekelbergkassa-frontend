@@ -121,3 +121,28 @@ test('HISWA editor blocks writes after a locale load failure', async ({ page }) 
   await expect(dialog.getByRole('button', { name: messages.save, exact: true })).toBeDisabled();
   expect(state.writes).toHaveLength(0);
 });
+
+test('HISWA edit control stays clickable above the CMS toolbar on a narrow viewport', async ({ page }) => {
+  await fixture(page);
+  const { cms: messages } = JSON.parse(fs.readFileSync('src/i18n/messages/nl.json', 'utf8'));
+  await page.setViewportSize({ width: 390, height: 700 });
+  await page.goto('/nl/over-ons');
+  await page.getByRole('button', { name: messages.enterEdit, exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-cms-toolbar', 'true');
+  const trigger = page.locator('[data-cms-card="over-ons.hiswa"]').getByRole('button', { name: messages.editHiswa });
+  await trigger.evaluate((node) => node.scrollIntoView({ block: 'end', inline: 'nearest' }));
+  const toolbar = page.getByRole('toolbar', { name: messages.toolbarLabel });
+  const btnBox = await trigger.boundingBox();
+  const barBox = await toolbar.boundingBox();
+  expect(btnBox).toBeTruthy();
+  expect(barBox).toBeTruthy();
+  const overlap = !(
+    btnBox!.right < barBox!.x ||
+    btnBox!.x > barBox!.x + barBox!.width ||
+    btnBox!.y + btnBox!.height < barBox!.y ||
+    btnBox!.y > barBox!.y + barBox!.height
+  );
+  expect(overlap).toBe(false);
+  await trigger.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+});

@@ -396,6 +396,8 @@
     "month": "adminNew.kassa.analytics.periods.month"
   },
   "settingsHub.integrations": {
+    "mollie": "settingsHub.integrations.mollie",
+    "google_places": "settingsHub.integrations.google_places",
     "email": "settingsHub.integrations.email",
     "mailbox": "settingsHub.integrations.mailbox",
     "ocr": "settingsHub.integrations.ocr",

@@ -65,6 +65,7 @@ import { adminRecordHref } from "@/config/admin-routes";
 import { formatCurrency, intlLocale } from "@/lib/format";
 import { productPriceExclEuros, productPriceInclEuros } from "@/lib/products";
 import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
+import { KassaAnalyticsDashboard } from "@/components/admin/KassaAnalyticsDashboard";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { usePermission } from '@/lib/permissions';
 import { useIntl } from "@/i18n/IntlProvider";
@@ -158,6 +159,7 @@ export default function KassaPage() {
   const [customerId, setCustomerId] = React.useState("");
   const [paymentMethod, setPaymentMethod] = React.useState("pin");
   const [note, setNote] = React.useState("");
+  const [analyticsPeriod, setAnalyticsPeriod] = React.useState("today");
   // Trello #79: optional total adjustment → separate DISCOUNT line + required reason.
   const [adjustEnabled, setAdjustEnabled] = React.useState(false);
   const [adjustedTotal, setAdjustedTotal] = React.useState("");
@@ -276,10 +278,10 @@ export default function KassaPage() {
   const recentSales = useQuery(["kassa-recent"], () =>
     kassaService.recentSales({}).catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
   );
-  const todayQuery = useQuery(["kassa-today"], async () => {
+  const todayQuery = useQuery(["kassa-today", analyticsPeriod], async () => {
     const [analyticsRaw, salesResult] = await Promise.all([
-      kassaService.analytics({ period: "today" }).catch(() => null),
-      kassaService.recentSales({ period: "today" }).catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
+      kassaService.analytics({ period: analyticsPeriod }).catch(() => null),
+      kassaService.recentSales({ period: analyticsPeriod === "today" ? "today" : undefined }).catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
     ]);
     const view = normalizeKassaAnalytics(
       analyticsRaw as Record<string, unknown> | null,
@@ -1705,6 +1707,12 @@ export default function KassaPage() {
               loading={todayQuery.loading}
             />
           </div>
+          <KassaAnalyticsDashboard
+            analytics={todayQuery.data ?? null}
+            loading={todayQuery.loading}
+            period={analyticsPeriod}
+            onPeriodChange={setAnalyticsPeriod}
+          />
           {/* Recent sales list */}
           <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
             <div className="mb-3 flex items-center justify-between gap-2">
@@ -2547,7 +2555,7 @@ export default function KassaPage() {
                 }))
               }
             />
-            <div className="grid grid-cols-[1fr_7rem] gap-2">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_7rem] gap-2 [&>*]:min-w-0">
               <Input
                 label={t("adminNew.kassa.street")}
                 value={newCustomer.street}
@@ -2563,7 +2571,7 @@ export default function KassaPage() {
                 }
               />
             </div>
-            <div className="grid grid-cols-[8rem_1fr] gap-2">
+            <div className="grid min-w-0 grid-cols-[8rem_minmax(0,1fr)] gap-2 [&>*]:min-w-0">
               <Input
                 label={t("adminNew.kassa.postalCode")}
                 value={newCustomer.postal_code}

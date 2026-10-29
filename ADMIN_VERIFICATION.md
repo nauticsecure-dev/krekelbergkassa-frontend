@@ -1,10 +1,10 @@
 # Admin page-by-page verification
 
-Generated 2026-10-27T03:45:44.957Z. 71 routes.
+Generated 2026-10-29T03:49:36.509Z. 71 routes.
 
 Browser tests intercept HTTP; backend tests use SQLite in memory. Browser smoke proves neither CRUD persistence nor complete localization. Pending is unverified. Source signal counts are not test passes.
 
-Browser results: **93 completed browser scenarios passed**, 0 earlier log-only smoke passes, 0 latest failures/interrupted observations. Log-only passes remain partial evidence. This is scenario coverage, not complete page sign-off.
+Browser results: **101 completed browser scenarios passed**, 0 earlier log-only smoke passes, 2 latest failures/interrupted observations. Log-only passes remain partial evidence. This is scenario coverage, not complete page sign-off.
 
 Reproduce: `node scripts/audit-admin-pages.mjs`, `node scripts/verify-admin-batches.mjs`, then `node scripts/report-admin-verification.mjs`. Each small batch restarts Next to bound memory and retains its own report. Remove only the specific report for a changed scenario before rerunning it; existing passing evidence is reused. Run backend permission suites separately.
 
@@ -32,6 +32,9 @@ Reproduce: `node scripts/audit-admin-pages.mjs`, `node scripts/verify-admin-batc
 
 - /admin/calculator/pricing: **passed**, 5 tests; pricing CRUD, validation, read-only denial, durable SQLite readback and audit. Evidence: `../_audit/admin-layout-backend.xml`.
 - /admin/klanten: **passed**, 1 tests; customer reader list/detail allowed; create/update/block/unblock/login-link/impersonation/recompute/delete denied. Evidence: `../_audit/admin-customer-permissions.xml`.
+- /admin/boten: **passed**, 2 tests; boat reader list/detail/dossier allowed; create/update/transfer/delete denied; writer durable create/update/delete. Evidence: `../_audit/admin-boat-permissions.xml`.
+- /admin/leveranciers: **passed**, 2 tests; supplier reader list/detail allowed; create/update/delete denied; writer durable create/update/delete. Evidence: `../_audit/admin-supplier-permissions.xml`.
+- /admin/producten: **passed**, 2 tests; product reader list/detail allowed; create/update/delete denied; writer durable create/update/delete. Evidence: `../_audit/admin-product-permissions.xml`.
 
 ## Route matrix
 
@@ -48,8 +51,8 @@ CRUD letters are create/read/update/delete. L/E/E = loading/error/empty. Permiss
 | `/admin/beveiliging` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/boekhouding` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/boten/[id]/[slug]` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
-| `/admin/boten/[id]` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
-| `/admin/boten` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
+| `/admin/boten/[id]` | pass | C:pending R:pass U:pass D:pending | pending | pending / pass / pending | partial / partial | partial / partial | nl | pending |
+| `/admin/boten` | pass | C:pass R:pass U:pending D:pass | partial | pass / pass / pass | partial / partial | partial / pending | nl | partial |
 | `/admin/bundels` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/calculator/history` | pass | C:pending R:pending U:pending D:pending | pending | pending / pending / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/calculator` | pass | C:pending R:pending U:pending D:pending | pending | pending / pending / pending | pending / pending | pending / pending | nl | pending |
@@ -82,7 +85,7 @@ CRUD letters are create/read/update/delete. L/E/E = loading/error/empty. Permiss
 | `/admin/klanten` | pass | C:pass R:pass U:pending D:pending | partial | pass / pass / pass | partial / partial | partial / pending | nl | partial |
 | `/admin/leveranciers/[id]/[slug]` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/leveranciers/[id]` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
-| `/admin/leveranciers` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
+| `/admin/leveranciers` | pass | C:pass R:pass U:pass D:partial | partial | pass / pass / pass | partial / partial | partial / pending | nl | partial |
 | `/admin/makelaardij` | pass | C:pending R:pending U:pending D:pending | pending | pending / pending / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/ocr-review` | pass | C:pending R:pending U:pending D:pending | pending | pending / partial / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/ocr/templates` | pass | C:pending R:pending U:pending D:pending | pending | pending / pending / pending | pending / pending | pending / pending | nl | pending |
@@ -92,8 +95,8 @@ CRUD letters are create/read/update/delete. L/E/E = loading/error/empty. Permiss
 | `/admin/product-stats` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/producten/[id]/[slug]` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/producten/[id]` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
-| `/admin/producten/nieuw` | pass | C:pending R:pending U:pending D:pending | pending | pending / pending / pending | pending / pending | pending / pending | nl | pending |
-| `/admin/producten` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
+| `/admin/producten/nieuw` | pass | C:pending R:pending U:pending D:pending | pending | pending / pending / pending | pending / partial | pending / pending | nl | pending |
+| `/admin/producten` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | partial / partial | pending / pending | nl | pending |
 | `/admin/rapportages` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/reminders` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
 | `/admin/scan-logs` | pass | C:pending R:pending U:pending D:pending | pending | pending / pass / pending | pending / pending | pending / pending | nl | pending |
@@ -208,3 +211,4 @@ Earlier failures are retained in the JSON attempt history and original reports. 
 - nl: dashboard sidebar and KPI responsive evidence: passed on recheck; earlier report(s): [targeted-results.json](artifacts/admin-audit/targeted-results.json).
 - customer loading empty validation and create modal retain data then save: passed on recheck; earlier report(s): [frozen-recheck-results.json](artifacts/admin-audit/frozen-recheck-results.json).
 - route failure boundary: /admin/klanten/[id]/[slug]: passed on recheck; earlier report(s): [all-routes-results.json](artifacts/admin-audit/all-routes-results.json), [final-recheck-results.json](artifacts/admin-audit/final-recheck-results.json).
+- boat list write controls and create deep link (false): passed on recheck; earlier report(s): [browser-results.json](artifacts/admin-audit/browser-results.json).

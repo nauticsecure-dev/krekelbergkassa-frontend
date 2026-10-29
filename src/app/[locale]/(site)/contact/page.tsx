@@ -67,6 +67,7 @@ export default function ContactPage() {
       <section className="relative isolate overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <EditableImage
+            defaultStyle={{ gradient: 'right', gradient_start: 0.85, gradient_middle: 0.55, gradient_end: 0.15 }}
             blockKey="contact.hero.image"
             page={CMS_PAGE}
             fallbackSrc="/img/krek/werf-hero.webp"
@@ -74,10 +75,6 @@ export default function ContactPage() {
             className="h-full w-full"
           />
         </div>
-        <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/55 to-navy-950/15"
-          aria-hidden
-        />
         <div className="container-wide pointer-events-none relative pb-24 pt-28 text-white lg:pb-32 lg:pt-40">
           <Badge tone="sand" dot className="pointer-events-auto mb-4">
             <EditableText blockKey="contact.hero.badge" page={CMS_PAGE} section="hero">

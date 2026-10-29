@@ -1,0 +1,251 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.boat-crud.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/entity-crud",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/entity-crud-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "admin-audit.spec.ts",
+      "file": "admin-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "product list write controls and create deep link (false)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 73755,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Je hebt geen toestemming voor deze actie.', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Je hebt geen toestemming voor deze actie.', { exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Je hebt geen toestemming voor deze actie.', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Je hebt geen toestemming voor deze actie.', { exact: true })\u001b[22m\n\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:505:102",
+                    "location": {
+                      "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                      "column": 102,
+                      "line": 505
+                    },
+                    "snippet": "  503 |       await expect(page.getByText(label('nl', 'adminNew.common.permissionDenied'), { exact: true })).toHaveCount(0);\n  504 |     } else {\n> 505 |       await expect(page.getByText(label('nl', 'adminNew.common.permissionDenied'), { exact: true })).toBeVisible();\n      |                                                                                                      ^\n  506 |       await expect(page.locator('form')).toHaveCount(0);\n  507 |     }\n  508 |     expect(mutations).toBe(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                        "column": 102,
+                        "line": 505
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Je hebt geen toestemming voor deze actie.', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Je hebt geen toestemming voor deze actie.', { exact: true })\u001b[22m\n\n\n  503 |       await expect(page.getByText(label('nl', 'adminNew.common.permissionDenied'), { exact: true })).toHaveCount(0);\n  504 |     } else {\n> 505 |       await expect(page.getByText(label('nl', 'adminNew.common.permissionDenied'), { exact: true })).toBeVisible();\n      |                                                                                                      ^\n  506 |       await expect(page.locator('form')).toHaveCount(0);\n  507 |     }\n  508 |     expect(mutations).toBe(0);\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:505:102"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T03:26:30.201Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-list-w-5d74d-and-create-deep-link-false-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                    "column": 102,
+                    "line": 505
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-27efb3123e7879e7d312",
+          "file": "admin-audit.spec.ts",
+          "line": 466,
+          "column": 7
+        },
+        {
+          "title": "product list write controls and create deep link (true)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14145,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T03:27:46.260Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-b612d49b5a5064979270",
+          "file": "admin-audit.spec.ts",
+          "line": 466,
+          "column": 7
+        },
+        {
+          "title": "product loading empty validation create and delete retain data then mutate",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 49845,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('main .animate-pulse').first()\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for locator('main .animate-pulse').first()\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('main .animate-pulse').first()\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for locator('main .animate-pulse').first()\u001b[22m\n\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:561:61",
+                    "location": {
+                      "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                      "column": 61,
+                      "line": 561
+                    },
+                    "snippet": "  559 |   });\n  560 |   await page.goto('/nl/admin/producten');\n> 561 |   await expect(page.locator('main .animate-pulse').first()).toBeVisible();\n      |                                                             ^\n  562 |   release();\n  563 |   await expect(page.getByText(label('nl', 'adminNew.products.emptyTitle'), { exact: true })).toBeVisible();\n  564 |   await page.goto('/nl/admin/producten/nieuw');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                        "column": 61,
+                        "line": 561
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('main .animate-pulse').first()\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for locator('main .animate-pulse').first()\u001b[22m\n\n\n  559 |   });\n  560 |   await page.goto('/nl/admin/producten');\n> 561 |   await expect(page.locator('main .animate-pulse').first()).toBeVisible();\n      |                                                             ^\n  562 |   release();\n  563 |   await expect(page.getByText(label('nl', 'adminNew.products.emptyTitle'), { exact: true })).toBeVisible();\n  564 |   await page.goto('/nl/admin/producten/nieuw');\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts:561:61"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T03:28:00.767Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-loadin-f76b7-ete-retain-data-then-mutate\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\entity-crud\\admin-audit-product-loadin-f76b7-ete-retain-data-then-mutate\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-audit.spec.ts",
+                    "column": 61,
+                    "line": 561
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-24457bea0074b4a24bd2",
+          "file": "admin-audit.spec.ts",
+          "line": 512,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T03:26:28.056Z",
+    "duration": 143174.071,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

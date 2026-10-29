@@ -200,6 +200,7 @@ export default function HomePage() {
                 <div className="relative aspect-[4/3]">
                   <div className="absolute inset-0 overflow-hidden rounded-t-xl">
                     <EditableImage
+                      defaultStyle={{ gradient: 'bottom', gradient_start: 0, gradient_middle: 0.3, gradient_end: 0.85 }}
                       blockKey={`home.svc.${s.key}.image`}
                       page={CMS_PAGE}
                       fallbackSrc={s.img}
@@ -207,7 +208,6 @@ export default function HomePage() {
                       className="absolute inset-0 transition duration-500 group-hover:scale-105"
                     />
                   </div>
-                  <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/30 to-transparent" />
                   <div aria-hidden className="pointer-events-none absolute left-4 top-4">
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white/95 text-navy-800 backdrop-blur">
                       <Icon className="h-4 w-4" />
@@ -350,6 +350,7 @@ export default function HomePage() {
             <div className="relative aspect-[5/3] overflow-hidden lg:aspect-auto">
               <div className="absolute inset-0 overflow-hidden">
                 <EditableImage
+                  defaultStyle={{ gradient: 'bottom', gradient_start: 0, gradient_middle: 0.1, gradient_end: 0.65 }}
                   blockKey="home.sale.image"
                   page={CMS_PAGE}
                   fallbackSrc="/img/krek/verkoop-schip.webp"
@@ -357,7 +358,6 @@ export default function HomePage() {
                   className="h-full w-full"
                 />
               </div>
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/65 via-navy-950/10 to-transparent" />
             </div>
             <div className="p-8 sm:p-12">
               <Badge tone="navy" className="mb-3">

@@ -29,6 +29,15 @@ function CmsToolbarInner() {
   const [globalOpen, setGlobalOpen] = useCmsEditorOpen();
   const [translationsOpen, setTranslationsOpen] = useCmsEditorOpen();
 
+  // Keep page content and edit pencils clear of the fixed bottom-right toolbar.
+  React.useEffect(() => {
+    if (!canEdit) return;
+    document.documentElement.dataset.cmsToolbar = 'true';
+    return () => {
+      delete document.documentElement.dataset.cmsToolbar;
+    };
+  }, [canEdit]);
+
   if (!canEdit && !retainCmsDrafts) return null;
 
   return (

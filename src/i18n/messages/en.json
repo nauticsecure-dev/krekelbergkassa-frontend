@@ -4550,29 +4550,126 @@
       "instagram": "Instagram URL"
     },
     "allTranslations": "All text",
-    "searchTranslations": "Search text or key"
+    "searchTranslations": "Search text or key",
+    "zoom": "Zoom",
+    "mediaLibrary": "Media library",
+    "existingImage": "Existing image",
+    "keepCurrentImage": "Keep current image",
+    "unusedImage": "Unused image",
+    "deleteUnusedImage": "Delete unused image",
+    "mobileImage": "Mobile image",
+    "useDesktopImage": "Use desktop image",
+    "uploadMobileImage": "Upload mobile image",
+    "desktopFocal": "Desktop focal {axis}",
+    "mobileFocal": "Mobile focal {axis}",
+    "brightness": "Brightness",
+    "contrast": "Contrast",
+    "saturation": "Saturation",
+    "alignment": "Alignment",
+    "alignLeft": "Left",
+    "alignCenter": "Center",
+    "alignRight": "Right",
+    "gradient": "Gradient",
+    "gradientNone": "None",
+    "gradientRight": "Right",
+    "gradientBottom": "Bottom",
+    "gradientStart": "Gradient start",
+    "gradientMiddle": "Gradient middle",
+    "gradientEnd": "Gradient end",
+    "selectValidPage": "Select a valid page",
+    "homeRoute": "Home",
+    "placeholderEmail": "info@example.com",
+    "placeholderPhone": "+31 475 315661",
+    "placeholderAnchor": "diensten",
+    "placeholderUrl": "https://example.com"
   },
   "settingsHub": {
     "search": "Search settings",
+    "subtitle": "Operational configuration hub — view, configure, test and verify.",
     "reminderRules": "Edit reminder rules",
     "paymentHealth": "Payment connection",
     "integrationHealth": "Integration health and setup",
     "untested": "Not tested",
     "setupRequired": "Setup required",
-    "pos_methods": "POS payment methods",
-    "online_methods": "Online payment methods",
+    "pos_methods": "POS / manual",
+    "online_methods": "Online (Mollie)",
     "mailbox": "Invoice mailbox",
-    "ocrModel": "OCR model",
+    "ocrModel": "OCR model (advanced)",
     "whatsappEnabled": "Enable WhatsApp",
     "transactionId": "Existing Signhost transaction UUID",
     "runDiagnostic": "Test saved configuration",
     "openWorkflow": "Open workflow",
+    "tabs": {
+      "reminders": "Reminders",
+      "emailImport": "Email & Import",
+      "integrations": "Integrations"
+    },
+    "actions": {
+      "manage": "Manage",
+      "configure": "Configure"
+    },
+    "attention": {
+      "title": "Attention required"
+    },
+    "save": {
+      "saving": "Saving…",
+      "saved": "Saved",
+      "failed": "Could not save"
+    },
+    "company": {
+      "description": "Single source of truth for website, invoices, contracts, emails and templates.",
+      "addressSearch": "Search address (Google Places)",
+      "website": "Website",
+      "bic": "BIC",
+      "logoUrl": "Logo URL"
+    },
+    "invoicing": {
+      "description": "These values drive real invoice generation (due term, VAT, currency, numbering).",
+      "numbering": "Numbering",
+      "example": "Example",
+      "creditPrefix": "Credit note prefix",
+      "bankInstructions": "Bank / payment details",
+      "paymentInstructions": "Payment instructions",
+      "openTemplates": "Open template editor",
+      "openInvoices": "Open invoices"
+    },
+    "reminders": {
+      "description": "Reminders are driven by configurable rules (not fixed invoicing day fields).",
+      "flowDue": "Due date",
+      "days": "days",
+      "final": "Final reminder",
+      "rulesAuthoritative": "Edit days, channels, templates and stop conditions in reminder rules. Changes apply to the scheduler.",
+      "openTemplates": "Open email/template builder"
+    },
+    "payments": {
+      "description": "Separate online Mollie methods from POS/manual methods. Secrets stay on the server.",
+      "onlineHint": "Cash and PIN do not belong here — they are POS methods.",
+      "posHint": "Cash, PIN, on account and split are POS methods (not Mollie).",
+      "testModeActive": "Mollie is in TEST. Switch to LIVE only after a successful diagnostic.",
+      "switchLive": "Switch to LIVE",
+      "confirmLive": "Confirm: enable LIVE"
+    },
+    "locales": {
+      "description": "Enable/disable without deleting translations. Disabled languages leave selectors, portal, CMS and templates.",
+      "disabledKept": "Translations are kept",
+      "fallbackChain": "Fallback: requested → configured fallback → default → NL",
+      "disableTitle": "Disable {code}?",
+      "disableBody": "This language will disappear from the public selector, customer portal and template editors. Existing translations are NOT deleted.",
+      "confirmDisable": "Disable",
+      "cannotDisableDefault": "Default or fallback language cannot be disabled."
+    },
     "integrations": {
+      "mollie": "Mollie",
+      "google_places": "Google Places",
       "email": "Email",
       "mailbox": "Invoice mailbox",
-      "ocr": "OCR",
+      "ocr": "Document recognition",
       "whatsapp": "WhatsApp",
-      "signhost": "Signhost"
+      "signhost": "Signhost",
+      "description": "Health, configuration and diagnostics for external integrations."
+    },
+    "rbac": {
+      "financeLimited": "Finance can access financial settings; company and integration secrets require operational permissions."
     },
     "mollieSetup": "Configure MOLLIE_TEST_KEY and MOLLIE_LIVE_KEY on the server. Save the selected mode, then test the saved configuration."
   },
