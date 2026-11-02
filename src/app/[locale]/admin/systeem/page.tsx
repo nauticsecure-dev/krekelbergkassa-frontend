@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -204,7 +206,7 @@ export default function SystemPage() {
               void repair.refetch();
             }}
           >
-            {t('adminNew.system.refresh')}
+            {<TranslatedText textKey={'adminNew.system.refresh'} />}
           </Button>
         }
       />
@@ -240,7 +242,7 @@ export default function SystemPage() {
                   disabled={running === 'mollie'}
                   onClick={() => void runRepair('mollie', () => repairService.syncMollieStatus())}
                 >
-                  {t('adminNew.system.repair.syncMollie')}
+                  {<TranslatedText textKey={'adminNew.system.repair.syncMollie'} />}
                 </Button>
                 <div className="space-y-2">
                   {(repair.data?.mismatched ?? []).slice(0, 5).map((payment) => (
@@ -259,7 +261,7 @@ export default function SystemPage() {
                             )
                           }
                         >
-                          {t('adminNew.system.repair.retryWebhook')}
+                          {<TranslatedText textKey={'adminNew.system.repair.retryWebhook'} />}
                         </Button>
                       }
                     />
@@ -291,7 +293,7 @@ export default function SystemPage() {
                             )
                           }
                         >
-                          {t('adminNew.system.repair.replay')}
+                          {<TranslatedText textKey={'adminNew.system.repair.replay'} />}
                         </Button>
                       }
                     />
@@ -328,7 +330,7 @@ export default function SystemPage() {
                           disabled={running === `conflict-${item.id}-keep`}
                           onClick={() => openConflictResolve(String(item.id), 'keep_server')}
                         >
-                          {t('adminNew.system.repair.resolveKeepServer')}
+                          {<TranslatedText textKey={'adminNew.system.repair.resolveKeepServer'} />}
                         </Button>
                         <Button
                           size="sm"
@@ -337,7 +339,7 @@ export default function SystemPage() {
                           disabled={running === `conflict-${item.id}-client`}
                           onClick={() => openConflictResolve(String(item.id), 'use_client')}
                         >
-                          {t('adminNew.system.repair.resolveUseClient')}
+                          {<TranslatedText textKey={'adminNew.system.repair.resolveUseClient'} />}
                         </Button>
                       </div>
                     </div>
@@ -362,7 +364,7 @@ export default function SystemPage() {
                       disabled={!invoiceId || running === 'resend-email'}
                       onClick={() => setConfirmResendEmail(true)}
                     >
-                      {t('adminNew.system.repair.resendEmail')}
+                      {<TranslatedText textKey={'adminNew.system.repair.resendEmail'} />}
                     </Button>
                     <Button
                       size="sm"
@@ -374,7 +376,7 @@ export default function SystemPage() {
                         )
                       }
                     >
-                      {t('adminNew.system.repair.regeneratePdf')}
+                      {<TranslatedText textKey={'adminNew.system.repair.regeneratePdf'} />}
                     </Button>
                   </div>
                   <Input
@@ -392,7 +394,7 @@ export default function SystemPage() {
                       )
                     }
                   >
-                    {t('adminNew.system.repair.retryWebhook')}
+                    {<TranslatedText textKey={'adminNew.system.repair.retryWebhook'} />}
                   </Button>
                 </div>
               </AdminSectionCard>
@@ -427,7 +429,7 @@ export default function SystemPage() {
                     leftIcon={<GitMerge className="h-3.5 w-3.5" />}
                     disabled={running === 'merge-customers'}
                   >
-                    {t('adminNew.system.repair.mergeCustomers')}
+                    {<TranslatedText textKey={'adminNew.system.repair.mergeCustomers'} />}
                   </Button>
                 </form>
               </AdminSectionCard>
@@ -448,7 +450,7 @@ export default function SystemPage() {
                     variant="outline"
                     disabled={running === 'idempotency'}
                   >
-                    {t('adminNew.system.repair.lookupIdempotency')}
+                    {<TranslatedText textKey={'adminNew.system.repair.lookupIdempotency'} />}
                   </Button>
                 </form>
                 {idempotencyResult ? (
@@ -471,12 +473,12 @@ export default function SystemPage() {
                   leftIcon={<HardDriveDownload className="h-3.5 w-3.5" />}
                   onClick={() => setShowBackup(true)}
                 >
-                  {t('adminNew.backups.runNow')}
+                  {<TranslatedText textKey={'adminNew.backups.runNow'} />}
                 </Button>
               }
             >
               {backups.loading ? (
-                <div className="text-sm text-navy-500">{t('adminNew.common.loading')}</div>
+                <div className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.common.loading'} />}</div>
               ) : (backups.data?.data ?? []).length ? (
                 <div className="space-y-2">
                   {(backups.data?.data ?? []).map((raw) => {
@@ -504,13 +506,13 @@ export default function SystemPage() {
                         subtitle={
                           <span className="flex flex-wrap gap-3">
                             {sizeMb != null ? (
-                              <span>{t('adminNew.backups.size', { mb: Number(sizeMb).toFixed(1) })}</span>
+                              <span>{<TranslatedText textKey={'adminNew.backups.size'} vars={{ mb: Number(sizeMb).toFixed(1) }} />}</span>
                             ) : null}
                             {duration != null ? (
-                              <span>{t('adminNew.backups.duration', { seconds: String(duration) })}</span>
+                              <span>{<TranslatedText textKey={'adminNew.backups.duration'} vars={{ seconds: String(duration) }} />}</span>
                             ) : null}
                             {run.triggered_by ? (
-                              <span>{t('adminNew.backups.triggeredBy', { by: String(run.triggered_by) })}</span>
+                              <span>{<TranslatedText textKey={'adminNew.backups.triggeredBy'} vars={{ by: String(run.triggered_by) }} />}</span>
                             ) : null}
                           </span>
                         }
@@ -529,7 +531,7 @@ export default function SystemPage() {
                   })}
                 </div>
               ) : (
-                <div className="text-sm text-navy-500">{t('adminNew.backups.empty')}</div>
+                <div className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.backups.empty'} />}</div>
               )}
             </AdminSectionCard>
           </>
@@ -596,11 +598,11 @@ export default function SystemPage() {
 
       <Modal open={showBackup} onClose={() => setShowBackup(false)} size="md">
         <form onSubmit={onRunBackup} className="p-6">
-          <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.backups.runNow')}</h2>
+          <h2 className="text-lg font-semibold text-navy-900">{<TranslatedText textKey={'adminNew.backups.runNow'} />}</h2>
           <div className="mt-4 space-y-3">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.backups.fields.type')}
+                {<TranslatedText textKey={'adminNew.backups.fields.type'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
@@ -613,7 +615,7 @@ export default function SystemPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.backups.fields.notes')}
+                {<TranslatedText textKey={'adminNew.backups.fields.notes'} />}
               </label>
               <textarea
                 className="input-base min-h-20 w-full"
@@ -624,10 +626,10 @@ export default function SystemPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowBackup(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createBackup.loading}>
-              {createBackup.loading ? t('adminNew.common.saving') : t('adminNew.backups.runNow')}
+              {createBackup.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.backups.runNow'} />}
             </Button>
           </div>
         </form>

@@ -5,6 +5,7 @@ import { locales } from '@/i18n/config';
 import { AuthProvider } from '@/lib/auth-context';
 import { ToastProvider } from '@/components/ui/ToastProvider';
 import { CmsProvider } from '@/components/cms/CmsProvider';
+import { PublicCmsRoute } from '@/components/cms/PublicCmsRoute';
 import { CmsToolbar } from '@/components/cms/CmsToolbar';
 
 export function generateStaticParams() {
@@ -27,6 +28,7 @@ export default async function LocaleLayout({
       <ToastProvider>
         <AuthProvider>
           <CmsProvider>
+            <PublicCmsRoute />
             <CmsToolbar />
             {children}
           </CmsProvider>

@@ -44,7 +44,12 @@
     ".next-cms-session-safety/types/**/*.ts",
     ".next-global-ux/types/**/*.ts",
     ".next-erp/types/**/*.ts",
-    ".next-global-ux-live/types/**/*.ts"
+    ".next-global-ux-live/types/**/*.ts",
+    ".next-contact-settings/types/**/*.ts",
+    ".next-cms-media/types/**/*.ts",
+    ".next-cms-media-3062/types/**/*.ts",
+    ".next-certification/types/**/*.ts",
+    ".next-qa-20261102/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

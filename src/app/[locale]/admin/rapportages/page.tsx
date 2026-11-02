@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { adminRecordHref } from '@/config/admin-routes';
 
 
@@ -243,7 +245,7 @@ export default function ReportsPage() {
             />
             <Link href={`/${locale}/admin/kassa/dagafsluiting`}>
               <Button variant="outline" size="sm" leftIcon={<Wallet className="h-4 w-4" />}>
-                {t('adminNew.reports.cashClose')}
+                {<TranslatedText textKey={'adminNew.reports.cashClose'} />}
               </Button>
             </Link>
             <Button
@@ -252,7 +254,7 @@ export default function ReportsPage() {
               leftIcon={<Printer className="h-4 w-4" />}
               onClick={() => window.print()}
             >
-              {t('adminNew.reports.print')}
+              {<TranslatedText textKey={'adminNew.reports.print'} />}
             </Button>
             <Button
               variant="gold"
@@ -261,7 +263,7 @@ export default function ReportsPage() {
               disabled={exporting}
               onClick={() => void onExport()}
             >
-              {t('adminNew.reports.export')}
+              {<TranslatedText textKey={'adminNew.reports.export'} />}
             </Button>
           </div>
         }
@@ -320,7 +322,7 @@ export default function ReportsPage() {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.reports.noData'} />}</p>
                 )}
                 {byGroup.length ? (
                   <div className="mt-3 space-y-1">
@@ -369,7 +371,7 @@ export default function ReportsPage() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.reports.noData'} />}</p>
                 )}
               </AdminSectionCard>
             </div>
@@ -406,11 +408,11 @@ export default function ReportsPage() {
                   <AdminTable minWidth={520}>
                     <AdminTableHead>
                       <tr>
-                        <AdminTableHeaderCell>{t('adminNew.reports.vat.rate')}</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Excl. BTW</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>BTW bedrag</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>{t('adminNew.reports.vat.total')}</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>{t('adminNew.reports.vat.outstanding')}</AdminTableHeaderCell>
+                        <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.reports.vat.rate'} />}</AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.b1ef4afe28172dc9" fallbackText={"Excl. BTW"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.3575a8a9e6a33650" fallbackText={"BTW bedrag"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.reports.vat.total'} />}</AdminTableHeaderCell>
+                        <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.reports.vat.outstanding'} />}</AdminTableHeaderCell>
                       </tr>
                     </AdminTableHead>
                     <tbody>
@@ -432,7 +434,7 @@ export default function ReportsPage() {
                     </tbody>
                   </AdminTable>
                 ) : (
-                  <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.reports.noData'} />}</p>
                 )}
               </AdminSectionCard>
 
@@ -451,13 +453,13 @@ export default function ReportsPage() {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <p className="text-sm text-navy-500">{t('adminNew.reports.noAging')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.reports.noAging'} />}</p>
                 )}
                 {/* Trello #85: per-invoice aging actions (reminder / mark paid / open). */}
                 {(overdueInvoices.data?.data ?? []).length ? (
                   <div className="mt-4 space-y-1.5 border-t border-navy-50 pt-3">
                     <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-                      {t('adminNew.reports.agingOverdueTitle')}
+                      {<TranslatedText textKey={'adminNew.reports.agingOverdueTitle'} />}
                     </p>
                     {(overdueInvoices.data?.data ?? []).slice(0, 10).map((inv) => (
                       <div key={inv.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sand-50">
@@ -465,13 +467,13 @@ export default function ReportsPage() {
                         <div className="flex items-center gap-1.5">
                           <span className="text-amber-700">{money(inv.outstanding_cents ?? inv.total_amount_cents)}</span>
                           <Button size="sm" variant="ghost" disabled={sendReminder.loading} onClick={() => void agingAction(t('adminNew.reports.agingReminderSent'), () => sendReminder.mutate(inv.id))}>
-                            {t('adminNew.reports.agingReminder')}
+                            {<TranslatedText textKey={'adminNew.reports.agingReminder'} />}
                           </Button>
                           <Button size="sm" variant="ghost" disabled={markPaid.loading} onClick={() => void agingAction(t('adminNew.reports.agingMarkedPaid'), () => markPaid.mutate(inv.id))}>
-                            {t('adminNew.reports.agingMarkPaid')}
+                            {<TranslatedText textKey={'adminNew.reports.agingMarkPaid'} />}
                           </Button>
                           <Link href={`/${locale}/admin/facturen/${inv.id}`} className="text-marine-700 hover:text-marine-900">
-                            {t('adminNew.common.open')} →
+                            {<TranslatedText textKey={'adminNew.common.open'} />} →
                           </Link>
                         </div>
                       </div>
@@ -527,7 +529,7 @@ export default function ReportsPage() {
                 {byContractType.length ? (
                   <div className="mt-3 space-y-1 border-t border-navy-50 pt-3">
                     <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-                      {t('adminNew.reports.storage.byContractType')}
+                      {<TranslatedText textKey={'adminNew.reports.storage.byContractType'} />}
                     </p>
                     {byContractType.map((ct, i) => (
                       <div key={i} className="flex items-center justify-between text-sm">
@@ -565,11 +567,11 @@ export default function ReportsPage() {
                       );
                     })}
                     {occupancy.capacity_configured === false ? (
-                      <p className="pt-1 text-xs text-navy-400">{t('adminNew.reports.occupancyNoCapacity')}</p>
+                      <p className="pt-1 text-xs text-navy-400">{<TranslatedText textKey={'adminNew.reports.occupancyNoCapacity'} />}</p>
                     ) : null}
                   </div>
                 ) : (
-                  <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.reports.noData'} />}</p>
                 )}
               </AdminSectionCard>
             </div>
@@ -599,19 +601,19 @@ export default function ReportsPage() {
                     })}
                     {customerAnalytics.concentration_pct != null ? (
                       <p className="pt-1 text-xs text-navy-400">
-                        {t('adminNew.reports.concentration', {
+                        {<TranslatedText textKey={'adminNew.reports.concentration'} vars={{
                           pct: n(customerAnalytics.concentration_pct),
-                        })}
+                        }} />}
                       </p>
                     ) : null}
                   </div>
                 ) : (
-                  <p className="text-sm text-navy-500">{t('adminNew.reports.noData')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.reports.noData'} />}</p>
                 )}
                 {/* Trello #85: top customers by open balance + overdue customers */}
                 {topByOpen.length ? (
                   <div className="mt-3 space-y-1 border-t border-navy-50 pt-3">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">{t('adminNew.reports.customersByOpen')}</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">{<TranslatedText textKey={'adminNew.reports.customersByOpen'} />}</p>
                     {topByOpen.slice(0, 5).map((c, i) => (
                       <div key={i} className="flex items-center justify-between text-sm">
                         <span className="text-navy-800">{str(c.name ?? c.customer_name) || '—'}</span>
@@ -622,7 +624,7 @@ export default function ReportsPage() {
                 ) : null}
                 {overdueCustomers.length ? (
                   <div className="mt-3 space-y-1 border-t border-navy-50 pt-3">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">{t('adminNew.reports.customersOverdue')}</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-navy-400">{<TranslatedText textKey={'adminNew.reports.customersOverdue'} />}</p>
                     {overdueCustomers.slice(0, 5).map((c, i) => (
                       <div key={i} className="flex items-center justify-between text-sm">
                         <span className="text-navy-800">{str(c.name ?? c.customer_name) || '—'}</span>
@@ -687,14 +689,14 @@ export default function ReportsPage() {
 
             {margin.available === false ? (
               <p className="mt-3 text-xs text-navy-400">
-                {t('adminNew.reports.marginMissing', { count: n(margin.missing_cost_line_count) })}
+                {<TranslatedText textKey={'adminNew.reports.marginMissing'} vars={{ count: n(margin.missing_cost_line_count) }} />}
               </p>
             ) : (
               <div className="mt-3 space-y-3">
                 <Badge tone="success">
-                  {t('adminNew.reports.marginValue', {
+                  {<TranslatedText textKey={'adminNew.reports.marginValue'} vars={{
                     pct: n(margin.gross_margin_percent ?? margin.gross_margin_pct),
-                  })}
+                  }} />}
                 </Badge>
                 {marginByGroup.length ? (
                   <AdminSectionCard title={t('adminNew.reports.marginByGroupTitle')} icon={Layers}>
@@ -704,10 +706,10 @@ export default function ReportsPage() {
                           <span className="font-medium text-navy-800">{str(g.group_name ?? g.group_code) || '—'}</span>
                           <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
                             <span className="text-navy-500">
-                              {t('adminNew.reports.marginRevenue')}: {money(n(g.revenue_cents ?? g.total_incl_vat))}
+                              {<TranslatedText textKey={'adminNew.reports.marginRevenue'} />}: {money(n(g.revenue_cents ?? g.total_incl_vat))}
                             </span>
                             <span className="text-navy-500">
-                              {t('adminNew.reports.marginCost')}: {money(n(g.cost_cents ?? g.purchase_cost_cents))}
+                              {<TranslatedText textKey={'adminNew.reports.marginCost'} />}: {money(n(g.cost_cents ?? g.purchase_cost_cents))}
                             </span>
                             <span className="font-semibold text-emerald-700">
                               {n(g.gross_margin_percent ?? g.gross_margin_pct).toFixed(1)}%

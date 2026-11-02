@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { IntlProvider, useIntl } from '@/i18n/IntlProvider';
 import { cmsService } from '@/lib/services';
+import { publishContact } from '@/lib/hooks/useCompanyContact';
 import { locales } from '@/i18n/config';
 import { CmsSessionRecovery } from './CmsSessionRecovery';
 
@@ -187,6 +188,7 @@ interface CmsContextValue {
   saveMediaMeta: (key: string, args: SaveMediaMetaArgs) => Promise<void>;
   saveSeo: (slug: string, args: SaveSeoArgs) => Promise<void>;
   saveGlobal: (key: string, value: GlobalValue) => Promise<void>;
+  saveContact: (data: Parameters<typeof cmsService.updateContact>[0]) => Promise<void>;
   guardCms: <T>(fn: () => Promise<T>) => Promise<T>;
 }
 
@@ -250,7 +252,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   const [editorLocales, setEditorLocales] = React.useState<LocaleTag[]>(EDITABLE_LOCALE_TAGS);
   const [expiredEditor, setExpiredEditor] = React.useState<string | null>(null);
-  const canEdit = sessionVerified && !!user?.permissions?.includes('cms.manage');
+  const canEdit = sessionVerified && user?.role === 'super_admin' && !!user?.permissions?.includes('cms.manage');
 
   // Wraps every CMS write call: if the server returns 401 the stored token has
   // been invalidated (server deploy / token rotation). Clear the local session
@@ -600,12 +602,27 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     [guardCms, localeTag, assertWritablePage],
   );
 
+  const saveContact = React.useCallback(
+    (data: Parameters<typeof cmsService.updateContact>[0]) => guardCms(async () => {
+      assertWritablePage();
+      const { company } = await cmsService.updateContact(data);
+      publishContact(company);
+      setGlobals(prev => ({ ...prev,
+        'company.email': company.email, 'company.phone': company.phone ?? '',
+        'company.address.street': company.address.street,
+        'company.address.postal_code': company.address.postal_code,
+        'company.address.city': company.address.city,
+      }));
+    }), [guardCms, assertWritablePage],
+  );
+
   const saveGlobal = React.useCallback(
     (key: string, value: GlobalValue) =>
       guardCms(async () => {
         assertWritablePage();
         await cmsService.saveGlobalSetting(key, { value });
         setGlobals((prev) => ({ ...prev, [key]: value }));
+        if (key.startsWith('company.')) window.dispatchEvent(new Event('company-contact-changed'));
       }),
     [guardCms, assertWritablePage],
   );
@@ -636,6 +653,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       saveMediaMeta,
       saveSeo,
       saveGlobal,
+      saveContact,
       guardCms,
     }),
     [
@@ -663,6 +681,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       saveMediaMeta,
       saveSeo,
       saveGlobal,
+      saveContact,
       guardCms,
     ],
   );

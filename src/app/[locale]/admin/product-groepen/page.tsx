@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -183,7 +185,7 @@ export default function ProductGroupsPage() {
         subtitle={t('adminNew.productGroups.subtitle')}
         rightSlot={
           <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={openNew}>
-            {t('adminNew.productGroups.new')}
+            {<TranslatedText textKey={'adminNew.productGroups.new'} />}
           </Button>
         }
       />
@@ -207,11 +209,11 @@ export default function ProductGroupsPage() {
               <AdminTable minWidth={760}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.productGroups.columns.group')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.productGroups.columns.code')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.productGroups.columns.vat')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.productGroups.columns.products', { defaultValue: 'Producten' })}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.productGroups.columns.status')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.productGroups.columns.group'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.productGroups.columns.code'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.productGroups.columns.vat'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.productGroups.columns.products'} vars={{ defaultValue: 'Producten' }} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.productGroups.columns.status'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -249,14 +251,14 @@ export default function ProductGroupsPage() {
                         <AdminTableCell>
                           <Badge tone={g.active === false ? 'neutral' : 'success'}>
                             {g.active === false
-                              ? t('adminNew.productGroups.inactive')
-                              : t('adminNew.productGroups.active')}
+                              ? <TranslatedText textKey={'adminNew.productGroups.inactive'} />
+                              : <TranslatedText textKey={'adminNew.productGroups.active'} />}
                           </Badge>
                         </AdminTableCell>
                         <AdminTableCell>
                           <div className="flex justify-end gap-1">
                             <Button variant="ghost" size="sm" onClick={() => openEdit(g)}>
-                              {t('adminNew.common.edit')}
+                              {<TranslatedText textKey={'adminNew.common.edit'} />}
                             </Button>
                             <Button
                               variant="ghost"
@@ -265,7 +267,7 @@ export default function ProductGroupsPage() {
                               disabled={archiveGroup.loading}
                               onClick={() => void onArchive(String(g.id))}
                             >
-                              {t('adminNew.productGroups.archive')}
+                              {<TranslatedText textKey={'adminNew.productGroups.archive'} />}
                             </Button>
                             <Button
                               variant="ghost"
@@ -273,7 +275,7 @@ export default function ProductGroupsPage() {
                               leftIcon={<Trash2 className="h-3.5 w-3.5" />}
                               onClick={() => setDeleteTarget(String(g.id))}
                             >
-                              {t('adminNew.common.delete')}
+                              {<TranslatedText textKey={'adminNew.common.delete'} />}
                             </Button>
                           </div>
                         </AdminTableCell>
@@ -311,7 +313,7 @@ export default function ProductGroupsPage() {
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.productGroups.fields.color')}
+                {<TranslatedText textKey={'adminNew.productGroups.fields.color'} />}
               </label>
               <div className="flex flex-wrap items-center gap-2">
                 <input
@@ -337,7 +339,7 @@ export default function ProductGroupsPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('adminNew.productGroups.fields.icon')}
+                  {<TranslatedText textKey={'adminNew.productGroups.fields.icon'} />}
                 </label>
                 <SearchSelect
                   className="input-base w-full"
@@ -397,7 +399,7 @@ export default function ProductGroupsPage() {
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.productGroups.fields.description')}
+                {<TranslatedText textKey={'adminNew.productGroups.fields.description'} />}
               </label>
               <textarea
                 className="input-base min-h-20 w-full"
@@ -409,7 +411,7 @@ export default function ProductGroupsPage() {
             {/* Trello #100: public-facing settings */}
             <div className="rounded-xl border border-navy-100 bg-sand-50/40 p-3">
               <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-navy-400">
-                {t('adminNew.productGroups.fields.publicSection')}
+                {<TranslatedText textKey={'adminNew.productGroups.fields.publicSection'} />}
               </h4>
               <label className="mb-3 flex items-center gap-2 text-sm text-navy-800">
                 <input
@@ -418,7 +420,7 @@ export default function ProductGroupsPage() {
                   onChange={(e) => setForm({ ...form, is_public: e.target.checked })}
                   className="h-4 w-4 rounded border-navy-300"
                 />
-                {t('adminNew.productGroups.fields.isPublic')}
+                {<TranslatedText textKey={'adminNew.productGroups.fields.isPublic'} />}
               </label>
               <Input
                 label={t('adminNew.productGroups.fields.slug')}
@@ -428,7 +430,7 @@ export default function ProductGroupsPage() {
               />
               <div className="mt-3">
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('adminNew.productGroups.fields.publicDescription')}
+                  {<TranslatedText textKey={'adminNew.productGroups.fields.publicDescription'} />}
                 </label>
                 <textarea
                   className="input-base min-h-20 w-full"
@@ -446,15 +448,15 @@ export default function ProductGroupsPage() {
                 onChange={(e) => setForm({ ...form, active: e.target.checked })}
                 className="h-4 w-4 rounded border-navy-300"
               />
-              {t('adminNew.productGroups.fields.active')}
+              {<TranslatedText textKey={'adminNew.productGroups.fields.active'} />}
             </label>
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createGroup.loading || updateGroup.loading}>
-              {t('adminNew.common.save')}
+              {<TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>

@@ -1,0 +1,435 @@
+{
+  "pages": {
+    "/[locale]/(site)/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/page.js"
+    ],
+    "/[locale]/(site)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/layout.js"
+    ],
+    "/[locale]/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/layout.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
+    ],
+    "/[locale]/admin/afspraken/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/afspraken/page.js"
+    ],
+    "/[locale]/admin/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/layout.js"
+    ],
+    "/[locale]/admin/api-credentials/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/api-credentials/page.js"
+    ],
+    "/[locale]/admin/audit/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/audit/page.js"
+    ],
+    "/[locale]/admin/beheer/dashboard-shortcuts/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/beheer/dashboard-shortcuts/page.js"
+    ],
+    "/[locale]/admin/beheer/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/beheer/page.js"
+    ],
+    "/[locale]/admin/betalingen/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/betalingen/page.js"
+    ],
+    "/[locale]/admin/beveiliging/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/beveiliging/page.js"
+    ],
+    "/[locale]/admin/boekhouding/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/boekhouding/page.js"
+    ],
+    "/[locale]/admin/boten/[id]/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/boten/[id]/[slug]/page.js"
+    ],
+    "/[locale]/admin/boten/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/boten/[id]/page.js"
+    ],
+    "/[locale]/admin/boten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/boten/page.js"
+    ],
+    "/[locale]/admin/bundels/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/bundels/page.js"
+    ],
+    "/[locale]/admin/calculator/history/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/calculator/history/page.js"
+    ],
+    "/[locale]/admin/calculator/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/calculator/page.js"
+    ],
+    "/[locale]/admin/calculator/pricing/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/calculator/pricing/page.js"
+    ],
+    "/[locale]/admin/contracten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/contracten/page.js"
+    ],
+    "/[locale]/admin/stalling/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/stalling/page.js"
+    ],
+    "/[locale]/admin/diensten-prijzen/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/diensten-prijzen/page.js"
+    ],
+    "/[locale]/admin/diensten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/diensten/page.js"
+    ],
+    "/[locale]/admin/documenten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/documenten/page.js"
+    ],
+    "/[locale]/admin/facturen/import/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/facturen/import/page.js"
+    ],
+    "/[locale]/admin/facturen/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/facturen/[id]/page.js"
+    ],
+    "/[locale]/admin/facturen/import/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/facturen/import/[id]/page.js"
+    ],
+    "/[locale]/admin/facturen/nieuw/handmatig/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/facturen/nieuw/handmatig/page.js"
+    ],
+    "/[locale]/admin/facturen/nieuw/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/facturen/nieuw/page.js"
+    ],
+    "/[locale]/admin/facturen/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/facturen/page.js"
+    ],
+    "/[locale]/admin/facturen/templates/editor/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/facturen/templates/editor/page.js"
+    ],
+    "/[locale]/admin/facturen/templates/layout/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/facturen/templates/layout/page.js"
+    ],
+    "/[locale]/admin/facturen/templates/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/facturen/templates/page.js"
+    ],
+    "/[locale]/admin/financieel/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/financieel/page.js"
+    ],
+    "/[locale]/admin/forms/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/forms/[id]/page.js"
+    ],
+    "/[locale]/admin/forms/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/forms/page.js"
+    ],
+    "/[locale]/admin/gebruikers/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/gebruikers/page.js"
+    ],
+    "/[locale]/admin/incidenten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/incidenten/page.js"
+    ],
+    "/[locale]/admin/instellingen/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/instellingen/page.js"
+    ],
+    "/[locale]/admin/kalender/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/kalender/page.js"
+    ],
+    "/[locale]/admin/kassa/dagafsluiting/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/kassa/dagafsluiting/page.js"
+    ],
+    "/[locale]/admin/kassa/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/kassa/page.js"
+    ],
+    "/[locale]/admin/klanten/[id]/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/klanten/[id]/[slug]/page.js"
+    ],
+    "/[locale]/admin/klanten/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/klanten/[id]/page.js"
+    ],
+    "/[locale]/admin/klanten/[id]/timeline/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/klanten/[id]/timeline/page.js"
+    ],
+    "/[locale]/admin/klanten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/klanten/page.js"
+    ],
+    "/[locale]/admin/leveranciers/[id]/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/leveranciers/[id]/[slug]/page.js"
+    ],
+    "/[locale]/admin/leveranciers/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/leveranciers/[id]/page.js"
+    ],
+    "/[locale]/admin/leveranciers/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/leveranciers/page.js"
+    ],
+    "/[locale]/admin/makelaardij/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/makelaardij/page.js"
+    ],
+    "/[locale]/admin/ocr-review/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/ocr-review/page.js"
+    ],
+    "/[locale]/admin/ocr/templates/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/ocr/templates/page.js"
+    ],
+    "/[locale]/admin/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/page.js"
+    ],
+    "/[locale]/admin/planning/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/planning/page.js"
+    ],
+    "/[locale]/admin/product-groepen/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/product-groepen/page.js"
+    ],
+    "/[locale]/admin/product-stats/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/product-stats/page.js"
+    ],
+    "/[locale]/admin/producten/[id]/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/producten/[id]/[slug]/page.js"
+    ],
+    "/[locale]/admin/producten/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/producten/[id]/page.js"
+    ],
+    "/[locale]/admin/producten/nieuw/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/producten/nieuw/page.js"
+    ],
+    "/[locale]/admin/producten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/producten/page.js"
+    ],
+    "/[locale]/admin/rapportages/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/rapportages/page.js"
+    ],
+    "/[locale]/admin/reminders/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/reminders/page.js"
+    ],
+    "/[locale]/admin/scan-logs/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/scan-logs/page.js"
+    ],
+    "/[locale]/admin/stalling/[id]/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/stalling/[id]/[slug]/page.js"
+    ],
+    "/[locale]/admin/stalling/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/stalling/[id]/page.js"
+    ],
+    "/[locale]/admin/sync/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/sync/page.js"
+    ],
+    "/[locale]/admin/systeem/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/systeem/page.js"
+    ],
+    "/[locale]/admin/systeembeheer/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/systeembeheer/page.js"
+    ],
+    "/[locale]/admin/taken/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/taken/page.js"
+    ],
+    "/[locale]/admin/tarieven/makelaardij/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/tarieven/makelaardij/page.js"
+    ],
+    "/[locale]/admin/timeline/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/timeline/page.js"
+    ],
+    "/[locale]/admin/verkopen/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/verkopen/[id]/page.js"
+    ],
+    "/[locale]/admin/verkopen/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/verkopen/page.js"
+    ],
+    "/[locale]/admin/werkorders/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/werkorders/[id]/page.js"
+    ],
+    "/[locale]/admin/werkorders/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/werkorders/page.js"
+    ],
+    "/[locale]/(site)/diensten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/diensten/page.js"
+    ],
+    "/[locale]/(site)/diensten/afspuiten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/diensten/afspuiten/page.js"
+    ],
+    "/[locale]/(site)/diensten/winterstalling/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/diensten/winterstalling/page.js"
+    ],
+    "/[locale]/(site)/diensten/zelf-werken/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/diensten/zelf-werken/page.js"
+    ],
+    "/[locale]/(site)/diensten/weekje-op-wal/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/diensten/weekje-op-wal/page.js"
+    ],
+    "/[locale]/(site)/over-ons/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/over-ons/page.js"
+    ],
+    "/[locale]/(site)/contact/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/contact/page.js"
+    ],
+    "/[locale]/(site)/verkoop/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/verkoop/page.js"
+    ],
+    "/[locale]/(site)/kraanafspraak/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/kraanafspraak/page.js"
+    ],
+    "/[locale]/(site)/faq/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/faq/page.js"
+    ]
+  }
+}

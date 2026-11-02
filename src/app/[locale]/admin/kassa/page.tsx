@@ -1,4 +1,6 @@
 "use client";
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -1239,7 +1241,7 @@ export default function KassaPage() {
                 <span className={selectedCustomer ? "font-medium text-navy-900" : "text-navy-400"}>
                   {selectedCustomer
                     ? selectedCustomer.name
-                    : t("adminNew.kassa.selectCustomer")}
+                    : <TranslatedText textKey={"adminNew.kassa.selectCustomer"} />}
                 </span>
                 <UserPlus className="h-4 w-4 text-marine-600" />
               </button>
@@ -1250,13 +1252,13 @@ export default function KassaPage() {
                 leftIcon={<Plus className="h-4 w-4" />}
                 onClick={() => setShowCustomerModal(true)}
               >
-                {t("adminNew.kassa.newCustomer")}
+                {<TranslatedText textKey={"adminNew.kassa.newCustomer"} />}
               </Button>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs text-navy-400">
-              {t("adminNew.kassa.keyboardHints")}
+              {<TranslatedText textKey={"adminNew.kassa.keyboardHints"} />}
             </p>
             <div className="flex items-center gap-3">
               {/* AI Natural Language Search */}
@@ -1265,8 +1267,7 @@ export default function KassaPage() {
                 onClick={() => { setShowAiSearch(!showAiSearch); if (showAiSearch) setAiResults(null); }}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition ${showAiSearch ? 'bg-marine-600 text-white' : 'border border-marine-200 text-marine-600 hover:bg-marine-50'}`}
               >
-                ✨ AI Zoeken
-              </button>
+                <TranslatedText textKey="siteCopy.0832de2e758aef36" fallbackText={"✨ AI Zoeken"} /></button>
             {/* Trello #80: fast-scan toggle (persisted; sent to scan API). */}
             <button
               type="button"
@@ -1290,7 +1291,7 @@ export default function KassaPage() {
               </span>
               <span className="inline-flex items-center gap-1">
                 <Zap className="h-3.5 w-3.5 text-gold-500" />
-                {t("adminNew.kassa.fastScan")}
+                {<TranslatedText textKey={"adminNew.kassa.fastScan"} />}
               </span>
             </button>
             </div>
@@ -1380,7 +1381,7 @@ export default function KassaPage() {
                 leftIcon={<Zap className="h-4 w-4 text-gold-500" />}
                 onClick={() => searchRef.current?.focus()}
               >
-                {t("adminNew.kassa.quickAdd")}
+                {<TranslatedText textKey={"adminNew.kassa.quickAdd"} />}
               </Button>
               <Button
                 variant="outline"
@@ -1389,7 +1390,7 @@ export default function KassaPage() {
                 disabled={scanning}
                 onClick={() => setShowCamera(true)}
               >
-                {t("adminNew.kassa.scanBarcode")}
+                {<TranslatedText textKey={"adminNew.kassa.scanBarcode"} />}
               </Button>
               <Link href={`/${locale}/admin/producten`}>
                 <Button
@@ -1397,7 +1398,7 @@ export default function KassaPage() {
                   size="sm"
                   leftIcon={<Pencil className="h-4 w-4 text-navy-500" />}
                 >
-                  {t("adminNew.kassa.manageProducts")}
+                  {<TranslatedText textKey={"adminNew.kassa.manageProducts"} />}
                 </Button>
               </Link>
             </div>
@@ -1407,7 +1408,7 @@ export default function KassaPage() {
           <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-navy-100/70 bg-white p-3 shadow-card">
             <span className="hidden items-center gap-1.5 rounded-lg border border-navy-100 px-3 py-2 text-sm text-navy-500 sm:inline-flex">
               <Filter className="h-4 w-4" />
-              {t("adminNew.kassa.filter")}
+              {<TranslatedText textKey={"adminNew.kassa.filter"} />}
             </span>
             <label className="relative ml-auto inline-flex items-center">
               <ArrowDownUp className="pointer-events-none absolute left-3 h-4 w-4 text-navy-400" />
@@ -1436,9 +1437,9 @@ export default function KassaPage() {
             <div className="flex items-center gap-2 rounded-xl border border-marine-200/80 bg-gradient-to-r from-marine-50 to-white px-4 py-3 text-sm text-marine-800">
               <Star className="h-4 w-4 text-marine-500" />
               <span className="font-semibold">
-                {t("adminNew.kassa.smartMatch")}:
+                {<TranslatedText textKey={"adminNew.kassa.smartMatch"} />}:
               </span>
-              {matchingRule.range_from_cm}–{matchingRule.range_to_cm} cm ·{" "}
+              {matchingRule.range_from_cm}–{matchingRule.range_to_cm} <TranslatedText textKey="siteCopy.868576369eae652b" fallbackText={" cm ·"} />{" "}
               {formatCurrency(productPriceInclEuros(matchingRule), localeTag)}
             </div>
           ) : null}
@@ -1523,11 +1524,11 @@ export default function KassaPage() {
           <div className="min-w-0 rounded-2xl border border-navy-100/70 bg-sand-50/60 p-3 sm:p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h2 className="min-w-0 break-words text-lg font-semibold text-navy-900">
-                {t("adminNew.kassa.resultsTitle", { category: categoryLabel })}
+                {<TranslatedText textKey={"adminNew.kassa.resultsTitle"} vars={{ category: categoryLabel }} />}
               </h2>
               {!productsQuery.loading ? (
                 <span className="rounded-full border border-marine-100 bg-white px-3 py-1 text-xs font-semibold text-marine-700">
-                  {t("adminNew.kassa.matchCount", { count: resultCount })}
+                  {<TranslatedText textKey={"adminNew.kassa.matchCount"} vars={{ count: resultCount }} />}
                 </span>
               ) : null}
             </div>
@@ -1653,7 +1654,7 @@ export default function KassaPage() {
             <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-navy-900">
                 <Star className="h-4 w-4 text-gold-500" />
-                {t("adminNew.kassa.mostChosen")}
+                {<TranslatedText textKey={"adminNew.kassa.mostChosen"} />}
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {mostChosen.map((product) => (
@@ -1718,13 +1719,13 @@ export default function KassaPage() {
             <div className="mb-3 flex items-center justify-between gap-2">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-navy-900">
                 <Receipt className="h-4 w-4 text-marine-600" />
-                {t("adminNew.kassa.recentSales")}
+                {<TranslatedText textKey={"adminNew.kassa.recentSales"} />}
               </h3>
               <Link
                 href={`/${locale}/admin/verkopen`}
                 className="text-xs font-semibold text-marine-700 hover:text-marine-900"
               >
-                {t("adminNew.kassa.viewAllSales")}
+                {<TranslatedText textKey={"adminNew.kassa.viewAllSales"} />}
               </Link>
             </div>
             {recentSales.loading ? (
@@ -1778,7 +1779,7 @@ export default function KassaPage() {
                               }}
                               className="rounded px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-50"
                             >
-                              {t("adminNew.kassa.refund")}
+                              {<TranslatedText textKey={"adminNew.kassa.refund"} />}
                             </button>
                           ) : null}
                         </div>
@@ -1807,7 +1808,7 @@ export default function KassaPage() {
               <div className="flex items-center gap-2">
                 <ShoppingCart className="h-4 w-4 text-marine-600" />
                 <h3 className="text-sm font-semibold text-navy-900">
-                  {t("adminNew.kassa.cart")}
+                  {<TranslatedText textKey={"adminNew.kassa.cart"} />}
                 </h3>
                 <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-marine-500 px-1.5 text-xs font-bold text-white">
                   {cart.length}
@@ -1817,13 +1818,13 @@ export default function KassaPage() {
 
             {prefillLocked ? (
               <div className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-800">
-                {t("adminNew.stalling.invoiceLabels.deposit")} · {t("adminNew.stalling.toasts.kassaOpened")}
+                {<TranslatedText textKey={"adminNew.stalling.invoiceLabels.deposit"} />} · {<TranslatedText textKey={"adminNew.stalling.toasts.kassaOpened"} />}
               </div>
             ) : null}
             <div className="max-h-[340px] space-y-2 overflow-y-auto scrollbar-thin p-3">
               {cart.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-3 py-8 text-center text-sm text-navy-500">
-                  {t("adminNew.kassa.emptyCartMessage")}
+                  {<TranslatedText textKey={"adminNew.kassa.emptyCartMessage"} />}
                 </div>
               ) : (
                 cart.map((item) => (
@@ -1907,7 +1908,7 @@ export default function KassaPage() {
               />
               <div className="mt-1 flex items-center justify-between border-t border-navy-100 pt-2">
                 <span className="text-base font-bold text-navy-900">
-                  {t("adminNew.kassa.total")}
+                  {<TranslatedText textKey={"adminNew.kassa.total"} />}
                 </span>
                 <span className="text-xl font-bold text-navy-900">
                   {money(totalCents)}
@@ -1926,7 +1927,7 @@ export default function KassaPage() {
                   setShowNoteModal(true);
                 }}
               >
-                {t("adminNew.kassa.addNote")}
+                {<TranslatedText textKey={"adminNew.kassa.addNote"} />}
               </Button>
               <Button
                 variant="ghost"
@@ -1939,7 +1940,7 @@ export default function KassaPage() {
                 }}
                 className="text-rose-600 hover:bg-rose-50"
               >
-                {t("adminNew.kassa.clearCart")}
+                {<TranslatedText textKey={"adminNew.kassa.clearCart"} />}
               </Button>
             </div>
           </div>
@@ -1948,7 +1949,7 @@ export default function KassaPage() {
           <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-navy-900">
               <UserPlus className="h-4 w-4 text-marine-600" />
-              {t("adminNew.kassa.customer")}
+              {<TranslatedText textKey={"adminNew.kassa.customer"} />}
             </h3>
             <button
               type="button"
@@ -1958,7 +1959,7 @@ export default function KassaPage() {
               <span className={selectedCustomer ? "text-navy-900" : "text-navy-400"}>
                 {selectedCustomer
                   ? `${selectedCustomer.name}${selectedCustomer.email ? ` · ${selectedCustomer.email}` : ""}`
-                  : t("adminNew.kassa.selectCustomer")}
+                  : <TranslatedText textKey={"adminNew.kassa.selectCustomer"} />}
               </span>
               <ScanLine className="h-4 w-4 rotate-90 text-navy-300" />
             </button>
@@ -1969,33 +1970,33 @@ export default function KassaPage() {
                 className="inline-flex items-center gap-1.5 font-semibold text-marine-700 hover:text-marine-900"
               >
                 <Plus className="h-4 w-4" />
-                {t("adminNew.kassa.newCustomer")}
+                {<TranslatedText textKey={"adminNew.kassa.newCustomer"} />}
               </button>
               {customerId ? (
                 <Link
                   href={adminRecordHref(locale, 'klanten', selectedCustomer ?? { id: customerId })}
                   className="inline-flex items-center gap-1 font-semibold text-navy-500 hover:text-navy-800"
                 >
-                  {t("adminNew.kassa.viewCustomer")}
+                  {<TranslatedText textKey={"adminNew.kassa.viewCustomer"} />}
                 </Link>
               ) : (
                 <Link
                   href={`/${locale}/admin/klanten`}
                   className="inline-flex items-center gap-1 font-semibold text-navy-500 hover:text-navy-800"
                 >
-                  {t("adminNew.kassa.allCustomers")}
+                  {<TranslatedText textKey={"adminNew.kassa.allCustomers"} />}
                 </Link>
               )}
             </div>
             <p className="mt-2 text-xs leading-relaxed text-navy-400">
-              {t("adminNew.kassa.customerHint")}
+              {<TranslatedText textKey={"adminNew.kassa.customerHint"} />}
             </p>
           </div>
 
           {/* Payment methods */}
           <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
             <h3 className="mb-3 text-sm font-semibold text-navy-900">
-              {t("adminNew.kassa.paymentMethodTitle")}
+              {<TranslatedText textKey={"adminNew.kassa.paymentMethodTitle"} />}
             </h3>
             <div className="grid grid-cols-2 gap-2">
               {PAYMENT_BUTTONS.map((btn) => {
@@ -2029,7 +2030,7 @@ export default function KassaPage() {
                 onClick={() => setCheckoutConfirm("qr")}
                 disabled={!canCheckout || (checkout.loading)}
               >
-                {t("adminNew.kassa.qrPayment")}
+                {<TranslatedText textKey={"adminNew.kassa.qrPayment"} />}
               </Button>
               <Button
                 variant="outline"
@@ -2039,8 +2040,8 @@ export default function KassaPage() {
                 disabled={!canCheckout || (quote.loading)}
               >
                 {quote.loading
-                  ? t("adminNew.kassa.calculating")
-                  : t("adminNew.kassa.createQuote")}
+                  ? <TranslatedText textKey={"adminNew.kassa.calculating"} />
+                  : <TranslatedText textKey={"adminNew.kassa.createQuote"} />}
               </Button>
             </div>
           </div>
@@ -2059,7 +2060,7 @@ export default function KassaPage() {
                 }}
                 className="h-4 w-4 rounded border-navy-300"
               />
-              {t("adminNew.kassa.adjustTotal")}
+              {<TranslatedText textKey={"adminNew.kassa.adjustTotal"} />}
             </label>
             {adjustEnabled ? (
               <div className="mt-3 space-y-2">
@@ -2094,8 +2095,8 @@ export default function KassaPage() {
             <span className="flex items-center gap-2 text-base">
               <CreditCard className="h-5 w-5" />
               {checkout.loading
-                ? t("adminNew.kassa.processing")
-                : t("adminNew.kassa.payNow")}
+                ? <TranslatedText textKey={"adminNew.kassa.processing"} />
+                : <TranslatedText textKey={"adminNew.kassa.payNow"} />}
             </span>
             <span className="text-xl font-bold">{money(totalCents)}</span>
           </button>
@@ -2112,7 +2113,7 @@ export default function KassaPage() {
         >
           <span className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
-            {t("adminNew.kassa.cart")} ({cart.length})
+            {<TranslatedText textKey={"adminNew.kassa.cart"} />} ({cart.length})
           </span>
           <span className="text-lg font-bold tabular-nums">{money(totalCents)}</span>
         </button>
@@ -2136,7 +2137,7 @@ export default function KassaPage() {
         </AdminModalBody>
         <AdminModalFooter>
           <Button variant="ghost" onClick={() => setShowNoteModal(false)}>
-            {t("adminNew.common.cancel")}
+            {<TranslatedText textKey={"adminNew.common.cancel"} />}
           </Button>
           <Button
             variant="gold"
@@ -2148,7 +2149,7 @@ export default function KassaPage() {
               }
             }}
           >
-            {t("adminNew.common.save")}
+            {<TranslatedText textKey={"adminNew.common.save"} />}
           </Button>
         </AdminModalFooter>
       </Modal>
@@ -2174,11 +2175,11 @@ export default function KassaPage() {
                   )
                 }
               >
-                <option value="pin">PIN</option>
+                <option value="pin"><TranslatedText textKey="siteCopy.f7070f4de4f42958" fallbackText={"PIN"} inline={false} /></option>
                 <option value="cash">{t("adminNew.kassa.payment.cash")}</option>
-                <option value="ideal">iDEAL</option>
+                <option value="ideal"><TranslatedText textKey="siteCopy.a0960033ab977465" fallbackText={"iDEAL"} inline={false} /></option>
                 <option value="creditcard">{t("adminNew.kassa.payment.creditcard")}</option>
-                <option value="bancontact">Bancontact</option>
+                <option value="bancontact"><TranslatedText textKey="siteCopy.2d68844a6caaf573" fallbackText={"Bancontact"} inline={false} /></option>
                 <option value="banktransfer">{t("adminNew.kassa.payment.banktransfer")}</option>
               </SearchSelect>
               <Input
@@ -2199,10 +2200,10 @@ export default function KassaPage() {
         </AdminModalBody>
         <AdminModalFooter>
           <Button variant="ghost" onClick={() => setShowSplitModal(false)}>
-            {t("adminNew.common.cancel")}
+            {<TranslatedText textKey={"adminNew.common.cancel"} />}
           </Button>
           <Button disabled={!canCheckout} variant="gold" onClick={() => setCheckoutConfirm("split")}>
-            {t("adminNew.kassa.checkout")}
+            {<TranslatedText textKey={"adminNew.kassa.checkout"} />}
           </Button>
         </AdminModalFooter>
       </Modal>
@@ -2297,7 +2298,7 @@ export default function KassaPage() {
               <div className="text-center">
                 {amountLabel && !paid ? (
                   <div className="mb-3 text-lg font-semibold text-navy-900">
-                    {t("adminNew.kassa.qrScanToPay", { amount: amountLabel })}
+                    {<TranslatedText textKey={"adminNew.kassa.qrScanToPay"} vars={{ amount: amountLabel }} />}
                   </div>
                 ) : null}
                 {qrStarting && !qrSession ? (
@@ -2308,7 +2309,7 @@ export default function KassaPage() {
                   <div className="py-6">
                     <Check className="mx-auto h-14 w-14 rounded-full bg-emerald-50 p-3 text-emerald-600" />
                     <div className="mt-3 text-lg font-semibold text-navy-900">
-                      {t("adminNew.kassa.qrPaid")}
+                      {<TranslatedText textKey={"adminNew.kassa.qrPaid"} />}
                     </div>
                     {qrSession?.invoice_id ? (
                       <Link
@@ -2327,7 +2328,7 @@ export default function KassaPage() {
                       <QrCode className="h-7 w-7" />
                     </div>
                     <div className="mt-3 text-lg font-semibold text-navy-900">
-                      {expired ? t("adminNew.kassa.qrExpired") : t("adminNew.kassa.qrFailed")}
+                      {expired ? <TranslatedText textKey={"adminNew.kassa.qrExpired"} /> : <TranslatedText textKey={"adminNew.kassa.qrFailed"} />}
                     </div>
                     <div className="mt-4 flex justify-center">
                       <Button
@@ -2336,7 +2337,7 @@ export default function KassaPage() {
                         leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
                         onClick={() => void regenerate()}
                       >
-                        {t("adminNew.kassa.qrRegenerate")}
+                        {<TranslatedText textKey={"adminNew.kassa.qrRegenerate"} />}
                       </Button>
                     </div>
                   </div>
@@ -2351,7 +2352,7 @@ export default function KassaPage() {
                     <div className="mt-3 flex items-center justify-center gap-3">
                       <div className="inline-flex items-center gap-2 rounded-full bg-marine-50 px-3 py-1 text-xs font-semibold text-marine-700">
                         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-marine-500" />
-                        {t(`adminNew.kassa.${statusKey}`)}
+                        {<TranslatedText textKey={`adminNew.kassa.${statusKey}`} />}
                       </div>
                       {qrSecondsLeft !== null && qrSecondsLeft > 0 ? (
                         <div className={`text-xs font-mono font-semibold tabular-nums ${qrSecondsLeft < 60 ? 'text-rose-600' : 'text-navy-400'}`}>
@@ -2366,8 +2367,7 @@ export default function KassaPage() {
                         <Mail className="h-3.5 w-3.5 shrink-0" />
                         <span className="truncate">{qrSession.guest_email}</span>
                         <Button size="sm" variant="outline" className="ml-1 h-6 px-2 text-[11px]" onClick={() => void sendEmail(qrEmailInput || qrSession.guest_email!)}>
-                          Verstuur
-                        </Button>
+                          <TranslatedText textKey="siteCopy.7e2c65b0a66ac754" fallbackText={"Verstuur"} /></Button>
                       </div>
                     ) : null}
 
@@ -2384,8 +2384,7 @@ export default function KassaPage() {
                           autoFocus
                         />
                         <Button size="sm" variant="gold" onClick={() => void sendEmail(qrEmailInput)} disabled={!qrEmailInput.trim()}>
-                          Stuur
-                        </Button>
+                          <TranslatedText textKey="siteCopy.73fb3ee78d68bdc3" fallbackText={"Stuur"} /></Button>
                         <Button size="sm" variant="ghost" onClick={() => setShowQrEmailInput(false)}>✕</Button>
                       </div>
                     ) : null}
@@ -2403,8 +2402,7 @@ export default function KassaPage() {
                           autoFocus
                         />
                         <Button size="sm" variant="gold" onClick={() => void sendWhatsApp(qrPhoneInput)} disabled={!qrPhoneInput.trim()}>
-                          Stuur
-                        </Button>
+                          <TranslatedText textKey="siteCopy.73fb3ee78d68bdc3" fallbackText={"Stuur"} /></Button>
                         <Button size="sm" variant="ghost" onClick={() => setShowQrPhoneInput(false)}>✕</Button>
                       </div>
                     ) : null}
@@ -2420,8 +2418,8 @@ export default function KassaPage() {
                         }}
                       >
                         {qrCopied
-                          ? t("adminNew.kassa.qrCopied")
-                          : t("adminNew.kassa.qrCopy")}
+                          ? <TranslatedText textKey={"adminNew.kassa.qrCopied"} />
+                          : <TranslatedText textKey={"adminNew.kassa.qrCopy"} />}
                       </Button>
                       <a
                         href={payUrl}
@@ -2433,7 +2431,7 @@ export default function KassaPage() {
                           variant="outline"
                           leftIcon={<ExternalLink className="h-3.5 w-3.5" />}
                         >
-                          {t("adminNew.kassa.qrOpen")}
+                          {<TranslatedText textKey={"adminNew.kassa.qrOpen"} />}
                         </Button>
                       </a>
                       <Button
@@ -2442,7 +2440,7 @@ export default function KassaPage() {
                         leftIcon={<MessageCircle className="h-3.5 w-3.5" />}
                         onClick={() => showQrPhoneInput ? void sendWhatsApp(qrPhoneInput) : void sendWhatsApp()}
                       >
-                        {t("adminNew.kassa.qrWhatsapp")}
+                        {<TranslatedText textKey={"adminNew.kassa.qrWhatsapp"} />}
                       </Button>
                       <Button
                         size="sm"
@@ -2450,7 +2448,7 @@ export default function KassaPage() {
                         leftIcon={<Mail className="h-3.5 w-3.5" />}
                         onClick={() => showQrEmailInput ? void sendEmail(qrEmailInput) : void sendEmail()}
                       >
-                        {t("adminNew.kassa.qrSendEmail")}
+                        {<TranslatedText textKey={"adminNew.kassa.qrSendEmail"} />}
                       </Button>
                       <Button
                         size="sm"
@@ -2458,7 +2456,7 @@ export default function KassaPage() {
                         leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
                         onClick={() => void regenerate()}
                       >
-                        {t("adminNew.kassa.qrRegenerate")}
+                        {<TranslatedText textKey={"adminNew.kassa.qrRegenerate"} />}
                       </Button>
                     </div>
                   </>
@@ -2487,11 +2485,11 @@ export default function KassaPage() {
                 closeQrModal();
               }}
             >
-              {t("adminNew.kassa.qrCancel")}
+              {<TranslatedText textKey={"adminNew.kassa.qrCancel"} />}
             </Button>
           ) : null}
           <Button variant="gold" onClick={closeQrModal}>
-            {t("adminNew.common.close")}
+            {<TranslatedText textKey={"adminNew.common.close"} />}
           </Button>
         </AdminModalFooter>
       </Modal>
@@ -2596,7 +2594,7 @@ export default function KassaPage() {
             />
             <div>
               <label className="mb-1 block text-sm font-medium text-navy-700">
-                {t("adminNew.kassa.customerNotes")}
+                {<TranslatedText textKey={"adminNew.kassa.customerNotes"} />}
               </label>
               <textarea
                 value={newCustomer.notes}
@@ -2608,7 +2606,7 @@ export default function KassaPage() {
                 placeholder={t("adminNew.kassa.customerNotesPlaceholder")}
               />
             </div>
-            <p className="text-xs text-navy-400">{t("adminNew.kassa.addressHint")}</p>
+            <p className="text-xs text-navy-400">{<TranslatedText textKey={"adminNew.kassa.addressHint"} />}</p>
           </AdminModalBody>
           <AdminModalFooter>
             <Button
@@ -2616,7 +2614,7 @@ export default function KassaPage() {
               variant="ghost"
               onClick={() => setShowCustomerModal(false)}
             >
-              {t("adminNew.common.cancel")}
+              {<TranslatedText textKey={"adminNew.common.cancel"} />}
             </Button>
             <Button
               type="submit"
@@ -2625,8 +2623,8 @@ export default function KassaPage() {
               disabled={createCustomer.loading}
             >
               {createCustomer.loading
-                ? t("adminNew.kassa.creating")
-                : t("adminNew.kassa.create")}
+                ? <TranslatedText textKey={"adminNew.kassa.creating"} />
+                : <TranslatedText textKey={"adminNew.kassa.create"} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -2709,10 +2707,10 @@ export default function KassaPage() {
             </AdminModalBody>
             <AdminModalFooter>
               <Button disabled={!canWriteCustomer} type="button" variant="ghost" onClick={() => setEditingCustomerId(null)}>
-                {t("adminNew.common.cancel")}
+                {<TranslatedText textKey={"adminNew.common.cancel"} />}
               </Button>
               <Button type="submit" variant="primary" disabled={updateCustomer.loading}>
-                {t("adminNew.common.save")}
+                {<TranslatedText textKey={"adminNew.common.save"} />}
               </Button>
             </AdminModalFooter>
           </form>
@@ -2740,11 +2738,11 @@ export default function KassaPage() {
                   }}
                   className="flex w-full items-center px-3 py-2 text-left text-sm text-navy-500 hover:bg-sand-50"
                 >
-                  {t("adminNew.kassa.noCustomer")}
+                  {<TranslatedText textKey={"adminNew.kassa.noCustomer"} />}
                 </button>
                 {pickerResultsQuery.loading ? (
                   <div className="px-3 py-4 text-center text-sm text-navy-400">
-                    {t("adminNew.common.loading")}…
+                    {<TranslatedText textKey={"adminNew.common.loading"} />}…
                   </div>
                 ) : (pickerResultsQuery.data?.data ?? []).map((c) => (
                   <div key={c.id} className={cn("flex items-center", c.id === customerId && "bg-marine-50")}>
@@ -2797,7 +2795,7 @@ export default function KassaPage() {
             <AdminModalFooter>
               <Link href={`/${locale}/admin/klanten`} className="mr-auto">
                 <Button type="button" variant="ghost">
-                  {t("adminNew.kassa.allCustomers")}
+                  {<TranslatedText textKey={"adminNew.kassa.allCustomers"} />}
                 </Button>
               </Link>
               <Button disabled={!canWriteCustomer}
@@ -2809,7 +2807,7 @@ export default function KassaPage() {
                   setShowCustomerModal(true);
                 }}
               >
-                {t("adminNew.kassa.newCustomer")}
+                {<TranslatedText textKey={"adminNew.kassa.newCustomer"} />}
               </Button>
             </AdminModalFooter>
           </>
@@ -2855,12 +2853,12 @@ export default function KassaPage() {
             })();
           }}
         >
-          <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.kassa.refundTitle')}</h2>
-          <p className="mt-1 text-sm text-navy-500">{t('adminNew.kassa.refundSubtitle')}</p>
+          <h2 className="text-lg font-semibold text-navy-900">{<TranslatedText textKey={'adminNew.kassa.refundTitle'} />}</h2>
+          <p className="mt-1 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.kassa.refundSubtitle'} />}</p>
           <div className="mt-4 space-y-4">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.kassa.refundMethod')}
+                {<TranslatedText textKey={'adminNew.kassa.refundMethod'} />}
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {(['pin', 'cash', 'banktransfer'] as const).map((m) => (
@@ -2882,7 +2880,7 @@ export default function KassaPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.kassa.refundReason')}
+                {<TranslatedText textKey={'adminNew.kassa.refundReason'} />}
               </label>
               <textarea
                 className="input-base min-h-24"
@@ -2895,14 +2893,14 @@ export default function KassaPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button disabled={!canRefund} type="button" variant="ghost" onClick={() => setRefundSaleId(null)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button
               type="submit"
               variant="primary"
               disabled={refundSaleMutation.loading || !refundReason.trim()}
             >
-              {t('adminNew.kassa.refundConfirm')}
+              {<TranslatedText textKey={'adminNew.kassa.refundConfirm'} />}
             </Button>
           </div>
         </form>

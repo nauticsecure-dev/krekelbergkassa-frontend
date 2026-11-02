@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
 import { Activity } from 'lucide-react';
 import { AdminSectionCard } from './AdminUi';
@@ -19,7 +21,7 @@ export function JourneyOpportunityCard() {
   }), { immediate: allowed });
   if (!allowed) return null;
   return <AdminSectionCard title={t('journey.lost')} description={t('journey.intents.crane_booking')} icon={Activity}>
-    {data.loading ? <p role="status" className="text-sm">{t('journey.loading')}</p> : data.error ? <p role="alert" className="text-sm text-rose-700">{data.error}</p> : <p className="text-sm">{data.data?.summary.failed_requests ?? 0} {t('journey.failedRequests')} · {data.data?.summary.abandoned_sessions ?? 0} {t('journey.abandonedSessions')}</p>}
-    <Link href={`/${locale}/admin/audit`} className="mt-3 inline-block text-sm font-semibold text-marine-700 underline">{t('journey.title')} →</Link>
+    {data.loading ? <p role="status" className="text-sm">{<TranslatedText textKey={'journey.loading'} />}</p> : data.error ? <p role="alert" className="text-sm text-rose-700">{data.error}</p> : <p className="text-sm">{data.data?.summary.failed_requests ?? 0} {<TranslatedText textKey={'journey.failedRequests'} />} · {data.data?.summary.abandoned_sessions ?? 0} {<TranslatedText textKey={'journey.abandonedSessions'} />}</p>}
+    <Link href={`/${locale}/admin/audit`} className="mt-3 inline-block text-sm font-semibold text-marine-700 underline">{<TranslatedText textKey={'journey.title'} />} →</Link>
   </AdminSectionCard>;
 }

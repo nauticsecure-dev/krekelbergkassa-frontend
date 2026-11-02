@@ -135,11 +135,14 @@ test('expired image upload retains its selected file and metadata for retry', as
   let uploads = 0;
   await page.route('**/admin/cms/media-blocks/*/upload', route => {
     uploads++;
+    expect(route.request().headers().authorization).toBe(`Bearer ${expired ? 'cms-fixture' : 'renewed-image-session'}`);
+    expect(route.request().headers()['content-type']).toContain('multipart/form-data; boundary=');
+    expect(route.request().postDataBuffer()?.toString()).toContain('name="image"');
     return route.fulfill({ status: expired ? 401 : 200, json: { image_url: '/img/krek/werf-hero.webp' } });
   });
   expect((await page.goto('/en'))?.status()).toBe(200);
   await page.getByRole('button', { name: cms.enterEdit, exact: true }).click();
-  await page.locator('[data-cms-block="home.hero.image"] button').click();
+  await page.locator('[data-cms-block="home.contact.image"] button').click();
   const dialog = page.locator('[role="dialog"]');
   await dialog.locator('input[type=file]').first().setInputFiles('public/img/krek/werf-hero.webp');
   const alt = dialog.getByRole('textbox', { name: `${cms.altText} EN`, exact: true });

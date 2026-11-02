@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -188,21 +190,21 @@ export default function InvoiceImportReviewPage() {
           <div className="flex gap-2">
             <Link href={`/${locale}/admin/facturen/import`}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                {t('adminNew.common.back')}
+                {<TranslatedText textKey={'adminNew.common.back'} />}
               </Button>
             </Link>
             <Link href={`/${locale}/admin/facturen/templates/editor?importId=${id}`}>
               <Button variant="outline" size="sm" leftIcon={<ScanText className="h-4 w-4" />}>
-                {t('adminNew.invoiceImports.reviewScreen.tagFields')}
+                {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.tagFields'} />}
               </Button>
             </Link>
             {open ? (
               <>
                 <Button variant="gold" size="sm" leftIcon={<CheckCircle2 className="h-4 w-4" />} onClick={() => setApproveOpen(true)}>
-                  {t('adminNew.invoiceImports.approve')}
+                  {<TranslatedText textKey={'adminNew.invoiceImports.approve'} />}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-rose-600" leftIcon={<XCircle className="h-4 w-4" />} onClick={() => setRejectOpen(true)}>
-                  {t('adminNew.invoiceImports.reject')}
+                  {<TranslatedText textKey={'adminNew.invoiceImports.reject'} />}
                 </Button>
               </>
             ) : null}
@@ -247,13 +249,13 @@ export default function InvoiceImportReviewPage() {
           <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.document')} icon={FileText}>
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <Button variant="outline" size="sm" leftIcon={<ZoomOut className="h-3.5 w-3.5" />} onClick={() => setZoom((z) => Math.max(50, z - 15))}>
-                {t('adminNew.invoiceImports.reviewScreen.zoomOut')}
+                {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.zoomOut'} />}
               </Button>
               <Button variant="outline" size="sm" leftIcon={<ZoomIn className="h-3.5 w-3.5" />} onClick={() => setZoom((z) => Math.min(200, z + 15))}>
-                {t('adminNew.invoiceImports.reviewScreen.zoomIn')}
+                {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.zoomIn'} />}
               </Button>
               <Button variant="outline" size="sm" leftIcon={<RotateCw className="h-3.5 w-3.5" />} onClick={() => setRotation((r) => (r + 90) % 360)}>
-                {t('adminNew.invoiceImports.reviewScreen.rotate')}
+                {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.rotate'} />}
               </Button>
               <span className="ml-auto text-xs font-semibold text-navy-500">{zoom}%</span>
             </div>
@@ -274,13 +276,13 @@ export default function InvoiceImportReviewPage() {
                 />
               </div>
             ) : (
-              <p className="text-sm text-navy-500">{t('adminNew.invoiceImports.reviewScreen.noDocument')}</p>
+              <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.noDocument'} />}</p>
             )}
             <div className="mt-3 flex justify-between gap-2">
               {prevId ? (
                 <Link href={`/${locale}/admin/facturen/import/${prevId}`}>
                   <Button variant="ghost" size="sm" leftIcon={<ChevronLeft className="h-4 w-4" />}>
-                    {t('adminNew.invoiceImports.reviewScreen.previous')}
+                    {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.previous'} />}
                   </Button>
                 </Link>
               ) : (
@@ -289,7 +291,7 @@ export default function InvoiceImportReviewPage() {
               {nextId ? (
                 <Link href={`/${locale}/admin/facturen/import/${nextId}`}>
                   <Button variant="ghost" size="sm" rightIcon={<ChevronRight className="h-4 w-4" />}>
-                    {t('adminNew.invoiceImports.reviewScreen.next')}
+                    {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.next'} />}
                   </Button>
                 </Link>
               ) : null}
@@ -318,7 +320,7 @@ export default function InvoiceImportReviewPage() {
                       />
                       {edited !== undefined && edited !== original ? (
                         <p className="mt-0.5 text-xs text-amber-600">
-                          {t('adminNew.invoiceImports.reviewScreen.corrected', { defaultValue: 'Gecorrigeerd' })} — origineel: <span className="line-through">{original || '—'}</span>
+                          {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.corrected'} vars={{ defaultValue: 'Gecorrigeerd' }} />} <TranslatedText textKey="siteCopy.3e010e03eba66f9c" fallbackText={" — origineel: "} /><span className="line-through">{original || '—'}</span>
                         </p>
                       ) : null}
                     </div>
@@ -333,14 +335,14 @@ export default function InvoiceImportReviewPage() {
                     disabled={updateM.loading}
                     onClick={() => void updateM.mutate(editedFields).then(() => imp.refetch())}
                   >
-                    {t('adminNew.invoiceImports.reviewScreen.saveCorrections', { defaultValue: 'Correcties opslaan' })}
+                    {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.saveCorrections'} vars={{ defaultValue: 'Correcties opslaan' }} />}
                   </Button>
                 </div>
               ) : null}
               {!hasSupplier ? (
                 <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-marine-200 bg-marine-50/60 px-3 py-2.5">
                   <span className="text-sm text-navy-700">
-                    {t('adminNew.invoiceImports.reviewScreen.noSupplierLinked')}
+                    {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.noSupplierLinked'} />}
                   </span>
                   <Button
                     variant="outline"
@@ -356,7 +358,7 @@ export default function InvoiceImportReviewPage() {
                       setSupplierOpen(true);
                     }}
                   >
-                    {t('adminNew.invoiceImports.reviewScreen.createSupplier')}
+                    {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.createSupplier'} />}
                   </Button>
                 </div>
               ) : null}
@@ -364,7 +366,7 @@ export default function InvoiceImportReviewPage() {
               {!data.customer_id ? (
                 <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/60 px-3 py-2.5">
                   <span className="text-sm text-navy-700">
-                    {t('adminNew.invoiceImports.reviewScreen.noCustomerLinked', { defaultValue: 'Geen klant gekoppeld' })}
+                    {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.noCustomerLinked'} vars={{ defaultValue: 'Geen klant gekoppeld' }} />}
                   </span>
                   <Button
                     variant="outline"
@@ -383,7 +385,7 @@ export default function InvoiceImportReviewPage() {
                       }
                     })()}
                   >
-                    {t('adminNew.invoiceImports.reviewScreen.createCustomer', { defaultValue: 'Klant aanmaken' })}
+                    {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.createCustomer'} vars={{ defaultValue: 'Klant aanmaken' }} />}
                   </Button>
                 </div>
               ) : null}
@@ -442,8 +444,7 @@ export default function InvoiceImportReviewPage() {
                                 setLinkWorkbonOpen(true);
                               }}
                             >
-                              Koppelen
-                            </Button>
+                              <TranslatedText textKey="siteCopy.59ca1fc370f21893" fallbackText={"Koppelen"} /></Button>
                           ) : null}
                         </div>
                       </li>
@@ -457,8 +458,8 @@ export default function InvoiceImportReviewPage() {
             {open ? (
               <div className="flex items-center justify-between rounded-xl border border-navy-100 bg-white px-4 py-3">
                 <div>
-                  <p className="text-sm font-semibold text-navy-800">Doorbelasten aan klant</p>
-                  <p className="text-xs text-navy-400">Maakt een klantfactuur aan bij goedkeuring</p>
+                  <p className="text-sm font-semibold text-navy-800"><TranslatedText textKey="siteCopy.86bc4f5ec4a725f9" fallbackText={"Doorbelasten aan klant"} /></p>
+                  <p className="text-xs text-navy-400"><TranslatedText textKey="siteCopy.30bab356d206ff27" fallbackText={"Maakt een klantfactuur aan bij goedkeuring"} /></p>
                 </div>
                 <button
                   type="button"
@@ -490,9 +491,9 @@ export default function InvoiceImportReviewPage() {
                         ) : null}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-3 text-xs text-navy-500">
-                        {str(s, 'ledger_account') ? <span>Rekening: <span className="font-medium text-navy-700">{str(s, 'ledger_account')}</span></span> : null}
-                        {str(s, 'cost_center') ? <span>Kostenpost: <span className="font-medium text-navy-700">{str(s, 'cost_center')}</span></span> : null}
-                        {str(s, 'vat_code') ? <span>BTW: <span className="font-medium text-navy-700">{str(s, 'vat_code')}</span></span> : null}
+                        {str(s, 'ledger_account') ? <span><TranslatedText textKey="siteCopy.198c9eef2cc9e8f5" fallbackText={"Rekening: "} /><span className="font-medium text-navy-700">{str(s, 'ledger_account')}</span></span> : null}
+                        {str(s, 'cost_center') ? <span><TranslatedText textKey="siteCopy.48121a9942b3b934" fallbackText={"Kostenpost: "} /><span className="font-medium text-navy-700">{str(s, 'cost_center')}</span></span> : null}
+                        {str(s, 'vat_code') ? <span><TranslatedText textKey="siteCopy.56e9238d9de56f5e" fallbackText={"BTW: "} /><span className="font-medium text-navy-700">{str(s, 'vat_code')}</span></span> : null}
                       </div>
                     </li>
                   ))}
@@ -505,15 +506,15 @@ export default function InvoiceImportReviewPage() {
         <AdminSectionCard title={t('adminNew.invoiceImports.reviewScreen.lineItems')} icon={FileText} className="mt-5">
           <AdminTableCard>
             {lineItems.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-navy-500">{t('adminNew.invoiceImports.reviewScreen.noLineItems')}</p>
+              <p className="px-4 py-6 text-center text-sm text-navy-500">{<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.noLineItems'} />}</p>
             ) : (
               <AdminTable minWidth={680}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.reviewScreen.description')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.reviewScreen.qty')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.reviewScreen.unitPrice')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.reviewScreen.lineTotal')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.description'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.qty'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.unitPrice'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.lineTotal'} />}</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
                 <tbody>
@@ -576,10 +577,10 @@ export default function InvoiceImportReviewPage() {
                 <AdminTable minWidth={680}>
                   <AdminTableHead>
                     <tr>
-                      <AdminTableHeaderCell>Omschrijving</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>Intern product</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>Productgroep</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>Match score</AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.63cc24f464a02cfc" fallbackText={"Omschrijving"} /></AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.67105f7fb5334407" fallbackText={"Intern product"} /></AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.08ebec0151c37060" fallbackText={"Productgroep"} /></AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.1d4dd44b21eaa507" fallbackText={"Match score"} /></AdminTableHeaderCell>
                     </tr>
                   </AdminTableHead>
                   <tbody>
@@ -686,10 +687,10 @@ export default function InvoiceImportReviewPage() {
         <div className="p-6">
           <h2 className="flex items-center gap-2 text-lg font-bold text-navy-900">
             <UserPlus className="h-5 w-5 text-marine-600" />
-            {t('adminNew.invoiceImports.reviewScreen.createSupplier')}
+            {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.createSupplier'} />}
           </h2>
           <p className="mt-1 text-sm text-navy-500">
-            {t('adminNew.invoiceImports.reviewScreen.createSupplierHint')}
+            {<TranslatedText textKey={'adminNew.invoiceImports.reviewScreen.createSupplierHint'} />}
           </p>
           <div className="mt-4 grid gap-3">
             <Input
@@ -718,7 +719,7 @@ export default function InvoiceImportReviewPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={() => setSupplierOpen(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button
               variant="gold"
@@ -726,7 +727,7 @@ export default function InvoiceImportReviewPage() {
               disabled={createSupplierM.loading}
               onClick={() => void onCreateSupplier()}
             >
-              {t('adminNew.common.save')}
+              {<TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </div>
         </div>

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import {
   CalendarDays,
@@ -362,7 +364,7 @@ export function LocationCardGrid({
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge tone={DIFFICULTY_TONE[row.difficulty] ?? 'navy'}>{row.difficulty}</Badge>
             {row.extra_minutes > 0 ? (
-              <span className="text-[11px] text-navy-500">+{row.extra_minutes} min</span>
+              <span className="text-[11px] text-navy-500">+{row.extra_minutes} <TranslatedText textKey="siteCopy.60579e4963cf6200" fallbackText={" min"} /></span>
             ) : null}
           </div>
 

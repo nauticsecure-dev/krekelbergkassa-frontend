@@ -69,22 +69,22 @@ export function EditableText({
   className,
   children,
 }: EditableTextProps) {
-  const { isCmsEditing, retainCmsDrafts, getText } = useCms();
+  const { isCmsEditing, retainCmsDrafts, getText, getContentBlock, localeTag } = useCms();
   const { t } = useIntl();
   const [open, setOpen] = useCmsEditorOpen();
 
   const fallbackText = React.useMemo(() => childrenToText(children), [children]);
-  const stored = getText(blockKey, '');
+  const stored = getContentBlock(blockKey)?.value;
   const Tag = (as ?? 'span') as AsTag;
   const block = usesBlockWrapper(as, className);
   const Wrap = block ? 'div' : 'span';
 
   // Render the stored value when present, otherwise the hardcoded children so
   // the public site is unchanged until a first edit upserts the key.
-  const content: React.ReactNode = stored ? stored : children;
+  const content: React.ReactNode = stored !== undefined ? stored : children;
 
   if (!isCmsEditing && !retainCmsDrafts) {
-    return <Tag className={className}>{content}</Tag>;
+    return <Tag data-cms-key={blockKey} data-cms-locale={localeTag} data-cms-source="content_block" className={className}>{content}</Tag>;
   }
 
   const stopNav = (event: React.SyntheticEvent) => {
@@ -100,6 +100,7 @@ export function EditableText({
     <>
       <Wrap
         data-cms-block={blockKey}
+        data-cms-key={blockKey} data-cms-locale={localeTag} data-cms-source="content_block"
         className={cn(
           'group/cms pointer-events-auto relative cursor-text',
           block ? 'block' : 'inline-block',

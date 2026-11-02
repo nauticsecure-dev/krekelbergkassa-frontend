@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { CheckSquare, Eye, FileText, Plus, Trash2 } from 'lucide-react';
@@ -129,8 +131,7 @@ export default function FormsPage() {
         subtitle="Beheer dynamische formulieren, checklists en inspecties"
         rightSlot={
           <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-            Nieuw formulier
-          </Button>
+            <TranslatedText textKey="siteCopy.0cf2dcd0f75b6d94" fallbackText={"Nieuw formulier"} /></Button>
         }
         stats={[
           { label: 'Formulieren', value: templates.data?.meta?.total ?? rows.length, icon: FileText, tone: 'marine', loading: templates.loading },
@@ -144,7 +145,7 @@ export default function FormsPage() {
           <AdminToolbar className="mb-4 border-0 bg-transparent p-0 shadow-none">
             <AdminSearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Zoek formulier..." />
             <AdminSelect value={categoryFilter} onChange={(v) => { setCategoryFilter(v); setPage(1); }}>
-              <option value="">Alle categorieën</option>
+              <option value=""><TranslatedText textKey="siteCopy.3df80980ab5feaf9" fallbackText={"Alle categorieën"} inline={false} /></option>
               {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
             </AdminSelect>
           </AdminToolbar>
@@ -157,7 +158,7 @@ export default function FormsPage() {
               <EmptyState
                 title="Geen formulieren gevonden"
                 message="Maak een nieuw formulier aan om te beginnen."
-                action={<Button variant="gold" size="sm" onClick={() => setShowCreate(true)}>Nieuw formulier</Button>}
+                action={<Button variant="gold" size="sm" onClick={() => setShowCreate(true)}><TranslatedText textKey="siteCopy.0cf2dcd0f75b6d94" fallbackText={"Nieuw formulier"} /></Button>}
               />
             ) : (
               <AdminTableCard footer={
@@ -170,12 +171,12 @@ export default function FormsPage() {
                 <AdminTable minWidth={700}>
                   <AdminTableHead>
                     <tr>
-                      <AdminTableHeaderCell>Naam</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>Categorie</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>Status</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>Vragen</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>Verstuurd</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>Bijgewerkt</AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.3fce1452bdac254b" fallbackText={"Naam"} /></AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.ceadd1e8b7ce50f8" fallbackText={"Categorie"} /></AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.4ac030da7fa52591" fallbackText={"Status"} /></AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.dccae9ef322b6fac" fallbackText={"Vragen"} /></AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.13a486f6554689e3" fallbackText={"Verstuurd"} /></AdminTableHeaderCell>
+                      <AdminTableHeaderCell><TranslatedText textKey="siteCopy.719ceec69669ce79" fallbackText={"Bijgewerkt"} /></AdminTableHeaderCell>
                       <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
                     </tr>
                   </AdminTableHead>
@@ -190,7 +191,7 @@ export default function FormsPage() {
                             {tmpl.name_json?.nl ?? tmpl.name_json?.en ?? '—'}
                           </Link>
                           {tmpl.offline_enabled ? (
-                            <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-gold-600">Offline</span>
+                            <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-gold-600"><TranslatedText textKey="siteCopy.01a37d2a68f70a2f" fallbackText={"Offline"} /></span>
                           ) : null}
                         </AdminTableCell>
                         <AdminTableCell>
@@ -214,8 +215,7 @@ export default function FormsPage() {
                           <div className="flex items-center justify-end gap-1">
                             <Link href={`/${locale}/admin/forms/${tmpl.id}`}>
                               <Button variant="outline" size="sm" leftIcon={<Eye className="h-3.5 w-3.5" />}>
-                                Open
-                              </Button>
+                                <TranslatedText textKey="siteCopy.5d70bff28209a618" fallbackText={"Open"} /></Button>
                             </Link>
                             <Button
                               variant="ghost"
@@ -223,7 +223,7 @@ export default function FormsPage() {
                               leftIcon={<Trash2 className="h-3.5 w-3.5" />}
                               onClick={() => setDeleteTarget(tmpl.id)}
                             >
-                              {t('adminNew.common.delete')}
+                              {<TranslatedText textKey={'adminNew.common.delete'} />}
                             </Button>
                           </div>
                         </AdminTableCell>
@@ -244,31 +244,30 @@ export default function FormsPage() {
           <AdminModalBody>
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Naam (NL) *</label>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.53d0abee5d78740b" fallbackText={"Naam (NL) *"} /></label>
                 <Input value={form.name_nl} onChange={(e) => setForm((f) => ({ ...f, name_nl: e.target.value }))} placeholder="Winterstalling checklist" required />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Naam (EN)</label>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.31f7100069f313fd" fallbackText={"Naam (EN)"} /></label>
                 <Input value={form.name_en} onChange={(e) => setForm((f) => ({ ...f, name_en: e.target.value }))} placeholder="Winter storage checklist" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Naam (DE)</label>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.b2f6d25f6a8b933e" fallbackText={"Naam (DE)"} /></label>
                 <Input value={form.name_de} onChange={(e) => setForm((f) => ({ ...f, name_de: e.target.value }))} placeholder="Winterlager Checkliste" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Categorie</label>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.ceadd1e8b7ce50f8" fallbackText={"Categorie"} /></label>
                 <AdminSelect value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))}>
                   {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </AdminSelect>
               </div>
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.offline_enabled} onChange={(e) => setForm((f) => ({ ...f, offline_enabled: e.target.checked }))} />
-                Offline beschikbaar (PWA)
-              </label>
+                <TranslatedText textKey="siteCopy.0a467e4e66e03c14" fallbackText={"Offline beschikbaar (PWA)"} /></label>
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button variant="outline" size="sm" type="button" onClick={() => setShowCreate(false)}>Annuleren</Button>
+            <Button variant="outline" size="sm" type="button" onClick={() => setShowCreate(false)}><TranslatedText textKey="siteCopy.35c0046e79ff1fcd" fallbackText={"Annuleren"} /></Button>
             <Button variant="gold" size="sm" type="submit" disabled={createTemplate.loading || !form.name_nl.trim()}>
               {createTemplate.loading ? 'Aanmaken...' : 'Aanmaken'}
             </Button>

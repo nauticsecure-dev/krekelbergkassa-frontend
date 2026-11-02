@@ -131,3 +131,8 @@ Thumbs.db
 artifacts/admin-audit/snapshot/
 .next-global-ux/
 .next-erp/
+
+.next-cms-text/
+.next-home-cms/
+.next-cms-media/
+.next-cms-media*/

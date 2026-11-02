@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { CreditCard, Receipt, ShoppingCart } from 'lucide-react';
@@ -70,7 +72,7 @@ export default function SalesPage() {
         rightSlot={
           <Link href={`/${locale}/admin/kassa`}>
             <Button variant="gold" size="sm" leftIcon={<ShoppingCart className="h-4 w-4" />}>
-              {t('admin.sidebar.kassa')}
+              {<TranslatedText textKey={'admin.sidebar.kassa'} />}
             </Button>
           </Link>
         }
@@ -118,12 +120,12 @@ export default function SalesPage() {
               <AdminTable minWidth={860}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.sales.columns.invoice')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.sales.columns.customer')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.sales.columns.amount')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.sales.columns.method')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.sales.columns.status')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.sales.columns.date')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.sales.columns.invoice'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.sales.columns.customer'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.sales.columns.amount'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.sales.columns.method'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.sales.columns.status'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.sales.columns.date'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -160,11 +162,11 @@ export default function SalesPage() {
                           {href ? (
                             <Link href={href}>
                               <Button variant="ghost" size="sm">
-                                {t('adminNew.sales.openInvoice')}
+                                {<TranslatedText textKey={'adminNew.sales.openInvoice'} />}
                               </Button>
                             </Link>
                           ) : (
-                            <Badge tone="neutral">{t('adminNew.sales.noInvoice')}</Badge>
+                            <Badge tone="neutral">{<TranslatedText textKey={'adminNew.sales.noInvoice'} />}</Badge>
                           )}
                         </AdminTableCell>
                       </AdminTableRow>

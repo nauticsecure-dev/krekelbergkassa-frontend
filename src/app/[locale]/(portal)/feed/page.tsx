@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -18,7 +20,7 @@ import {
   Warehouse,
 } from 'lucide-react';
 import { useIntl } from '@/i18n/IntlProvider';
-import { companyInfo } from '@/lib/company';
+import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { useAuth } from '@/lib/auth-context';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -57,6 +59,7 @@ type TypeFilter =
   | 'documents';
 
 export default function FeedPage() {
+  const companyInfo = useCompanyInfo();
   const { t, locale } = useIntl();
   const { user } = useAuth();
   const [typeFilter, setTypeFilter] = React.useState<TypeFilter>('');
@@ -167,13 +170,13 @@ export default function FeedPage() {
                   {salutation}, {firstName} <span aria-hidden>👋</span>
                 </h1>
                 <p className="mt-3 max-w-md text-sm leading-relaxed text-sand-100/85">
-                  {t('feed.heroSubtitle')}
+                  {<TranslatedText textKey={'feed.heroSubtitle'} />}
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <Pill icon={Sparkles}>{t('feed.pills.deals')}</Pill>
-                  <Pill icon={Anchor}>{t('feed.pills.personalised')}</Pill>
-                  <Pill icon={CheckCircle2}>{t('feed.pills.fast')}</Pill>
+                  <Pill icon={Sparkles}>{<TranslatedText textKey={'feed.pills.deals'} />}</Pill>
+                  <Pill icon={Anchor}>{<TranslatedText textKey={'feed.pills.personalised'} />}</Pill>
+                  <Pill icon={CheckCircle2}>{<TranslatedText textKey={'feed.pills.fast'} />}</Pill>
                 </div>
 
                 <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -183,14 +186,14 @@ export default function FeedPage() {
                       size="lg"
                       rightIcon={<ArrowRight className="h-4 w-4" />}
                     >
-                      {t('feed.ctaPrimary')}
+                      {<TranslatedText textKey={'feed.ctaPrimary'} />}
                     </Button>
                   </Link>
                   <Link
                     href={`/${locale}/dashboard/afspraken`}
                     className="text-sm font-semibold text-sand-100/90 hover:text-white"
                   >
-                    {t('feed.ctaSecondary')} →
+                    {<TranslatedText textKey={'feed.ctaSecondary'} />} →
                   </Link>
                 </div>
 
@@ -219,20 +222,20 @@ export default function FeedPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-                    {t('feed.wallet.title')}
+                    {<TranslatedText textKey={'feed.wallet.title'} />}
                   </div>
                   <div className="mt-1.5 text-3xl font-semibold text-emerald-600">
                     {formatCurrency(wallet.balance, dateLocale)}
                   </div>
                 </div>
                 <Badge tone={wallet.active ? 'success' : 'sand'} dot={wallet.active}>
-                  {wallet.active ? t('feed.wallet.activeShort') : '—'}
+                  {wallet.active ? <TranslatedText textKey={'feed.wallet.activeShort'} /> : '—'}
                 </Badge>
               </div>
-              <p className="mt-1 text-xs text-navy-500">{t('feed.wallet.subtitle')}</p>
+              <p className="mt-1 text-xs text-navy-500">{<TranslatedText textKey={'feed.wallet.subtitle'} />}</p>
               <div className="mt-4">
                 <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-navy-500">
-                  <span>{t('feed.wallet.profileLabel')}</span>
+                  <span>{<TranslatedText textKey={'feed.wallet.profileLabel'} />}</span>
                   <span>{profilePct}%</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-sand-100">
@@ -247,13 +250,13 @@ export default function FeedPage() {
                   href={`/${locale}/dashboard/facturen`}
                   className="inline-flex items-center gap-1 rounded-lg border border-navy-100/70 px-3 py-1.5 text-xs font-semibold text-navy-700 transition hover:border-navy-200 hover:bg-white"
                 >
-                  {t('feed.wallet.viewInvoices')}
+                  {<TranslatedText textKey={'feed.wallet.viewInvoices'} />}
                 </Link>
                 <Link
                   href={`/${locale}/dashboard/settings`}
                   className="inline-flex items-center gap-1 rounded-lg bg-navy-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-navy-800"
                 >
-                  {t('feed.wallet.completeProfile')}
+                  {<TranslatedText textKey={'feed.wallet.completeProfile'} />}
                 </Link>
               </div>
             </Card>
@@ -273,14 +276,14 @@ export default function FeedPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-widest text-sand-100/70">
-                        {t('feed.messages')}
+                        {<TranslatedText textKey={'feed.messages'} />}
                       </div>
                       <div className="mt-1 text-xl font-semibold">
                         {unreadNotifications + unreadTimeline > 0
-                          ? t('feed.notificationsUnread', {
+                          ? <TranslatedText textKey={'feed.notificationsUnread'} vars={{
                               count: unreadNotifications + unreadTimeline,
-                            })
-                          : t('adminNew.portal.messages.empty')}
+                            }} />
+                          : <TranslatedText textKey={'adminNew.portal.messages.empty'} />}
                       </div>
                     </div>
                     <Badge tone="gold">{unreadNotifications}</Badge>
@@ -296,14 +299,14 @@ export default function FeedPage() {
                       </li>
                     ))}
                     {!feed.data?.notifications.latest?.length ? (
-                      <li className="text-xs text-sand-100/70">{t('feed.emptyTimeline')}</li>
+                      <li className="text-xs text-sand-100/70">{<TranslatedText textKey={'feed.emptyTimeline'} />}</li>
                     ) : null}
                   </ul>
                   <Link
                     href={`/${locale}/dashboard/berichten`}
                     className="mt-4 inline-flex items-center gap-2 rounded-lg bg-navy-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-black"
                   >
-                    {t('feed.viewAll')}
+                    {<TranslatedText textKey={'feed.viewAll'} />}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
@@ -348,10 +351,10 @@ export default function FeedPage() {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <Badge tone="gold" className="mb-2" dot>
-                  {t('feed.timelineBadge')}
+                  {<TranslatedText textKey={'feed.timelineBadge'} />}
                 </Badge>
-                <h2 className="heading-display text-2xl">{t('feed.timelineTitle')}</h2>
-                <p className="mt-1 text-sm text-navy-500">{t('feed.timelineSubtitle')}</p>
+                <h2 className="heading-display text-2xl">{<TranslatedText textKey={'feed.timelineTitle'} />}</h2>
+                <p className="mt-1 text-sm text-navy-500">{<TranslatedText textKey={'feed.timelineSubtitle'} />}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <input
@@ -407,7 +410,7 @@ export default function FeedPage() {
                 href={`/${locale}/dashboard/berichten`}
                 className="inline-flex items-center gap-1 text-sm font-semibold text-navy-700 transition hover:text-marine-700"
               >
-                {t('feed.viewAll')}
+                {<TranslatedText textKey={'feed.viewAll'} />}
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -424,9 +427,9 @@ export default function FeedPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-gold-300" />
-                      <span className="text-sm font-semibold">{t('feed.ai.title')}</span>
+                      <span className="text-sm font-semibold">{<TranslatedText textKey={'feed.ai.title'} />}</span>
                     </div>
-                    <Badge tone="gold">Live</Badge>
+                    <Badge tone="gold"><TranslatedText textKey="siteCopy.0cdde17ca43d950f" fallbackText={"Live"} /></Badge>
                   </div>
                   <ul className="mt-4 space-y-3 text-sm">
                     <InsightRow
@@ -477,7 +480,7 @@ export default function FeedPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-                          {t('feed.boat.label')}
+                          {<TranslatedText textKey={'feed.boat.label'} />}
                         </div>
                         <div className="mt-1 text-base font-semibold text-navy-900">
                           {primaryBoat.name}
@@ -489,7 +492,7 @@ export default function FeedPage() {
                         </div>
                       </div>
                       <Badge tone="success" dot>
-                        {t('feed.boat.statusActive')}
+                        {<TranslatedText textKey={'feed.boat.statusActive'} />}
                       </Badge>
                     </div>
                     <div className="mt-3 flex items-center gap-2 text-xs text-navy-500">
@@ -499,8 +502,8 @@ export default function FeedPage() {
                   </>
                 ) : (
                   <>
-                    <div className="text-sm font-semibold text-navy-900">{t('feed.noBoat')}</div>
-                    <p className="mt-1 text-xs text-navy-500">{t('feed.noBoatDesc')}</p>
+                    <div className="text-sm font-semibold text-navy-900">{<TranslatedText textKey={'feed.noBoat'} />}</div>
+                    <p className="mt-1 text-xs text-navy-500">{<TranslatedText textKey={'feed.noBoatDesc'} />}</p>
                   </>
                 )}
                 <div className="mt-4 flex gap-2">
@@ -508,13 +511,13 @@ export default function FeedPage() {
                     href={`/${locale}/dashboard/boten`}
                     className="inline-flex flex-1 items-center justify-center rounded-lg border border-navy-100/70 px-3 py-1.5 text-xs font-semibold text-navy-700 transition hover:bg-sand-50"
                   >
-                    {t('feed.boat.view')}
+                    {<TranslatedText textKey={'feed.boat.view'} />}
                   </Link>
                   <Link
                     href={`/${locale}/kraanafspraak`}
                     className="inline-flex flex-1 items-center justify-center rounded-lg bg-navy-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-navy-800"
                   >
-                    {t('feed.boat.plan')}
+                    {<TranslatedText textKey={'feed.boat.plan'} />}
                   </Link>
                 </div>
               </div>
@@ -526,16 +529,16 @@ export default function FeedPage() {
                   <Phone className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-navy-900">{t('feed.help.title')}</div>
+                  <div className="text-sm font-semibold text-navy-900">{<TranslatedText textKey={'feed.help.title'} />}</div>
                   <a
                     href={companyInfo.phoneHref}
                     className="text-xs font-medium text-marine-700 hover:underline"
                   >
-                    {companyInfo.phone}
+                    <CompanyText field="phone" />
                   </a>
                 </div>
               </div>
-              <p className="mt-3 text-xs leading-relaxed text-navy-500">{t('feed.help.subtitle')}</p>
+              <p className="mt-3 text-xs leading-relaxed text-navy-500">{<TranslatedText textKey={'feed.help.subtitle'} />}</p>
             </Card>
           </aside>
         </div>

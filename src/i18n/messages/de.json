@@ -4462,6 +4462,14 @@
     "statusCompleted": "Abgeschlossen"
   },
   "cms": {
+    "contact": {
+      "edit": "Kontaktdaten bearbeiten",
+      "street": "Straße und Hausnummer",
+      "postal_code": "Postleitzahl",
+      "city": "Ort",
+      "phone": "Telefonnummer",
+      "email": "E-Mail-Adresse"
+    },
     "sessionExpired": "Sitzung abgelaufen",
     "draftRetained": "Deine ungespeicherten Änderungen bleiben hier erhalten. Melde dich in einem neuen Tab an und setze die Bearbeitung hier fort.",
     "signInAgain": "Erneut anmelden",
@@ -4521,9 +4529,12 @@
     "localeHint": "Nur geänderte Sprachen werden gespeichert.",
     "textPlaceholder": "Text eingeben…",
     "focalPoint": "Fokuspunkt",
-    "focalHint": "Klicken Sie auf das Bild, um den Fokuspunkt zu setzen.",
+    "focalHint": "Ziehen Sie das Bild zum Zuschneiden. Klicken Sie auf eine Vorschau oder verwenden Sie die Regler, um den Fokuspunkt festzulegen.",
     "overlay": "Dunkle Überlagerung",
     "altText": "Alt-Text",
+    "desktopPreview": "Desktop-Vorschau",
+    "mobilePreview": "Mobile Vorschau",
+    "resetImageAdjustments": "Bildanpassungen zurücksetzen",
     "imageSeoTitle": "SEO-Bildtitel",
     "altPlaceholder": "Bild beschreiben…",
     "seoTitle": "SEO",
@@ -4535,6 +4546,9 @@
     "globalTitle": "Globale Einstellungen",
     "globalDesc": "Änderungen gelten für die gesamte Website.",
     "global": {
+      "email": "E-Mail",
+      "street": "Straße",
+      "postalCode": "Postleitzahl",
       "headerCtaLabel": "Header-Schaltflächentext",
       "headerCtaPath": "Header-Schaltflächenlink",
       "phone": "Telefonnummer",
@@ -4578,6 +4592,11 @@
     "placeholderUrl": "https://beispiel.de"
   },
   "settingsHub": {
+    "saveBeforeDiagnostic": "Änderungen vor der Diagnose speichern.",
+    "configurationPresent": "Konfiguration vorhanden",
+    "signingConfiguration": "Signaturkonfiguration",
+    "diagnosticResult": "Diagnoseergebnis",
+    "workflowVerification": "Prüfung im Workflow weiterhin erforderlich",
     "search": "Einstellungen suchen",
     "subtitle": "Operatives Konfigurationszentrum — ansehen, konfigurieren, testen und prüfen.",
     "reminderRules": "Erinnerungsregeln bearbeiten",

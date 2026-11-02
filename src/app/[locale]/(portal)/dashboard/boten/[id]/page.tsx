@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -71,7 +73,7 @@ export default function PortalBoatDossierPage() {
         rightSlot={
           <Link href={`/${locale}/dashboard/boten`}>
             <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              {t('adminNew.common.back')}
+              {<TranslatedText textKey={'adminNew.common.back'} />}
             </Button>
           </Link>
         }

@@ -23,6 +23,8 @@ Decision, 27 October 2026: five KPI columns start at `2xl` (1536px), not `xl` (1
 | audit/page | Allowed before/key/arrow/after diff, stacked below sm; shrinkable tracks. | Long before/after values in detail modal at 390/1280/1536. |
 | kassa/page | Customer address rows use `minmax(0,1fr)` with 7rem/8rem companions. Domain pattern allowed. | Populated address modal + discount/payment cart at 390/1280; no viewport overflow. |
 
+All five patterns above have populated responsive checks. These scenarios do not establish full compliance with the desktop expanded/collapsed sidebar requirement for every pattern.
+
 Equal-column grids are allowed only when their children fit; source approval is not a responsive pass. The generated source matrix lists route-to-component ownership, including delegated modals. Any new arbitrary grid requires an entry here and browser evidence at 390, 1280, 1536px with desktop sidebar expanded/collapsed. Form, table and modal evidence must use realistic long data, not just an empty page.
 
 Browser scenarios: `tests/browser/admin-review.spec.ts` (populated kassa / cash-close / document zones / audit modal). Screenshots: `../_audit/global-ux-populated-layouts/`.

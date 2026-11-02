@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -142,9 +144,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 </span>
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sand-100/70">
-                    {t('authLayout.physicalSupport')}
+                    {<TranslatedText textKey={'authLayout.physicalSupport'} />}
                   </div>
-                  <div className="text-sm font-medium text-white">{t('authLayout.address')}</div>
+                  <div className="text-sm font-medium text-white">{<TranslatedText textKey={'authLayout.address'} />}</div>
                 </div>
               </div>
             </div>
@@ -219,7 +221,7 @@ function LoginRoleTabs() {
   return (
     <div className="border-b border-navy-100/60 bg-white px-4 py-3">
       <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-widest text-navy-500">
-        {t('loginRole.question')}
+        {<TranslatedText textKey={'loginRole.question'} />}
       </div>
       <div className="flex items-center gap-1 rounded-full bg-sand-100 p-1">
         {LOGIN_ROLES.map((item) => (

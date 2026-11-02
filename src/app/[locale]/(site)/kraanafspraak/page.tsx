@@ -772,17 +772,14 @@ export default function KraanAfspraakPage() {
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
               <CheckCircle2 className="h-8 w-8 text-emerald-600" />
             </div>
-            <Badge tone="gold" className="mb-4">Aanvraag ontvangen</Badge>
-            <h2 className="font-display text-2xl font-bold text-navy-900">Uw aanvraag is verzonden</h2>
+            <Badge tone="gold" className="mb-4"><TranslatedText textKey="siteCopy.4076d1efe4558f24" fallbackText={"Aanvraag ontvangen"} /></Badge>
+            <h2 className="font-display text-2xl font-bold text-navy-900"><TranslatedText textKey="siteCopy.7a6599c7ba7be129" fallbackText={"Uw aanvraag is verzonden"} /></h2>
             <p className="mt-3 text-sm leading-relaxed text-navy-500">
-              Wij bekijken uw aanvraag zo snel mogelijk en bevestigen de afspraak per e-mail.
-              U kunt de status volgen via het klantportaal.
-            </p>
+              <TranslatedText textKey="siteCopy.bed33ffdae766260" fallbackText={"Wij bekijken uw aanvraag zo snel mogelijk en bevestigen de afspraak per e-mail. U kunt de status volgen via het klantportaal."} /></p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Link href={`/${locale}/dashboard/afspraken`}>
                 <Button variant="gold" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  Bekijk uw afspraken
-                </Button>
+                  <TranslatedText textKey="siteCopy.cd43e8905a540bb0" fallbackText={"Bekijk uw afspraken"} /></Button>
               </Link>
               <Button variant="outline" disabled={!!photoRetry} onClick={() => {
                 journeyStarted.current = false;
@@ -790,7 +787,7 @@ export default function KraanAfspraakPage() {
                 changedFields.current.clear();
                 setImages([]);
                 setSubmitted(false);
-              }}>Nieuwe aanvraag</Button>
+              }}><TranslatedText textKey="siteCopy.e4408ed48c63ecb6" fallbackText={"Nieuwe aanvraag"} /></Button>
             </div>
             {photoRetry ? (
               <div role="alert" className="mt-5 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
@@ -841,7 +838,7 @@ export default function KraanAfspraakPage() {
 
             <Card className="p-6 sm:p-8">
               {/* Personal data */}
-              <SectionTitle icon={<User2 className="h-4 w-4" />}>Uw gegevens</SectionTitle>
+              <SectionTitle icon={<User2 className="h-4 w-4" />}><TranslatedText textKey="siteCopy.63fee9e23d59345e" fallbackText={"Uw gegevens"} /></SectionTitle>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <Input
                   ref={(el) => { fieldRefs.current.voornaam = el; }}
@@ -956,7 +953,7 @@ export default function KraanAfspraakPage() {
               </div>
 
               {/* Boat */}
-              <SectionTitle icon={<Ship className="h-4 w-4" />} className="mt-8">Uw boot</SectionTitle>
+              <SectionTitle icon={<Ship className="h-4 w-4" />} className="mt-8"><TranslatedText textKey="siteCopy.a2a65e407664c210" fallbackText={"Uw boot"} /></SectionTitle>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <Input
                   label="Naam boot"
@@ -971,7 +968,7 @@ export default function KraanAfspraakPage() {
                   onChange={setField('boatEngine')}
                 />
                 <div className="sm:col-span-2">
-                  <p className="mb-1.5 text-sm font-medium text-navy-800">Merk en model</p>
+                  <p className="mb-1.5 text-sm font-medium text-navy-800"><TranslatedText textKey="siteCopy.9b59c4de138c7882" fallbackText={"Merk en model"} /></p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Input
                       label="Merk"
@@ -1100,17 +1097,16 @@ export default function KraanAfspraakPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-semibold">{s.label}</div>
-                          {line?.included_by ? <div className="text-xs">Inbegrepen: {line.included_by}</div> : null}
+                          {line?.included_by ? <div className="text-xs"><TranslatedText textKey="siteCopy.c1468588762401a7" fallbackText={"Inbegrepen: "} />{line.included_by}</div> : null}
                           <div className={cn('text-xs', active ? 'text-sand-100/80' : 'text-navy-400')}>
                             {duration != null ? `Ca. ${duration} min` : '—'}
                           </div>
                         </div>
                         <div className={cn('shrink-0 text-sm font-semibold', active ? 'text-gold-300' : 'text-navy-900')}>
-                          {price == null ? t('servicePage.onRequest') : formatCurrency(price, currencyLocale)}
+                          {price == null ? <TranslatedText textKey={'servicePage.onRequest'} /> : formatCurrency(price, currencyLocale)}
                           {price != null && !lengthCm ? (
                             <span className={cn('ml-0.5 text-[10px] font-normal', active ? 'text-sand-100/70' : 'text-navy-400')}>
-                              v.a.
-                            </span>
+                              <TranslatedText textKey="siteCopy.3f25c808648f54aa" fallbackText={"v.a."} /></span>
                           ) : null}
                         </div>
                       </button>
@@ -1275,8 +1271,8 @@ export default function KraanAfspraakPage() {
               >
                 <SectionTitle icon={<Clock className="h-4 w-4" />}>
                   {picked
-                    ? t('crane.timeSlots', { date: `${picked.getDate()} ${DUTCH_MONTHS[picked.getMonth()]}` })
-                    : t('crane.selectDate')}
+                    ? <TranslatedText textKey={'crane.timeSlots'} vars={{ date: `${picked.getDate()} ${DUTCH_MONTHS[picked.getMonth()]}` }} />
+                    : <TranslatedText textKey={'crane.selectDate'} />}
                 </SectionTitle>
                 {slotsError === 'closed' && (
                   <p
@@ -1300,8 +1296,7 @@ export default function KraanAfspraakPage() {
                 )}
                 {!slotsError && !loadingSlots && picked && !lengthCm && (
                   <p className="mt-3 rounded-lg border border-navy-100 bg-sand-50 px-3 py-2.5 text-xs text-navy-500">
-                    Voer eerst de lengte van uw boot in om beschikbare tijden te zien.
-                  </p>
+                    <TranslatedText textKey="siteCopy.00cc8b1576199e33" fallbackText={"Voer eerst de lengte van uw boot in om beschikbare tijden te zien."} /></p>
                 )}
                 {!slotsError && (
                   <div className="mt-3 grid grid-cols-4 gap-2">
@@ -1328,7 +1323,7 @@ export default function KraanAfspraakPage() {
                       );
                     })}
                     {!loadingSlots && timeSlots.length === 0 && picked && lengthCm && !slotsError && (
-                      <p className="col-span-4 text-xs text-navy-400">Geen beschikbare tijden op deze dag.</p>
+                      <p className="col-span-4 text-xs text-navy-400"><TranslatedText textKey="siteCopy.77957011d12a0a5e" fallbackText={"Geen beschikbare tijden op deze dag."} /></p>
                     )}
                   </div>
                 )}
@@ -1370,7 +1365,7 @@ export default function KraanAfspraakPage() {
                     <TranslatedText textKey={'crane.estimate'} />
                   </span>
                   <span className="text-2xl font-semibold">
-                    {finalPrice == null ? t('servicePage.onRequest') : `€${finalPrice.toFixed(2)}`}
+                    {finalPrice == null ? <TranslatedText textKey={'servicePage.onRequest'} /> : `€${finalPrice.toFixed(2)}`}
                   </span>
                 </div>
               </div>
@@ -1410,7 +1405,7 @@ export default function KraanAfspraakPage() {
                     }
                     onClick={onSubmitClick}
                   >
-                    {submitted ? t('crane.submitSuccess') : t('crane.submit')}
+                    {submitted ? <TranslatedText textKey={'crane.submitSuccess'} /> : <TranslatedText textKey={'crane.submit'} />}
                   </Button>
                 </div>
               </div>

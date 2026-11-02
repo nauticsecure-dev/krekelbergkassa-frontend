@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
 import {
   Download,
@@ -183,7 +185,7 @@ export default function PortalDocumentsPage() {
                         className="text-xs font-semibold text-marine-700 hover:text-marine-900"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {t('adminNew.portal.documents.viewInvoice')}
+                        {<TranslatedText textKey={'adminNew.portal.documents.viewInvoice'} />}
                       </Link>
                     ) : null}
                     <a
@@ -194,7 +196,7 @@ export default function PortalDocumentsPage() {
                       className="inline-flex items-center gap-1 rounded-lg border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-sand-50"
                     >
                       <Download className="h-3.5 w-3.5" />
-                      {t('adminNew.invoiceDetail.actions.openPdf')}
+                      {<TranslatedText textKey={'adminNew.invoiceDetail.actions.openPdf'} />}
                     </a>
                   </div>
                 }
@@ -212,13 +214,13 @@ export default function PortalDocumentsPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold text-navy-900">
-                  {t('adminNew.portal.documents.helpTitle')}
+                  {<TranslatedText textKey={'adminNew.portal.documents.helpTitle'} />}
                 </div>
-                <p className="mt-1 text-xs text-navy-500">{t('adminNew.portal.documents.helpText')}</p>
+                <p className="mt-1 text-xs text-navy-500">{<TranslatedText textKey={'adminNew.portal.documents.helpText'} />}</p>
               </div>
               <Link href={`/${locale}/contact`}>
                 <Button variant="outline" size="sm" leftIcon={<ExternalLink className="h-4 w-4" />}>
-                  {t('adminNew.portal.documents.contactSupport')}
+                  {<TranslatedText textKey={'adminNew.portal.documents.contactSupport'} />}
                 </Button>
               </Link>
             </div>

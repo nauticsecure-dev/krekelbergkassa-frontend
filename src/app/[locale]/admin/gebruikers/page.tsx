@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -200,7 +202,7 @@ export default function UsersPage() {
           icon={UserCog}
           action={
             <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-              {t('adminNew.users.new')}
+              {<TranslatedText textKey={'adminNew.users.new'} />}
             </Button>
           }
         >
@@ -213,11 +215,11 @@ export default function UsersPage() {
           />
           <AdminSelect value={roleFilter} onChange={(value) => { setRoleFilter(value); setPage(1); }}>
             <option value="">{t('adminNew.users.allRoles')}</option>
-            <option value="admin">admin</option>
-            <option value="manager">manager</option>
-            <option value="staff">staff</option>
-            <option value="employee">employee</option>
-            <option value="finance">finance</option>
+            <option value="admin"><TranslatedText textKey="siteCopy.b62572210341d121" fallbackText={"admin"} inline={false} /></option>
+            <option value="manager"><TranslatedText textKey="siteCopy.8821dd3d77119200" fallbackText={"manager"} inline={false} /></option>
+            <option value="staff"><TranslatedText textKey="siteCopy.6530f4516d5d44de" fallbackText={"staff"} inline={false} /></option>
+            <option value="employee"><TranslatedText textKey="siteCopy.3dbe62f00d398de9" fallbackText={"employee"} inline={false} /></option>
+            <option value="finance"><TranslatedText textKey="siteCopy.07933ae8211d357c" fallbackText={"finance"} inline={false} /></option>
           </AdminSelect>
           <AdminSelect value={statusFilter} onChange={(value) => { setStatusFilter(value); setPage(1); }}>
             <option value="">{t('adminNew.users.allStatuses')}</option>
@@ -227,9 +229,9 @@ export default function UsersPage() {
           </AdminSelect>
           <AdminSelect value={localeFilter} onChange={(value) => { setLocaleFilter(value); setPage(1); }}>
             <option value="">{t('adminNew.users.allLanguages')}</option>
-            <option value="nl">NL</option>
-            <option value="en">EN</option>
-            <option value="de">DE</option>
+            <option value="nl"><TranslatedText textKey="siteCopy.67603e3c12332d4a" fallbackText={"NL"} inline={false} /></option>
+            <option value="en"><TranslatedText textKey="siteCopy.799b0cc02df909e0" fallbackText={"EN"} inline={false} /></option>
+            <option value="de"><TranslatedText textKey="siteCopy.aa92ef2843cfc707" fallbackText={"DE"} inline={false} /></option>
           </AdminSelect>
         </div>
 
@@ -245,10 +247,10 @@ export default function UsersPage() {
               <AdminTable minWidth={800}>
                 <AdminTableHead>
                   <AdminTableRow>
-                    <AdminTableHeaderCell>{t('adminNew.users.columns.user')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.users.columns.role')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.users.columns.status')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.users.columns.lastLogin')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.users.columns.user'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.users.columns.role'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.users.columns.status'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.users.columns.lastLogin'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
                   </AdminTableRow>
                 </AdminTableHead>
@@ -279,14 +281,14 @@ export default function UsersPage() {
                       <AdminTableCell>
                         <div className="flex flex-col items-start gap-1">
                           {isBlocked ? (
-                            <Badge tone="danger">{t('adminNew.users.statusBlocked', { defaultValue: 'Geblokkeerd' })}</Badge>
+                            <Badge tone="danger">{<TranslatedText textKey={'adminNew.users.statusBlocked'} vars={{ defaultValue: 'Geblokkeerd' }} />}</Badge>
                           ) : (
                             <Badge tone={row.active ? 'success' : 'danger'}>
-                              {row.active ? t('adminNew.users.active') : t('adminNew.users.inactive')}
+                              {row.active ? <TranslatedText textKey={'adminNew.users.active'} /> : <TranslatedText textKey={'adminNew.users.inactive'} />}
                             </Badge>
                           )}
                           {!lastLogin ? (
-                            <Badge tone="warning">{t('adminNew.users.neverLoggedIn')}</Badge>
+                            <Badge tone="warning">{<TranslatedText textKey={'adminNew.users.neverLoggedIn'} />}</Badge>
                           ) : null}
                         </div>
                       </AdminTableCell>
@@ -305,22 +307,22 @@ export default function UsersPage() {
                           {canImpersonateUser(row.role) ? (
                             <Button size="sm" variant="ghost" leftIcon={<UserRound className="h-3.5 w-3.5" />}
                               onClick={() => setImpersonateTarget({ id: row.id, name: row.name })}>
-                              {t('adminNew.impersonation.action')}
+                              {<TranslatedText textKey={'adminNew.impersonation.action'} />}
                             </Button>
                           ) : null}
                           <Button size="sm" variant="ghost" leftIcon={<Pencil className="h-3.5 w-3.5" />}
                             onClick={() => openEdit(row)}>
-                            {t('adminNew.common.edit', { defaultValue: 'Bewerken' })}
+                            {<TranslatedText textKey={'adminNew.common.edit'} vars={{ defaultValue: 'Bewerken' }} />}
                           </Button>
                           {isBlocked ? (
                             <Button size="sm" variant="ghost" leftIcon={<ShieldCheck className="h-3.5 w-3.5" />}
                               onClick={() => setBlockTarget({ id: row.id, name: row.name, isBlocked: true })}>
-                              {t('adminNew.users.unblock', { defaultValue: 'Deblokkeren' })}
+                              {<TranslatedText textKey={'adminNew.users.unblock'} vars={{ defaultValue: 'Deblokkeren' }} />}
                             </Button>
                           ) : (
                             <Button size="sm" variant="ghost" leftIcon={<Ban className="h-3.5 w-3.5" />}
                               onClick={() => { setBlockReason(''); setBlockTarget({ id: row.id, name: row.name, isBlocked: false }); }}>
-                              {t('adminNew.users.block', { defaultValue: 'Blokkeren' })}
+                              {<TranslatedText textKey={'adminNew.users.block'} vars={{ defaultValue: 'Blokkeren' }} />}
                             </Button>
                           )}
                           <SearchSelect
@@ -330,14 +332,14 @@ export default function UsersPage() {
                               void updateUser.mutate({ id: row.id, data: { locale: e.target.value } }).then(() => users.refetch())
                             }
                           >
-                            <option value="nl-NL">NL</option>
-                            <option value="en-GB">EN</option>
-                            <option value="de-DE">DE</option>
-                            <option value="fr-FR">FR</option>
+                            <option value="nl-NL"><TranslatedText textKey="siteCopy.67603e3c12332d4a" fallbackText={"NL"} inline={false} /></option>
+                            <option value="en-GB"><TranslatedText textKey="siteCopy.799b0cc02df909e0" fallbackText={"EN"} inline={false} /></option>
+                            <option value="de-DE"><TranslatedText textKey="siteCopy.aa92ef2843cfc707" fallbackText={"DE"} inline={false} /></option>
+                            <option value="fr-FR"><TranslatedText textKey="siteCopy.aa66c804894288a7" fallbackText={"FR"} inline={false} /></option>
                           </SearchSelect>
                           <Button size="sm" variant="ghost"
                             onClick={() => row.active ? setDeactivateTarget({ id: row.id, name: row.name }) : void toggleActive(row.id, row.active)}>
-                            {row.active ? t('adminNew.users.deactivate') : t('adminNew.users.activate')}
+                            {row.active ? <TranslatedText textKey={'adminNew.users.deactivate'} /> : <TranslatedText textKey={'adminNew.users.activate'} />}
                           </Button>
                         </div>
                       </AdminTableCell>
@@ -368,18 +370,18 @@ export default function UsersPage() {
               <Input label={t('adminNew.common.phone', { defaultValue: 'Telefoon' })} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               <Input label={t('adminNew.users.fields.password')} type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
               <label className="block text-sm">
-                <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.columns.role')}</span>
+                <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'adminNew.users.columns.role'} />}</span>
                 <SearchSelect className="input-base" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-                  <option value="staff">staff</option>
-                  <option value="manager">manager</option>
-                  <option value="admin">admin</option>
-                  <option value="employee">employee</option>
-                  <option value="finance">finance</option>
+                  <option value="staff"><TranslatedText textKey="siteCopy.6530f4516d5d44de" fallbackText={"staff"} inline={false} /></option>
+                  <option value="manager"><TranslatedText textKey="siteCopy.8821dd3d77119200" fallbackText={"manager"} inline={false} /></option>
+                  <option value="admin"><TranslatedText textKey="siteCopy.b62572210341d121" fallbackText={"admin"} inline={false} /></option>
+                  <option value="employee"><TranslatedText textKey="siteCopy.3dbe62f00d398de9" fallbackText={"employee"} inline={false} /></option>
+                  <option value="finance"><TranslatedText textKey="siteCopy.07933ae8211d357c" fallbackText={"finance"} inline={false} /></option>
                 </SearchSelect>
               </label>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label className="block text-sm">
-                  <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.gender')}</span>
+                  <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'adminNew.users.fields.gender'} />}</span>
                   <SearchSelect className="input-base w-full" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}>
                     <option value="">{t('adminNew.users.gender.unspecified')}</option>
                     <option value="male">{t('adminNew.users.gender.male')}</option>
@@ -388,21 +390,21 @@ export default function UsersPage() {
                   </SearchSelect>
                 </label>
                 <label className="block text-sm">
-                  <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.language')}</span>
+                  <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'adminNew.users.fields.language'} />}</span>
                   <SearchSelect className="input-base w-full" value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })}>
                     <option value="">{t('adminNew.users.localeDefault')}</option>
-                    <option value="nl">NL</option>
-                    <option value="en">EN</option>
-                    <option value="de">DE</option>
+                    <option value="nl"><TranslatedText textKey="siteCopy.67603e3c12332d4a" fallbackText={"NL"} inline={false} /></option>
+                    <option value="en"><TranslatedText textKey="siteCopy.799b0cc02df909e0" fallbackText={"EN"} inline={false} /></option>
+                    <option value="de"><TranslatedText textKey="siteCopy.aa92ef2843cfc707" fallbackText={"DE"} inline={false} /></option>
                   </SearchSelect>
                 </label>
               </div>
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
             <Button type="submit" variant="gold" disabled={register.loading}>
-              {register.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+              {register.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -418,18 +420,18 @@ export default function UsersPage() {
               <Input label={t('adminNew.common.email')} type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
               <Input label={t('adminNew.common.phone', { defaultValue: 'Telefoon' })} value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
               <label className="block text-sm">
-                <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.columns.role')}</span>
+                <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'adminNew.users.columns.role'} />}</span>
                 <SearchSelect className="input-base w-full" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}>
-                  <option value="staff">staff</option>
-                  <option value="manager">manager</option>
-                  <option value="admin">admin</option>
-                  <option value="employee">employee</option>
-                  <option value="finance">finance</option>
+                  <option value="staff"><TranslatedText textKey="siteCopy.6530f4516d5d44de" fallbackText={"staff"} inline={false} /></option>
+                  <option value="manager"><TranslatedText textKey="siteCopy.8821dd3d77119200" fallbackText={"manager"} inline={false} /></option>
+                  <option value="admin"><TranslatedText textKey="siteCopy.b62572210341d121" fallbackText={"admin"} inline={false} /></option>
+                  <option value="employee"><TranslatedText textKey="siteCopy.3dbe62f00d398de9" fallbackText={"employee"} inline={false} /></option>
+                  <option value="finance"><TranslatedText textKey="siteCopy.07933ae8211d357c" fallbackText={"finance"} inline={false} /></option>
                 </SearchSelect>
               </label>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label className="block text-sm">
-                  <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.gender')}</span>
+                  <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'adminNew.users.fields.gender'} />}</span>
                   <SearchSelect className="input-base w-full" value={editForm.gender} onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}>
                     <option value="">{t('adminNew.users.gender.unspecified')}</option>
                     <option value="male">{t('adminNew.users.gender.male')}</option>
@@ -438,21 +440,21 @@ export default function UsersPage() {
                   </SearchSelect>
                 </label>
                 <label className="block text-sm">
-                  <span className="mb-1 block font-medium text-navy-700">{t('adminNew.users.fields.language')}</span>
+                  <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'adminNew.users.fields.language'} />}</span>
                   <SearchSelect className="input-base w-full" value={editForm.locale} onChange={(e) => setEditForm({ ...editForm, locale: e.target.value })}>
-                    <option value="nl-NL">Nederlands (NL)</option>
-                    <option value="en-GB">English (EN)</option>
-                    <option value="de-DE">Deutsch (DE)</option>
-                    <option value="fr-FR">Français (FR)</option>
+                    <option value="nl-NL"><TranslatedText textKey="siteCopy.718b2849bf60ef58" fallbackText={"Nederlands (NL)"} inline={false} /></option>
+                    <option value="en-GB"><TranslatedText textKey="siteCopy.954ba9bee72cbee6" fallbackText={"English (EN)"} inline={false} /></option>
+                    <option value="de-DE"><TranslatedText textKey="siteCopy.a4d3277d0d70e4bb" fallbackText={"Deutsch (DE)"} inline={false} /></option>
+                    <option value="fr-FR"><TranslatedText textKey="siteCopy.5a36182e006d4973" fallbackText={"Français (FR)"} inline={false} /></option>
                   </SearchSelect>
                 </label>
               </div>
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setEditTarget(null)}>{t('adminNew.common.cancel')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setEditTarget(null)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
             <Button type="submit" variant="gold" disabled={updateUser.loading}>
-              {updateUser.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+              {updateUser.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>

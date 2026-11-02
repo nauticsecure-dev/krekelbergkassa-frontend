@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import {
@@ -99,7 +101,7 @@ export function KassaAnalyticsDashboard({
             <div className="rounded-xl border border-navy-100 bg-gradient-to-b from-white to-sand-50/50 p-4">
               <div className="mb-4 flex items-center justify-between">
                 <h4 className="text-sm font-semibold text-navy-900">
-                  {t('adminNew.kassa.analytics.revenueChart')}
+                  {<TranslatedText textKey={'adminNew.kassa.analytics.revenueChart'} />}
                 </h4>
                 {analytics?.periodLabel ? (
                   <span className="text-xs text-navy-500">{analytics.periodLabel}</span>
@@ -107,7 +109,7 @@ export function KassaAnalyticsDashboard({
               </div>
               {series.length === 0 ? (
                 <p className="py-10 text-center text-sm text-navy-500">
-                  {t('adminNew.kassa.analytics.noChartData')}
+                  {<TranslatedText textKey={'adminNew.kassa.analytics.noChartData'} />}
                 </p>
               ) : (
                 <div className="flex h-44 items-end gap-2 border-b border-navy-100 pb-2">
@@ -135,10 +137,10 @@ export function KassaAnalyticsDashboard({
 
             <div className="rounded-xl border border-navy-100 bg-white p-4">
               <h4 className="mb-4 text-sm font-semibold text-navy-900">
-                {t('adminNew.kassa.analytics.paymentMethods')}
+                {<TranslatedText textKey={'adminNew.kassa.analytics.paymentMethods'} />}
               </h4>
               {methods.length === 0 ? (
-                <p className="py-6 text-sm text-navy-500">{t('adminNew.kassa.analytics.noPaymentData')}</p>
+                <p className="py-6 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.kassa.analytics.noPaymentData'} />}</p>
               ) : (
                 <div className="space-y-3">
                   {methods.map((slice) => {

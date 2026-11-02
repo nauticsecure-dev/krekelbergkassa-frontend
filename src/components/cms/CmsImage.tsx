@@ -3,12 +3,13 @@ import * as React from 'react';
 import type { MediaBlock } from './CmsProvider';
 
 /** Cover a responsive frame with the saved rectangle of the original image. */
-export function CmsImage({ src, alt, title, crop, focal = { x: 50, y: 50 }, className, srcSet, mobileSrc, mobileSrcSet, mobileCrop, mobileFocal, filter, dimensions, mobileDimensions }: {
+export function CmsImage({ src, alt, title, crop, focal = { x: 50, y: 50 }, className, srcSet, mobileSrc, mobileSrcSet, mobileCrop, mobileFocal, filter, dimensions, mobileDimensions, imageStyle, overlay = 0 }: {
   src: string; alt: string; title?: string; crop?: MediaBlock['crop_data'];
   focal?: { x: number; y: number }; className?: string;
   srcSet?: string | null; mobileSrc?: string | null; mobileSrcSet?: string | null;
   mobileCrop?: MediaBlock['crop_data']; mobileFocal?: {x:number;y:number} | null; filter?: string;
   dimensions?: {width: number; height: number} | null; mobileDimensions?: {width: number; height: number} | null;
+  imageStyle?: MediaBlock['image_style']; overlay?: number;
 }) {
   const frame = React.useRef<HTMLSpanElement>(null);
   const [size, setSize] = React.useState({ width: 0, height: 0 });
@@ -21,6 +22,8 @@ export function CmsImage({ src, alt, title, crop, focal = { x: 50, y: 50 }, clas
     return () => query.removeEventListener('change', sync);
   }, []);
   if (mobile) { crop = mobileCrop ?? (mobileSrc ? null : crop); focal = mobileFocal ?? focal; if (mobileSrc) dimensions = mobileDimensions; }
+  if (imageStyle?.alignment) focal = { x: imageStyle.alignment === 'left' ? 0 : imageStyle.alignment === 'right' ? 100 : 50, y: focal.y };
+  const imageFilter = filter ?? (imageStyle ? `brightness(${imageStyle.brightness ?? 100}%) contrast(${imageStyle.contrast ?? 100}%) saturate(${imageStyle.saturation ?? 100}%)` : undefined);
   if (crop && crop.unit !== 'percent' && dimensions?.width && dimensions?.height) {
     crop = {x: crop.x / dimensions.width * 100, y: crop.y / dimensions.height * 100,
       width: crop.width / dimensions.width * 100, height: crop.height / dimensions.height * 100, unit:'percent'};
@@ -46,8 +49,11 @@ export function CmsImage({ src, alt, title, crop, focal = { x: 50, y: 50 }, clas
     <picture>
     {mobileSrc && <source media="(max-width: 767px)" srcSet={mobileSrcSet || mobileSrc} sizes="100vw" />}
     {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img key={src + (mobileSrc ?? '')} src={src} srcSet={srcSet || undefined} sizes="100vw" alt={alt} title={title} className={className ?? 'h-full w-full object-cover'} style={{...style, filter}}
+    <img key={src + (mobileSrc ?? '')} src={src} srcSet={srcSet || undefined} sizes="100vw" alt={alt} title={title} className={className ?? 'h-full w-full object-cover'} style={{...style, filter: imageFilter}}
       onLoad={(event) => setNatural({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} />
     </picture>
+    {imageStyle?.gradient && imageStyle.gradient !== 'none' && <span aria-hidden className="pointer-events-none absolute inset-0"
+      style={{background: `linear-gradient(to ${imageStyle.gradient}, rgba(8,19,38,${imageStyle.gradient_start ?? .9}), rgba(8,19,38,${imageStyle.gradient_middle ?? ((imageStyle.gradient_start ?? .9) + (imageStyle.gradient_end ?? .35)) / 2}), rgba(8,19,38,${imageStyle.gradient_end ?? .35}))`}} />}
+    {overlay > 0 && <span aria-hidden className="pointer-events-none absolute inset-0" style={{backgroundColor: `rgba(8, 19, 38, ${overlay})`}} />}
   </span>;
 }

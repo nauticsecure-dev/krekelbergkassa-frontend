@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import { intlLocale } from '@/lib/format';
@@ -212,7 +214,7 @@ export default function ManualInvoicePage() {
         rightSlot={
           <Link href={`/${locale}/admin/facturen/nieuw`}>
             <Button variant="outline" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              {t('adminNew.invoices.back', { defaultValue: 'Terug' })}
+              {<TranslatedText textKey={'adminNew.invoices.back'} vars={{ defaultValue: 'Terug' }} />}
             </Button>
           </Link>
         }
@@ -227,7 +229,7 @@ export default function ManualInvoicePage() {
                   <p className="text-sm text-navy-600">{selectedCustomer.email ?? selectedCustomer.phone ?? ''}</p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={() => setSelectedCustomer(null)}>
-                  {t('adminNew.invoices.changeCustomer', { defaultValue: 'Andere klant kiezen' })}
+                  {<TranslatedText textKey={'adminNew.invoices.changeCustomer'} vars={{ defaultValue: 'Andere klant kiezen' }} />}
                 </Button>
               </div>
             ) : (
@@ -254,10 +256,10 @@ export default function ManualInvoicePage() {
                   </button>
                 ))}
                 {customerQuery.length < 2 ? (
-                  <p className="text-sm text-navy-500">{t('adminNew.invoices.customerSearchHint', { defaultValue: 'Zoek op naam, e-mail, telefoon of bedrijf (minimaal 2 tekens)' })}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.invoices.customerSearchHint'} vars={{ defaultValue: 'Zoek op naam, e-mail, telefoon of bedrijf (minimaal 2 tekens)' }} />}</p>
                 ) : null}
                 {can('customers.write') ? <Button type="button" variant="outline" leftIcon={<UserRoundPlus className="h-4 w-4" />} onClick={() => setCreateCustomerOpen((open) => !open)}>
-                  {t('adminNew.invoices.createCustomerInline', { defaultValue: 'Nieuwe klant aanmaken' })}
+                  {<TranslatedText textKey={'adminNew.invoices.createCustomerInline'} vars={{ defaultValue: 'Nieuwe klant aanmaken' }} />}
                 </Button> : null}
                 {createCustomerOpen && can('customers.write') ? (
                   <div className="rounded-xl border border-navy-200 bg-sand-50 p-4">
@@ -268,14 +270,14 @@ export default function ManualInvoicePage() {
                       <Input value={customerForm.company_name} onChange={(e) => setCustomerForm((v) => ({ ...v, company_name: e.target.value }))} placeholder={t('adminNew.customers.fields.company', { defaultValue: 'Bedrijf' })} />
                     </AdminFormGrid>
                     <Button type="button" className="mt-3" variant="gold" disabled={createCustomer.loading || !customerForm.name.trim()} onClick={() => void createInlineCustomer()}>
-                      {createCustomer.loading ? t('adminNew.common.saving') : t('adminNew.invoices.createCustomerInline', { defaultValue: 'Nieuwe klant aanmaken' })}
+                      {createCustomer.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.invoices.createCustomerInline'} vars={{ defaultValue: 'Nieuwe klant aanmaken' }} />}
                     </Button>
                   </div>
                 ) : null}
               </div>
             )}
             <div className="mt-4">
-              <label className="mb-1 block text-sm font-medium text-navy-700">{t('adminNew.invoices.billingAddress', { defaultValue: 'Factuuradres' })}</label>
+              <label className="mb-1 block text-sm font-medium text-navy-700">{<TranslatedText textKey={'adminNew.invoices.billingAddress'} vars={{ defaultValue: 'Factuuradres' }} />}</label>
               <textarea className="input-base min-h-20 w-full" value={billingAddress} onChange={(e) => setBillingAddress(e.target.value)} />
             </div>
           </AdminSectionCard>
@@ -287,7 +289,7 @@ export default function ManualInvoicePage() {
               <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} placeholder={t('adminNew.invoices.invoiceNumberOptional', { defaultValue: 'Factuurnummer (automatisch indien leeg)' })} />
               <SearchSelect className="input-base" value={templateId} onChange={(e) => setTemplateId(e.target.value)} aria-label={t('adminNew.templates.layout', { defaultValue: 'Factuuropmaak' })}>
                 <option value="">{t('adminNew.invoices.defaultTemplate', { defaultValue: 'Actieve standaardopmaak' })}</option>
-                {(layouts.data ?? []).map((layout) => <option key={layout.id} value={layout.id}>{layout.name} · v{layout.version}</option>)}
+                {(layouts.data ?? []).map((layout) => <option key={layout.id} value={layout.id}>{layout.name} <TranslatedText textKey="siteCopy.27e49bcbf4a6dfbf" fallbackText={" · v"} inline={false} />{layout.version}</option>)}
               </SearchSelect>
               <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder={t('adminNew.invoices.reference', { defaultValue: 'Referentie' })} />
               <SearchSelect className="input-base" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} aria-label={t('adminNew.invoices.paymentMethod', { defaultValue: 'Betaalmethode' })}>
@@ -297,7 +299,7 @@ export default function ManualInvoicePage() {
                 <option value="cash">{t('adminNew.invoiceDetail.paymentMethods.cash')}</option>
               </SearchSelect>
               <SearchSelect className="input-base" value={currency} onChange={(e) => setCurrency(e.target.value)} aria-label={t('adminNew.invoices.currency', { defaultValue: 'Valuta' })}>
-                <option value="EUR">EUR — Euro</option>
+                <option value="EUR"><TranslatedText textKey="siteCopy.07693c685a0dd7a0" fallbackText={"EUR — Euro"} inline={false} /></option>
               </SearchSelect>
             </AdminFormGrid>
           </AdminSectionCard>
@@ -326,26 +328,26 @@ export default function ManualInvoicePage() {
               ))}
             </div>
             <Button type="button" variant="outline" className="mt-3" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setLines((current) => [...current, newLine()])}>
-              {t('adminNew.invoices.addFreeLine', { defaultValue: 'Vrije factuurregel toevoegen' })}
+              {<TranslatedText textKey={'adminNew.invoices.addFreeLine'} vars={{ defaultValue: 'Vrije factuurregel toevoegen' }} />}
             </Button>
             <div className="ml-auto mt-5 max-w-sm space-y-2 border-t border-navy-100 pt-4 text-sm">
-              <div className="flex justify-between"><span>{t('adminNew.invoices.subtotal', { defaultValue: 'Subtotaal excl. btw' })}</span><span>{money(totals.subtotal)}</span></div>
-              <div className="flex justify-between"><span>{t('adminNew.invoices.vatTotal', { defaultValue: 'Btw totaal' })}</span><span>{money(totals.vat)}</span></div>
-              <div className="flex justify-between text-lg font-bold"><span>{t('adminNew.invoices.totalAmount', { defaultValue: 'Totaal' })}</span><span>{money(totals.total)}</span></div>
+              <div className="flex justify-between"><span>{<TranslatedText textKey={'adminNew.invoices.subtotal'} vars={{ defaultValue: 'Subtotaal excl. btw' }} />}</span><span>{money(totals.subtotal)}</span></div>
+              <div className="flex justify-between"><span>{<TranslatedText textKey={'adminNew.invoices.vatTotal'} vars={{ defaultValue: 'Btw totaal' }} />}</span><span>{money(totals.vat)}</span></div>
+              <div className="flex justify-between text-lg font-bold"><span>{<TranslatedText textKey={'adminNew.invoices.totalAmount'} vars={{ defaultValue: 'Totaal' }} />}</span><span>{money(totals.total)}</span></div>
             </div>
           </AdminSectionCard>
 
           <AdminSectionCard title={t('adminNew.invoices.notesAndTerms')} icon={MessageSquareText}>
             <AdminFormGrid>
-              <label className="text-sm font-medium text-navy-700">{t('adminNew.invoices.customerNote', { defaultValue: 'Opmerking op factuur' })}<textarea className="input-base mt-1 min-h-24 w-full" value={notes} onChange={(e) => setNotes(e.target.value)} /></label>
-              <label className="text-sm font-medium text-navy-700">{t('adminNew.invoices.internalNote', { defaultValue: 'Interne notitie' })}<textarea className="input-base mt-1 min-h-24 w-full" value={internalNote} onChange={(e) => setInternalNote(e.target.value)} /></label>
+              <label className="text-sm font-medium text-navy-700">{<TranslatedText textKey={'adminNew.invoices.customerNote'} vars={{ defaultValue: 'Opmerking op factuur' }} />}<textarea className="input-base mt-1 min-h-24 w-full" value={notes} onChange={(e) => setNotes(e.target.value)} /></label>
+              <label className="text-sm font-medium text-navy-700">{<TranslatedText textKey={'adminNew.invoices.internalNote'} vars={{ defaultValue: 'Interne notitie' }} />}<textarea className="input-base mt-1 min-h-24 w-full" value={internalNote} onChange={(e) => setInternalNote(e.target.value)} /></label>
             </AdminFormGrid>
           </AdminSectionCard>
 
           <div className="flex justify-end gap-2">
-            <Link href={`/${locale}/admin/facturen`}><Button type="button" variant="outline">{t('adminNew.common.cancel')}</Button></Link>
+            <Link href={`/${locale}/admin/facturen`}><Button type="button" variant="outline">{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button></Link>
             <Button type="submit" variant="gold" disabled={createInvoice.loading || !selectedCustomer}>
-              {createInvoice.loading ? t('adminNew.common.saving') : t('adminNew.invoices.saveDraft', { defaultValue: 'Factuur opslaan als concept' })}
+              {createInvoice.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.invoices.saveDraft'} vars={{ defaultValue: 'Factuur opslaan als concept' }} />}
             </Button>
           </div>
         </form>

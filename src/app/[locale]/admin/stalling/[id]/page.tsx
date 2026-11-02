@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
@@ -212,11 +214,10 @@ export default function StallingDetailPage() {
         rightSlot={
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={() => setShowEdit(true)}>
-              Bewerken
-            </Button>
+              <TranslatedText textKey="siteCopy.d002f2f2b6eb91e5" fallbackText={"Bewerken"} /></Button>
             <Link href={`/${locale}/admin/stalling`}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                {t('adminNew.common.back')}
+                {<TranslatedText textKey={'adminNew.common.back'} />}
               </Button>
             </Link>
           </div>
@@ -255,7 +256,7 @@ export default function StallingDetailPage() {
                   {str(customer, 'phone') ? <Field label="Telefoon" value={str(customer, 'phone')} /> : null}
                   {customer.id ? (
                     <Link href={adminRecordHref(locale, 'klanten', customer)} className="mt-2 block text-sm font-semibold text-marine-700 hover:text-marine-900">
-                      {t('adminNew.customers.details')} →
+                      {<TranslatedText textKey={'adminNew.customers.details'} />} →
                     </Link>
                   ) : null}
                   {boat.id ? (
@@ -270,7 +271,7 @@ export default function StallingDetailPage() {
             {/* Invoices */}
             <AdminSectionCard title={t('admin.sidebar.invoices')} icon={Receipt} className="mt-5">
               {invoices.length === 0 ? (
-                <p className="text-sm text-navy-500">{t('adminNew.invoices.emptyMessage')}</p>
+                <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.invoices.emptyMessage'} />}</p>
               ) : (
                 <div className="space-y-2">
                   {invoices.map((inv, i) => {
@@ -305,8 +306,7 @@ export default function StallingDetailPage() {
               className="mt-5"
               action={
                 <Button size="sm" variant="gold" leftIcon={<Send className="h-3.5 w-3.5" />} onClick={() => setShowSendForm(true)}>
-                  Formulier versturen
-                </Button>
+                  <TranslatedText textKey="siteCopy.951004620f7928d0" fallbackText={"Formulier versturen"} /></Button>
               }
             >
               {formResponses.loading ? (
@@ -317,8 +317,7 @@ export default function StallingDetailPage() {
                   message="Stuur een checklist of formulier naar de klant of medewerker."
                   action={
                     <Button variant="gold" size="sm" leftIcon={<Send className="h-3.5 w-3.5" />} onClick={() => setShowSendForm(true)}>
-                      Formulier versturen
-                    </Button>
+                      <TranslatedText textKey="siteCopy.951004620f7928d0" fallbackText={"Formulier versturen"} /></Button>
                   }
                 />
               ) : (
@@ -326,11 +325,11 @@ export default function StallingDetailPage() {
                   <AdminTable minWidth={600}>
                     <AdminTableHead>
                       <tr>
-                        <AdminTableHeaderCell>Formulier</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Kanaal</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Status</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Verstuurd</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Ingediend</AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.866a400d7c360e44" fallbackText={"Formulier"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.5f7fd6de00521391" fallbackText={"Kanaal"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.a6b41da974b5abaf" fallbackText={"Status"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.15265eba71d1aed0" fallbackText={"Verstuurd"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.a59298098f3ce658" fallbackText={"Ingediend"} /></AdminTableHeaderCell>
                         <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
                       </tr>
                     </AdminTableHead>
@@ -356,7 +355,7 @@ export default function StallingDetailPage() {
                           </AdminTableCell>
                           <AdminTableCell>
                             <Link href={`/${locale}/admin/form-responses/${r.id}`}>
-                              <Button variant="outline" size="sm">Open</Button>
+                              <Button variant="outline" size="sm"><TranslatedText textKey="siteCopy.929cb82c6f31fdbf" fallbackText={"Open"} /></Button>
                             </Link>
                           </AdminTableCell>
                         </AdminTableRow>
@@ -376,13 +375,13 @@ export default function StallingDetailPage() {
                   <>
                     <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { void onUpload('photo', e.target.files?.[0]); e.target.value = ''; }} />
                     <Button size="sm" variant="outline" leftIcon={<Upload className="h-3.5 w-3.5" />} disabled={uploadPhoto.loading} onClick={() => photoInputRef.current?.click()}>
-                      {t('adminNew.common.add')}
+                      {<TranslatedText textKey={'adminNew.common.add'} />}
                     </Button>
                   </>
                 }
               >
                 {photos.length === 0 ? (
-                  <p className="text-sm text-navy-500">{t('adminNew.boats.noPhotos')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.boats.noPhotos'} />}</p>
                 ) : (
                   <div className="grid grid-cols-3 gap-2">
                     {photos.map((p, i) => {
@@ -405,20 +404,20 @@ export default function StallingDetailPage() {
                   <>
                     <input ref={docInputRef} type="file" className="hidden" onChange={(e) => { void onUpload('document', e.target.files?.[0]); e.target.value = ''; }} />
                     <Button size="sm" variant="outline" leftIcon={<Upload className="h-3.5 w-3.5" />} disabled={uploadDoc.loading} onClick={() => docInputRef.current?.click()}>
-                      {t('adminNew.common.add')}
+                      {<TranslatedText textKey={'adminNew.common.add'} />}
                     </Button>
                   </>
                 }
               >
                 {documents.length === 0 ? (
-                  <p className="text-sm text-navy-500">{t('adminNew.boats.noDocuments')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.boats.noDocuments'} />}</p>
                 ) : (
                   <ul className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                     {documents.map((d, i) => (
                       <li key={str(d, 'file_id', 'id') || i} className="flex items-center justify-between px-4 py-3 text-sm">
                         <span className="text-navy-800">{str(d, 'filename', 'name') || `#${i + 1}`}</span>
                         <a href={str(d, 'signed_url', 'url')} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 hover:text-marine-900">
-                          {t('adminNew.invoiceDetail.actions.openPdf')}
+                          {<TranslatedText textKey={'adminNew.invoiceDetail.actions.openPdf'} />}
                         </a>
                       </li>
                     ))}
@@ -433,7 +432,7 @@ export default function StallingDetailPage() {
               {logs.loading ? (
                 <LoadingState label={t('adminNew.common.loading')} variant="table" />
               ) : auditRows.length === 0 ? (
-                <p className="text-sm text-navy-500">{t('adminNew.stalling.auditEmptyMessage')}</p>
+                <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.stalling.auditEmptyMessage'} />}</p>
               ) : (
                 <>
                   <div className="space-y-2">
@@ -479,35 +478,35 @@ export default function StallingDetailPage() {
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Type</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.0d211c9ec921f855" fallbackText={"Type"} /></label>
                   <AdminSelect value={editForm.type} onChange={(v) => setEditForm((f) => ({ ...f, type: v }))}>
-                    <option value="winter">Winterstalling</option>
-                    <option value="summer">Zomerstalling</option>
-                    <option value="year">Jaarstalling</option>
-                    <option value="temporary">Tijdelijk</option>
+                    <option value="winter"><TranslatedText textKey="siteCopy.1bc46c5006b4d7eb" fallbackText={"Winterstalling"} inline={false} /></option>
+                    <option value="summer"><TranslatedText textKey="siteCopy.fd9121ec0dc86537" fallbackText={"Zomerstalling"} inline={false} /></option>
+                    <option value="year"><TranslatedText textKey="siteCopy.489f060e711388d8" fallbackText={"Jaarstalling"} inline={false} /></option>
+                    <option value="temporary"><TranslatedText textKey="siteCopy.8e93be34c6ab2707" fallbackText={"Tijdelijk"} inline={false} /></option>
                   </AdminSelect>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Bok nummer</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.ea4712a03bf60c1a" fallbackText={"Bok nummer"} /></label>
                   <Input value={editForm.bok_number} onChange={(e) => setEditForm((f) => ({ ...f, bok_number: e.target.value }))} placeholder="112" />
                 </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Startdatum</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.1b4890d57b3c9ed8" fallbackText={"Startdatum"} /></label>
                   <Input type="date" value={editForm.start_date} onChange={(e) => setEditForm((f) => ({ ...f, start_date: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Einddatum</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.7b27e9a748b5b368" fallbackText={"Einddatum"} /></label>
                   <Input type="date" value={editForm.end_date} onChange={(e) => setEditForm((f) => ({ ...f, end_date: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Betaald tot</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.3ee4f481d4206e30" fallbackText={"Betaald tot"} /></label>
                   <Input type="date" value={editForm.paid_until} onChange={(e) => setEditForm((f) => ({ ...f, paid_until: e.target.value }))} />
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Notities</label>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.b4f35a237c094e0d" fallbackText={"Notities"} /></label>
                 <textarea
                   className="input-base w-full"
                   rows={3}
@@ -519,7 +518,7 @@ export default function StallingDetailPage() {
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button variant="outline" size="sm" type="button" onClick={() => setShowEdit(false)}>Annuleren</Button>
+            <Button variant="outline" size="sm" type="button" onClick={() => setShowEdit(false)}><TranslatedText textKey="siteCopy.0fe730908667e0d2" fallbackText={"Annuleren"} /></Button>
             <Button variant="gold" size="sm" type="submit" disabled={updateContract.loading} leftIcon={<Save className="h-3.5 w-3.5" />}>
               {updateContract.loading ? 'Opslaan...' : 'Opslaan'}
             </Button>
@@ -534,37 +533,37 @@ export default function StallingDetailPage() {
           <AdminModalBody>
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Formulier *</label>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.cf987043493eb609" fallbackText={"Formulier *"} /></label>
                 <AdminSelect value={selectedTemplateId} onChange={setSelectedTemplateId}>
-                  <option value="">Kies een formulier...</option>
+                  <option value=""><TranslatedText textKey="siteCopy.88c1967a3c115efe" fallbackText={"Kies een formulier..."} inline={false} /></option>
                   {templateOptions.map((tmpl) => (
                     <option key={tmpl.id} value={tmpl.id}>{tmpl.name_json?.nl ?? '—'}</option>
                   ))}
                 </AdminSelect>
                 {templateOptions.length === 0 ? (
                   <p className="mt-1 text-xs text-navy-500">
-                    Geen actieve formulieren. <Link href={`/${locale}/admin/forms`} className="text-marine-700 hover:underline">Maak er eerst één aan →</Link>
+                    <TranslatedText textKey="siteCopy.94a32c94631bb8e7" fallbackText={"Geen actieve formulieren. "} /><Link href={`/${locale}/admin/forms`} className="text-marine-700 hover:underline"><TranslatedText textKey="siteCopy.9fffd69c4a6e3eca" fallbackText={"Maak er eerst één aan →"} /></Link>
                   </p>
                 ) : null}
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Kanaal</label>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.5f7fd6de00521391" fallbackText={"Kanaal"} /></label>
                 <AdminSelect value={sentChannel} onChange={setSentChannel}>
-                  <option value="email">Email</option>
-                  <option value="portal">Klant portaal</option>
-                  <option value="tablet">Tablet (medewerker)</option>
-                  <option value="qr">QR code</option>
+                  <option value="email"><TranslatedText textKey="siteCopy.47f1c6265ebc9a90" fallbackText={"Email"} inline={false} /></option>
+                  <option value="portal"><TranslatedText textKey="siteCopy.c0a0c0571c61b7ae" fallbackText={"Klant portaal"} inline={false} /></option>
+                  <option value="tablet"><TranslatedText textKey="siteCopy.2e435a2de39fb4c4" fallbackText={"Tablet (medewerker)"} inline={false} /></option>
+                  <option value="qr"><TranslatedText textKey="siteCopy.d2c50a7f3be6b8ec" fallbackText={"QR code"} inline={false} /></option>
                 </AdminSelect>
               </div>
               {customer.email ? (
                 <p className="text-sm text-navy-600">
-                  Versturen naar: <span className="font-semibold">{str(customer, 'email')}</span>
+                  <TranslatedText textKey="siteCopy.cd4f2f16de74f35f" fallbackText={"Versturen naar: "} /><span className="font-semibold">{str(customer, 'email')}</span>
                 </p>
               ) : null}
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button variant="outline" size="sm" type="button" onClick={() => setShowSendForm(false)}>Annuleren</Button>
+            <Button variant="outline" size="sm" type="button" onClick={() => setShowSendForm(false)}><TranslatedText textKey="siteCopy.0fe730908667e0d2" fallbackText={"Annuleren"} /></Button>
             <Button variant="gold" size="sm" type="submit" disabled={sendForm.loading || !selectedTemplateId} leftIcon={<Send className="h-3.5 w-3.5" />}>
               {sendForm.loading ? 'Versturen...' : 'Versturen'}
             </Button>

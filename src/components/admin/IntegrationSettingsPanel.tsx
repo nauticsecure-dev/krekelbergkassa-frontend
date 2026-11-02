@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
@@ -25,6 +27,8 @@ export function IntegrationSettingsPanel() {
   const [busy, setBusy] = React.useState<string | null>(null);
   const [error, setError] = React.useState('');
   const [showAdvanced, setShowAdvanced] = React.useState(false);
+  const dirty = query.data !== null && query.data !== undefined &&
+    JSON.stringify(form) !== JSON.stringify(query.data.configuration);
 
   React.useEffect(() => {
     if (query.data) setForm(query.data.configuration);
@@ -43,7 +47,7 @@ export function IntegrationSettingsPanel() {
     }
   };
 
-  if (query.loading) return <p>{t('adminNew.settings.loading')}</p>;
+  if (query.loading) return <p>{<TranslatedText textKey={'adminNew.settings.loading'} />}</p>;
 
   const health = query.data?.health ?? {};
 
@@ -70,7 +74,7 @@ export function IntegrationSettingsPanel() {
             checked={form.whatsapp_enabled}
             onChange={(e) => setForm({ ...form, whatsapp_enabled: e.target.checked })}
           />
-          {t('settingsHub.whatsappEnabled')}
+          {<TranslatedText textKey={'settingsHub.whatsappEnabled'} />}
         </label>
         <div className="sm:col-span-2">
           <button
@@ -88,13 +92,13 @@ export function IntegrationSettingsPanel() {
                 onChange={(e) => setForm({ ...form, ocr_model: e.target.value })}
               />
               <p className="mt-1 text-xs text-navy-500">
-                Normale beheerders hoeven het model niet te wijzigen. Gebruik Upload/test in OCR-review.
-              </p>
+                <TranslatedText textKey="siteCopy.0a06ab548396f15e" fallbackText={"Normale beheerders hoeven het model niet te wijzigen. Gebruik Upload/test in OCR-review."} /></p>
             </div>
           ) : null}
         </div>
-        <Button onClick={() => void act('save', () => settingsService.updateIntegrations(form))}>
-          {t('adminNew.common.save')}
+        {dirty ? <p role="status" className="text-sm text-amber-800 sm:col-span-2">{t('settingsHub.saveBeforeDiagnostic')}</p> : null}
+        <Button disabled={!query.data || !dirty} onClick={() => void act('save', () => settingsService.updateIntegrations(form))}>
+          {<TranslatedText textKey={'adminNew.common.save'} />}
         </Button>
       </fieldset>
 
@@ -103,17 +107,31 @@ export function IntegrationSettingsPanel() {
           <article key={name} className="space-y-3 rounded-xl border bg-white p-5">
             <div className="flex justify-between gap-2">
               <h3 className="font-semibold">{tEnum(t, 'settingsHub.integrations', name)}</h3>
-              <Badge tone={item.last_test?.ok ? 'success' : item.configured ? 'warning' : 'danger'}>
-                {item.last_test?.status ??
-                  (item.configured ? t('settingsHub.untested') : t('settingsHub.setupRequired'))}
+              <Badge tone={item.configured ? 'navy' : 'danger'}>
+                {item.configured ? t('settingsHub.configurationPresent') : t('settingsHub.setupRequired')}
               </Badge>
             </div>
             <p className="text-sm">{item.description}</p>
             <p className="text-sm text-navy-500">{item.setup}</p>
+            {item.runtime_configured != null ? (
+              <p className="text-sm">{t('settingsHub.signingConfiguration')}: {item.runtime_configured ? t('settingsHub.configurationPresent') : t('settingsHub.setupRequired')}</p>
+            ) : null}
+            <div className="flex items-center gap-2 text-sm">
+              <span>{t('settingsHub.diagnosticResult')}</span>
+              <Badge tone={item.last_test ? (item.last_test.ok ? 'success' : 'danger') : 'warning'}>
+                {item.last_test?.status ?? t('settingsHub.untested')}
+              </Badge>
+            </div>
             {item.last_test ? (
               <p role="status" className="text-sm">
-                {item.last_test.message} <time>{item.last_test.checked_at}</time>
+                {item.last_test.message} <time dateTime={item.last_test.checked_at}>{new Date(item.last_test.checked_at).toLocaleString(locale)}</time>
               </p>
+            ) : null}
+            {item.verification ? (
+              <div className="rounded-lg bg-navy-50 p-3 text-sm">
+                <p className="font-medium">{t('settingsHub.workflowVerification')}</p>
+                <p>{item.verification}</p>
+              </div>
             ) : null}
             {name === 'signhost' ? (
               <Input
@@ -125,20 +143,21 @@ export function IntegrationSettingsPanel() {
             <div className="flex flex-wrap items-center gap-3">
               {name === 'mollie' ? (
                 <Button
-                  disabled={!can('settings.update') || busy !== null}
+                  disabled={!can('settings.update') || busy !== null || dirty}
                   onClick={() =>
                     void act(name, async () => {
                       await settingsService.testMollie();
                     })
                   }
                 >
-                  {t('settingsHub.runDiagnostic')}
+                  {<TranslatedText textKey={'settingsHub.runDiagnostic'} />}
                 </Button>
               ) : name !== 'google_places' ? (
                 <Button
                   disabled={
                     !can('settings.update') ||
                     busy !== null ||
+                    dirty ||
                     (name === 'signhost' && !transaction)
                   }
                   onClick={() =>
@@ -150,18 +169,14 @@ export function IntegrationSettingsPanel() {
                     )
                   }
                 >
-                  {t('settingsHub.runDiagnostic')}
+                  {<TranslatedText textKey={'settingsHub.runDiagnostic'} />}
                 </Button>
               ) : null}
               <Link
                 className="text-sm underline"
-                href={
-                  item.path.includes('#')
-                    ? `/${locale}/admin/${item.path}`
-                    : `/${locale}/admin/${item.path}`
-                }
+                href={`/${locale}/admin/${item.path}`}
               >
-                {t('settingsHub.openWorkflow')}
+                {<TranslatedText textKey={'settingsHub.openWorkflow'} />}
               </Link>
             </div>
           </article>

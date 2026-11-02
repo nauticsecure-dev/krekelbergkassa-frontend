@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { useIntl } from '@/i18n/IntlProvider';
 import { AlertTriangle, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -135,7 +137,7 @@ export function ErrorState({
         {message ? <div className="mt-1 text-sm text-navy-500">{message}</div> : null}
         {onRetry ? (
           <Button onClick={onRetry} variant="outline" size="sm" className="mt-4">
-            {t('adminNew.states.retry')}
+            {<TranslatedText textKey={'adminNew.states.retry'} />}
           </Button>
         ) : null}
       </div>

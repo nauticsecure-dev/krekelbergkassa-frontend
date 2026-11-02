@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
@@ -24,7 +26,7 @@ function AuthLoading() {
     <div className="app-canvas flex min-h-screen items-center justify-center">
       <div className="surface-float flex flex-col items-center gap-3 px-8 py-10">
         <span className="h-8 w-8 animate-spin rounded-full border-2 border-navy-200 border-t-navy-700" />
-        <span className="text-sm font-medium text-navy-500">Loading…</span>
+        <span className="text-sm font-medium text-navy-500"><TranslatedText textKey="siteCopy.259e44f2f7cf8b2b" fallbackText={"Loading…"} /></span>
       </div>
     </div>
   );

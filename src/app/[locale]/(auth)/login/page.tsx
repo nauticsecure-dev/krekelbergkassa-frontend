@@ -1,5 +1,7 @@
 "use client";
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -118,10 +120,10 @@ function LoginPageContent() {
     return (
       <div>
         <h2 className="heading-display text-3xl text-navy-900 sm:text-[34px]">
-          {t("adminNew.auth.mfaTitle")}.
+          {<TranslatedText textKey={"adminNew.auth.mfaTitle"} />}.
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-navy-500">
-          {t("adminNew.auth.mfaSubtitle")}
+          {<TranslatedText textKey={"adminNew.auth.mfaSubtitle"} />}
         </p>
         <form onSubmit={submitMfa} className="mt-6 space-y-4">
           <Field id="mfa-code" label={t("adminNew.auth.mfaCode")} icon={<Lock className="h-4 w-4" />}>
@@ -150,14 +152,14 @@ function LoginPageContent() {
             rightIcon={<ArrowRight className="h-4 w-4" />}
             className="bg-navy-900 text-white hover:bg-navy-800"
           >
-            {loading ? t("common.loggingIn") : t("adminNew.auth.mfaVerify")}
+            {loading ? <TranslatedText textKey={"common.loggingIn"} /> : <TranslatedText textKey={"adminNew.auth.mfaVerify"} />}
           </Button>
           <button
             type="button"
             onClick={() => { setMfaToken(null); setMfaCode(""); setError(null); }}
             className="block w-full pt-1 text-center text-sm font-semibold text-navy-500 hover:text-navy-800"
           >
-            {t("adminNew.common.back")}
+            {<TranslatedText textKey={"adminNew.common.back"} />}
           </button>
         </form>
       </div>
@@ -167,10 +169,10 @@ function LoginPageContent() {
   return (
     <div>
       <h2 className="heading-display text-3xl text-navy-900 sm:text-[34px]">
-        {t("login.title")}.
+        {<TranslatedText textKey={"login.title"} />}.
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-navy-500">
-        {t("loginExt.subtitle")}
+        {<TranslatedText textKey={"loginExt.subtitle"} />}
       </p>
 
       <form onSubmit={submit} className="mt-6 space-y-4">
@@ -233,18 +235,18 @@ function LoginPageContent() {
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
               />
-              {t("login.remember")}
+              {<TranslatedText textKey={"login.remember"} />}
             </label>
             <Link
               href={`/${locale}/forgot-password`}
               className="font-semibold text-marine-700 hover:text-marine-800"
             >
-              {t("login.forgot")}
+              {<TranslatedText textKey={"login.forgot"} />}
             </Link>
           </div>
         ) : (
           <div className="rounded-lg border border-marine-200 bg-marine-50 px-3 py-2 text-xs text-marine-800">
-            {t("adminNew.auth.magicInfo")}
+            {<TranslatedText textKey={"adminNew.auth.magicInfo"} />}
           </div>
         )}
 
@@ -263,19 +265,19 @@ function LoginPageContent() {
           className="bg-navy-900 text-white hover:bg-navy-800"
         >
           {loading
-            ? t("common.loggingIn")
+            ? <TranslatedText textKey={"common.loggingIn"} />
             : role === "customer"
-              ? t("adminNew.auth.sendMagicLink")
+              ? <TranslatedText textKey={"adminNew.auth.sendMagicLink"} />
               : `${t("login.submit")}`}
         </Button>
 
         <p className="pt-2 text-center text-sm text-navy-500">
-          {t("login.noAccount")}{" "}
+          {<TranslatedText textKey={"login.noAccount"} />}{" "}
           <Link
             href={`/${locale}/signup?role=${role}`}
             className="font-semibold text-navy-900 hover:text-marine-700"
           >
-            {t("login.createAccount")}
+            {<TranslatedText textKey={"login.createAccount"} />}
           </Link>
         </p>
       </form>

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import { useParams } from 'next/navigation';
 import { CheckCircle, FileText, Loader2, Ship } from 'lucide-react';
@@ -84,7 +86,7 @@ export default function SigningPage() {
     return (
       <div className="flex min-h-screen items-center justify-center p-6 text-center">
         <div>
-          <p className="text-lg font-semibold text-navy-900">Contract niet gevonden</p>
+          <p className="text-lg font-semibold text-navy-900"><TranslatedText textKey="siteCopy.2ed67f7ddc32c81c" fallbackText={"Contract niet gevonden"} /></p>
           <p className="mt-1 text-sm text-navy-500">{error ?? 'De link is ongeldig of verlopen.'}</p>
         </div>
       </div>
@@ -96,11 +98,9 @@ export default function SigningPage() {
       <div className="flex min-h-screen items-center justify-center p-6">
         <div className="max-w-md text-center">
           <CheckCircle className="mx-auto h-16 w-16 text-emerald-500" />
-          <h1 className="mt-4 text-2xl font-bold text-navy-900">Contract ondertekend</h1>
+          <h1 className="mt-4 text-2xl font-bold text-navy-900"><TranslatedText textKey="siteCopy.ab9a297d1947737d" fallbackText={"Contract ondertekend"} /></h1>
           <p className="mt-2 text-navy-600">
-            Uw stallingcontract <strong>{contract.contract_number}</strong> is succesvol ondertekend.
-            U ontvangt een bevestiging per e-mail.
-          </p>
+            <TranslatedText textKey="siteCopy.ce56e4b5378b4c13" fallbackText={"Uw stallingcontract "} /><strong>{contract.contract_number}</strong> <TranslatedText textKey="siteCopy.cc07dce138d15be5" fallbackText={" is succesvol ondertekend. U ontvangt een bevestiging per e-mail."} /></p>
         </div>
       </div>
     );
@@ -112,36 +112,35 @@ export default function SigningPage() {
         {/* Header */}
         <div className="mb-8 text-center">
           <Ship className="mx-auto h-10 w-10 text-marine-700" />
-          <h1 className="mt-3 text-2xl font-bold text-navy-900">Stallingcontract ondertekenen</h1>
-          <p className="mt-1 text-navy-500">Krekelberg Nautic</p>
+          <h1 className="mt-3 text-2xl font-bold text-navy-900"><TranslatedText textKey="siteCopy.5b4997d0c7f82550" fallbackText={"Stallingcontract ondertekenen"} /></h1>
+          <p className="mt-1 text-navy-500"><TranslatedText textKey="siteCopy.7866f5b4e104647f" fallbackText={"Krekelberg Nautic"} /></p>
         </div>
 
         {/* Contract summary */}
         <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
           <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-navy-400">
             <FileText className="h-4 w-4" />
-            Contractgegevens
-          </div>
+            <TranslatedText textKey="siteCopy.32bd1a1a8ff748d2" fallbackText={"Contractgegevens"} /></div>
           <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div>
-              <dt className="text-navy-500">Contractnummer</dt>
+              <dt className="text-navy-500"><TranslatedText textKey="siteCopy.7a109ff0f5205360" fallbackText={"Contractnummer"} /></dt>
               <dd className="font-semibold text-navy-900">{contract.contract_number}</dd>
             </div>
             <div>
-              <dt className="text-navy-500">Boot</dt>
+              <dt className="text-navy-500"><TranslatedText textKey="siteCopy.88265b361cf3509f" fallbackText={"Boot"} /></dt>
               <dd className="font-semibold text-navy-900">{contract.boat_name}</dd>
             </div>
             <div>
-              <dt className="text-navy-500">Periode</dt>
+              <dt className="text-navy-500"><TranslatedText textKey="siteCopy.5c4d477329060579" fallbackText={"Periode"} /></dt>
               <dd className="font-semibold text-navy-900">{contract.start_date} – {contract.end_date}</dd>
             </div>
             <div>
-              <dt className="text-navy-500">Totaalbedrag</dt>
+              <dt className="text-navy-500"><TranslatedText textKey="siteCopy.499b1b1c6add77b7" fallbackText={"Totaalbedrag"} /></dt>
               <dd className="font-semibold text-navy-900">{formatCurrency(contract.price_total / 100, 'nl-NL')}</dd>
             </div>
             {contract.deposit_amount > 0 ? (
               <div>
-                <dt className="text-navy-500">Aanbetaling ({contract.deposit_percentage}%)</dt>
+                <dt className="text-navy-500"><TranslatedText textKey="siteCopy.3f47d38b0f1871b4" fallbackText={"Aanbetaling ("} />{contract.deposit_percentage}%)</dt>
                 <dd className="font-semibold text-navy-900">{formatCurrency(contract.deposit_amount / 100, 'nl-NL')}</dd>
               </div>
             ) : null}
@@ -158,11 +157,9 @@ export default function SigningPage() {
 
         {/* Signature form */}
         {contract.signing_provider === 'signhost' ? <div className="rounded-2xl bg-white p-6 shadow-sm"><h2 className="mb-4 font-semibold">{copy.title}</h2>{contract.signing_url ? <a className="font-semibold text-marine-700 underline" href={contract.signing_url} rel="noreferrer">{copy.open}</a> : <p>{copy.waiting}</p>}</div> : <div className="rounded-2xl bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-base font-semibold text-navy-900">Digitale handtekening</h2>
+          <h2 className="mb-4 text-base font-semibold text-navy-900"><TranslatedText textKey="siteCopy.52f399f4da0c7974" fallbackText={"Digitale handtekening"} /></h2>
           <p className="mb-4 text-sm text-navy-600">
-            Door uw naam en e-mailadres in te voeren en op &quot;Ondertekenen&quot; te klikken,
-            bevestigt u akkoord te gaan met de bovenstaande contractvoorwaarden.
-          </p>
+            <TranslatedText textKey="siteCopy.b546732a6a0dd965" fallbackText={"Door uw naam en e-mailadres in te voeren en op \"Ondertekenen\" te klikken, bevestigt u akkoord te gaan met de bovenstaande contractvoorwaarden."} /></p>
           <form onSubmit={(e) => void onSign(e)} className="space-y-4">
             <Input
               label="Uw naam"
@@ -188,8 +185,7 @@ export default function SigningPage() {
               {signing ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Ondertekenen…
-                </span>
+                  <TranslatedText textKey="siteCopy.265266120e0716ff" fallbackText={"Ondertekenen…"} /></span>
               ) : (
                 'Contract ondertekenen'
               )}

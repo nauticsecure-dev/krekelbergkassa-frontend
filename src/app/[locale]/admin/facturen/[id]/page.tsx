@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -214,7 +216,7 @@ export default function InvoiceDetailPage() {
               disabled={invoice?.direction === 'purchase' || invoice?.invoice_status !== 'draft'}
               onClick={() => setConfirmSend(true)}
             >
-              {t('adminNew.invoiceDetail.actions.send')}
+              {<TranslatedText textKey={'adminNew.invoiceDetail.actions.send'} />}
             </Button>
             <Button
               variant="outline"
@@ -223,7 +225,7 @@ export default function InvoiceDetailPage() {
               disabled={invoice?.direction === 'purchase' || invoice?.invoice_status !== 'final' || invoice?.outstanding_cents <= 0}
               onClick={() => setShowMarkPaid(true)}
             >
-              {t('adminNew.invoiceDetail.actions.markPaid')}
+              {<TranslatedText textKey={'adminNew.invoiceDetail.actions.markPaid'} />}
             </Button>
             <Button
               variant="gold"
@@ -241,7 +243,7 @@ export default function InvoiceDetailPage() {
                 )
               }
             >
-              {t('adminNew.invoiceDetail.actions.mollieLink')}
+              {<TranslatedText textKey={'adminNew.invoiceDetail.actions.mollieLink'} />}
             </Button>
           </>
         }
@@ -342,7 +344,7 @@ export default function InvoiceDetailPage() {
             {creditResult ? (
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                 <p className="mb-3 text-sm font-semibold text-emerald-800">
-                  {t('adminNew.invoiceDetail.creditSuccess')}
+                  {<TranslatedText textKey={'adminNew.invoiceDetail.creditSuccess'} />}
                   {creditResult.invoice_number ? ` — ${creditResult.invoice_number}` : ''}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -351,7 +353,7 @@ export default function InvoiceDetailPage() {
                     className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 text-sm font-medium text-navy-800 transition hover:bg-navy-50"
                   >
                     <FileText className="h-4 w-4" />
-                    {t('adminNew.invoiceDetail.actions.openCreditNote')}
+                    {<TranslatedText textKey={'adminNew.invoiceDetail.actions.openCreditNote'} />}
                   </Link>
                   {creditResult.pdf_url ? (
                     <>
@@ -361,7 +363,7 @@ export default function InvoiceDetailPage() {
                         className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 text-sm font-medium text-navy-800 transition hover:bg-navy-50"
                       >
                         <Download className="h-4 w-4" />
-                        {t('adminNew.invoiceDetail.actions.downloadPdf')}
+                        {<TranslatedText textKey={'adminNew.invoiceDetail.actions.downloadPdf'} />}
                       </a>
                       <button
                         type="button"
@@ -372,7 +374,7 @@ export default function InvoiceDetailPage() {
                         }}
                       >
                         <Printer className="h-4 w-4" />
-                        {t('adminNew.invoiceDetail.actions.printPdf')}
+                        {<TranslatedText textKey={'adminNew.invoiceDetail.actions.printPdf'} />}
                       </button>
                     </>
                   ) : null}
@@ -387,14 +389,14 @@ export default function InvoiceDetailPage() {
                     }
                   >
                     <Mail className="h-4 w-4" />
-                    {t('adminNew.invoiceDetail.actions.emailPdf')}
+                    {<TranslatedText textKey={'adminNew.invoiceDetail.actions.emailPdf'} />}
                   </button>
                   <button
                     type="button"
                     className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-navy-600 transition hover:bg-navy-50"
                     onClick={() => setCreditResult(null)}
                   >
-                    {t('adminNew.common.dismiss')}
+                    {<TranslatedText textKey={'adminNew.common.dismiss'} />}
                   </button>
                 </div>
               </div>
@@ -464,19 +466,19 @@ export default function InvoiceDetailPage() {
                       <AdminTableHead>
                         <tr>
                           <AdminTableHeaderCell>
-                            {t('adminNew.invoiceDetail.columns.description')}
+                            {<TranslatedText textKey={'adminNew.invoiceDetail.columns.description'} />}
                           </AdminTableHeaderCell>
                           <AdminTableHeaderCell>
-                            {t('adminNew.invoiceDetail.columns.qty')}
+                            {<TranslatedText textKey={'adminNew.invoiceDetail.columns.qty'} />}
                           </AdminTableHeaderCell>
                           <AdminTableHeaderCell>
-                            {t('adminNew.invoiceDetail.columns.unitExcl')}
+                            {<TranslatedText textKey={'adminNew.invoiceDetail.columns.unitExcl'} />}
                           </AdminTableHeaderCell>
                           <AdminTableHeaderCell>
-                            {t('adminNew.invoiceDetail.columns.vat')}
+                            {<TranslatedText textKey={'adminNew.invoiceDetail.columns.vat'} />}
                           </AdminTableHeaderCell>
                           <AdminTableHeaderCell>
-                            {t('adminNew.invoiceDetail.columns.total')}
+                            {<TranslatedText textKey={'adminNew.invoiceDetail.columns.total'} />}
                           </AdminTableHeaderCell>
                         </tr>
                       </AdminTableHead>
@@ -563,16 +565,16 @@ export default function InvoiceDetailPage() {
                   <div className="space-y-2">
                     {dossierTab === 'documenten' ? (
                     <>
-                    {invoice.source_type === 'invoice_import' ? <Button variant="outline" size="sm" fullWidth onClick={openOriginal}>{t('adminNew.invoiceDetail.originalDocument', { defaultValue: 'Origineel document' })}</Button> : null}
+                    {invoice.source_type === 'invoice_import' ? <Button variant="outline" size="sm" fullWidth onClick={openOriginal}>{<TranslatedText textKey={'adminNew.invoiceDetail.originalDocument'} vars={{ defaultValue: 'Origineel document' }} />}</Button> : null}
                     {invoice.direction !== 'purchase' ? <>
                     <div className="rounded-xl border border-navy-100/70 bg-white p-2">
                       <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-widest text-navy-400">
-                        {t('adminNew.invoiceDetail.pdfActions')}
+                        {<TranslatedText textKey={'adminNew.invoiceDetail.pdfActions'} />}
                       </div>
                       {pdfGenerating && !invoice.pdf_url ? (
                         <div className="flex items-center justify-center gap-2 py-3 text-sm text-navy-500">
                           <RefreshCw className="h-4 w-4 animate-spin" />
-                          {t('adminNew.invoiceDetail.pdfGenerating')}
+                          {<TranslatedText textKey={'adminNew.invoiceDetail.pdfGenerating'} />}
                         </div>
                       ) : !invoice.pdf_url ? (
                         <Button
@@ -587,7 +589,7 @@ export default function InvoiceDetailPage() {
                             })
                           }
                         >
-                          {t('adminNew.invoiceDetail.actions.generatePdf')}
+                          {<TranslatedText textKey={'adminNew.invoiceDetail.actions.generatePdf'} />}
                         </Button>
                       ) : (
                         <div className="grid grid-cols-2 gap-2">
@@ -598,7 +600,7 @@ export default function InvoiceDetailPage() {
                             className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm font-medium text-navy-800 transition hover:bg-sand-50"
                           >
                             <FileText className="h-4 w-4" />
-                            {t('adminNew.invoiceDetail.actions.openPdf')}
+                            {<TranslatedText textKey={'adminNew.invoiceDetail.actions.openPdf'} />}
                           </a>
                           <Button
                             variant="outline"
@@ -606,7 +608,7 @@ export default function InvoiceDetailPage() {
                             leftIcon={<Download className="h-4 w-4" />}
                             onClick={() => void downloadPdf()}
                           >
-                            {t('adminNew.invoiceDetail.actions.downloadPdf')}
+                            {<TranslatedText textKey={'adminNew.invoiceDetail.actions.downloadPdf'} />}
                           </Button>
                           <Button
                             variant="outline"
@@ -614,7 +616,7 @@ export default function InvoiceDetailPage() {
                             leftIcon={<Printer className="h-4 w-4" />}
                             onClick={printPdf}
                           >
-                            {t('adminNew.invoiceDetail.actions.printPdf')}
+                            {<TranslatedText textKey={'adminNew.invoiceDetail.actions.printPdf'} />}
                           </Button>
                           <Button
                             variant="outline"
@@ -628,7 +630,7 @@ export default function InvoiceDetailPage() {
                               )
                             }
                           >
-                            {t('adminNew.invoiceDetail.actions.emailPdf')}
+                            {<TranslatedText textKey={'adminNew.invoiceDetail.actions.emailPdf'} />}
                           </Button>
                         </div>
                       )}
@@ -648,7 +650,7 @@ export default function InvoiceDetailPage() {
                         )
                       }
                     >
-                      {t('adminNew.invoiceDetail.actions.regeneratePdf')}
+                      {<TranslatedText textKey={'adminNew.invoiceDetail.actions.regeneratePdf'} />}
                     </Button>
                     </> : null}
                     </>
@@ -662,7 +664,7 @@ export default function InvoiceDetailPage() {
                       leftIcon={<RefreshCw className="h-4 w-4" />}
                       onClick={() => setShowReminder(true)}
                     >
-                      {t('adminNew.invoiceDetail.actions.sendReminder')}
+                      {<TranslatedText textKey={'adminNew.invoiceDetail.actions.sendReminder'} />}
                     </Button>
                     <Button
                       variant="outline"
@@ -670,7 +672,7 @@ export default function InvoiceDetailPage() {
                       fullWidth
                       onClick={onOpenCredit}
                     >
-                      {t('adminNew.invoiceDetail.actions.credit')}
+                      {<TranslatedText textKey={'adminNew.invoiceDetail.actions.credit'} />}
                     </Button>
                     <Button
                       variant="danger"
@@ -679,7 +681,7 @@ export default function InvoiceDetailPage() {
                       leftIcon={<XCircle className="h-4 w-4" />}
                       onClick={() => setConfirmCancel(true)}
                     >
-                      {t('adminNew.common.cancel')}
+                      {<TranslatedText textKey={'adminNew.common.cancel'} />}
                     </Button>
                     </>
                     ) : null}
@@ -730,7 +732,7 @@ export default function InvoiceDetailPage() {
                     ))
                   ) : (
                     <div className="px-4 py-6 text-sm text-navy-500">
-                      {t('adminNew.invoiceDetail.noPayments')}
+                      {<TranslatedText textKey={'adminNew.invoiceDetail.noPayments'} />}
                     </div>
                   )}
                 </div>
@@ -754,14 +756,14 @@ export default function InvoiceDetailPage() {
                           </span>
                         </div>
                         <div className="mt-1 text-xs text-navy-500">
-                          {t('adminNew.invoiceDetail.channel')}: {reminder.channel} ·{' '}
-                          {t('adminNew.invoiceDetail.status')}: {reminder.status}
+                          {<TranslatedText textKey={'adminNew.invoiceDetail.channel'} />}: {reminder.channel} ·{' '}
+                          {<TranslatedText textKey={'adminNew.invoiceDetail.status'} />}: {reminder.status}
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="px-4 py-6 text-sm text-navy-500">
-                      {t('adminNew.invoiceDetail.noReminders')}
+                      {<TranslatedText textKey={'adminNew.invoiceDetail.noReminders'} />}
                     </div>
                   )}
                 </div>
@@ -838,7 +840,7 @@ export default function InvoiceDetailPage() {
                       <div className="text-xs text-navy-500">{String(item.description ?? item.message ?? '')}</div>
                     </div>
                   )) : (
-                    <div className="px-4 py-6 text-sm text-navy-500">{t('adminNew.invoiceDetail.noPayments')}</div>
+                    <div className="px-4 py-6 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.invoiceDetail.noPayments'} />}</div>
                   )}
                 </div>
               </AdminSectionCard>
@@ -866,7 +868,7 @@ export default function InvoiceDetailPage() {
                 href={`/${locale}/admin/facturen`}
                 className="inline-flex text-sm font-semibold text-marine-700 hover:text-marine-800"
               >
-                {t('adminNew.invoiceDetail.back')}
+                {<TranslatedText textKey={'adminNew.invoiceDetail.back'} />}
               </Link>
               {/* Trello #107: back-link to the originating stalling contract. */}
               {provenance ? (
@@ -875,7 +877,7 @@ export default function InvoiceDetailPage() {
                   className="inline-flex items-center gap-1 text-sm font-semibold text-marine-700 hover:text-marine-800"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  {t('adminNew.invoices.provenanceLabel', { defaultValue: 'Bron' })}: {provenance.label}
+                  {<TranslatedText textKey={'adminNew.invoices.provenanceLabel'} vars={{ defaultValue: 'Bron' }} />}: {provenance.label}
                 </Link>
               ) : null}
             </div>
@@ -895,7 +897,7 @@ export default function InvoiceDetailPage() {
           }}
         >
           <h2 className="text-lg font-semibold text-navy-900">
-            {t('adminNew.invoiceDetail.reminderModal.title')}
+            {<TranslatedText textKey={'adminNew.invoiceDetail.reminderModal.title'} />}
           </h2>
           <div className="mt-4 space-y-3">
             <Input
@@ -906,7 +908,7 @@ export default function InvoiceDetailPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.invoiceDetail.reminderModal.message')}
+                {<TranslatedText textKey={'adminNew.invoiceDetail.reminderModal.message'} />}
               </label>
               <textarea
                 className="input-base min-h-36"
@@ -918,10 +920,10 @@ export default function InvoiceDetailPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowReminder(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold">
-              {t('adminNew.invoiceDetail.actions.send')}
+              {<TranslatedText textKey={'adminNew.invoiceDetail.actions.send'} />}
             </Button>
           </div>
         </form>
@@ -936,11 +938,11 @@ export default function InvoiceDetailPage() {
           }}
         >
           <h2 className="text-lg font-semibold text-navy-900">
-            {t('adminNew.invoiceDetail.markPaidModal.title')}
+            {<TranslatedText textKey={'adminNew.invoiceDetail.markPaidModal.title'} />}
           </h2>
           <div className="mt-4">
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.invoiceDetail.markPaidModal.method')}
+              {<TranslatedText textKey={'adminNew.invoiceDetail.markPaidModal.method'} />}
             </label>
             <SearchSelect
               className="input-base"
@@ -957,10 +959,10 @@ export default function InvoiceDetailPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowMarkPaid(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold">
-              {t('adminNew.common.save')}
+              {<TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </div>
         </form>
@@ -985,15 +987,15 @@ export default function InvoiceDetailPage() {
       <Modal open={showCredit} onClose={() => setShowCredit(false)} size="md">
         <form className="p-6" onSubmit={onSubmitCredit}>
           <h2 className="text-lg font-semibold text-navy-900">
-            {t('adminNew.invoiceDetail.creditModal.title')}
+            {<TranslatedText textKey={'adminNew.invoiceDetail.creditModal.title'} />}
           </h2>
           <p className="mt-1 text-sm text-navy-500">
-            {t('adminNew.invoiceDetail.creditModal.subtitle')}
+            {<TranslatedText textKey={'adminNew.invoiceDetail.creditModal.subtitle'} />}
           </p>
           <div className="mt-4 space-y-4">
             <div>
               <span className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.invoiceDetail.creditModal.scope')}
+                {<TranslatedText textKey={'adminNew.invoiceDetail.creditModal.scope'} />}
               </span>
               <div className="grid grid-cols-2 gap-2">
                 {(['full', 'partial'] as const).map((mode) => (
@@ -1027,7 +1029,7 @@ export default function InvoiceDetailPage() {
             ) : null}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.invoiceDetail.creditModal.reason')}
+                {<TranslatedText textKey={'adminNew.invoiceDetail.creditModal.reason'} />}
               </label>
               <textarea
                 className="input-base min-h-28"
@@ -1045,20 +1047,20 @@ export default function InvoiceDetailPage() {
                 onChange={(e) => setSendEmailCredit(e.target.checked)}
               />
               <span className="text-sm text-navy-700">
-                {t('adminNew.invoiceDetail.creditModal.sendEmail')}
+                {<TranslatedText textKey={'adminNew.invoiceDetail.creditModal.sendEmail'} />}
               </span>
             </label>
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowCredit(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button
               type="submit"
               variant="primary"
               disabled={creditInvoice.loading || !creditReason.trim()}
             >
-              {t('adminNew.invoiceDetail.creditModal.confirm')}
+              {<TranslatedText textKey={'adminNew.invoiceDetail.creditModal.confirm'} />}
             </Button>
           </div>
         </form>

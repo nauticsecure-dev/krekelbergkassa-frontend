@@ -1,7 +1,9 @@
+"use client";
 import { LegalPage } from '@/components/site/LegalPage';
-import { companyInfo } from '@/lib/company';
+import { useCompanyInfo } from '@/components/cms/CompanyText';
 
 export default function PrivacyPage() {
+  const companyInfo = useCompanyInfo();
   return (
     <LegalPage
       page="privacy"

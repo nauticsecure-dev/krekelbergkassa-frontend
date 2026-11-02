@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 import { AdminSplitLayout } from '@/components/admin/AdminUi';
@@ -295,7 +297,7 @@ export function DocumentZoneEditor({
             disabled={loadingDoc}
             onClick={() => fileRef.current?.click()}
           >
-            {docUrl ? t('adminNew.templates.changeDoc') : t('adminNew.templates.loadDoc')}
+            {docUrl ? <TranslatedText textKey={'adminNew.templates.changeDoc'} /> : <TranslatedText textKey={'adminNew.templates.loadDoc'} />}
           </Button>
           <input
             ref={fileRef}
@@ -309,7 +311,7 @@ export function DocumentZoneEditor({
             }}
           />
           <label className="ml-auto flex items-center gap-2 text-sm">
-            <span className="text-navy-500">{t('adminNew.templates.activeField')}</span>
+            <span className="text-navy-500">{<TranslatedText textKey={'adminNew.templates.activeField'} />}</span>
             <SearchSelect
               className="input-base py-1 text-sm"
               value={field}
@@ -327,7 +329,7 @@ export function DocumentZoneEditor({
         {totalPages > 1 ? (
           <div className="mb-2 flex items-center gap-2">
             <Button variant="outline" size="sm" disabled={currentPage <= 1 || loadingDoc} onClick={() => void goToPage(currentPage - 1)}>‹</Button>
-            <span className="text-xs text-navy-600">Pagina {currentPage} / {totalPages}</span>
+            <span className="text-xs text-navy-600"><TranslatedText textKey="siteCopy.04812e1b7324f025" fallbackText={"Pagina "} />{currentPage} / {totalPages}</span>
             <Button variant="outline" size="sm" disabled={currentPage >= totalPages || loadingDoc} onClick={() => void goToPage(currentPage + 1)}>›</Button>
           </div>
         ) : null}
@@ -349,7 +351,7 @@ export function DocumentZoneEditor({
             <img src={docUrl} alt="" className="pointer-events-none block w-full" draggable={false} />
           ) : (
             <div className="flex min-h-[360px] items-center justify-center text-sm text-navy-400">
-              {loadingDoc ? t('adminNew.templates.rendering') : t('adminNew.templates.loadPrompt')}
+              {loadingDoc ? <TranslatedText textKey={'adminNew.templates.rendering'} /> : <TranslatedText textKey={'adminNew.templates.loadPrompt'} />}
             </div>
           )}
 
@@ -396,15 +398,15 @@ export function DocumentZoneEditor({
           ) : null}
         </div>
         {docError ? <p className="mt-2 text-sm text-rose-600">{docError}</p> : null}
-        <p className="mt-2 text-xs text-navy-400">{t('adminNew.templates.drawHint')}</p>
+        <p className="mt-2 text-xs text-navy-400">{<TranslatedText textKey={'adminNew.templates.drawHint'} />}</p>
       </div>
 
       <div>
         <div className="mb-2 text-sm font-semibold text-navy-900">
-          {t('adminNew.templates.zones')} ({zones.length})
+          {<TranslatedText textKey={'adminNew.templates.zones'} />} ({zones.length})
         </div>
         {zones.length === 0 ? (
-          <p className="text-sm text-navy-400">{t('adminNew.templates.noZones')}</p>
+          <p className="text-sm text-navy-400">{<TranslatedText textKey={'adminNew.templates.noZones'} />}</p>
         ) : (
           <ul className="space-y-2">
             {zones.map((z, idx) => (

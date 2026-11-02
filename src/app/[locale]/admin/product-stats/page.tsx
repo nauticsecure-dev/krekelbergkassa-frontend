@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { adminRecordHref } from '@/config/admin-routes';
 
 
@@ -91,7 +93,7 @@ export default function ProductStatsPage() {
           </AdminSelect>
           <div className="w-52">
             <AdminSelect value={groupFilter} onChange={setGroupFilter}>
-              <option value="">Alle groepen</option>
+              <option value=""><TranslatedText textKey="siteCopy.af0aea2130d8b833" fallbackText={"Alle groepen"} inline={false} /></option>
               {groupRows.map((g) => (
                 <option key={String(g.id)} value={String(g.id)}>{String(g.name)}</option>
               ))}
@@ -119,13 +121,13 @@ export default function ProductStatsPage() {
                     <AdminTableHead>
                       <tr>
                         <AdminTableHeaderCell>#</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>{t('adminNew.products.columns.name')}</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Groep</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Verkopen</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Vandaag</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Omzet</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Laatste verkoop</AdminTableHeaderCell>
-                        <AdminTableHeaderCell>Status</AdminTableHeaderCell>
+                        <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.products.columns.name'} />}</AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.2767931f8969b705" fallbackText={"Groep"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.f37ad7d16f2566ad" fallbackText={"Verkopen"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.8dd6480b21bc32d2" fallbackText={"Vandaag"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.3d24677ba406afad" fallbackText={"Omzet"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.2113bf8f64cd015d" fallbackText={"Laatste verkoop"} /></AdminTableHeaderCell>
+                        <AdminTableHeaderCell><TranslatedText textKey="siteCopy.ee274ba7efadc863" fallbackText={"Status"} /></AdminTableHeaderCell>
                       </tr>
                     </AdminTableHead>
                     <tbody>
@@ -166,9 +168,9 @@ export default function ProductStatsPage() {
                             </AdminTableCell>
                             <AdminTableCell>
                               {isHot ? (
-                                <Badge tone="gold">🔥 Hot</Badge>
+                                <Badge tone="gold"><TranslatedText textKey="siteCopy.3f5ebccabc62cb16" fallbackText={"🔥 Hot"} /></Badge>
                               ) : Number(row.times_sold ?? 0) === 0 ? (
-                                <Badge tone="neutral">Nooit verkocht</Badge>
+                                <Badge tone="neutral"><TranslatedText textKey="siteCopy.5db7e3c631a2ffc0" fallbackText={"Nooit verkocht"} /></Badge>
                               ) : null}
                             </AdminTableCell>
                           </AdminTableRow>
@@ -188,10 +190,10 @@ export default function ProductStatsPage() {
                     <AdminTable minWidth={640}>
                       <AdminTableHead>
                         <tr>
-                          <AdminTableHeaderCell>{t('adminNew.products.columns.name')}</AdminTableHeaderCell>
-                          <AdminTableHeaderCell>Groep</AdminTableHeaderCell>
-                          <AdminTableHeaderCell>Verkopen (totaal)</AdminTableHeaderCell>
-                          <AdminTableHeaderCell>Laatste verkoop</AdminTableHeaderCell>
+                          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.products.columns.name'} />}</AdminTableHeaderCell>
+                          <AdminTableHeaderCell><TranslatedText textKey="siteCopy.2767931f8969b705" fallbackText={"Groep"} /></AdminTableHeaderCell>
+                          <AdminTableHeaderCell><TranslatedText textKey="siteCopy.0abf55c8ace23a1f" fallbackText={"Verkopen (totaal)"} /></AdminTableHeaderCell>
+                          <AdminTableHeaderCell><TranslatedText textKey="siteCopy.2113bf8f64cd015d" fallbackText={"Laatste verkoop"} /></AdminTableHeaderCell>
                         </tr>
                       </AdminTableHead>
                       <tbody>

@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -106,7 +108,7 @@ export default function DashboardShortcutsPage() {
         {query.error && query.errorStatus !== 403 ? <ErrorState message={query.error} onRetry={() => void query.refetch().catch(() => undefined)} /> : null}
         {query.errorStatus === 403 ? (
           <AdminSectionCard title={t('adminNew.shortcuts.title')} icon={Star}>
-            <p className="text-sm text-navy-600">{t('adminNew.shortcuts.forbidden')}</p>
+            <p className="text-sm text-navy-600">{<TranslatedText textKey={'adminNew.shortcuts.forbidden'} />}</p>
           </AdminSectionCard>
         ) : (
           <AdminSectionCard
@@ -116,10 +118,10 @@ export default function DashboardShortcutsPage() {
             action={
               <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" disabled={busy || query.loading || !!query.error} onClick={() => void perform(reset)}>
-                  {t('adminNew.shortcuts.reset')}
+                  {<TranslatedText textKey={'adminNew.shortcuts.reset'} />}
                 </Button>
                 <Button type="button" variant="gold" disabled={busy || query.loading || !!query.error} onClick={() => void perform(createShortcut)}>
-                  {t('adminNew.shortcuts.create')}
+                  {<TranslatedText textKey={'adminNew.shortcuts.create'} />}
                 </Button>
               </div>
             }
@@ -136,10 +138,10 @@ export default function DashboardShortcutsPage() {
                 >
                   <div className="mb-3 flex flex-wrap items-center gap-2">
                     <Button type="button" variant="outline" size="sm" disabled={busy || index === 0} onClick={() => void perform(() => move(index, -1))} aria-label={t('adminNew.shortcuts.moveUp')}>
-                      {t('adminNew.shortcuts.moveUp')}
+                      {<TranslatedText textKey={'adminNew.shortcuts.moveUp'} />}
                     </Button>
                     <Button type="button" variant="outline" size="sm" disabled={busy || index === rows.length - 1} onClick={() => void perform(() => move(index, 1))} aria-label={t('adminNew.shortcuts.moveDown')}>
-                      {t('adminNew.shortcuts.moveDown')}
+                      {<TranslatedText textKey={'adminNew.shortcuts.moveDown'} />}
                     </Button>
                     <label className="ml-auto flex items-center gap-2 text-sm text-navy-700">
                       <input
@@ -147,16 +149,16 @@ export default function DashboardShortcutsPage() {
                         checked={row.active}
                         onChange={(event) => patchRow(row.id, { active: event.target.checked })}
                       />
-                      {t('adminNew.shortcuts.active')}
+                      {<TranslatedText textKey={'adminNew.shortcuts.active'} />}
                     </label>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
                     <label className="text-sm text-navy-700">
-                      {t('adminNew.shortcuts.key')}
+                      {<TranslatedText textKey={'adminNew.shortcuts.key'} />}
                       <input className="input-base mt-1 w-full" value={row.key} onChange={(event) => patchRow(row.id, { key: event.target.value })} />
                     </label>
                     <label className="text-sm text-navy-700">
-                      {t('adminNew.shortcuts.route')}
+                      {<TranslatedText textKey={'adminNew.shortcuts.route'} />}
                       <SearchSelect className="input-base mt-1 w-full" value={row.route_key} onChange={(event) => patchRow(row.id, { route_key: event.target.value })}>
                         {routes.map((routeKey) => (
                           <option key={routeKey} value={routeKey}>{routeKey}</option>
@@ -164,7 +166,7 @@ export default function DashboardShortcutsPage() {
                       </SearchSelect>
                     </label>
                     <label className="text-sm text-navy-700">
-                      {t('adminNew.shortcuts.label')}
+                      {<TranslatedText textKey={'adminNew.shortcuts.label'} />}
                       <SearchSelect className="input-base mt-1 w-full" value={row.icon} onChange={(event) => patchRow(row.id, { icon: event.target.value })}>
                         {ICONS.map((icon) => (
                           <option key={icon} value={icon}>{icon}</option>
@@ -173,7 +175,7 @@ export default function DashboardShortcutsPage() {
                     </label>
                     {LOCALES.map((code) => (
                       <label key={code} className="text-sm text-navy-700">
-                        {t('adminNew.shortcuts.label')} ({code})
+                        {<TranslatedText textKey={'adminNew.shortcuts.label'} />} ({code})
                         <input
                           className="input-base mt-1 w-full"
                           value={row.labels?.[code] ?? ''}
@@ -183,8 +185,8 @@ export default function DashboardShortcutsPage() {
                     ))}
                   </div>
                   <fieldset className="mt-3">
-                    <legend className="text-sm text-navy-700">{t('adminNew.shortcuts.roles')}</legend>
-                    <p className="mb-2 text-xs text-navy-500">{t('adminNew.shortcuts.allRoles')}</p>
+                    <legend className="text-sm text-navy-700">{<TranslatedText textKey={'adminNew.shortcuts.roles'} />}</legend>
+                    <p className="mb-2 text-xs text-navy-500">{<TranslatedText textKey={'adminNew.shortcuts.allRoles'} />}</p>
                     <div className="flex flex-wrap gap-3">
                       {ROLES.map((role) => (
                         <label key={role} className="flex items-center gap-2 text-sm text-navy-700">
@@ -206,9 +208,9 @@ export default function DashboardShortcutsPage() {
                     </div>
                   </fieldset>
                   <details className="mt-3">
-                    <summary className="cursor-pointer text-sm text-navy-600">{t('adminNew.shortcuts.advanced')}</summary>
+                    <summary className="cursor-pointer text-sm text-navy-600">{<TranslatedText textKey={'adminNew.shortcuts.advanced'} />}</summary>
                     <label className="mt-2 block text-sm text-navy-700">
-                      {t('adminNew.shortcuts.customUrl')}
+                      {<TranslatedText textKey={'adminNew.shortcuts.customUrl'} />}
                       <input
                         className="input-base mt-1 w-full"
                         value={row.custom_url ?? ''}
@@ -219,10 +221,10 @@ export default function DashboardShortcutsPage() {
                   </details>
                   <div className="mt-3 flex gap-2">
                     <Button type="submit" variant="gold" disabled={busy || savingId === row.id}>
-                      {t('adminNew.shortcuts.save')}
+                      {<TranslatedText textKey={'adminNew.shortcuts.save'} />}
                     </Button>
                     <Button type="button" variant="outline" disabled={busy} onClick={() => void perform(() => remove(row.id))}>
-                      {t('admin.common.delete', { defaultValue: 'Verwijderen' })}
+                      {<TranslatedText textKey={'admin.common.delete'} vars={{ defaultValue: 'Verwijderen' }} />}
                     </Button>
                   </div>
                 </form>

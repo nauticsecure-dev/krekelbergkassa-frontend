@@ -375,14 +375,14 @@ export function ServicePage({
                   <EditableText blockKey={`${p}.cta.title`} page={p} section="cta" type="heading">
                     {t('servicePage.ctaTitle')}
                   </EditableText>
-                ) : t('servicePage.ctaTitle')}
+                ) : <TranslatedText textKey={'servicePage.ctaTitle'} />}
               </h3>
               <p className="mt-2 max-w-xl text-sm text-sand-100/80">
                 {p ? (
                   <EditableText blockKey={`${p}.cta.desc`} page={p} section="cta" type="paragraph">
                     {t('servicePage.ctaDesc')}
                   </EditableText>
-                ) : t('servicePage.ctaDesc')}
+                ) : <TranslatedText textKey={'servicePage.ctaDesc'} />}
               </p>
             </div>
             <div className="flex flex-wrap gap-3 lg:justify-end">

@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -285,7 +287,7 @@ export default function RemindersPage() {
             disabled={runRules.loading}
             onClick={() => void action(t('adminNew.reminders.toasts.rulesRan'), () => runRules.mutate(), true)}
           >
-            {t('adminNew.reminders.runRules')}
+            {<TranslatedText textKey={'adminNew.reminders.runRules'} />}
           </Button>
         }
         stats={[
@@ -373,11 +375,11 @@ export default function RemindersPage() {
               <AdminTable minWidth={840}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.subject')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.type')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.channel')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.status')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.reminders.columns.date')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.reminders.columns.subject'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.reminders.columns.type'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.reminders.columns.channel'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.reminders.columns.status'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.reminders.columns.date'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -412,7 +414,7 @@ export default function RemindersPage() {
                                   )
                                 }
                               >
-                                {t('adminNew.reminders.complete')}
+                                {<TranslatedText textKey={'adminNew.reminders.complete'} />}
                               </Button>
                               <Button
                                 variant="ghost"
@@ -425,12 +427,12 @@ export default function RemindersPage() {
                                   )
                                 }
                               >
-                                {t('adminNew.reminders.dismiss')}
+                                {<TranslatedText textKey={'adminNew.reminders.dismiss'} />}
                               </Button>
                             </div>
                           ) : (
                             <div className="text-right text-xs text-navy-400">
-                              {t('adminNew.reminders.done')}
+                              {<TranslatedText textKey={'adminNew.reminders.done'} />}
                             </div>
                           )}
                         </AdminTableCell>
@@ -450,7 +452,7 @@ export default function RemindersPage() {
           className="mt-5"
           action={
             <Button variant="outline" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowRule(true)}>
-              {t('adminNew.reminders.newRule')}
+              {<TranslatedText textKey={'adminNew.reminders.newRule'} />}
             </Button>
           }
         >
@@ -481,8 +483,8 @@ export default function RemindersPage() {
                   <div className="flex items-center gap-2">
                     <Badge tone={rl.enabled === false ? 'neutral' : 'success'}>
                       {rl.enabled === false
-                        ? t('adminNew.reminders.ruleDisabled')
-                        : t('adminNew.reminders.ruleEnabled')}
+                        ? <TranslatedText textKey={'adminNew.reminders.ruleDisabled'} />
+                        : <TranslatedText textKey={'adminNew.reminders.ruleEnabled'} />}
                     </Badge>
                     <Button
                       variant="ghost"
@@ -490,7 +492,7 @@ export default function RemindersPage() {
                       leftIcon={<Pencil className="h-3.5 w-3.5" />}
                       onClick={() => openEditRule(rl)}
                     >
-                      {t('adminNew.common.edit')}
+                      {<TranslatedText textKey={'adminNew.common.edit'} />}
                     </Button>
                     <Button
                       variant="ghost"
@@ -498,7 +500,7 @@ export default function RemindersPage() {
                       disabled={previewRule.loading}
                       onClick={() => void onPreviewRule(String(rl.id))}
                     >
-                      {t('adminNew.reminders.preview')}
+                      {<TranslatedText textKey={'adminNew.reminders.preview'} />}
                     </Button>
                     <Button
                       variant="ghost"
@@ -506,7 +508,7 @@ export default function RemindersPage() {
                       leftIcon={<Send className="h-3.5 w-3.5" />}
                       onClick={() => openTestSend(String(rl.id))}
                     >
-                      {t('adminNew.reminders.testSend.button')}
+                      {<TranslatedText textKey={'adminNew.reminders.testSend.button'} />}
                     </Button>
                     <Button
                       variant="ghost"
@@ -517,7 +519,7 @@ export default function RemindersPage() {
                         void action(t('adminNew.reminders.toasts.ruleDeleted'), () => deleteRule.mutate(String(rl.id)), true)
                       }
                     >
-                      {t('adminNew.common.delete')}
+                      {<TranslatedText textKey={'adminNew.common.delete'} />}
                     </Button>
                   </div>
                 </div>
@@ -537,7 +539,7 @@ export default function RemindersPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('adminNew.reminders.ruleFields.entity')}
+                  {<TranslatedText textKey={'adminNew.reminders.ruleFields.entity'} />}
                 </label>
                 <SearchSelect
                   className="input-base w-full"
@@ -553,7 +555,7 @@ export default function RemindersPage() {
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('adminNew.reminders.ruleFields.trigger')}
+                  {<TranslatedText textKey={'adminNew.reminders.ruleFields.trigger'} />}
                 </label>
                 <SearchSelect
                   className="input-base w-full"
@@ -578,7 +580,7 @@ export default function RemindersPage() {
               />
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('adminNew.reminders.ruleFields.channel')}
+                  {<TranslatedText textKey={'adminNew.reminders.ruleFields.channel'} />}
                 </label>
                 <SearchSelect
                   className="input-base w-full"
@@ -595,7 +597,7 @@ export default function RemindersPage() {
             {reminderTypes.length > 0 ? (
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('adminNew.reminders.ruleFields.reminderType')}
+                  {<TranslatedText textKey={'adminNew.reminders.ruleFields.reminderType'} />}
                 </label>
                 <SearchSelect
                   className="input-base w-full"
@@ -618,7 +620,7 @@ export default function RemindersPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.reminders.ruleFields.body')}
+                {<TranslatedText textKey={'adminNew.reminders.ruleFields.body'} />}
               </label>
               <textarea
                 className="input-base min-h-20 w-full"
@@ -633,15 +635,15 @@ export default function RemindersPage() {
                 onChange={(e) => setRule({ ...rule, enabled: e.target.checked })}
                 className="h-4 w-4 rounded border-navy-300"
               />
-              {t('adminNew.reminders.ruleFields.enabled')}
+              {<TranslatedText textKey={'adminNew.reminders.ruleFields.enabled'} />}
             </label>
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowRule(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createRule.loading || updateRule.loading}>
-              {t('adminNew.common.save')}
+              {<TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -670,7 +672,7 @@ export default function RemindersPage() {
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setTestRuleId(null)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button
               type="submit"
@@ -678,7 +680,7 @@ export default function RemindersPage() {
               leftIcon={<Send className="h-4 w-4" />}
               disabled={testSendRule.loading || !testEmail.trim()}
             >
-              {t('adminNew.reminders.testSend.submit')}
+              {<TranslatedText textKey={'adminNew.reminders.testSend.submit'} />}
             </Button>
           </AdminModalFooter>
         </form>

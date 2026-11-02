@@ -137,7 +137,7 @@ test('HISWA edit control stays clickable above the CMS toolbar on a narrow viewp
   expect(btnBox).toBeTruthy();
   expect(barBox).toBeTruthy();
   const overlap = !(
-    btnBox!.right < barBox!.x ||
+    btnBox!.x + btnBox!.width < barBox!.x ||
     btnBox!.x > barBox!.x + barBox!.width ||
     btnBox!.y + btnBox!.height < barBox!.y ||
     btnBox!.y > barBox!.y + barBox!.height

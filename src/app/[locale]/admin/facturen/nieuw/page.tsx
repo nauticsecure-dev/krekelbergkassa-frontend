@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
@@ -32,7 +34,7 @@ export default function NewInvoicePage() {
         rightSlot={
           <Link href={`/${locale}/admin/facturen`}>
             <Button variant="outline" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              {t('adminNew.invoices.backToRegister', { defaultValue: 'Terug naar facturen' })}
+              {<TranslatedText textKey={'adminNew.invoices.backToRegister'} vars={{ defaultValue: 'Terug naar facturen' }} />}
             </Button>
           </Link>
         }
@@ -50,13 +52,13 @@ export default function NewInvoicePage() {
             >
               <FileUp className="h-8 w-8 text-marine-700" />
               <h2 className="mt-4 text-lg font-semibold text-navy-900">
-                {t('adminNew.invoices.importPdf', { defaultValue: 'PDF importeren' })}
+                {<TranslatedText textKey={'adminNew.invoices.importPdf'} vars={{ defaultValue: 'PDF importeren' }} />}
               </h2>
               <p className="mt-2 text-sm leading-6 text-navy-500">
-                {t('adminNew.invoices.importPdfDescription', { defaultValue: 'Upload het document naar de importwachtrij om de gegevens te laten uitlezen en te controleren.' })}
+                {<TranslatedText textKey={'adminNew.invoices.importPdfDescription'} vars={{ defaultValue: 'Upload het document naar de importwachtrij om de gegevens te laten uitlezen en te controleren.' }} />}
               </p>
               <Button type="button" variant="outline" className="mt-5">
-                {t('adminNew.invoices.goToImport', { defaultValue: 'Naar PDF-import' })}
+                {<TranslatedText textKey={'adminNew.invoices.goToImport'} vars={{ defaultValue: 'Naar PDF-import' }} />}
               </Button>
             </Link>
             <Link
@@ -65,13 +67,13 @@ export default function NewInvoicePage() {
             >
               <FileText className="h-8 w-8 text-gold-600" />
               <h2 className="mt-4 text-lg font-semibold text-navy-900">
-                {t('adminNew.invoices.manualCreate', { defaultValue: 'Handmatig maken' })}
+                {<TranslatedText textKey={'adminNew.invoices.manualCreate'} vars={{ defaultValue: 'Handmatig maken' }} />}
               </h2>
               <p className="mt-2 text-sm leading-6 text-navy-500">
-                {t('adminNew.invoices.manualCreateDescription', { defaultValue: 'Stel een factuur op met een klant en eigen factuurregels.' })}
+                {<TranslatedText textKey={'adminNew.invoices.manualCreateDescription'} vars={{ defaultValue: 'Stel een factuur op met een klant en eigen factuurregels.' }} />}
               </p>
               <Button type="button" variant="gold" className="mt-5">
-                {t('adminNew.invoices.startManual', { defaultValue: 'Handmatige factuur starten' })}
+                {<TranslatedText textKey={'adminNew.invoices.startManual'} vars={{ defaultValue: 'Handmatige factuur starten' }} />}
               </Button>
             </Link>
           </div>

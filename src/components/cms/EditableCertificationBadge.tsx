@@ -85,7 +85,7 @@ export function EditableCertificationBadge() {
 
   return (
     <>
-      <div data-cms-badge="home.werf.cert" className="relative mt-4 w-fit max-w-full rounded-xl bg-white p-5 shadow-elev lg:absolute lg:-bottom-6 lg:-right-6 lg:mt-0">
+      <div data-cms-badge="home.werf.cert" className={`relative mt-4 w-fit max-w-full rounded-xl bg-white p-5 shadow-elev lg:absolute lg:-bottom-6 lg:-right-6 lg:mt-0 ${isCmsEditing ? 'outline-dashed outline-2 outline-gold-400/60' : ''}`}>
         <ShieldCheck aria-hidden className="h-6 w-6 text-gold-500" />
         <div className="mt-2 break-words text-xs font-semibold uppercase tracking-widest text-navy-500">
           {getText(fields[0], fallback[0])}

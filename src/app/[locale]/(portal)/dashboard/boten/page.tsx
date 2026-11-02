@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import {
@@ -82,7 +84,7 @@ export default function PortalBoatsPage() {
           icon={Ship}
           action={
             <Link href={`/${locale}/kraanafspraak`}>
-              <Button variant="gold" size="sm">{t('adminNew.portal.boats.planService')}</Button>
+              <Button variant="gold" size="sm">{<TranslatedText textKey={'adminNew.portal.boats.planService'} />}</Button>
             </Link>
           }
         >
@@ -183,13 +185,13 @@ export default function PortalBoatsPage() {
             </PortalModalBody>
             <PortalModalFooter>
               <Button variant="outline" onClick={() => setSelected(null)}>
-                {t('adminNew.common.cancel')}
+                {<TranslatedText textKey={'adminNew.common.cancel'} />}
               </Button>
               <Link href={`/${locale}/dashboard/boten/${selected.id}`}>
-                <Button variant="outline">{t('adminNew.portal.boats.viewDossier')}</Button>
+                <Button variant="outline">{<TranslatedText textKey={'adminNew.portal.boats.viewDossier'} />}</Button>
               </Link>
               <Link href={`/${locale}/kraanafspraak`}>
-                <Button variant="gold">{t('adminNew.portal.boats.planService')}</Button>
+                <Button variant="gold">{<TranslatedText textKey={'adminNew.portal.boats.planService'} />}</Button>
               </Link>
             </PortalModalFooter>
           </>

@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -475,7 +477,7 @@ export default function PlanningPage() {
                   <Icon className="h-5 w-5" />
                 </span>
                 <div className="flex-1">
-                  <div className="text-xs text-navy-500">{st.label} {t('planning.thisWeek')}</div>
+                  <div className="text-xs text-navy-500">{st.label} {<TranslatedText textKey={'planning.thisWeek'} />}</div>
                   <div className="text-lg font-semibold text-navy-900">{rangeCounts[st.id]}</div>
                 </div>
               </Card>
@@ -525,13 +527,13 @@ export default function PlanningPage() {
               </AdminSelect>
               <Button variant={selectMode ? 'primary' : 'outline'} size="sm" leftIcon={<CheckSquare className="h-4 w-4" />}
                 onClick={() => { if (selectMode) clearSelection(); else setSelectMode(true); }}>
-                {selectMode ? t('planning.exitSelect') : t('planning.selectMode')}
+                {selectMode ? <TranslatedText textKey={'planning.exitSelect'} /> : <TranslatedText textKey={'planning.selectMode'} />}
               </Button>
               <Button variant="outline" size="sm" leftIcon={<Download className="h-4 w-4" />} onClick={() => void onExport()}>
-                {t('planning.export')}
+                {<TranslatedText textKey={'planning.export'} />}
               </Button>
               <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setCreateOpen(true)}>
-                {t('planning.createAppointment')}
+                {<TranslatedText textKey={'planning.createAppointment'} />}
               </Button>
             </div>
           ) : null}
@@ -545,7 +547,7 @@ export default function PlanningPage() {
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button onClick={goToday} className="rounded-md border border-navy-100 px-3 py-1.5 text-xs font-medium text-navy-700 hover:bg-sand-100">
-                  {t('planning.today')}
+                  {<TranslatedText textKey={'planning.today'} />}
                 </button>
                 <button onClick={() => move(1)} className="rounded-md border border-navy-100 p-1.5 text-navy-700 hover:bg-sand-100" aria-label={t('planning.nextWeek')}>
                   <ChevronRight className="h-4 w-4" />
@@ -555,7 +557,7 @@ export default function PlanningPage() {
             </div>
             <Link href={`/${locale}/kraanafspraak`}>
               <Button variant="outline" size="sm" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                {t('planning.newAppointment')}
+                {<TranslatedText textKey={'planning.newAppointment'} />}
               </Button>
             </Link>
           </div>
@@ -638,7 +640,7 @@ export default function PlanningPage() {
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
             {isStaff
               ? `${t('planning.realtimeStaff')} · ${t('planning.dragHint')}`
-              : t('planning.realtimeCustomer')}
+              : <TranslatedText textKey={'planning.realtimeCustomer'} />}
           </div>
         </div>
       </section>
@@ -709,14 +711,14 @@ export default function PlanningPage() {
             {selected.location_id ? (
               <div className="mt-2 flex items-center gap-1.5 text-xs text-navy-500">
                 <Ship className="h-3.5 w-3.5" />
-                Dok: {selected.location_id}
+                <TranslatedText textKey="siteCopy.61806125aca64901" fallbackText={"Dok: "} />{selected.location_id}
               </div>
             ) : null}
 
             {/* Customer notes */}
             {selected.customer_notes ? (
               <div className="mt-4 rounded-lg border border-navy-100 bg-sand-50/60 p-3">
-                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-navy-400">Klantnotitie</div>
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-navy-400"><TranslatedText textKey="siteCopy.95c8072b9fa245a2" fallbackText={"Klantnotitie"} /></div>
                 <p className="text-sm text-navy-600">{selected.customer_notes}</p>
               </div>
             ) : null}
@@ -724,7 +726,7 @@ export default function PlanningPage() {
             {/* Staff notes (read, shown to staff) */}
             {isStaff && selected.staff_notes ? (
               <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/60 p-3">
-                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600">Interne notitie</div>
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600"><TranslatedText textKey="siteCopy.47d3fa91334df2c4" fallbackText={"Interne notitie"} /></div>
                 <p className="whitespace-pre-wrap text-sm text-amber-900">{selected.staff_notes}</p>
               </div>
             ) : null}
@@ -732,7 +734,7 @@ export default function PlanningPage() {
             {/* Public notes (staff-writable, customer-visible) */}
             {selected.public_notes ? (
               <div className="mt-3 rounded-lg border border-marine-200 bg-marine-50/40 p-3">
-                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-marine-600">Klantbericht</div>
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-marine-600"><TranslatedText textKey="siteCopy.11cd98ba6d47fe89" fallbackText={"Klantbericht"} /></div>
                 <p className="text-sm text-marine-900">{selected.public_notes}</p>
               </div>
             ) : null}
@@ -743,8 +745,7 @@ export default function PlanningPage() {
                 {editNoteId === selected.id ? (
                   <div className="space-y-2">
                     <label className="block text-xs font-medium text-navy-700">
-                      Interne notitie toevoegen
-                      <textarea
+                      <TranslatedText textKey="siteCopy.eacbb6cea75f166e" fallbackText={"Interne notitie toevoegen"} /><textarea
                         rows={2}
                         className="mt-1 w-full rounded-lg border border-navy-200 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-marine-300"
                         placeholder="Zichtbaar alleen voor medewerkers…"
@@ -753,8 +754,7 @@ export default function PlanningPage() {
                       />
                     </label>
                     <label className="block text-xs font-medium text-navy-700">
-                      Klantbericht (zichtbaar in portaal)
-                      <textarea
+                      <TranslatedText textKey="siteCopy.a464538a78503e57" fallbackText={"Klantbericht (zichtbaar in portaal)"} /><textarea
                         rows={2}
                         className="mt-1 w-full rounded-lg border border-navy-200 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-marine-300"
                         placeholder="Instructies of updates voor de klant…"
@@ -784,11 +784,9 @@ export default function PlanningPage() {
                           }
                         }}
                       >
-                        Opslaan
-                      </Button>
+                        <TranslatedText textKey="siteCopy.671b55cb2876a027" fallbackText={"Opslaan"} /></Button>
                       <Button size="sm" variant="ghost" onClick={() => { setEditNoteId(null); setStaffNote(''); setPublicNote(''); }}>
-                        Annuleren
-                      </Button>
+                        <TranslatedText textKey="siteCopy.e70595f62c7250fe" fallbackText={"Annuleren"} /></Button>
                     </div>
                   </div>
                 ) : (
@@ -801,8 +799,7 @@ export default function PlanningPage() {
                     className="inline-flex items-center gap-1.5 text-xs text-navy-400 hover:text-navy-700"
                   >
                     <Pencil className="h-3 w-3" />
-                    Notitie toevoegen / bewerken
-                  </button>
+                    <TranslatedText textKey="siteCopy.f3b295867b52984f" fallbackText={"Notitie toevoegen / bewerken"} /></button>
                 )}
               </div>
             ) : null}
@@ -817,7 +814,7 @@ export default function PlanningPage() {
                     onClick={() => runAction(() => confirm.mutate(selected.id), 'planning.confirmed')}
                     disabled={confirm.loading}
                   >
-                    {t('planning.confirm')}
+                    {<TranslatedText textKey={'planning.confirm'} />}
                   </Button>
                 ) : null}
 
@@ -833,19 +830,19 @@ export default function PlanningPage() {
                     }
                     disabled={updateStatus.loading}
                   >
-                    Volgende stap → {selected.next_status.replace(/_/g, ' ')}
+                    <TranslatedText textKey="siteCopy.6229d0206148f63e" fallbackText={"Volgende stap → "} />{selected.next_status.replace(/_/g, ' ')}
                   </Button>
                 ) : null}
 
                 {/* Cancel */}
                 {isActive(selected.status) ? (
                   <Button variant="danger" onClick={() => setCancelFor(selected)}>
-                    {t('planning.cancel')}
+                    {<TranslatedText textKey={'planning.cancel'} />}
                   </Button>
                 ) : null}
               </div>
             ) : (
-              <p className="mt-6 text-xs text-navy-400">{t('planning.customerHint')}</p>
+              <p className="mt-6 text-xs text-navy-400">{<TranslatedText textKey={'planning.customerHint'} />}</p>
             )}
           </div>
         ) : null}
@@ -1156,7 +1153,7 @@ function EmployeeView({
   return (
     <div>
       <div className="border-b border-navy-100 bg-sand-50/40 px-4 py-2 text-sm font-semibold text-navy-700">
-        Medewerkers — {formatDayLabel(focusDay)}
+        <TranslatedText textKey="siteCopy.8853460a9e041ae6" fallbackText={"Medewerkers — "} />{formatDayLabel(focusDay)}
       </div>
       <div className="flex overflow-x-auto">
         {/* Hour gutter */}
@@ -1255,10 +1252,10 @@ function CraneView({
     <div>
       <div className="border-b border-navy-100 bg-marine-50/40 px-4 py-2 text-sm font-semibold text-marine-800 flex items-center gap-2">
         <Ship className="h-4 w-4" />
-        Kraanafspraken — {formatWeekRange(days[0]!)}
+        <TranslatedText textKey="siteCopy.8e97356ebd784b4d" fallbackText={"Kraanafspraken — "} />{formatWeekRange(days[0]!)}
       </div>
       {appointments.length === 0 ? (
-        <div className="px-5 py-12 text-center text-sm text-navy-400">Geen kraanafspraken deze week</div>
+        <div className="px-5 py-12 text-center text-sm text-navy-400"><TranslatedText textKey="siteCopy.fdf8f437ae3f297a" fallbackText={"Geen kraanafspraken deze week"} /></div>
       ) : (
         <div className="flex overflow-x-auto">
           <div className="sticky left-0 z-10 flex-shrink-0 bg-white border-r border-navy-100" style={{ width: 48 }}>
@@ -1315,7 +1312,7 @@ function CraneView({
                       >
                         <div className="p-1 text-[10px] font-semibold">{(a.start_time || '').slice(0, 5)}</div>
                         {h > 36 ? <div className="px-1 text-[10px] truncate">{(a.boat as { name?: string } | undefined)?.name ?? '—'}</div> : null}
-                        {h > 52 && loc?.code ? <div className="px-1 text-[10px] text-marine-600">Dok: {loc.code}</div> : null}
+                        {h > 52 && loc?.code ? <div className="px-1 text-[10px] text-marine-600"><TranslatedText textKey="siteCopy.61806125aca64901" fallbackText={"Dok: "} />{loc.code}</div> : null}
                       </button>
                     );
                   })}
@@ -1488,7 +1485,7 @@ function BulkBar({ count, staffMembers, loading, onCancel, onAssign, onStatus, o
   return (
     <div className="sticky bottom-0 z-30 border-t border-navy-100 bg-white/95 backdrop-blur">
       <div className="container-wide flex flex-wrap items-center gap-3 py-3">
-        <span className="text-sm font-semibold text-navy-900">{t('planning.bulkSelected', { count: String(count) })}</span>
+        <span className="text-sm font-semibold text-navy-900">{<TranslatedText textKey={'planning.bulkSelected'} vars={{ count: String(count) }} />}</span>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1">
             <AdminSelect value={assignee} onChange={setAssignee} className="lg:min-w-[150px]">
@@ -1496,21 +1493,21 @@ function BulkBar({ count, staffMembers, loading, onCancel, onAssign, onStatus, o
               {staffMembers.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
             </AdminSelect>
             <Button variant="outline" size="sm" disabled={!assignee || loading} onClick={() => onAssign(assignee)}>
-              {t('planning.bulkAssign')}
+              {<TranslatedText textKey={'planning.bulkAssign'} />}
             </Button>
           </div>
           <div className="flex items-center gap-1">
             <AdminSelect value={status} onChange={setStatus} className="lg:min-w-[150px]">
               <option value="">{t('planning.bulkStatusPlaceholder')}</option>
               <option value="confirmed">{t('planning.statusConfirmed')}</option>
-              <option value="planned">Ingepland</option>
+              <option value="planned"><TranslatedText textKey="siteCopy.18623878f351edb1" fallbackText={"Ingepland"} inline={false} /></option>
               <option value="completed">{t('planning.statusCompleted')}</option>
             </AdminSelect>
             <Button variant="outline" size="sm" disabled={!status || loading} onClick={() => onStatus(status)}>
-              {t('planning.bulkSetStatus')}
+              {<TranslatedText textKey={'planning.bulkSetStatus'} />}
             </Button>
           </div>
-          <Button variant="danger" size="sm" disabled={loading} onClick={onCancel}>{t('planning.bulkCancel')}</Button>
+          <Button variant="danger" size="sm" disabled={loading} onClick={onCancel}>{<TranslatedText textKey={'planning.bulkCancel'} />}</Button>
           <button type="button" onClick={onClear} className="rounded-md border border-navy-100 p-1.5 text-navy-500 hover:bg-sand-100" aria-label={t('planning.bulkClear')}>
             <X className="h-4 w-4" />
           </button>
@@ -1586,31 +1583,31 @@ function CreateAppointmentModal({ open, onClose, staffMembers, onCreated }: {
 
   return (
     <Modal open={open} onClose={onClose} size="lg" className="p-6">
-      <h3 className="font-display text-xl text-navy-900">{t('planning.createTitle')}</h3>
-      <p className="mt-1 text-sm text-navy-500">{t('planning.createSubtitle')}</p>
+      <h3 className="font-display text-xl text-navy-900">{<TranslatedText textKey={'planning.createTitle'} />}</h3>
+      <p className="mt-1 text-sm text-navy-500">{<TranslatedText textKey={'planning.createSubtitle'} />}</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldCustomer')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldCustomer'} />}</span>
           <SearchSelect className="input-base w-full" value={customerId} onChange={(e) => { setCustomerId(e.target.value); setBoatId(''); }}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </SearchSelect>
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldBoat')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldBoat'} />}</span>
           <SearchSelect className="input-base w-full" value={boatId} onChange={(e) => setBoatId(e.target.value)}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {boats.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </SearchSelect>
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldService')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldService'} />}</span>
           <SearchSelect className="input-base w-full" value={serviceCode} onChange={(e) => setServiceCode(e.target.value)}>
             {SERVICE_FILTERS.map((s) => <option key={s.code} value={s.code}>{t(s.labelKey)}</option>)}
           </SearchSelect>
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldLocation')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldLocation'} />}</span>
           <SearchSelect className="input-base w-full" value={locationId} onChange={(e) => setLocationId(e.target.value)}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {locations.map((l) => <option key={l.id} value={l.id}>{l.code}</option>)}
@@ -1620,7 +1617,7 @@ function CreateAppointmentModal({ open, onClose, staffMembers, onCreated }: {
         <Input label={t('planning.fieldStartTime')} type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
         <Input label={t('planning.fieldDuration')} type="number" min={15} step={15} value={duration} onChange={(e) => setDuration(e.target.value)} />
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldAssignee')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldAssignee'} />}</span>
           <SearchSelect className="input-base w-full" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
             <option value="">{t('planning.unassigned')}</option>
             {staffMembers.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
@@ -1629,7 +1626,7 @@ function CreateAppointmentModal({ open, onClose, staffMembers, onCreated }: {
       </div>
       {hasConflicts ? (
         <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
-          <div className="font-semibold">{t('planning.conflictTitle')}</div>
+          <div className="font-semibold">{<TranslatedText textKey={'planning.conflictTitle'} />}</div>
           <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
             {conflicts!.map((c, i) => {
               const time = (c.start_time as string | undefined) ?? (c.appointment_date as string | undefined) ?? '';
@@ -1639,14 +1636,14 @@ function CreateAppointmentModal({ open, onClose, staffMembers, onCreated }: {
           </ul>
           <label className="mt-2 flex items-center gap-2 text-xs font-medium text-amber-900">
             <input type="checkbox" checked={confirmAnyway} onChange={(e) => setConfirmAnyway(e.target.checked)} />
-            {t('planning.conflictConfirmAnyway')}
+            {<TranslatedText textKey={'planning.conflictConfirmAnyway'} />}
           </label>
         </div>
       ) : null}
       <div className="mt-6 flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose}>{t('planning.cancel')}</Button>
+        <Button variant="outline" onClick={onClose}>{<TranslatedText textKey={'planning.cancel'} />}</Button>
         <Button variant="gold" onClick={() => void submit()} disabled={!canSubmit || checking || create.loading || (hasConflicts && !confirmAnyway)}>
-          {checking ? t('planning.checking') : t('planning.createConfirm')}
+          {checking ? <TranslatedText textKey={'planning.checking'} /> : <TranslatedText textKey={'planning.createConfirm'} />}
         </Button>
       </div>
     </Modal>

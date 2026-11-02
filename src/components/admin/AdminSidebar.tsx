@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -170,7 +172,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
       )}
     >
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-4">
-        {!collapsed ? <Logo variant="light" editable={false} /> : <span className="mx-auto text-xs font-bold text-gold-300">KN</span>}
+        {!collapsed ? <Logo variant="light" editable={false} /> : <span className="mx-auto text-xs font-bold text-gold-300"><TranslatedText textKey="siteCopy.a970ecaeb882aece" fallbackText={"KN"} /></span>}
         {onToggleCollapse ? (
           <button
             type="button"

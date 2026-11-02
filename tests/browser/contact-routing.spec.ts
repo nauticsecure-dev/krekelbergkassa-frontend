@@ -34,10 +34,10 @@ async function fixture(page: Page) {
 test('French contact details, hours and failure retry retain a submission ID', async ({ page }) => {
   const state = await fixture(page);
   await page.goto('/fr/contact');
-  await expect(page.getByText('yard@example.test', { exact: true })).toBeVisible();
-  await expect(page.getByText('+31 (0)475 99 88 77', { exact: true })).toBeVisible();
-  await expect(page.locator('a[href="tel:+31475998877"]')).toHaveCount(2);
-  await expect(page.locator('a[href="mailto:yard@example.test"]')).toHaveCount(2);
+  await expect(page.getByText('yard@example.test', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('+31 (0)475 99 88 77', { exact: true }).first()).toBeVisible();
+  await expect(page.locator('a[href="tel:+31475998877"]')).toHaveCount(3);
+  await expect(page.locator('a[href="mailto:yard@example.test"]')).toHaveCount(3);
   await expect(page.locator('iframe')).toHaveAttribute('src', /Teststraat%2012/);
   await expect(page.getByText('09:00 - 17:30', { exact: true })).toBeVisible();
   const form = page.locator('form').filter({ has: page.locator('textarea') });

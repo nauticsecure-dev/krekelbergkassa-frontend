@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Camera, CheckCircle2, Download, FileUp, RotateCw, ScanText, Upload, XCircle } from 'lucide-react';
@@ -240,12 +242,12 @@ export default function InvoiceImportsPage() {
           <div className="flex gap-2">
             <Link href={`/${locale}/admin/facturen`}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                {t('adminNew.common.back')}
+                {<TranslatedText textKey={'adminNew.common.back'} />}
               </Button>
             </Link>
             <Link href={`/${locale}/admin/facturen/templates`}>
               <Button variant="outline" size="sm" leftIcon={<ScanText className="h-4 w-4" />}>
-                {t('adminNew.templates.title')}
+                {<TranslatedText textKey={'adminNew.templates.title'} />}
               </Button>
             </Link>
             <Button
@@ -255,7 +257,7 @@ export default function InvoiceImportsPage() {
               disabled={exporting}
               onClick={() => void onExport()}
             >
-              {t('adminNew.invoiceImports.exportCsv')}
+              {<TranslatedText textKey={'adminNew.invoiceImports.exportCsv'} />}
             </Button>
             <Button
               variant="outline"
@@ -264,7 +266,7 @@ export default function InvoiceImportsPage() {
               disabled={uploading}
               onClick={() => photoRef.current?.click()}
             >
-              {t('adminNew.invoiceImports.photoCapture')}
+              {<TranslatedText textKey={'adminNew.invoiceImports.photoCapture'} />}
             </Button>
             <Button
               variant="outline"
@@ -273,7 +275,7 @@ export default function InvoiceImportsPage() {
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
             >
-              {t('adminNew.invoiceImports.upload')}
+              {<TranslatedText textKey={'adminNew.invoiceImports.upload'} />}
             </Button>
             <Button
               variant="gold"
@@ -282,7 +284,7 @@ export default function InvoiceImportsPage() {
               disabled={uploading}
               onClick={() => batchRef.current?.click()}
             >
-              {t('adminNew.invoiceImports.batchUpload')}
+              {<TranslatedText textKey={'adminNew.invoiceImports.batchUpload'} />}
             </Button>
             <input
               ref={fileRef}
@@ -338,14 +340,14 @@ export default function InvoiceImportsPage() {
           }}
         >
           <Upload className="mx-auto h-8 w-8 text-marine-500" />
-          <p className="mt-2 text-sm font-semibold text-navy-800">{t('adminNew.invoiceImports.dropzoneTitle')}</p>
-          <p className="mt-1 text-xs text-navy-500">{t('adminNew.invoiceImports.dropzoneHint')}</p>
+          <p className="mt-2 text-sm font-semibold text-navy-800">{<TranslatedText textKey={'adminNew.invoiceImports.dropzoneTitle'} />}</p>
+          <p className="mt-1 text-xs text-navy-500">{<TranslatedText textKey={'adminNew.invoiceImports.dropzoneHint'} />}</p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-              {t('adminNew.invoiceImports.upload')}
+              {<TranslatedText textKey={'adminNew.invoiceImports.upload'} />}
             </Button>
             <Button variant="gold" size="sm" onClick={() => batchRef.current?.click()}>
-              {t('adminNew.invoiceImports.batchUpload')}
+              {<TranslatedText textKey={'adminNew.invoiceImports.batchUpload'} />}
             </Button>
           </div>
         </div>
@@ -373,7 +375,7 @@ export default function InvoiceImportsPage() {
               <option value="photo">{t('adminNew.invoiceImports.sourcePhoto')}</option>
             </AdminSelect>
             <AdminSelect value={docType} onChange={setDocType}>
-              <option value="">Alle types</option>
+              <option value=""><TranslatedText textKey="siteCopy.bb5af97371f27ce6" fallbackText={"Alle types"} inline={false} /></option>
               {DOCUMENT_TYPES.map((dt) => (
                 <option key={dt} value={dt}>{dt.replace(/_/g, ' ')}</option>
               ))}
@@ -383,7 +385,7 @@ export default function InvoiceImportsPage() {
           {selected.size > 0 ? (
             <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-marine-200 bg-marine-50/60 px-4 py-2.5">
               <span className="text-sm font-semibold text-navy-800">
-                {t('adminNew.invoiceImports.selectedCount', { count: selected.size })}
+                {<TranslatedText textKey={'adminNew.invoiceImports.selectedCount'} vars={{ count: selected.size }} />}
               </span>
               <div className="ml-auto flex gap-2">
                 <Button
@@ -393,7 +395,7 @@ export default function InvoiceImportsPage() {
                   disabled={bulkM.loading}
                   onClick={() => void runBulk('approve', t('adminNew.invoiceImports.toasts.bulkApproved'))}
                 >
-                  {t('adminNew.invoiceImports.approve')}
+                  {<TranslatedText textKey={'adminNew.invoiceImports.approve'} />}
                 </Button>
                 <Button
                   variant="ghost"
@@ -403,7 +405,7 @@ export default function InvoiceImportsPage() {
                   disabled={bulkM.loading}
                   onClick={() => void runBulk('reject', t('adminNew.invoiceImports.toasts.bulkRejected'))}
                 >
-                  {t('adminNew.invoiceImports.reject')}
+                  {<TranslatedText textKey={'adminNew.invoiceImports.reject'} />}
                 </Button>
                 <Button
                   variant="outline"
@@ -412,10 +414,10 @@ export default function InvoiceImportsPage() {
                   disabled={bulkM.loading}
                   onClick={() => void runBulk('retry', t('adminNew.invoiceImports.toasts.bulkRetried'))}
                 >
-                  {t('adminNew.invoiceImports.retryOcr')}
+                  {<TranslatedText textKey={'adminNew.invoiceImports.retryOcr'} />}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
-                  {t('adminNew.common.clear')}
+                  {<TranslatedText textKey={'adminNew.common.clear'} />}
                 </Button>
               </div>
             </div>
@@ -443,15 +445,15 @@ export default function InvoiceImportsPage() {
                         onChange={toggleAll}
                       />
                     </AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.file')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.invoiceNumber', { defaultValue: 'Factuurnr.' })}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.supplier')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.customer', { defaultValue: 'Klant' })}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.total', { defaultValue: 'Totaal' })}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.source')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.confidence')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.status')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.invoiceImports.columns.date')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.columns.file'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.columns.invoiceNumber'} vars={{ defaultValue: 'Factuurnr.' }} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.columns.supplier'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.columns.customer'} vars={{ defaultValue: 'Klant' }} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.columns.total'} vars={{ defaultValue: 'Totaal' }} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.columns.source'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.columns.confidence'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.columns.status'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoiceImports.columns.date'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -508,7 +510,7 @@ export default function InvoiceImportsPage() {
                           <div className="flex flex-wrap justify-end gap-1">
                             <Link href={`/${locale}/admin/facturen/import/${id}`}>
                               <Button variant="outline" size="sm">
-                                {t('adminNew.invoiceImports.review')}
+                                {<TranslatedText textKey={'adminNew.invoiceImports.review'} />}
                               </Button>
                             </Link>
                             {st === 'uploaded' ? (
@@ -522,7 +524,7 @@ export default function InvoiceImportsPage() {
                                   )
                                 }
                               >
-                                {t('adminNew.invoiceImports.process')}
+                                {<TranslatedText textKey={'adminNew.invoiceImports.process'} />}
                               </Button>
                             ) : null}
                             {open ? (
@@ -537,17 +539,17 @@ export default function InvoiceImportsPage() {
                                   )
                                 }
                               >
-                                {t('adminNew.invoiceImports.retryOcr')}
+                                {<TranslatedText textKey={'adminNew.invoiceImports.retryOcr'} />}
                               </Button>
                             ) : null}
                             {isDeliveryNote(row) && open ? (
                               <Button variant="outline" size="sm" onClick={() => setWorkbonTarget(id)}>
-                                {t('adminNew.invoiceImports.markWorkbon')}
+                                {<TranslatedText textKey={'adminNew.invoiceImports.markWorkbon'} />}
                               </Button>
                             ) : null}
                             {open ? (
                               <Button variant="ghost" size="sm" onClick={() => setApproveTarget(id)}>
-                                {t('adminNew.invoiceImports.approve')}
+                                {<TranslatedText textKey={'adminNew.invoiceImports.approve'} />}
                               </Button>
                             ) : null}
                             {open ? (
@@ -567,7 +569,7 @@ export default function InvoiceImportsPage() {
                                   }
                                 }}
                               >
-                                {t('adminNew.invoiceImports.markDuplicate')}
+                                {<TranslatedText textKey={'adminNew.invoiceImports.markDuplicate'} />}
                               </Button>
                             ) : null}
                             {open ? (
@@ -577,7 +579,7 @@ export default function InvoiceImportsPage() {
                                 className="text-rose-600"
                                 onClick={() => setRejectTarget(id)}
                               >
-                                {t('adminNew.invoiceImports.reject')}
+                                {<TranslatedText textKey={'adminNew.invoiceImports.reject'} />}
                               </Button>
                             ) : null}
                           </div>
@@ -596,15 +598,13 @@ export default function InvoiceImportsPage() {
             if (lastPage <= 1) return null;
             return (
               <div className="mt-3 flex items-center justify-between gap-4">
-                <span className="text-xs text-navy-500">{total} resultaten</span>
+                <span className="text-xs text-navy-500">{total} <TranslatedText textKey="siteCopy.2df76e0a8226e865" fallbackText={" resultaten"} /></span>
                 <div className="flex gap-1">
                   <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                    ‹ Vorige
-                  </Button>
+                    <TranslatedText textKey="siteCopy.15a01308144bd55c" fallbackText={"‹ Vorige"} /></Button>
                   <span className="flex items-center px-3 text-xs text-navy-600">{page} / {lastPage}</span>
                   <Button variant="outline" size="sm" disabled={page >= lastPage} onClick={() => setPage((p) => p + 1)}>
-                    Volgende ›
-                  </Button>
+                    <TranslatedText textKey="siteCopy.28c9813ed1eb542b" fallbackText={"Volgende ›"} /></Button>
                 </div>
               </div>
             );
@@ -684,9 +684,9 @@ export default function InvoiceImportsPage() {
           return (
             <div className="p-6">
               <h2 className="text-lg font-bold text-navy-900">
-                {t('adminNew.invoiceImports.duplicate.title')}
+                {<TranslatedText textKey={'adminNew.invoiceImports.duplicate.title'} />}
               </h2>
-              <p className="mt-1 text-sm text-navy-500">{t('adminNew.invoiceImports.duplicate.subtitle')}</p>
+              <p className="mt-1 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.invoiceImports.duplicate.subtitle'} />}</p>
               {dupOther.loading ? (
                 <div className="mt-4">
                   <LoadingState label={t('adminNew.common.loading')} />
@@ -696,9 +696,9 @@ export default function InvoiceImportsPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-navy-50 text-left text-[11px] uppercase tracking-widest text-navy-400">
-                        <th className="px-3 py-2 font-semibold">{t('adminNew.invoiceImports.duplicate.field')}</th>
-                        <th className="px-3 py-2 font-semibold">{t('adminNew.invoiceImports.duplicate.thisImport')}</th>
-                        <th className="px-3 py-2 font-semibold">{t('adminNew.invoiceImports.duplicate.matchedImport')}</th>
+                        <th className="px-3 py-2 font-semibold">{<TranslatedText textKey={'adminNew.invoiceImports.duplicate.field'} />}</th>
+                        <th className="px-3 py-2 font-semibold">{<TranslatedText textKey={'adminNew.invoiceImports.duplicate.thisImport'} />}</th>
+                        <th className="px-3 py-2 font-semibold">{<TranslatedText textKey={'adminNew.invoiceImports.duplicate.matchedImport'} />}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -722,7 +722,7 @@ export default function InvoiceImportsPage() {
               )}
               <div className="mt-5 flex justify-end gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setDupResolve(null)}>
-                  {t('adminNew.common.cancel')}
+                  {<TranslatedText textKey={'adminNew.common.cancel'} />}
                 </Button>
                 <Button
                   variant="gold"
@@ -734,7 +734,7 @@ export default function InvoiceImportsPage() {
                     await runAction(t('adminNew.invoiceImports.toasts.markedDuplicate'), () => dupM.mutate(payload));
                   }}
                 >
-                  {t('adminNew.invoiceImports.duplicate.confirm')}
+                  {<TranslatedText textKey={'adminNew.invoiceImports.duplicate.confirm'} />}
                 </Button>
               </div>
             </div>

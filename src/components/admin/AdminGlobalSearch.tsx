@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
@@ -120,12 +122,12 @@ export function AdminGlobalSearch({
       <div className="max-h-[min(60vh,420px)] overflow-y-auto p-2 scrollbar-thin">
         {query.trim().length < 2 ? (
           <p className="px-3 py-6 text-center text-sm text-navy-500">
-            {t('adminNew.search.hint')}
+            {<TranslatedText textKey={'adminNew.search.hint'} />}
           </p>
         ) : null}
         {query.trim().length >= 2 && !loading && resultCount === 0 ? (
           <p className="px-3 py-6 text-center text-sm text-navy-500">
-            {t('adminNew.search.noResults')}
+            {<TranslatedText textKey={'adminNew.search.noResults'} />}
           </p>
         ) : null}
         {SECTION_KEYS.map((section) => {
@@ -204,10 +206,9 @@ export function AdminSearchTrigger({
       )}
     >
       <Search className="h-4 w-4 shrink-0 text-navy-400" />
-      <span className="flex-1 truncate">{t('admin.common.search')}</span>
+      <span className="flex-1 truncate">{<TranslatedText textKey={'admin.common.search'} />}</span>
       <kbd className="hidden rounded border border-navy-100 bg-sand-50 px-1.5 py-0.5 text-[10px] font-semibold text-navy-500 sm:inline">
-        ⌘K
-      </kbd>
+        <TranslatedText textKey="siteCopy.573d0c4005a0349e" fallbackText={"⌘K"} /></kbd>
     </button>
   );
 }

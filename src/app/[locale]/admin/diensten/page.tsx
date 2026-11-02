@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { ExternalLink, Globe, Pencil, ShoppingCart, Layers } from 'lucide-react';
@@ -55,11 +57,11 @@ export default function DienstenAdminPage() {
               <AdminTable minWidth={700}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>Pagina</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>Status</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>Producten gevonden</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>Tariefregels</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>Zichtbaarheid</AdminTableHeaderCell>
+                    <AdminTableHeaderCell><TranslatedText textKey="siteCopy.7d3642e4c8aeddfb" fallbackText={"Pagina"} /></AdminTableHeaderCell>
+                    <AdminTableHeaderCell><TranslatedText textKey="siteCopy.005d3608b04318fd" fallbackText={"Status"} /></AdminTableHeaderCell>
+                    <AdminTableHeaderCell><TranslatedText textKey="siteCopy.93427b86fd6b8b2d" fallbackText={"Producten gevonden"} /></AdminTableHeaderCell>
+                    <AdminTableHeaderCell><TranslatedText textKey="siteCopy.101ecfd72ec655c6" fallbackText={"Tariefregels"} /></AdminTableHeaderCell>
+                    <AdminTableHeaderCell><TranslatedText textKey="siteCopy.a5c38ede2fbaeac0" fallbackText={"Zichtbaarheid"} /></AdminTableHeaderCell>
                     <AdminTableHeaderCell>&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -76,13 +78,13 @@ export default function DienstenAdminPage() {
                       <AdminTableRow key={s.slug}>
                         <AdminTableCell>
                           <div className="font-semibold text-navy-800">{s.label}</div>
-                          <div className="text-xs text-navy-400">/diensten/{s.slug}</div>
+                          <div className="text-xs text-navy-400"><TranslatedText textKey="siteCopy.dd98f31381ea9bdd" fallbackText={"/diensten/"} />{s.slug}</div>
                         </AdminTableCell>
                         <AdminTableCell>
                           {hasProducts ? (
-                            <Badge tone="success">Live (DB)</Badge>
+                            <Badge tone="success"><TranslatedText textKey="siteCopy.a4d1d975a8e44eac" fallbackText={"Live (DB)"} /></Badge>
                           ) : (
-                            <Badge tone="warning">Statische fallback</Badge>
+                            <Badge tone="warning"><TranslatedText textKey="siteCopy.f3f8045fbd8b3b85" fallbackText={"Statische fallback"} /></Badge>
                           )}
                         </AdminTableCell>
                         <AdminTableCell className="tabular-nums">
@@ -101,21 +103,19 @@ export default function DienstenAdminPage() {
                         </AdminTableCell>
                         <AdminTableCell>
                           <div className="flex flex-wrap gap-1">
-                            {vis.public ? <Badge tone="marine">website</Badge> : <Badge tone="neutral">−website</Badge>}
-                            {vis.kassa ? <Badge tone="gold">kassa</Badge> : <Badge tone="neutral">−kassa</Badge>}
+                            {vis.public ? <Badge tone="marine"><TranslatedText textKey="siteCopy.2c2e1e9cbe4e95cb" fallbackText={"website"} /></Badge> : <Badge tone="neutral"><TranslatedText textKey="siteCopy.64098ffd02262993" fallbackText={"−website"} /></Badge>}
+                            {vis.kassa ? <Badge tone="gold"><TranslatedText textKey="siteCopy.67fad8c681eb00ea" fallbackText={"kassa"} /></Badge> : <Badge tone="neutral"><TranslatedText textKey="siteCopy.9595c1663c2e52eb" fallbackText={"−kassa"} /></Badge>}
                           </div>
                         </AdminTableCell>
                         <AdminTableCell>
                           <div className="flex items-center justify-end gap-1">
                             <Link href={`/${locale}${s.publicPath}`} target="_blank">
                               <Button size="sm" variant="outline" leftIcon={<Globe className="h-3.5 w-3.5" />}>
-                                Bekijk
-                              </Button>
+                                <TranslatedText textKey="siteCopy.2099bad69514c255" fallbackText={"Bekijk"} /></Button>
                             </Link>
                             <Link href={`/${locale}/admin/producten?search=${encodeURIComponent(s.adminSearch)}`}>
                               <Button size="sm" variant="outline" leftIcon={<Pencil className="h-3.5 w-3.5" />}>
-                                Product
-                              </Button>
+                                <TranslatedText textKey="siteCopy.2522f3b30ad13c2b" fallbackText={"Product"} /></Button>
                             </Link>
                             <Link
                               href={`/${locale}/admin/calculator/pricing?product=${encodeURIComponent(
@@ -123,8 +123,7 @@ export default function DienstenAdminPage() {
                               )}`}
                             >
                               <Button size="sm" variant="ghost" leftIcon={<ShoppingCart className="h-3.5 w-3.5" />}>
-                                Tarieven
-                              </Button>
+                                <TranslatedText textKey="siteCopy.d15776583b6d9375" fallbackText={"Tarieven"} /></Button>
                             </Link>
                           </div>
                         </AdminTableCell>
@@ -159,7 +158,7 @@ export default function DienstenAdminPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-navy-400">Geen tariefregels in database. Voeg toe via Calculatie → Tariefregels.</p>
+                    <p className="text-xs text-navy-400"><TranslatedText textKey="siteCopy.7c1b2747348d1beb" fallbackText={"Geen tariefregels in database. Voeg toe via Calculatie → Tariefregels."} /></p>
                   )}
                 </div>
               ))}

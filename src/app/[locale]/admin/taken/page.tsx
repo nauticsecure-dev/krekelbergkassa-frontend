@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
@@ -106,12 +108,12 @@ export default function TakenPage() {
     <AdminTable minWidth={780}>
       <AdminTableHead>
         <tr>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.title', { defaultValue: 'Taak' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.customer', { defaultValue: 'Klant' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.entity', { defaultValue: 'Entiteit' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.priority', { defaultValue: 'Prioriteit' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.dueAt', { defaultValue: 'Deadline' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.status', { defaultValue: 'Status' })}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.title'} vars={{ defaultValue: 'Taak' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.customer'} vars={{ defaultValue: 'Klant' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.entity'} vars={{ defaultValue: 'Entiteit' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.priority'} vars={{ defaultValue: 'Prioriteit' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.dueAt'} vars={{ defaultValue: 'Deadline' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.status'} vars={{ defaultValue: 'Status' }} />}</AdminTableHeaderCell>
           <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
         </tr>
       </AdminTableHead>
@@ -157,11 +159,11 @@ export default function TakenPage() {
                     disabled={completeTask.loading}
                     onClick={() => void onComplete(String(r.id))}
                   >
-                    {t('adminNew.tasks.complete', { defaultValue: 'Afronden' })}
+                    {<TranslatedText textKey={'adminNew.tasks.complete'} vars={{ defaultValue: 'Afronden' }} />}
                   </Button>
                 ) : (
                   <span className="text-xs text-navy-400">
-                    {t('adminNew.tasks.done', { defaultValue: 'Afgerond' })}
+                    {<TranslatedText textKey={'adminNew.tasks.done'} vars={{ defaultValue: 'Afgerond' }} />}
                   </span>
                 )}
               </AdminTableCell>

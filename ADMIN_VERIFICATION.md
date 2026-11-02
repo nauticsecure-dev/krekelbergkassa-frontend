@@ -116,10 +116,12 @@ CRUD letters are create/read/update/delete. L/E/E = loading/error/empty. Permiss
 
 ## Open release gaps
 
-- All pending cells require verification; redirects and hubs must have applicability reviewed individually.
-- Most CRUD successes/deletes, field validation, delayed loading, populated modals/details and entity-level permission combinations remain pending.
-- NL/EN/DE/FR coverage is limited to the named dashboard/form scenarios. Hardcoded-copy review is in `artifacts/admin-audit/i18n.json`; key completeness alone is not full localization.
-- Responsive evidence covers representative shell/empty/form states. Long populated charts, document zones, audit diffs and POS workflows remain pending per [layout policy](ADMIN_LAYOUT_PATTERNS.md).
+- Page-by-page verification remains incomplete across the 71-route ledger. Apply CRUD, validation, loading/error/empty, modal and detail checks where relevant; review applicability individually for redirects, hubs and routes without CRUD.
+- Permissions are partially covered by UI checks and backend tests for selected customer, boat, supplier, product and pricing actions. A complete action-level permission matrix remains unverified.
+- Responsive evidence remains incomplete across all pages. Dashboard scenarios exercise desktop sidebar expanded/collapsed states and mobile widths; selected populated workflows also have checks. These scenarios do not establish every-page coverage.
+- All five custom-grid patterns now have populated responsive checks recorded in [layout policy](ADMIN_LAYOUT_PATTERNS.md). Those scenarios do not establish full compliance with the desktop expanded/collapsed sidebar requirement for every pattern.
+- Browser localization remains incomplete. Four-locale checks cover selected surfaces, including the dashboard and manual invoice form; they do not cover all admin pages or establish wording quality.
+- Copy review remains open. Hardcoded and English-identical candidates in `artifacts/admin-audit/i18n.json` require review; legitimate names, units and shared terminology are not automatically translation defects.
 - No provider or production database effects are tested. Backend denial evidence does not prove every control is hidden, and hidden controls do not prove backend authorization.
 
 ## Browser screenshots

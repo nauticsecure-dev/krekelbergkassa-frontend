@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -151,11 +153,11 @@ export function AppointmentCreateModal({
 
   return (
     <Modal open={open && canManage} onClose={onClose} size="lg" className="overflow-y-auto p-6">
-      <h3 className="font-display text-xl text-navy-900">{t('planning.createTitle')}</h3>
-      <p className="mt-1 text-sm text-navy-500">{t('planning.createSubtitle')}</p>
+      <h3 className="font-display text-xl text-navy-900">{<TranslatedText textKey={'planning.createTitle'} />}</h3>
+      <p className="mt-1 text-sm text-navy-500">{<TranslatedText textKey={'planning.createSubtitle'} />}</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm sm:col-span-2">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldCustomer')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldCustomer'} />}</span>
           <SearchSelect
             className="input-base w-full"
             aria-label={t('planning.fieldCustomer')}
@@ -175,7 +177,7 @@ export function AppointmentCreateModal({
           />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldBoat')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldBoat'} />}</span>
           <SearchSelect className="input-base w-full" value={boatId} onChange={(event) => setBoatId(event.target.value)}
             aria-label={t('planning.fieldBoat')}
             disabled={!customerId || boatsQuery.loading}
@@ -187,7 +189,7 @@ export function AppointmentCreateModal({
           />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldService')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldService'} />}</span>
           <SearchSelect className="input-base w-full" value={serviceCode} onChange={(event) => setServiceCode(event.target.value)}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {services.map((service) => (
@@ -196,7 +198,7 @@ export function AppointmentCreateModal({
           </SearchSelect>
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldLocation')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldLocation'} />}</span>
           <SearchSelect className="input-base w-full" value={locationId} onChange={(event) => setLocationId(event.target.value)}>
             <option value="">{t('planning.selectPlaceholder')}</option>
             {locations.map((location) => (
@@ -205,7 +207,7 @@ export function AppointmentCreateModal({
           </SearchSelect>
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-navy-700">{t('planning.fieldAssignee')}</span>
+          <span className="mb-1 block font-medium text-navy-700">{<TranslatedText textKey={'planning.fieldAssignee'} />}</span>
           <SearchSelect className="input-base w-full" value={assignee} onChange={(event) => setAssignee(event.target.value)}>
             <option value="">{t('planning.unassigned')}</option>
             {staff.map((member) => (
@@ -228,7 +230,7 @@ export function AppointmentCreateModal({
       {catalogQuery.error || optionsQuery.error ? <p role="alert" className="mt-3 text-sm text-red-700">{catalogQuery.error || optionsQuery.error}</p> : null}
       {hasConflicts ? (
         <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
-          <div className="font-semibold">{t('planning.conflictTitle')}</div>
+          <div className="font-semibold">{<TranslatedText textKey={'planning.conflictTitle'} />}</div>
           <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
             {conflicts!.map((conflict, index) => {
               const time = String(conflict.start_time ?? '').slice(0, 5);
@@ -239,13 +241,13 @@ export function AppointmentCreateModal({
         </div>
       ) : null}
       <div className="mt-6 flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose}>{t('planning.cancel')}</Button>
+        <Button variant="outline" onClick={onClose}>{<TranslatedText textKey={'planning.cancel'} />}</Button>
         <Button
           variant="gold"
           onClick={() => void submit()}
           disabled={!canSubmit || checking || create.loading || hasConflicts}
         >
-          {checking ? t('planning.checking') : t('planning.createConfirm')}
+          {checking ? <TranslatedText textKey={'planning.checking'} /> : <TranslatedText textKey={'planning.createConfirm'} />}
         </Button>
       </div>
     </Modal>

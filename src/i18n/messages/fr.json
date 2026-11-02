@@ -4468,6 +4468,14 @@
     "statusCompleted": "Completed"
   },
   "cms": {
+    "contact": {
+      "edit": "Modifier les coordonnées",
+      "street": "Rue et numéro",
+      "postal_code": "Code postal",
+      "city": "Ville",
+      "phone": "Numéro de téléphone",
+      "email": "Adresse e-mail"
+    },
     "sessionExpired": "Session expirée",
     "draftRetained": "Vos modifications sont conservées ici. Connectez-vous dans un nouvel onglet, puis reprenez la modification ici.",
     "signInAgain": "Se reconnecter",
@@ -4527,9 +4535,12 @@
     "localeHint": "Only changed languages are saved.",
     "textPlaceholder": "Enter text…",
     "focalPoint": "Focal point",
-    "focalHint": "Click the image to set the focal point.",
+    "focalHint": "Faites glisser l’image pour la recadrer. Cliquez sur un aperçu ou utilisez les curseurs pour définir le point focal.",
     "overlay": "Dark overlay",
     "altText": "Alt text",
+    "desktopPreview": "Aperçu sur ordinateur",
+    "mobilePreview": "Aperçu mobile",
+    "resetImageAdjustments": "Réinitialiser les réglages de l’image",
     "imageSeoTitle": "Image SEO title",
     "altPlaceholder": "Describe the image…",
     "seoTitle": "SEO",
@@ -4541,6 +4552,9 @@
     "globalTitle": "Global settings",
     "globalDesc": "Changes apply across the whole site.",
     "global": {
+      "email": "E-mail",
+      "street": "Rue",
+      "postalCode": "Code postal",
       "headerCtaLabel": "Header button text",
       "headerCtaPath": "Header button link",
       "phone": "Phone number",
@@ -4584,6 +4598,11 @@
     "placeholderUrl": "https://exemple.fr"
   },
   "settingsHub": {
+    "saveBeforeDiagnostic": "Enregistrez les modifications avant le diagnostic.",
+    "configurationPresent": "Configuration présente",
+    "signingConfiguration": "Configuration de signature",
+    "diagnosticResult": "Résultat du diagnostic",
+    "workflowVerification": "Vérification du processus encore nécessaire",
     "search": "Rechercher un paramètre",
     "subtitle": "Centre de configuration opérationnel — voir, configurer, tester et vérifier.",
     "reminderRules": "Modifier les règles de rappel",

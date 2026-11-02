@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
 import { AlertTriangle, CheckCircle2, RefreshCw, WifiOff } from 'lucide-react';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -13,7 +15,7 @@ export function ConnectionIndicator() {
   if (loading) {
     return (
       <Badge tone="navy" className="hidden sm:inline-flex" dot>
-        <RefreshCw className="h-3 w-3 animate-spin" /> {t('adminNew.sync.syncing')}
+        <RefreshCw className="h-3 w-3 animate-spin" /> {<TranslatedText textKey={'adminNew.sync.syncing'} />}
       </Badge>
     );
   }
@@ -26,12 +28,12 @@ export function ConnectionIndicator() {
       <Badge tone={tone} className="cursor-pointer" dot>
         {!online ? <WifiOff className="h-3 w-3" /> : hasSyncError ? <AlertTriangle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
         {stateLabel === 'Offline'
-          ? t('adminNew.sync.offline')
+          ? <TranslatedText textKey={'adminNew.sync.offline'} />
           : stateLabel === 'Sync wachtend'
-            ? t('adminNew.sync.pending')
+            ? <TranslatedText textKey={'adminNew.sync.pending'} />
             : stateLabel === 'Sync fout'
-              ? t('adminNew.sync.error')
-              : t('adminNew.sync.online')}
+              ? <TranslatedText textKey={'adminNew.sync.error'} />
+              : <TranslatedText textKey={'adminNew.sync.online'} />}
         {pending > 0 ? ` · ${pending}` : ''}
       </Badge>
     </Link>

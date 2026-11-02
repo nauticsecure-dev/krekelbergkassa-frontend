@@ -57,7 +57,6 @@ export function EditableImage({
   const focal = block?.focal_point ?? { x: 50, y: 50 };
   const overlay = block?.overlay ?? 0;
   const imageStyle = { ...defaultStyle, ...block?.image_style };
-  const alignedFocal = imageStyle.alignment ? {x: imageStyle.alignment === 'left' ? 0 : imageStyle.alignment === 'right' ? 100 : 50, y: focal.y} : focal;
 
   const editable = isCmsEditing;
 
@@ -84,7 +83,7 @@ export function EditableImage({
             alt={altText}
             title={block?.seo_title}
             className={cn('h-full w-full object-cover', editable && 'pointer-events-none')}
-            focal={alignedFocal}
+            focal={focal}
             crop={block?.crop_data}
             srcSet={block?.src_set}
             mobileSrc={block?.mobile_image_url}
@@ -93,16 +92,8 @@ export function EditableImage({
             mobileFocal={block?.mobile_focal_point}
             dimensions={block?.image_dimensions}
             mobileDimensions={block?.mobile_image_dimensions}
-            filter={`brightness(${imageStyle.brightness ?? 100}%) contrast(${imageStyle.contrast ?? 100}%) saturate(${imageStyle.saturation ?? 100}%)`}
-          />
-        ) : null}
-        {imageStyle.gradient && imageStyle.gradient !== 'none' && <span aria-hidden className="pointer-events-none absolute inset-0"
-          style={{background: `linear-gradient(to ${imageStyle.gradient}, rgba(8,19,38,${imageStyle.gradient_start ?? .9}), rgba(8,19,38,${imageStyle.gradient_middle ?? ((imageStyle.gradient_start ?? .9) + (imageStyle.gradient_end ?? .35)) / 2}), rgba(8,19,38,${imageStyle.gradient_end ?? .35}))`}} />}
-        {overlay > 0 ? (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{ backgroundColor: `rgba(8, 19, 38, ${overlay})` }}
+            imageStyle={imageStyle}
+            overlay={overlay}
           />
         ) : null}
 

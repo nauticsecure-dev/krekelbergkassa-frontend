@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import { ScanLine, Zap } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
@@ -80,9 +82,9 @@ export default function ScanLogsPage() {
             <div className="w-44">
               <AdminSelect value={result} onChange={(v) => { setResult(v); setPage(1); }}>
                 <option value="">{t('adminNew.scanLogs.allResults', { defaultValue: 'Alle resultaten' })}</option>
-                <option value="matched">matched</option>
-                <option value="not_found">not_found</option>
-                <option value="multiple">multiple</option>
+                <option value="matched"><TranslatedText textKey="siteCopy.69f11e8dfe0edffa" fallbackText={"matched"} inline={false} /></option>
+                <option value="not_found"><TranslatedText textKey="siteCopy.e0d39215ff4ef37f" fallbackText={"not_found"} inline={false} /></option>
+                <option value="multiple"><TranslatedText textKey="siteCopy.bd753cf2d72bdf28" fallbackText={"multiple"} inline={false} /></option>
               </AdminSelect>
             </div>
             <input
@@ -113,13 +115,13 @@ export default function ScanLogsPage() {
                 <AdminTable minWidth={900}>
                   <AdminTableHead>
                     <tr>
-                      <AdminTableHeaderCell>{t('adminNew.scanLogs.columns.timestamp', { defaultValue: 'Tijdstip' })}</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>{t('adminNew.scanLogs.columns.barcode', { defaultValue: 'Barcode' })}</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>{t('adminNew.scanLogs.columns.source', { defaultValue: 'Bron' })}</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>{t('adminNew.scanLogs.columns.result', { defaultValue: 'Resultaat' })}</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>{t('adminNew.scanLogs.columns.product', { defaultValue: 'Product' })}</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>{t('adminNew.scanLogs.columns.fastScan', { defaultValue: 'Fast scan' })}</AdminTableHeaderCell>
-                      <AdminTableHeaderCell>{t('adminNew.scanLogs.columns.user', { defaultValue: 'Medewerker' })}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.scanLogs.columns.timestamp'} vars={{ defaultValue: 'Tijdstip' }} />}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.scanLogs.columns.barcode'} vars={{ defaultValue: 'Barcode' }} />}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.scanLogs.columns.source'} vars={{ defaultValue: 'Bron' }} />}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.scanLogs.columns.result'} vars={{ defaultValue: 'Resultaat' }} />}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.scanLogs.columns.product'} vars={{ defaultValue: 'Product' }} />}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.scanLogs.columns.fastScan'} vars={{ defaultValue: 'Fast scan' }} />}</AdminTableHeaderCell>
+                      <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.scanLogs.columns.user'} vars={{ defaultValue: 'Medewerker' }} />}</AdminTableHeaderCell>
                     </tr>
                   </AdminTableHead>
                   <tbody>
@@ -148,10 +150,9 @@ export default function ScanLogsPage() {
                           <AdminTableCell>
                             {row.fast_scan ? (
                               <span className="inline-flex items-center gap-1 text-xs font-semibold text-gold-600">
-                                <Zap className="h-3 w-3" /> Ja
-                              </span>
+                                <Zap className="h-3 w-3" /> <TranslatedText textKey="siteCopy.24d9ede32744b5ab" fallbackText={" Ja"} /></span>
                             ) : (
-                              <span className="text-xs text-navy-400">Nee</span>
+                              <span className="text-xs text-navy-400"><TranslatedText textKey="siteCopy.b91ec243d126e82e" fallbackText={"Nee"} /></span>
                             )}
                           </AdminTableCell>
                           <AdminTableCell className="text-xs">

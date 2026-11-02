@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
@@ -218,7 +220,7 @@ function GlobalTopbar({
               className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gold-500 px-3 text-xs font-semibold text-white hover:bg-gold-600"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t('admin.common.new')}</span>
+              <span className="hidden sm:inline">{<TranslatedText textKey={'admin.common.new'} />}</span>
             </button>
             {createOpen ? (
               <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-navy-100 bg-white py-1 shadow-elev">
@@ -264,9 +266,9 @@ function GlobalTopbar({
               <span className="hidden sm:inline">
                 {publicPage.contextual
                   ? publicPage.boat
-                    ? t('adminNew.shell.viewBoat')
-                    : t('adminNew.shell.viewPage')
-                  : t('adminNew.shell.viewWebsite')}
+                    ? <TranslatedText textKey={'adminNew.shell.viewBoat'} />
+                    : <TranslatedText textKey={'adminNew.shell.viewPage'} />
+                  : <TranslatedText textKey={'adminNew.shell.viewWebsite'} />}
               </span>
             </span>
           </Link>
@@ -293,7 +295,7 @@ function GlobalTopbar({
             {bellOpen ? (
               <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-elev anim-zoom">
                 <div className="flex items-center justify-between border-b border-navy-100 px-4 py-3">
-                  <span className="font-semibold text-navy-900">{t('adminNew.shell.notifications')}</span>
+                  <span className="font-semibold text-navy-900">{<TranslatedText textKey={'adminNew.shell.notifications'} />}</span>
                   <Badge tone="gold">{unreadCount}</Badge>
                 </div>
                 {notifications.loading ? (
@@ -309,7 +311,7 @@ function GlobalTopbar({
                   <ul className="max-h-80 overflow-y-auto scrollbar-thin">
                     {unreadCount === 0 ? (
                       <li className="px-4 py-6 text-center text-sm text-navy-500">
-                        {t('adminNew.states.emptyTitle')}
+                        {<TranslatedText textKey={'adminNew.states.emptyTitle'} />}
                       </li>
                     ) : (
                       notifications.data?.map((n) => (
@@ -335,7 +337,7 @@ function GlobalTopbar({
                   onClick={closeAll}
                   className="block bg-sand-50 px-4 py-3 text-center text-sm font-semibold text-navy-900 hover:bg-sand-100"
                 >
-                  {t('adminNew.shell.viewAllUpdates')}
+                  {<TranslatedText textKey={'adminNew.shell.viewAllUpdates'} />}
                 </Link>
               </div>
             ) : null}
@@ -368,7 +370,7 @@ function GlobalTopbar({
                   className="flex items-center gap-2 px-4 py-2 text-sm text-navy-700 hover:bg-sand-50"
                 >
                   <Settings className="h-4 w-4" />
-                  {t('admin.sidebar.settings')}
+                  {<TranslatedText textKey={'admin.sidebar.settings'} />}
                 </Link>
                 <Link
                   href={`/${locale}/faq`}
@@ -376,14 +378,14 @@ function GlobalTopbar({
                   className="flex items-center gap-2 px-4 py-2 text-sm text-navy-700 hover:bg-sand-50"
                 >
                   <HelpCircle className="h-4 w-4" />
-                  {t('admin.sidebar.help')}
+                  {<TranslatedText textKey={'admin.sidebar.help'} />}
                 </Link>
                 <button
                   onClick={requestLogout}
                   className="flex w-full items-center gap-2 border-t border-navy-100 px-4 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
                 >
                   <LogOut className="h-4 w-4" />
-                  {t('adminNew.common.logout')}
+                  {<TranslatedText textKey={'adminNew.common.logout'} />}
                 </button>
               </div>
             ) : null}

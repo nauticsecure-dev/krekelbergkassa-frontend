@@ -18,7 +18,12 @@
     "test:i18n": "node --test scripts/admin-i18n-audit.test.mjs",
     "check:admin-i18n:strict": "node scripts/check-admin-i18n.mjs --strict-dynamic",
     "check:types": "tsc --project tsconfig.check.json",
-    "test:global-ux": "playwright test --config playwright.global-ux.config.ts"
+    "test:global-ux": "playwright test --config playwright.global-ux.config.ts",
+    "audit:cms": "node scripts/audit-cms-coverage.mjs",
+    "check:cms": "node scripts/audit-cms-coverage.mjs --check",
+    "test:cms-audit": "node --test scripts/audit-cms-coverage.test.mjs",
+    "test:cms-text": "playwright test --config playwright.cms-text.config.ts",
+    "test:cms-media": "node scripts/test-cms-media.mjs"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",

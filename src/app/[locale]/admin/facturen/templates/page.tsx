@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, FileText, Mail, Plus, PowerOff, ScanText, Trash2 } from 'lucide-react';
@@ -19,7 +21,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
-import { extractionTemplatesService, type ExtractionTemplate } from '@/lib/services';
+import { settingsService, extractionTemplatesService, type ExtractionTemplate } from '@/lib/services';
 import { companyInfo } from '@/lib/company';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatDate, intlLocale } from '@/lib/format';
@@ -67,17 +69,17 @@ export default function ExtractionTemplatesPage() {
           <div className="flex gap-2">
             <Link href={`/${locale}/admin/facturen/import`}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                {t('adminNew.invoiceImports.title')}
+                {<TranslatedText textKey={'adminNew.invoiceImports.title'} />}
               </Button>
             </Link>
             <Link href={`/${locale}/admin/facturen/templates/layout`}>
               <Button variant="outline" size="sm" leftIcon={<FileText className="h-4 w-4" />}>
-                {t('adminNew.templates.layout', { defaultValue: 'Factuuropmaak' })}
+                {<TranslatedText textKey={'adminNew.templates.layout'} vars={{ defaultValue: 'Factuuropmaak' }} />}
               </Button>
             </Link>
             <Link href={`/${locale}/admin/facturen/templates/editor?mode=extraction`}>
               <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-                {t('adminNew.templates.newExtraction', { defaultValue: 'Extractiesjabloon' })}
+                {<TranslatedText textKey={'adminNew.templates.newExtraction'} vars={{ defaultValue: 'Extractiesjabloon' }} />}
               </Button>
             </Link>
           </div>
@@ -95,7 +97,7 @@ export default function ExtractionTemplatesPage() {
               value={importEmail}
               tone="marine"
             />
-            <p className="flex-1 text-sm text-navy-500">{t('adminNew.templates.emailHint')}</p>
+            <p className="flex-1 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.templates.emailHint'} />}</p>
           </div>
         </AdminSectionCard>
 
@@ -119,13 +121,13 @@ export default function ExtractionTemplatesPage() {
               <AdminTable minWidth={860}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.templates.columns.name')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.templates.columns.supplier')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>Status</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.templates.columns.zones')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.templates.columns.usage')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.templates.columns.confidence')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.templates.columns.lastUsed')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.templates.columns.name'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.templates.columns.supplier'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell><TranslatedText textKey="siteCopy.0ae04a7bf15230a0" fallbackText={"Status"} /></AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.templates.columns.zones'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.templates.columns.usage'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.templates.columns.confidence'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.templates.columns.lastUsed'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -171,7 +173,7 @@ export default function ExtractionTemplatesPage() {
                         <div className="flex flex-wrap justify-end gap-1">
                           <Link href={`/${locale}/admin/facturen/templates/editor?id=${tpl.id}`}>
                             <Button variant="ghost" size="sm">
-                              {t('adminNew.common.edit')}
+                              {<TranslatedText textKey={'adminNew.common.edit'} />}
                             </Button>
                           </Link>
                           <Button
@@ -194,8 +196,7 @@ export default function ExtractionTemplatesPage() {
                               leftIcon={<Trash2 className="h-3.5 w-3.5" />}
                               onClick={() => setDeleteTarget(tpl)}
                             >
-                              Verwijderen
-                            </Button>
+                              <TranslatedText textKey="siteCopy.c8224da799cac3b8" fallbackText={"Verwijderen"} /></Button>
                           ) : null}
                         </div>
                       </AdminTableCell>

@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -168,8 +170,8 @@ export default function PortalInvoicesPage() {
           {STATUS_FILTERS.map((value) => (
             <PortalFilterPill key={value || 'all'} active={status === value} onClick={() => setStatus(value)}>
               {value
-                ? t(`adminNew.status.${value === 'open' ? 'open' : value}`)
-                : t('adminNew.portal.invoices.allStatuses')}
+                ? <TranslatedText textKey={`adminNew.status.${value === 'open' ? 'open' : value}`} />
+                : <TranslatedText textKey={'adminNew.portal.invoices.allStatuses'} />}
             </PortalFilterPill>
           ))}
         </PortalFilterBar>
@@ -211,7 +213,7 @@ export default function PortalInvoicesPage() {
                           setPayOpen(true);
                         }}
                       >
-                        {t('adminNew.portal.invoices.pay')}
+                        {<TranslatedText textKey={'adminNew.portal.invoices.pay'} />}
                       </Button>
                     ) : null}
                   </div>
@@ -274,7 +276,7 @@ export default function PortalInvoicesPage() {
               {(invoiceDetail.lines?.length ?? 0) > 0 ? (
                 <div className="overflow-hidden rounded-xl border border-navy-100">
                   <div className="border-b border-navy-100 bg-sand-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-navy-500">
-                    {t('adminNew.portal.invoices.lines')}
+                    {<TranslatedText textKey={'adminNew.portal.invoices.lines'} />}
                   </div>
                   <div className="divide-y divide-navy-100">
                     {invoiceDetail.lines?.map((line) => (
@@ -298,16 +300,16 @@ export default function PortalInvoicesPage() {
                   className="inline-flex items-center gap-1 rounded-lg border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-sand-50"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  {t('adminNew.invoiceDetail.actions.openPdf')}
+                  {<TranslatedText textKey={'adminNew.invoiceDetail.actions.openPdf'} />}
                 </a>
               ) : null}
               {!String(invoiceDetail.is_fully_paid).includes('true') && invoiceDetail.status !== 'paid' ? (
                 <Button variant="gold" leftIcon={<ExternalLink className="h-4 w-4" />} onClick={() => setPayOpen(true)}>
-                  {t('adminNew.portal.invoices.pay')}
+                  {<TranslatedText textKey={'adminNew.portal.invoices.pay'} />}
                 </Button>
               ) : null}
               <Button variant="outline" onClick={() => setSelected(null)}>
-                {t('adminNew.common.cancel')}
+                {<TranslatedText textKey={'adminNew.common.cancel'} />}
               </Button>
             </PortalModalFooter>
           </>
@@ -322,30 +324,30 @@ export default function PortalInvoicesPage() {
               subtitle={selected.invoice_number}
             />
             <PortalModalBody>
-              <p className="text-sm text-navy-600">{t('adminNew.portal.invoices.paySubtitle')}</p>
+              <p className="text-sm text-navy-600">{<TranslatedText textKey={'adminNew.portal.invoices.paySubtitle'} />}</p>
               <div className="rounded-xl border border-navy-100 bg-sand-50/60 p-4">
-                <div className="text-xs text-navy-500">{t('adminNew.portal.invoices.amountDue')}</div>
+                <div className="text-xs text-navy-500">{<TranslatedText textKey={'adminNew.portal.invoices.amountDue'} />}</div>
                 <div className="text-2xl font-semibold text-navy-900">
                   {formatCurrency(centsToEuro(selected.outstanding_cents), dateLocale)}
                 </div>
               </div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-navy-400">
-                {t('adminNew.portal.invoices.paymentMethod')}
+                {<TranslatedText textKey={'adminNew.portal.invoices.paymentMethod'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
                 value={payMethod}
                 onChange={(e) => setPayMethod(e.target.value)}
               >
-                <option value="ideal">iDEAL</option>
+                <option value="ideal"><TranslatedText textKey="siteCopy.097641dce84d75c5" fallbackText={"iDEAL"} inline={false} /></option>
                 <option value="creditcard">{t('adminNew.kassa.payment.creditcard')}</option>
-                <option value="bancontact">Bancontact</option>
+                <option value="bancontact"><TranslatedText textKey="siteCopy.1e6dc285493f0ed6" fallbackText={"Bancontact"} inline={false} /></option>
                 <option value="banktransfer">{t('adminNew.portal.invoices.bankTransfer')}</option>
               </SearchSelect>
             </PortalModalBody>
             <PortalModalFooter>
               <Button variant="outline" onClick={() => setPayOpen(false)}>
-                {t('adminNew.common.cancel')}
+                {<TranslatedText textKey={'adminNew.common.cancel'} />}
               </Button>
               <Button
                 variant="gold"
@@ -353,7 +355,7 @@ export default function PortalInvoicesPage() {
                 leftIcon={<ExternalLink className="h-4 w-4" />}
                 onClick={() => setConfirmPay(true)}
               >
-                {paying ? t('adminNew.kassa.processing') : t('adminNew.portal.invoices.continuePay')}
+                {paying ? <TranslatedText textKey={'adminNew.kassa.processing'} /> : <TranslatedText textKey={'adminNew.portal.invoices.continuePay'} />}
               </Button>
             </PortalModalFooter>
           </>

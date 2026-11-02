@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -358,7 +360,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
           <AdminToolbar className="mb-4 border-0 bg-transparent p-0 shadow-none">
             <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               <label className="flex items-center gap-2 text-sm font-medium text-navy-700">
-                <span className="sr-only">{t('adminNew.appointments.columns.date')}</span>
+                <span className="sr-only">{<TranslatedText textKey={'adminNew.appointments.columns.date'} />}</span>
                 <input
                   type="date"
                   className="input-base w-full sm:w-auto"
@@ -369,7 +371,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
                 />
               </label>
               <label className="sr-only" htmlFor="appointment-status-filter">
-                {t('adminNew.appointments.columns.status')}
+                {<TranslatedText textKey={'adminNew.appointments.columns.status'} />}
               </label>
               <SearchSelect
                 id="appointment-status-filter"
@@ -405,7 +407,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
               leftIcon={<Plus className="h-4 w-4" />}
               onClick={() => openCreate()}
             >
-              {t('planning.createAppointment')}
+              {<TranslatedText textKey={'planning.createAppointment'} />}
             </Button>}
           </AdminToolbar>
 
@@ -553,24 +555,24 @@ function AppointmentDetailModal({
           </div>
           <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
             <div>
-              <dt className="text-navy-400">{t('adminNew.appointments.columns.date')}</dt>
+              <dt className="text-navy-400">{<TranslatedText textKey={'adminNew.appointments.columns.date'} />}</dt>
               <dd className="font-medium text-navy-900">
                 {formatDate(appointment.appointment_date?.slice(0, 10), dateLocale)}
               </dd>
             </div>
             <div>
-              <dt className="text-navy-400">{t('adminNew.appointments.columns.time')}</dt>
+              <dt className="text-navy-400">{<TranslatedText textKey={'adminNew.appointments.columns.time'} />}</dt>
               <dd className="font-medium text-navy-900">
                 {(appointment.start_time ?? '').slice(0, 5)}–{(appointment.end_time ?? '').slice(0, 5)}
               </dd>
             </div>
             <div className="col-span-2">
-              <dt className="text-navy-400">{t('adminNew.appointments.columns.services')}</dt>
+              <dt className="text-navy-400">{<TranslatedText textKey={'adminNew.appointments.columns.services'} />}</dt>
               <dd className="font-medium text-navy-900">{appointment.service_codes?.join(', ') || '—'}</dd>
             </div>
             {appointment.assigned_to?.name ? (
               <div className="col-span-2">
-                <dt className="text-navy-400">{t('planning.fieldAssignee')}</dt>
+                <dt className="text-navy-400">{<TranslatedText textKey={'planning.fieldAssignee'} />}</dt>
                 <dd className="font-medium text-navy-900">{appointment.assigned_to.name}</dd>
               </div>
             ) : null}
@@ -578,7 +580,7 @@ function AppointmentDetailModal({
           <div className="mt-6 flex flex-wrap justify-end gap-2">
             {isPending && can('planning.manage') ? (
               <Button size="sm" variant="secondary" leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />} onClick={() => onConfirm(appointment.id)}>
-                {t('adminNew.appointments.confirm')}
+                {<TranslatedText textKey={'adminNew.appointments.confirm'} />}
               </Button>
             ) : nextStep && !isPending && can('planning.write') ? (
               <Button size="sm" variant="secondary" leftIcon={<CircleCheck className="h-3.5 w-3.5" />} onClick={() => onAdvance(appointment.id, nextStep)}>
@@ -587,7 +589,7 @@ function AppointmentDetailModal({
             ) : null}
             {canCancel && can('planning.manage') ? (
               <Button size="sm" variant="ghost" leftIcon={<XCircle className="h-3.5 w-3.5" />} onClick={() => onCancel(appointment.id)}>
-                {t('adminNew.appointments.cancel')}
+                {<TranslatedText textKey={'adminNew.appointments.cancel'} />}
               </Button>
             ) : null}
           </div>

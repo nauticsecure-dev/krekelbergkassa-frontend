@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -153,7 +155,7 @@ export default function ApiCredentialsPage() {
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => setShowCreate(true)}
           >
-            {t('adminNew.credentials.actions.new')}
+            {<TranslatedText textKey={'adminNew.credentials.actions.new'} />}
           </Button>
         }
       />
@@ -221,15 +223,15 @@ export default function ApiCredentialsPage() {
               <AdminTable minWidth={1040}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.credentials.columns.name')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.credentials.columns.service')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.credentials.columns.environment')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.credentials.columns.status')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.credentials.columns.expires')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.credentials.columns.lastUsed')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.credentials.columns.createdBy')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.credentials.columns.name'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.credentials.columns.service'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.credentials.columns.environment'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.credentials.columns.status'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.credentials.columns.expires'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.credentials.columns.lastUsed'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.credentials.columns.createdBy'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">
-                      {t('adminNew.credentials.columns.actions')}
+                      {<TranslatedText textKey={'adminNew.credentials.columns.actions'} />}
                     </AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -250,11 +252,11 @@ export default function ApiCredentialsPage() {
                         </AdminTableCell>
                         <AdminTableCell>
                           {isExpired ? (
-                            <Badge tone="danger">{t('adminNew.credentials.status.expired')}</Badge>
+                            <Badge tone="danger">{<TranslatedText textKey={'adminNew.credentials.status.expired'} />}</Badge>
                           ) : isActive ? (
-                            <Badge tone="success">{t('adminNew.credentials.status.active')}</Badge>
+                            <Badge tone="success">{<TranslatedText textKey={'adminNew.credentials.status.active'} />}</Badge>
                           ) : (
-                            <Badge tone="neutral">{t('adminNew.credentials.status.inactive')}</Badge>
+                            <Badge tone="neutral">{<TranslatedText textKey={'adminNew.credentials.status.inactive'} />}</Badge>
                           )}
                         </AdminTableCell>
                         <AdminTableCell className="whitespace-nowrap text-xs">
@@ -275,7 +277,7 @@ export default function ApiCredentialsPage() {
                               disabled={revealCredential.loading}
                               onClick={() => void onReveal(cred)}
                             >
-                              {t('adminNew.credentials.actions.reveal')}
+                              {<TranslatedText textKey={'adminNew.credentials.actions.reveal'} />}
                             </Button>
                             <Button
                               size="sm"
@@ -283,7 +285,7 @@ export default function ApiCredentialsPage() {
                               leftIcon={<Trash2 className="h-3.5 w-3.5" />}
                               onClick={() => setDeleteTarget(cred)}
                             >
-                              {t('adminNew.common.delete')}
+                              {<TranslatedText textKey={'adminNew.common.delete'} />}
                             </Button>
                           </div>
                         </AdminTableCell>
@@ -301,7 +303,7 @@ export default function ApiCredentialsPage() {
       <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
         <form onSubmit={onCreate} className="p-6">
           <h2 className="text-lg font-semibold text-navy-900">
-            {t('adminNew.credentials.modal.title')}
+            {<TranslatedText textKey={'adminNew.credentials.modal.title'} />}
           </h2>
           <div className="mt-4 space-y-3">
             <Input
@@ -318,7 +320,7 @@ export default function ApiCredentialsPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.credentials.fields.environment')}
+                {<TranslatedText textKey={'adminNew.credentials.fields.environment'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
@@ -340,7 +342,7 @@ export default function ApiCredentialsPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.credentials.fields.description')}
+                {<TranslatedText textKey={'adminNew.credentials.fields.description'} />}
               </label>
               <textarea
                 className="input-base min-h-20 w-full"
@@ -351,10 +353,10 @@ export default function ApiCredentialsPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createCredential.loading}>
-              {createCredential.loading ? t('adminNew.common.saving') : t('adminNew.credentials.actions.new')}
+              {createCredential.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.credentials.actions.new'} />}
             </Button>
           </div>
         </form>
@@ -364,9 +366,9 @@ export default function ApiCredentialsPage() {
       <Modal open={!!revealed} onClose={() => setRevealed(null)} size="md">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-navy-900">
-            {t('adminNew.credentials.reveal.title')}
+            {<TranslatedText textKey={'adminNew.credentials.reveal.title'} />}
           </h2>
-          <p className="mt-1 text-sm text-amber-700">{t('adminNew.credentials.reveal.auditNote')}</p>
+          <p className="mt-1 text-sm text-amber-700">{<TranslatedText textKey={'adminNew.credentials.reveal.auditNote'} />}</p>
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-navy-100 bg-sand-50/60 p-3">
             <code className="min-w-0 flex-1 break-all font-mono text-sm text-navy-900">
               {revealed?.key}
@@ -377,19 +379,19 @@ export default function ApiCredentialsPage() {
               leftIcon={copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               onClick={() => void onCopy()}
             >
-              {copied ? t('adminNew.credentials.reveal.copied') : t('adminNew.credentials.reveal.copy')}
+              {copied ? <TranslatedText textKey={'adminNew.credentials.reveal.copied'} /> : <TranslatedText textKey={'adminNew.credentials.reveal.copy'} />}
             </Button>
           </div>
           {revealed?.revealedAt ? (
             <p className="mt-2 text-xs text-navy-500">
-              {t('adminNew.credentials.reveal.revealedAt', {
+              {<TranslatedText textKey={'adminNew.credentials.reveal.revealedAt'} vars={{
                 time: formatDateTime(revealed.revealedAt, dateLocale),
-              })}
+              }} />}
             </p>
           ) : null}
           <div className="mt-5 flex justify-end">
             <Button variant="ghost" onClick={() => setRevealed(null)}>
-              {t('adminNew.common.close')}
+              {<TranslatedText textKey={'adminNew.common.close'} />}
             </Button>
           </div>
         </div>

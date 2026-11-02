@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -282,23 +284,23 @@ export default function BoatDossierPage() {
               <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 ring-1 ring-inset ring-rose-200">
                 <AlertTriangle className="h-3.5 w-3.5" />
                 {insuranceDaysLeft != null && insuranceDaysLeft < 0
-                  ? t('adminNew.boats.insuranceExpired')
-                  : t('adminNew.boats.insuranceExpiringSoon', { days: insuranceDaysLeft ?? 0 })}
+                  ? <TranslatedText textKey={'adminNew.boats.insuranceExpired'} />
+                  : <TranslatedText textKey={'adminNew.boats.insuranceExpiringSoon'} vars={{ days: insuranceDaysLeft ?? 0 }} />}
               </span>
             ) : null}
             <Link href={`/${locale}/admin/boten`}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                {t('adminNew.common.back')}
+                {<TranslatedText textKey={'adminNew.common.back'} />}
               </Button>
             </Link>
             {canWrite ? (
               <Button variant="outline" size="sm" leftIcon={<UserCog className="h-4 w-4" />} onClick={() => setShowTransfer(true)}>
-                {t('adminNew.boats.transfer')}
+                {<TranslatedText textKey={'adminNew.boats.transfer'} />}
               </Button>
             ) : null}
             {canWrite ? (
               <Button variant="gold" size="sm" onClick={() => setShowEdit(true)}>
-                {t('adminNew.common.edit')}
+                {<TranslatedText textKey={'adminNew.common.edit'} />}
               </Button>
             ) : null}
           </div>
@@ -378,7 +380,7 @@ export default function BoatDossierPage() {
                         href={adminRecordHref(locale, 'klanten', owner)}
                         className="text-sm font-semibold text-marine-700 hover:text-marine-900"
                       >
-                        {t('adminNew.customers.details')} →
+                        {<TranslatedText textKey={'adminNew.customers.details'} />} →
                       </Link>
                     ) : null}
                   </div>
@@ -451,7 +453,7 @@ export default function BoatDossierPage() {
                           {String(qr.payload ?? boat.qr_code ?? '')}
                         </div>
                         <Button size="sm" variant="outline" className="print:hidden" onClick={() => window.print()}>
-                          {t('adminNew.boats.printLabel')}
+                          {<TranslatedText textKey={'adminNew.boats.printLabel'} />}
                         </Button>
                       </div>
                     </AdminSectionCard>
@@ -468,10 +470,10 @@ export default function BoatDossierPage() {
                   <Field label={t('adminNew.customers.columns.phone')} value={String(owner.phone ?? '—')} />
                 </div>
                 <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-navy-400">
-                  {t('adminNew.boats.ownershipHistory')}
+                  {<TranslatedText textKey={'adminNew.boats.ownershipHistory'} />}
                 </h4>
                 {ownershipHistory.length === 0 ? (
-                  <p className="text-sm text-navy-500">{t('adminNew.boats.noOwnershipHistory')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.boats.noOwnershipHistory'} />}</p>
                 ) : (
                   <ul className="space-y-2">
                     {ownershipHistory.map((o, i) => (
@@ -503,13 +505,13 @@ export default function BoatDossierPage() {
                     </SearchSelect>
                     <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { void onUpload('photo', e.target.files?.[0]); e.target.value = ''; }} />
                     <Button size="sm" variant="outline" leftIcon={<Upload className="h-3.5 w-3.5" />} disabled={uploadPhoto.loading} onClick={() => photoInputRef.current?.click()}>
-                      {t('adminNew.common.add')}
+                      {<TranslatedText textKey={'adminNew.common.add'} />}
                     </Button>
                   </div>
                 }
               >
                 {photos.length === 0 ? (
-                  <p className="text-sm text-navy-500">{t('adminNew.boats.noPhotos')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.boats.noPhotos'} />}</p>
                 ) : (
                   (() => {
                     const FOLDERS = ['arrival', 'inspection', 'maintenance', 'damage', 'departure'];
@@ -579,13 +581,13 @@ export default function BoatDossierPage() {
                     </SearchSelect>
                     <input ref={docInputRef} type="file" className="hidden" onChange={(e) => { void onUpload('document', e.target.files?.[0]); e.target.value = ''; }} />
                     <Button size="sm" variant="outline" leftIcon={<Upload className="h-3.5 w-3.5" />} disabled={uploadDoc.loading} onClick={() => docInputRef.current?.click()}>
-                      {t('adminNew.common.add')}
+                      {<TranslatedText textKey={'adminNew.common.add'} />}
                     </Button>
                   </div>
                 }
               >
                 {documents.length === 0 ? (
-                  <p className="text-sm text-navy-500">{t('adminNew.boats.noDocuments')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.boats.noDocuments'} />}</p>
                 ) : (
                   <ul className="divide-y divide-navy-100 rounded-xl border border-navy-100/70">
                     {documents.map((d, i) => {
@@ -595,11 +597,11 @@ export default function BoatDossierPage() {
                           <span className="min-w-0 flex-1 truncate text-navy-800">
                             {String(d.filename ?? d.name ?? `#${i + 1}`)}
                             {d.category ? <span className="ml-2 text-xs text-navy-400">{tEnum(t, 'adminNew.boats.docCategories', String(d.category))}</span> : null}
-                            {d.version ? <span className="ml-2 text-xs text-navy-400">v{String(d.version)}</span> : null}
+                            {d.version ? <span className="ml-2 text-xs text-navy-400"><TranslatedText textKey="siteCopy.313509a4da1be827" fallbackText={"v"} />{String(d.version)}</span> : null}
                           </span>
                           <div className="flex shrink-0 items-center gap-2">
                             <a href={String(d.signed_url ?? d.url ?? '')} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 hover:text-marine-900">
-                              {t('adminNew.invoiceDetail.actions.openPdf')}
+                              {<TranslatedText textKey={'adminNew.invoiceDetail.actions.openPdf'} />}
                             </a>
                             <button
                               type="button"
@@ -621,7 +623,7 @@ export default function BoatDossierPage() {
             {tab === 'timeline' ? (
               <AdminSectionCard title={t('adminNew.boats.tabs.timeline')} icon={History}>
                 {timeline.length === 0 ? (
-                  <p className="text-sm text-navy-500">{t('adminNew.boats.noTimeline')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.boats.noTimeline'} />}</p>
                 ) : (
                   <ol className="space-y-2">
                     {timeline.map((item, i) => (
@@ -642,7 +644,7 @@ export default function BoatDossierPage() {
               <AdminSectionCard title={t('adminNew.stalling.title')} icon={Warehouse}>
                 <div className="space-y-2">
                   {storage.length === 0 ? (
-                    <p className="text-sm text-navy-500">{t('adminNew.stalling.emptyMessage')}</p>
+                    <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.stalling.emptyMessage'} />}</p>
                   ) : (
                     storage.map((c) => {
                       const startDate = c.start_date ? new Date(String(c.start_date)) : null;
@@ -679,7 +681,7 @@ export default function BoatDossierPage() {
                           </div>
                           <div className="mt-3">
                             <Link href={adminRecordHref(locale, 'stalling', c)} className="text-xs font-semibold text-marine-700 hover:text-marine-900">
-                              {t('adminNew.boats.openContract', { defaultValue: 'Open contract →' })}
+                              {<TranslatedText textKey={'adminNew.boats.openContract'} vars={{ defaultValue: 'Open contract →' }} />}
                             </Link>
                           </div>
                         </div>
@@ -694,21 +696,21 @@ export default function BoatDossierPage() {
               <AdminSectionCard title={t('admin.sidebar.invoices')} icon={FileText}>
                 <div className="mb-5 grid grid-cols-3 gap-3">
                   <div className="rounded-xl border border-navy-100 bg-gradient-to-r from-white to-sand-50/40 px-4 py-3 text-sm">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-navy-400">{t('adminNew.boats.stats.revenue', { defaultValue: 'Totale omzet' })}</div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-navy-400">{<TranslatedText textKey={'adminNew.boats.stats.revenue'} vars={{ defaultValue: 'Totale omzet' }} />}</div>
                     <div className="mt-1 text-lg font-semibold text-navy-900">{formatCurrency(Number(stats.revenue_cents ?? 0) / 100, dateLocale)}</div>
                   </div>
                   <div className="rounded-xl border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white px-4 py-3 text-sm">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-emerald-600">{t('adminNew.boats.stats.paid', { defaultValue: 'Betaald' })}</div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-emerald-600">{<TranslatedText textKey={'adminNew.boats.stats.paid'} vars={{ defaultValue: 'Betaald' }} />}</div>
                     <div className="mt-1 text-lg font-semibold text-emerald-700">{formatCurrency(Number(stats.paid_cents ?? 0) / 100, dateLocale)}</div>
                   </div>
                   <div className="rounded-xl border border-rose-100 bg-gradient-to-r from-rose-50 to-white px-4 py-3 text-sm">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-rose-600">{t('adminNew.boats.stats.openBalance', { defaultValue: 'Open saldo' })}</div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-rose-600">{<TranslatedText textKey={'adminNew.boats.stats.openBalance'} vars={{ defaultValue: 'Open saldo' }} />}</div>
                     <div className="mt-1 text-lg font-semibold text-rose-700">{formatCurrency(Number(stats.open_balance_cents ?? 0) / 100, dateLocale)}</div>
                   </div>
                 </div>
                 <div className="space-y-2">
                   {invoices.length === 0 ? (
-                    <p className="text-sm text-navy-500">{t('adminNew.invoices.emptyMessage')}</p>
+                    <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.invoices.emptyMessage'} />}</p>
                   ) : (
                     invoices.map((inv) => (
                       <Link
@@ -729,7 +731,7 @@ export default function BoatDossierPage() {
               <AdminSectionCard title={t('adminNew.workOrders.title')} icon={FileText}>
                 <div className="space-y-2">
                   {workOrders.length === 0 ? (
-                    <p className="text-sm text-navy-500">{t('adminNew.workOrders.emptyMessage')}</p>
+                    <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.emptyMessage'} />}</p>
                   ) : (
                     workOrders.map((wo) => (
                       <Link
@@ -753,7 +755,7 @@ export default function BoatDossierPage() {
               <AdminSectionCard title={t('admin.sidebar.audit')} icon={Anchor}>
                 <div className="space-y-2">
                   {auditRows.length === 0 ? (
-                    <p className="text-sm text-navy-500">{t('adminNew.stalling.auditEmptyMessage')}</p>
+                    <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.stalling.auditEmptyMessage'} />}</p>
                   ) : (
                     auditRows.slice(0, 25).map((log, i) => {
                       const explicitChanges =
@@ -819,8 +821,8 @@ export default function BoatDossierPage() {
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowEdit(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={updateBoat.loading}>{t('adminNew.common.save')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setShowEdit(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={updateBoat.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>
@@ -876,7 +878,7 @@ export default function BoatDossierPage() {
           <AdminModalHeader title={t('adminNew.boats.transfer')} subtitle={t('adminNew.boats.transferSubtitle')} />
           <AdminModalBody>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.boats.newOwner')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.boats.newOwner'} />}</label>
               <SearchSelect className="input-base w-full" value={transferForm.customer_id} onChange={(e) => setTransferForm({ ...transferForm, customer_id: e.target.value })} required>
                 <option value="">{t('adminNew.kassa.selectCustomer')}</option>
                 {(customers.data?.data ?? []).map((c) => (
@@ -886,13 +888,13 @@ export default function BoatDossierPage() {
             </div>
             <Input label={t('adminNew.boats.transferReason')} value={transferForm.transfer_reason} onChange={(e) => setTransferForm({ ...transferForm, transfer_reason: e.target.value })} placeholder="sale" />
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.boats.ownershipNotes')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.boats.ownershipNotes'} />}</label>
               <textarea className="input-base min-h-20 w-full" value={transferForm.ownership_notes} onChange={(e) => setTransferForm({ ...transferForm, ownership_notes: e.target.value })} />
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowTransfer(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={transferBoat.loading}>{t('adminNew.boats.transfer')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setShowTransfer(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={transferBoat.loading}>{<TranslatedText textKey={'adminNew.boats.transfer'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>

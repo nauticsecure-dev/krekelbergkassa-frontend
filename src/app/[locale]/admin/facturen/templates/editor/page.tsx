@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -129,21 +131,21 @@ function EditorInner() {
           <div className="flex gap-2">
             <Link href={`/${locale}/admin/facturen/templates`}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                {t('adminNew.common.back')}
+                {<TranslatedText textKey={'adminNew.common.back'} />}
               </Button>
             </Link>
             <Button variant="gold" size="sm" disabled={save.loading} onClick={() => void onSave()}>
-              {t('adminNew.common.save')}
+              {<TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </div>
         }
       />
       <AdminContent>
         <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-navy-700">
-          {t('adminNew.templates.extractionNotice', { defaultValue: 'Dit sjabloon hoort bij import en OCR: veldzones en matchregels. De opmaak van een gegenereerde factuur (logo, totalen, footer, voorwaarden) staat apart.' })}
+          {<TranslatedText textKey={'adminNew.templates.extractionNotice'} vars={{ defaultValue: 'Dit sjabloon hoort bij import en OCR: veldzones en matchregels. De opmaak van een gegenereerde factuur (logo, totalen, footer, voorwaarden) staat apart.' }} />}
           {' '}
           <Link href={`/${locale}/admin/facturen/templates/layout`} className="font-semibold text-marine-700">
-            {t('adminNew.templates.layout', { defaultValue: 'Factuuropmaak' })}
+            {<TranslatedText textKey={'adminNew.templates.layout'} vars={{ defaultValue: 'Factuuropmaak' }} />}
           </Link>
         </p>
         <AdminSectionCard title={t('adminNew.templates.detailsTitle')} icon={ScanText}>
@@ -162,23 +164,23 @@ function EditorInner() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.templates.fieldsMeta.documentType')}
+                {<TranslatedText textKey={'adminNew.templates.fieldsMeta.documentType'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
               >
-                <option value="supplier_invoice">Leveranciersfactuur</option>
-                <option value="purchase_invoice">Inkoopfactuur</option>
-                <option value="sales_invoice">Verkoopfactuur</option>
-                <option value="delivery_note">Pakbon / leveringsbon</option>
-                <option value="workbon">Werkbon</option>
-                <option value="receipt">Bon / kassabon</option>
-                <option value="quote">Offerte</option>
-                <option value="contract">Contract</option>
-                <option value="document">Overig document</option>
-                <option value="unknown">Onbekend</option>
+                <option value="supplier_invoice"><TranslatedText textKey="siteCopy.a435c33b4145aac0" fallbackText={"Leveranciersfactuur"} inline={false} /></option>
+                <option value="purchase_invoice"><TranslatedText textKey="siteCopy.7eed7e669dce94c8" fallbackText={"Inkoopfactuur"} inline={false} /></option>
+                <option value="sales_invoice"><TranslatedText textKey="siteCopy.7b0ead92a1dc4977" fallbackText={"Verkoopfactuur"} inline={false} /></option>
+                <option value="delivery_note"><TranslatedText textKey="siteCopy.7cba417c3ac21843" fallbackText={"Pakbon / leveringsbon"} inline={false} /></option>
+                <option value="workbon"><TranslatedText textKey="siteCopy.bf881d0d69a81231" fallbackText={"Werkbon"} inline={false} /></option>
+                <option value="receipt"><TranslatedText textKey="siteCopy.c4d4ed4c44b3638d" fallbackText={"Bon / kassabon"} inline={false} /></option>
+                <option value="quote"><TranslatedText textKey="siteCopy.31d491b8e575974a" fallbackText={"Offerte"} inline={false} /></option>
+                <option value="contract"><TranslatedText textKey="siteCopy.25a44b50ab22ccad" fallbackText={"Contract"} inline={false} /></option>
+                <option value="document"><TranslatedText textKey="siteCopy.d72646ad3b6fe798" fallbackText={"Overig document"} inline={false} /></option>
+                <option value="unknown"><TranslatedText textKey="siteCopy.e7cee2fa4328d132" fallbackText={"Onbekend"} inline={false} /></option>
               </SearchSelect>
             </div>
             <Input

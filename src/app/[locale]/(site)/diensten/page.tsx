@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useIntl } from '@/i18n/IntlProvider';
-import { companyInfo } from '@/lib/company';
+import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { cn } from '@/lib/cn';
 import { useQuery } from '@/lib/hooks/useAsync';
 import {
@@ -91,6 +91,7 @@ function groupLiveServices(services: ServiceCatalogService[] | undefined): LiveG
 }
 
 export default function DienstenPage() {
+  const companyInfo = useCompanyInfo();
   const { t, locale } = useIntl();
   useRegisterCmsPage(CMS_PAGE);
   const [openFaq, setOpenFaq] = React.useState<string | null>('faq1');
@@ -195,7 +196,7 @@ export default function DienstenPage() {
                 t={t}
               />
             ))
-          ) : <p role="status" className="py-8 text-center text-navy-500">{t(catalogQuery.loading ? 'adminNew.common.loading' : 'globalUx.servicesEmpty')}</p>}
+          ) : <p role="status" className="py-8 text-center text-navy-500">{<TranslatedText textKey={catalogQuery.loading ? 'adminNew.common.loading' : 'globalUx.servicesEmpty'} />}</p>}
         </div>
       </section>
 
@@ -296,12 +297,12 @@ export default function DienstenPage() {
               <ul className="mt-5 space-y-2.5 text-sm text-navy-700">
                 <li className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-marine-700" />
-                  {companyInfo.address}
+                  <CompanyText field="address" />
                 </li>
                 <li className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-marine-700" />
                   <a href={companyInfo.phoneHref} className="hover:text-navy-900">
-                    {companyInfo.phone}
+                    <CompanyText field="phone" />
                   </a>
                 </li>
               </ul>
@@ -462,7 +463,7 @@ function LiveServiceGroup({
                         {tf.range_label}
                       </span>
                       <span className="font-semibold text-navy-900">
-                        {tf.is_on_request ? t('servicePage.onRequest') : tf.display_price}
+                        {tf.is_on_request ? <TranslatedText textKey={'servicePage.onRequest'} /> : tf.display_price}
                       </span>
                     </li>
                   ))}

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
 import type { ComponentType } from 'react';
 import { usePathname } from 'next/navigation';
@@ -107,13 +109,13 @@ export function PortalSidebar({ variant = 'desktop' }: Props) {
               : 'text-sand-100/70 hover:bg-white/5 hover:text-white'
           )}
         >
-          <Settings className="h-4 w-4 text-sand-100/50" /> {t('admin.sidebar.settings')}
+          <Settings className="h-4 w-4 text-sand-100/50" /> {<TranslatedText textKey={'admin.sidebar.settings'} />}
         </Link>
         <Link
           href={`/${locale}/faq`}
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sand-100/70 transition hover:bg-white/5 hover:text-white"
         >
-          <HelpCircle className="h-4 w-4 text-sand-100/50" /> {t('admin.sidebar.help')}
+          <HelpCircle className="h-4 w-4 text-sand-100/50" /> {<TranslatedText textKey={'admin.sidebar.help'} />}
         </Link>
       </nav>
 
@@ -122,16 +124,16 @@ export function PortalSidebar({ variant = 'desktop' }: Props) {
           <Sparkles className="absolute -right-1 -top-1 h-10 w-10 text-white/30" />
           <div className="relative">
             <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-900/80">
-              {t('feed.newsletter')}
+              {<TranslatedText textKey={'feed.newsletter'} />}
             </div>
             <div className="mt-1 text-sm font-semibold leading-tight">
-              {t('feed.newsletterDesc')}
+              {<TranslatedText textKey={'feed.newsletterDesc'} />}
             </div>
             <Link
               href={`/${locale}/kraanafspraak`}
               className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-navy-950 px-3 py-2 text-xs font-semibold text-white hover:bg-navy-900"
             >
-              {t('feed.planAppointment')}
+              {<TranslatedText textKey={'feed.planAppointment'} />}
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>

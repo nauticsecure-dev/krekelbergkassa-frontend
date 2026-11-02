@@ -4463,6 +4463,14 @@
     "statusCompleted": "Voltooid"
   },
   "cms": {
+    "contact": {
+      "edit": "Contactgegevens bewerken",
+      "street": "Straat en huisnummer",
+      "postal_code": "Postcode",
+      "city": "Plaats",
+      "phone": "Telefoonnummer",
+      "email": "E-mailadres"
+    },
     "sessionExpired": "Sessie verlopen",
     "draftRetained": "Je niet-opgeslagen wijzigingen blijven hier bewaard. Log in op een nieuw tabblad en hervat daarna het bewerken op dit tabblad.",
     "signInAgain": "Opnieuw inloggen",
@@ -4522,9 +4530,12 @@
     "localeHint": "Alleen gewijzigde talen worden opgeslagen.",
     "textPlaceholder": "Voer tekst in…",
     "focalPoint": "Focuspunt",
-    "focalHint": "Klik op de afbeelding om het focuspunt te bepalen.",
+    "focalHint": "Versleep de afbeelding om bij te snijden. Klik op een voorbeeld of gebruik de schuifregelaars om het focuspunt te bepalen.",
     "overlay": "Donkere overlay",
     "altText": "Alt-tekst",
+    "desktopPreview": "Desktopvoorbeeld",
+    "mobilePreview": "Mobiel voorbeeld",
+    "resetImageAdjustments": "Afbeeldingsaanpassingen herstellen",
     "imageSeoTitle": "SEO-afbeeldingstitel",
     "altPlaceholder": "Beschrijf de afbeelding…",
     "seoTitle": "SEO",
@@ -4536,6 +4547,9 @@
     "globalTitle": "Algemene instellingen",
     "globalDesc": "Wijzigingen gelden op de hele site.",
     "global": {
+      "email": "E-mail",
+      "street": "Straat",
+      "postalCode": "Postcode",
       "headerCtaLabel": "Navigatie-knoptekst",
       "headerCtaPath": "Navigatie-knop link",
       "phone": "Telefoonnummer",
@@ -4579,6 +4593,11 @@
     "placeholderUrl": "https://voorbeeld.nl"
   },
   "settingsHub": {
+    "saveBeforeDiagnostic": "Sla wijzigingen op voordat u een diagnose uitvoert.",
+    "configurationPresent": "Configuratie aanwezig",
+    "signingConfiguration": "Ondertekenconfiguratie",
+    "diagnosticResult": "Diagnoseresultaat",
+    "workflowVerification": "Verificatie in de workflow blijft nodig",
     "search": "Instellingen zoeken",
     "subtitle": "Operationeel configuratiecentrum — bekijk, configureer, test en controleer.",
     "reminderRules": "Herinneringsregels beheren",

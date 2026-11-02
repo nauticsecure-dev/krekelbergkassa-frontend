@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -116,7 +118,7 @@ export default function CustomerTimelinePage() {
         rightSlot={
           <Link href={`/${locale}/admin/klanten/${customerId}`}>
             <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              {t('adminNew.common.back')}
+              {<TranslatedText textKey={'adminNew.common.back'} />}
             </Button>
           </Link>
         }
@@ -155,8 +157,8 @@ export default function CustomerTimelinePage() {
                     }
                   >
                     {v === 'internal'
-                      ? t('adminNew.customerDetail.timelineInternal')
-                      : t('adminNew.customerDetail.timelineCustomer')}
+                      ? <TranslatedText textKey={'adminNew.customerDetail.timelineInternal'} />
+                      : <TranslatedText textKey={'adminNew.customerDetail.timelineCustomer'} />}
                   </button>
                 ))}
               </div>
@@ -188,7 +190,7 @@ export default function CustomerTimelinePage() {
                   disabled={!tlTitle.trim() || !tlBody.trim() || postTimeline.loading}
                   onClick={() => void handlePost()}
                 >
-                  {t('adminNew.customerDetail.timelinePost')}
+                  {<TranslatedText textKey={'adminNew.customerDetail.timelinePost'} />}
                 </Button>
               </div>
             </div>
@@ -237,7 +239,7 @@ export default function CustomerTimelinePage() {
                           <span className="flex items-center gap-2 flex-wrap font-semibold text-navy-900">
                             {str(item, 'title', 'type') || '—'}
                             {vis === 'internal' ? (
-                              <Badge tone="neutral">{t('adminNew.customerDetail.internalNote')}</Badge>
+                              <Badge tone="neutral">{<TranslatedText textKey={'adminNew.customerDetail.internalNote'} />}</Badge>
                             ) : null}
                             {priority === 'high' || priority === 'urgent' ? (
                               <Badge tone="danger">{priority}</Badge>
@@ -271,10 +273,10 @@ export default function CustomerTimelinePage() {
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handlePostComment(itemId); } }}
                               />
                               <Button size="sm" variant="outline" disabled={cs.loading || !cs.body.trim()} onClick={() => void handlePostComment(itemId)}>
-                                {t('adminNew.customerDetail.commentSend', { defaultValue: 'Stuur' })}
+                                {<TranslatedText textKey={'adminNew.customerDetail.commentSend'} vars={{ defaultValue: 'Stuur' }} />}
                               </Button>
                               <Button size="sm" variant="ghost" onClick={() => setCommentState((prev) => ({ ...prev, [itemId]: { open: false, body: '', loading: false } }))}>
-                                {t('adminNew.common.cancel')}
+                                {<TranslatedText textKey={'adminNew.common.cancel'} />}
                               </Button>
                             </div>
                           ) : (
@@ -283,7 +285,7 @@ export default function CustomerTimelinePage() {
                               className="mt-1.5 text-xs text-marine-700 hover:text-marine-900 underline"
                               onClick={() => setCommentState((prev) => ({ ...prev, [itemId]: { open: true, body: '', loading: false } }))}
                             >
-                              {t('adminNew.customerDetail.addComment', { defaultValue: '+ Opmerking' })}
+                              {<TranslatedText textKey={'adminNew.customerDetail.addComment'} vars={{ defaultValue: '+ Opmerking' }} />}
                             </button>
                           )}
                         </div>

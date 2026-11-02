@@ -23,8 +23,8 @@ export const companyInfo = {
   phoneHref: 'tel:+31475315661',
 
   // Email
-  email: 'marketing@answer24.nl',
-  emailHref: 'mailto:marketing@answer24.nl',
+  email: 'roermond@schepenkring.nl',
+  emailHref: 'mailto:roermond@schepenkring.nl',
 
   // Google Maps
   mapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${MAPS_QUERY}`,

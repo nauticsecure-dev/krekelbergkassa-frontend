@@ -20,7 +20,8 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClassName } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
-import { companyInfo, openingHoursRows } from "@/lib/company";
+import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
+import { openingHoursRows } from "@/lib/company";
 import { contentService } from "@/lib/services";
 import { useQuery } from "@/lib/hooks/useAsync";
 import { cn } from "@/lib/cn";
@@ -39,14 +40,8 @@ export default function ContactPage() {
 
   const localeTag = intlLocale(locale);
   const language = ['nl', 'en', 'de', 'fr'].includes(locale) ? locale : 'nl';
-  const contactQuery = useQuery(['contact-company'], () => contentService.contact());
-  const company = contactQuery.data?.company;
-  const phone = company?.phone ?? companyInfo.phone;
-  const phoneHref = 'tel:' + phone.replace(/\(0\)/g, '').replace(/[^+\d]/g, '');
-  const email = company?.email ?? companyInfo.email;
-  const address = company?.address
-    ? [company.address.street, company.address.postal_code, company.address.city].filter(Boolean).join(', ')
-    : companyInfo.address;
+  const companyInfo = useCompanyInfo();
+  const { phoneHref, email, address } = companyInfo;
   const mapsQuery = encodeURIComponent(address);
   const mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + mapsQuery;
   const mapsEmbed = 'https://maps.google.com/maps?q=' + mapsQuery + '&z=14&output=embed';
@@ -102,7 +97,7 @@ export default function ContactPage() {
         <ContactCard
           icon={MapPin}
           label={<EditableText blockKey="contact.card.address.label" page={CMS_PAGE} section="cards">{t("contactPage.addressLabel")}</EditableText>}
-          value={address}
+          value={<CompanyText field="address" />}
           actionLabel={t("contactPage.ctaRoute")}
           actionHref={mapsUrl}
           external
@@ -110,14 +105,14 @@ export default function ContactPage() {
         <ContactCard
           icon={Phone}
           label={<EditableText blockKey="contact.card.phone.label" page={CMS_PAGE} section="cards">{t("contactPage.phoneLabel")}</EditableText>}
-          value={phone}
+          value={<CompanyText field="phone" />}
           actionLabel={t("contactPage.ctaCall")}
           actionHref={phoneHref}
         />
         <ContactCard
           icon={Mail}
           label={<EditableText blockKey="contact.card.email.label" page={CMS_PAGE} section="cards">{t("contactPage.emailLabel")}</EditableText>}
-          value={email}
+          value={<CompanyText field="email" />}
           actionLabel={t("contactPage.ctaMail")}
           actionHref={`mailto:${email}`}
         />
@@ -184,7 +179,7 @@ export default function ContactPage() {
                     )}
                   </span>
                   <span className="font-semibold text-navy-900">
-                    {h.closed ? t("contactPage.closed") : h.display}
+                    {h.closed ? <TranslatedText textKey={"contactPage.closed"} /> : h.display}
                   </span>
                 </li>
               ))}
@@ -434,7 +429,7 @@ function ContactForm({
           disabled={!canSubmit}
           rightIcon={<Send className="h-4 w-4" />}
         >
-          {status === "sending" ? t("contactPage.fSending") : t("contactPage.fSubmit")}
+          {status === "sending" ? <TranslatedText textKey={"contactPage.fSending"} /> : <TranslatedText textKey={"contactPage.fSubmit"} />}
         </Button>
       </div>
     </form>

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import {
@@ -92,7 +94,7 @@ export default function SecurityDashboardPage() {
             leftIcon={<RefreshCw className="h-4 w-4" />}
             onClick={() => void security.refetch()}
           >
-            {t('adminNew.security.refresh')}
+            {<TranslatedText textKey={'adminNew.security.refresh'} />}
           </Button>
         }
       />
@@ -115,9 +117,9 @@ export default function SecurityDashboardPage() {
             >
               <div className="flex items-center gap-2 text-sm text-navy-500">
                 <Clock className="h-4 w-4" />
-                {t('adminNew.security.checkedAt', {
+                {<TranslatedText textKey={'adminNew.security.checkedAt'} vars={{
                   time: data.checked_at ? formatDateTime(data.checked_at, dateLocale) : '—',
-                })}
+                }} />}
               </div>
             </AdminSectionCard>
 
@@ -164,7 +166,7 @@ export default function SecurityDashboardPage() {
                         <span className="flex items-center gap-3 text-xs text-navy-500">
                           {count != null ? (
                             <Badge tone="warning">
-                              {t('adminNew.security.attempts', { count: toNumber(count) })}
+                              {<TranslatedText textKey={'adminNew.security.attempts'} vars={{ count: toNumber(count) }} />}
                             </Badge>
                           ) : null}
                           {lastSeen ? (
@@ -176,7 +178,7 @@ export default function SecurityDashboardPage() {
                   })}
                 </ul>
               ) : (
-                <div className="text-sm text-navy-500">{t('adminNew.security.noSuspicious')}</div>
+                <div className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.security.noSuspicious'} />}</div>
               )}
             </AdminSectionCard>
           </>

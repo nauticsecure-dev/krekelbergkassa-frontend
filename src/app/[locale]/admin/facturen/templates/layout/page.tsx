@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, FileText } from 'lucide-react';
@@ -101,7 +103,7 @@ export default function InvoiceLayoutTemplatePage() {
         rightSlot={
           <Link href={`/${locale}/admin/facturen/templates`}>
             <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              {t('adminNew.templates.extractionBack', { defaultValue: 'Extractiesjablonen' })}
+              {<TranslatedText textKey={'adminNew.templates.extractionBack'} vars={{ defaultValue: 'Extractiesjablonen' }} />}
             </Button>
           </Link>
         }
@@ -116,7 +118,7 @@ export default function InvoiceLayoutTemplatePage() {
             icon={FileText}
             action={
               <Button variant="gold" size="sm" disabled={save.loading} onClick={() => void onSave()}>
-                {save.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+                {save.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
               </Button>
             }
           >
@@ -129,39 +131,39 @@ export default function InvoiceLayoutTemplatePage() {
                     onClick={() => setSelectedId(row.id)}
                     className={`rounded-lg border px-3 py-1.5 text-sm ${(selected?.id === row.id) ? 'border-marine-500 bg-marine-50 text-marine-800' : 'border-navy-200 bg-white text-navy-700'}`}
                   >
-                    {row.name} · v{row.version}
+                    {row.name} <TranslatedText textKey="siteCopy.663e66a532c56205" fallbackText={" · v"} />{row.version}
                   </button>
                 ))}
               </div>
             ) : null}
-            {selected?.warnings?.length ? <p role="alert" className="mb-4 text-sm text-amber-800">{t('adminNew.templates.missingTags', { defaultValue: 'Ontbrekende verplichte tags' })}: {selected.warnings.join(', ')}</p> : null}
+            {selected?.warnings?.length ? <p role="alert" className="mb-4 text-sm text-amber-800">{<TranslatedText textKey={'adminNew.templates.missingTags'} vars={{ defaultValue: 'Ontbrekende verplichte tags' }} />}: {selected.warnings.join(', ')}</p> : null}
             <AdminFormGrid>
-              {selected ? <label className="text-sm text-navy-700">{t('adminNew.templates.uploadLogo', { defaultValue: 'Logo uploaden (PNG/JPG, max. 1 MB)' })}<input type="file" accept="image/png,image/jpeg" onChange={(e) => void uploadLogo(e.target.files?.[0])} /></label> : null}
+              {selected ? <label className="text-sm text-navy-700">{<TranslatedText textKey={'adminNew.templates.uploadLogo'} vars={{ defaultValue: 'Logo uploaden (PNG/JPG, max. 1 MB)' }} />}<input type="file" accept="image/png,image/jpeg" onChange={(e) => void uploadLogo(e.target.files?.[0])} /></label> : null}
               <Input label={t('adminNew.templates.fieldsMeta.name')} value={name} onChange={(e) => setName(e.target.value)} required />
               <label className="flex items-center gap-2 text-sm text-navy-700">
                 <input type="checkbox" checked={showLogo} onChange={(e) => setShowLogo(e.target.checked)} />
-                {t('adminNew.templates.layoutLogo', { defaultValue: 'Logo tonen' })}
+                {<TranslatedText textKey={'adminNew.templates.layoutLogo'} vars={{ defaultValue: 'Logo tonen' }} />}
               </label>
               <label className="flex items-center gap-2 text-sm text-navy-700">
                 <input type="checkbox" checked={showTotals} onChange={(e) => setShowTotals(e.target.checked)} />
-                {t('adminNew.templates.layoutTotals', { defaultValue: 'Totalenblok tonen' })}
+                {<TranslatedText textKey={'adminNew.templates.layoutTotals'} vars={{ defaultValue: 'Totalenblok tonen' }} />}
               </label>
               <label className="text-sm font-medium text-navy-700 sm:col-span-2">
-                {t('adminNew.templates.layoutFooter', { defaultValue: 'Footer' })}
+                {<TranslatedText textKey={'adminNew.templates.layoutFooter'} vars={{ defaultValue: 'Footer' }} />}
                 <textarea className="input-base mt-1 min-h-24 w-full" value={footer} onChange={(e) => setFooter(e.target.value)} />
               </label>
               <label className="text-sm font-medium text-navy-700 sm:col-span-2">
-                {t('adminNew.templates.layoutTerms', { defaultValue: 'Voorwaarden' })}
+                {<TranslatedText textKey={'adminNew.templates.layoutTerms'} vars={{ defaultValue: 'Voorwaarden' }} />}
                 <textarea className="input-base mt-1 min-h-24 w-full" value={terms} onChange={(e) => setTerms(e.target.value)} />
               </label>
               <label className="text-sm font-medium text-navy-700 sm:col-span-2">
-                {t('adminNew.templates.layoutTags', { defaultValue: 'Dynamische tags' })}
+                {<TranslatedText textKey={'adminNew.templates.layoutTags'} vars={{ defaultValue: 'Dynamische tags' }} />}
                 <Input value={tags} onChange={(e) => setTags(e.target.value)} />
               </label>
             </AdminFormGrid>
             {selected?.snapshots?.length ? (
               <p className="mt-4 text-sm text-navy-500">
-                {t('adminNew.templates.layoutVersions', { defaultValue: 'Bewaarde versies' })}: {selected.snapshots.map((snapshot) => `v${snapshot.version}`).join(', ')}
+                {<TranslatedText textKey={'adminNew.templates.layoutVersions'} vars={{ defaultValue: 'Bewaarde versies' }} />}: {selected.snapshots.map((snapshot) => `v${snapshot.version}`).join(', ')}
               </p>
             ) : null}
           </AdminSectionCard>

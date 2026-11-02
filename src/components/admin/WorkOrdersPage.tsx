@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -174,7 +176,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
   const statsData = stats.data as Record<string, unknown> | null | undefined;
   const createButton = orders.errorStatus === 403 ? null : (
     <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-      {t('adminNew.workOrders.new')}
+      {<TranslatedText textKey={'adminNew.workOrders.new'} />}
     </Button>
   );
 
@@ -208,7 +210,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
               />
             </div>
             <Button type="submit" size="sm" variant="outline">
-              {t('adminNew.common.search')}
+              {<TranslatedText textKey={'adminNew.common.search'} />}
             </Button>
           </form>
           <Button
@@ -217,12 +219,12 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
             leftIcon={<Filter className="h-3.5 w-3.5" />}
             onClick={() => setShowFilters((v) => !v)}
           >
-            {t('adminNew.common.filter')}
+            {<TranslatedText textKey={'adminNew.common.filter'} />}
             {hasActiveFilters ? <span className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-marine-600 text-xs text-white">!</span> : null}
           </Button>
           {hasActiveFilters ? (
             <Button size="sm" variant="ghost" onClick={clearFilters}>
-              {t('adminNew.common.clearFilters')}
+              {<TranslatedText textKey={'adminNew.common.clearFilters'} />}
             </Button>
           ) : null}
         </div>
@@ -230,7 +232,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
         {showFilters ? (
           <div className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-navy-100 bg-white p-4 sm:grid-cols-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-navy-600">{t('adminNew.workOrders.columns.status')}</label>
+              <label className="mb-1 block text-xs font-medium text-navy-600">{<TranslatedText textKey={'adminNew.workOrders.columns.status'} />}</label>
               <SearchSelect
                 className="input-base w-full text-sm"
                 value={filterStatus}
@@ -243,7 +245,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-navy-600">{t('adminNew.workOrders.columns.priority')}</label>
+              <label className="mb-1 block text-xs font-medium text-navy-600">{<TranslatedText textKey={'adminNew.workOrders.columns.priority'} />}</label>
               <SearchSelect
                 className="input-base w-full text-sm"
                 value={filterPriority}
@@ -256,7 +258,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-navy-600">{t('adminNew.workOrders.columns.type')}</label>
+              <label className="mb-1 block text-xs font-medium text-navy-600">{<TranslatedText textKey={'adminNew.workOrders.columns.type'} />}</label>
               <SearchSelect
                 className="input-base w-full text-sm"
                 value={filterType}
@@ -269,7 +271,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-navy-600">{t('adminNew.workOrders.columns.assignee')}</label>
+              <label className="mb-1 block text-xs font-medium text-navy-600">{<TranslatedText textKey={'adminNew.workOrders.columns.assignee'} />}</label>
               <SearchSelect
                 className="input-base w-full text-sm"
                 value={filterAssignee}
@@ -311,15 +313,15 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
               <AdminTable minWidth={900}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.number')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.boat')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.type')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.assignee')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.status')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.priority')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.hours')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.invoiceStatus')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.workOrders.columns.due')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.workOrders.columns.number'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.workOrders.columns.boat'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.workOrders.columns.type'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.workOrders.columns.assignee'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.workOrders.columns.status'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.workOrders.columns.priority'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.workOrders.columns.hours'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.workOrders.columns.invoiceStatus'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.workOrders.columns.due'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -397,7 +399,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
                             href={`/${locale}/admin/werkorders/${row.id}`}
                             className="text-sm font-semibold text-marine-700 hover:text-marine-900"
                           >
-                            {t('adminNew.workOrders.detail.open')} →
+                            {<TranslatedText textKey={'adminNew.workOrders.detail.open'} />} →
                           </Link>
                         </AdminTableCell>
                       </AdminTableRow>
@@ -415,7 +417,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
           <AdminModalHeader title={t('adminNew.workOrders.new')} subtitle={t('adminNew.workOrders.createSubtitle')} />
           <AdminModalBody>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.boats.title')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.boats.title'} />}</label>
               <SearchSelect className="input-base w-full" value={form.boat_id} onChange={(e) => setForm({ ...form, boat_id: e.target.value })} required>
                 <option value="">{t('adminNew.boats.selectCustomer')}</option>
                 {(boats.data?.data ?? []).map((b) => (
@@ -424,7 +426,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.type')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.workOrders.columns.type'} />}</label>
               <SearchSelect className="input-base w-full" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} required>
                 <option value="">{t('adminNew.workOrders.selectType')}</option>
                 {(types.length ? types : Object.keys(TYPE_LABELS).map((value) => ({ value, label: TYPE_LABELS[value] }))).map((o) => (
@@ -434,7 +436,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.detail.priority')}</label>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.workOrders.detail.priority'} />}</label>
                 <SearchSelect className="input-base w-full" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
                   {['low', 'normal', 'high', 'urgent', 'emergency'].map((p) => (
                     <option key={p} value={p}>{p}</option>
@@ -442,7 +444,7 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
                 </SearchSelect>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.assignee')}</label>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.workOrders.columns.assignee'} />}</label>
                 <SearchSelect className="input-base w-full" value={form.assigned_to_user_id} onChange={(e) => setForm({ ...form, assigned_to_user_id: e.target.value })}>
                   <option value="">{t('adminNew.workOrders.detail.unassigned')}</option>
                   {technicians.map((tech) => (
@@ -458,8 +460,8 @@ export default function WorkOrdersPage({ embedded = false }: { embedded?: boolea
             <textarea className="input-base min-h-24 w-full" placeholder={t('adminNew.workOrders.description')} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={createOrder.loading}>{t('adminNew.common.save')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={createOrder.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>

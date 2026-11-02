@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -201,11 +203,11 @@ export default function CalculatorPricingPage() {
           <div className="flex gap-2">
             <Link href={`/${locale}/admin/calculator`}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                {t('adminNew.common.back')}
+                {<TranslatedText textKey={'adminNew.common.back'} />}
               </Button>
             </Link>
             {canUpdatePricing ? <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => { setEditingRule(null); setShowCreate(true); }}>
-              {t('adminNew.common.new')}
+              {<TranslatedText textKey={'adminNew.common.new'} />}
             </Button> : null}
           </div>
         }
@@ -214,14 +216,14 @@ export default function CalculatorPricingPage() {
         {activeFilterLabel ? (
           <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-navy-100 bg-sand-50 px-3 py-2 text-sm text-navy-700">
             <span>
-              {t('adminNew.calculator.pricing.filtered')}:{' '}
+              {<TranslatedText textKey={'adminNew.calculator.pricing.filtered'} />}:{' '}
               <span className="font-semibold">{activeFilterLabel}</span>
             </span>
             <Link
               href={`/${locale}/admin/calculator/pricing`}
               className="text-xs font-semibold text-navy-500 underline-offset-2 hover:text-navy-800 hover:underline"
             >
-              {t('adminNew.calculator.pricing.clearFilter')}
+              {<TranslatedText textKey={'adminNew.calculator.pricing.clearFilter'} />}
             </Link>
           </div>
         ) : null}
@@ -238,13 +240,13 @@ export default function CalculatorPricingPage() {
               <AdminTable minWidth={800}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('globalUx.pricing.product')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('globalUx.pricing.range')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('globalUx.pricing.price')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('globalUx.pricing.vat')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('globalUx.pricing.type')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('globalUx.pricing.channel')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('globalUx.pricing.active')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.product'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.range'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.price'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.vat'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.type'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.channel'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.active'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -255,9 +257,9 @@ export default function CalculatorPricingPage() {
                         <span className="text-sm font-medium text-navy-800">{rule.product_name ?? rule.service_code ?? rule.product_id}</span>
                         {rule.service_code ? <span className="ml-1 text-xs text-navy-400">({rule.service_code})</span> : null}
                         {rule.valid_from || rule.valid_to ? <div className="text-xs text-navy-500">{rule.valid_from ?? '…'} – {rule.valid_to ?? '…'}</div> : null}
-                        {rule.included_service_codes?.length ? <div className="text-xs text-navy-500">Inbegrepen: {rule.included_service_codes.join(', ')}</div> : null}
+                        {rule.included_service_codes?.length ? <div className="text-xs text-navy-500"><TranslatedText textKey="siteCopy.6391eca0f896b176" fallbackText={"Inbegrepen: "} />{rule.included_service_codes.join(', ')}</div> : null}
                       </AdminTableCell>
-                      <AdminTableCell className="tabular-nums">{rule.range_from_cm} – {rule.range_to_cm} cm</AdminTableCell>
+                      <AdminTableCell className="tabular-nums">{rule.range_from_cm} – {rule.range_to_cm} <TranslatedText textKey="siteCopy.0f8ca25ca5d43bff" fallbackText={" cm"} /></AdminTableCell>
                       <AdminTableCell>{formatCurrency(productPriceInclEuros(rule), intlLocale(locale))}</AdminTableCell>
                       <AdminTableCell className="tabular-nums text-sm text-navy-600">
                         {rule.vat_rate != null ? `${rule.vat_rate}%` : '—'}
@@ -266,7 +268,7 @@ export default function CalculatorPricingPage() {
                       <AdminTableCell><span className="text-xs text-navy-500">{(channelLabels[rule.channel ?? 'all'] ?? rule.channel)}</span></AdminTableCell>
                       <AdminTableCell>
                         <span className={`text-xs font-semibold ${rule.active ? 'text-emerald-600' : 'text-navy-300'}`}>
-                          {t(rule.active ? 'globalUx.pricing.yes' : 'globalUx.pricing.no')}
+                          {<TranslatedText textKey={rule.active ? 'globalUx.pricing.yes' : 'globalUx.pricing.no'} />}
                         </span>
                       </AdminTableCell>
                       <AdminTableCell className="text-right">
@@ -310,7 +312,7 @@ export default function CalculatorPricingPage() {
           <AdminModalBody>
             <div className="space-y-3">
               {!editingRule ? <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">{t('globalUx.pricing.product')} *</label>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">{<TranslatedText textKey={'globalUx.pricing.product'} />} *</label>
                 <SearchSelect aria-label={t('globalUx.pricing.product')} className="input-base w-full" value={form.product_id}
                   onSearchChange={setProductSearch} loading={products.loading || productSearch.trim() !== productTerm}
                   error={products.error ? t('globalUx.searchFailed') : null}
@@ -331,7 +333,7 @@ export default function CalculatorPricingPage() {
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">{t('globalUx.pricing.type')}</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">{<TranslatedText textKey={'globalUx.pricing.type'} />}</label>
                   <SearchSelect aria-label={t('globalUx.pricing.type')} className="input-base w-full" value={form.price_type} onChange={(e) => setForm({ ...form, price_type: e.target.value })}>
                     <option value="fixed">{t('globalUx.pricing.fixed')}</option>
                     <option value="per_meter">{t('globalUx.pricing.per_meter')}</option>
@@ -340,7 +342,7 @@ export default function CalculatorPricingPage() {
                   </SearchSelect>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">{t('globalUx.pricing.channel')}</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">{<TranslatedText textKey={'globalUx.pricing.channel'} />}</label>
                   <SearchSelect aria-label={t('globalUx.pricing.channel')} className="input-base w-full" value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })}>
                     <option value="all">{t('globalUx.pricing.all')}</option>
                     <option value="kassa">{t('globalUx.pricing.kassa')}</option>
@@ -357,13 +359,13 @@ export default function CalculatorPricingPage() {
               <Input label="Inbegrepen dienstcodes (komma gescheiden)" value={form.included_service_codes} onChange={(e) => setForm({ ...form, included_service_codes: e.target.value })} placeholder="kranen, afspuiten" />
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
-                {t('globalUx.pricing.active')}
+                {<TranslatedText textKey={'globalUx.pricing.active'} />}
               </label>
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={createRule.loading || updateRule.loading}>{t('adminNew.common.save')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={createRule.loading || updateRule.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>

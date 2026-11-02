@@ -29,8 +29,8 @@ import { EditableHeaderCta } from '@/components/cms/EditableHeaderCta';
 interface MegaItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  desc: string;
+  label: React.ReactNode;
+  desc: React.ReactNode;
 }
 
 export function Header() {
@@ -59,11 +59,11 @@ export function Header() {
   React.useEffect(() => setOpen(false), [pathname]);
 
   const servicesMega: MegaItem[] = [
-    { href: `/${locale}/kraanafspraak`, icon: Ship, label: t('services.crane.title'), desc: t('services.crane.desc') },
-    { href: `/${locale}/diensten/afspuiten`, icon: Droplets, label: t('services.wash.title'), desc: t('services.wash.desc') },
-    { href: `/${locale}/diensten/winterstalling`, icon: Warehouse, label: t('services.storage.title'), desc: t('services.storage.desc') },
-    { href: `/${locale}/diensten/zelf-werken`, icon: Hammer, label: t('services.diy.title'), desc: t('services.diy.desc') },
-    { href: `/${locale}/diensten/weekje-op-wal`, icon: Calendar, label: t('home.svc.week.title'), desc: t('home.svc.week.desc') },
+    { href: `/${locale}/kraanafspraak`, icon: Ship, label: <TranslatedText textKey="services.crane.title" />, desc: <TranslatedText textKey="services.crane.desc" /> },
+    { href: `/${locale}/diensten/afspuiten`, icon: Droplets, label: <TranslatedText textKey="services.wash.title" />, desc: <TranslatedText textKey="services.wash.desc" /> },
+    { href: `/${locale}/diensten/winterstalling`, icon: Warehouse, label: <TranslatedText textKey="services.storage.title" />, desc: <TranslatedText textKey="services.storage.desc" /> },
+    { href: `/${locale}/diensten/zelf-werken`, icon: Hammer, label: <TranslatedText textKey="services.diy.title" />, desc: <TranslatedText textKey="services.diy.desc" /> },
+    { href: `/${locale}/diensten/weekje-op-wal`, icon: Calendar, label: <TranslatedText textKey="home.svc.week.title" />, desc: <TranslatedText textKey="home.svc.week.desc" /> },
   ];
 
   const openMenu = (id: string) => {

@@ -1141,7 +1141,7 @@ export const i18nService = {
 export interface IntegrationDiagnostic { ok: boolean; status: string; message: string; checked_at: string; }
 export interface IntegrationSettings {
   configuration: {inbound_address: string | null; ocr_model: string; whatsapp_enabled: boolean};
-  health: Record<string, {configured: boolean; setup: string; description: string; path: string; last_test: IntegrationDiagnostic | null}>;
+  health: Record<string, {configured: boolean; setup: string; description: string; path: string; verification?: string; runtime_configured?: boolean | null; last_test: IntegrationDiagnostic | null}>;
 }
 export const settingsService = {
   integrations() { return api<IntegrationSettings>('/v1/admin/settings/integrations'); },
@@ -2705,6 +2705,9 @@ export interface OpeningHoursResponse {
 
 // Trello #112: Inline CMS / Visual Editor — public read + admin upsert endpoints.
 export const cmsService = {
+  updateContact(body: Partial<AppSettings['company']>) {
+    return api<{ company: AppSettings['company'] }>('/v1/admin/cms/contact-settings', { method: 'PATCH', body });
+  },
   mediaLibrary() { return api<{data: Array<{id: string; filename: string; url: string; usage: Array<{key: string; page: string}>}>}>('/v1/admin/cms/media-library'); },
   deleteLibraryMedia(id: string) { return api('/v1/admin/cms/media-library/'+encodeURIComponent(id), {method:'DELETE'}); },
   // Public: fetch all editable content/media/seo/global blocks for a page.
@@ -2766,6 +2769,7 @@ export const contentService = {
   contact(locale?: string) {
     return api<FaqContent['contact']>('/v1/content/contact', {
       auth: false,
+      cache: 'no-store',
       query: locale ? { locale } : undefined,
     });
   },
