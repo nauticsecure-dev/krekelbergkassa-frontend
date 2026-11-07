@@ -179,6 +179,7 @@ export async function apiResult<T = unknown>(
     // Binary downloads (PDF, CSV, Excel, generic octet-stream) must be returned
     // as a Blob so callers can trigger a file download — Trello #68 CSV export et al.
     const isBinary =
+      contentType.startsWith('image/') ||
       contentType.includes('application/pdf') ||
       contentType.includes('text/csv') ||
       contentType.includes('application/octet-stream') ||

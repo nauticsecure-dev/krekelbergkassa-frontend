@@ -174,7 +174,7 @@ export function timelinePresentation(
     return {
       icon: Calendar,
       tone: 'marine',
-      href: `/${locale}/dashboard/afspraken`,
+      href: `/${locale}/dashboard/afspraken` + (item.related_type === "appointment" && item.related_id ? "?appointment=" + encodeURIComponent(item.related_id) : ""),
       priority,
     };
   }

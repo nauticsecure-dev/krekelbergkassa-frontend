@@ -12,11 +12,12 @@ import { useAuth } from '@/lib/auth-context';
 import { canAccessAdmin } from '@/lib/auth-routes';
 import { usePermission } from '@/lib/permissions';
 import { useQuery } from '@/lib/hooks/useAsync';
-import { serviceCatalogService } from '@/lib/services';
+import { serviceCatalogService, type ServiceCatalogService } from '@/lib/services';
 import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
 import { EditableText } from '@/components/cms/EditableText';
 import { EditableImage } from '@/components/cms/EditableImage';
 import { EditableHeroCta } from '@/components/cms/EditableHeroCta';
+import { ServicePricing, ServiceTariffTable, yardService } from '@/components/site/ServicePricing';
 import { EditSafeLink } from '@/components/cms/EditSafeLink';
 
 export interface ServicePageProps {
@@ -33,6 +34,7 @@ export interface ServicePageProps {
   priceFootnote?: string;
   catalogSlug?: string;
   catalogServiceCode?: string;
+  catalogServices?: ServiceCatalogService[];
   cmsPage?: string;
   editableTitle?: React.ReactNode;
   editableDescription?: React.ReactNode;
@@ -53,6 +55,7 @@ export function ServicePage({
   priceFootnote,
   catalogSlug,
   catalogServiceCode,
+  catalogServices,
   cmsPage,
   editableTitle,
   editableDescription,
@@ -68,29 +71,15 @@ export function ServicePage({
 
   const catalogQuery = useQuery([catalogSlug ?? '', locale], () =>
     catalogSlug ? serviceCatalogService.page(catalogSlug, locale) : Promise.resolve(null),
+    { immediate: !!catalogSlug && !catalogServices },
   );
-  const liveRanges = React.useMemo(() => {
-    const services = catalogQuery.data?.services ?? [];
-    const service = services.find((item) =>
-      [item.code, item.service_code, item.slug].some(
-        (value) => value?.toLowerCase() === catalogServiceCode?.toLowerCase(),
-      ),
-    );
-    const tariffs = service?.tariffs ?? [];
-    if (!catalogServiceCode || !tariffs.length) return [];
-    return tariffs
-      .slice()
-      .sort((a, b) => a.range_from_cm - b.range_from_cm)
-      .map((tf) => ({
-        label: tf.range_label,
-        price: tf.is_on_request ? t('servicePage.onRequest') : tf.display_price,
-        note: tf.range_from_cm === 0 ? t('servicePage.from') : undefined,
-        showInclVat: !tf.is_on_request,
-        vatRate: tf.vat_rate,
-      }));
-  }, [catalogQuery.data, catalogServiceCode, t]);
-  const showPricingWarning =
-    !catalogQuery.loading && (!liveRanges.length || !!catalogQuery.error);
+  const services = catalogServices ?? catalogQuery.data?.services ?? [];
+  const service = services.find((item) =>
+    [item.code, item.service_code, item.slug].some(
+      (value) => value?.toLowerCase() === catalogServiceCode?.toLowerCase(),
+    ),
+  );
+  const pricingService = yardService(service?.service_code) ?? yardService(catalogSlug);
 
   const p = cmsPage ?? '';
 
@@ -285,34 +274,14 @@ export function ServicePage({
               </EditSafeLink>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {liveRanges.map((r) => (
-              <Card key={r.label} className="flex items-center justify-between p-5">
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-                    <TranslatedText textKey={'servicePage.length'} />
-                  </div>
-                  <div className="text-base font-semibold text-navy-900">{r.label}</div>
-                  {r.note ? (
-                    <div className="text-[11px] text-navy-400">{r.note}</div>
-                  ) : null}
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-semibold text-navy-900">{r.price}</div>
-                  {r.showInclVat ? (
-                    <div className="text-[11px] font-medium text-navy-400">
-                      <TranslatedText textKey={'servicePage.inclVat'} vars={{ rate: r.vatRate ?? 21 }} />
-                    </div>
-                  ) : null}
-                </div>
-              </Card>
-            ))}
-          </div>
-          {showPricingWarning ? (
-            <p role="status" className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              <TranslatedText textKey={'servicePage.pricingUnavailable'} />
-            </p>
-          ) : null}
+          {pricingService ? (
+            <ServicePricing services={services} loading={catalogQuery.loading}
+              active={pricingService} single cmsPage={cmsPage} />
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-navy-100">
+              <ServiceTariffTable tariffs={service?.tariffs ?? []} loading={catalogQuery.loading} />
+            </div>
+          )}
           {priceFootnote ? (
             <p className="mt-4 text-xs text-navy-400">
               {p ? (

@@ -77,6 +77,7 @@ export interface Boat {
   registration_number: string | null;
   length_cm: number | null;
   width_cm: number | null;
+  draft_cm?: number | null;
   length_metres: number | null;
   surface_area_cm2: number | null;
   location_code: string | null;
@@ -276,6 +277,9 @@ export interface Product {
   aliases?: string[] | null;
   product_group_id?: string | null;
   group?: { code?: string; name?: string; color?: string } | null;
+  pricing_type?: string;
+  has_pricing_rules?: boolean;
+  pricing_rules?: PricingRule[];
   show_in_kassa?: boolean;
   show_in_public?: boolean;
   show_in_calculator?: boolean;
@@ -527,6 +531,7 @@ export interface AppSettings {
     enabled_methods: string[];
     pos_methods: string[];
     online_methods: string[];
+    crane_mode?: 'none' | 'optional' | 'required';
     key_configured: boolean;
   };
   locales: {
@@ -617,7 +622,8 @@ export interface PortalBoat {
   width_cm: number | string;
   length_metres: number | string;
   location_code: string;
-  photo_url: string;
+  photo_url: string | null;
+  photo_file_id?: string | null;
 }
 
 export interface Appointment {
@@ -635,6 +641,10 @@ export interface Appointment {
   location_extra_minutes: number;
   status: string;
   approval_type: string;
+  public_request?: boolean;
+  payment_status?: string;
+  notification_deliveries?: { id: number; type: string; status: string; attempts: number; sent_at?: string | null }[];
+  invoice?: { status: string; payments?: { id: string; status: string; amount: number; provider_payment_id?: string }[] } | null;
   cancellation_reason: string | null;
   invoice_id: string | null;
   customer_notes: string | null;

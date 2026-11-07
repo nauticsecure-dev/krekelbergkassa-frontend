@@ -111,17 +111,23 @@ export const authService = {
   logout() {
     return api<{ message: string }>('/v1/auth/logout', { method: 'POST' });
   },
-  requestMagicLink(email: string, locale?: string) {
+  requestMagicLink(email: string, locale?: string, returnTo?: string) {
     return api<{ success: boolean; message: string }>(
       '/v1/auth/customer/magic-link',
       {
         method: 'POST',
         auth: false,
-        body: { email, locale },
+        body: { email, locale, returnTo },
       }
     );
   },
   verifyMagicLink(token: string) {
+    return this.completeCustomerLogin("verify-magic-link", { token });
+  },
+  customerLogin(email: string, password: string) {
+    return this.completeCustomerLogin("login", { email, password });
+  },
+  completeCustomerLogin(action: "verify-magic-link" | "login", body: object) {
     return api<{
       success: boolean;
       portal_token: string;
@@ -132,10 +138,18 @@ export const authService = {
         email: string;
         preferred_locale: string;
       };
-    }>('/v1/auth/customer/verify-magic-link', {
+    }>(`/v1/auth/customer/${action}`, {
       method: 'POST',
       auth: false,
-      body: { token },
+      body,
+    });
+  },
+  requestCustomerPassword(email: string, locale: string) {
+    return api('/v1/auth/customer/forgot-password', { method: 'POST', auth: false, body: { email, locale } });
+  },
+  resetCustomerPassword(email: string, token: string, password: string, password_confirmation: string) {
+    return api('/v1/auth/customer/reset-password', {
+      method: 'POST', auth: false, body: { email, token, password, password_confirmation },
     });
   },
   registerCustomer(payload: {
@@ -519,7 +533,7 @@ export const invoicesService = {
     });
   },
   email(id: string, payload?: { to?: string; subject?: string; body?: string; locale?: string }) {
-    return api<{ message?: string }>(`/v1/invoices/${id}/email`, {
+    return api<{ message?: string; queued?: boolean }>(`/v1/invoices/${id}/email`, {
       method: 'POST',
       body: payload,
       queueWhenOffline: true,
@@ -600,6 +614,8 @@ export const paymentsService = {
 export const kassaService = {
   checkout(payload: {
     idempotency_key?: string;
+    expected_total_cents?: number;
+    sale_note?: string;
     device_id: string;
     customer_id?: string | null;
     payment_method?: string;
@@ -610,14 +626,17 @@ export const kassaService = {
     // changes product prices); a reason is required when adjusting.
     adjusted_total_cents?: number;
     adjustment_reason?: string;
+    adjustment_vat_rate?: number;
     on_account_note?: string;
     items: Array<{ product_id?: string; description?: string; quantity: number; unit_price_cents?: number; price_cents?: number; vat_rate?: number }>;
   }) {
     return api<string | KassaCheckoutResponse>('/v1/kassa/checkout', {
       method: 'POST',
       body: payload,
-      queueWhenOffline: true,
     });
+  },
+  paymentMethods() {
+    return api<{ pos: string[]; online: string[] }>('/v1/kassa/payment-methods');
   },
   analytics(query?: Record<string, string | number | boolean | undefined>) {
     return api<Record<string, unknown>>('/v1/kassa/analytics', { query });
@@ -649,6 +668,9 @@ export const kassaService = {
   // Trello #72: Mollie QR sessions — created before an invoice exists, the
   // invoice/payment are finalized by the webhook once paid.
   async createQrSession(payload: {
+    session_id?: string;
+    expected_total_cents?: number;
+    sale_note?: string;
     device_id: string;
     customer_id?: string | null;
     method?: string;
@@ -686,7 +708,12 @@ export const kassaService = {
     });
   },
   quote(payload: { customer_id?: string; locale?: string; items: Array<Record<string, unknown>> }) {
-    return api<Record<string, unknown>>('/v1/kassa/quote', {
+    return api<{
+      subtotal_cents: number;
+      vat_amount_cents: number;
+      total_cents: number;
+      lines: Array<{ unit_price: number; vat_rate: number; vat_amount: number; line_total: number }>;
+    }>('/v1/kassa/quote', {
       method: 'POST',
       body: payload,
     });
@@ -1498,6 +1525,15 @@ export const portalService = {
     return asArray<PortalBoat>(res);
   },
   // Trello #87/#90: customer-facing boat dossier (portal).
+  boatPhoto(boatId: string, fileId: string, thumbnail: boolean) {
+    const path = '/v1/portal/boats/' + encodeURIComponent(boatId) + '/photos/' + encodeURIComponent(fileId);
+    return api<Blob>(path, { auth: false, portalAuth: true, query: { thumbnail } });
+  },
+  replaceBoatPhoto(id: string, photo: File) {
+    const body = new FormData();
+    body.append('photo', photo);
+    return api<PortalBoat>('/v1/portal/boats/' + id + '/photo', { method: 'POST', auth: false, portalAuth: true, body });
+  },
   boatDossier(id: string) {
     return api<Record<string, unknown>>(`/v1/portal/boats/${id}/dossier`, { portalAuth: true, auth: false });
   },
@@ -1673,8 +1709,14 @@ export const appointmentsService = {
   confirm(id: string) {
     return api<Appointment>(`/v1/appointments/${id}/confirm`, {
       method: 'POST',
-      queueWhenOffline: true,
+      queueWhenOffline: false,
     });
+  },
+  retryEmail(id: string, emailId: number) {
+    return api<{ status: string }>(`/v1/appointments/${id}/emails/${emailId}/retry`, { method: 'POST' });
+  },
+  reject(id: string, reason: string) {
+    return api<Appointment>(`/v1/appointments/${id}/reject`, { method: 'POST', body: { reason } });
   },
   updateStatus(
     id: string,
@@ -1741,6 +1783,8 @@ export const appointmentsService = {
 };
 
 export interface BookingQuoteLine {
+  rule_id?: string | null;
+  vat_rate?: number;
   service_code: string;
   product_id: string | null;
   price_incl_vat: number;
@@ -1750,6 +1794,7 @@ export interface BookingQuoteLine {
   is_on_request: boolean;
 }
 export interface BookingQuote {
+  total_vat?: number;
   services: BookingQuoteLine[];
   total_incl_vat: number;
   total_duration_minutes: number;
@@ -1809,10 +1854,13 @@ export const bookingService = {
       registration_number?: string | null;
     };
     service_codes: string[];
+    submission_key?: string;
+    boat_id?: string;
   }, opts?: { requestId?: string }) {
-    return apiResult<{ appointment_id: string; status: string }>('/v1/booking', {
+    return apiResult<{ appointment_id: string; reference?: string; status: string }>(payload.boat_id ? '/v1/portal/booking' : '/v1/booking', {
       method: 'POST',
       auth: false,
+      portalAuth: Boolean(payload.boat_id),
       body: payload,
       requestId: opts?.requestId,
     });
@@ -2818,6 +2866,7 @@ export const contentService = {
 // Trello #98 / #100: public service catalog — diensten pages read tariffs
 // from the single product DB instead of the static front-end table.
 export interface ServiceCatalogTariff {
+  id?: string;
   price_excl_vat?: number;
   range_from_cm: number;
   range_to_cm: number;
@@ -2852,6 +2901,21 @@ export interface ServiceCatalogPage {
   services: ServiceCatalogService[];
 }
 export const serviceCatalogService = {
+  createBookingSelection(length_cm: number, service_codes: string[]) {
+    return api<{ token: string }>('/v1/service-catalog/booking-selections', {
+      auth: false, method: 'POST', body: { length_cm, service_codes },
+    });
+  },
+  bookingSelection(token: string) {
+    return api<{ length_cm: number; service_codes: string[]; total_incl_vat: number }>(
+      `/v1/service-catalog/booking-selections/${encodeURIComponent(token)}`, { auth: false },
+    );
+  },
+  preview(length_cm: number, service_codes: string[]) {
+    return api<BookingQuote>('/v1/service-catalog/preview', {
+      auth: false, method: 'POST', body: { length_cm, service_codes },
+    });
+  },
   page(slug: string, locale?: string) {
     return api<ServiceCatalogPage>(`/v1/service-catalog/pages/${encodeURIComponent(slug)}`, { auth: false, query: { locale } });
   },

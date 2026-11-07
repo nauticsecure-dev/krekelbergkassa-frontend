@@ -1,47 +1,37 @@
 "use client";
 
 import { TranslatedText } from '@/components/cms/TranslatedText';
-import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from "react";
 import Link from "next/link";
 import {
   Anchor,
-  ArrowDownUp,
   Banknote,
   Check,
   CreditCard,
   Droplets,
   ExternalLink,
   FileText,
-  Filter,
   Mail,
   MessageCircle,
-  MessageSquarePlus,
-  Minus,
-  MoreHorizontal,
   Pencil,
   Plus,
   QrCode,
-  Receipt,
-  RefreshCw,
   ScanLine,
+  Search,
   Ship,
-  ShoppingCart,
   Star,
   Trash2,
   UserPlus,
   Wallet,
   Warehouse,
-  Zap,
+  Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/AdminShell";
 import {
   AdminContent,
-  AdminSplitLayout,
   AdminModalBody,
   AdminModalFooter,
   AdminModalHeader,
@@ -50,25 +40,23 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { AddressAutocomplete } from "@/components/ui/AddressAutocomplete";
-import { EmptyState, LoadingState } from "@/components/admin/DataState";
+import { LoadingState } from "@/components/admin/DataState";
 import { AdminConfirmModal } from "@/components/admin/AdminConfirmModal";
 import { BarcodeScannerModal } from "@/components/admin/BarcodeScannerModal";
 import {
+  boatsService,
   customersService,
+  invoicesService,
   kassaService,
-  pricingService,
-  paginatedRows,
-  productGroupsService,
   productsService,
 } from "@/lib/services";
 import { useMutation, useQuery } from "@/lib/hooks/useAsync";
-import type { Product, PricingRule, KassaQrSession } from "@/lib/api-types";
-import { adminRecordHref } from "@/config/admin-routes";
+import type { Boat, Customer, Product, KassaCheckoutResponse, KassaQrSession } from "@/lib/api-types";
 import { formatCurrency, intlLocale } from "@/lib/format";
 import { productPriceExclEuros, productPriceInclEuros } from "@/lib/products";
-import { normalizeKassaAnalytics } from "@/lib/kassa-analytics";
-import { KassaAnalyticsDashboard } from "@/components/admin/KassaAnalyticsDashboard";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
+import { canAccessAdminRoute } from "@/lib/auth-routes";
+import { useAuth } from "@/lib/auth-context";
 import { usePermission } from '@/lib/permissions';
 import { useIntl } from "@/i18n/IntlProvider";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -81,22 +69,10 @@ interface CartItem {
   description: string;
   quantity: number;
   unit_price_cents: number;
-  vat_rate: number;
+  product?: Product;
   metadata?: Record<string, unknown>;
-  image_url?: string | null;
-  color?: string | null;
+  boatName?: string;
 }
-
-type SortKey = "recommended" | "priceAsc" | "priceDesc" | "name";
-
-const CATEGORY_PALETTE = [
-  "#1f93b8",
-  "#0ea5e9",
-  "#bd8528",
-  "#7c3aed",
-  "#059669",
-  "#e11d48",
-];
 
 // Trello #80: resolve a DB-provided Lucide icon name (e.g. "Anchor") to its
 // component. Returns null when the name is empty or unknown so callers can fall
@@ -117,32 +93,19 @@ function resolveLucideIcon(icon?: string | null): LucideIcon | null {
     : null;
 }
 
-function categoryMeta(
-  name: string,
-  index: number,
-): { icon: LucideIcon; accent: string } {
-  const n = name.toLowerCase();
-  if (n.includes("afspuit") || n.includes("was") || n.includes("clean"))
-    return { icon: Droplets, accent: "#1f93b8" };
-  if (
-    n.includes("kraan") ||
-    n.includes("kran") ||
-    n.includes("lift") ||
-    n.includes("crane")
-  )
-    return { icon: Anchor, accent: "#0ea5e9" };
-  if (n.includes("stalling") || n.includes("winter") || n.includes("storage"))
-    return { icon: Warehouse, accent: "#bd8528" };
-  return {
-    icon: MoreHorizontal,
-    accent: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
-  };
+function catalogIcon(name: string): LucideIcon {
+  const key = name.toLowerCase();
+  if (/afspuit|wash|clean/.test(key)) return Droplets;
+  if (/kraan|kran|lift|crane/.test(key)) return Anchor;
+  if (/stalling|winter|storage/.test(key)) return Warehouse;
+  if (/onderhoud|repar|maintenance/.test(key)) return Wrench;
+  return Ship;
 }
 
 export default function KassaPage() {
   const { can } = usePermission();
+  const { user } = useAuth();
   const canCheckout = can('kassa.checkout');
-  const canRefund = can('kassa.refund');
   const canWriteCustomer = can('customers.write');
   const { locale, t } = useIntl();
   const { push } = useToast();
@@ -150,18 +113,12 @@ export default function KassaPage() {
     intlLocale(locale);
 
   const [query, setQuery] = React.useState("");
-  const [aiQuery, setAiQuery] = React.useState("");
-  const [showAiSearch, setShowAiSearch] = React.useState(false);
-  const [aiResults, setAiResults] = React.useState<{ answer: string; products: import('@/lib/api-types').Product[] } | null>(null);
-  const aiSearch = useMutation((q: string) => productsService.aiSearch(q));
   // Trello #80: fast-scan mode (skip confirmation/sound; sent to scan API).
   const [fastScan, setFastScan] = React.useState(false);
   const [activeCategory, setActiveCategory] = React.useState("");
-  const [sortBy, setSortBy] = React.useState<SortKey>("recommended");
   const [customerId, setCustomerId] = React.useState("");
   const [paymentMethod, setPaymentMethod] = React.useState("pin");
   const [note, setNote] = React.useState("");
-  const [analyticsPeriod, setAnalyticsPeriod] = React.useState("today");
   // Trello #79: optional total adjustment → separate DISCOUNT line + required reason.
   const [adjustEnabled, setAdjustEnabled] = React.useState(false);
   const [adjustedTotal, setAdjustedTotal] = React.useState("");
@@ -171,6 +128,8 @@ export default function KassaPage() {
   const [showSplitModal, setShowSplitModal] = React.useState(false);
   const [showQrModal, setShowQrModal] = React.useState(false);
   const [qrSession, setQrSession] = React.useState<KassaQrSession | null>(null);
+  const [qrAttempt, setQrAttempt] = React.useState<Parameters<typeof kassaService.createQrSession>[0] | null>(null);
+  const qrSubmitting = React.useRef(false);
   const [qrStarting, setQrStarting] = React.useState(false);
   const [qrCopied, setQrCopied] = React.useState(false);
   const [qrSecondsLeft, setQrSecondsLeft] = React.useState<number | null>(null);
@@ -226,82 +185,106 @@ export default function KassaPage() {
 
   const searchRef = React.useRef<HTMLInputElement>(null);
 
-  // POS keyboard shortcuts (ignored when typing in inputs).
+  const pos = (key: string) => t("adminNew.kassa.pos." + key);
+  const [selectedBoat, setSelectedBoat] = React.useState<Boat | null>(null);
+  const [pickedCustomer, setPickedCustomer] = React.useState<(Pick<Customer, "id" | "name"> & { email?: string | null }) | null>(null);
+  const [serviceProduct, setServiceProduct] = React.useState<Product | null>(null);
+  const [serviceLength, setServiceLength] = React.useState("");
+  const [serviceDate, setServiceDate] = React.useState("");
+  const [editingLine, setEditingLine] = React.useState<CartItem | null>(null);
+  const [showPayment, setShowPayment] = React.useState(false);
+  const [showClear, setShowClear] = React.useState(false);
+  const [showBoats, setShowBoats] = React.useState(false);
+  const [sale, setSale] = React.useState<KassaCheckoutResponse | null>(null);
+  const [receiptBusy, setReceiptBusy] = React.useState(false);
+  const [receiptUrl, setReceiptUrl] = React.useState<string | null>(null);
+  const [receiptStatus, setReceiptStatus] = React.useState("");
+  const [submitted, setSubmitted] = React.useState<Parameters<typeof kassaService.checkout>[0] | null>(null);
+  const submitting = React.useRef(false);
+  const [search, setSearch] = React.useState("");
   React.useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
-      const inField =
-        tag === "input" ||
-        tag === "textarea" ||
-        tag === "select" ||
-        (e.target as HTMLElement)?.isContentEditable;
-      if (e.key === "/" && !inField) {
-        e.preventDefault();
-        searchRef.current?.focus();
-        return;
-      }
-      if (inField) return;
-      if (e.key === "F2" || (e.ctrlKey && e.key === "k")) {
-        e.preventDefault();
-        setShowCustomerPicker(true);
-        return;
-      }
-      if (e.key === "F4" || (e.ctrlKey && e.key === "Enter")) {
-        e.preventDefault();
-        if (cart.length) {
-          setCheckoutConfirm(
-            paymentMethod === "invoice" ? "on_account" : "standard",
-          );
-        }
-        return;
-      }
-      if (e.key === "F8" || (e.ctrlKey && e.key === "Backspace")) {
-        e.preventDefault();
-        if (cart.length) {
-          setCart([]);
-          setNote("");
-          push({ tone: "success", title: t("adminNew.kassa.clearCart") });
-        }
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [cart.length, paymentMethod, push, t]);
+    const timer = setTimeout(() => setSearch(query.trim()), 250);
+    return () => clearTimeout(timer);
+  }, [query]);
+  const matches = query.trim() === search && search.length >= 2;
+  const boatSearch = useQuery(["kassa-boats", search, showBoats, customerId], () =>
+    can("boats.view") && (search.length >= 2 || showBoats)
+      ? boatsService.list({
+          search: search.length >= 2 ? search : undefined,
+          customer_id: showBoats ? customerId || undefined : undefined,
+          per_page: 8,
+        })
+      : Promise.resolve(null),
+  );
+  const customerSearch = useQuery(["kassa-customer-search", search], () =>
+    can("customers.view") && search.length >= 2
+      ? customersService.list({ search, per_page: 5 })
+      : Promise.resolve(null),
+  );
+  const qrPending = !!qrSession && !["paid", "completed", "expired", "failed", "canceled", "cancelled"].includes(qrSession.status);
+  const basketLocked = qrStarting || !!qrAttempt || qrPending || !!submitted || !!sale;
+  const basketContextChanged = cart.some((item) => item.metadata?.boat_id && item.metadata.boat_id !== selectedBoat?.id);
 
   const productsQuery = useQuery(["products"], () =>
-    productsService.list({ per_page: 200, active: true }),
+    productsService.list({ per_page: 200, active: true, show_in_kassa: true }),
   );
-  const pricingQuery = useQuery(["pricing-rules"], () =>
-    pricingService.rules({ per_page: 200, active: true, valid_now: true }),
+  const productSearch = useQuery(["kassa-product-search", search], () =>
+    search.length >= 2
+      ? productsService.list({ search, active: true, show_in_kassa: true, per_page: 40 })
+          .then((result) => ({ search, products: result.data }))
+      : Promise.resolve(null),
   );
+  const paymentMethods = useQuery(["kassa-payment-methods", showPayment], () =>
+    canCheckout && showPayment ? kassaService.paymentMethods() : Promise.resolve(null));
   const customersQuery = useQuery(["customers-kassa"], () =>
     customersService.list({ per_page: 100 }),
   );
-  const recentSales = useQuery(["kassa-recent"], () =>
-    kassaService.recentSales({}).catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
-  );
-  const todayQuery = useQuery(["kassa-today", analyticsPeriod], async () => {
-    const [analyticsRaw, salesResult] = await Promise.all([
-      kassaService.analytics({ period: analyticsPeriod }).catch(() => null),
-      kassaService.recentSales({ period: analyticsPeriod === "today" ? "today" : undefined }).catch(() => ({ data: [] as import('@/lib/api-types').Sale[], emptyMessage: '' })),
-    ]);
-    const view = normalizeKassaAnalytics(
-      analyticsRaw as Record<string, unknown> | null,
-      salesResult.data,
-      localeTag,
-    );
-    const dashboardCards = (
-      (analyticsRaw as Record<string, unknown> | null)?.dashboard_cards ?? []
-    ) as Array<{ key: string; label: string; value: number; deeplink?: string; empty_state?: { message?: string } }>;
-    return { ...view, dashboardCards };
-  });
-
   const createCustomer = useMutation(customersService.create);
   const updateCustomer = useMutation(
     ({ id, ...payload }: Record<string, unknown> & { id: string }) =>
       customersService.update(id, payload)
   );
   const checkout = useMutation(kassaService.checkout);
+  const qrStorageKey = user?.id ? "kassa.qr." + user.id : null;
+  React.useEffect(() => {
+    if (!qrStorageKey) return;
+    try {
+      const saved = sessionStorage.getItem(qrStorageKey);
+      if (saved) setQrAttempt(JSON.parse(saved));
+    } catch {
+      // A pending request remains recoverable in memory while the page is open.
+    }
+  }, [qrStorageKey]);
+  const rememberQr = React.useCallback((request: Parameters<typeof kassaService.createQrSession>[0] | null) => {
+    setQrAttempt(request);
+    if (!qrStorageKey) return;
+    try {
+      if (request) sessionStorage.setItem(qrStorageKey, JSON.stringify(request));
+      else sessionStorage.removeItem(qrStorageKey);
+    } catch {
+      // A pending request remains recoverable in memory while the page is open.
+    }
+  }, [qrStorageKey]);
+  const checkoutStorageKey = user?.id ? "kassa.checkout." + user.id : null;
+  React.useEffect(() => {
+    if (!checkoutStorageKey) return;
+    try {
+      const saved = sessionStorage.getItem(checkoutStorageKey);
+      if (saved) setSubmitted(JSON.parse(saved));
+    } catch {
+      // Checkout still supports retry while the page remains open.
+    }
+  }, [checkoutStorageKey]);
+  const rememberCheckout = (request: Parameters<typeof kassaService.checkout>[0] | null) => {
+    setSubmitted(request);
+    if (!checkoutStorageKey) return;
+    try {
+      if (request) sessionStorage.setItem(checkoutStorageKey, JSON.stringify(request));
+      else sessionStorage.removeItem(checkoutStorageKey);
+    } catch {
+      // The current attempt remains available in component state.
+    }
+  };
   const quote = useMutation(kassaService.quote);
 
   // Debounce picker search so we don't fire on every keystroke.
@@ -317,26 +300,9 @@ export default function KassaPage() {
         ? customersService.list({ search: pickerSearchDebounced || undefined, per_page: 10 })
         : Promise.resolve(null),
   );
-  const refundSaleMutation = useMutation(
-    ({ id, reason }: { id: string; reason: string; method: string }) =>
-      kassaService.refund(id, { reason, amount: undefined })
-  );
-
-  const [refundSaleId, setRefundSaleId] = React.useState<string | null>(null);
-  const [refundReason, setRefundReason] = React.useState('');
-  const [refundMethod, setRefundMethod] = React.useState('pin');
-
   // Trello #80/#86: favourites, recently-used and bundles for fast checkout.
   const bundlesQuery = useQuery(["kassa-bundles"], () =>
     productsService.bundles().catch(() => []),
-  );
-  // Trello #80: product groups → category chip color + DB icon.
-  const groupsQuery = useQuery(["kassa-product-groups"], () =>
-    productGroupsService.list({ per_page: 100 }).catch(() => ({ data: [] })),
-  );
-  // Trello #86: bulk product heatmap (times sold today/week) for tile badges.
-  const productStatsQuery = useQuery(["kassa-product-stats"], () =>
-    productsService.statsBulk().catch(() => []),
   );
   // Trello #80: recently-used seeded from the backend.
   const recentQuery = useQuery(["kassa-recent-products"], () =>
@@ -387,18 +353,6 @@ export default function KassaPage() {
       /* ignore */
     }
   }, []);
-  const toggleFastScan = () => {
-    setFastScan((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("kassa_fast_scan", next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  };
-
   const pushRecent = React.useCallback((productId?: string) => {
     if (!productId) return;
     setRecentIds((prev) => {
@@ -436,9 +390,6 @@ export default function KassaPage() {
     });
   };
 
-  const numericInput = Number(query.replace(/[^0-9]/g, ""));
-  const queryText = query.replace(/[0-9]/g, "").trim().toLowerCase();
-
   const catalogProducts = React.useMemo(
     () => productsQuery.data?.data ?? [],
     [productsQuery.data?.data],
@@ -447,58 +398,6 @@ export default function KassaPage() {
     () => catalogProducts.filter((product) => product.show_in_kassa !== false),
     [catalogProducts],
   );
-  const allRules = React.useMemo(
-    () =>
-      (pricingQuery.data?.data ?? []).filter((rule) => {
-        const product =
-          catalogProducts.find((item) => item.id === rule.product_id) ?? rule.product;
-        return product?.show_in_kassa !== false;
-      }),
-    [pricingQuery.data?.data, catalogProducts],
-  );
-
-  // Trello #80: lookup product groups by name/code → resolve chip color + icon.
-  const groupByName = React.useMemo(() => {
-    const map = new Map<string, { color?: string | null; icon?: string | null }>();
-    paginatedRows(groupsQuery.data).forEach((g) => {
-      const color = (g.color ?? g.display_color) as string | null | undefined;
-      const icon = (g.icon ?? g.display_icon) as string | null | undefined;
-      const entry = { color, icon };
-      const name = g.name ? String(g.name).toLowerCase() : "";
-      const code = g.code ? String(g.code).toLowerCase() : "";
-      if (name) map.set(name, entry);
-      if (code) map.set(code, entry);
-    });
-    return map;
-  }, [groupsQuery.data]);
-
-  // Trello #86: product_id → times sold (today/week) for the heatmap badge.
-  const heatmap = React.useMemo(() => {
-    const map = new Map<string, { today: number; week: number }>();
-    const rows = (productStatsQuery.data ?? []) as Array<Record<string, unknown>>;
-    rows.forEach((row) => {
-      const id = String(row.product_id ?? row.id ?? "");
-      if (!id) return;
-      const today = Number(
-        row.times_sold_today ?? row.sold_today ?? row.today ?? 0,
-      );
-      const week = Number(
-        row.times_sold_week ?? row.sold_week ?? row.week ?? row.times_sold ?? 0,
-      );
-      map.set(id, {
-        today: Number.isFinite(today) ? today : 0,
-        week: Number.isFinite(week) ? week : 0,
-      });
-    });
-    return map;
-  }, [productStatsQuery.data]);
-  const HEAT_THRESHOLD = 3;
-  // Trello #62: currently-selected customer for the picker display.
-  const selectedCustomer = React.useMemo(
-    () => (customersQuery.data?.data ?? []).find((c) => c.id === customerId) ?? null,
-    [customersQuery.data, customerId],
-  );
-
   // Trello #107: when opened from a stalling contract's "pay at register" route,
   // pre-fill the cart with the locked deposit line and lock the customer.
   const [prefillLocked, setPrefillLocked] = React.useState(false);
@@ -519,7 +418,6 @@ export default function KassaPage() {
         description,
         quantity: 1,
         unit_price_cents: Math.round((cents * 100) / 121),
-        vat_rate: 21,
       },
     ]);
     setPrefillLocked(true);
@@ -527,36 +425,17 @@ export default function KassaPage() {
   }, []);
 
   const categories = React.useMemo(() => {
-    const set = new Map<
-      string,
-      { label: string; icon: LucideIcon; accent: string }
-    >();
-    allProducts.forEach((p) => {
-      const key = (p.category ?? p.group?.name ?? "").trim();
-      if (!key || set.has(key.toLowerCase())) return;
-      const meta = categoryMeta(key, set.size);
-      // Trello #80: prefer the matching product group's color + DB icon.
-      const group = groupByName.get(key.toLowerCase());
-      const dbIcon = resolveLucideIcon(
-        group?.icon ?? (p.group as { icon?: string } | null | undefined)?.icon,
-      );
-      const groupColor = group?.color ?? p.group?.color ?? p.color ?? null;
-      set.set(key.toLowerCase(), {
-        label: key,
-        icon: dbIcon ?? meta.icon,
-        accent: groupColor || meta.accent,
+    const groups = new Map<string, { label: string; icon: LucideIcon }>();
+    for (const product of allProducts) {
+      const label = (product.category ?? product.group?.name ?? "").trim();
+      if (!label || groups.has(label.toLowerCase())) continue;
+      groups.set(label.toLowerCase(), {
+        label,
+        icon: resolveLucideIcon(product.display_icon) ?? catalogIcon(label),
       });
-    });
-    return Array.from(set.values());
-  }, [allProducts, groupByName]);
-
-  const matchingRule = React.useMemo(() => {
-    if (!numericInput) return null;
-    return allRules.find(
-      (rule) =>
-        numericInput >= rule.range_from_cm && numericInput <= rule.range_to_cm,
-    );
-  }, [numericInput, allRules]);
+    }
+    return Array.from(groups.values());
+  }, [allProducts]);
 
   const productMatchesText = React.useCallback(
     (product: Product | undefined, q: string) => {
@@ -581,148 +460,59 @@ export default function KassaPage() {
     [],
   );
 
-  // When the staff types a length (e.g. "afspuiten 880"), show the matching
-  // size-range tiles like the template instead of plain product cards.
-  const rangeTiles = React.useMemo(() => {
-    if (!numericInput) return [];
-    const rules = allRules.filter((rule) => {
-      const product =
-        allProducts.find((p) => p.id === rule.product_id) ?? rule.product;
-      if (queryText && !productMatchesText(product, queryText)) return false;
-      if (
-        activeCategory &&
-        (product?.category ?? "").toLowerCase() !== activeCategory.toLowerCase()
-      )
-        return false;
-      return true;
-    });
-    return [...rules].sort((a, b) => a.range_from_cm - b.range_from_cm);
-  }, [
-    numericInput,
-    queryText,
-    activeCategory,
-    allRules,
-    allProducts,
-    productMatchesText,
-  ]);
+  const hasLengthPricing = (product: Product) =>
+    product.has_pricing_rules || product.pricing_type === "length_range" ||
+    product.pricing_type === "per_meter" || !!product.pricing_rules?.length;
+  const priceOnRequest = (product: Product) =>
+    ["manual", "on_request"].includes(product.pricing_type ?? "") ||
+    (!hasLengthPricing(product) && product.price_excl_vat <= 0);
 
-  const visibleProducts = React.useMemo(() => {
-    let list = allProducts;
-    if (activeCategory) {
-      list = list.filter(
-        (p) =>
-          (p.category ?? p.group?.name ?? "").toLowerCase() ===
-          activeCategory.toLowerCase(),
-      );
+  const addProduct = (product: Product, context?: { length: number; date: string }) => {
+    if (!canCheckout || product.show_in_kassa === false || product.active === false || basketLocked || prefillLocked) return;
+    if (priceOnRequest(product)) {
+      push({ tone: "error", title: pos("onRequest") });
+      return;
     }
-    if (queryText) {
-      list = list.filter((p) => productMatchesText(p, queryText));
+    if (hasLengthPricing(product) && !context) {
+      setEditingLine(null);
+      setServiceProduct(product);
+      setServiceLength(selectedBoat?.length_cm ? String(selectedBoat.length_cm) : "");
+      setServiceDate("");
+      return;
     }
-    const sorted = [...list];
-    if (sortBy === "priceAsc")
-      sorted.sort(
-        (a, b) => productPriceInclEuros(a) - productPriceInclEuros(b),
-      );
-    else if (sortBy === "priceDesc")
-      sorted.sort(
-        (a, b) => productPriceInclEuros(b) - productPriceInclEuros(a),
-      );
-    else if (sortBy === "name")
-      sorted.sort((a, b) => a.name.localeCompare(b.name));
-    return sorted;
-  }, [allProducts, activeCategory, queryText, sortBy, productMatchesText]);
 
-  const usingRanges = rangeTiles.length > 0;
-  const resultCount = usingRanges ? rangeTiles.length : visibleProducts.length;
-  const categoryLabel = activeCategory || t("adminNew.kassa.allCategories");
-
-  const mostChosen = React.useMemo(() => {
-    // Aggregate the most frequent line descriptions across recent sales, then
-    // resolve them back to products for quick re-adding.
-    const counts = new Map<string, number>();
-    (recentSales.data?.data ?? []).forEach((sale) => {
-      (sale.lines ?? []).forEach((line) => {
-        const key = (line.description ?? "").toLowerCase();
-        if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
-      });
-    });
-    const ranked = Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([desc]) => allProducts.find((p) => p.name.toLowerCase() === desc))
-      .filter(Boolean) as Product[];
-    const result = ranked.slice(0, 4);
-    if (result.length < 4) {
-      for (const p of allProducts) {
-        if (result.length >= 4) break;
-        if (!result.includes(p)) result.push(p);
-      }
-    }
-    return result;
-  }, [recentSales.data, allProducts]);
-
-  const addProduct = (product: Product, rule?: PricingRule | null) => {
-    const selectedRule = rule ?? null;
-    const unitCents = selectedRule
-      ? selectedRule.price_excl_vat
-      : Math.round(productPriceExclEuros(product) * 100) ||
-        product.price_excl_vat;
-    const description = selectedRule
-      ? `${product.name} (${selectedRule.range_from_cm}-${selectedRule.range_to_cm} cm)`
-      : product.name;
-
-    setCart((prev) => {
-      const existing = prev.find(
-        (item) =>
-          item.product_id === product.id && item.description === description,
-      );
+    const boatId = editingLine ? editingLine.metadata?.boat_id : selectedBoat?.id;
+    const boatName = editingLine ? editingLine.boatName : selectedBoat?.name;
+    const quantity = editingLine?.quantity ?? 1;
+    const id = context
+      ? JSON.stringify([product.id, boatId, context.length, context.date])
+      : product.id;
+    const description = context ? product.name + ' · ' + context.length + ' cm' : product.name;
+    setCart((current) => {
+      const previous = context && editingLine ? current.filter((item) => item.id !== editingLine.id) : current;
+      const existing = previous.find((item) => item.id === id);
       if (existing) {
-        return prev.map((item) =>
-          item === existing ? { ...item, quantity: item.quantity + 1 } : item,
+        return previous.map((item) =>
+          item === existing ? { ...item, quantity: item.quantity + quantity } : item,
         );
       }
-      return [
-        ...prev,
-        {
-          id: `${product.id}-${selectedRule?.id ?? "base"}`,
-          product_id: product.id,
-          description,
-          quantity: 1,
-          unit_price_cents: unitCents,
-          vat_rate: Number(selectedRule?.vat_rate ?? product.vat_rate ?? 21),
-          metadata: selectedRule
-            ? { length_cm: selectedRule.range_from_cm }
-            : undefined,
-          image_url: product.image_url,
-          color: product.color ?? product.group?.color ?? null,
-        },
-      ];
+      return [...previous, {
+        id,
+        product_id: product.id,
+        description,
+        quantity,
+        unit_price_cents: context ? 0 : Math.round(productPriceExclEuros(product) * 100),
+        product: context ? product : undefined,
+        metadata: context ? {
+          length_cm: context.length,
+          date: context.date || undefined,
+          boat_id: boatId,
+        } : undefined,
+        boatName: context ? boatName : undefined,
+      }];
     });
+    if (context) setEditingLine(null);
     pushRecent(product.id);
-    // Trello #62: confirm each add with a toast.
-    push({
-      tone: "success",
-      title: t("adminNew.kassa.toasts.added", { name: description }),
-    });
-  };
-
-  // Trello #80: add every product in a bundle with one click.
-  const addBundle = (bundle: {
-    name: string;
-    items?: Array<{ product_id: string; quantity?: number; product?: Product }>;
-  }) => {
-    const items = bundle.items ?? [];
-    let added = 0;
-    items.forEach((it) => {
-      const product =
-        it.product ?? allProducts.find((p) => p.id === it.product_id);
-      if (!product) return;
-      const times = Math.max(1, it.quantity ?? 1);
-      for (let i = 0; i < times; i += 1) addProduct(product);
-      added += 1;
-    });
-    if (!added) {
-      push({ tone: "error", title: t("adminNew.kassa.bundleEmpty") });
-    }
   };
 
   // Trello #80: barcode scan — resolve via the backend (search_code / EAN /
@@ -732,7 +522,7 @@ export default function KassaPage() {
   const [showCamera, setShowCamera] = React.useState(false);
   const runScan = async (rawCode: string, source = "usb") => {
     const code = rawCode.trim();
-    if (!code) return;
+    if (!code || !canCheckout || basketLocked || prefillLocked) return;
     setScanning(true);
     try {
       const res = await productsService.scan({
@@ -761,10 +551,10 @@ export default function KassaPage() {
   const handleBarcodeScan = () => runScan(query, "usb");
 
   const removeItem = (id: string) =>
-    setCart((prev) => prev.filter((item) => item.id !== id));
+    !basketLocked && setCart((prev) => prev.filter((item) => item.id !== id));
 
   const changeQty = (id: string, delta: number) =>
-    setCart((prev) =>
+    !basketLocked && !prefillLocked && setCart((prev) =>
       prev.map((p) =>
         p.id === id ? { ...p, quantity: Math.max(1, p.quantity + delta) } : p,
       ),
@@ -773,63 +563,58 @@ export default function KassaPage() {
   const cartHas = (productId?: string) =>
     !!productId && cart.some((item) => item.product_id === productId);
 
-  const subtotalCents = cart.reduce(
-    (sum, item) => sum + item.unit_price_cents * item.quantity,
-    0,
+  const basketItems = React.useMemo(() => cart.map((item) => ({
+    product_id: item.product_id,
+    description: item.description,
+    quantity: item.quantity,
+    unit_price_cents: item.unit_price_cents,
+    metadata: item.metadata,
+  })), [cart]);
+  const basketQuote = useQuery(
+    ["kassa-basket", basketItems, customerId],
+    () => canCheckout && basketItems.length
+      ? kassaService.quote({ customer_id: customerId || undefined, items: basketItems }).then((value) => ({ items: basketItems, customerId, value }))
+      : Promise.resolve(null),
   );
-  const vatCents = cart.reduce(
-    (sum, item) =>
-      sum +
-      Math.round(item.unit_price_cents * item.quantity * item.vat_rate / 100),
-    0,
-  );
-  const exclCents = subtotalCents;
-  const totalCents = exclCents + vatCents;
-  const primaryVatRate = cart[0]?.vat_rate ?? 21;
+  const reviewed = basketQuote.loading || basketQuote.error || basketQuote.data?.items !== basketItems || basketQuote.data.customerId !== customerId
+    ? null : basketQuote.data.value;
+  const totalCents = reviewed?.total_cents ?? 0;
+  const vatRates = Array.from(new Set(reviewed?.lines.map((line) => line.vat_rate) ?? []));
+  const canAdjust = can("kassa.refund") && vatRates.length === 1;
+  const checkoutReady = canCheckout && !!reviewed && cart.length > 0 && totalCents > 0 &&
+    !basketLocked && !basketContextChanged;
   const money = (cents: number) => formatCurrency(cents / 100, localeTag);
 
   const PAYMENT_BUTTONS: Array<{
     method: string;
     label: string;
     icon: LucideIcon;
-    classes: string;
-    activeClasses: string;
     action?: () => void;
   }> = [
     {
       method: "cash",
       label: t("adminNew.kassa.payment.cash"),
       icon: Banknote,
-      classes: "border-emerald-200 text-emerald-700 hover:bg-emerald-50",
-      activeClasses: "border-emerald-500 bg-emerald-500 text-white shadow-sm",
     },
     {
       method: "pin",
       label: t("adminNew.kassa.payment.pin"),
       icon: CreditCard,
-      classes: "border-marine-200 text-marine-700 hover:bg-marine-50",
-      activeClasses: "border-marine-500 bg-marine-500 text-white shadow-sm",
     },
     {
       method: "creditcard",
       label: t("adminNew.kassa.payment.creditcard"),
       icon: CreditCard,
-      classes: "border-violet-200 text-violet-700 hover:bg-violet-50",
-      activeClasses: "border-violet-500 bg-violet-500 text-white shadow-sm",
     },
     {
       method: "invoice",
       label: t("adminNew.kassa.payment.invoice"),
       icon: FileText,
-      classes: "border-amber-200 text-amber-700 hover:bg-amber-50",
-      activeClasses: "border-amber-500 bg-amber-500 text-white shadow-sm",
     },
     {
       method: "downpayment",
       label: t("adminNew.kassa.downPayment"),
       icon: Wallet,
-      classes: "border-slate-200 text-slate-600 hover:bg-slate-50",
-      activeClasses: "border-slate-500 bg-slate-500 text-white shadow-sm",
       action: () => setShowSplitModal(true),
     },
   ];
@@ -878,7 +663,7 @@ export default function KassaPage() {
             }
           : undefined,
       });
-      setCustomerId(created.id);
+      chooseCustomer(created);
       setShowCustomerModal(false);
       setNewCustomer({
         name: "",
@@ -912,32 +697,39 @@ export default function KassaPage() {
   // Trello #72: QR flow uses a payment session (no invoice up front); the
   // webhook finalizes the invoice once Mollie confirms payment.
   const startQrSession = async () => {
-    if (!canCheckout) return;
-    if (!cart.length) {
-      push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
-      return;
-    }
+    if (!canCheckout || qrSubmitting.current || (!qrAttempt && (!checkoutReady || adjustEnabled))) return;
+    qrSubmitting.current = true;
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 15) | 64;
+    bytes[8] = (bytes[8] & 63) | 128;
+    const uuid = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")
+      .replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5");
+    const request = qrAttempt ?? {
+      session_id: uuid,
+      device_id: getDeviceId(),
+      customer_id: customerId || undefined,
+      method: "ideal",
+      expected_total_cents: totalCents,
+      sale_note: note || undefined,
+      redirect_url: window.location.href,
+      items: basketItems,
+    };
+    rememberQr(request);
     setQrStarting(true);
     setQrSession(null);
     setQrCopied(false);
+    qrSettled.current = false;
     setShowQrModal(true);
     try {
-      const session = await kassaService.createQrSession({
-        device_id: getDeviceId(),
-        customer_id: customerId || undefined,
-        method: "ideal",
-        redirect_url:
-          typeof window !== "undefined" ? window.location.href : undefined,
-        items: cart.map((item) => ({
-          product_id: item.product_id,
-          description: item.description,
-          quantity: item.quantity,
-          unit_price_cents: item.unit_price_cents,
-          metadata: item.metadata,
-        })),
-      });
+      const session = await kassaService.createQrSession(request);
+      if (request.customer_id) setCustomerId(request.customer_id);
       setQrSession(session);
+      setQrAttempt(null);
     } catch (err) {
+      if ([400, 401, 403, 404, 422, 429].includes(getApiErrorStatus(err) ?? 0)) {
+        rememberQr(null);
+        void basketQuote.refetch().catch(() => undefined);
+      }
       setShowQrModal(false);
       push({
         tone: "error",
@@ -945,6 +737,7 @@ export default function KassaPage() {
         message: getApiErrorMessage(err),
       });
     } finally {
+      qrSubmitting.current = false;
       setQrStarting(false);
     }
   };
@@ -954,14 +747,19 @@ export default function KassaPage() {
   React.useEffect(() => {
     const id = qrSession?.session_id;
     const status = (qrSession?.status ?? "").toLowerCase();
-    if (!showQrModal || !id) return;
+    if (!id) return;
     if (status === "paid" || status === "completed") {
       if (!qrSettled.current) {
         qrSettled.current = true;
+        rememberQr(null);
+        setShowQrModal(false);
         setCart([]);
         setNote("");
-        void recentSales.refetch();
-        void todayQuery.refetch();
+        setShowPayment(false);
+        setShowMobileCart(false);
+        setPrefillLocked(false);
+        setSale({ payment_status: "paid", invoice_id: qrSession.invoice_id ?? undefined,
+          invoice_number: qrSession.invoice_number ?? undefined, total_amount_cents: qrSession.amount_cents });
         push({
           tone: "success",
           title: t("adminNew.kassa.toasts.checkoutDone"),
@@ -975,6 +773,7 @@ export default function KassaPage() {
       status === "canceled" ||
       status === "cancelled"
     ) {
+      rememberQr(null);
       return;
     }
     const timer = setTimeout(async () => {
@@ -986,7 +785,7 @@ export default function KassaPage() {
       }
     }, 3000);
     return () => clearTimeout(timer);
-  }, [showQrModal, qrSession, recentSales, todayQuery, push, t]);
+  }, [qrSession, rememberQr, push, t]);
 
   // Countdown ticker for QR session expiry
   React.useEffect(() => {
@@ -1012,8 +811,6 @@ export default function KassaPage() {
 
   const closeQrModal = () => {
     setShowQrModal(false);
-    qrSettled.current = false;
-    setQrSession(null);
     setQrSecondsLeft(null);
     setQrEmailInput('');
     setQrPhoneInput('');
@@ -1024,29 +821,25 @@ export default function KassaPage() {
   const handleCheckout = async (
     mode: "standard" | "split" | "qr" | "on_account" = "standard",
   ) => {
-    if (!canCheckout) return;
+    if (!canCheckout || submitting.current) return;
     if (mode === "qr") {
       await startQrSession();
       return;
     }
-    if (!cart.length) {
-      push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
-      return;
-    }
+    if (!submitted && (!checkoutReady || (mode === "on_account" && !customerId))) return;
+    submitting.current = true;
     try {
       const payload: Parameters<typeof kassaService.checkout>[0] = {
+        idempotency_key: Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, "0")).join(""),
+        expected_total_cents: totalCents,
+        sale_note: note || undefined,
         device_id: getDeviceId(),
         customer_id: customerId || undefined,
         locale: localeTag,
+        on_account_note: note || undefined,
         redirect_url:
           typeof window !== "undefined" ? window.location.href : undefined,
-        items: cart.map((item) => ({
-          product_id: item.product_id,
-          description: item.description,
-          quantity: item.quantity,
-          unit_price_cents: item.unit_price_cents,
-          metadata: item.metadata,
-        })),
+        items: basketItems,
       };
 
       if (mode === "split") {
@@ -1062,16 +855,23 @@ export default function KassaPage() {
       }
 
       // Total adjustment → backend records a DISCOUNT line; reason is mandatory.
-      if (adjustEnabled && adjustedTotal !== "") {
+      if (!submitted && adjustEnabled && adjustedTotal !== "") {
         if (!adjustmentReason.trim()) {
           push({ tone: "error", title: t("adminNew.kassa.adjustReasonRequired") });
           return;
         }
         payload.adjusted_total_cents = Math.round(Number(adjustedTotal) * 100);
         payload.adjustment_reason = adjustmentReason.trim();
+        payload.adjustment_vat_rate = vatRates[0];
       }
 
-      const res = await checkout.mutate(payload);
+      if (!submitted && mode === "split" && !payload.payments?.length) return;
+      const request = submitted ?? payload;
+      rememberCheckout(request);
+      const res = await checkout.mutate(request);
+      rememberCheckout(null);
+      if (typeof res !== "string") setSale(res);
+      if (request.customer_id) setCustomerId(request.customer_id);
       const checkoutUrl =
         typeof res === "string"
           ? res
@@ -1079,8 +879,6 @@ export default function KassaPage() {
             res.payment?.checkout_url ??
             res.payment_url ??
             res.url);
-      const invoiceNumber =
-        typeof res === "string" ? undefined : res.invoice_number;
 
       setCart([]);
       setNote("");
@@ -1088,28 +886,25 @@ export default function KassaPage() {
       setAdjustedTotal("");
       setAdjustmentReason("");
       setShowSplitModal(false);
-      void recentSales.refetch();
-      void todayQuery.refetch();
+      setShowPayment(false);
+      setShowMobileCart(false);
+      setPrefillLocked(false);
 
-      if (checkoutUrl) {
-        const popup = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
-        if (!popup) {
-          window.location.assign(checkoutUrl);
-        }
-      }
+      if (typeof res === "string" && checkoutUrl) window.location.assign(checkoutUrl);
 
-      push({
-        tone: "success",
-        title: invoiceNumber
-          ? `${t("adminNew.kassa.toasts.checkoutDone")} · ${invoiceNumber}`
-          : t("adminNew.kassa.toasts.checkoutDone"),
-      });
+
     } catch (err) {
+      if ([400, 401, 403, 404, 422, 429].includes(getApiErrorStatus(err) ?? 0)) {
+        rememberCheckout(null);
+        void basketQuote.refetch().catch(() => undefined);
+      }
       push({
         tone: "error",
         title: t("adminNew.kassa.toasts.checkoutFailed"),
         message: getApiErrorMessage(err),
       });
+    } finally {
+      submitting.current = false;
     }
   };
 
@@ -1123,13 +918,7 @@ export default function KassaPage() {
       await quote.mutate({
         customer_id: customerId || undefined,
         locale: localeTag,
-        items: cart.map((item) => ({
-          product_id: item.product_id,
-          description: item.description,
-          quantity: item.quantity,
-          unit_price_cents: item.unit_price_cents,
-          metadata: item.metadata,
-        })),
+        items: basketItems,
       });
       push({ tone: "success", title: t("adminNew.kassa.toasts.quoteDone") });
     } catch (err) {
@@ -1141,984 +930,424 @@ export default function KassaPage() {
     }
   };
 
-  const lastSale = recentSales.data?.data?.[0];
-  // Trello #62: safe total (never NaN) + deep link to the real invoice.
-  const lastSaleEuros = lastSale
-    ? Number(
-        lastSale.total_euros ??
-          lastSale.total_amount_euros ??
-          Number(lastSale.total_amount_cents ?? 0) / 100,
-      ) || 0
-    : 0;
-  const lastSaleHref =
-    lastSale?.invoice_url ??
-    lastSale?.admin_url ??
-    (lastSale?.invoice_id
-      ? `/${locale}/admin/facturen/${lastSale.invoice_id}`
-      : undefined);
-  const todayTurnover = todayQuery.data?.totals.turnover_cents ?? 0;
-  const todayTransactions = todayQuery.data?.totals.transaction_count ?? 0;
-  const dashCard = (key: string) =>
-    (todayQuery.data?.dashboardCards ?? []).find((c) => c.key === key);
+
+  const selectedCustomer = pickedCustomer?.id === customerId ? pickedCustomer
+    : customersQuery.data?.data.find((customer) => customer.id === customerId);
+  const chooseCustomer = (customer: (Pick<Customer, "id" | "name"> & { email?: string | null }) | null) => {
+    if (prefillLocked || basketLocked) return;
+    setShowBoats(false);
+    setCustomerId(customer?.id ?? "");
+    setPickedCustomer(customer);
+    if (selectedBoat?.customer_id !== customer?.id) setSelectedBoat(null);
+    setQuery("");
+  };
+  const chooseCustomerAfterSale = () => {
+    setPickedCustomer(null);
+    setCustomerId("");
+    setSelectedBoat(null);
+    setQuery("");
+  };
+  const chooseBoat = (boat: Boat) => {
+    if (prefillLocked || basketLocked) return;
+    chooseCustomer(boat.customer ?? { id: boat.customer_id, name: "" });
+    setSelectedBoat(boat);
+    setShowBoats(false);
+  };
+
+  React.useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat ||
+          target.closest("input, textarea, select, [contenteditable=true]") || document.querySelector("[role=dialog]")) return;
+      if (event.key === "/") searchRef.current?.focus();
+      else if (event.key === "F2" && !basketLocked && !prefillLocked) setShowCustomerPicker(true);
+      else if (event.key === "F4" && checkoutReady) setShowPayment(true);
+      else if (event.key === "F8" && cart.length && !basketLocked) setShowClear(true);
+      else if (event.key === "Escape" && showMobileCart) setShowMobileCart(false);
+      else return;
+      event.preventDefault();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [basketLocked, cart.length, checkoutReady, prefillLocked, showMobileCart]);
+
+  const localProducts = allProducts.filter((product) => query.trim()
+    ? productMatchesText(product, query.trim().toLowerCase())
+    : !activeCategory || (product.category ?? product.group?.name ?? "").trim().toLowerCase() === activeCategory);
+  const visibleProducts = matches && productSearch.data?.search === search
+    ? Array.from(new Map([...localProducts, ...productSearch.data.products]
+        .filter((product) => product.active !== false && product.show_in_kassa !== false)
+        .map((product) => [product.id, product])).values())
+    : localProducts;
+  const waitingForProducts = matches && productSearch.loading;
+  const quickProducts = [...new Set([...favoriteIds, ...recentIds])]
+    .map((id) => allProducts.find((product) => product.id === id))
+    .filter((product): product is Product => !!product).slice(0, 6);
+  const invoiceHref = sale?.invoice_id && "/" + locale + "/admin/facturen/" + sale.invoice_id;
+  const paymentHref = sale?.checkout_url ?? sale?.payment?.checkout_url ?? sale?.payment_url ?? sale?.url;
+  const formatDimension = (cm: number) =>
+    new Intl.NumberFormat(localeTag, { maximumFractionDigits: 2 }).format(cm / 100) + " m (" +
+    new Intl.NumberFormat(localeTag).format(cm) + " cm)";
+  const enabledPayments = paymentMethods.error ? null : paymentMethods.data;
+  const methodEnabled = (method: string) => ["creditcard", "ideal", "bancontact"].includes(method)
+    ? enabledPayments?.online.includes(method) : enabledPayments?.pos.includes(method);
+  const updateReceipt = async (kind: "print" | "email") => {
+    if (!sale?.invoice_id || receiptBusy) return;
+    setReceiptBusy(true);
+    setReceiptStatus("");
+    try {
+      if (kind === "email") {
+        const result = await invoicesService.email(sale.invoice_id);
+        setReceiptStatus(result.queued === true ? pos("emailQueued") : pos("receiptPending"));
+      } else {
+        const pdf = await invoicesService.getPdf(sale.invoice_id);
+        setReceiptUrl(pdf.signed_url ?? null);
+        if (!pdf.signed_url) setReceiptStatus(pos("receiptPending"));
+      }
+    } catch (error) {
+      setReceiptStatus(getApiErrorMessage(error));
+    } finally {
+      setReceiptBusy(false);
+    }
+  };
+  const nextSale = () => {
+    setSale(null);
+    setReceiptUrl(null);
+    setReceiptStatus("");
+    setQrSession(null);
+    rememberQr(null);
+    chooseCustomerAfterSale();
+  };
+  const basketAmount = reviewed ? money(totalCents) : cart.length ? "—" : money(0);
 
   return (
     <>
-      <AdminPageHeader
-        title={t("adminNew.kassa.title")}
-        subtitle={t("adminNew.kassa.subtitle")}
-        stats={[
-          {
-            label: t("adminNew.kassa.cart"),
-            value: cart.length,
-            icon: ShoppingCart,
-            tone: cart.length > 0 ? "marine" : "navy",
-            href: `#cart`,
-          },
-          {
-            label: t("adminNew.kassa.total"),
-            value: money(totalCents),
-            icon: CreditCard,
-            tone: totalCents > 0 ? "gold" : "success",
-            href: `#cart`,
-          },
-          {
-            label: dashCard("products")?.label ?? t("adminNew.kassa.products"),
-            value:
-              dashCard("products")?.value ??
-              productsQuery.data?.meta?.total ??
-              productsQuery.data?.data.length ??
-              0,
-            icon: Warehouse,
-            tone: "navy",
-            href: dashCard("products")?.deeplink ?? `/${locale}/admin/producten`,
-            actionIcon: Pencil,
-            actionHref: `/${locale}/admin/producten`,
-            actionLabel: t("adminNew.kassa.editProducts"),
-            loading: productsQuery.loading,
-          },
-          {
-            label: dashCard("recent_sales")?.label ?? t("adminNew.kassa.recentSales"),
-            value: dashCard("recent_sales")?.value ?? recentSales.data?.data?.length ?? 0,
-            icon: Receipt,
-            tone: "marine",
-            href: dashCard("recent_sales")?.deeplink ?? `/${locale}/admin/verkopen`,
-            loading: recentSales.loading,
-          },
-        ]}
-      />
-
-      <AdminContent>
-        <AdminSplitLayout sidebarWidth="25rem" breakpoint="xl" className="items-start">
-        {/* Top bar: primary search + customer (Trello #62 layout) */}
-        <div className="col-span-full space-y-3 rounded-2xl border border-marine-200/60 bg-gradient-to-br from-white to-sand-50/80 p-4 shadow-card">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
-            <div className="relative min-w-0 flex-[2]">
-              <ScanLine className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-marine-500" />
-              <input
-                ref={searchRef}
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    void handleBarcodeScan();
-                  }
-                }}
-                placeholder={t("adminNew.kassa.searchPlaceholder")}
-                className="input-base w-full py-3.5 pl-12 text-base font-medium shadow-sm"
-              />
-              <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-navy-100 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-navy-400 sm:inline">
-                /
-              </span>
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => setShowCustomerPicker(true)}
-                className="flex flex-1 items-center justify-between rounded-xl border border-navy-200 bg-white px-4 py-3 text-left text-sm shadow-sm transition hover:border-marine-300"
-              >
-                <span className={selectedCustomer ? "font-medium text-navy-900" : "text-navy-400"}>
-                  {selectedCustomer
-                    ? selectedCustomer.name
-                    : <TranslatedText textKey={"adminNew.kassa.selectCustomer"} />}
-                </span>
-                <UserPlus className="h-4 w-4 text-marine-600" />
-              </button>
-              <Button disabled={!canWriteCustomer}
-                variant="outline"
-                size="sm"
-                className="shrink-0 py-3"
-                leftIcon={<Plus className="h-4 w-4" />}
-                onClick={() => setShowCustomerModal(true)}
-              >
-                {<TranslatedText textKey={"adminNew.kassa.newCustomer"} />}
-              </Button>
-            </div>
+      <AdminContent className="space-y-5 pb-24 lg:pb-6">
+        <header className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-navy-900">{t("adminNew.kassa.title")}</h1>
+            {user?.name && <p className="text-sm text-navy-600">{user.name}</p>}
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-navy-400">
-              {<TranslatedText textKey={"adminNew.kassa.keyboardHints"} />}
-            </p>
-            <div className="flex items-center gap-3">
-              {/* AI Natural Language Search */}
-              <button
-                type="button"
-                onClick={() => { setShowAiSearch(!showAiSearch); if (showAiSearch) setAiResults(null); }}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition ${showAiSearch ? 'bg-marine-600 text-white' : 'border border-marine-200 text-marine-600 hover:bg-marine-50'}`}
-              >
-                <TranslatedText textKey="siteCopy.0832de2e758aef36" fallbackText={"✨ AI Zoeken"} /></button>
-            {/* Trello #80: fast-scan toggle (persisted; sent to scan API). */}
-            <button
-              type="button"
-              role="switch"
-              aria-checked={fastScan}
-              onClick={toggleFastScan}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-navy-600"
-            >
-              <span
-                className={cn(
-                  "relative inline-flex h-5 w-9 items-center rounded-full transition",
-                  fastScan ? "bg-marine-500" : "bg-navy-200",
-                )}
-              >
-                <span
-                  className={cn(
-                    "inline-block h-4 w-4 transform rounded-full bg-white shadow transition",
-                    fastScan ? "translate-x-4" : "translate-x-0.5",
-                  )}
-                />
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Zap className="h-3.5 w-3.5 text-gold-500" />
-                {<TranslatedText textKey={"adminNew.kassa.fastScan"} />}
-              </span>
-            </button>
-            </div>
-          </div>
+          <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-navy-700">
+            {canAccessAdminRoute(user?.role, "/" + locale + "/admin/verkopen", user?.permissions) && (
+              <Link href={'/' + locale + '/admin/verkopen'}>{t("adminNew.kassa.viewAllSales")}</Link>
+            )}
+            <Link href={'/' + locale + '/admin/kassa/analytics'}>{t("adminNew.kassa.analytics.title")}</Link>
+            {(can("settings.view") || can("settings.financial.view")) && (
+              <Link href={'/' + locale + '/admin/instellingen#payments'}>{t("admin.sidebar.settings")}</Link>
+            )}
+          </nav>
+        </header>
 
-          {/* AI Search panel */}
-          {showAiSearch ? (
-            <form
-              className="mt-3 border-t border-marine-100 pt-3"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!aiQuery.trim()) return;
-                try {
-                  const res = await aiSearch.mutate(aiQuery.trim());
-                  setAiResults(res ?? null);
-                } catch {
-                  setAiResults(null);
-                }
-              }}
-            >
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={aiQuery}
-                  onChange={(e) => setAiQuery(e.target.value)}
-                  placeholder='Bijv. "bootverf onder €30" of "onderhoud producten"'
-                  className="input-base flex-1 text-sm"
-                />
-                <Button type="submit" variant="outline" size="sm" disabled={aiSearch.loading}>
-                  {aiSearch.loading ? 'Zoeken…' : 'Zoek'}
-                </Button>
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,34%)]">
+          <div className="min-w-0 space-y-4">
+            <div className="flex gap-2">
+              <div className="relative min-w-0 flex-1">
+                <Search aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-navy-500" />
+                <input ref={searchRef} type="search" value={query} aria-label={pos("search")}
+                  onChange={(event) => { setQuery(event.target.value); setShowBoats(false); }}
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter") return;
+                    event.preventDefault();
+                    if (!scanning) void handleBarcodeScan();
+                  }}
+                  placeholder={pos("search")} className="input-base w-full py-3 pl-11" />
               </div>
-              {aiResults ? (
-                <div className="mt-2 rounded-xl border border-marine-100 bg-marine-50/60 p-3">
-                  <p className="mb-2 text-sm font-medium text-marine-800">{aiResults.answer}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {(aiResults.products ?? []).slice(0, 12).map((pr) => (
-                      <button
-                        key={pr.id}
-                        type="button"
-                        onClick={() => {
-                          addProduct(pr);
-                          setShowAiSearch(false);
-                          setAiResults(null);
-                        }}
-                        className="flex items-center gap-1.5 rounded-lg border border-marine-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-marine-800 transition hover:bg-marine-50"
-                      >
-                        {pr.color ? <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: pr.color }} /> : null}
-                        {pr.name}
-                        <span className="text-navy-400">{formatCurrency(productPriceInclEuros(pr), localeTag)}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </form>
-          ) : null}
-        </div>
-
-        {/* ----------------------------- LEFT: catalog ---------------------------- */}
-        <div className="min-w-0 space-y-4">
-          {/* Category tabs + quick actions */}
-          <div className="flex flex-wrap items-center gap-2">
-            <CategoryTab
-              label={t("adminNew.kassa.allCategories")}
-              icon={ShoppingCart}
-              accent="#1a2e48"
-              active={activeCategory === ""}
-              onClick={() => setActiveCategory("")}
-            />
-            {categories.map((cat) => (
-              <CategoryTab
-                key={cat.label}
-                label={cat.label}
-                icon={cat.icon}
-                accent={cat.accent}
-                active={
-                  activeCategory.toLowerCase() === cat.label.toLowerCase()
-                }
-                onClick={() => setActiveCategory(cat.label)}
-              />
-            ))}
-            <div className="ml-auto flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Zap className="h-4 w-4 text-gold-500" />}
-                onClick={() => searchRef.current?.focus()}
-              >
-                {<TranslatedText textKey={"adminNew.kassa.quickAdd"} />}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<ScanLine className="h-4 w-4 text-marine-600" />}
-                disabled={scanning}
-                onClick={() => setShowCamera(true)}
-              >
-                {<TranslatedText textKey={"adminNew.kassa.scanBarcode"} />}
-              </Button>
-              <Link href={`/${locale}/admin/producten`}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Pencil className="h-4 w-4 text-navy-500" />}
-                >
-                  {<TranslatedText textKey={"adminNew.kassa.manageProducts"} />}
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          {/* Sort (search lives in the top bar) */}
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-navy-100/70 bg-white p-3 shadow-card">
-            <span className="hidden items-center gap-1.5 rounded-lg border border-navy-100 px-3 py-2 text-sm text-navy-500 sm:inline-flex">
-              <Filter className="h-4 w-4" />
-              {<TranslatedText textKey={"adminNew.kassa.filter"} />}
-            </span>
-            <label className="relative ml-auto inline-flex items-center">
-              <ArrowDownUp className="pointer-events-none absolute left-3 h-4 w-4 text-navy-400" />
-              <SearchSelect
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortKey)}
-                className="input-base cursor-pointer py-2 pl-9 pr-8 text-sm"
-                aria-label={t("adminNew.kassa.sortBy")}
-              >
-                <option value="recommended">
-                  {t("adminNew.kassa.sort.recommended")}
-                </option>
-                <option value="priceAsc">
-                  {t("adminNew.kassa.sort.priceAsc")}
-                </option>
-                <option value="priceDesc">
-                  {t("adminNew.kassa.sort.priceDesc")}
-                </option>
-                <option value="name">{t("adminNew.kassa.sort.name")}</option>
-              </SearchSelect>
-            </label>
-          </div>
-
-          {/* Smart match banner */}
-          {matchingRule ? (
-            <div className="flex items-center gap-2 rounded-xl border border-marine-200/80 bg-gradient-to-r from-marine-50 to-white px-4 py-3 text-sm text-marine-800">
-              <Star className="h-4 w-4 text-marine-500" />
-              <span className="font-semibold">
-                {<TranslatedText textKey={"adminNew.kassa.smartMatch"} />}:
-              </span>
-              {matchingRule.range_from_cm}–{matchingRule.range_to_cm} <TranslatedText textKey="siteCopy.868576369eae652b" fallbackText={" cm ·"} />{" "}
-              {formatCurrency(productPriceInclEuros(matchingRule), localeTag)}
-            </div>
-          ) : null}
-
-          {/* Trello #80/#86: favourites, recently used and bundles */}
-          {(() => {
-            const favProducts = allProducts.filter((p) =>
-              favoriteIds.has(p.id),
-            );
-            const recentProducts = recentIds
-              .map((id) => allProducts.find((p) => p.id === id))
-              .filter((p): p is Product => Boolean(p));
-            const bundles = bundlesQuery.data ?? [];
-            const renderChip = (
-              key: string,
-              label: string,
-              accent: string | null | undefined,
-              onClick: () => void,
-            ) => (
-              <button
-                key={key}
-                type="button"
-                onClick={onClick}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-navy-100 bg-white px-3 py-1.5 text-xs font-semibold text-navy-700 shadow-sm transition hover:border-marine-200 hover:bg-sand-50"
-              >
-                <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: accent ?? "#1f93b8" }}
-                />
-                {label}
-              </button>
-            );
-            if (
-              !favProducts.length &&
-              !recentProducts.length &&
-              !bundles.length
-            )
-              return null;
-            return (
-              <div className="mb-4 space-y-2">
-                {favProducts.length ? (
-                  <QuickRow icon={Star} label={t("adminNew.kassa.favourites")}>
-                    {favProducts.map((p) =>
-                      renderChip(p.id, p.name, p.color ?? p.group?.color, () =>
-                        addProduct(p),
-                      ),
-                    )}
-                  </QuickRow>
-                ) : null}
-                {recentProducts.length ? (
-                  <QuickRow
-                    icon={MoreHorizontal}
-                    label={t("adminNew.kassa.recentlyUsed")}
-                  >
-                    {recentProducts.map((p) =>
-                      renderChip(
-                        `r-${p.id}`,
-                        p.name,
-                        p.color ?? p.group?.color,
-                        () => addProduct(p),
-                      ),
-                    )}
-                  </QuickRow>
-                ) : null}
-                {bundles.length ? (
-                  <QuickRow
-                    icon={ShoppingCart}
-                    label={t("adminNew.kassa.bundles")}
-                  >
-                    {bundles.map((b) =>
-                      renderChip(`b-${b.id}`, b.name, b.color, () =>
-                        addBundle(b),
-                      ),
-                    )}
-                  </QuickRow>
-                ) : null}
-              </div>
-            );
-          })()}
-
-          {/* Results */}
-          <div className="min-w-0 rounded-2xl border border-navy-100/70 bg-sand-50/60 p-3 sm:p-5">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="min-w-0 break-words text-lg font-semibold text-navy-900">
-                {<TranslatedText textKey={"adminNew.kassa.resultsTitle"} vars={{ category: categoryLabel }} />}
-              </h2>
-              {!productsQuery.loading ? (
-                <span className="rounded-full border border-marine-100 bg-white px-3 py-1 text-xs font-semibold text-marine-700">
-                  {<TranslatedText textKey={"adminNew.kassa.matchCount"} vars={{ count: resultCount }} />}
-                </span>
-              ) : null}
+              <Button variant="outline" leftIcon={<ScanLine className="h-5 w-5" />}
+                disabled={basketLocked} onClick={() => setShowCamera(true)}>{pos("scan")}</Button>
             </div>
 
-            {productsQuery.loading ? (
-              <LoadingState
-                label={t("adminNew.kassa.loadingProducts")}
-                variant="cards"
-              />
-            ) : resultCount === 0 ? (
-              <EmptyState
-                title={t("adminNew.kassa.emptyProductsTitle")}
-                message={t("adminNew.kassa.emptyProductsMessage")}
-              />
-            ) : usingRanges ? (
-              <div className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(min(100%,9rem),1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,11rem),1fr))] sm:gap-4">
-                {rangeTiles.map((rule) => {
-                  const product =
-                    allProducts.find((p) => p.id === rule.product_id) ??
-                    rule.product;
-                  const inRange =
-                    numericInput >= rule.range_from_cm &&
-                    numericInput <= rule.range_to_cm;
-                  const tileId = `${rule.product_id}-${rule.id}`;
-                  return (
-                    <CatalogTile
-                      key={rule.id}
-                      title={`${rule.range_from_cm} – ${rule.range_to_cm} cm`}
-                      price={formatCurrency(productPriceInclEuros(rule), localeTag)}
-                      accent={
-                        product?.color ?? product?.group?.color ?? "#1f93b8"
-                      }
-                      selected={cart.some((i) => i.id === tileId)}
-                      highlighted={inRange}
-                      onClick={() => product && addProduct(product, rule)}
-                    />
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(min(100%,9rem),1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,11rem),1fr))] sm:gap-4">
-                {visibleProducts.slice(0, 24).map((product) => {
-                  const ruleMatch =
-                    matchingRule && matchingRule.product_id === product.id
-                      ? matchingRule
-                      : null;
-                  const fav = favoriteIds.has(product.id);
-                  // Trello #86: heatmap badge for hot products.
-                  const heat = heatmap.get(product.id);
-                  const heatCount = heat ? heat.today || heat.week : 0;
-                  const isHot = heatCount >= HEAT_THRESHOLD;
-                  // Trello #80: small meta line (VAT % + group name).
-                  const metaBits = [
-                    product.vat_rate ? `${product.vat_rate}%` : null,
-                    product.group?.name ?? null,
-                  ].filter(Boolean) as string[];
-                  return (
-                    <CatalogTile
-                      key={product.id}
-                      actions={<>
-                        {isHot ? (
-                        <span
-                            className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-600"
-                            title={t("adminNew.kassa.hotProduct", { count: heatCount })}
-                          >
-                            <Zap className="h-3 w-3" />
-                            {heatCount}
-                          </span>
-                        ) : null}
-                        {/* Trello #80: quick edit pencil → product detail */}
-                        <Link
-                          href={adminRecordHref(locale, 'producten', product)}
-                          onClick={(e) => e.stopPropagation()}
-                          aria-label={t("adminNew.kassa.editProduct")}
-                          className="ml-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-navy-500 transition hover:bg-marine-50 hover:text-marine-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marine-500"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Link>
-                        <button
-                          type="button"
-                          aria-pressed={fav}
-                          aria-label={t("adminNew.kassa.favouriteToggle")}
-                          onClick={() => toggleFavorite(product.id)}
-                          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition hover:bg-gold-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marine-500"
-                        >
-                          <Star
-                            className={cn(
-                              "h-4 w-4",
-                              fav
-                                ? "fill-gold-400 text-gold-500"
-                                : "text-navy-400",
-                            )}
-                          />
-                        </button>
-                      </>}
-                        title={product.name}
-                        subtitle={product.code}
-                        meta={metaBits.length ? metaBits.join(" · ") : undefined}
-                        price={formatCurrency(
-                          ruleMatch
-                            ? productPriceInclEuros(ruleMatch)
-                            : productPriceInclEuros(product),
-                          localeTag,
-                        )}
-                        accent={
-                          product.display_color ?? product.color ?? product.group?.color ?? "#1f93b8"
-                        }
-                        image={product.image_url}
-                        displayIcon={product.display_icon}
-                        displayColor={product.display_color ?? product.color ?? null}
-                        selected={cartHas(product.id)}
-                        highlighted={!!ruleMatch}
-                        onClick={() => addProduct(product, ruleMatch)}
-                      />
-                  );
-                })}
+            {((matches && (can("boats.view") || can("customers.view"))) || showBoats) && (
+              <div className="grid gap-4 rounded-xl border border-navy-100 bg-white p-4 sm:grid-cols-2" aria-live="polite">
+                {can("boats.view") && <div>
+                  <h2 className="font-semibold text-navy-900">{t("adminModules.nav.boats")}</h2>
+                  {(boatSearch.loading || boatSearch.error) && <p className="text-sm">{boatSearch.error || t("adminNew.common.loading")}</p>}
+                  {!boatSearch.loading && !boatSearch.error && !boatSearch.data?.data.length && <p className="text-sm">{pos("noResults")}</p>}
+                  {!boatSearch.loading && !boatSearch.error && boatSearch.data?.data.map((boat) => (
+                    <button type="button" key={boat.id} disabled={basketLocked || prefillLocked} onClick={() => chooseBoat(boat)}
+                      className="block w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-sand-50 disabled:opacity-50">
+                      {boat.name} {[boat.registration_number, boat.customer?.name].filter(Boolean).map((label) => ' · ' + label)}
+                    </button>
+                  ))}
+                </div>}
+                {matches && can("customers.view") && <div>
+                  <h2 className="font-semibold text-navy-900">{t("adminModules.nav.customers")}</h2>
+                  {(customerSearch.loading || customerSearch.error) && <p className="text-sm">{customerSearch.error || t("adminNew.common.loading")}</p>}
+                  {!customerSearch.loading && !customerSearch.error && !customerSearch.data?.data.length && <p className="text-sm">{pos("noResults")}</p>}
+                  {!customerSearch.loading && !customerSearch.error && customerSearch.data?.data.map((customer) => (
+                    <button type="button" key={customer.id} disabled={basketLocked || prefillLocked} onClick={() => chooseCustomer(customer)}
+                      className="block w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-sand-50 disabled:opacity-50">
+                      {customer.name}{customer.email && ' · ' + customer.email}
+                    </button>
+                  ))}
+                </div>}
               </div>
             )}
-          </div>
 
-          {/* Most chosen */}
-          {mostChosen.length > 0 ? (
-            <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-navy-900">
-                <Star className="h-4 w-4 text-gold-500" />
-                {<TranslatedText textKey={"adminNew.kassa.mostChosen"} />}
-              </div>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {mostChosen.map((product) => (
-                  <button
-                    key={product.id}
-                    type="button"
-                    onClick={() => addProduct(product)}
-                    className="flex items-center gap-2 rounded-xl border border-navy-100 bg-sand-50/60 px-3 py-2 text-left transition hover:border-marine-200 hover:bg-white"
-                  >
-                    <Ship className="h-4 w-4 shrink-0 text-marine-500" />
-                    <div className="min-w-0">
-                      <div className="truncate text-xs font-semibold text-navy-900">
-                        {product.name}
-                      </div>
-                      <div className="text-xs text-marine-700">
-                        {formatCurrency(
-                          productPriceInclEuros(product),
-                          localeTag,
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {/* Bottom stats strip */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <StatStrip
-              icon={Star}
-              tone="gold"
-              label={t("adminNew.kassa.lastSale")}
-              value={lastSale ? formatCurrency(lastSaleEuros, localeTag) : "—"}
-              hint={lastSale?.invoice_number ?? undefined}
-              href={lastSaleHref}
-              loading={recentSales.loading}
-            />
-            <StatStrip
-              icon={Receipt}
-              tone="marine"
-              label={t("adminNew.kassa.totalToday")}
-              value={money(todayTurnover)}
-              loading={todayQuery.loading}
-            />
-            <StatStrip
-              icon={ShoppingCart}
-              tone="navy"
-              label={t("adminNew.kassa.transactionsCount")}
-              value={todayTransactions}
-              loading={todayQuery.loading}
-            />
-          </div>
-          <KassaAnalyticsDashboard
-            analytics={todayQuery.data ?? null}
-            loading={todayQuery.loading}
-            period={analyticsPeriod}
-            onPeriodChange={setAnalyticsPeriod}
-          />
-          {/* Recent sales list */}
-          <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-navy-900">
-                <Receipt className="h-4 w-4 text-marine-600" />
-                {<TranslatedText textKey={"adminNew.kassa.recentSales"} />}
-              </h3>
-              <Link
-                href={`/${locale}/admin/verkopen`}
-                className="text-xs font-semibold text-marine-700 hover:text-marine-900"
-              >
-                {<TranslatedText textKey={"adminNew.kassa.viewAllSales"} />}
-              </Link>
-            </div>
-            {recentSales.loading ? (
-              <LoadingState label={t("adminNew.common.loading")} variant="list" />
-            ) : !recentSales.data?.data?.length ? (
-              <p className="text-sm text-navy-500">
-                {recentSales.data?.emptyMessage || t("adminNew.kassa.noRecentSales")}
-              </p>
-            ) : (
-              <ul className="divide-y divide-navy-50">
-                {(recentSales.data.data).slice(0, 5).map((sale, i) => {
-                  const euros =
-                    Number(
-                      sale.total_euros ??
-                        sale.total_amount_euros ??
-                        Number(sale.total_amount_cents ?? 0) / 100,
-                    ) || 0;
-                  const href =
-                    sale.invoice_url ??
-                    sale.admin_url ??
-                    (sale.invoice_id
-                      ? `/${locale}/admin/facturen/${sale.invoice_id}`
-                      : undefined);
-                  const saleKey = sale.id ?? sale.invoice_id ?? String((sale as { sale_id?: string }).sale_id ?? i);
-                  return (
-                    <li key={saleKey} className="space-y-0.5">
-                      <div className="flex items-center justify-between py-1 text-sm">
-                        {href ? (
-                          <Link
-                            href={href}
-                            className="font-medium text-navy-800 hover:text-marine-700"
-                          >
-                            {sale.invoice_number ?? sale.customer_name ?? "—"}
-                          </Link>
-                        ) : (
-                          <span className="font-medium text-navy-800">
-                            {sale.invoice_number ?? "—"}
-                          </span>
-                        )}
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold tabular-nums text-navy-900">
-                            {formatCurrency(euros, localeTag)}
-                          </span>
-                          {sale.id ? (
-                            <button disabled={!canRefund}
-                              type="button"
-                              onClick={() => {
-                                setRefundSaleId(sale.id);
-                                setRefundReason('');
-                                setRefundMethod('pin');
-                              }}
-                              className="rounded px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-50"
-                            >
-                              {<TranslatedText textKey={"adminNew.kassa.refund"} />}
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        {/* ----------------------------- RIGHT: checkout --------------------------- */}
-        <div
-          id="cart"
-          className={cn(
-            "space-y-4 xl:sticky xl:top-24",
-            showMobileCart
-              ? "max-xl:fixed max-xl:inset-x-0 max-xl:bottom-0 max-xl:z-50 max-xl:max-h-[92vh] max-xl:overflow-y-auto max-xl:rounded-t-2xl max-xl:border-t max-xl:border-navy-100 max-xl:bg-sand-50 max-xl:p-4 max-xl:pb-6 max-xl:shadow-elev"
-              : "max-xl:hidden",
-          )}
-        >
-          {/* Cart */}
-          <div className="overflow-hidden rounded-2xl border border-navy-100/70 bg-white shadow-card">
-            <div className="flex items-center justify-between border-b border-navy-100/80 bg-gradient-to-r from-sand-50/90 to-white px-4 py-3">
-              <div className="flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4 text-marine-600" />
-                <h3 className="text-sm font-semibold text-navy-900">
-                  {<TranslatedText textKey={"adminNew.kassa.cart"} />}
-                </h3>
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-marine-500 px-1.5 text-xs font-bold text-white">
-                  {cart.length}
-                </span>
-              </div>
-            </div>
-
-            {prefillLocked ? (
-              <div className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-800">
-                {<TranslatedText textKey={"adminNew.stalling.invoiceLabels.deposit"} />} · {<TranslatedText textKey={"adminNew.stalling.toasts.kassaOpened"} />}
-              </div>
-            ) : null}
-            <div className="max-h-[340px] space-y-2 overflow-y-auto scrollbar-thin p-3">
-              {cart.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-3 py-8 text-center text-sm text-navy-500">
-                  {<TranslatedText textKey={"adminNew.kassa.emptyCartMessage"} />}
-                </div>
-              ) : (
-                cart.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 rounded-xl border border-navy-100 bg-white p-2.5"
-                  >
-                    <span
-                      className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-sand-50"
-                      style={{
-                        borderLeft: `3px solid ${item.color ?? "#1f93b8"}`,
-                      }}
-                    >
-                      {item.image_url ? (
+            <div className={cn("grid gap-4", (selectedBoat || customerId) && "xl:grid-cols-[minmax(11rem,32%)_minmax(0,1fr)]")}>
+              <div className="min-w-0">
+                {(selectedBoat || customerId) && (
+                  <div className="mb-3 space-y-3 rounded-2xl border border-navy-100 bg-white p-4">
+                    {selectedBoat && <>
+                      {selectedBoat.photo_url && (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={item.image_url}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <Ship className="h-5 w-5 text-marine-400" />
+                        <img src={selectedBoat.photo_url} alt={selectedBoat.name} className="aspect-video w-full rounded-lg object-cover" />
                       )}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-navy-900">
-                        {item.description}
+                      <div>
+                        <h2 className="break-words text-lg font-bold text-navy-900">{selectedBoat.name}</h2>
+                        <p className="text-sm text-navy-600">{selectedBoat.registration_number}</p>
                       </div>
-                      <div className="mt-1 flex items-center gap-1.5">
-                        <button
-                          onClick={() => changeQty(item.id, -1)}
-                          className="flex h-6 w-6 items-center justify-center rounded-md border border-navy-200 text-navy-600 hover:bg-sand-50"
-                          aria-label="-"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <span className="min-w-6 text-center text-sm tabular-nums">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => changeQty(item.id, 1)}
-                          className="flex h-6 w-6 items-center justify-center rounded-md border border-navy-200 text-navy-600 hover:bg-sand-50"
-                          aria-label="+"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="text-sm font-semibold text-navy-900">
-                        {money(Math.round(item.unit_price_cents * item.quantity * (100 + item.vat_rate) / 100))}
-                      </span>
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="rounded-md p-1 text-navy-400 hover:bg-sand-100 hover:text-rose-600"
-                        aria-label="delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                      <dl className="space-y-2 border-t border-navy-100 pt-3 text-sm">
+                        {([["length", selectedBoat.length_cm], ["width", selectedBoat.width_cm], ["draft", selectedBoat.draft_cm]] as const).map(([key, cm]) => cm != null && (
+                          <div key={key} className="flex flex-wrap justify-between gap-1">
+                            <dt>{pos(key)}</dt><dd className="font-medium">{formatDimension(cm)}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </>}
+                    {selectedCustomer?.name && <p className="break-words text-sm font-semibold text-navy-900">{selectedCustomer.name}</p>}
                   </div>
-                ))
-              )}
-            </div>
-
-            {note ? (
-              <div className="mx-3 mb-2 rounded-lg bg-sand-50 px-3 py-2 text-xs text-navy-600">
-                {note}
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {can("customers.view") && (
+                    <Button size="sm" variant="outline" disabled={basketLocked || prefillLocked}
+                      onClick={() => setShowCustomerPicker(true)}>{t("adminNew.kassa.selectCustomer")}</Button>
+                  )}
+                  {can("boats.view") && (
+                    <Button size="sm" variant="outline" disabled={basketLocked || prefillLocked}
+                      aria-expanded={showBoats} onClick={() => { setQuery(""); setSearch(""); setShowBoats(!showBoats); }}>
+                      {pos("chooseBoat")}
+                    </Button>
+                  )}
+                </div>
               </div>
-            ) : null}
-
-            {/* Totals */}
-            <div className="space-y-1.5 border-t border-navy-100/80 px-4 py-3 text-sm">
-              <Row
-                label={t("adminNew.kassa.totalExcl")}
-                value={money(exclCents)}
-              />
-              <Row
-                label={t("adminNew.kassa.vatPercent", { rate: primaryVatRate })}
-                value={money(vatCents)}
-              />
-              <div className="mt-1 flex items-center justify-between border-t border-navy-100 pt-2">
-                <span className="text-base font-bold text-navy-900">
-                  {<TranslatedText textKey={"adminNew.kassa.total"} />}
-                </span>
-                <span className="text-xl font-bold text-navy-900">
-                  {money(totalCents)}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex gap-2 border-t border-navy-100/80 px-3 py-3">
-              <Button
-                variant="outline"
-                size="sm"
-                fullWidth
-                leftIcon={<MessageSquarePlus className="h-4 w-4" />}
-                onClick={() => {
-                  setNoteDraft(note);
-                  setShowNoteModal(true);
-                }}
-              >
-                {<TranslatedText textKey={"adminNew.kassa.addNote"} />}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                fullWidth
-                leftIcon={<Trash2 className="h-4 w-4" />}
-                onClick={() => {
-                  setCart([]);
-                  setNote("");
-                }}
-                className="text-rose-600 hover:bg-rose-50"
-              >
-                {<TranslatedText textKey={"adminNew.kassa.clearCart"} />}
-              </Button>
+              <section aria-label={t("adminNew.kassa.products")} className="min-w-0 space-y-4">
+                {!query.trim() && <div className="flex flex-wrap gap-2">
+                  <CategoryTab active={!activeCategory} label={t("adminNew.kassa.allCategories")} icon={Warehouse} onClick={() => setActiveCategory("")} />
+                  {quickProducts.length > 0 && <CategoryTab active={activeCategory === "__quick"} label={pos("quick")} icon={Star} onClick={() => setActiveCategory("__quick")} />}
+                  {categories.map(({ label, icon }) => (
+                    <CategoryTab key={label} label={label} icon={icon} active={activeCategory === label.toLowerCase()}
+                      onClick={() => setActiveCategory(label.toLowerCase())} />
+                  ))}
+                </div>}
+                {productsQuery.loading ? <LoadingState label={t("adminNew.common.loading")} /> :
+                  productsQuery.error ? <p role="alert" className="text-rose-700">{productsQuery.error}</p> :
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {(activeCategory === "__quick" && !query.trim() ? quickProducts : visibleProducts).map((product) => {
+                      const unavailable = priceOnRequest(product);
+                      const icon = resolveLucideIcon(product.display_icon) ?? catalogIcon(product.name + " " + (product.category ?? product.group?.name ?? ""));
+                      return <CatalogTile key={product.id} title={product.name}
+                        price={unavailable ? pos("onRequest") : hasLengthPricing(product) ? pos("calculate") : formatCurrency(productPriceInclEuros(product), localeTag)}
+                        selected={cartHas(product.id)} image={product.image_url}
+                        icon={icon}
+                        disabled={unavailable || basketLocked || !canCheckout || prefillLocked}
+                        favorite={favoriteIds.has(product.id)} favoriteLabel={t("adminNew.kassa.favouriteToggle")}
+                        onFavorite={() => toggleFavorite(product.id)} onClick={() => addProduct(product)} />;
+                    })}
+                  </div>
+                }
+                {waitingForProducts && !visibleProducts.length && <LoadingState label={t("adminNew.common.loading")} />}
+                {matches && productSearch.error && <p role="alert" className="text-sm text-rose-700">{productSearch.error}</p>}
+                {!waitingForProducts && !productsQuery.loading && !productsQuery.error && !visibleProducts.length && activeCategory !== "__quick" && (
+                  <p className="rounded-xl border border-navy-100 bg-white p-4 text-sm text-navy-600">{pos("noResults")}</p>
+                )}
+                {!query.trim() && (bundlesQuery.data ?? []).some((bundle) => bundle.items?.length) && (
+                  <details className="rounded-xl border border-navy-100 bg-white p-3">
+                    <summary className="cursor-pointer font-semibold">{pos("bundles")}</summary>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(bundlesQuery.data ?? []).filter((bundle) => bundle.items?.length).map((bundle) => {
+                        const items = bundle.items ?? [];
+                        const products = items.map((item) => allProducts.find((product) => product.id === item.product_id));
+                        return <Button key={bundle.id} size="sm" variant="outline"
+                          disabled={basketLocked || prefillLocked || !canCheckout || !items.length ||
+                            products.some((product) => !product || hasLengthPricing(product) || priceOnRequest(product))}
+                          onClick={() => items.forEach((item, index) => {
+                            const product = products[index];
+                            if (product) for (let count = 0; count < (item.quantity ?? 1); count++) addProduct(product);
+                          })}>{bundle.name}</Button>;
+                      })}
+                    </div>
+                  </details>
+                )}
+              </section>
             </div>
           </div>
 
-          {/* Customer */}
-          <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-navy-900">
-              <UserPlus className="h-4 w-4 text-marine-600" />
-              {<TranslatedText textKey={"adminNew.kassa.customer"} />}
-            </h3>
-            <button
-              type="button"
-              onClick={() => setShowCustomerPicker(true)}
-              className="flex w-full items-center justify-between rounded-lg border border-navy-200 bg-white px-3 py-2 text-left text-sm transition hover:border-marine-300"
-            >
-              <span className={selectedCustomer ? "text-navy-900" : "text-navy-400"}>
-                {selectedCustomer
-                  ? `${selectedCustomer.name}${selectedCustomer.email ? ` · ${selectedCustomer.email}` : ""}`
-                  : <TranslatedText textKey={"adminNew.kassa.selectCustomer"} />}
-              </span>
-              <ScanLine className="h-4 w-4 rotate-90 text-navy-300" />
-            </button>
-            <div className="mt-2 flex items-center gap-3 text-sm">
-              <button disabled={!canWriteCustomer}
-                type="button"
-                onClick={() => setShowCustomerModal(true)}
-                className="inline-flex items-center gap-1.5 font-semibold text-marine-700 hover:text-marine-900"
-              >
-                <Plus className="h-4 w-4" />
-                {<TranslatedText textKey={"adminNew.kassa.newCustomer"} />}
-              </button>
-              {customerId ? (
-                <Link
-                  href={adminRecordHref(locale, 'klanten', selectedCustomer ?? { id: customerId })}
-                  className="inline-flex items-center gap-1 font-semibold text-navy-500 hover:text-navy-800"
-                >
-                  {<TranslatedText textKey={"adminNew.kassa.viewCustomer"} />}
-                </Link>
-              ) : (
-                <Link
-                  href={`/${locale}/admin/klanten`}
-                  className="inline-flex items-center gap-1 font-semibold text-navy-500 hover:text-navy-800"
-                >
-                  {<TranslatedText textKey={"adminNew.kassa.allCustomers"} />}
-                </Link>
-              )}
+          <aside id="cart" className={cn("min-w-0 rounded-2xl border border-navy-100 bg-white shadow-sm lg:sticky lg:top-24",
+            showMobileCart ? "max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-50 max-lg:max-h-[85dvh] max-lg:overflow-y-auto" : "max-lg:hidden")}>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-navy-100 p-4">
+              <h2 className="text-lg font-bold text-navy-900">{t("adminNew.kassa.cart")} ({cart.length})</h2>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" disabled={!cart.length || basketLocked} onClick={() => setShowClear(true)}>
+                  {t("adminNew.kassa.clearCart")}
+                </Button>
+                <Button size="sm" variant="ghost" className="lg:hidden" onClick={() => setShowMobileCart(false)}>{t("adminNew.common.close")}</Button>
+              </div>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-navy-400">
-              {<TranslatedText textKey={"adminNew.kassa.customerHint"} />}
-            </p>
-          </div>
-
-          {/* Payment methods */}
-          <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
-            <h3 className="mb-3 text-sm font-semibold text-navy-900">
-              {<TranslatedText textKey={"adminNew.kassa.paymentMethodTitle"} />}
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {PAYMENT_BUTTONS.map((btn) => {
-                const Icon = btn.icon;
-                const active = !btn.action && paymentMethod === btn.method;
-                return (
-                  <button
-                    key={btn.method}
-                    type="button"
-                    onClick={() =>
-                      btn.action ? btn.action() : setPaymentMethod(btn.method)
-                    }
-                    className={cn(
-                      "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition",
-                      active ? btn.activeClasses : `bg-white ${btn.classes}`,
+            {selectedCustomer?.name && <p className="px-4 pt-3 text-sm text-navy-600">{selectedCustomer.name}</p>}
+            <div className="divide-y divide-navy-100 px-4 lg:max-h-[38vh] lg:overflow-y-auto">
+              {!cart.length && <p className="py-6 text-sm text-navy-500">{t("adminNew.kassa.emptyCartMessage")}</p>}
+              {cart.map((item, index) => {
+                const line = reviewed?.lines[index];
+                return <div key={item.id} className="flex items-start justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-semibold">{item.description}</p>
+                    {item.boatName && <p className="break-words text-xs text-navy-600">{item.boatName}{item.metadata?.date ? ' · ' + String(item.metadata.date) : ''}</p>}
+                    {item.metadata?.length_cm != null && !basketLocked && (
+                      <button type="button" className="py-1 text-xs font-semibold text-marine-700 underline" onClick={() => {
+                        const product = item.product;
+                        if (!product) return;
+                        setEditingLine(item);
+                        setServiceProduct(product);
+                        setServiceLength(String(item.metadata?.length_cm ?? ""));
+                        setServiceDate(String(item.metadata?.date ?? ""));
+                      }}>{t("adminNew.common.edit")}</button>
                     )}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    {btn.label}
-                  </button>
-                );
+                    {line && <p className="text-xs text-navy-600">{money(line.unit_price)} · {t("adminNew.kassa.vatPercent", { rate: line.vat_rate })}</p>}
+                    {!prefillLocked && <div className="mt-1 flex items-center gap-2 text-sm">
+                      <button type="button" disabled={basketLocked} className="h-8 w-8 rounded-lg border border-navy-100" aria-label={pos("decrease")} onClick={() => changeQty(item.id, -1)}>−</button>
+                      <span>{item.quantity}</span>
+                      <button type="button" disabled={basketLocked} className="h-8 w-8 rounded-lg border border-navy-100" aria-label={pos("increase")} onClick={() => changeQty(item.id, 1)}>+</button>
+                    </div>}
+                  </div>
+                  <div className="shrink-0 text-right text-sm font-semibold">
+                    <p>{line ? money(line.line_total) : "—"}</p>
+                    <button type="button" disabled={basketLocked} className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-lg hover:bg-sand-50"
+                      aria-label={pos("remove") + ' ' + item.description} onClick={() => { removeItem(item.id); if (prefillLocked) setPrefillLocked(false); }}>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>;
               })}
             </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                fullWidth
-                leftIcon={<QrCode className="h-4 w-4" />}
-                onClick={() => setCheckoutConfirm("qr")}
-                disabled={!canCheckout || (checkout.loading)}
-              >
-                {<TranslatedText textKey={"adminNew.kassa.qrPayment"} />}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                fullWidth
-                onClick={handleQuote}
-                disabled={!canCheckout || (quote.loading)}
-              >
-                {quote.loading
-                  ? <TranslatedText textKey={"adminNew.kassa.calculating"} />
-                  : <TranslatedText textKey={"adminNew.kassa.createQuote"} />}
-              </Button>
-            </div>
-          </div>
-
-          {/* Trello #79: total adjustment / discount with mandatory reason */}
-          <div className="rounded-2xl border border-navy-100/70 bg-white p-4 shadow-card">
-            <label className="flex items-center gap-2 text-sm font-semibold text-navy-900">
-              <input
-                type="checkbox"
-                checked={adjustEnabled}
-                onChange={(e) => {
-                  setAdjustEnabled(e.target.checked);
-                  if (e.target.checked && adjustedTotal === "") {
-                    setAdjustedTotal((totalCents / 100).toFixed(2));
-                  }
-                }}
-                className="h-4 w-4 rounded border-navy-300"
-              />
-              {<TranslatedText textKey={"adminNew.kassa.adjustTotal"} />}
-            </label>
-            {adjustEnabled ? (
-              <div className="mt-3 space-y-2">
-                <Input
-                  label={t("adminNew.kassa.adjustNewTotal")}
-                  inputMode="decimal"
-                  value={adjustedTotal}
-                  onChange={(e) => setAdjustedTotal(e.target.value)}
-                />
-                <Input
-                  label={t("adminNew.kassa.adjustReason")}
-                  value={adjustmentReason}
-                  onChange={(e) => setAdjustmentReason(e.target.value)}
-                  placeholder={t("adminNew.kassa.adjustReasonPlaceholder")}
-                  required
-                />
+            <div className="space-y-2 border-t border-navy-100 p-4 text-sm" aria-live="polite">
+              {note && <p className="break-words rounded bg-sand-50 p-2">{note}</p>}
+              {basketContextChanged && <p role="alert" className="text-amber-800">{pos("contextChanged")}</p>}
+              {cart.length > 0 && basketQuote.error && <p role="alert" className="text-rose-700">{basketQuote.error}</p>}
+              {cart.length > 0 && !reviewed && !basketQuote.error && <p>{pos("pricing")}</p>}
+              {reviewed && <>
+                <Row label={t("adminNew.kassa.totalExcl")} value={money(reviewed.subtotal_cents)} />
+                <details>
+                  <summary className="cursor-pointer">{pos("vat")} · {money(reviewed.vat_amount_cents)}</summary>
+                  {vatRates.map((rate) => (
+                    <Row key={rate} label={t("adminNew.kassa.vatPercent", { rate })}
+                      value={money(reviewed.lines.reduce((sum, line) => sum + (line.vat_rate === rate ? line.vat_amount : 0), 0))} />
+                  ))}
+                </details>
+              </>}
+              <div className="flex justify-between gap-2 border-t border-navy-100 pt-2 text-base font-bold">
+                <span>{pos("totalIncl")}</span><span>{basketAmount}</span>
               </div>
-            ) : null}
-          </div>
-
-          {/* Checkout */}
-          <button
-            type="button"
-            onClick={() =>
-              setCheckoutConfirm(
-                paymentMethod === "invoice" ? "on_account" : "standard",
-              )
-            }
-            disabled={!canCheckout || (checkout.loading || cart.length === 0)}
-            className="flex w-full items-center justify-between rounded-2xl bg-marine-600 px-5 py-4 text-left font-semibold text-white shadow-elev transition hover:bg-marine-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <span className="flex items-center gap-2 text-base">
-              <CreditCard className="h-5 w-5" />
-              {checkout.loading
-                ? <TranslatedText textKey={"adminNew.kassa.processing"} />
-                : <TranslatedText textKey={"adminNew.kassa.payNow"} />}
-            </span>
-            <span className="text-xl font-bold">{money(totalCents)}</span>
-          </button>
+              <Button variant="gold" fullWidth className="min-h-12" leftIcon={<CreditCard className="h-5 w-5" />}
+                disabled={!checkoutReady} onClick={() => setShowPayment(true)}>
+                {t("adminNew.kassa.payNow")} {basketAmount}
+              </Button>
+              {qrAttempt && !qrPending && <Button variant="outline" fullWidth disabled={qrStarting} onClick={() => void startQrSession()}>{pos("resumeQr")}</Button>}
+              {qrPending && <Button variant="outline" fullWidth onClick={() => setShowQrModal(true)}>{pos("resumeQr")}</Button>}
+              {submitted && <Button variant="outline" fullWidth disabled={checkout.loading} onClick={() => void handleCheckout()}>
+                {pos("retry")}
+              </Button>}
+              <Button variant="ghost" size="sm" disabled={!cart.length || basketLocked}
+                onClick={() => { setNoteDraft(note); setShowNoteModal(true); }}>{t("adminNew.kassa.addNote")}</Button>
+            </div>
+          </aside>
         </div>
-        </AdminSplitLayout>
       </AdminContent>
 
-      {/* Mobile cart bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-100/80 bg-white/95 p-3 shadow-elev backdrop-blur-sm xl:hidden">
-        <button
-          type="button"
-          onClick={() => setShowMobileCart((v) => !v)}
-          className="flex w-full items-center justify-between rounded-xl bg-marine-600 px-4 py-3.5 text-left font-semibold text-white"
-        >
-          <span className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
-            {<TranslatedText textKey={"adminNew.kassa.cart"} />} ({cart.length})
-          </span>
-          <span className="text-lg font-bold tabular-nums">{money(totalCents)}</span>
-        </button>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-100 bg-white p-3 lg:hidden">
+        <Button variant="gold" fullWidth aria-expanded={showMobileCart} aria-controls="cart" onClick={() => setShowMobileCart(true)}>
+          {t("adminNew.kassa.cart")} ({cart.length}) · {basketAmount}
+        </Button>
       </div>
 
+      <AdminConfirmModal open={showClear} onClose={() => setShowClear(false)}
+        title={t("adminNew.kassa.clearCart")} message={pos("confirmClear")}
+        confirmLabel={t("adminNew.kassa.clearCart")} cancelLabel={t("adminNew.common.cancel")}
+        onConfirm={() => { if (!basketLocked) { setCart([]); setNote(""); setPrefillLocked(false); setAdjustEnabled(false); setAdjustedTotal(""); setAdjustmentReason(""); } setShowClear(false); }} />
+
+      <Modal open={!!serviceProduct} onClose={() => { setServiceProduct(null); setEditingLine(null); }} size="sm">
+        <form onSubmit={(event) => {
+          event.preventDefault();
+          const length = Number(serviceLength);
+          if (!serviceProduct || !Number.isInteger(length) || length < 1 || length > 99999) return;
+          addProduct(serviceProduct, { length, date: serviceDate });
+          setServiceProduct(null);
+        }}>
+          <AdminModalHeader title={serviceProduct?.name ?? ""} subtitle={editingLine ? editingLine.boatName : selectedBoat?.name} />
+          <AdminModalBody>
+            <Input label={pos("length") + " (cm)"} type="number" min={1} max={99999} step={1} required
+              value={serviceLength} readOnly={editingLine ? !!editingLine.metadata?.boat_id : !!selectedBoat?.length_cm} onChange={(event) => setServiceLength(event.target.value)} />
+            <Input label={pos("serviceDate")} type="date" value={serviceDate} onChange={(event) => setServiceDate(event.target.value)} />
+          </AdminModalBody>
+          <AdminModalFooter><Button type="submit" variant="gold">{pos("calculate")}</Button></AdminModalFooter>
+        </form>
+      </Modal>
+
+      <Modal open={showPayment && !checkoutConfirm && !showSplitModal && !showQrModal} onClose={() => { setShowPayment(false); setAdjustEnabled(false); }} size="md">
+        <AdminModalHeader title={t("adminNew.kassa.paymentMethodTitle")} subtitle={basketAmount} />
+        <AdminModalBody>
+          <div className="grid grid-cols-2 gap-2">
+            {PAYMENT_BUTTONS.filter(({ method }) => method === "downpayment"
+              ? ["cash", "pin", "ideal", "creditcard", "bancontact", "banktransfer"].some(methodEnabled) : methodEnabled(method))
+              .map(({ method, label, icon: Icon, action }) => (
+              <Button key={method} variant={paymentMethod === method ? "gold" : "outline"}
+                aria-pressed={action ? undefined : paymentMethod === method} disabled={!checkoutReady}
+                leftIcon={<Icon className="h-4 w-4" />} onClick={action ?? (() => setPaymentMethod(method))}>{label}</Button>
+            ))}
+            {enabledPayments?.online.includes("ideal") && <Button variant="outline" disabled={!checkoutReady || adjustEnabled} onClick={() => setCheckoutConfirm("qr")}>{t("adminNew.kassa.qrPayment")}</Button>}
+            <Button variant="outline" disabled={!checkoutReady || quote.loading} onClick={handleQuote}>{pos("reviewQuote")}</Button>
+          </div>
+          {(paymentMethods.loading || paymentMethods.error) && <p role="status">{paymentMethods.error || t("adminNew.common.loading")}</p>}
+          {paymentMethod === "pin" && methodEnabled("pin") && <p className="text-sm text-navy-600">{pos("manualPin")}</p>}
+          {paymentMethod === "creditcard" && <p className="text-sm text-navy-600">{pos("onlineCard")}</p>}
+          {paymentMethod === "invoice" && !customerId && <p role="alert" className="text-sm text-amber-800">{pos("invoiceCustomer")}</p>}
+          {canAdjust && <details>
+            <summary className="cursor-pointer text-sm font-semibold">{t("adminNew.kassa.adjustTotal")}</summary>
+            <label className="my-2 flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={adjustEnabled} onChange={(event) => {
+                setAdjustEnabled(event.target.checked);
+                if (event.target.checked && !adjustedTotal) setAdjustedTotal((totalCents / 100).toFixed(2));
+              }} />
+              {t("adminNew.kassa.adjustTotal")}
+            </label>
+            {adjustEnabled && <>
+              <Input label={t("adminNew.kassa.adjustNewTotal")} type="number" min="0" step="0.01"
+                value={adjustedTotal} onChange={(event) => setAdjustedTotal(event.target.value)} />
+              <Input label={t("adminNew.kassa.adjustReason")} value={adjustmentReason}
+                onChange={(event) => setAdjustmentReason(event.target.value)} />
+            </>}
+          </details>}
+        </AdminModalBody>
+        <AdminModalFooter>
+          <Button variant="gold" disabled={!checkoutReady || !methodEnabled(paymentMethod) || (paymentMethod === "invoice" && !customerId) ||
+            (adjustEnabled && (!adjustmentReason.trim() || !adjustedTotal || Number(adjustedTotal) < 0 || Number(adjustedTotal) * 100 > totalCents))}
+            onClick={() => setCheckoutConfirm(paymentMethod === "invoice" ? "on_account" : "standard")}>
+            {t("adminNew.kassa.checkout")}
+          </Button>
+        </AdminModalFooter>
+      </Modal>
+
+      <Modal open={!!sale} onClose={nextSale} size="sm">
+        <AdminModalHeader title={sale?.payment_status === "paid" ? pos("paid") : pos("recorded")} subtitle={sale?.invoice_number} />
+        <AdminModalBody>
+          <p className="text-lg font-semibold">{money(sale?.total_amount_cents ?? 0)}</p>
+          {sale?.invoice_id && <div className="flex flex-wrap gap-2">
+            {can("invoice.view") && (receiptUrl
+              ? <a href={receiptUrl} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 underline">{pos("openReceipt")}</a>
+              : <Button size="sm" variant="outline" disabled={receiptBusy} onClick={() => void updateReceipt("print")}>{pos("printReceipt")}</Button>)}
+            {customerId && can("invoice.send") && <Button size="sm" variant="outline" disabled={receiptBusy}
+              onClick={() => void updateReceipt("email")}>{pos("emailReceipt")}</Button>}
+          </div>}
+          {receiptStatus && <p role="status" className="text-sm text-navy-600">{receiptStatus}</p>}
+          {paymentHref && sale?.payment_status !== "paid" && (
+            <a href={paymentHref} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 underline">{pos("openPayment")}</a>
+          )}
+        </AdminModalBody>
+        <AdminModalFooter>
+          {invoiceHref && can("invoice.view") && <Link href={invoiceHref} className="font-semibold text-marine-700 underline">{pos("viewInvoice")}</Link>}
+          <Button variant="gold" onClick={nextSale}>{pos("newSale")}</Button>
+        </AdminModalFooter>
+      </Modal>
       {/* Note modal */}
       <Modal
         open={showNoteModal}
@@ -2202,7 +1431,7 @@ export default function KassaPage() {
           <Button variant="ghost" onClick={() => setShowSplitModal(false)}>
             {<TranslatedText textKey={"adminNew.common.cancel"} />}
           </Button>
-          <Button disabled={!canCheckout} variant="gold" onClick={() => setCheckoutConfirm("split")}>
+          <Button disabled={!checkoutReady || !splitPayments.some((row) => Number(row.amount) > 0) || splitPayments.some((row) => Number(row.amount) > 0 && !methodEnabled(row.method))} variant="gold" onClick={() => setCheckoutConfirm("split")}>
             {<TranslatedText textKey={"adminNew.kassa.checkout"} />}
           </Button>
         </AdminModalFooter>
@@ -2254,16 +1483,6 @@ export default function KassaPage() {
                 : totalCents > 0
                   ? money(totalCents)
                   : null;
-            const regenerate = async () => {
-              if (!qrSession?.session_id) return;
-              try {
-                const next = await kassaService.regenerateQrSession(qrSession.session_id);
-                setQrSession(next);
-                setQrCopied(false);
-              } catch (err) {
-                push({ tone: "error", title: t("adminNew.common.operationFailed"), message: getApiErrorMessage(err) });
-              }
-            };
             const sendEmail = async (email?: string) => {
               if (!qrSession?.session_id) return;
               try {
@@ -2330,16 +1549,7 @@ export default function KassaPage() {
                     <div className="mt-3 text-lg font-semibold text-navy-900">
                       {expired ? <TranslatedText textKey={"adminNew.kassa.qrExpired"} /> : <TranslatedText textKey={"adminNew.kassa.qrFailed"} />}
                     </div>
-                    <div className="mt-4 flex justify-center">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
-                        onClick={() => void regenerate()}
-                      >
-                        {<TranslatedText textKey={"adminNew.kassa.qrRegenerate"} />}
-                      </Button>
-                    </div>
+
                   </div>
                 ) : payUrl ? (
                   <>
@@ -2450,44 +1660,15 @@ export default function KassaPage() {
                       >
                         {<TranslatedText textKey={"adminNew.kassa.qrSendEmail"} />}
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
-                        onClick={() => void regenerate()}
-                      >
-                        {<TranslatedText textKey={"adminNew.kassa.qrRegenerate"} />}
-                      </Button>
+
                     </div>
                   </>
-                ) : null}
+                ) : <p role="status" className="py-4 text-sm text-navy-600">{t("adminNew.kassa.qrCreating")}</p>}
               </div>
             );
           })()}
         </AdminModalBody>
         <AdminModalFooter>
-          {qrSession &&
-          ![
-            "paid",
-            "completed",
-            "expired",
-            "failed",
-            "canceled",
-            "cancelled",
-          ].includes((qrSession.status ?? "").toLowerCase()) ? (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                if (qrSession?.session_id)
-                  void kassaService
-                    .cancelQrSession(qrSession.session_id)
-                    .catch(() => {});
-                closeQrModal();
-              }}
-            >
-              {<TranslatedText textKey={"adminNew.kassa.qrCancel"} />}
-            </Button>
-          ) : null}
           <Button variant="gold" onClick={closeQrModal}>
             {<TranslatedText textKey={"adminNew.common.close"} />}
           </Button>
@@ -2665,7 +1846,7 @@ export default function KassaPage() {
                       }
                     : undefined,
                 });
-                setCustomerId(updated.id);
+                chooseCustomer(updated);
                 setEditingCustomerId(null);
                 void pickerResultsQuery.refetch();
                 push({ tone: "success", title: t("adminNew.kassa.toasts.customerCreated") });
@@ -2732,7 +1913,7 @@ export default function KassaPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setCustomerId("");
+                    chooseCustomer(null);
                     setShowCustomerPicker(false);
                     setCustomerPickerSearch("");
                   }}
@@ -2749,7 +1930,7 @@ export default function KassaPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setCustomerId(c.id);
+                        chooseCustomer(c);
                         setShowCustomerPicker(false);
                         setCustomerPickerSearch("");
                       }}
@@ -2825,7 +2006,7 @@ export default function KassaPage() {
         }}
         title={t("adminNew.kassa.confirmCheckoutTitle")}
         message={t("adminNew.kassa.confirmCheckout", {
-          total: money(totalCents),
+          total: money(checkoutConfirm !== "qr" && adjustEnabled ? Math.round(Number(adjustedTotal) * 100) : totalCents),
           method: checkoutConfirm ? checkoutMethodLabel(checkoutConfirm) : "",
         })}
         confirmLabel={t("adminNew.kassa.checkout")}
@@ -2835,76 +2016,6 @@ export default function KassaPage() {
         loading={checkout.loading}
       />
 
-      <Modal open={canRefund && !!refundSaleId} onClose={() => setRefundSaleId(null)} size="sm">
-        <form
-          className="p-6"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!canRefund || !refundSaleId) return;
-            void (async () => {
-              try {
-                await refundSaleMutation.mutate({ id: refundSaleId, reason: refundReason, method: refundMethod });
-                push({ tone: 'success', title: t('adminNew.kassa.refundSuccess') });
-                setRefundSaleId(null);
-                void recentSales.refetch();
-              } catch (err) {
-                push({ tone: 'error', title: getApiErrorMessage(err) ?? t('adminNew.common.operationFailed') });
-              }
-            })();
-          }}
-        >
-          <h2 className="text-lg font-semibold text-navy-900">{<TranslatedText textKey={'adminNew.kassa.refundTitle'} />}</h2>
-          <p className="mt-1 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.kassa.refundSubtitle'} />}</p>
-          <div className="mt-4 space-y-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {<TranslatedText textKey={'adminNew.kassa.refundMethod'} />}
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['pin', 'cash', 'banktransfer'] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setRefundMethod(m)}
-                    className={
-                      'rounded-lg border px-3 py-2 text-sm font-medium transition ' +
-                      (refundMethod === m
-                        ? 'border-marine-500 bg-marine-50 text-marine-800'
-                        : 'border-navy-200 bg-white text-navy-700 hover:bg-sand-50')
-                    }
-                  >
-                    {tEnum(t, 'adminNew.invoiceDetail.paymentMethods', m)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {<TranslatedText textKey={'adminNew.kassa.refundReason'} />}
-              </label>
-              <textarea
-                className="input-base min-h-24"
-                value={refundReason}
-                onChange={(e) => setRefundReason(e.target.value)}
-                placeholder={t('adminNew.kassa.refundReasonPlaceholder')}
-                required
-              />
-            </div>
-          </div>
-          <div className="mt-5 flex justify-end gap-2">
-            <Button disabled={!canRefund} type="button" variant="ghost" onClick={() => setRefundSaleId(null)}>
-              {<TranslatedText textKey={'adminNew.common.cancel'} />}
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={refundSaleMutation.loading || !refundReason.trim()}
-            >
-              {<TranslatedText textKey={'adminNew.kassa.refundConfirm'} />}
-            </Button>
-          </div>
-        </form>
-      </Modal>
     </>
   );
 }
@@ -2916,13 +2027,11 @@ export default function KassaPage() {
 function CategoryTab({
   label,
   icon: Icon,
-  accent,
   active,
   onClick,
 }: {
   label: string;
   icon: LucideIcon;
-  accent: string;
   active: boolean;
   onClick: () => void;
 }) {
@@ -2930,185 +2039,49 @@ function CategoryTab({
     <button
       type="button"
       onClick={onClick}
-      style={
-        active ? { backgroundColor: accent, borderColor: accent } : undefined
-      }
+      aria-pressed={active}
       className={cn(
         "inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition",
         active
-          ? "text-white shadow-sm"
+          ? "border-navy-900 bg-navy-900 text-white"
           : "border-navy-100 bg-white text-navy-700 hover:border-navy-200 hover:bg-sand-50",
       )}
     >
-      <Icon
-        className="h-4 w-4"
-        style={active ? undefined : { color: accent }}
-      />
+      <Icon aria-hidden="true" className="h-4 w-4" />
       {label}
     </button>
   );
 }
 
-function CatalogTile({
-  title,
-  subtitle,
-  meta,
-  price,
-  accent,
-  selected,
-  highlighted,
-  image,
-  displayIcon,
-  displayColor,
-  actions,
-  onClick,
-}: {
+function CatalogTile({ title, price, icon: Icon, image, selected, disabled, favorite, favoriteLabel, onFavorite, onClick }: {
   title: string;
-  subtitle?: string;
-  meta?: string;
   price: string;
-  accent: string;
-  selected?: boolean;
-  highlighted?: boolean;
+  icon: LucideIcon;
   image?: string | null;
-  displayIcon?: string | null;
-  displayColor?: string | null;
-  actions?: React.ReactNode;
+  selected: boolean;
+  disabled: boolean;
+  favorite: boolean;
+  favoriteLabel: string;
+  onFavorite: () => void;
   onClick: () => void;
 }) {
-  const tileAccent = displayColor || accent;
   return (
-    <div
-      className={cn(
-        "group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-shadow hover:shadow-md",
-        selected
-          ? "border-marine-500 ring-1 ring-marine-500"
-          : cn(
-              "border-navy-100 hover:border-marine-300",
-              highlighted && "ring-2 ring-marine-300",
-            ),
-      )}
-    >
-      <span className="h-1 w-full shrink-0" style={{ backgroundColor: tileAccent }} />
-      <button
-        type="button"
-        onClick={onClick}
-        className={cn(
-          "flex min-h-[11rem] w-full min-w-0 flex-1 flex-col gap-3 p-3 text-left sm:min-h-[12rem] sm:p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-marine-500",
-          selected ? "bg-marine-50/70" : "hover:bg-sand-50/50",
-        )}
-      >
-        <div className="flex w-full items-center justify-between gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-sand-50 ring-1 ring-navy-100">
-            {image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={image} alt="" className="h-full w-full object-cover" />
-            ) : displayIcon ? (
-              <span className="text-2xl" style={{ color: tileAccent }}>{displayIcon}</span>
-            ) : (
-              <Ship className="h-6 w-6" style={{ color: tileAccent }} />
-            )}
-          </span>
-          <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full", selected ? "bg-marine-600 text-white" : "bg-marine-50 text-marine-600")}>
-            {selected ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          </span>
-        </div>
-        <div className="min-w-0">
-          <div
-            className="break-words text-sm font-semibold leading-snug text-navy-900 [overflow-wrap:anywhere]"
-          >
-            {title}
-          </div>
-          {subtitle ? (
-            <div
-              className="mt-1 break-words text-xs text-navy-500 [overflow-wrap:anywhere]"
-            >
-              {subtitle}
-            </div>
-          ) : null}
-        </div>
-        <div className="mt-auto w-full min-w-0 border-t border-navy-100/70 pt-3">
-          {meta ? (
-            <div
-              className="mb-1 break-words text-xs text-navy-500 [overflow-wrap:anywhere]"
-            >
-              {meta}
-            </div>
-          ) : null}
-          <div
-            className="break-words text-xl font-bold tabular-nums tracking-tight text-marine-800 [overflow-wrap:anywhere]"
-          >
-            {price}
-          </div>
-        </div>
+    <div className={cn("relative min-w-0 rounded-2xl border bg-white", selected ? "border-gold-500 bg-gold-50" : "border-navy-100")}>
+      <button type="button" disabled={disabled} onClick={onClick}
+        className="flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-2xl px-2 pb-3 pt-7 text-center hover:bg-sand-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-marine-600 disabled:opacity-60">
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt="" className="h-10 w-14 rounded-md object-cover" />
+        ) : <Icon aria-hidden="true" className="h-9 w-9 text-navy-800" />}
+        <span className="break-words text-sm font-bold text-navy-900 [overflow-wrap:anywhere]">{title}</span>
+        <span className="text-xs font-semibold text-navy-600">{price}</span>
       </button>
-      {actions ? <div className="flex items-center gap-1 border-t border-navy-100/70 px-3 py-1">{actions}</div> : null}
+      <button type="button" aria-label={favoriteLabel + ' · ' + title} aria-pressed={favorite}
+        onClick={onFavorite} className="absolute right-1 top-1 grid h-8 w-8 place-items-center rounded-lg hover:bg-gold-50">
+        <Star className={cn("h-4 w-4", favorite ? "fill-gold-400 text-gold-600" : "text-navy-400")} />
+      </button>
     </div>
   );
-}
-
-function StatStrip({
-  icon: Icon,
-  tone,
-  label,
-  value,
-  hint,
-  loading,
-  href,
-}: {
-  icon: LucideIcon;
-  tone: "navy" | "marine" | "gold";
-  label: string;
-  value: React.ReactNode;
-  hint?: string;
-  loading?: boolean;
-  href?: string;
-}) {
-  const tones: Record<string, string> = {
-    navy: "bg-navy-50 text-navy-700",
-    marine: "bg-marine-50 text-marine-700",
-    gold: "bg-gold-50 text-gold-700",
-  };
-  const inner = (
-    <>
-      <span
-        className={cn(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-          tones[tone],
-        )}
-      >
-        <Icon className="h-4 w-4" />
-      </span>
-      <div className="min-w-0">
-        <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
-          {label}
-        </div>
-        {loading ? (
-          <span className="mt-1 block h-5 w-16 animate-pulse rounded bg-navy-100" />
-        ) : (
-          <div className="truncate text-lg font-semibold text-navy-900">
-            {value}
-          </div>
-        )}
-        {hint && !loading ? (
-          <div className="truncate text-xs text-navy-400">{hint}</div>
-        ) : null}
-      </div>
-    </>
-  );
-  const base =
-    "flex items-center gap-3 rounded-2xl border border-navy-100/70 bg-white px-4 py-3 shadow-card";
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className={cn(base, "transition hover:border-navy-200 hover:shadow-md")}
-      >
-        {inner}
-      </Link>
-    );
-  }
-  return <div className={base}>{inner}</div>;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -3116,28 +2089,6 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between">
       <span className="text-navy-500">{label}</span>
       <span className="font-medium text-navy-800">{value}</span>
-    </div>
-  );
-}
-
-function QuickRow({
-  icon: Icon,
-  label,
-  children,
-}: {
-  icon: LucideIcon;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-navy-400">
-        <Icon className="h-3.5 w-3.5" />
-        {label}
-      </span>
-      <div className="flex flex-1 gap-1.5 overflow-x-auto pb-0.5">
-        {children}
-      </div>
     </div>
   );
 }

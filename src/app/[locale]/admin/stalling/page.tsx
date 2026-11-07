@@ -6,6 +6,7 @@ import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
+import { WerfcanvasLink } from '@/components/admin/WerfcanvasLink';
 import { Copy, Eye, FilePlus2, Link2, Mail, MapPin, Pencil, Plus, Receipt, Ship, ShieldCheck, Warehouse, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { adminRecordHref } from '@/config/admin-routes';
@@ -494,9 +495,12 @@ export default function StallingPage() {
         title={t('adminNew.stalling.title')}
         subtitle={t('adminNew.stalling.subtitle')}
         rightSlot={
-          <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-            {<TranslatedText textKey={'adminNew.stalling.new'} />}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <WerfcanvasLink locale={locale} className="rounded-lg border border-current px-3 py-2 text-sm font-medium">Werfcanvas</WerfcanvasLink>
+            <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+              {<TranslatedText textKey={'adminNew.stalling.new'} />}
+            </Button>
+          </div>
         }
         stats={[
           {

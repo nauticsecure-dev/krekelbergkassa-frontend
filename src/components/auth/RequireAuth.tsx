@@ -33,7 +33,7 @@ function AuthLoading() {
 }
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { user, loading, isDemo, isPortalSession } = useAuth();
+  const { user, loading, isDemo, isPortalSession, refresh, invalidateSession } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const { locale, t } = useIntl();
@@ -63,7 +63,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     !superAdminDenied &&
     !canAccessAdminRoute(user.role, pathname, user.permissions);
 
-  const resolvingAuth = loading || (sessionHint && !user);
+  const resolvingAuth = loading;
 
   // Role-based redirect — no full-page login fallback, no dashboard flash loop.
   React.useEffect(() => {
@@ -80,7 +80,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (resolvingAuth || !protectedRoute) return;
     if (!needsLogin) return;
-    router.replace(loginPath(locale, pathname));
+    router.replace(loginPath(locale, pathname + window.location.search));
   }, [resolvingAuth, needsLogin, protectedRoute, router, locale, pathname]);
 
   if (superAdminDenied) {
@@ -101,6 +101,18 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (protectedRoute && resolvingAuth) {
     return <AuthLoading />;
+  }
+
+  if (protectedRoute && sessionHint && !user) {
+    return (
+      <div className="app-canvas flex min-h-screen flex-col items-center justify-center gap-4 p-6">
+        <ErrorState message={t('login.requestFailed')} onRetry={() => void refresh()} />
+        <button className="text-sm font-semibold underline" onClick={() => {
+          invalidateSession();
+          window.location.replace(loginPath(locale, pathname + window.location.search));
+        }}><TranslatedText textKey="login.title" /></button>
+      </div>
+    );
   }
 
   if (!loading && needsLogin) {

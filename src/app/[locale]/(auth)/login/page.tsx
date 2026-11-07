@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useIntl } from "@/i18n/IntlProvider";
 import { Button } from "@/components/ui/Button";
+import { customerReturnTo, isSafeReturnTo } from "@/lib/auth-routes";
 import { useAuth, MfaRequiredError } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/ToastProvider";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -29,11 +30,13 @@ function LoginPageContent() {
   const { t, locale } = useIntl();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, verifyMfa, requestCustomerMagicLink, verifyCustomerMagicLink } =
+  const { signIn, signInCustomer, verifyMfa, requestCustomerMagicLink } =
     useAuth();
   const { push } = useToast();
 
   const role: LoginRole = coerceLoginRole(searchParams.get("role"));
+  const [passwordless, setPasswordless] = React.useState(false);
+  const magicMode = role === "customer" && passwordless;
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [remember, setRemember] = React.useState(true);
@@ -44,44 +47,28 @@ function LoginPageContent() {
   const [mfaToken, setMfaToken] = React.useState<string | null>(null);
   const [mfaCode, setMfaCode] = React.useState("");
 
-  const dest =
-    searchParams.get('returnTo')?.startsWith('/') && !searchParams.get('returnTo')?.includes('://')
-      ? searchParams.get('returnTo')!
-      : `/${locale}${ROLE_REDIRECTS[role]}`;
-
-  React.useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("token")
-        : null;
-    if (!token) return;
-    setLoading(true);
-    void verifyCustomerMagicLink(token)
-      .then(() => {
-        push({
-          tone: "success",
-          title: t("adminNew.auth.portalSessionActive"),
-          message: t("adminNew.auth.portalSessionActiveMsg"),
-        });
-        router.push(`/${locale}/feed`);
-      })
-      .catch((err) => {
-        setError(getApiErrorMessage(err, t("common.loginFailed")));
-      })
-      .finally(() => setLoading(false));
-  }, [verifyCustomerMagicLink, push, router, locale, t]);
+  const returnTo = searchParams.get('returnTo');
+  const destination = role === 'customer'
+    ? customerReturnTo(returnTo)
+    : (isSafeReturnTo(returnTo) ? returnTo : undefined);
+  const dest = destination ?? `/${locale}${ROLE_REDIRECTS[role]}`;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      if (role === "customer") {
-        await requestCustomerMagicLink(email, locale);
+      if (magicMode) {
+        await requestCustomerMagicLink(email, locale, destination);
         push({
           tone: "success",
           title: t("adminNew.auth.magicSentTitle"),
         });
+        return;
+      }
+      if (role === "customer") {
+        await signInCustomer(email, password, remember);
+        window.location.replace(dest);
         return;
       }
       await signIn(email, password, remember);
@@ -193,7 +180,7 @@ function LoginPageContent() {
           />
         </Field>
 
-        {role !== "customer" ? (
+        {!magicMode ? (
           <Field
             id="password"
             label={t("login.password")}
@@ -226,7 +213,7 @@ function LoginPageContent() {
           </Field>
         ) : null}
 
-        {role !== "customer" ? (
+        {!magicMode ? (
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-navy-700">
               <input
@@ -237,16 +224,16 @@ function LoginPageContent() {
               />
               {<TranslatedText textKey={"login.remember"} />}
             </label>
-            <Link
+            {role === "customer" && <Link
               href={`/${locale}/forgot-password`}
               className="font-semibold text-marine-700 hover:text-marine-800"
             >
               {<TranslatedText textKey={"login.forgot"} />}
-            </Link>
+            </Link>}
           </div>
         ) : (
           <div className="rounded-lg border border-marine-200 bg-marine-50 px-3 py-2 text-xs text-marine-800">
-            {<TranslatedText textKey={"adminNew.auth.magicInfo"} />}
+            {<TranslatedText textKey={"login.emailLinkHelp"} />}
           </div>
         )}
 
@@ -266,10 +253,17 @@ function LoginPageContent() {
         >
           {loading
             ? <TranslatedText textKey={"common.loggingIn"} />
-            : role === "customer"
-              ? <TranslatedText textKey={"adminNew.auth.sendMagicLink"} />
+            : magicMode
+              ? <TranslatedText textKey={"login.emailLink"} />
               : `${t("login.submit")}`}
         </Button>
+
+        {role === "customer" && (
+          <button type="button" disabled={loading} className="w-full text-sm font-semibold text-marine-700"
+            onClick={() => { setPasswordless(!passwordless); setError(null); }}>
+            <TranslatedText textKey={magicMode ? "login.withPassword" : "login.withoutPassword"} />
+          </button>
+        )}
 
         <p className="pt-2 text-center text-sm text-navy-500">
           {<TranslatedText textKey={"login.noAccount"} />}{" "}

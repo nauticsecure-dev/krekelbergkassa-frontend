@@ -3,8 +3,94 @@ import fs from 'node:fs';
 
 const nl = JSON.parse(fs.readFileSync('src/i18n/messages/nl.json', 'utf8'));
 const origin = process.env.JOURNEY_TEST_URL ?? 'http://localhost:3030';
+
+test('T01 T02 T03 T09 T10 T22 customer magic-link navigation and recovery', async ({ page, context }, testInfo) => {
+  const appointmentId = '00000000-0000-4000-8000-000000000025';
+  const appointment = '/nl/dashboard/afspraken?appointment=' + appointmentId;
+  const customer = { id: 'customer-fixture', name: 'Portal fixture', email: 'portal@example.test', preferred_locale: 'nl-NL' };
+  const verified: string[] = [];
+  await page.route('**/api/**', async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/verify-magic-link')) {
+      const { token } = route.request().postDataJSON();
+      verified.push(token);
+      if (token === 'network-failure') return route.abort('failed');
+      return route.fulfill({ json: { portal_token: 'portal-fixture', customer } });
+    }
+    if (path.endsWith('/portal/me')) {
+      expect(route.request().headers().authorization).toBe('Bearer portal-fixture');
+      return route.fulfill({ json: { customer } });
+    }
+    if (path.endsWith('/portal/appointments')) {
+      const filter = new URL(route.request().url()).searchParams.get('appointment');
+      return route.fulfill({ json: { appointments: filter === appointmentId ? [{
+        id: appointmentId, appointment_date: '2026-11-24', start_time: '09:00',
+        end_time: '09:30', service_codes: ['crane-out'], duration_minutes: 30,
+        status: 'pending_manual_review', customer_notes: 'Requested appointment fixture',
+      }] : [], total: filter === appointmentId ? 1 : 0 } });
+    }
+    return route.fulfill({ json: { data: [], items: [], blocks: [], settings: {} } });
+  });
+
+  await page.goto('/nl/portal/verify?token=first-link&returnTo=' + encodeURIComponent(appointment));
+  await expect(page).toHaveURL(origin + appointment);
+  await expect(page.getByRole('heading', { name: nl.adminNew.portal.appointments.title }).first()).toBeVisible();
+  await expect(page.getByText('Requested appointment fixture')).toBeVisible();
+  expect(verified).toEqual(['first-link']);
+  expect((await context.cookies()).find((cookie) => cookie.name === 'krek_portal_session')?.value).toBe('portal-fixture');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: nl.adminNew.portal.appointments.title }).first()).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('portal-after-magic-link.png') });
+
+  await page.goto('/nl/portal/verify?token=second-link&returnTo=' + encodeURIComponent('//example.test/evil'));
+  await expect(page).toHaveURL(/\/nl\/feed$/);
+  await page.goto('/nl/portal/verify?token=network-failure');
+  await expect(page.getByRole('heading', { name: nl.verify.failed })).toBeVisible();
+  await expect(page.getByRole('link', { name: nl.verify.backToLogin })).toBeVisible();
+});
 type Event = { event: string; event_id?: string; request_id?: string; session_id?: string; anonymous_session_id?: string;
   http_status?: number; metadata?: Record<string, unknown> };
+
+test('T04 T14 T15 T18 T20 customer password login and shared private photo on mobile', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const customer = { id: 'photo-customer', name: 'Portal fixture', email: 'portal@example.test', preferred_locale: 'nl-NL' };
+  const photoPath = '/api/v1/portal/boats/fixture-boat/photos/fixture-image';
+  const boats = [
+    { id: 'fixture-boat', name: 'Fixture Aquila', type: 'sail', photo_file_id: 'fixture-image', photo_url: photoPath },
+    { id: 'no-image', name: 'Fixture zonder foto', type: 'sail', photo_file_id: null, photo_url: null },
+  ];
+  const image = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=', 'base64');
+  let privateRequests = 0;
+  await page.route('**/api/**', async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    if (path.endsWith('/auth/customer/login')) {
+      expect(request.postDataJSON().email).toBe(customer.email);
+      return route.fulfill({ json: { portal_token: 'photo-portal-session', customer } });
+    }
+    if (path.endsWith('/portal/me')) return route.fulfill({ json: { customer } });
+    if (path.endsWith('/portal/boats')) return route.fulfill({ json: boats });
+    if (path === photoPath) {
+      expect(request.headers().authorization).toBe('Bearer photo-portal-session');
+      privateRequests += 1;
+      return route.fulfill({ body: image, contentType: 'image/png' });
+    }
+    return route.fulfill({ json: { data: [], items: [], blocks: [], settings: {} } });
+  });
+
+  const destination = '/nl/dashboard/boten';
+  await page.goto('/nl/login?returnTo=' + encodeURIComponent(destination));
+  await page.locator('#email').fill(customer.email);
+  await page.locator('#password').fill('fixture-password-2026!');
+  await page.locator('form button[type=submit]').click();
+  await expect(page).toHaveURL(new RegExp(destination + '$'));
+  await expect(page.getByRole('img', { name: 'Fixture Aquila' })).toHaveJSProperty('naturalWidth', 1);
+  await expect(page.getByRole('button', { name: /Fixture zonder foto/ }).locator('svg.lucide-ship')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('my-boats-mobile.png') });
+  await page.goto('/nl/feed');
+  await expect(page.getByRole('img', { name: 'Fixture Aquila' })).toHaveJSProperty('naturalWidth', 1);
+  expect(privateRequests).toBeGreaterThanOrEqual(2);
+});
 
 async function bookingFixture(page: Page, status = 201, options: { photosFail?: boolean; trackingFails?: boolean; networkFails?: boolean; slotsFail?: boolean; googleScript?: string } = {}) {
   const events: Event[] = [];

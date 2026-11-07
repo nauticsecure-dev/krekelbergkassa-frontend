@@ -1,5 +1,5 @@
 // Krekelberg PWA service worker
-const VERSION = 'krek-v1';
+const VERSION = 'krek-v2';
 const APP_SHELL = '/offline';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k.startsWith('krek-') && k !== VERSION).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
@@ -32,11 +32,17 @@ self.addEventListener('fetch', (event) => {
 
   // Network-first for HTML navigation, fall back to cached app shell
   if (request.mode === 'navigate') {
+    const privatePath = /^\/(?:[a-z]{2}\/)?(?:login|signup|forgot-password|portal\/verify|dashboard|feed|planning|admin)(?:\/|$)/;
+    if (privatePath.test(url.pathname) || url.searchParams.has('token')) return;
+
     event.respondWith(
       fetch(request)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(VERSION).then((cache) => cache.put(request, copy)).catch(() => null);
+          const cacheControl = res.headers.get('Cache-Control') ?? '';
+          if (res.ok && !res.redirected && !/\b(?:no-store|private)\b/i.test(cacheControl)) {
+            const copy = res.clone();
+            caches.open(VERSION).then((cache) => cache.put(request, copy)).catch(() => null);
+          }
           return res;
         })
         .catch(() => caches.match(request).then((r) => r || caches.match(APP_SHELL)))

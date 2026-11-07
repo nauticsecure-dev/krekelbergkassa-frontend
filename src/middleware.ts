@@ -101,7 +101,7 @@ export async function middleware(req: NextRequest) {
   if (isAdminPath(pathname) && !hasStaffSession) {
     const url = req.nextUrl.clone();
     applyLoginRedirect(url, locale, `${pathname}${req.nextUrl.search}`);
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(url, { headers: { 'Cache-Control': 'private, no-store' } });
   }
 
   if (isPortalPath(pathname) && !hasPortalSession && !hasStaffSession) {
@@ -111,11 +111,17 @@ export async function middleware(req: NextRequest) {
   }
 
   const hasSession = hasStaffSession || hasPortalSession;
+  const recovery = pathname.endsWith("/forgot-password") && (req.nextUrl.searchParams.has("token") || req.nextUrl.searchParams.has("setup"));
+  if (pathname.endsWith("/login") && req.nextUrl.searchParams.has("token")) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/" + locale + "/portal/verify";
+    return NextResponse.redirect(url);
+  }
 
-  if (isAuthPath(pathname) && hasSession) {
+  if (isAuthPath(pathname) && hasSession && !recovery) {
     const url = req.nextUrl.clone();
     const returnTo = url.searchParams.get('returnTo');
-    if (isSafeReturnTo(returnTo)) {
+    if (isSafeReturnTo(returnTo) && (hasStaffSession || isPortalPath(returnToParts(returnTo).pathname))) {
       const parts = returnToParts(returnTo);
       url.pathname = parts.pathname;
       url.search = parts.search;
@@ -131,8 +137,9 @@ export async function middleware(req: NextRequest) {
   // Readable admin URLs have native [id]/[slug] pages. Rewriting those URLs
   // back into this server adds a proxy hop that can time out during compilation.
   const res = NextResponse.next({ request: { headers: requestHeaders } });
-  if (isProtectedPath(pathname) || isAuthPath(pathname)) {
+  if (isProtectedPath(pathname) || isAuthPath(pathname) || pathname.endsWith('/portal/verify')) {
     res.headers.set('Cache-Control', 'no-store');
+    if (recovery || pathname.endsWith('/portal/verify')) res.headers.set('Referrer-Policy', 'no-referrer');
   }
   return res;
 }

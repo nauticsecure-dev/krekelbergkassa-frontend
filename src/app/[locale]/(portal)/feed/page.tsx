@@ -3,6 +3,7 @@
 import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
+import { BoatPhoto } from '@/components/portal/BoatPhoto';
 import * as React from 'react';
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
@@ -129,7 +130,8 @@ export default function FeedPage() {
   const groupedTimeline = groupFeedTimeline(filteredTimeline);
   const nextAppt = nextUpcomingAppointment(feed.data?.appointments.data ?? []);
   const nextContract = nearestContractEnd(feed.data?.contracts ?? []);
-  const primaryBoat = feed.data?.boats?.[0];
+  const featuredBoatId = nextAppt?.boat_id ?? feed.data?.appointments.data[0]?.boat_id;
+  const primaryBoat = feed.data?.boats.find((boat) => boat.id === featuredBoatId) ?? feed.data?.boats[0];
   const unreadTimeline = feed.data?.timeline.pagination.unread_count ?? 0;
   const unreadNotifications = feed.data?.notifications.unread_count ?? 0;
 
@@ -395,6 +397,7 @@ export default function FeedPage() {
                       <FeedTimelineItem
                         key={item.id}
                         item={item}
+                        boat={feed.data?.boats.find((boat) => boat.id === item.boat?.id)}
                         locale={locale}
                         dateLocale={dateLocale}
                         t={t}
@@ -463,17 +466,9 @@ export default function FeedPage() {
             </Card>
 
             <Card className="surface-float-hover overflow-hidden p-0">
-              {primaryBoat?.photo_url ? (
-                <div
-                  className="aspect-[4/2] bg-cover bg-center"
-                  style={{ backgroundImage: `url(${primaryBoat.photo_url})` }}
-                />
-              ) : (
-                <div
-                  className="aspect-[4/2] bg-cover bg-center"
-                  style={{ backgroundImage: 'url(/img/krek/verkoop-schip.webp)' }}
-                />
-              )}
+              <div className="aspect-[4/2]">
+                <BoatPhoto boat={primaryBoat} thumbnail />
+              </div>
               <div className="p-5">
                 {primaryBoat ? (
                   <>
@@ -549,11 +544,13 @@ export default function FeedPage() {
 
 function FeedTimelineItem({
   item,
+  boat,
   locale,
   dateLocale,
   t,
 }: {
   item: PortalTimelineItem;
+  boat?: PortalBoat;
   locale: string;
   dateLocale: string;
   t: (key: string) => string;
@@ -572,16 +569,21 @@ function FeedTimelineItem({
   const isHigh = (item.priority === 'high' || item.priority === 'urgent') && !!cta.cta_url;
 
   return (
-    <TimelineItem
-      icon={Icon}
-      tone={isHigh ? 'gold' : presentation.tone}
-      title={isHigh ? `${t('feed.actionRequired')} · ${title}` : title}
-      meta={meta}
-      cta={cta.cta_label ?? t('feed.openItem')}
-      href={cta.cta_url ?? presentation.href}
-      priority={presentation.priority}
-      unread={unread}
-    />
+    <div>
+      {boat && (
+        <div className="aspect-[4/2] overflow-hidden rounded-t-xl"><BoatPhoto boat={boat} thumbnail /></div>
+      )}
+      <TimelineItem
+        icon={Icon}
+        tone={isHigh ? 'gold' : presentation.tone}
+        title={isHigh ? `${t('feed.actionRequired')} · ${title}` : title}
+        meta={meta}
+        cta={cta.cta_label ?? t('feed.openItem')}
+        href={cta.cta_url ?? presentation.href}
+        priority={presentation.priority}
+        unread={unread}
+      />
+    </div>
   );
 }
 

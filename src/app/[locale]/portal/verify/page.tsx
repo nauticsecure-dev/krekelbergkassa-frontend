@@ -4,19 +4,21 @@
 import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
-import { authService } from '@/lib/services';
-import { auth } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
+import { customerReturnTo, loginPath } from '@/lib/auth-routes';
+import { Logo } from '@/components/ui/Logo';
 import { useIntl } from '@/i18n/IntlProvider';
 
 type State = 'verifying' | 'success' | 'error';
 
 function VerifyInner() {
-  const { locale, t } = useIntl();
-  const router = useRouter();
+  const { locale } = useIntl();
+  const { verifyCustomerMagicLink } = useAuth();
   const params = useSearchParams();
   const token = params.get('token');
+  const returnTo = customerReturnTo(params.get('returnTo'));
   const [state, setState] = React.useState<State>('verifying');
   const ranRef = React.useRef(false);
 
@@ -29,25 +31,19 @@ function VerifyInner() {
     }
     void (async () => {
       try {
-        const res = await authService.verifyMagicLink(token);
-        if (!res.portal_token) throw new Error('no token');
-        auth.setPortalSession(res.portal_token);
+        await verifyCustomerMagicLink(token);
         setState('success');
-        const dest = res.customer?.preferred_locale?.startsWith('en')
-          ? 'en'
-          : res.customer?.preferred_locale?.startsWith('de')
-            ? 'de'
-            : locale;
-        setTimeout(() => router.replace(`/${dest}/feed`), 600);
+        window.location.replace(returnTo ?? `/${locale}/feed`);
       } catch {
         setState('error');
       }
     })();
-  }, [token, locale, router]);
+  }, [token, locale, returnTo, verifyCustomerMagicLink]);
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
       <div className="w-full max-w-sm rounded-2xl border border-navy-100 bg-white p-8 text-center shadow-card">
+        <Logo editable={false} />
         {state === 'verifying' ? (
           <>
             <Loader2 className="mx-auto h-10 w-10 animate-spin text-marine-500" />
@@ -68,7 +64,7 @@ function VerifyInner() {
             <h1 className="mt-4 text-lg font-semibold text-navy-900">{<TranslatedText textKey={'verify.failed'} />}</h1>
             <p className="mt-1 text-sm text-navy-500">{<TranslatedText textKey={'verify.failedHint'} />}</p>
             <Link
-              href={`/${locale}/login`}
+              href={loginPath(locale, returnTo)}
               className="mt-5 inline-flex rounded-lg bg-navy-900 px-4 py-2 text-sm font-semibold text-white hover:bg-navy-800"
             >
               {<TranslatedText textKey={'verify.backToLogin'} />}

@@ -14,6 +14,8 @@ import {
   Ship,
   Warehouse,
 } from 'lucide-react';
+import { BoatPhoto } from '@/components/portal/BoatPhoto';
+import type { PortalBoat } from '@/lib/api-types';
 import { PortalPageHeader } from '@/components/portal/PortalShell';
 import {
   PortalContent,
@@ -110,6 +112,7 @@ export default function PortalBoatDossierPage() {
       />
 
       <PortalContent>
+        {Boolean(data.boat) && <div className="aspect-[16/7] overflow-hidden rounded-xl"><BoatPhoto boat={data.boat as PortalBoat} /></div>}
         {dossier.loading ? <LoadingState label={t('adminNew.common.loading')} variant="cards" /> : null}
         {!dossier.loading && dossier.error ? (
           <ErrorState message={dossier.error} onRetry={() => void dossier.refetch()} />

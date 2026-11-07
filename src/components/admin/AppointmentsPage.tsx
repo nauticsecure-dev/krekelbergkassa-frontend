@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { appointmentsService, workOrdersService, serviceCatalogService } from '@/lib/services';
+import { useAuth } from '@/lib/auth-context';
 import { usePermission } from '@/lib/permissions';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
@@ -187,14 +188,18 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
   const rows = React.useMemo(() => appointments.data?.data ?? [], [appointments.data?.data]);
   const events = React.useMemo(() => rows.map((row) => appointmentToEvent(row, canManage)), [rows, canManage]);
   const sourceId = searchParams.get('appointment_id');
-  const sourceAppointment = useQuery(['source-appointment', sourceId], () => sourceId ? appointmentsService.get(sourceId) : Promise.resolve(null));
+  const decision = selectedId === sourceId ? searchParams.get('decision') : null;
   React.useEffect(() => {
-    if (sourceAppointment.data) setSelectedId(sourceAppointment.data.id);
-  }, [sourceAppointment.data]);
-  const selected = rows.find((row) => row.id === selectedId) ?? (sourceAppointment.data?.id === selectedId ? sourceAppointment.data : null);
+    if (sourceId) setSelectedId(sourceId);
+  }, [sourceId]);
+  const appointmentDetail = useQuery(['appointment-detail', selectedId], () => selectedId ? appointmentsService.get(selectedId) : Promise.resolve(null));
+  const selected = appointmentDetail.data?.id === selectedId
+    ? appointmentDetail.data
+    : rows.find((row) => row.id === selectedId) ?? null;
   const workOrderRows = (workOrders.data?.data ?? []) as Array<Record<string, unknown>>;
 
   const confirm = useMutation(appointmentsService.confirm);
+  const reject = useMutation(({ id, reason }: { id: string; reason: string }) => appointmentsService.reject(id, reason));
   const cancel = useMutation((id: string) =>
     appointmentsService.cancel(id, t('adminNew.appointments.cancelReason'))
   );
@@ -212,7 +217,7 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
 
   const refresh = async () => {
     // A failed refresh must not revert a move already accepted by the server.
-    await Promise.allSettled([appointments.refetch(), stats.refetch(), ...(sourceId ? [sourceAppointment.refetch()] : [])]);
+    await Promise.allSettled([appointments.refetch(), stats.refetch(), ...(selectedId ? [appointmentDetail.refetch()] : [])]);
   };
 
   const onConfirm = async (id: string) => {
@@ -221,6 +226,24 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
       await confirm.mutate(id);
       await refresh();
       push({ tone: 'success', title: t('adminNew.appointments.toasts.confirmed') });
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
+  const onRetryEmail = async (id: string, emailId: number) => {
+    try {
+      await appointmentsService.retryEmail(id, emailId);
+      await refresh();
+    } catch (err) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+    }
+  };
+
+  const onReject = async (id: string, reason: string) => {
+    try {
+      await reject.mutate({ id, reason });
+      await refresh();
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
     }
@@ -492,6 +515,10 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
 
       <AppointmentDetailModal
         appointment={selected}
+        decision={decision}
+        deciding={confirm.loading || reject.loading}
+        onReject={onReject}
+        onRetryEmail={onRetryEmail}
         dateLocale={dateLocale}
         onClose={() => setSelectedId(null)}
         onConfirm={onConfirm}
@@ -521,6 +548,10 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
 
 function AppointmentDetailModal({
   appointment,
+  decision,
+  deciding,
+  onReject,
+  onRetryEmail,
   dateLocale,
   onClose,
   onConfirm,
@@ -528,6 +559,10 @@ function AppointmentDetailModal({
   onCancel,
 }: {
   appointment: Appointment | null;
+  decision: string | null;
+  deciding: boolean;
+  onReject: (id: string, reason: string) => void;
+  onRetryEmail: (id: string, emailId: number) => void;
   dateLocale: string;
   onClose: () => void;
   onConfirm: (id: string) => void;
@@ -536,9 +571,13 @@ function AppointmentDetailModal({
 }) {
   const { t } = useIntl();
   const { can } = usePermission();
+  const { user } = useAuth();
+  const [reason, setReason] = React.useState('');
+  React.useEffect(() => setReason(''), [appointment?.id]);
+  const isSuperAdmin = user?.role === 'super_admin';
   const isPending = appointment ? ['pending_manual_review', 'requested'].includes(appointment.status) : false;
   const nextStep = appointment?.next_status ?? null;
-  const canCancel = appointment ? !['completed', 'cancelled', 'no_show'].includes(appointment.status) : false;
+  const canCancel = appointment ? !['completed', 'cancelled', 'no_show', 'rejected'].includes(appointment.status) : false;
 
   return (
     <Modal open={!!appointment} onClose={onClose} size="md" className="p-6">
@@ -577,9 +616,35 @@ function AppointmentDetailModal({
               </div>
             ) : null}
           </dl>
+          {appointment.photo_ids?.filter((photo): photo is string => typeof photo === 'string' && /^https?:\/\//i.test(photo)).map((photo, index) => (
+            <a key={photo} className="mt-2 block text-sm underline" href={photo} target="_blank" rel="noreferrer">Foto {index + 1}</a>
+          ))}
+          {appointment.notification_deliveries?.map((delivery) => (
+            <p key={delivery.id} className={delivery.status === 'failed' ? 'text-sm text-red-700' : 'text-sm text-navy-600'}>
+              {delivery.type} · {delivery.status} · {delivery.attempts}
+              {delivery.sent_at ? ` · ${formatDate(delivery.sent_at, dateLocale)}` : null}
+              {isSuperAdmin && delivery.status === 'failed' ? (
+                <Button size="sm" variant="ghost" onClick={() => onRetryEmail(appointment.id, delivery.id)}>Opnieuw proberen</Button>
+              ) : null}
+            </p>
+          ))}
+          {appointment.invoice ? (
+            <p className="mt-3 text-sm text-navy-600">
+              Factuur: {appointment.invoice.status}
+              {appointment.invoice.payments?.map((payment) => (
+                <span key={payment.id} className="block">{payment.status} · € {(payment.amount / 100).toFixed(2)} · {payment.provider_payment_id}</span>
+              ))}
+            </p>
+          ) : null}
+          {isPending && isSuperAdmin && decision !== 'approve' ? (
+            <label className="mt-4 block text-sm">
+              Reden voor afwijzing (optioneel)
+              <input className="mt-1 block w-full rounded border p-2" value={reason} maxLength={255} onChange={(event) => setReason(event.target.value)} />
+            </label>
+          ) : null}
           <div className="mt-6 flex flex-wrap justify-end gap-2">
-            {isPending && can('planning.manage') ? (
-              <Button size="sm" variant="secondary" leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />} onClick={() => onConfirm(appointment.id)}>
+            {isPending && decision !== 'reject' && can('planning.manage') && (!appointment.public_request || isSuperAdmin) ? (
+              <Button size="sm" variant="secondary" leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />} disabled={deciding} onClick={() => onConfirm(appointment.id)}>
                 {<TranslatedText textKey={'adminNew.appointments.confirm'} />}
               </Button>
             ) : nextStep && !isPending && can('planning.write') ? (
@@ -587,7 +652,12 @@ function AppointmentDetailModal({
                 {nextStep.replace(/_/g, ' ')}
               </Button>
             ) : null}
-            {canCancel && can('planning.manage') ? (
+            {isPending && isSuperAdmin && decision !== 'approve' ? (
+              <Button size="sm" variant="ghost" disabled={deciding} onClick={() => onReject(appointment.id, reason)}>
+                NEE — Afwijzen
+              </Button>
+            ) : null}
+            {canCancel && !decision && can('planning.manage') ? (
               <Button size="sm" variant="ghost" leftIcon={<XCircle className="h-3.5 w-3.5" />} onClick={() => onCancel(appointment.id)}>
                 {<TranslatedText textKey={'adminNew.appointments.cancel'} />}
               </Button>

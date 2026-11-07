@@ -5,6 +5,7 @@ import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
+import { WerfcanvasLink } from '@/components/admin/WerfcanvasLink';
 import { CheckCircle2, ClipboardList } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { adminRecordHref } from '@/config/admin-routes';
@@ -151,7 +152,9 @@ export default function TakenPage() {
                 </Badge>
               </AdminTableCell>
               <AdminTableCell className="text-right">
-                {!isDone ? (
+                {r.entity_type === 'yard_move' ? (
+                  <WerfcanvasLink locale={locale} moves className="text-sm font-semibold text-marine-700">Werfcanvas</WerfcanvasLink>
+                ) : !isDone ? (
                   <Button
                     variant="ghost"
                     size="sm"

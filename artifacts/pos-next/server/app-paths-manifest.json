@@ -1,0 +1,4 @@
+{
+  "/[locale]/admin/kassa/analytics/page": "app/[locale]/admin/kassa/analytics/page.js",
+  "/[locale]/admin/kassa/page": "app/[locale]/admin/kassa/page.js"
+}

@@ -306,6 +306,19 @@ function ContactForm({
   const [subjectKey, setSubjectKey] = React.useState("");
   const [message, setMessage] = React.useState("");
 
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const codes = params.get("services")?.split(",") ?? [];
+    const allowed = ["kranen", "afspuiten", "weekje-op-wal", "winterstalling"];
+    if (!codes.length || codes.length > 2 || !codes.every((code) => allowed.includes(code))) return;
+    const length = params.get("length_cm") ?? "";
+    const serviceNames = codes.map((code) => t("yardPricing." + code)).join(" + ");
+    const lengthLine = /^[1-9]\d{0,3}$/.test(length)
+      ? "\n" + t("servicePage.length") + " " + (Number(length) / 100).toLocaleString(localeTag) + " " + t("yardPricing.unit")
+      : "";
+    setMessage((previous) => previous || serviceNames + lengthLine);
+  }, [localeTag, t]);
+
   const submission = React.useRef<{ payload: string; id: string } | null>(null);
 
   const canSubmit = Boolean(subjectKey) && status !== "sending";

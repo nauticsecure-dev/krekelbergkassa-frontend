@@ -27,7 +27,8 @@ import { portalService } from '@/lib/services';
 import { useQuery } from '@/lib/hooks/useAsync';
 import type { PortalBoat } from '@/lib/api-types';
 import { useIntl } from '@/i18n/IntlProvider';
-import { cn } from '@/lib/cn';
+import { BoatPhoto } from '@/components/portal/BoatPhoto';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function PortalBoatsPage() {
   const { t, locale } = useIntl();
@@ -35,6 +36,22 @@ export default function PortalBoatsPage() {
 
   const boats = useQuery([], () => portalService.boats());
   const items = boats.data ?? [];
+  const [uploading, setUploading] = React.useState(false);
+  const [photoError, setPhotoError] = React.useState<string>();
+
+  async function replacePhoto(boat: PortalBoat, file: File) {
+    setUploading(true);
+    setPhotoError(undefined);
+    try {
+      const updated = await portalService.replaceBoatPhoto(boat.id, file);
+      setSelected((current) => current?.id === boat.id ? updated : current);
+      await boats.refetch();
+    } catch (error) {
+      setPhotoError(getApiErrorMessage(error, t('login.requestFailed')));
+    } finally {
+      setUploading(false);
+    }
+  }
 
   return (
     <>
@@ -109,19 +126,11 @@ export default function PortalBoatsPage() {
               <button
                 key={boat.id}
                 type="button"
-                onClick={() => setSelected(boat)}
+                onClick={() => { setPhotoError(undefined); setSelected(boat); }}
                 className="group overflow-hidden rounded-xl2 border border-navy-100 bg-white text-left shadow-card transition hover:-translate-y-0.5 hover:border-navy-200 hover:shadow-elev"
               >
-                <div
-                  className={cn(
-                    'relative aspect-[16/10] bg-gradient-to-br from-navy-900 to-marine-800',
-                    boat.photo_url && 'bg-cover bg-center'
-                  )}
-                  style={boat.photo_url ? { backgroundImage: `url(${boat.photo_url})` } : undefined}
-                >
-                  {!boat.photo_url ? (
-                    <Ship className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 text-white/30" />
-                  ) : null}
+                <div className="relative aspect-[16/10]">
+                  <BoatPhoto boat={boat} thumbnail />
                   <div className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-transparent to-transparent" />
                   <div className="absolute bottom-3 left-3 right-3">
                     <Badge tone="gold" className="mb-2">
@@ -156,12 +165,19 @@ export default function PortalBoatsPage() {
               subtitle={selected.registration_number || t('adminNew.portal.boats.noRegistration')}
             />
             <PortalModalBody>
-              {selected.photo_url ? (
-                <div
-                  className="aspect-[16/7] rounded-xl bg-cover bg-center"
-                  style={{ backgroundImage: `url(${selected.photo_url})` }}
-                />
-              ) : null}
+              <div className="aspect-[16/7] overflow-hidden rounded-xl">
+                <BoatPhoto boat={selected} />
+              </div>
+              <label className="my-4 block text-sm font-semibold">
+                <TranslatedText textKey="login.boatPhoto" />
+                <input className="mt-2 block w-full" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                  disabled={uploading} onChange={(event) => {
+                    const file = event.currentTarget.files?.[0];
+                    event.currentTarget.value = "";
+                    if (file) void replacePhoto(selected, file);
+                  }} />
+              </label>
+              {photoError && <p role="alert" className="text-sm text-rose-700">{photoError}</p>}
               <PortalDetailGrid
                 items={[
                   {

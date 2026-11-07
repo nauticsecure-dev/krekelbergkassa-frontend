@@ -2,6 +2,8 @@
 
 
 import { TranslatedText } from '@/components/cms/TranslatedText';
+import { BoatPhoto } from '@/components/portal/BoatPhoto';
+import { useSearchParams } from 'next/navigation';
 import * as React from 'react';
 import Link from 'next/link';
 import {
@@ -59,6 +61,10 @@ function isPast(a: Appointment): boolean {
 }
 
 export default function PortalAppointmentsPage() {
+  return <React.Suspense><PortalAppointments /></React.Suspense>;
+}
+
+function PortalAppointments() {
   const { t, locale } = useIntl();
   const { push } = useToast();
   const dateLocale = intlLocale(locale);
@@ -74,12 +80,23 @@ export default function PortalAppointmentsPage() {
   const [prefTime, setPrefTime] = React.useState('');
   const [reschedReason, setReschedReason] = React.useState('');
 
-  const appointments = useQuery([statusFilter], () =>
+  const requestedId = useSearchParams().get('appointment') ?? undefined;
+  const appointments = useQuery([statusFilter, requestedId], () =>
     portalService.appointments({
       status: statusFilter || undefined,
+      appointment: requestedId,
       per_page: 50,
     })
   );
+
+  const openedRequest = React.useRef<string>();
+  React.useEffect(() => {
+    const requested = appointments.data?.data.find((item) => item.id === requestedId);
+    if (requested && openedRequest.current !== requested.id) {
+      openedRequest.current = requested.id;
+      setSelected(requested);
+    }
+  }, [requestedId, appointments.data]);
 
   const cancelMutation = useMutation((id: string, reason?: string) =>
     portalService.cancelAppointment(id, reason)
@@ -349,6 +366,9 @@ export default function PortalAppointmentsPage() {
               subtitle={`${selected.start_time} – ${selected.end_time}`}
             />
             <PortalModalBody>
+              {selected.boat && (
+                <div className="aspect-[16/7] overflow-hidden rounded-xl"><BoatPhoto boat={selected.boat} /></div>
+              )}
               <div className="flex flex-wrap items-center gap-2">
                 <AppointmentStatusBadge status={selected.status} statusGeneric={selected.status_generic} />
                 {selected.approval_type ? (
@@ -383,6 +403,11 @@ export default function PortalAppointmentsPage() {
                   },
                 ]}
               />
+              {selected.payment_status && selected.payment_status !== 'draft' ? (
+                <Link className="text-sm font-medium underline" href={`/${locale}/dashboard/facturen`}>
+                  <TranslatedText textKey="adminNew.portal.appointments.invoiceLink" fallbackText="Bekijk uw factuur en betaalstatus" />
+                </Link>
+              ) : null}
               {selected.customer_notes ? (
                 <div className="rounded-xl border border-navy-100 bg-sand-50/60 p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-navy-400">

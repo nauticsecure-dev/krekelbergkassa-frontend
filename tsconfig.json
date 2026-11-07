@@ -49,7 +49,8 @@
     ".next-cms-media/types/**/*.ts",
     ".next-cms-media-3062/types/**/*.ts",
     ".next-certification/types/**/*.ts",
-    ".next-qa-20261102/types/**/*.ts"
+    ".next-qa-20261102/types/**/*.ts",
+    "artifacts/pos-next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

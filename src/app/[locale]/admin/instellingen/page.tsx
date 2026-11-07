@@ -4,6 +4,7 @@
 import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
 import * as React from 'react';
+import { useAuth } from '@/lib/auth-context';
 import {
   AlertTriangle,
   Building2,
@@ -161,11 +162,14 @@ export default function SettingsPage() {
     payment_instructions: '',
   });
 
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'super_admin';
   const [paymentsForm, setPaymentsForm] = React.useState({
     provider: 'mollie',
     test_mode: true,
     pos_methods: [] as string[],
     online_methods: [] as string[],
+    crane_mode: 'optional' as 'none' | 'optional' | 'required',
   });
 
   const [localeForm, setLocaleForm] = React.useState({
@@ -206,6 +210,7 @@ export default function SettingsPage() {
       test_mode: Boolean(s.payments.test_mode),
       pos_methods: s.payments.pos_methods || [],
       online_methods: s.payments.online_methods || [],
+      crane_mode: s.payments.crane_mode ?? 'optional',
     });
     setLocaleForm({
       default_locale: s.locales.default_locale || 'nl-NL',
@@ -633,6 +638,25 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  {isSuperAdmin ? (
+                    <label className="block text-sm font-semibold">
+                      <TranslatedText textKey="settingsHub.cranePaymentMode" fallbackText="Online betaling voor kraanafspraak" />
+                      <select
+                        className="mt-1 block w-full rounded border p-2"
+                        value={paymentsForm.crane_mode}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          if (value === 'none' || value === 'optional' || value === 'required') {
+                            setPaymentsForm((current) => ({ ...current, crane_mode: value }));
+                          }
+                        }}
+                      >
+                        <option value="none">Geen online betaling</option>
+                        <option value="optional">Optioneel na goedkeuring</option>
+                        <option value="required">Verplicht na goedkeuring</option>
+                      </select>
+                    </label>
+                  ) : null}
                   <fieldset className="rounded-lg border border-navy-100 p-4">
                     <legend className="px-1 text-sm font-semibold">{<TranslatedText textKey={'settingsHub.online_methods'} />}</legend>
                     <p className="mb-2 text-xs text-navy-500">{<TranslatedText textKey={'settingsHub.payments.onlineHint'} />}</p>
@@ -739,6 +763,7 @@ export default function SettingsPage() {
                               : {}),
                             pos_methods: paymentsForm.pos_methods,
                             online_methods: paymentsForm.online_methods,
+                            ...(isSuperAdmin ? { crane_mode: paymentsForm.crane_mode } : {}),
                           }),
                         t('adminNew.settings.toasts.paymentsSaved'),
                       )

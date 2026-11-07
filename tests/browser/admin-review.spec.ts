@@ -158,10 +158,21 @@ test('populated kassa POS, analytics charts and address grids stay inside the vi
     active: true,
     is_favorite: true,
   };
+  const services = ['Kranen uit het water', 'Romp afspuiten', 'Weekje op wal', 'Winterstalling', 'Zomerstalling', 'Onderhoud']
+    .map((name, index) => ({
+      ...product, id: 'service-' + index, code: 'SERVICE-' + index, name,
+      category: index < 3 ? 'Werfdiensten' : index < 5 ? 'Stalling' : 'Onderhoud',
+      price_excl_vat: 0, price_incl_vat: 0, pricing_type: 'length_range',
+    }));
   await page.route('**/api/v1/products**', (route) => {
     if (route.request().method() !== 'GET') return route.fulfill({ status: 201, json: {} });
-    return route.fulfill({ json: { data: [product], meta: { total: 1, current_page: 1, last_page: 1, per_page: 200 } } });
+    return route.fulfill({ json: { data: [...services, product], meta: { total: 7, current_page: 1, last_page: 1 } } });
   });
+  await page.route('**/api/v1/boats?**', (route) => route.fulfill({
+    json: { data: [{ id: 'boat-1', name: 'Bavaria 37', customer_id: 'customer-1',
+      length_cm: 1135, width_cm: 380, draft_cm: 190, registration_number: 'BAV-037',
+      customer: { id: 'customer-1', name: 'Hans Müller' } }] },
+  }));
   await page.route('**/api/v1/kassa/analytics**', (route) => route.fulfill({
     json: {
       totals: { turnover_cents: 1284500, transaction_count: 42, avg_ticket_cents: 30583, refund_count: 2 },
@@ -192,21 +203,42 @@ test('populated kassa POS, analytics charts and address grids stay inside the vi
     },
   }));
 
+  await page.route('**/api/v1/kassa/quote', (route) => {
+    const items = route.request().postDataJSON().items as Array<{ metadata?: { length_cm?: number } }>;
+    if (items[0]?.metadata) expect(items[0].metadata.length_cm).toBe(1135);
+    return route.fulfill({
+      json: { subtotal_cents: 20000 * items.length, vat_amount_cents: 4200 * items.length, total_cents: 24200 * items.length,
+        lines: items.map(() => ({ unit_price: 20000, vat_rate: 21, vat_amount: 4200, line_total: 24200 })) },
+    });
+  });
+  await page.route('**/api/v1/kassa/payment-methods', (route) => route.fulfill({
+    json: { pos: ['cash', 'pin', 'invoice'], online: [] },
+  }));
   await page.goto('/nl/admin/kassa');
   await expect(page.locator('main h1')).toBeVisible();
-  await expect(page.getByText(text('nl', 'adminNew.kassa.analytics.title'), { exact: true })).toBeVisible();
-  await expect(page.getByText(/Bancontact-via-Mollie/)).toBeVisible();
-
+  await expect(page.getByText(/Bancontact-via-Mollie/)).toHaveCount(0);
+  await page.getByRole('searchbox', { name: text('nl', 'adminNew.kassa.pos.search') }).fill('BAV-037');
+  await page.getByRole('button', { name: /Bavaria 37.*BAV-037/ }).click();
+  await page.getByRole('button', { name: /Kranen uit het water.*Prijs berekenen/ }).click();
+  await expect(page.getByRole('spinbutton', { name: /Lengte/ })).toHaveValue('1135');
+  await page.getByRole('dialog').getByRole('button', { name: text('nl', 'adminNew.kassa.pos.calculate'), exact: true }).click();
+  await expect(page.locator('#cart')).toContainText(/242,00/);
   await page.locator('main').getByRole('button', { name: new RegExp(product.name) }).first().click();
-  await expect(page.getByRole('button', { name: new RegExp(text('nl', 'adminNew.kassa.payNow')) })).toBeVisible();
-  await page.getByLabel(text('nl', 'adminNew.kassa.adjustTotal')).check();
-  await page.getByLabel(text('nl', 'adminNew.kassa.adjustReason')).fill(`Loyaliteitskorting voor ${LONG} met uitgebreide toelichting`);
+  await expect(page.locator('#cart')).toContainText(/484,00/);
 
-  await page.setViewportSize({ width: 390, height: 1000 });
-  await assertNoPageOverflow(page);
-  await page.screenshot({ path: testInfo.outputPath('kassa-populated-pos-390.png'), fullPage: true });
+  for (const width of [1440, 1024, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await assertNoPageOverflow(page);
+    await page.screenshot({ path: testInfo.outputPath(`kassa-pos-${width}.png`), fullPage: true });
+  }
+  await page.getByRole('button', { name: new RegExp(text('nl', 'adminNew.kassa.cart')) }).click();
+  await page.getByRole('button', { name: new RegExp(text('nl', 'adminNew.kassa.payNow')) }).click();
+  await expect(page.getByRole('dialog')).toContainText(text('nl', 'adminNew.kassa.pos.manualPin'));
+  await page.keyboard.press('Escape');
+  await page.locator('#cart').getByRole('button', { name: text('nl', 'adminNew.common.close') }).click({ timeout: 8000 });
 
-  await page.getByRole('button', { name: text('nl', 'adminNew.kassa.newCustomer'), exact: true }).first().click();
+  await page.getByRole('button', { name: text('nl', 'adminNew.kassa.selectCustomer'), exact: true }).click();
+  await page.getByRole('button', { name: text('nl', 'adminNew.kassa.newCustomer'), exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByLabel(text('nl', 'adminNew.common.name'), { exact: false }).first().fill(LONG);
@@ -230,6 +262,8 @@ test('populated kassa POS, analytics charts and address grids stay inside the vi
   }
   await page.keyboard.press('Escape');
 
+  await page.goto('/nl/admin/kassa/analytics');
+  await expect(page.getByText(/Bancontact-via-Mollie/)).toBeVisible();
   for (const width of [1280, 1536]) {
     await page.setViewportSize({ width, height: 1000 });
     await assertNoPageOverflow(page);

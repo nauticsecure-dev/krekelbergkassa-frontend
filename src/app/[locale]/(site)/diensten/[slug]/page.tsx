@@ -19,5 +19,5 @@ export default function CatalogServicePage({ params }: { params: { slug: string 
     subtitle={service.short_description ?? service.description ?? ''}
     description={service.long_description ?? service.description ?? ''}
     features={[]} faqs={[]} heroImage={service.image_url || undefined}
-    catalogSlug={params.slug} catalogServiceCode={service.code} />;
+    catalogSlug={params.slug} catalogServiceCode={service.code} catalogServices={query.data?.services} />;
 }
