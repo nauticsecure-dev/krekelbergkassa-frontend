@@ -3124,7 +3124,7 @@
         "sessionRefreshed": "Accountgegevens vernieuwd",
         "account": "Klantaccount",
         "securityTitle": "Beveiliging",
-        "securityText": "Uw portaal gebruikt magic-link login. Elke sessie is tijdelijk en gekoppeld aan uw e-mailadres.",
+        "securityText": "Log in met een e-maillink of wachtwoord. Bij het instellen of wijzigen van uw wachtwoord worden andere sessies afgemeld.",
         "securityEmail": "Login via beveiligde magic link per e-mail",
         "securitySupport": "Hulp nodig? Bel Krekelberg voor accountvragen",
         "quickLinks": "Snelle links",

@@ -29,12 +29,17 @@ import type { PortalBoat } from '@/lib/api-types';
 import { useIntl } from '@/i18n/IntlProvider';
 import { BoatPhoto } from '@/components/portal/BoatPhoto';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { useBoatPhotoVersion } from '@/lib/hooks/useBoatPhotoVersion';
 
 export default function PortalBoatsPage() {
   const { t, locale } = useIntl();
   const [selected, setSelected] = React.useState<PortalBoat | null>(null);
 
-  const boats = useQuery([], () => portalService.boats());
+  const photoVersion = useBoatPhotoVersion();
+  const boats = useQuery([photoVersion], () => portalService.boats());
+  React.useEffect(() => {
+    setSelected(current => current ? boats.data?.find(boat => boat.id === current.id) ?? current : null);
+  }, [boats.data]);
   const items = boats.data ?? [];
   const [uploading, setUploading] = React.useState(false);
   const [photoError, setPhotoError] = React.useState<string>();
@@ -45,7 +50,6 @@ export default function PortalBoatsPage() {
     try {
       const updated = await portalService.replaceBoatPhoto(boat.id, file);
       setSelected((current) => current?.id === boat.id ? updated : current);
-      await boats.refetch();
     } catch (error) {
       setPhotoError(getApiErrorMessage(error, t('login.requestFailed')));
     } finally {

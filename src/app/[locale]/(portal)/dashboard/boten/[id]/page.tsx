@@ -15,6 +15,7 @@ import {
   Warehouse,
 } from 'lucide-react';
 import { BoatPhoto } from '@/components/portal/BoatPhoto';
+import { useBoatPhotoVersion } from '@/lib/hooks/useBoatPhotoVersion';
 import type { PortalBoat } from '@/lib/api-types';
 import { PortalPageHeader } from '@/components/portal/PortalShell';
 import {
@@ -38,7 +39,8 @@ export default function PortalBoatDossierPage() {
   const id = String(params.id);
   const dateLocale = intlLocale(locale);
 
-  const dossier = useQuery([id], () => portalService.boatDossier(id));
+  const photoVersion = useBoatPhotoVersion();
+  const dossier = useQuery([id, photoVersion], () => portalService.boatDossier(id));
   const workOrdersQuery = useQuery([id, 'work-orders'], () =>
     portalService.boatWorkOrders(id).catch(() => [] as Row[])
   );

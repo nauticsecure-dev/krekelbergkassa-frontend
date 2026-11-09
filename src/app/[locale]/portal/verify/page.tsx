@@ -31,9 +31,11 @@ function VerifyInner() {
     }
     void (async () => {
       try {
-        await verifyCustomerMagicLink(token);
+        const customer = await verifyCustomerMagicLink(token);
+        const preferredLocale = customer.locale?.slice(0, 2);
+        const destinationLocale = preferredLocale && ['nl', 'en', 'de', 'fr'].includes(preferredLocale) ? preferredLocale : locale;
         setState('success');
-        window.location.replace(returnTo ?? `/${locale}/feed`);
+        window.location.replace(returnTo ?? `/${destinationLocale}/feed`);
       } catch {
         setState('error');
       }

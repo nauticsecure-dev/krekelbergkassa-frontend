@@ -45,10 +45,12 @@ function drawCutout(canvas: HTMLCanvasElement, image: HTMLImageElement, points: 
   context.drawImage(image, -left, -top);
 }
 
-export function YardPhotoWorkflow({ path, analysis, onPublish }: {
+export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deleting = false }: {
   path: string;
   analysis: YardAnalysis;
   onPublish?: (file: File) => void;
+  onRemove?: () => void;
+  deleting?: boolean;
 }) {
   const [review, setReview] = useState(analysis);
   const [selected, setSelected] = useState(0);
@@ -128,6 +130,9 @@ export function YardPhotoWorkflow({ path, analysis, onPublish }: {
     {error && <p role="alert" className="rounded bg-red-950 p-2">{error}</p>}
     <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="min-w-0 space-y-2">
+        {onRemove && <div className="flex justify-end">
+          <button type="button" className={`${control} !text-red-300`} disabled={busy || deleting} onClick={onRemove}>Foto verwijderen</button>
+        </div>}
         <div className="max-h-[65vh] overflow-auto rounded-lg border border-slate-700 bg-slate-950">
           <div className="relative" style={{ width: zoom * 100 + '%' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}

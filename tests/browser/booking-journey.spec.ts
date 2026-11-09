@@ -133,6 +133,8 @@ async function bookingFixture(page: Page, status = 201, options: { photosFail?: 
     if (url.pathname.endsWith('/booking/slots')) return route.fulfill({ status: options.slotsFail ? 503 : 200, json: options.slotsFail
       ? { message: 'Availability fixture unavailable' } : { is_open: true, slots: ['09:00', '10:00'], duration_minutes: 30 } });
     if (url.pathname.endsWith('/booking/appointment-fixture/photos')) {
+      expect(request.postData()).toContain('name="submission_key"');
+      expect(request.postData()).toContain(String(requests[0].body.submission_key));
       photoRequests.push(url.pathname);
       return route.fulfill({ status: options.photosFail && photoRequests.length === 1 ? 500 : 200, json: { uploaded: 1 } });
     }

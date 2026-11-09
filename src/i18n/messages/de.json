@@ -2679,7 +2679,7 @@
         "sessionRefreshed": "Kontodaten aktualisiert",
         "account": "Kundenkonto",
         "securityTitle": "Sicherheit",
-        "securityText": "Ihr Portal verwendet Magic-Link-Login. Jede Sitzung ist temporär und an Ihre E-Mail-Adresse gebunden.",
+        "securityText": "Melden Sie sich per E-Mail-Link oder Passwort an. Beim Einrichten oder Ändern des Passworts werden andere Sitzungen abgemeldet.",
         "securityEmail": "Anmeldung über sicheren Magic Link per E-Mail",
         "securitySupport": "Hilfe benötigt? Rufen Sie Krekelberg für Kontofragen an",
         "quickLinks": "Schnelllinks",

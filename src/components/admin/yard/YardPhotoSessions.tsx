@@ -21,7 +21,7 @@ export function useYardPhotoCopy() {
   return (key: string) => intl.t('yardPhotos.' + key);
 }
 
-function OriginalPreview({ path, filename }: { path: string; filename: string }) {
+function OriginalPreview({ path, filename, onRemove, busy }: { path: string; filename: string; onRemove: () => void; busy: boolean }) {
   const [url, setUrl] = useState('');
   const [failed, setFailed] = useState(false);
   const t = useYardPhotoCopy();
@@ -43,10 +43,16 @@ function OriginalPreview({ path, filename }: { path: string; filename: string })
   }, [path]);
 
   if (failed) return <p role="alert">{t('error')}</p>;
-  return url ? <div className="max-h-[65vh] overflow-auto rounded-lg bg-slate-950">
+  return url ? <div className="overflow-hidden rounded-lg border border-slate-700 bg-slate-950">
+    <div className="flex items-center justify-between gap-2 p-2">
+      <span className="min-w-0 break-words">{filename}</span>
+      <button type="button" className={`${control} !text-red-300`} disabled={busy} onClick={onRemove}>Foto verwijderen</button>
+    </div>
+    <div className="max-h-[65vh] overflow-auto">
     {/* The original is loaded through the authenticated API as a private blob. */}
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img src={url} alt={filename} className="mx-auto max-w-full" />
+    </div>
   </div> : <p role="status">{t('loading')}</p>;
 }
 
@@ -160,6 +166,24 @@ export function YardPhotoSessions({ onPublish }: { onPublish?: (file: File) => v
     }
   }
 
+  async function removeImage(original: Original) {
+    if (!detail || busy) return;
+    const reviewed = detail.analysis?.image_id === original.id;
+    if (!window.confirm(`Foto “${original.filename}” definitief verwijderen?${reviewed ? ' De bijbehorende beoordeling en maskers worden ook verwijderd.' : ''}`)) return;
+    setBusy(true);
+    setError('');
+    try {
+      const next = await api<Detail>(endpoint + '/' + detail.session.id + '/images/' + original.id, { method: 'DELETE' });
+      setDetail(next);
+      if (image?.id === original.id) setImage(undefined);
+      await list(sessions?.current_page);
+    } catch (reason) {
+      report(reason as ApiError);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const field = 'rounded border border-slate-600 bg-[#10283d] p-2 text-white';
   return <section className="space-y-4">
     <header className="flex flex-wrap items-center justify-between gap-2">
@@ -192,8 +216,18 @@ export function YardPhotoSessions({ onPublish }: { onPublish?: (file: File) => v
         <h3 className="break-words text-lg font-semibold">{detail.session.name}</h3>
         <p className="text-sm text-slate-300">{detail.analysis ? 'Ter controle' : t(detail.session.status)}</p>
         {detail.session.notes && <p className="whitespace-pre-wrap break-words">{detail.session.notes}</p>}
+        <div className="flex flex-wrap gap-2">{detail.images.map((original) => <div key={original.id} className="flex max-w-full items-center gap-2 rounded-lg border border-slate-600 p-2">
+          <button className={`${control} min-w-0 break-words text-left`} disabled={busy || !!detail.analysis}
+            aria-pressed={image?.id === original.id || detail.analysis?.image_id === original.id}
+            onClick={() => setImage(original)}>{original.filename} · {original.metadata.width} × {original.metadata.height}</button>
+          <button type="button" className={`${control} !text-red-300`} disabled={busy}
+            aria-label={`Foto ${original.filename} verwijderen`} onClick={() => void removeImage(original)}>Verwijderen</button>
+        </div>)}</div>
         {detail.analysis ? <YardPhotoWorkflow key={detail.session.id} path={endpoint + '/' + detail.session.id}
-          analysis={detail.analysis} onPublish={onPublish} /> : <>
+          analysis={detail.analysis} onPublish={onPublish} deleting={busy} onRemove={() => {
+            const original = detail.images.find((item) => item.id === detail.analysis?.image_id);
+            if (original) void removeImage(original);
+          }} /> : <>
           <label className="block cursor-pointer space-y-2 rounded-lg border border-dashed border-slate-500 p-4"
             onDragOver={(event) => event.preventDefault()} onDrop={(event) => {
               event.preventDefault();
@@ -207,14 +241,13 @@ export function YardPhotoSessions({ onPublish }: { onPublish?: (file: File) => v
           </label>
           {progress && <progress aria-label={t('progress')} max={progress.total} value={progress.done} />}
           {!!pending.length && <button className={control} disabled={busy} onClick={() => void upload(pending)}>{t('retry')}</button>}
-          <div className="flex flex-wrap gap-2">{detail.images.map((original) => <button key={original.id} className={control}
-            disabled={busy} aria-pressed={image?.id === original.id} onClick={() => setImage(original)}>{original.filename} · {original.metadata.width} × {original.metadata.height}</button>)}</div>
           {image && <>
             <button className="rounded-lg bg-blue-700 px-3 py-2 font-semibold disabled:opacity-50"
               disabled={busy} onClick={() => void detect()}>AI verwerken</button>
             <button className={control} disabled={busy} onClick={() => void detect(true)}>Handmatig maskeren</button>
             {busy && <p role="status">Bezig met verwerken…</p>}
-            <OriginalPreview path={endpoint + '/' + detail.session.id + '/images/' + image.id} filename={image.filename} />
+            <OriginalPreview path={endpoint + '/' + detail.session.id + '/images/' + image.id} filename={image.filename}
+              busy={busy} onRemove={() => void removeImage(image)} />
           </>}
         </>}
       </div>}

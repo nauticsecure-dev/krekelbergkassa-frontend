@@ -544,6 +544,7 @@ export interface AppSettings {
 }
 
 export interface PortalCustomer {
+  has_password?: boolean;
   id: string;
   customer_number: string;
   name: string;

@@ -32,6 +32,7 @@ import { formatCurrency, intlLocale } from '@/lib/format';
 import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { PasswordForm } from '@/components/portal/PasswordForm';
 
 export default function PortalSettingsPage() {
   const { t, locale } = useIntl();
@@ -164,6 +165,7 @@ export default function PortalSettingsPage() {
                 description={t('adminNew.portal.settings.securityText')}
                 icon={Shield}
               >
+                <PasswordForm hasPassword={!!me.data.customer.has_password} onSaved={me.refetch} />
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 rounded-xl border border-navy-100 bg-sand-50/60 px-3 py-2.5 text-sm text-navy-700">
                     <Mail className="h-4 w-4 text-navy-400" />

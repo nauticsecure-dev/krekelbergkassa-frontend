@@ -4,6 +4,7 @@ import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import { BoatPhoto } from '@/components/portal/BoatPhoto';
+import { useBoatPhotoVersion } from '@/lib/hooks/useBoatPhotoVersion';
 import * as React from 'react';
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
@@ -65,6 +66,7 @@ export default function FeedPage() {
   const { user } = useAuth();
   const [typeFilter, setTypeFilter] = React.useState<TypeFilter>('');
   const [search, setSearch] = React.useState('');
+  const photoVersion = useBoatPhotoVersion();
 
   const dateLocale = intlLocale(locale);
   const firstName = (user?.name ?? 'Jan').split(' ')[0];
@@ -77,7 +79,7 @@ export default function FeedPage() {
   }).format(today);
   const salutation = salutationForHour(today.getHours(), t);
 
-  const feed = useQuery([locale], async () => {
+  const feed = useQuery([locale, photoVersion], async () => {
     const [
       me,
       timeline,

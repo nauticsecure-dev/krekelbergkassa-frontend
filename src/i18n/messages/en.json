@@ -2685,7 +2685,7 @@
         "sessionRefreshed": "Account data refreshed",
         "account": "Customer account",
         "securityTitle": "Security",
-        "securityText": "Your portal uses magic-link login. Each session is temporary and tied to your email address.",
+        "securityText": "Sign in with an email link or a password. Setting or changing your password signs out other sessions.",
         "securityEmail": "Login via secure magic link by email",
         "securitySupport": "Need help? Call Krekelberg for account questions",
         "quickLinks": "Quick links",

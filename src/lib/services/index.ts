@@ -1,5 +1,6 @@
 import { api, apiResult } from '@/lib/api';
 import { getDeviceId } from '@/lib/device';
+import { publishBoatPhotoChange } from '@/lib/portal-events';
 import { getAuthToken, getPortalToken } from '@/lib/auth-storage';
 import type {
   AdminUser,
@@ -1525,14 +1526,22 @@ export const portalService = {
     return asArray<PortalBoat>(res);
   },
   // Trello #87/#90: customer-facing boat dossier (portal).
+  changePassword(password: string, password_confirmation: string, current_password?: string) {
+    return api('/v1/portal/password', {
+      method: 'PUT', auth: false, portalAuth: true,
+      body: { password, password_confirmation, current_password },
+    });
+  },
   boatPhoto(boatId: string, fileId: string, thumbnail: boolean) {
     const path = '/v1/portal/boats/' + encodeURIComponent(boatId) + '/photos/' + encodeURIComponent(fileId);
     return api<Blob>(path, { auth: false, portalAuth: true, query: { thumbnail } });
   },
-  replaceBoatPhoto(id: string, photo: File) {
+  async replaceBoatPhoto(id: string, photo: File) {
     const body = new FormData();
     body.append('photo', photo);
-    return api<PortalBoat>('/v1/portal/boats/' + id + '/photo', { method: 'POST', auth: false, portalAuth: true, body });
+    const boat = await api<PortalBoat>('/v1/portal/boats/' + id + '/photo', { method: 'POST', auth: false, portalAuth: true, body });
+    publishBoatPhotoChange();
+    return boat;
   },
   boatDossier(id: string) {
     return api<Record<string, unknown>>(`/v1/portal/boats/${id}/dossier`, { portalAuth: true, auth: false });
