@@ -9,6 +9,7 @@ export const CONTACT_CHANGED = 'company-contact-changed';
 let snapshot: FaqContent['contact'] | null = null;
 let pending: Promise<void> | null = null;
 let generation = 0;
+let refreshQueued = false;
 const listeners = new Set<() => void>();
 export function publishContact(company: NonNullable<FaqContent['contact']['company']>) {
   generation++;
@@ -22,10 +23,35 @@ function refresh() {
     if (current !== generation) return;
     snapshot = data;
     listeners.forEach(listener => listener());
-  }).catch(() => undefined).finally(() => { pending = null; });
+  }).catch(() => undefined).finally(() => {
+    pending = null;
+    if (refreshQueued) {
+      refreshQueued = false;
+      void refresh();
+    }
+  });
   return pending;
 }
-const subscribe = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
+function invalidate() {
+  // Discard any response captured before the settings change, then read again.
+  generation++;
+  if (pending) refreshQueued = true;
+  else void refresh();
+}
+const subscribe = (listener: () => void) => {
+  if (listeners.size === 0) {
+    window.addEventListener(CONTACT_CHANGED, invalidate);
+    window.addEventListener('focus', invalidate);
+  }
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) {
+      window.removeEventListener(CONTACT_CHANGED, invalidate);
+      window.removeEventListener('focus', invalidate);
+    }
+  };
+};
 const getSnapshot = () => snapshot;
 const getServerSnapshot = () => null;
 
@@ -33,13 +59,6 @@ export function useCompanyContact() {
   const data = React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   React.useEffect(() => {
     void refresh();
-    const reload = () => { void refresh(); };
-    window.addEventListener(CONTACT_CHANGED, reload);
-    window.addEventListener('focus', reload);
-    return () => {
-      window.removeEventListener(CONTACT_CHANGED, reload);
-      window.removeEventListener('focus', reload);
-    };
   }, []);
   const company = data?.company;
   // A successful settings response is authoritative, including cleared values.

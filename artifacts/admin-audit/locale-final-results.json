@@ -1,0 +1,226 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-audit.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/locale-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/locale-final-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node --v8-pool-size=1 scripts/admin-audit-server.cjs",
+      "env": {
+        "NEXT_DIST_DIR": ".next-admin-audit",
+        "NEXT_PUBLIC_API_URL": "/api",
+        "API_PROXY_TARGET": "http://127.0.0.1:9",
+        "RAYON_NUM_THREADS": "1",
+        "NEXT_FONT_GOOGLE_MOCKED_RESPONSES": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\fixtures\\journey-fonts.cjs"
+      },
+      "url": "http://localhost:3047/sw.js",
+      "timeout": 300000,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "admin-review.spec.ts",
+      "file": "admin-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "nl: audit loading empty error recovery and technical dialog copy",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 54394,
+                  "error": {
+                    "message": "Error: locator.click: Error: strict mode violation: getByText(/^Audit service unavailable/).locator('..').getByRole('button', { name: 'Opnieuw proberen', exact: true }) resolved to 2 elements:\n    1) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 bg-navy-900 text-white hover:bg-navy-800 focus-visible:ring-navy-300 h-9 px-3 text-sm gap-1.5\">…</button> aka getByRole('button', { name: 'Opnieuw proberen' }).first()\n    2) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 border border-navy-200 bg-white text-navy-800 hover:bg-navy-50 focus-visible:ring-navy-200 h-9 px-3 text-sm gap-1.5 mt-4\">…</button> aka getByRole('button', { name: 'Opnieuw proberen' }).nth(1)\n\nCall log:\n\u001b[2m  - waiting for getByText(/^Audit service unavailable/).locator('..').getByRole('button', { name: 'Opnieuw proberen', exact: true })\u001b[22m\n",
+                    "stack": "Error: locator.click: Error: strict mode violation: getByText(/^Audit service unavailable/).locator('..').getByRole('button', { name: 'Opnieuw proberen', exact: true }) resolved to 2 elements:\n    1) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 bg-navy-900 text-white hover:bg-navy-800 focus-visible:ring-navy-300 h-9 px-3 text-sm gap-1.5\">…</button> aka getByRole('button', { name: 'Opnieuw proberen' }).first()\n    2) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 border border-navy-200 bg-white text-navy-800 hover:bg-navy-50 focus-visible:ring-navy-200 h-9 px-3 text-sm gap-1.5 mt-4\">…</button> aka getByRole('button', { name: 'Opnieuw proberen' }).nth(1)\n\nCall log:\n\u001b[2m  - waiting for getByText(/^Audit service unavailable/).locator('..').getByRole('button', { name: 'Opnieuw proberen', exact: true })\u001b[22m\n\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:447:145",
+                    "location": {
+                      "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                      "column": 145,
+                      "line": 447
+                    },
+                    "snippet": "  445 |     await expect(page.locator('main')).toContainText('Audit service unavailable');\n  446 |     phase = 'populated';\n> 447 |     await page.getByText(/^Audit service unavailable/).locator('..').getByRole('button',{name:text(locale,'adminNew.states.retry'),exact:true}).click();\n      |                                                                                                                                                 ^\n  448 |     await page.getByRole('button',{name:'Locale audit record',exact:true}).click();\n  449 |     const dialog=page.getByRole('dialog');\n  450 |     await dialog.getByRole('button',{name:text(locale,'adminNew.audit.technicalDetails'),exact:true}).click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                        "column": 145,
+                        "line": 447
+                      },
+                      "message": "Error: locator.click: Error: strict mode violation: getByText(/^Audit service unavailable/).locator('..').getByRole('button', { name: 'Opnieuw proberen', exact: true }) resolved to 2 elements:\n    1) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 bg-navy-900 text-white hover:bg-navy-800 focus-visible:ring-navy-300 h-9 px-3 text-sm gap-1.5\">…</button> aka getByRole('button', { name: 'Opnieuw proberen' }).first()\n    2) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 border border-navy-200 bg-white text-navy-800 hover:bg-navy-50 focus-visible:ring-navy-200 h-9 px-3 text-sm gap-1.5 mt-4\">…</button> aka getByRole('button', { name: 'Opnieuw proberen' }).nth(1)\n\nCall log:\n\u001b[2m  - waiting for getByText(/^Audit service unavailable/).locator('..').getByRole('button', { name: 'Opnieuw proberen', exact: true })\u001b[22m\n\n\n  445 |     await expect(page.locator('main')).toContainText('Audit service unavailable');\n  446 |     phase = 'populated';\n> 447 |     await page.getByText(/^Audit service unavailable/).locator('..').getByRole('button',{name:text(locale,'adminNew.states.retry'),exact:true}).click();\n      |                                                                                                                                                 ^\n  448 |     await page.getByRole('button',{name:'Locale audit record',exact:true}).click();\n  449 |     const dialog=page.getByRole('dialog');\n  450 |     await dialog.getByRole('button',{name:text(locale,'adminNew.audit.technicalDetails'),exact:true}).click();\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:447:145"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T18:02:26.741Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-final\\admin-review-nl-audit-load-56d60-y-and-technical-dialog-copy-admin-audit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-final\\admin-review-nl-audit-load-56d60-y-and-technical-dialog-copy-admin-audit\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                    "column": 145,
+                    "line": 447
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-e961d3a7307bc7bb9bf5",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        },
+        {
+          "title": "en: audit loading empty error recovery and technical dialog copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-5f6a3cc9959df90272fb",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        },
+        {
+          "title": "de: audit loading empty error recovery and technical dialog copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-5e555b82486e699fbda4",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        },
+        {
+          "title": "fr: audit loading empty error recovery and technical dialog copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-eadbf0b97f88c4133dfa",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-11-09T18:01:28.474Z",
+    "duration": 431115.75999999995,
+    "expected": 0,
+    "skipped": 3,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

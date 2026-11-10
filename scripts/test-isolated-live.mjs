@@ -62,7 +62,7 @@ async function ready(url, child, headers) {
 try {
   console.log('Creating isolated SQLite tables and dummy users, products and tariffs.');
   run('php', ['artisan', 'migrate', '--force', '--no-interaction'], backend, 'migrations.txt');
-  for (const name of ['UserSeeder', 'ProductSeeder', 'SettingsSeeder']) {
+  for (const name of (process.env.CMS_MEDIA_LIVE === '1' ? ['UserSeeder'] : ['UserSeeder', 'ProductSeeder', 'SettingsSeeder'])) {
     run('php', ['artisan', 'db:seed', `--class=${name}`, '--force', '--no-interaction'], backend, `${name}.txt`);
   }
   run('php', ['-r', 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap(); $user=App\\Models\\User::factory()->admin()->create(["email"=>getenv("E2E_ADMIN_EMAIL"),"password_hash"=>Illuminate\\Support\\Facades\\Hash::make(getenv("E2E_ADMIN_PASSWORD")),"locale"=>"nl-NL"]); $user->assignRole("admin");'], backend, 'dummy-admin.txt');
@@ -78,13 +78,13 @@ try {
   env.ISOLATED_BASE_URL = env.E2E_BASE_URL = `http://127.0.0.1:${frontendPort}`;
   env.API_PROXY_TARGET = env.APP_URL;
   env.NEXT_PUBLIC_API_URL = '/api';
-  env.NEXT_DIST_DIR = '.next-isolated-live';
+  env.NEXT_DIST_DIR = process.env.CMS_MEDIA_LIVE === '1' ? `.next-cms-live-${path.basename(runtime)}` : '.next-isolated-live';
   env.NEXT_FONT_GOOGLE_MOCKED_RESPONSES = path.join(frontend, 'tests/fixtures/journey-fonts.cjs');
   env.ISOLATED_TEST_RESULTS = path.join(runtime, 'pricing-results');
   const web = start(process.execPath, ['scripts/isolated-next-server.cjs', String(frontendPort)], frontend, 'frontend.txt');
   await ready(`${env.ISOLATED_BASE_URL}/nl`, web);
   // Compile the routes before timed browser actions on a cold Windows dev server.
-  for (const route of ['/nl/login?role=manager', '/nl/admin', '/nl/diensten/winterstalling', '/nl/admin/calculator/pricing']) {
+  for (const route of (process.env.CMS_MEDIA_LIVE === '1' ? ['/en','/de','/fr'] : ['/nl/login?role=manager', '/nl/admin', '/nl/diensten/winterstalling', '/nl/admin/calculator/pricing'])) {
     console.log(`Warming isolated route: ${route}`);
     // Middleware requires cookie presence even for a compile-only HTTP request.
     // The browser tests still authenticate against Laravel with the real dummy account.
@@ -92,6 +92,13 @@ try {
     await ready(`${env.ISOLATED_BASE_URL}${route}`, web, headers);
   }
 
+  if (process.env.CMS_MEDIA_LIVE === '1') {
+    env.CMS_MEDIA_LIVE = '1';
+    run('php', ['scripts/cms-media-audit.php'], backend, 'cms-media-audit.json');
+    run(process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.cms-media-live.config.ts'], frontend, 'cms-media-test.txt');
+    fs.writeFileSync(path.join(runtime, 'result.json'), JSON.stringify({status:'passed', tests:['Laravel CMS media save/reload/reopen'], productionWrites:false}, null, 2));
+    console.log('CMS media tests passed: ' + runtime);
+  } else {
   console.log('Testing real staff login against the isolated backend.');
   run(process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.config.ts', '--timeout', '120000'], frontend, 'login-test.txt');
   console.log('Testing employee tariff save, public reload, denied write and restoration.');
@@ -101,6 +108,7 @@ try {
   run(process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.ui.config.ts', 'pricing-permissions.spec.ts'], frontend, 'pricing-permissions-test.txt');
   fs.writeFileSync(path.join(runtime, 'result.json'), JSON.stringify({ status: 'passed', tests: ['staff login', 'employee pricing save/reload/permissions/restore', 'four browser pricing permission checks'], database, productionWrites: false }, null, 2));
   console.log(`Isolated live tests passed. Results: ${runtime}`);
+  }
 } catch (error) {
   fs.writeFileSync(path.join(runtime, 'result.json'), JSON.stringify({ status: 'failed', error: error.message, database, productionWrites: false }, null, 2));
   console.error(error.message);

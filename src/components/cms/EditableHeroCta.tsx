@@ -140,7 +140,7 @@ export function EditableHeroCta({
 }) {
   const { t, locale } = useIntl();
   const { push, pushError } = useToast();
-  const { isCmsEditing, retainCmsDrafts, localeTag, editorLocales, getText, saveText } = useCms();
+  const { isCmsEditing, retainCmsDrafts, localeTag, editorLocales, getText, saveTextBatch } = useCms();
   const configKey = `${blockKey}.link`;
   const labelKey = labelBlockKey ?? `${blockKey}.label`;
   const config = React.useMemo(
@@ -151,6 +151,8 @@ export function EditableHeroCta({
   const [open, setOpen] = useCmsEditorOpen();
   const [saving, setSaving] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [loadFailed, setLoadFailed] = React.useState(false);
+  const [revisions, setRevisions] = React.useState<Record<string, string | null>>({});
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
   const [labels, setLabels] = React.useState<Partial<Record<LocaleTag, string>>>({});
   const [baseLabels, setBaseLabels] = React.useState<Partial<Record<LocaleTag, string>>>({});
@@ -164,19 +166,15 @@ export function EditableHeroCta({
     setActive(initialEditorLocale(localeTag, editorLocales));
     setDraft(config);
     setLoading(true);
-    void Promise.all(editorLocales.map(async (tag) => {
-      const response = await cmsService.pageContent(page, tag).catch(() => null) as
-        | { content_blocks?: Array<{ key?: string; value?: string }> }
-        | null;
-      return [tag, response?.content_blocks?.find((block) => block.key === labelKey)?.value ?? ''] as const;
-    })).then((entries) => {
+    setLoadFailed(false);
+    void Promise.all([cmsService.contentBlock(labelKey), cmsService.contentBlock(configKey)]).then(([textBlock, linkBlock]) => {
       if (cancelled) return;
-      const loaded = Object.fromEntries(entries) as Partial<Record<LocaleTag, string>>;
-      loaded[localeTag] ||= label;
-      setLabels(loaded);
-      setBaseLabels(loaded);
+      setRevisions({ [labelKey]: textBlock.cms_revision, [configKey]: linkBlock.cms_revision });
+      setDraft(parseConfig(linkBlock.value_by_locale[localeTag] ?? '', href, locale));
+      const loaded = Object.fromEntries(editorLocales.map(tag => [tag, textBlock.value_by_locale[tag] ?? (tag === localeTag ? label : '')]));
+      setLabels(loaded); setBaseLabels(loaded);
     }).catch((error) => {
-      if (!cancelled) pushError(error, t('cms.loadError'));
+      if (!cancelled) { setLoadFailed(true); pushError(error, t('cms.loadError')); }
     }).finally(() => {
       if (!cancelled) setLoading(false);
     });
@@ -194,15 +192,10 @@ export function EditableHeroCta({
       for (const tag of editorLocales) {
         if ((labels[tag] ?? '') !== (baseLabels[tag] ?? '')) changedLabels[tag] = labels[tag] ?? '';
       }
-      if (Object.keys(changedLabels).length) {
-        await saveText(labelKey, { page, section, value_by_locale: changedLabels });
-      }
-      await saveText(configKey, {
-        page,
-        section,
-        type: 'short_text',
-        value_by_locale: { [localeTag]: JSON.stringify(draft) },
-      });
+      await saveTextBatch([
+        ...(Object.keys(changedLabels).length ? [{ key: labelKey, page, section, value_by_locale: changedLabels, expected_revision: revisions[labelKey] }] : []),
+        { key: configKey, page, section, type: 'short_text', value_by_locale: { [localeTag]: JSON.stringify(draft) }, expected_revision: revisions[configKey] },
+      ]);
       push({ tone: 'success', title: t('cms.saved') });
       setOpen(false);
     } catch (error) {
@@ -334,7 +327,7 @@ function CtaEditModal({
         <h2 className="text-lg font-semibold text-navy-900">{t('cms.editCta')}</h2>
         <p className="mt-1 text-sm text-navy-500">{t('cms.ctaDescription')}</p>
       </div>
-      <fieldset disabled={loading || saving} className="min-w-0 space-y-4 overflow-y-auto px-6 py-5">
+      <fieldset disabled={loading || saving || loadFailed} className="min-w-0 space-y-4 overflow-y-auto px-6 py-5">
         <div className="flex gap-2" role="tablist" aria-label={t('cms.ctaLabel')}>
           {editorLocales.map((tag) => (
             <button
@@ -416,7 +409,7 @@ function CtaEditModal({
       </fieldset>
       <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
         <Button variant="ghost" onClick={onClose} disabled={saving}>{t('cms.cancel')}</Button>
-        <Button variant="primary" onClick={onSave} disabled={saving || loading}>{t('cms.save')}</Button>
+        <Button variant="primary" onClick={onSave} disabled={saving || loading || loadFailed}>{t('cms.save')}</Button>
       </div>
     </Modal>
   );

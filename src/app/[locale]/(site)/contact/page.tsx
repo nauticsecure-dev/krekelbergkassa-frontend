@@ -41,10 +41,7 @@ export default function ContactPage() {
   const localeTag = intlLocale(locale);
   const language = ['nl', 'en', 'de', 'fr'].includes(locale) ? locale : 'nl';
   const companyInfo = useCompanyInfo();
-  const { phoneHref, email, address } = companyInfo;
-  const mapsQuery = encodeURIComponent(address);
-  const mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + mapsQuery;
-  const mapsEmbed = 'https://maps.google.com/maps?q=' + mapsQuery + '&z=14&output=embed';
+  const { phoneHref, emailHref, mapsUrl, mapsEmbed } = companyInfo;
 
   const hoursQuery = useQuery([localeTag], () =>
     contentService.openingHours(localeTag).catch(() => null),
@@ -88,7 +85,7 @@ export default function ContactPage() {
           </p>
           <div className="pointer-events-none mt-8 flex w-fit flex-wrap gap-3">
             <EditSafeLink href={phoneHref} className={buttonClassName({ variant: 'gold', size: 'lg', className: 'pointer-events-auto' })}><Phone className="h-4 w-4" /><EditableText blockKey="contact.hero.cta_primary.label" page={CMS_PAGE}>{t('contactPage.ctaCall')}</EditableText></EditSafeLink>
-            <EditSafeLink href={`mailto:${email}`} className={buttonClassName({ variant: 'outline', size: 'lg', className: 'pointer-events-auto border-white/30 bg-white/5 text-white hover:bg-white/10' })}><Mail className="h-4 w-4" /><EditableText blockKey="contact.hero.cta_secondary.label" page={CMS_PAGE}>{t('contactPage.ctaMail')}</EditableText></EditSafeLink>
+            <EditSafeLink href={emailHref} className={buttonClassName({ variant: 'outline', size: 'lg', className: 'pointer-events-auto border-white/30 bg-white/5 text-white hover:bg-white/10' })}><Mail className="h-4 w-4" /><EditableText blockKey="contact.hero.cta_secondary.label" page={CMS_PAGE}>{t('contactPage.ctaMail')}</EditableText></EditSafeLink>
           </div>
         </div>
       </section>
@@ -114,7 +111,7 @@ export default function ContactPage() {
           label={<EditableText blockKey="contact.card.email.label" page={CMS_PAGE} section="cards">{t("contactPage.emailLabel")}</EditableText>}
           value={<CompanyText field="email" />}
           actionLabel={t("contactPage.ctaMail")}
-          actionHref={`mailto:${email}`}
+          actionHref={emailHref}
         />
       </section>
 

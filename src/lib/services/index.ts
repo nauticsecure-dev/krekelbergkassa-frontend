@@ -2762,6 +2762,10 @@ export interface OpeningHoursResponse {
 
 // Trello #112: Inline CMS / Visual Editor — public read + admin upsert endpoints.
 export const cmsService = {
+  contentBlock(key: string) {
+    return api<{ key: string; cms_revision: string | null; value_by_locale: Record<string, string>; publication_state: string }>(
+      `/v1/admin/cms/content-blocks/${encodeURIComponent(key)}`);
+  },
   updateContact(body: Partial<AppSettings['company']>) {
     return api<{ company: AppSettings['company'] }>('/v1/admin/cms/contact-settings', { method: 'PATCH', body });
   },
@@ -2775,6 +2779,12 @@ export const cmsService = {
     });
   },
   // Admin upserts (key-addressed; partial value_by_locale merges server-side).
+  contentBlocks(page: string) {
+    return api<{ data: Array<{ key: string; cms_revision: string; value_by_locale: Record<string, string | null> }> }>('/v1/admin/cms/content-blocks', { query: { page } });
+  },
+  saveContentBlocks(blocks: Array<Record<string, unknown>>) {
+    return api('/v1/admin/cms/content-blocks', { method: 'PATCH', body: { blocks } });
+  },
   saveContentBlock(key: string, payload: Record<string, unknown>) {
     return api<Record<string, unknown>>(`/v1/admin/cms/content-blocks/${encodeURIComponent(key)}`, {
       method: 'PATCH',

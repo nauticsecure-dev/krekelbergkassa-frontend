@@ -45,6 +45,7 @@ for (const locale of ['nl', 'en', 'de', 'fr']) {
         }
       }
       await page.screenshot({ path: testInfo.outputPath(`${locale}-${width}.png`), fullPage: true });
+    await test.info().attach('layout-evidence', { path: testInfo.outputPath(`${locale}-${width}.png`), contentType: 'image/png' });
     }
     expect(errors).toEqual([]);
   });
@@ -62,6 +63,7 @@ for (const route of ['kassa', 'kalender', 'audit']) {
       const main = page.locator('main');
       await expect.poll(() => main.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
       await page.screenshot({ path: testInfo.outputPath(`${route}-${width}.png`), fullPage: true });
+    await test.info().attach('layout-evidence', { path: testInfo.outputPath(`${route}-${width}.png`), contentType: 'image/png' });
     }
     expect(errors).toEqual([]);
   });
@@ -137,15 +139,25 @@ async function assertNoPageOverflow(page: Page) {
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
 }
 
+async function setSidebar(page: Page, state: 'expanded' | 'collapsed') {
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  const toggle = page.locator('aside button[aria-expanded]');
+  await expect(toggle).toBeVisible();
+  if (await toggle.getAttribute('aria-expanded') !== String(state === 'expanded')) await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', String(state === 'expanded'));
+}
+
 async function captureWidths(page: Page, testInfo: { outputPath: (name: string) => string }, prefix: string, widths = [390, 1280, 1536]) {
   for (const width of widths) {
     await page.setViewportSize({ width, height: 1000 });
     await assertNoPageOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`${prefix}-${width}.png`), fullPage: true });
+    await test.info().attach('layout-evidence', { path: testInfo.outputPath(`${prefix}-${width}.png`), contentType: 'image/png' });
   }
 }
 
-test('populated kassa POS, analytics charts and address grids stay inside the viewport', async ({ page }, testInfo) => {
+for (const sidebar of ['expanded', 'collapsed'] as const) {
+test(`populated kassa POS, analytics charts and address grids stay inside the viewport [sidebar ${sidebar}]`, async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await isolatedSession(page);
@@ -215,6 +227,7 @@ test('populated kassa POS, analytics charts and address grids stay inside the vi
     json: { pos: ['cash', 'pin', 'invoice'], online: [] },
   }));
   await page.goto('/nl/admin/kassa');
+  await setSidebar(page, sidebar);
   await expect(page.locator('main h1')).toBeVisible();
   await expect(page.getByText(/Bancontact-via-Mollie/)).toHaveCount(0);
   await page.getByRole('searchbox', { name: text('nl', 'adminNew.kassa.pos.search') }).fill('BAV-037');
@@ -226,11 +239,13 @@ test('populated kassa POS, analytics charts and address grids stay inside the vi
   await page.locator('main').getByRole('button', { name: new RegExp(product.name) }).first().click();
   await expect(page.locator('#cart')).toContainText(/484,00/);
 
-  for (const width of [1440, 1024, 390]) {
+  for (const width of [390, 1280, 1536]) {
     await page.setViewportSize({ width, height: 1000 });
     await assertNoPageOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`kassa-pos-${width}.png`), fullPage: true });
+    await test.info().attach('layout-evidence', { path: testInfo.outputPath(`kassa-pos-${width}.png`), contentType: 'image/png' });
   }
+  await page.setViewportSize({ width: 390, height: 1000 });
   await page.getByRole('button', { name: new RegExp(text('nl', 'adminNew.kassa.cart')) }).click();
   await page.getByRole('button', { name: new RegExp(text('nl', 'adminNew.kassa.payNow')) }).click();
   await expect(page.getByRole('dialog')).toContainText(text('nl', 'adminNew.kassa.pos.manualPin'));
@@ -246,7 +261,7 @@ test('populated kassa POS, analytics charts and address grids stay inside the vi
   await dialog.getByLabel(text('nl', 'adminNew.kassa.houseNumber'), { exact: true }).fill('123A');
   await dialog.getByLabel(text('nl', 'adminNew.kassa.postalCode'), { exact: true }).fill('1234AB');
   await dialog.getByLabel(text('nl', 'adminNew.kassa.city'), { exact: true }).fill(`Gemeente-naam-met-extra-lange-toevoeging-${LONG}`);
-  for (const width of [390, 1280]) {
+  for (const width of [390, 1280, 1536]) {
     await page.setViewportSize({ width, height: 1000 });
     const box = await dialog.boundingBox();
     expect(box).toBeTruthy();
@@ -259,20 +274,23 @@ test('populated kassa POS, analytics charts and address grids stay inside the vi
       expect(fieldBox.x + fieldBox.width).toBeLessThanOrEqual(width + 1);
     }
     await page.screenshot({ path: testInfo.outputPath(`kassa-address-grids-${width}.png`), fullPage: true });
+    await test.info().attach('layout-evidence', { path: testInfo.outputPath(`kassa-address-grids-${width}.png`), contentType: 'image/png' });
   }
   await page.keyboard.press('Escape');
 
   await page.goto('/nl/admin/kassa/analytics');
+  await setSidebar(page, sidebar);
   await expect(page.getByText(/Bancontact-via-Mollie/)).toBeVisible();
-  for (const width of [1280, 1536]) {
+  for (const width of [390, 1280, 1536]) {
     await page.setViewportSize({ width, height: 1000 });
     await assertNoPageOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`kassa-populated-analytics-${width}.png`), fullPage: true });
+    await test.info().attach('layout-evidence', { path: testInfo.outputPath(`kassa-populated-analytics-${width}.png`), contentType: 'image/png' });
   }
   expect(errors).toEqual([]);
 });
 
-test('AdminSplitLayout start sidebar (cash close) holds populated history at lg and xl', async ({ page }, testInfo) => {
+test(`AdminSplitLayout start sidebar (cash close) holds populated history at lg and xl [sidebar ${sidebar}]`, async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await isolatedSession(page);
@@ -295,13 +313,14 @@ test('AdminSplitLayout start sidebar (cash close) holds populated history at lg 
     });
   });
   await page.goto('/nl/admin/kassa/dagafsluiting');
+  await setSidebar(page, sidebar);
   await expect(page.locator('main h1')).toBeVisible();
   await expect(page.locator('tbody tr')).toHaveCount(6);
   await captureWidths(page, testInfo, 'cash-close-split-start');
   expect(errors).toEqual([]);
 });
 
-test('DocumentZoneEditor loaded zones and drag stay inside the viewport', async ({ page }, testInfo) => {
+test(`DocumentZoneEditor loaded zones and drag stay inside the viewport [sidebar ${sidebar}]`, async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await isolatedSession(page);
@@ -335,6 +354,7 @@ test('DocumentZoneEditor loaded zones and drag stay inside the viewport', async 
   }));
 
   await page.goto('/nl/admin/facturen/templates/editor?id=tpl-populated&importId=imp-populated&mode=extraction');
+  await setSidebar(page, sidebar);
   await expect(page.locator('main')).toContainText(text('nl', 'adminNew.templates.zonesTitle'));
   await expect(page.locator('main')).toContainText(/3/);
   const surface = page.locator('.touch-none').first();
@@ -349,7 +369,7 @@ test('DocumentZoneEditor loaded zones and drag stay inside the viewport', async 
   expect(errors).toEqual([]);
 });
 
-test('audit detail modal wraps long before/after values without page overflow', async ({ page }, testInfo) => {
+test(`audit detail modal wraps long before/after values without page overflow [sidebar ${sidebar}]`, async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await isolatedSession(page);
@@ -380,6 +400,7 @@ test('audit detail modal wraps long before/after values without page overflow', 
   }));
 
   await page.goto('/nl/admin/audit');
+  await setSidebar(page, sidebar);
   await expect(page.locator('main h1')).toBeVisible();
   await page.getByRole('button', { name: `Klant bijgewerkt ${LONG}`, exact: true }).click();
   const dialog = page.getByRole('dialog');
@@ -394,6 +415,43 @@ test('audit detail modal wraps long before/after values without page overflow', 
     expect(box!.x + box!.width).toBeLessThanOrEqual(width + 1);
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: testInfo.outputPath(`audit-diff-modal-${width}.png`), fullPage: true });
+    await test.info().attach('layout-evidence', { path: testInfo.outputPath(`audit-diff-modal-${width}.png`), contentType: 'image/png' });
   }
   expect(errors).toEqual([]);
 });
+
+}
+
+for (const locale of ['nl', 'en', 'de', 'fr']) {
+  test(locale + ': audit loading empty error recovery and technical dialog copy', async ({ page }, info) => {
+    await isolatedSession(page);
+    let phase = 'empty';
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    let waiting = true;
+    await page.route('**/api/v1/admin/audit-logs**', async route => {
+      if (waiting) await held;
+      if (phase === 'error') return route.fulfill({ status: 503, json: { message: 'Audit service unavailable' } });
+      return route.fulfill({ json: {
+        data: phase === 'populated' ? [{ id:'locale-audit', action:'customer.updated', title:'Locale audit record', entity_type:'customer', entity_name:LONG, severity:'info', created_at:'2026-10-28T12:00:00Z', can_view_details:true, request_id:LONG, changes:[{field_name:'email',old_value:'old@example.test',new_value:'new@example.test'}] }] : [],
+        meta:{total:phase === 'populated' ? 1 : 0,current_page:1,last_page:1,per_page:20}, counters:{total:1}
+      } });
+    });
+    await page.goto('/' + locale + '/admin/audit');
+    await expect(page.getByText(text(locale,'adminNew.audit.loading'), {exact:true})).toBeVisible();
+    waiting = false; release();
+    await expect(page.getByText(text(locale,'adminNew.audit.empty'), {exact:true})).toBeVisible();
+    phase = 'error'; await page.reload();
+    await expect(page.locator('main')).toContainText('Audit service unavailable');
+    phase = 'populated';
+    await page.locator('main .overflow-x-auto').filter({hasText:'Audit service unavailable'}).getByRole('button',{name:text(locale,'adminNew.states.retry'),exact:true}).click();
+    await page.getByRole('button',{name:'Locale audit record',exact:true}).click();
+    const dialog=page.getByRole('dialog');
+    await dialog.getByRole('button',{name:text(locale,'adminNew.audit.technicalDetails'),exact:true}).click();
+    for(const key of ['event','id','entityId','requestId','correlationId','ip','endpoint','method','browser']) {
+      await expect(dialog.locator('dt').filter({hasText:new RegExp('^'+text(locale,'adminNew.audit.technical.'+key)+'$')})).toHaveCount(1);
+    }
+    await captureWidths(page, info, locale+'-audit-technical');
+    expect((await dialog.innerText()).match(/\b(?:adminNew|adminModules)\.[A-Za-z][\w.]+/g) ?? []).toEqual([]);
+  });
+}

@@ -146,11 +146,11 @@ export default function DienstenPage() {
               <button key={code} type="button" aria-pressed={active === code} aria-controls="prijsberekening"
                 onClick={() => setActive(code)}
                 className={cn('flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-3 text-center text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300', active === code ? 'border-gold-300 bg-navy-950/90 text-gold-100' : 'border-white/60 bg-white/90 text-navy-950 hover:bg-white')}>
-                <Icon aria-hidden="true" className="h-6 w-6" />{t('yardPricing.' + code)}
+                <Icon aria-hidden="true" className="h-6 w-6" /><TranslatedText textKey={'yardPricing.' + code} />
               </button>
             ))}
             <Link href="#meer-diensten" className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border border-white/60 bg-white/90 px-2 py-3 text-center text-sm font-bold text-navy-950 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300">
-              <Plus aria-hidden="true" className="h-6 w-6" />{t('yardPricing.moreServices')}
+              <Plus aria-hidden="true" className="h-6 w-6" /><TranslatedText textKey={'yardPricing.moreServices'} />
             </Link>
           </div>
         </div>
@@ -303,9 +303,9 @@ export default function DienstenPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-marine-700" />
-                  <a href={companyInfo.phoneHref} className="hover:text-navy-900">
+                  <EditSafeLink href={companyInfo.phoneHref} className="hover:text-navy-900">
                     <CompanyText field="phone" />
-                  </a>
+                  </EditSafeLink>
                 </li>
               </ul>
               <div className="mt-6 flex flex-wrap gap-2">

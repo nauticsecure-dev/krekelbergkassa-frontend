@@ -19,6 +19,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useIntl } from "@/i18n/IntlProvider";
 import { cn } from "@/lib/cn";
+import { EditSafeLink } from '@/components/cms/EditSafeLink';
 import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { useCms, useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
@@ -438,9 +439,9 @@ export default function HomePage() {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-marine-700" />{" "}
-                <a href={companyInfo.phoneHref} className="hover:text-navy-900">
+                <EditSafeLink href={companyInfo.phoneHref} className="hover:text-navy-900">
                   <CompanyText field="phone" />
-                </a>
+                </EditSafeLink>
               </li>
               <li className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-marine-700" />{" "}

@@ -277,7 +277,7 @@ export default function SettingsPage() {
     if (!enabled && (code === localeForm.default_locale || code === localeForm.fallback_locale)) {
       push({
         tone: 'error',
-        title: t('settingsHub.locale.cannotDisableDefault'),
+        title: t('settingsHub.locales.cannotDisableDefault'),
       });
       return;
     }

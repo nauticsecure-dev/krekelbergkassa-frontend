@@ -203,18 +203,18 @@ export default function FaqPage() {
               </div>
               <p className="mt-2 text-sm text-marine-50"><TranslatedText textKey={"faq.helpDesc"} /></p>
               <div className="mt-4 space-y-2 text-sm">
-                <a
+                <EditSafeLink
                   href={companyInfo.phoneHref}
                   className="flex items-center gap-2 font-medium hover:text-gold-200"
                 >
                   <Phone className="h-4 w-4" /> <CompanyText field="phone" />
-                </a>
-                <a
+                </EditSafeLink>
+                <EditSafeLink
                   href={companyInfo.emailHref}
                   className="flex items-center gap-2 hover:text-gold-200"
                 >
                   <Mail className="h-4 w-4" /> <CompanyText field="email" />
-                </a>
+                </EditSafeLink>
               </div>
               <Link href="#" className="mt-5 block">
                 <Button

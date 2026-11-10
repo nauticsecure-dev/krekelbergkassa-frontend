@@ -1450,8 +1450,8 @@ export default function KraanAfspraakPage() {
                   </span>
                   <span className="text-2xl font-semibold">
                     {finalPrice == null ? <TranslatedText textKey={'servicePage.onRequest'} /> : formatCurrency(finalPrice, currencyLocale)}
-                    {previousPrice && <span className="block text-sm font-normal">{t('yardPricing.previousEstimate', { amount: previousPrice })}</span>}
-                    {prefillError && <span role="alert" className="block text-sm font-normal">{t('yardPricing.selectionUnavailable')}</span>}
+                    {previousPrice && <span className="block text-sm font-normal"><TranslatedText textKey={'yardPricing.previousEstimate'} vars={{ amount: previousPrice }} /></span>}
+                    {prefillError && <span role="alert" className="block text-sm font-normal"><TranslatedText textKey={'yardPricing.selectionUnavailable'} /></span>}
                   </span>
                 </div>
               </div>

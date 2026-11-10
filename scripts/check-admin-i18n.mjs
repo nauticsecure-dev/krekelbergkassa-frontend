@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { checkCalls, translationCalls, hardcodedCopy, flattenStrings } from './lib/admin-i18n-audit.mjs';
+import { checkCalls, translationCalls, hardcodedCopy, flattenStrings, classifyCopy } from './lib/admin-i18n-audit.mjs';
 
 const locales = ['nl', 'en', 'de', 'fr'];
 const roots = ['src/app/[locale]/admin', 'src/components/admin', 'src/components/shell'];
@@ -34,13 +34,17 @@ const identicalEnglishCopy = locales.filter(locale=>locale!=='en').flatMap(local
   const strings=flattenStrings(dictionaries[locale]);
   return [...referencedKeys].filter(key=>strings[key]===english[key] && typeof strings[key]==='string' && /\p{L}{2}/u.test(strings[key])).map(key=>({locale,key,text:strings[key]}));
 });
+const decisions = JSON.parse(fs.readFileSync(new URL('./admin-copy-decisions.json', import.meta.url), 'utf8'));
+const copyReview = classifyCopy([...copyCandidates, ...identicalEnglishCopy], decisions);
+const reviewSummary = Object.fromEntries(['intentional', 'translate', 'unreviewed'].map(status => [status, copyReview.filter(item => item.review.decision === status).length]));
 if (process.argv.includes('--json')) {
-  console.log(JSON.stringify({ locales, callCount, missing, unresolved, copyCandidates, identicalEnglishCopy, strict }, null, 2));
+  console.log(JSON.stringify({ locales, callCount, missing, unresolved, copyCandidates, identicalEnglishCopy, copyReview, reviewSummary, strict }, null, 2));
 } else {
   for (const item of missing) console.error(`${item.file}:${item.line}: ${item.key} missing/empty in ${item.locales.join(', ')}`);
   for (const item of unresolved) console.warn(`${item.file}:${item.line}: runtime key requires review: ${item.expression}`);
   console.log(`${callCount} translation calls; ${missing.length} missing/empty entries; ${unresolved.length} unresolved runtime patterns. NL/EN/DE/FR checked; fallback text does not waive missing translations.`);
   console.log(`${copyCandidates.length} hardcoded JSX copy candidates require review (including legitimate units/names); use --json for file/line evidence.`);
   console.log(`${identicalEnglishCopy.length} referenced locale entries match English and require copy review; shared names/technical terms may be intentional.`);
+  console.log(`Recorded copy decisions: ${JSON.stringify(reviewSummary)}. --strict-copy requires every current candidate to be intentional or fixed.`);
 }
-process.exitCode = missing.length || (strict && unresolved.length) ? 1 : 0;
+process.exitCode = missing.length || (strict && unresolved.length) || (process.argv.includes('--strict-copy') && (reviewSummary.translate || reviewSummary.unreviewed)) ? 1 : 0;

@@ -1,0 +1,23 @@
+✔ copy review finds JSX text and accessible labels without CSS/comments or translated copy (16.2808ms)
+✔ copy review follows conditional copy but ignores style bodies and spacing entities (2.4748ms)
+✔ AST finds multiline, const-prefix and conditional calls without parsing comments (3.826ms)
+✔ fallbacks and empty values cannot conceal absent FR translations (1.3263ms)
+✔ dynamic families check union parity and remain explicitly unresolved (1.4064ms)
+✔ unknown branches, missing families and out-of-scope constants never claim coverage (2.0655ms)
+✔ bounded enum calls check every supported key in every locale (0.8946ms)
+✔ unknown, empty and runtime enum families still fail the strict gate (0.6813ms)
+✔ copy decisions survive line shifts, expire on copy changes and keep units unreviewed by default (0.8538ms)
+✔ bounded yard adapter resolves its namespace without lending it to other scopes (1.5259ms)
+✔ pending explanations never render as partial passes (2.3418ms)
+✔ redirects and reviewed read-only pages have different obligations (0.5407ms)
+✔ unreviewed workflows never become inapplicable by absence of source signals (22.3225ms)
+✔ applicability overrides smoke credit without suppressing permission obligations (4.1567ms)
+✔ delegated actions retain all owners and independent permission requirements (1.3759ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 651.4986

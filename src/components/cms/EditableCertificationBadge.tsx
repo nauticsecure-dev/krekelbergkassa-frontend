@@ -15,7 +15,7 @@ type Draft = Record<string, Partial<Record<LocaleTag, string>>>;
 /** Edit both badge lines together, keeping the existing CMS keys and translations. */
 export function EditableCertificationBadge() {
   const { t } = useIntl();
-  const { isCmsEditing, retainCmsDrafts, getText, localeTag, editorLocales, saveText } = useCms();
+  const { isCmsEditing, retainCmsDrafts, getText, localeTag, editorLocales, saveTextBatch } = useCms();
   const { push, pushError } = useToast();
   const [open, setOpen] = useCmsEditorOpen();
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
@@ -24,6 +24,7 @@ export function EditableCertificationBadge() {
   const [base, setBase] = React.useState<Draft>({});
   const [loading, setLoading] = React.useState(false);
   const [loadFailed, setLoadFailed] = React.useState(false);
+  const [revisions, setRevisions] = React.useState<Record<string, string | null>>({});
   const [saving, setSaving] = React.useState(false);
   const fallback = [t('home.werf.cert'), 'HISWA · 1976'];
 
@@ -33,18 +34,12 @@ export function EditableCertificationBadge() {
     setActive(localeTag);
     setLoading(true);
     setLoadFailed(false);
-    void Promise.all(editorLocales.map(async (tag) => {
-      const response = await cmsService.pageContent('home', tag) as {
-        content_blocks?: Array<{ key: string; value: string }>;
-      };
-      return { tag, blocks: response.content_blocks ?? [] };
-    })).then((results) => {
+    void Promise.all(fields.map(key => cmsService.contentBlock(key))).then((results) => {
       if (cancelled) return;
       const draft: Draft = {};
+      setRevisions(Object.fromEntries(results.map(result => [result.key, result.cms_revision])));
       fields.forEach((key, index) => {
-        draft[key] = Object.fromEntries(results.map(({ tag, blocks }) => [
-          tag, blocks.find((block) => block.key === key)?.value || (tag === localeTag ? fallback[index] : ''),
-        ]));
+        draft[key] = Object.fromEntries(editorLocales.map(tag => [tag, results[index].value_by_locale[tag] ?? (tag === localeTag ? fallback[index] : '')]));
       });
       setValues(draft);
       setBase(draft);
@@ -65,15 +60,9 @@ export function EditableCertificationBadge() {
     if (busy || loadFailed) return;
     setSaving(true);
     try {
-      for (const key of fields) {
-        const changed = Object.fromEntries(editorLocales
-          .filter((tag) => (values[key]?.[tag] ?? '') !== (base[key]?.[tag] ?? ''))
-          .map((tag) => [tag, values[key]?.[tag] ?? '']));
-        if (!Object.keys(changed).length) continue;
-        await saveText(key, { page: 'home', section: 'werf', type: 'short_text', value_by_locale: changed });
-        // A failed second write can be retried without rewriting the first line.
-        setBase((previous) => ({ ...previous, [key]: { ...values[key] } }));
-      }
+      await saveTextBatch(fields.map(key => ({ key, page: 'home', section: 'werf', type: 'short_text', expected_revision: revisions[key],
+        value_by_locale: Object.fromEntries(editorLocales.filter(tag => (values[key]?.[tag] ?? '') !== (base[key]?.[tag] ?? '')).map(tag => [tag, values[key]?.[tag] ?? ''])),
+      })));
       push({ tone: 'success', title: t('cms.saved') });
       setOpen(false);
     } catch (error) {

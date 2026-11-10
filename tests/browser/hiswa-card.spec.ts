@@ -15,6 +15,7 @@ async function fixture(page: Page) {
   const writes: Array<{ key: string; body: Record<string, unknown> }> = [];
   let failDescription = false;
   let failRead = false;
+  let conflict = false;
   await page.context().addCookies([{ name: 'krek_session', value: 'cms-fixture', url: origin }]);
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
@@ -28,17 +29,25 @@ async function fixture(page: Page) {
       const values = store[url.searchParams.get('locale') ?? 'nl-NL'] ?? {};
       return route.fulfill({ json: { content_blocks: Object.entries(values).map(([key, value]) => ({ key, value, type: 'short_text' })), media_blocks: [] } });
     }
-    if (url.pathname.includes('/cms/content-blocks/')) {
-      const key = decodeURIComponent(url.pathname.split('/').pop()!);
-      const body = route.request().postDataJSON();
-      writes.push({ key, body });
-      if (failDescription && key === descKey) return route.fulfill({ status: 500, json: { message: 'Save failed' } });
-      for (const [tag, value] of Object.entries(body.value_by_locale)) store[tag][key] = String(value);
-      return route.fulfill({ json: {} });
+    if (url.pathname.endsWith('/cms/content-blocks')) {
+      if (route.request().method() === 'GET') {
+        if (failRead) return route.fulfill({ status: 500, json: { message: 'Read failed' } });
+        return route.fulfill({ json: { data: [titleKey, descKey].map((key) => ({
+          key, cms_revision: 'revision-1', value_by_locale: Object.fromEntries(Object.entries(store).map(([tag, values]) => [tag, values[key]])),
+        })) } });
+      }
+      const blocks = route.request().postDataJSON().blocks;
+      for (const { key, ...body } of blocks) writes.push({ key, body });
+      if (conflict) return route.fulfill({ status: 409, json: { message: 'Content changed since this editor opened. Reopen the editor before saving.' } });
+      if (failDescription) return route.fulfill({ status: 500, json: { message: 'Save failed' } });
+      for (const { key, value_by_locale } of blocks) {
+        for (const [tag, value] of Object.entries(value_by_locale)) store[tag][key] = String(value);
+      }
+      return route.fulfill({ json: { data: [] } });
     }
     return route.fulfill({ json: { data: [], settings: {}, items: [] } });
   });
-  return { store, writes, failDescription: () => { failDescription = true; }, recover: () => { failDescription = false; }, failRead: () => { failRead = true; } };
+  return { store, writes, failDescription: () => { failDescription = true; }, recover: () => { failDescription = false; }, failRead: () => { failRead = true; }, conflict: () => { conflict = true; } };
 }
 
 for (const [locale, tag] of Object.entries(tags)) {
@@ -78,8 +87,8 @@ for (const [locale, tag] of Object.entries(tags)) {
     await expect(card).toContainText(`Updated title ${tag}`);
     await expect(card).toContainText(`Updated description ${tag}`);
     expect(state.writes).toEqual([
-      { key: titleKey, body: { page: 'over-ons', section: 'story', type: 'short_text', value_by_locale: { [tag]: `Updated title ${tag}` } } },
-      { key: descKey, body: { page: 'over-ons', section: 'story', type: 'paragraph', value_by_locale: { [tag]: `Updated description ${tag}` } } },
+      { key: titleKey, body: { page: 'over-ons', section: 'story', type: 'short_text', expected_revision: 'revision-1', value_by_locale: { [tag]: `Updated title ${tag}` } } },
+      { key: descKey, body: { page: 'over-ons', section: 'story', type: 'paragraph', expected_revision: 'revision-1', value_by_locale: { [tag]: `Updated description ${tag}` } } },
     ]);
     await page.reload();
     await expect(card).toContainText(`Updated title ${tag}`);
@@ -87,7 +96,7 @@ for (const [locale, tag] of Object.entries(tags)) {
   });
 }
 
-test('HISWA editor retains drafts and retries only the failed field', async ({ page }) => {
+test('HISWA editor retains both drafts after a failed atomic save', async ({ page }) => {
   const state = await fixture(page);
   const { cms: messages } = JSON.parse(fs.readFileSync('src/i18n/messages/en.json', 'utf8'));
   await page.goto('/en/over-ons');
@@ -103,10 +112,29 @@ test('HISWA editor retains drafts and retries only the failed field', async ({ p
   await dialog.getByRole('button', { name: messages.save, exact: true }).click();
   await expect(dialog.getByRole('button', { name: messages.save, exact: true })).toBeEnabled();
   await expect(description).toHaveValue('Changed description');
+  expect(state.store['en-GB'][titleKey]).toBe('Title en-GB');
+  expect(state.store['en-GB'][descKey]).toBe('Description en-GB');
   state.recover();
   await dialog.getByRole('button', { name: messages.save, exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  expect(state.writes.map(({ key }) => key)).toEqual([titleKey, descKey, descKey]);
+  expect(state.writes.map(({ key }) => key)).toEqual([titleKey, descKey, titleKey, descKey]);
+});
+
+test('HISWA editor preserves drafts after a revision conflict', async ({ page }) => {
+  const state = await fixture(page);
+  const { cms: messages } = JSON.parse(fs.readFileSync('src/i18n/messages/en.json', 'utf8'));
+  await page.goto('/en/over-ons');
+  await page.getByRole('button', { name: messages.enterEdit, exact: true }).click();
+  await page.getByRole('button', { name: messages.editHiswa }).click();
+  const dialog = page.getByRole('dialog');
+  const title = dialog.getByLabel(messages.hiswaTitle, { exact: true });
+  await title.fill('My draft');
+  state.store['en-GB'][titleKey] = 'Another editor';
+  state.conflict();
+  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+  await expect(dialog.getByRole('button', { name: messages.save, exact: true })).toBeEnabled();
+  await expect(title).toHaveValue('My draft');
+  expect(state.store['en-GB'][titleKey]).toBe('Another editor');
 });
 
 test('HISWA editor blocks writes after a locale load failure', async ({ page }) => {

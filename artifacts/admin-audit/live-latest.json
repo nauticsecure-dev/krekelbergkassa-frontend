@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "runtime": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kkes8a",
+  "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kkes8a\\fixtures.sqlite",
+  "mockedApplicationHttp": false,
+  "liveDatabaseWrites": false,
+  "boundary": "Isolated local Laravel/Next deployment with a file-backed SQLite database; production environment is not verified.",
+  "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kkes8a\\browser-results.json",
+  "generatedAt": "2026-11-09T17:54:24.409Z"
+}

@@ -54,6 +54,7 @@ export interface ContentBlock {
   key: string;
   type: string;
   value: string;
+  source?: { field_id: string; record_id: string | null; field: string; source_type: string; locale: string; publication_state: string; version: string | null; permissions: { edit: string; role: string } };
 }
 
 export interface FocalPoint {
@@ -113,6 +114,8 @@ interface GlobalSettingsResponse {
 // --- Save payload shapes (what the modals build) ----------------------------
 
 export interface SaveContentArgs {
+  expected_revision?: string | null;
+  publication?: 'draft' | 'publish';
   page: string;
   section?: string;
   type?: string;
@@ -184,6 +187,7 @@ interface CmsContextValue {
 
   // Save helpers — call cmsService then update local state optimistically.
   saveText: (key: string, args: SaveContentArgs) => Promise<void>;
+  saveTextBatch: (blocks: Array<SaveContentArgs & { key: string; expected_revision: string | null }>) => Promise<void>;
   uploadImage: (key: string, file: File, page?: string) => Promise<string>;
   saveMediaMeta: (key: string, args: SaveMediaMetaArgs) => Promise<void>;
   saveSeo: (slug: string, args: SaveSeoArgs) => Promise<void>;
@@ -485,7 +489,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           section: args.section,
           type: args.type ?? 'short_text',
           value_by_locale: args.value_by_locale,
+          expected_revision: args.expected_revision,
+          publication: args.publication ?? 'publish',
         });
+        if (args.publication === 'draft') return;
         if (args.page === 'global' && /^(company|footer|header|social|cta|maps)\./.test(key)) {
           let merged: GlobalValue = args.value_by_locale;
           setGlobals((prev) => {
@@ -515,6 +522,26 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         }
       }),
     [guardCms, localeTag, assertWritablePage],
+  );
+
+  const saveTextBatch = React.useCallback(
+    (blocks: Array<SaveContentArgs & { key: string; expected_revision: string | null }>) => guardCms(async () => {
+      for (const block of blocks) assertWritablePage(block.page);
+      await cmsService.saveContentBlocks(blocks.map((block) => ({ ...block, publication: block.publication ?? 'publish' })));
+      // Update state and the reload cache only after the entire transaction commits.
+      const updates: Record<string, ContentBlock> = {};
+      for (const block of blocks) {
+        const value = block.value_by_locale[localeTag];
+        if (value == null) continue;
+        const saved = { key: block.key, type: block.type ?? 'short_text', value };
+        updates[block.key] = saved;
+        const cached = readPageCache(block.page, localeTag) ?? {};
+        writePageCache(block.page, localeTag, { ...cached, content_blocks: [
+          ...(cached.content_blocks ?? []).filter((item) => item.key !== block.key), saved,
+        ] });
+      }
+      setContent((previous) => ({ ...previous, ...updates }));
+    }), [guardCms, assertWritablePage, localeTag],
   );
 
   const uploadImage = React.useCallback(
@@ -649,6 +676,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       getSeo,
       getGlobalRaw,
       saveText,
+      saveTextBatch,
       uploadImage,
       saveMediaMeta,
       saveSeo,
@@ -677,6 +705,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       getSeo,
       getGlobalRaw,
       saveText,
+      saveTextBatch,
       uploadImage,
       saveMediaMeta,
       saveSeo,

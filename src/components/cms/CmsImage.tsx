@@ -22,7 +22,7 @@ export function CmsImage({ src, alt, title, crop, focal = { x: 50, y: 50 }, clas
     return () => query.removeEventListener('change', sync);
   }, []);
   if (mobile) { crop = mobileCrop ?? (mobileSrc ? null : crop); focal = mobileFocal ?? focal; if (mobileSrc) dimensions = mobileDimensions; }
-  if (imageStyle?.alignment) focal = { x: imageStyle.alignment === 'left' ? 0 : imageStyle.alignment === 'right' ? 100 : 50, y: focal.y };
+  if (!mobile && imageStyle?.alignment) focal = { x: imageStyle.alignment === 'left' ? 0 : imageStyle.alignment === 'right' ? 100 : 50, y: focal.y };
   const imageFilter = filter ?? (imageStyle ? `brightness(${imageStyle.brightness ?? 100}%) contrast(${imageStyle.contrast ?? 100}%) saturate(${imageStyle.saturation ?? 100}%)` : undefined);
   if (crop && crop.unit !== 'percent' && dimensions?.width && dimensions?.height) {
     crop = {x: crop.x / dimensions.width * 100, y: crop.y / dimensions.height * 100,

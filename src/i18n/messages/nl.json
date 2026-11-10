@@ -94,6 +94,9 @@
       "service": "Dienst"
     },
     "nav": {
+      "myQaFindings": "Mijn QA-bevindingen",
+      "qualityCenter": "Kwaliteitscentrum",
+      "qaUnavailable": "QA is niet beschikbaar. Controleer uw netwerk en probeer opnieuw.",
       "overview": "Overzicht",
       "planning": "Planning",
       "pos": "Kassa",
@@ -2440,13 +2443,24 @@
       "columns": {
         "time": "Tijd",
         "action": "Actie",
-        "entity": "Entity",
-        "actor": "Actor",
+        "entity": "Entiteit",
+        "actor": "Uitvoerder",
         "changes": "Wijzigingen",
         "status": "Resultaat",
         "details": "Details"
       },
-      "events": "{count} events"
+      "events": "{count} gebeurtenissen",
+      "technical": {
+        "event": "Gebeurtenis",
+        "id": "ID",
+        "entityId": "Entiteits-ID",
+        "requestId": "Verzoek-ID",
+        "correlationId": "Correlatie-ID",
+        "ip": "IP",
+        "endpoint": "Eindpunt",
+        "method": "HTTP-methode",
+        "browser": "Browser"
+      }
     },
     "boats": {
       "title": "Boten",
@@ -2574,7 +2588,7 @@
     "kassa": {
       "pos": {
         "totalIncl": "Totaal incl. btw",
-        "search": "Zoek boot, klant, product of barcode\u2026",
+        "search": "Zoek boot, klant, product of barcode…",
         "scan": "Scan",
         "onRequest": "Prijs op aanvraag",
         "calculate": "Prijs berekenen",
@@ -2589,7 +2603,7 @@
         "increase": "Aantal verhogen",
         "remove": "Verwijder",
         "contextChanged": "Er staan diensten voor een andere boot in de mand. Selecteer die boot opnieuw of pas de mand aan.",
-        "pricing": "Prijzen ophalen\u2026",
+        "pricing": "Prijzen ophalen…",
         "vat": "BTW",
         "resumeQr": "Mollie-betaling bekijken",
         "retry": "Verkoopstatus opnieuw ophalen",
@@ -4636,6 +4650,9 @@
     "altText": "Alt-tekst",
     "desktopPreview": "Desktopvoorbeeld",
     "mobilePreview": "Mobiel voorbeeld",
+    "customAlignment": "Aangepast focuspunt",
+    "mobileCrop": "Mobiele uitsnede",
+    "mobileZoom": "Mobiele zoom",
     "resetImageAdjustments": "Afbeeldingsaanpassingen herstellen",
     "imageSeoTitle": "SEO-afbeeldingstitel",
     "altPlaceholder": "Beschrijf de afbeelding…",
@@ -4691,7 +4708,9 @@
     "placeholderEmail": "info@voorbeeld.nl",
     "placeholderPhone": "+31 475 315661",
     "placeholderAnchor": "diensten",
-    "placeholderUrl": "https://voorbeeld.nl"
+    "placeholderUrl": "https://voorbeeld.nl",
+    "saveDraft": "Concept opslaan",
+    "publish": "Publiceren"
   },
   "settingsHub": {
     "saveBeforeDiagnostic": "Sla wijzigingen op voordat u een diagnose uitvoert.",
@@ -4941,5 +4960,29 @@
         "faq4Answer": "Ja, leveranciers kunnen direct op de werf afleveren. Wij melden u via SMS zodra het pakket binnen is."
       }
     }
+  },
+  "email": {
+    "receipt": "Uw kraanaanvraag is ontvangen",
+    "approved": "Uw kraanafspraak is bevestigd",
+    "rejected": "Uw kraanaanvraag is afgewezen",
+    "paid": "Uw betaling voor de kraanafspraak is ontvangen",
+    "payment": "Betaal uw kraanafspraak via iDEAL",
+    "greeting": "Beste :name,",
+    "receiptBody": "Wij beoordelen uw aanvraag. De afspraak wordt definitief zodra u onze bevestiging ontvangt.",
+    "rejectedBody": "Wij kunnen uw aanvraag helaas niet inplannen.",
+    "reference": "Referentie",
+    "boat": "Boot",
+    "services": "Diensten",
+    "date": "Datum en tijd",
+    "price": "Prijsindicatie",
+    "onRequest": "Op aanvraag",
+    "paymentRequired": "Wij vragen u de factuur voor uw kraanafspraak online te betalen.",
+    "paymentOptional": "U kunt de factuur voor uw kraanafspraak online betalen.",
+    "pay": "Betalen via iDEAL",
+    "view": "Bekijk uw aanvraag",
+    "reset": "Wachtwoord instellen",
+    "changed": "Uw wachtwoord is gewijzigd.",
+    "configured": "Uw wachtwoord is ingesteld.",
+    "expiry": "Deze link is :minutes minuten geldig."
   }
 }

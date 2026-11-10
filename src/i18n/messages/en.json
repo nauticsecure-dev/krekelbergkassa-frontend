@@ -94,6 +94,9 @@
       "service": "Service"
     },
     "nav": {
+      "myQaFindings": "My QA findings",
+      "qualityCenter": "Quality Center",
+      "qaUnavailable": "QA is unavailable. Check your network and try again.",
       "overview": "Overview",
       "planning": "Planning",
       "pos": "POS",
@@ -2007,7 +2010,18 @@
         "status": "Outcome",
         "details": "Details"
       },
-      "events": "{count} events"
+      "events": "{count} events",
+      "technical": {
+        "event": "Event",
+        "id": "ID",
+        "entityId": "Entity ID",
+        "requestId": "Request ID",
+        "correlationId": "Correlation ID",
+        "ip": "IP",
+        "endpoint": "Endpoint",
+        "method": "HTTP method",
+        "browser": "Browser"
+      }
     },
     "boats": {
       "title": "Boats",
@@ -2135,7 +2149,7 @@
     "kassa": {
       "pos": {
         "totalIncl": "Total incl. VAT",
-        "search": "Search boats, customers, products or barcodes\u2026",
+        "search": "Search boats, customers, products or barcodes…",
         "scan": "Scan",
         "onRequest": "Price on request",
         "calculate": "Calculate price",
@@ -2150,7 +2164,7 @@
         "increase": "Increase quantity",
         "remove": "Remove",
         "contextChanged": "The basket contains services for a different boat. Reselect that boat or edit the basket.",
-        "pricing": "Fetching prices\u2026",
+        "pricing": "Fetching prices…",
         "vat": "VAT",
         "resumeQr": "View Mollie payment",
         "retry": "Check sale status again",
@@ -4641,6 +4655,9 @@
     "altText": "Alt text",
     "desktopPreview": "Desktop preview",
     "mobilePreview": "Mobile preview",
+    "customAlignment": "Custom focal point",
+    "mobileCrop": "Mobile crop",
+    "mobileZoom": "Mobile zoom",
     "resetImageAdjustments": "Reset image adjustments",
     "imageSeoTitle": "Image SEO title",
     "altPlaceholder": "Describe the image…",
@@ -4696,7 +4713,9 @@
     "placeholderEmail": "info@example.com",
     "placeholderPhone": "+31 475 315661",
     "placeholderAnchor": "diensten",
-    "placeholderUrl": "https://example.com"
+    "placeholderUrl": "https://example.com",
+    "saveDraft": "Save draft",
+    "publish": "Publish"
   },
   "settingsHub": {
     "saveBeforeDiagnostic": "Save changes before running diagnostics.",
@@ -4946,5 +4965,29 @@
         "faq4Answer": "Yes, suppliers can deliver directly to the yard. We notify you by text message when your package arrives."
       }
     }
+  },
+  "email": {
+    "receipt": "Your crane request has been received",
+    "approved": "Your crane appointment is confirmed",
+    "rejected": "Your crane request was declined",
+    "paid": "Your crane appointment payment has been received",
+    "payment": "Pay for your crane appointment via iDEAL",
+    "greeting": "Dear :name,",
+    "receiptBody": "We are reviewing your request. Your appointment is final once you receive our confirmation.",
+    "rejectedBody": "Unfortunately we cannot schedule your request.",
+    "reference": "Reference",
+    "boat": "Boat",
+    "services": "Services",
+    "date": "Date and time",
+    "price": "Estimated price",
+    "onRequest": "On request",
+    "paymentRequired": "Please pay the invoice for your crane appointment online.",
+    "paymentOptional": "You can pay the invoice for your crane appointment online.",
+    "pay": "Pay via iDEAL",
+    "view": "View your request",
+    "reset": "Set your password",
+    "changed": "Your password has been changed.",
+    "configured": "Your password has been configured.",
+    "expiry": "This link expires in :minutes minutes."
   }
 }

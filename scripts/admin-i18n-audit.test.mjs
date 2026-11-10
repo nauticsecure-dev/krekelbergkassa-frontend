@@ -53,3 +53,16 @@ test('unknown, empty and runtime enum families still fail the strict gate', () =
   const calls = translationCalls("tEnum(t, 'unknown', value); tEnum(t, 'empty', value); tEnum(t, runtimeFamily, value);", 'page.tsx', { empty: {} });
   assert.equal(checkCalls(calls, { nl: {}, fr: {} }).unresolved.length, 3);
 });
+
+import { classifyCopy } from './lib/admin-i18n-audit.mjs';
+test('copy decisions survive line shifts, expire on copy changes and keep units unreviewed by default',()=>{
+ const decisions=[{match:{locale:'nl',key:'boat.mmsi',text:'MMSI'},decision:'intentional',reason:'International identifier'}];
+ const review=classifyCopy([{locale:'nl',key:'boat.mmsi',text:'MMSI',line:99},{locale:'nl',key:'boat.mmsi',text:'Changed MMSI'},{text:'kg'}],decisions);
+ assert.deepEqual(review.map(item=>item.review.decision),['intentional','unreviewed','unreviewed']);
+ assert.throws(()=>classifyCopy([{text:'kg'}],[{match:{text:'kg'},decision:'intentional'}]));
+});
+
+test('bounded yard adapter resolves its namespace without lending it to other scopes', () => {
+ const calls=translationCalls("function a(){const t=useYardPhotoCopy();t('error');} function b(){t('other');}");
+ assert.deepEqual(calls.map(call=>call.patterns),[['yardPhotos.error'],['other']]);
+});

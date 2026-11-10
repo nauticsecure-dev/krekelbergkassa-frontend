@@ -130,6 +130,7 @@ Thumbs.db
 .next-admin-audit/
 artifacts/admin-audit/snapshot/
 .next-global-ux/
+.next-global-ux-live/
 .next-erp/
 
 .next-cms-text/

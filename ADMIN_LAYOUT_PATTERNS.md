@@ -17,14 +17,14 @@ Decision, 27 October 2026: five KPI columns start at `2xl` (1536px), not `xl` (1
 
 | Source | Decision | Runtime evidence |
 | --- | --- | --- |
-| AdminUi / AdminSplitLayout | Shared primitive; allowed four responsive templates with minmax(0,1fr). | Populated: kassa cart sidebar at xl (`end`) and dagafsluiting form sidebar at lg (`start`), widths 390/1280/1536. |
-| DocumentZoneEditor | Replaced fixed 1fr/18rem template with AdminSplitLayout, 18rem side. | Populated extraction template with zones + source image; drag edit checked at 390/1280/1536. |
-| KassaAnalyticsDashboard | Allowed chart ratio 1.4:1. Both tracks now minmax(0,...) with min-w-0 children. Long payment labels truncate. | Mounted on `/admin/kassa`; long method labels and populated series at 390/1280/1536. |
-| audit/page | Allowed before/key/arrow/after diff, stacked below sm; shrinkable tracks. | Long before/after values in detail modal at 390/1280/1536. |
-| kassa/page | Customer address rows use `minmax(0,1fr)` with 7rem/8rem companions. Domain pattern allowed. | Populated address modal + discount/payment cart at 390/1280; no viewport overflow. |
+| AdminUi / AdminSplitLayout | Shared primitive; allowed four responsive templates with minmax(0,1fr). | Populated: kassa cart sidebar at xl (`end`) and dagafsluiting form sidebar at lg (`start`), widths 390/1280/1536; desktop sidebar expanded and collapsed. |
+| DocumentZoneEditor | Replaced fixed 1fr/18rem template with AdminSplitLayout, 18rem side. | Populated extraction template with zones + source image; drag edit checked at 390/1280/1536 with both desktop sidebar states. |
+| KassaAnalyticsDashboard | Allowed chart ratio 1.4:1. Both tracks now minmax(0,...) with min-w-0 children. Long payment labels truncate. | Mounted on `/admin/kassa`; long method labels and populated series at 390/1280/1536 with both desktop sidebar states. |
+| audit/page | Allowed before/key/arrow/after diff, stacked below sm; shrinkable tracks. | Long before/after values in detail modal at 390/1280/1536 with both desktop sidebar states. |
+| kassa/page | Customer address rows use `minmax(0,1fr)` with 7rem/8rem companions. Domain pattern allowed. | Populated address modal + discount/payment cart at 390/1280/1536 with both desktop sidebar states; no viewport overflow. |
 
-All five patterns above have populated responsive checks. These scenarios do not establish full compliance with the desktop expanded/collapsed sidebar requirement for every pattern.
+All five patterns above have populated responsive checks, including applicable desktop expanded/collapsed sidebars at 1280/1536 and mobile at 390. The four browser scenarios run separately for each sidebar state; state is set with the real sidebar button before opening modals. This closes the documented custom-grid sidebar-state gap for these scenarios; other page workflows still require their own coverage.
 
 Equal-column grids are allowed only when their children fit; source approval is not a responsive pass. The generated source matrix lists route-to-component ownership, including delegated modals. Any new arbitrary grid requires an entry here and browser evidence at 390, 1280, 1536px with desktop sidebar expanded/collapsed. Form, table and modal evidence must use realistic long data, not just an empty page.
 
-Browser scenarios: `tests/browser/admin-review.spec.ts` (populated kassa / cash-close / document zones / audit modal). Screenshots: `../_audit/global-ux-populated-layouts/`.
+Browser scenarios: `tests/browser/admin-review.spec.ts` (populated kassa / cash-close / document zones / audit modal). Reports and attached screenshots: `artifacts/admin-audit/sidebar-final-results.json` and `artifacts/admin-audit/pos-completed-results.json`. Earlier failed attempts remain in the verification ledger history.

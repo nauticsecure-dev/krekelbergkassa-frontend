@@ -94,6 +94,9 @@
       "service": "Service"
     },
     "nav": {
+      "myQaFindings": "Meine QA-Befunde",
+      "qualityCenter": "Qualitätszentrum",
+      "qaUnavailable": "QA ist nicht verfügbar. Prüfen Sie Ihr Netzwerk und versuchen Sie es erneut.",
       "overview": "Übersicht",
       "planning": "Planung",
       "pos": "Kasse",
@@ -2001,7 +2004,18 @@
         "status": "Ergebnis",
         "details": "Details"
       },
-      "events": "{count} Ereignisse"
+      "events": "{count} Ereignisse",
+      "technical": {
+        "event": "Ereignis",
+        "id": "ID",
+        "entityId": "Entitäts-ID",
+        "requestId": "Anfrage-ID",
+        "correlationId": "Korrelations-ID",
+        "ip": "IP",
+        "endpoint": "Endpunkt",
+        "method": "HTTP-Methode",
+        "browser": "Browser"
+      }
     },
     "boats": {
       "title": "Boote",
@@ -2129,38 +2143,38 @@
     "kassa": {
       "pos": {
         "totalIncl": "Summe inkl. MwSt.",
-        "search": "Boot, Kunde, Produkt oder Barcode suchen\u2026",
+        "search": "Boot, Kunde, Produkt oder Barcode suchen…",
         "scan": "Scannen",
         "onRequest": "Preis auf Anfrage",
         "calculate": "Preis berechnen",
         "noResults": "Keine Ergebnisse",
-        "length": "L\u00e4nge",
+        "length": "Länge",
         "width": "Breite",
         "draft": "Tiefgang",
-        "chooseBoat": "Boot ausw\u00e4hlen",
+        "chooseBoat": "Boot auswählen",
         "quick": "Schnellauswahl",
         "bundles": "Pakete",
         "decrease": "Menge verringern",
-        "increase": "Menge erh\u00f6hen",
+        "increase": "Menge erhöhen",
         "remove": "Entfernen",
-        "contextChanged": "Der Warenkorb enth\u00e4lt Leistungen f\u00fcr ein anderes Boot. W\u00e4hlen Sie dieses Boot erneut oder bearbeiten Sie den Warenkorb.",
-        "pricing": "Preise werden geladen\u2026",
+        "contextChanged": "Der Warenkorb enthält Leistungen für ein anderes Boot. Wählen Sie dieses Boot erneut oder bearbeiten Sie den Warenkorb.",
+        "pricing": "Preise werden geladen…",
         "vat": "MwSt.",
         "resumeQr": "Mollie-Zahlung anzeigen",
         "retry": "Verkaufsstatus erneut abrufen",
         "confirmClear": "Alle Positionen aus dem Warenkorb entfernen?",
         "serviceDate": "Leistungsdatum",
-        "reviewQuote": "Angebot pr\u00fcfen",
-        "manualPin": "Erfassen Sie die Kartenzahlung, sobald das Terminal sie best\u00e4tigt hat.",
-        "onlineCard": "Kreditkartenzahlungen werden \u00fcber Mollie verarbeitet.",
-        "invoiceCustomer": "W\u00e4hlen Sie einen Rechnungskunden aus.",
+        "reviewQuote": "Angebot prüfen",
+        "manualPin": "Erfassen Sie die Kartenzahlung, sobald das Terminal sie bestätigt hat.",
+        "onlineCard": "Kreditkartenzahlungen werden über Mollie verarbeitet.",
+        "invoiceCustomer": "Wählen Sie einen Rechnungskunden aus.",
         "paid": "Zahlung abgeschlossen",
         "recorded": "Verkauf erfasst",
-        "openPayment": "Zahlungslink \u00f6ffnen",
+        "openPayment": "Zahlungslink öffnen",
         "viewInvoice": "Rechnung anzeigen",
         "newSale": "Neuer Verkauf",
         "printReceipt": "Beleg drucken",
-        "openReceipt": "Druckbaren Beleg \u00f6ffnen",
+        "openReceipt": "Druckbaren Beleg öffnen",
         "emailReceipt": "Beleg per E-Mail senden",
         "emailQueued": "Die E-Mail ist in der Warteschlange.",
         "receiptPending": "Das PDF wird vorbereitet. Versuchen Sie es gleich erneut."
@@ -4635,6 +4649,9 @@
     "altText": "Alt-Text",
     "desktopPreview": "Desktop-Vorschau",
     "mobilePreview": "Mobile Vorschau",
+    "customAlignment": "Eigener Fokuspunkt",
+    "mobileCrop": "Mobiler Bildausschnitt",
+    "mobileZoom": "Mobiler Zoom",
     "resetImageAdjustments": "Bildanpassungen zurücksetzen",
     "imageSeoTitle": "SEO-Bildtitel",
     "altPlaceholder": "Bild beschreiben…",
@@ -4690,7 +4707,9 @@
     "placeholderEmail": "info@beispiel.de",
     "placeholderPhone": "+31 475 315661",
     "placeholderAnchor": "diensten",
-    "placeholderUrl": "https://beispiel.de"
+    "placeholderUrl": "https://beispiel.de",
+    "saveDraft": "Entwurf speichern",
+    "publish": "Veröffentlichen"
   },
   "settingsHub": {
     "saveBeforeDiagnostic": "Änderungen vor der Diagnose speichern.",
@@ -4940,5 +4959,29 @@
         "faq4Answer": "Ja, Lieferanten können direkt an die Werft liefern. Wir informieren Sie per SMS, sobald das Paket angekommen ist."
       }
     }
+  },
+  "email": {
+    "receipt": "Ihre Krananfrage ist eingegangen",
+    "approved": "Ihr Krantermin ist bestätigt",
+    "rejected": "Ihre Krananfrage wurde abgelehnt",
+    "paid": "Ihre Zahlung für den Krantermin ist eingegangen",
+    "payment": "Bezahlen Sie Ihren Krantermin über iDEAL",
+    "greeting": "Guten Tag :name,",
+    "receiptBody": "Wir prüfen Ihre Anfrage. Der Termin ist nach unserer Bestätigung verbindlich.",
+    "rejectedBody": "Leider können wir Ihre Anfrage nicht einplanen.",
+    "reference": "Referenz",
+    "boat": "Boot",
+    "services": "Leistungen",
+    "date": "Datum und Uhrzeit",
+    "price": "Geschätzter Preis",
+    "onRequest": "Auf Anfrage",
+    "paymentRequired": "Bitte bezahlen Sie die Rechnung für Ihren Krantermin online.",
+    "paymentOptional": "Sie können die Rechnung für Ihren Krantermin online bezahlen.",
+    "pay": "Über iDEAL bezahlen",
+    "view": "Anfrage ansehen",
+    "reset": "Passwort festlegen",
+    "changed": "Ihr Passwort wurde geändert.",
+    "configured": "Ihr Passwort wurde eingerichtet.",
+    "expiry": "Dieser Link ist :minutes Minuten gültig."
   }
 }

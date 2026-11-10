@@ -152,6 +152,8 @@ export function TextEditModal({
   const [autoTranslate, setAutoTranslate] = React.useState(false);
   const [translating, setTranslating] = React.useState(false);
   const [loadingLocales, setLoadingLocales] = React.useState(false);
+  const [revision, setRevision] = React.useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = React.useState(false);
 
   React.useLayoutEffect(() => {
     if (!open) return;
@@ -163,14 +165,13 @@ export function TextEditModal({
     setAutoTranslate(false);
     let cancelled = false;
     setLoadingLocales(true);
-    void Promise.all(editorLocales.map(async (tag) => {
-      const response = await cmsService.pageContent(page, tag) as { content_blocks?: Array<{ key: string; value: string }> };
-      return [tag, response.content_blocks?.find((block) => block.key === blockKey)?.value ?? seeded[tag] ?? ''] as const;
-    })).then((entries) => {
+    setLoadFailed(false);
+    void cmsService.contentBlock(blockKey).then((response) => {
       if (cancelled) return;
-      const loaded = Object.fromEntries(entries);
+      setRevision(response.cms_revision);
+      const loaded = Object.fromEntries(editorLocales.map(tag => [tag, response.value_by_locale[tag] ?? seeded[tag] ?? '']));
       setValues(loaded); setBase(loaded);
-    }).catch((error) => { if (!cancelled) pushError(error, t('cms.loadError')); })
+    }).catch((error) => { if (!cancelled) { setLoadFailed(true); pushError(error, t('cms.loadError')); } })
       .finally(() => { if (!cancelled) setLoadingLocales(false); });
     return () => { cancelled = true; };
     // Seed once per opening rather than resetting the draft on a CMS update.
@@ -182,8 +183,8 @@ export function TextEditModal({
   // All locale tabs except the one currently being edited
   const otherLocales = editorLocales.filter((tag) => tag !== active);
 
-  const onSave = async () => {
-    if (saving || translating) return;
+  const onSave = async (publication: 'draft' | 'publish' = 'publish') => {
+    if (saving || translating || loadingLocales || loadFailed) return;
     setSaving(true);
     try {
       const outcome = await saveTextDraft({
@@ -193,9 +194,12 @@ export function TextEditModal({
           try { return await cmsService.translate(payload); }
           finally { setTranslating(false); }
         },
-        save: (value_by_locale) => saveText(blockKey, { page, section, type, value_by_locale }),
+        save: (value_by_locale) => saveText(blockKey, { page, section, type, value_by_locale, expected_revision: revision, publication }),
         onTranslated: setValues,
       });
+      if (outcome === 'unchanged' && publication === 'publish' && revision) {
+        await saveText(blockKey, { page, section, type, value_by_locale: {}, expected_revision: revision, publication });
+      }
       if (outcome !== 'unchanged') {
         push({
           tone: outcome.startsWith('translationFailed') ? 'info' : 'success',
@@ -213,7 +217,7 @@ export function TextEditModal({
   };
 
   const submitting = saving || translating;
-  const busy = submitting || loadingLocales;
+  const busy = submitting || loadingLocales || loadFailed;
 
   return (
     <Modal open={open} onClose={() => { if (!submitting) onClose(); }} size="lg">
@@ -259,15 +263,16 @@ export function TextEditModal({
         <Button variant="ghost" onClick={onClose} disabled={submitting}>
           {t('cms.cancel')}
         </Button>
+        {!blockKey.startsWith('home.svc.') && <Button variant="outline" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}
         <Button
           variant="primary"
-          onClick={onSave}
+          onClick={() => onSave('publish')}
           disabled={busy}
           leftIcon={
             busy ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined
           }
         >
-          {translating ? t('cms.translating') : t('cms.save')}
+          {translating ? t('cms.translating') : t('cms.publish')}
         </Button>
       </div>
     </Modal>
@@ -314,6 +319,10 @@ export function ImageEditModal({
   const [pendingMobileFile, setPendingMobileFile] = React.useState<File | null>(null);
   const [mobilePreviewUrl, setMobilePreviewUrl] = React.useState<string | null>(null);
   const [mobileCrop, setMobileCrop] = React.useState<MediaBlock['crop_data']>(null);
+  const [mobilePan, setMobilePan] = React.useState({x:0,y:0});
+  const [mobileZoom, setMobileZoom] = React.useState(1);
+  const [initialMobileCrop, setInitialMobileCrop] = React.useState<Area | undefined>();
+  const [initialMobilePixels, setInitialMobilePixels] = React.useState<Area | undefined>();
   const [mobileFileId, setMobileFileId] = React.useState<string | null>(null);
   const [selectedFileId, setSelectedFileId] = React.useState<string | undefined>();
   const [library, setLibrary] = React.useState<Array<{id: string; filename: string; url: string; usage: Array<{key: string; page: string}>}>>([]);
@@ -340,12 +349,15 @@ export function ImageEditModal({
     setSeoTitleValues(seededSeoTitle);
     setSeoTitleBase(seededSeoTitle);
     setPreviewSrc(block?.image_url || fallbackSrc);
-    setFocal(block?.focal_point ?? { x: 50, y: 50 });
+    setFocal(block?.image_style?.alignment ? {x:block.image_style.alignment === 'left' ? 0 : block.image_style.alignment === 'right' ? 100 : 50, y:block.focal_point?.y ?? 50} : block?.focal_point ?? { x: 50, y: 50 });
     setOverlay(block?.overlay ?? 0);
     setImageStyle({ ...defaultStyle, ...block?.image_style });
     setMobileFocal(block?.mobile_focal_point ?? block?.focal_point ?? {x:50,y:50});
     setMobileFileId(block?.mobile_file_id ?? null);
     setMobileCrop(block?.mobile_crop_data ?? null);
+    setInitialMobileCrop(block?.mobile_crop_data?.unit === 'percent' ? block.mobile_crop_data : undefined);
+    setInitialMobilePixels(block?.mobile_crop_data && block.mobile_crop_data.unit !== 'percent' ? block.mobile_crop_data : undefined);
+    setMobilePan({x:0,y:0}); setMobileZoom(1);
     setSelectedFileId(undefined);
     setPendingFile(null);
     setPendingMobileFile(null);
@@ -478,7 +490,7 @@ export function ImageEditModal({
         file_id: selectedFileId,
         mobile_file_id: savedMobileFileId,
         mobile_focal_point: mobileFocal,
-        mobile_crop_data: pendingMobileFile ? null : mobileCrop,
+        mobile_crop_data: mobileCrop,
         image_style: imageStyle,
         alt_by_locale: Object.keys(alt_by_locale).length ? alt_by_locale : undefined,
         seo_title_by_locale: Object.keys(seo_title_by_locale).length ? seo_title_by_locale : undefined,
@@ -505,6 +517,13 @@ export function ImageEditModal({
       setUploading(false);
     }
   };
+
+  const resetMobileCrop = () => {
+    setMobileCrop(null); setInitialMobileCrop(undefined); setInitialMobilePixels(undefined);
+    setMobilePan({x:0,y:0}); setMobileZoom(1);
+  };
+  const block = getMedia(blockKey);
+  const mobileSource = mobilePreviewUrl || (mobileFileId ? library.find(file => file.id === mobileFileId)?.url || (mobileFileId === block?.mobile_file_id ? block.mobile_image_url : null) : null) || previewSrc;
 
   return (
     <Modal open={open} onClose={() => { if (!saving) onClose(); }} size="lg">
@@ -603,20 +622,20 @@ export function ImageEditModal({
             catch(error) { pushError(error, t('cms.saveError')); }
           }}>{t('cms.deleteUnusedImage')}</Button>}
           <label className="block text-sm">{t('cms.mobileImage')}
-            <SearchSelect className={fieldClass} value={mobileFileId ?? ''} onChange={e => { setMobileFileId(e.target.value || null); setPendingMobileFile(null); setMobileCrop(null); }}>
+            <SearchSelect className={fieldClass} value={mobileFileId ?? ''} onChange={e => { setMobileFileId(e.target.value || null); setPendingMobileFile(null); resetMobileCrop(); }}>
               <option value="">{t('cms.useDesktopImage')}</option>
               {library.map(file => <option key={file.id} value={file.id}>{file.filename}</option>)}
             </SearchSelect>
           </label>
           <label className="block text-sm">{t('cms.uploadMobileImage')}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={saving || uploading} onChange={e => {
             const file = e.target.files?.[0];
-            if (file && validateImage(file)) { setPendingMobileFile(file); setMobileCrop(null); }
+            if (file && validateImage(file)) { setPendingMobileFile(file); resetMobileCrop(); }
             e.target.value = '';
           }} /></label>
           {(['x','y'] as const).map(axis => {
             const label = t('cms.desktopFocal', { axis });
             return <label key={axis} className="block text-sm">{label}: {focal[axis]}
-              <input aria-label={label} className="w-full" type="range" min="0" max="100" value={focal[axis]} onChange={e => setFocal(v => ({...v,[axis]:Number(e.target.value)}))} />
+              <input aria-label={label} className="w-full" type="range" min="0" max="100" value={focal[axis]} onChange={e => { setFocal(v => ({...v,[axis]:Number(e.target.value)})); setImageStyle(v => ({...v, alignment:undefined})); }} />
             </label>;
           })}
           {(['x','y'] as const).map(axis => {
@@ -632,7 +651,8 @@ export function ImageEditModal({
           ] as const).map(([field, labelKey]) => <label key={field} className="block text-sm">{t(labelKey)}: {imageStyle[field] ?? 100}%
             <input aria-label={t(labelKey)} className="w-full" type="range" min="0" max="200" value={imageStyle[field] ?? 100} onChange={e => setImageStyle(v => ({...v,[field]:Number(e.target.value)}))} />
           </label>)}
-          <label className="block text-sm">{t('cms.alignment')}<SearchSelect className={fieldClass} value={imageStyle.alignment ?? 'center'} onChange={e => setImageStyle(v => ({...v, alignment:e.target.value as ImageStyle['alignment']}))}>
+          <label className="block text-sm">{t('cms.alignment')}<SearchSelect className={fieldClass} value={imageStyle.alignment ?? ''} onChange={e => { const alignment = (e.target.value || undefined) as ImageStyle['alignment']; setImageStyle(v => ({...v, alignment})); if (alignment) setFocal(v => ({...v,x:alignment === 'left' ? 0 : alignment === 'right' ? 100 : 50})); }}>
+            <option value="">{t('cms.customAlignment')}</option>
             <option value="left">{t('cms.alignLeft')}</option>
             <option value="center">{t('cms.alignCenter')}</option>
             <option value="right">{t('cms.alignRight')}</option>
@@ -649,6 +669,19 @@ export function ImageEditModal({
           ] as const).map(([field, labelKey]) => <label key={field} className="block text-sm">{t(labelKey)}
             <input aria-label={t(labelKey)} className="w-full" type="range" min="0" max="1" step=".05" value={imageStyle[field] ?? 0} onChange={e => setImageStyle(v => ({...v,[field]:Number(e.target.value)}))} />
           </label>)}
+        </fieldset>
+        <fieldset disabled={saving} data-cms-mobile-crop className="space-y-3">
+          <legend className="text-sm font-semibold">{t('cms.mobileCrop')}</legend>
+          <div className="relative mx-auto w-full max-w-xs overflow-hidden rounded-lg bg-navy-950" style={{aspectRatio:'3 / 4'}}>
+            <Cropper key={mobileSource} image={mobileSource} crop={mobilePan} zoom={mobileZoom} aspect={3/4}
+              initialCroppedAreaPercentages={initialMobileCrop} initialCroppedAreaPixels={initialMobilePixels}
+              onCropChange={value => { if (!saving) setMobilePan(value); }}
+              onZoomChange={value => { if (!saving) setMobileZoom(value); }}
+              onCropAreaChange={area => setMobileCrop({...area,unit:'percent'})} />
+          </div>
+          <label className="block text-sm">{t('cms.mobileZoom')}
+            <input aria-label={t('cms.mobileZoom')} className="w-full" type="range" min="1" max="3" step=".05" value={mobileZoom} onChange={e => setMobileZoom(Number(e.target.value))} />
+          </label>
         </fieldset>
         <div className="grid gap-4 sm:grid-cols-2">
           {(['desktop', 'mobile'] as const).map(device => {
@@ -668,7 +701,7 @@ export function ImageEditModal({
                   else { setFocal(point); setImageStyle(style => ({...style, alignment: undefined})); }
                 }}>
                 <CmsImage src={separateMobile ? mobileSrc! : previewSrc} alt={altValues[active] ?? ''} title={seoTitleValues[active] ?? ''}
-                  crop={previewCrop} focal={device === 'mobile' ? mobileFocal : focal} imageStyle={imageStyle} overlay={overlay}
+                  crop={previewCrop} focal={device === 'mobile' ? mobileFocal : focal} imageStyle={device === 'mobile' ? {...imageStyle, alignment:undefined} : imageStyle} overlay={overlay}
                   dimensions={separateMobile ? block?.mobile_image_dimensions : !pendingFile && !selectedFileId ? block?.image_dimensions : null} />
               </div>
             </figure>;
@@ -677,7 +710,7 @@ export function ImageEditModal({
         <Button variant="ghost" disabled={saving} onClick={() => {
           setInitialCrop(undefined); setInitialPixels(undefined); setCrop({x:0,y:0}); setZoom(1);
           setCroppedArea(null); setCroppedAreaPixels(null); setFocal({x:50,y:50}); setMobileFocal({x:50,y:50});
-          setMobileCrop(null);
+          resetMobileCrop();
           setImageStyle({...defaultStyle}); setOverlay(0);
         }}>{t('cms.resetImageAdjustments')}</Button>
         {/* Overlay slider */}

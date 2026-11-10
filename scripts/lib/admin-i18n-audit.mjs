@@ -2,10 +2,25 @@ import ts from 'typescript';
 import fs from 'node:fs';
 
 const enumRegistry = JSON.parse(fs.readFileSync(new URL('../../src/i18n/admin-enums.json', import.meta.url), 'utf8'));
+// Explicit bounded translation adapter used by the yard photo components.
+const translationAdapters = { useYardPhotoCopy: 'yardPhotos.' };
 
 const UNKNOWN = '\u0000';
 const unique = (items) => [...new Set(items)];
 const combine = (left, right) => unique(left.flatMap((a) => right.map((b) => a + b)));
+
+// Decisions match exact locale/key/text or file/kind/text. Editing copy invalidates
+// its review; line numbers are evidence, not identity (they shift after edits).
+export function classifyCopy(candidates, decisions) {
+  return candidates.map(candidate => {
+    const matches = decisions.filter(({ match }) => Object.entries(match).every(([key, value]) =>
+      (key === 'file' ? candidate[key]?.replaceAll('\\', '/') : candidate[key]) === value));
+    if (matches.length > 1) throw new Error(`Ambiguous copy decision: ${JSON.stringify(candidate)}`);
+    const decision = matches[0];
+    if (decision && (!['intentional', 'translate'].includes(decision.decision) || !decision.reason?.trim())) throw new Error('Copy decisions require a valid classification and reason');
+    return { ...candidate, review: decision ? { decision: decision.decision, reason: decision.reason } : { decision: 'unreviewed' } };
+  });
+}
 
 export function translationCalls(source, filename = 'page.tsx', enums = enumRegistry) {
   const file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -55,7 +70,14 @@ export function translationCalls(source, filename = 'page.tsx', enums = enumRegi
     }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 't' && node.arguments[0]) {
       const { line } = file.getLineAndCharacterOfPosition(node.getStart(file));
-      calls.push({ line: line + 1, expression: node.arguments[0].getText(file), patterns: resolve(node.arguments[0]) });
+      let prefix = '';
+      for (let scope = node; scope; scope = scope.parent) {
+        const declaration = (constants.get('t') ?? []).find(item => item.parent.parent.parent === scope);
+        if (!declaration) continue;
+        if (ts.isCallExpression(declaration.initializer) && ts.isIdentifier(declaration.initializer.expression)) prefix = translationAdapters[declaration.initializer.expression.text] ?? '';
+        break;
+      }
+      calls.push({ line: line + 1, expression: node.arguments[0].getText(file), patterns: resolve(node.arguments[0]).map(key => prefix + key) });
     }
     ts.forEachChild(node, visit);
   }

@@ -104,8 +104,8 @@ for (const route of ['', '/diensten', '/diensten/afspuiten', '/diensten/winterst
       await expect.poll(() => image.locator('img').first().evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
       await image.getByRole('button', { name: cms.editImage, exact: true }).click();
       const dialog = page.locator('[role="dialog"]');
-      await expect(dialog.locator('.reactEasyCrop_Image')).toBeVisible();
-      await expect.poll(() => dialog.locator('.reactEasyCrop_Image').evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+      await expect(dialog.locator('.reactEasyCrop_Image').first()).toBeVisible();
+      await expect.poll(() => dialog.locator('.reactEasyCrop_Image').first().evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
       await expect(dialog.getByRole('button', { name: cms.save, exact: true })).toBeEnabled();
       await dialog.getByRole('button', { name: cms.cancel, exact: true }).click();
     }

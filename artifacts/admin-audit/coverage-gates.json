@@ -1,0 +1,11 @@
+{
+  "typecheck": {
+    "status": "passed",
+    "evidence": "artifacts/admin-audit/typecheck-coverage.txt"
+  },
+  "policyTests": {
+    "status": "passed",
+    "cases": 15,
+    "evidence": "artifacts/admin-audit/verification-policy-tests.txt"
+  }
+}

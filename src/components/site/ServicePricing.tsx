@@ -1,4 +1,5 @@
 'use client';
+import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -185,7 +186,7 @@ export function ServicePricing({
             </fieldset>
             {ownedBoats.length > 0 && (
               <label className="block text-sm font-semibold">
-                {t('login.chooseBoat')}
+                <TranslatedText textKey={'login.chooseBoat'} />
                 <select value={boatId} className="mt-1 block w-full rounded-lg border border-navy-200 bg-white p-2"
                   onChange={(event) => {
                     const boat = ownedBoats.find((item) => item.id === event.target.value);
@@ -198,7 +199,7 @@ export function ServicePricing({
               </label>
             )}
             <div>
-              <label htmlFor={inputId} className="mb-2 block text-sm font-bold">{t('yardPricing.lengthCm')}</label>
+              <label htmlFor={inputId} className="mb-2 block text-sm font-bold"><TranslatedText textKey={'yardPricing.lengthCm'} /></label>
               <div className="flex items-center rounded-lg border border-navy-200 bg-white focus-within:border-gold-600">
                 <input id={inputId} value={length} inputMode="numeric" placeholder="820"
                   aria-invalid={!!text && !cm} aria-describedby={text && !cm ? inputId + '-error' : undefined}
@@ -209,8 +210,8 @@ export function ServicePricing({
                   className="min-w-0 flex-1 rounded-lg bg-transparent px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold-600" />
                 <span className="px-3 text-xs text-navy-700">cm</span>
               </div>
-              {cm > 0 && <p className="mt-1 text-sm text-navy-700">= {new Intl.NumberFormat(intlLocale(locale), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cm / 100)} {t('yardPricing.unit')}</p>}
-              {text && !cm && <p id={inputId + '-error'} className="mt-1 text-sm text-red-700">{t('yardPricing.invalidLength')}</p>}
+              {cm > 0 && <p className="mt-1 text-sm text-navy-700">= {new Intl.NumberFormat(intlLocale(locale), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cm / 100)} <TranslatedText textKey={'yardPricing.unit'} /></p>}
+              {text && !cm && <p id={inputId + '-error'} className="mt-1 text-sm text-red-700"><TranslatedText textKey={'yardPricing.invalidLength'} /></p>}
             </div>
           </div>
           <div className="flex min-w-0 flex-col rounded-xl bg-navy-950 p-5 text-white">
@@ -223,7 +224,7 @@ export function ServicePricing({
                 {codes.map(label).join(' + ')}
                 {quotedRule && ` · ${quotedRule.range_from_cm}–${quotedRule.range_to_cm} cm`}
               </p>
-              {current && !quote && <p className="mt-2 text-sm text-sand-100">{t('servicePage.pricingUnavailable')}</p>}
+              {current && !quote && <p className="mt-2 text-sm text-sand-100"><TranslatedText textKey={'servicePage.pricingUnavailable'} /></p>}
             </div>
             {quote && quote.services.length > 0 && (
               <div className="my-3 border-y border-white/25 py-3 text-sm">
@@ -235,26 +236,26 @@ export function ServicePricing({
                       <dd className="text-right">
                         {line.is_on_request || line.is_manual ? t('servicePage.onRequest') : line.included_by ? t('yardPricing.included') : currency(line.price_incl_vat)}
                         {!line.is_on_request && !line.is_manual && !line.included_by && line.vat_rate !== undefined && (
-                          <span className="block text-xs text-sand-100">{t('servicePage.inclVat', { rate: line.vat_rate })}</span>
+                          <span className="block text-xs text-sand-100"><TranslatedText textKey={'servicePage.inclVat'} vars={{ rate: line.vat_rate }} /></span>
                         )}
                       </dd>
                     </div>
                   ))}
                   {priced && quote.total_vat !== undefined && (
-                    <div className="flex justify-between gap-2"><dt>{t('yardPricing.vat')}</dt><dd>{currency(quote.total_vat)}</dd></div>
+                    <div className="flex justify-between gap-2"><dt><TranslatedText textKey={'yardPricing.vat'} /></dt><dd>{currency(quote.total_vat)}</dd></div>
                   )}
                 </dl>
               </div>
             )}
             <p className="mb-4 mt-3 text-xs text-sand-100">{copy('conditions')}</p>
-            {key && bookingErrorKey === key && <p role="alert" className="mb-2 text-sm">{t('servicePage.pricingUnavailable')}</p>}
+            {key && bookingErrorKey === key && <p role="alert" className="mb-2 text-sm"><TranslatedText textKey={'servicePage.pricingUnavailable'} /></p>}
             {bookable ? (
               <button type="button" className={ctaClass} disabled={openingBooking} onClick={openBooking}>
-                {t(openingBooking ? 'adminNew.common.loading' : 'nav.bookCrane')} <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
+                <TranslatedText textKey={openingBooking ? 'adminNew.common.loading' : 'nav.bookCrane'} /> <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
               </button>
             ) : (
               <Link href={cta} className={ctaClass}>
-                {t(active === 'winterstalling' ? 'yardPricing.requestStorage' : 'yardPricing.requestQuote')} <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
+                <TranslatedText textKey={active === 'winterstalling' ? 'yardPricing.requestStorage' : 'yardPricing.requestQuote'} /> <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
               </Link>
             )}
           </div>
@@ -263,7 +264,7 @@ export function ServicePricing({
 
       <section className={cn('py-9', !single && 'container-wide')} aria-labelledby={inputId + '-tariffs'}>
         <div className="mb-5 text-center">
-          <p className="mb-1 text-sm font-bold uppercase tracking-wider text-gold-800">{t('servicePage.pricesBadge')}</p>
+          <p className="mb-1 text-sm font-bold uppercase tracking-wider text-gold-800"><TranslatedText textKey={'servicePage.pricesBadge'} /></p>
           <h2 id={inputId + '-tariffs'} className="heading-display text-3xl">{copy('tariffs')}</h2>
           <p className="mt-1 text-sm text-navy-700">{copy('tariffsIntro')}</p>
           <div className="mx-auto mt-3 h-0.5 w-14 bg-gold-600" />
@@ -298,11 +299,11 @@ export function ServicePricing({
             <p>{shownService?.description ?? t('yardPricing.conditions')}</p>
             {isCmsEditing && user?.permissions?.includes('products.write') && shownService?.id && (
               <Link className="mt-3 block font-semibold underline" href={`/${locale}/admin/producten/${encodeURIComponent(shownService.id)}`}>
-                {shownService.name} · {t('yardPricing.fullEdit')}
+                {shownService.name} · <TranslatedText textKey={'yardPricing.fullEdit'} />
               </Link>
             )}
             {shownService?.slug && !single && (
-              <Link className="mt-3 inline-block font-semibold underline" href={'/' + locale + '/diensten/' + encodeURIComponent(shownService.slug)}>{t('werf.more')}</Link>
+              <Link className="mt-3 inline-block font-semibold underline" href={'/' + locale + '/diensten/' + encodeURIComponent(shownService.slug)}><TranslatedText textKey={'werf.more'} /></Link>
             )}
           </aside>
         </div>
@@ -320,14 +321,14 @@ export function ServiceTariffTable({ tariffs, cm = 0, ruleId, loading, editProdu
 }) {
   const { t, locale } = useIntl();
   const matching = ruleId ? tariffs.find((rule) => rule.id === ruleId) : tariffs.find((rule) => cm > 0 && cm >= rule.range_from_cm && cm <= rule.range_to_cm);
-  if (!tariffs.length) return <p role="status" className="p-4 text-sm">{t(loading ? 'adminNew.common.loading' : 'servicePage.pricingUnavailable')}</p>;
+  if (!tariffs.length) return <p role="status" className="p-4 text-sm"><TranslatedText textKey={loading ? 'adminNew.common.loading' : 'servicePage.pricingUnavailable'} /></p>;
 
   return (
     <table className="w-full text-sm">
       <thead className="bg-navy-950 text-white">
         <tr>
-          <th scope="col" className="px-4 py-2 text-left">{t('yardPricing.lengthCm')}</th>
-          <th scope="col" className="px-4 py-2 text-right">{t('yardPricing.tariff')}</th>
+          <th scope="col" className="px-4 py-2 text-left"><TranslatedText textKey={'yardPricing.lengthCm'} /></th>
+          <th scope="col" className="px-4 py-2 text-right"><TranslatedText textKey={'yardPricing.tariff'} /></th>
         </tr>
       </thead>
       <tbody>
@@ -341,7 +342,7 @@ export function ServiceTariffTable({ tariffs, cm = 0, ruleId, loading, editProdu
                 <Link className="mt-1 block underline" href={`/${locale}/admin/calculator/pricing?` + new URLSearchParams({
                   product: editProductCode, rule_id: rule.id,
                 })}>
-                  {t('yardPricing.fullEdit')}
+                  <TranslatedText textKey={'yardPricing.fullEdit'} />
                 </Link>
               )}
             </td>

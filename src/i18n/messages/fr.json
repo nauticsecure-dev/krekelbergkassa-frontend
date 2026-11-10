@@ -94,6 +94,9 @@
       "service": "Service"
     },
     "nav": {
+      "myQaFindings": "Mes constats QA",
+      "qualityCenter": "Centre qualité",
+      "qaUnavailable": "QA est indisponible. Vérifiez votre réseau et réessayez.",
       "overview": "Vue d’ensemble",
       "planning": "Planning",
       "pos": "Caisse",
@@ -2007,7 +2010,18 @@
         "status": "Outcome",
         "details": "Details"
       },
-      "events": "{count} events"
+      "events": "{count} events",
+      "technical": {
+        "event": "Événement",
+        "id": "ID",
+        "entityId": "ID de l’entité",
+        "requestId": "ID de la requête",
+        "correlationId": "ID de corrélation",
+        "ip": "IP",
+        "endpoint": "Point de terminaison",
+        "method": "Méthode HTTP",
+        "browser": "Navigateur"
+      }
     },
     "boats": {
       "title": "Boats",
@@ -2135,41 +2149,41 @@
     "kassa": {
       "pos": {
         "totalIncl": "Total TTC",
-        "search": "Rechercher un bateau, un client, un produit ou un code-barres\u2026",
+        "search": "Rechercher un bateau, un client, un produit ou un code-barres…",
         "scan": "Scanner",
         "onRequest": "Prix sur demande",
         "calculate": "Calculer le prix",
-        "noResults": "Aucun r\u00e9sultat",
+        "noResults": "Aucun résultat",
         "length": "Longueur",
         "width": "Largeur",
-        "draft": "Tirant d\u2019eau",
+        "draft": "Tirant d’eau",
         "chooseBoat": "Choisir un bateau",
-        "quick": "S\u00e9lection rapide",
+        "quick": "Sélection rapide",
         "bundles": "Lots",
-        "decrease": "Diminuer la quantit\u00e9",
-        "increase": "Augmenter la quantit\u00e9",
+        "decrease": "Diminuer la quantité",
+        "increase": "Augmenter la quantité",
         "remove": "Retirer",
-        "contextChanged": "Le panier contient des prestations pour un autre bateau. S\u00e9lectionnez ce bateau ou modifiez le panier.",
-        "pricing": "Chargement des prix\u2026",
+        "contextChanged": "Le panier contient des prestations pour un autre bateau. Sélectionnez ce bateau ou modifiez le panier.",
+        "pricing": "Chargement des prix…",
         "vat": "TVA",
         "resumeQr": "Voir le paiement Mollie",
-        "retry": "Rev\u00e9rifier le statut de la vente",
+        "retry": "Revérifier le statut de la vente",
         "confirmClear": "Supprimer tous les articles du panier ?",
         "serviceDate": "Date de la prestation",
-        "reviewQuote": "V\u00e9rifier le devis",
-        "manualPin": "Enregistrez le paiement par carte apr\u00e8s confirmation du terminal.",
-        "onlineCard": "Le paiement par carte de cr\u00e9dit passe par Mollie.",
-        "invoiceCustomer": "S\u00e9lectionnez un client pour la facturation.",
-        "paid": "Paiement termin\u00e9",
-        "recorded": "Vente enregistr\u00e9e",
+        "reviewQuote": "Vérifier le devis",
+        "manualPin": "Enregistrez le paiement par carte après confirmation du terminal.",
+        "onlineCard": "Le paiement par carte de crédit passe par Mollie.",
+        "invoiceCustomer": "Sélectionnez un client pour la facturation.",
+        "paid": "Paiement terminé",
+        "recorded": "Vente enregistrée",
         "openPayment": "Ouvrir le lien de paiement",
         "viewInvoice": "Voir la facture",
         "newSale": "Nouvelle vente",
-        "printReceipt": "Imprimer le re\u00e7u",
-        "openReceipt": "Ouvrir le re\u00e7u imprimable",
-        "emailReceipt": "Envoyer le re\u00e7u par e-mail",
-        "emailQueued": "L\u2019e-mail est en file d\u2019attente.",
-        "receiptPending": "Le PDF est en cours de pr\u00e9paration. R\u00e9essayez dans un instant."
+        "printReceipt": "Imprimer le reçu",
+        "openReceipt": "Ouvrir le reçu imprimable",
+        "emailReceipt": "Envoyer le reçu par e-mail",
+        "emailQueued": "L’e-mail est en file d’attente.",
+        "receiptPending": "Le PDF est en cours de préparation. Réessayez dans un instant."
       },
       "title": "Cash Desk",
       "subtitle": "Fast checkout with smart search and realtime calculation",
@@ -4641,6 +4655,9 @@
     "altText": "Alt text",
     "desktopPreview": "Aperçu sur ordinateur",
     "mobilePreview": "Aperçu mobile",
+    "customAlignment": "Point focal personnalisé",
+    "mobileCrop": "Recadrage mobile",
+    "mobileZoom": "Zoom mobile",
     "resetImageAdjustments": "Réinitialiser les réglages de l’image",
     "imageSeoTitle": "Image SEO title",
     "altPlaceholder": "Describe the image…",
@@ -4696,7 +4713,9 @@
     "placeholderEmail": "info@exemple.fr",
     "placeholderPhone": "+31 475 315661",
     "placeholderAnchor": "diensten",
-    "placeholderUrl": "https://exemple.fr"
+    "placeholderUrl": "https://exemple.fr",
+    "saveDraft": "Enregistrer le brouillon",
+    "publish": "Publier"
   },
   "settingsHub": {
     "saveBeforeDiagnostic": "Enregistrez les modifications avant le diagnostic.",
@@ -4946,5 +4965,29 @@
         "faq4Answer": "Oui, les fournisseurs peuvent livrer directement au chantier. Nous vous prévenons par SMS à l’arrivée du colis."
       }
     }
+  },
+  "email": {
+    "receipt": "Votre demande de grutage a été reçue",
+    "approved": "Votre rendez-vous de grutage est confirmé",
+    "rejected": "Votre demande de grutage a été refusée",
+    "paid": "Votre paiement pour le grutage a été reçu",
+    "payment": "Payez votre grutage via iDEAL",
+    "greeting": "Bonjour :name,",
+    "receiptBody": "Nous examinons votre demande. Le rendez-vous sera définitif après notre confirmation.",
+    "rejectedBody": "Nous ne pouvons malheureusement pas planifier votre demande.",
+    "reference": "Référence",
+    "boat": "Bateau",
+    "services": "Services",
+    "date": "Date et heure",
+    "price": "Prix estimé",
+    "onRequest": "Sur demande",
+    "paymentRequired": "Veuillez régler la facture de votre grutage en ligne.",
+    "paymentOptional": "Vous pouvez régler la facture de votre grutage en ligne.",
+    "pay": "Payer via iDEAL",
+    "view": "Voir votre demande",
+    "reset": "Définir votre mot de passe",
+    "changed": "Votre mot de passe a été modifié.",
+    "configured": "Votre mot de passe a été défini.",
+    "expiry": "Ce lien est valable :minutes minutes."
   }
 }

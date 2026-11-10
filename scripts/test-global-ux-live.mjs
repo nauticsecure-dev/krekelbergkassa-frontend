@@ -21,6 +21,14 @@ const env = { ...process.env, APP_ENV: 'testing', APP_DEBUG: 'false', GLOBAL_UX_
   AWS_ACCESS_KEY_ID: '', AWS_SECRET_ACCESS_KEY: '', SENTRY_LARAVEL_DSN: '', SENTRY_DSN: '',
   NEXT_PUBLIC_API_URL: '/api', NEXT_DIST_DIR: '.next-global-ux-live', NEXT_FONT_GOOGLE_MOCKED_RESPONSES: path.join(frontend, 'tests/fixtures/journey-fonts.cjs') };
 const children = [];
+function recordResult(result) {
+  const evidence = { ...result, runtime, database, mockedApplicationHttp: false, liveDatabaseWrites: false,
+    boundary: 'Isolated local Laravel/Next deployment with a file-backed SQLite database; production environment is not verified.',
+    report: path.join(runtime, 'browser-results.json'), generatedAt: new Date().toISOString() };
+  fs.writeFileSync(path.join(runtime, 'result.json'), JSON.stringify(evidence, null, 2));
+  fs.mkdirSync(path.join(frontend, 'artifacts/admin-audit'), { recursive: true });
+  fs.writeFileSync(path.join(frontend, 'artifacts/admin-audit/live-latest.json'), JSON.stringify(evidence, null, 2));
+}
 function run(exe, args, cwd, filename) {
   const result = spawnSync(exe, args, { cwd, env, windowsHide: true, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
   fs.writeFileSync(path.join(runtime, filename), (result.stdout || '') + (result.stderr || ''));
@@ -67,9 +75,9 @@ try {
   const args = ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.global-ux-live.config.ts'];
   if (process.env.GLOBAL_UX_LIVE_GREP) args.push('--grep', process.env.GLOBAL_UX_LIVE_GREP);
   run(process.execPath, args, frontend, 'browser.log');
-  fs.writeFileSync(path.join(runtime, 'result.json'), JSON.stringify({ status: 'passed', database, mockedApplicationHttp: false, liveDatabaseWrites: false }, null, 2));
+  recordResult({ status: 'passed' });
   console.log('Passed. Evidence: ' + runtime);
 } catch (error) {
-  fs.writeFileSync(path.join(runtime, 'result.json'), JSON.stringify({ status: 'failed', error: error.message, database, mockedApplicationHttp: false, liveDatabaseWrites: false }, null, 2));
+  recordResult({ status: 'failed', error: error.message });
   console.error(error.message); process.exitCode = 1;
 } finally { for (const child of children.reverse()) stop(child); }

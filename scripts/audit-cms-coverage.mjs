@@ -106,15 +106,28 @@ export function audit(root = process.cwd()) {
   const used = new Set(references.map(ref => ref.key));
   const orphanCandidates = keys.filter(key => !used.has(key)); // Dynamic keys prevent declaring these actual orphans.
   const unbound = findings.filter(item => item.kind === 'unbound_translation' || item.kind === 'hardcoded_jsx');
+  const roles = ['guest', 'customer', 'employee', 'admin', 'super_admin'];
+  const states = ['default', 'loading', 'empty', 'error', 'modal'];
+  const routeMatrix = routes.flatMap(route => locales.flatMap(locale => roles.flatMap(role => states.map(state => ({
+    id: hash(`${route.file}\0${locale}\0${role}\0${state}`), route: route.route, file: route.file, locale, role, state,
+    status: /\[(?!locale\])/.test(route.route) ? 'BLOCKED' : 'UNTESTED',
+    reason: /\[(?!locale\])/.test(route.route) ? 'Needs an authorized record fixture.' : 'Needs a browser scenario or a reviewed not-applicable exclusion.',
+  })))));
+  const requiredFields = fields.flatMap(field => locales.map(locale => ({
+    id: `${field.fingerprint}:${locale}`, fingerprint: field.fingerprint, key: field.key, file: field.file, locale,
+    source: field.source, status: field.key ? 'UNTESTED' : 'BLOCKED',
+    reason: field.key ? field.reason : 'Resolve dynamic binding to canonical record IDs during the route crawl.',
+  })));
   return {
-    schema: 1, generated_at: new Date().toISOString(), source_hash: sourceHash.digest('hex'),
+    schema: 2, generated_at: new Date().toISOString(), source_hash: sourceHash.digest('hex'),
+    required_fields: requiredFields, route_matrix: routeMatrix, roles, states,
     scope: 'Static TSX candidates only. Prop/data-driven copy, Blade/email templates, runtime bindings and all UI states still require discovery and verification.',
     locales, routes, fields, findings, catalog_surfaces: catalog, missing_translations: missing, orphan_candidates: orphanCandidates,
     metrics: {
       i18n: { present: keys.length * locales.length - missing.length, required: keys.length * locales.length, missing: missing.length, fallback_counts_as_translation: false },
       inline: { bound_candidates: fields.length, required_candidates: fields.length + unbound.length, missing_candidates: unbound.length, verified: 0 },
       functional: { pass: 0, fail: 0, blocked: 0, stale: 0, untested: fields.length * locales.length, required: fields.length * locales.length },
-      route_states: { pass: 0, untested: routes.length * locales.length, required: routes.length * locales.length, ui_state_discovery: 'UNTESTED' },
+      route_states: { pass: 0, untested: routeMatrix.filter(row => row.status === 'UNTESTED').length, blocked: routeMatrix.filter(row => row.status === 'BLOCKED').length, required: routeMatrix.length, ui_state_discovery: 'UNTESTED' },
     },
     release_status: 'BLOCKED', reason: 'Static bindings are not evidence of functional CMS coverage. Staging verification is required.',
   };

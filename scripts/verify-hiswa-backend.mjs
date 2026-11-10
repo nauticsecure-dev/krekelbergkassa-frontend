@@ -83,12 +83,18 @@ for (const [locale, tag] of Object.entries({ nl: 'nl-NL', en: 'en-GB', de: 'de-D
   const description = `${marker} description ${tag}`;
   await dialog.getByLabel(messages.hiswaTitle, { exact: true }).fill(title);
   await dialog.getByLabel(messages.hiswaDescription, { exact: true }).fill(description);
-  const saved = keys.map((key) => page.waitForResponse((response) => response.url().includes(`/admin/cms/content-blocks/${key}`) && response.request().method() === 'PATCH'));
+  const saved = page.waitForResponse((response) => new URL(response.url()).pathname.endsWith('/admin/cms/content-blocks') && response.request().method() === 'PATCH');
   changed = true;
   await dialog.getByRole('button', { name: messages.save, exact: true }).click();
-  for (const response of await Promise.all(saved)) {
+  {
+    const response = await saved;
     assert.equal(response.status(), 200, `Save failed: ${response.status()} ${await response.text()}`);
-    assert.deepEqual(Object.keys(response.request().postDataJSON().value_by_locale), [tag]);
+    const payload = response.request().postDataJSON().blocks;
+    assert.equal(payload.length, 2);
+    for (const block of payload) {
+      assert.deepEqual(Object.keys(block.value_by_locale), [tag]);
+      assert.ok(Object.hasOwn(block, 'expected_revision'));
+    }
   }
   await dialog.waitFor({ state: 'detached' });
   const read = await fetch(`${api}/cms/page-content?page=over-ons&locale=${tag}&verify=${Date.now()}`, { cache: 'no-store', headers: { Accept: 'application/json' } });
@@ -109,7 +115,7 @@ for (const [locale, tag] of Object.entries({ nl: 'nl-NL', en: 'en-GB', de: 'de-D
     await publicPage.locator('[data-cms-card="over-ons.hiswa"]').getByText(title, { exact: true }).waitFor();
     await publicPage.locator('[data-cms-card="over-ons.hiswa"]').getByText(description, { exact: true }).waitFor();
   } finally { await fresh.close(); }
-  report.locales.push({ locale, tag, saveStatuses: [200, 200], uncachedApiRead: true, reload: true, freshAnonymousContext: true });
+  report.locales.push({ locale, tag, saveStatuses: [200], atomicSave: true, uncachedApiRead: true, reload: true, freshAnonymousContext: true });
   console.log(`PASS ${locale}: both fields saved, read from backend, reloaded, and rendered in a fresh anonymous context`);
 }
 // Verify later saves did not overwrite translations saved earlier.

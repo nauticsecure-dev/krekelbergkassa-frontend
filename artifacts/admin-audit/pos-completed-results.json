@@ -1,0 +1,241 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-warm.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/pos-completed",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/pos-completed-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "admin-review.spec.ts",
+      "file": "admin-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "populated kassa POS, analytics charts and address grids stay inside the viewport [sidebar expanded]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 45292,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T18:05:45.759Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-70991475abc450aa379be9bf82d03be9e0b81952.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-d6522308a5db1a3b84ce235081e0102fdd82e303.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-1625517567eb46d42467f5f53fe2d5a1835e992f.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-4173cd1fad8b7b1d5bd40a151ed95d8f37eef19a.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-2cbd16ac487a9708909aef085eda81b6d6abf62f.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-d4474e096eb7db0756431187b0ff2cff369ce635.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-8e810b834ffaad0c4c0d854cd7700b84670af87d.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-8ed21849cb1c537b745f3a799ebe1bfa20edd1e0.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-a095ac6783422be4b519cd697cc15793c283d23d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-81d84fb34aa60013bf5e",
+          "file": "admin-review.spec.ts",
+          "line": 160,
+          "column": 5
+        },
+        {
+          "title": "populated kassa POS, analytics charts and address grids stay inside the viewport [sidebar collapsed]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18357,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T18:06:31.394Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-5c0179769956dfaf59eeb7f9c2e4bd88066723a5.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-b5540ffd2197d42a02bbce09643b35801c80fdba.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-602564c0842472d112de396eeb4f7c18991fafd1.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-40e4ec76558fe137888bc8c25d32b757f71551b8.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-dbd8282e190b812f4a44a208d92c4b0a7d1971d3.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-a693e9f1ba2cd5df38ebfdb666cd3f7c46168318.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-d4e3f079e22122f36fdcf65e98e5a4826c0d0e90.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-4432d5ee8290ecb3d356dd34a7d8c0e1d64d4b49.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\pos-completed\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-8429b4b743e6a62cc7b00059e9b3865b971af225.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-dda55fd509f41ba5efff",
+          "file": "admin-review.spec.ts",
+          "line": 160,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-09T18:05:44.787Z",
+    "duration": 65256.291,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

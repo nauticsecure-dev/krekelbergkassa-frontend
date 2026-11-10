@@ -3,6 +3,8 @@
 
 import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { openQuality, qualityAccess, qualityUrls } from '@/lib/quality-navigation';
 import { usePathname } from 'next/navigation';
 import {
   CalendarDays,
@@ -51,9 +53,19 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
   const isSuperAdmin = user?.role === 'super_admin';
   const { can } = usePermission();
   const { requestLogout } = useConfirmLogout();
+  const qa = useMemo(() => qualityUrls(locale), [locale]);
+  const [qaAccess, setQaAccess] = useState({ assigned: false, portal: false });
+  useEffect(() => {
+    setQaAccess({ assigned: false, portal: false });
+    if (!qa || !user || !['super_admin', 'admin', 'employee', 'finance'].includes(user.role)) return;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    qualityAccess(qa.base, controller.signal).then(setQaAccess).catch(() => {}).finally(() => clearTimeout(timer));
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [qa, user]);
 
   const main: NavItem[] = [
-    { href: `${process.env.NEXT_PUBLIC_QUALITY_ASSIGNED_URL ?? 'http://localhost/krekelbergkassa/krekelbergkassa-backend/public/api/v1/quality/assigned'}?locale=${locale}`, icon: Wrench, label: ({nl:'Mijn QA-bevindingen',en:'My QA findings',de:'Meine QA-Befunde',fr:'Mes constats QA'} as Record<string,string>)[locale] ?? 'My QA findings', backendPage: true },
+    ...(qa && qaAccess.assigned ? [{ href: qa.assigned, icon: Wrench, label: t('adminModules.nav.myQaFindings'), backendPage: true }] : []),
     { href: `/${locale}/admin`, icon: Home, label: t('adminModules.nav.overview') },
     {
       href: `/${locale}/admin/planning`,
@@ -112,7 +124,7 @@ export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleC
     ...(can('settings.financial.view') && !can('settings.view') ? [{href: `/${locale}/admin/instellingen`, icon: Settings, label: t('admin.sidebar.settings')}] : []),
     ...(isSuperAdmin
       ? [
-          { href: `${process.env.NEXT_PUBLIC_QUALITY_URL ?? 'http://localhost/krekelbergkassa/krekelbergkassa-backend/public/api/v1/admin/quality/portal'}?locale=${locale}`, icon: Wrench, label: 'Quality Center', backendPage: true } satisfies NavItem,
+          ...(qa && qaAccess.portal ? [{ href: qa.portal, icon: Wrench, label: t('adminModules.nav.qualityCenter'), backendPage: true } satisfies NavItem] : []),
           {
             href: `/${locale}/admin/systeem`,
             icon: Wrench,
@@ -241,10 +253,21 @@ function Item({
   collapsed?: boolean;
   backendPage?: boolean;
 }) {
+  const { locale, t } = useIntl();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState('');
   const NavLink = backendPage ? 'a' : Link;
   return (
+    <>
     <NavLink
       href={href}
+      aria-disabled={pending}
+      onClick={backendPage ? async (event: React.MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
+        if (pending) return;
+        setPending(true); setError('');
+        try { await openQuality(href, locale); } catch { setError(t('adminModules.nav.qaUnavailable')); } finally { setPending(false); }
+      } : undefined}
       title={collapsed ? label : undefined}
       className={cn(
         'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
@@ -256,5 +279,7 @@ function Item({
       <Icon className={cn('h-4 w-4 transition', active ? 'text-gold-300' : 'text-sand-100/50 group-hover:text-white')} />
       <span className="flex-1">{!collapsed ? label : null}</span>
     </NavLink>
+    {error ? <p role="alert" className="px-3 text-xs text-red-300">{error}</p> : null}
+    </>
   );
 }

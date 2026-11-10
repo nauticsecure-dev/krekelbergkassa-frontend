@@ -517,15 +517,15 @@ function AuditDetailsModal({
         </button>
         {technicalOpen ? (
           <dl className="mt-3 grid gap-3 rounded-xl border border-navy-100 bg-white p-4 text-sm sm:grid-cols-2">
-            <TechnicalDetail label="Event" value={log.event_code || log.action} />
-            <TechnicalDetail label="ID" value={log.id} />
-            <TechnicalDetail label="Entity ID" value={log.entity_id} />
-            <TechnicalDetail label="Request ID" value={log.request_id} />
-            <TechnicalDetail label="Correlation ID" value={log.correlation_id} />
-            <TechnicalDetail label="IP" value={log.ip_address} />
-            <TechnicalDetail label="Endpoint" value={log.endpoint} />
-            <TechnicalDetail label="HTTP method" value={log.method} />
-            <TechnicalDetail label="Browser" value={log.user_agent} />
+            <TechnicalDetail label={t('adminNew.audit.technical.event')} value={log.event_code || log.action} />
+            <TechnicalDetail label={t('adminNew.audit.technical.id')} value={log.id} />
+            <TechnicalDetail label={t('adminNew.audit.technical.entityId')} value={log.entity_id} />
+            <TechnicalDetail label={t('adminNew.audit.technical.requestId')} value={log.request_id} />
+            <TechnicalDetail label={t('adminNew.audit.technical.correlationId')} value={log.correlation_id} />
+            <TechnicalDetail label={t('adminNew.audit.technical.ip')} value={log.ip_address} />
+            <TechnicalDetail label={t('adminNew.audit.technical.endpoint')} value={log.endpoint} />
+            <TechnicalDetail label={t('adminNew.audit.technical.method')} value={log.method} />
+            <TechnicalDetail label={t('adminNew.audit.technical.browser')} value={log.user_agent} />
           </dl>
         ) : null}
       </section> : null}

@@ -1,0 +1,800 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-audit.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/sidebar-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/sidebar-final-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node --v8-pool-size=1 scripts/admin-audit-server.cjs",
+      "env": {
+        "NEXT_DIST_DIR": ".next-admin-audit",
+        "NEXT_PUBLIC_API_URL": "/api",
+        "API_PROXY_TARGET": "http://127.0.0.1:9",
+        "RAYON_NUM_THREADS": "1",
+        "NEXT_FONT_GOOGLE_MOCKED_RESPONSES": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\fixtures\\journey-fonts.cjs"
+      },
+      "url": "http://localhost:3047/sw.js",
+      "timeout": 300000,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "admin-review.spec.ts",
+      "file": "admin-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "populated kassa POS, analytics charts and address grids stay inside the viewport [sidebar expanded]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 81017,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:45:34.506Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-8b148d5078291db22c92f0d601514c4099c799a8.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-182fda3e333743704148bd684a13769709add5d9.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-807583554fb508ed3b7d73234486497c9408b446.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-b9e35462041523db2e1165e7fa3005bc5bde3525.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-8a4949058a3c1d36ba9e017a6bf5118ce9fbe2b0.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-f4296fc928dc3e7d0faf87722630aa4c93a65e0c.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-7ffdd7d2c2d3f9b5b3a3f8c8e5a5baea47270229.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-da8dda5d181c9fd39c9c2c31b1a77b507eaecec8.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-81d84fb34aa60013bf5e",
+          "file": "admin-review.spec.ts",
+          "line": 160,
+          "column": 5
+        },
+        {
+          "title": "AdminSplitLayout start sidebar (cash close) holds populated history at lg and xl [sidebar expanded]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18336,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:46:56.093Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-AdminSplitLay-389c1-lg-and-xl-sidebar-expanded--admin-audit\\attachments\\layout-evidence-5fd985e72108ec8170c15496e186f9f5b7d4e35e.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-AdminSplitLay-389c1-lg-and-xl-sidebar-expanded--admin-audit\\attachments\\layout-evidence-a0be24d0a2c76865e32408c42e72cb6f40b77683.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-AdminSplitLay-389c1-lg-and-xl-sidebar-expanded--admin-audit\\attachments\\layout-evidence-23375b141f932d96cd56ecb50f3934f47f1997ec.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-fa791aa1159e95ec6c48",
+          "file": "admin-review.spec.ts",
+          "line": 293,
+          "column": 5
+        },
+        {
+          "title": "DocumentZoneEditor loaded zones and drag stay inside the viewport [sidebar expanded]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18663,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:47:14.480Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-DocumentZoneE-c8e43--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-bd5ca285e871030cce74d1d64d837b3a9d38c9a3.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-DocumentZoneE-c8e43--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-676243f0b7fc60656bd077e6e47bb53d21e01d41.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-DocumentZoneE-c8e43--viewport-sidebar-expanded--admin-audit\\attachments\\layout-evidence-8632da2759168c2665f22a176a4299d41dcac2c3.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-554665b010deff1b68eb",
+          "file": "admin-review.spec.ts",
+          "line": 323,
+          "column": 5
+        },
+        {
+          "title": "audit detail modal wraps long before/after values without page overflow [sidebar expanded]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19823,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:47:33.195Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-audit-detail--ee480--overflow-sidebar-expanded--admin-audit\\attachments\\layout-evidence-7a8c327cedd74b18294f621def9ff1eee4a5f529.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-audit-detail--ee480--overflow-sidebar-expanded--admin-audit\\attachments\\layout-evidence-64b8312a01f6ce4eaed98db0299ad5742b01957f.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-audit-detail--ee480--overflow-sidebar-expanded--admin-audit\\attachments\\layout-evidence-ce26c48453685b16082815baabf1bb69b28b6fff.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-df11c95182c08f99d024",
+          "file": "admin-review.spec.ts",
+          "line": 372,
+          "column": 5
+        },
+        {
+          "title": "populated kassa POS, analytics charts and address grids stay inside the viewport [sidebar collapsed]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22081,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:47:53.072Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-3508908c822cdfcaaceffb179c0568b198b1ab24.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-04c56b6d14d73234857c8f6141120136b2a534bc.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-836f5abdb01226ed46951cb44e8238afdd4eafa7.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-4af67f5c222b227504f40c132b1aee12dfa27cbf.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-f298e396a552b0c3ed2b4bf533ac6130568083b9.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-76110c3242b16a4236672fb5e52b158e99e88fa9.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-094a089c70d94a7f8575a67da545122608d43076.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-71ba5b138fc91bde48b6edbfdd5107b05ad342ed.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-dda55fd509f41ba5efff",
+          "file": "admin-review.spec.ts",
+          "line": 160,
+          "column": 5
+        },
+        {
+          "title": "AdminSplitLayout start sidebar (cash close) holds populated history at lg and xl [sidebar collapsed]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9863,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:48:15.203Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-AdminSplitLay-c53b5-g-and-xl-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-313e091849c7d3489e74ce46955f9b3438f68169.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-AdminSplitLay-c53b5-g-and-xl-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-028f25cd5a97ff49de8c0ba2c9d7c247b4a373a5.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-AdminSplitLay-c53b5-g-and-xl-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-6b57b12de34fe2dc4fe1c9434e0ab27500ecba5a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-22f0c1b442ffb31a2252",
+          "file": "admin-review.spec.ts",
+          "line": 293,
+          "column": 5
+        },
+        {
+          "title": "DocumentZoneEditor loaded zones and drag stay inside the viewport [sidebar collapsed]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7625,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:48:25.115Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-DocumentZoneE-ed01e-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-c08745eb92b6a9f6d578db476371ee555363d6e1.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-DocumentZoneE-ed01e-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-1ae4f34ab6836e86ca960e3aca52fceb7c6bb544.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-DocumentZoneE-ed01e-viewport-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-23677f2152914699cf84f7dcba07b4ec6a2c218a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-304a4e2d04a3e688f20a",
+          "file": "admin-review.spec.ts",
+          "line": 323,
+          "column": 5
+        },
+        {
+          "title": "audit detail modal wraps long before/after values without page overflow [sidebar collapsed]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11340,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:48:32.801Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-audit-detail--e1669-overflow-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-383240b628ca33d680775d3ff51b922717fa0c73.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-audit-detail--e1669-overflow-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-e7b1580d9fc2b9eb47dca29acfabd8f181884287.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-audit-detail--e1669-overflow-sidebar-collapsed--admin-audit\\attachments\\layout-evidence-a275e09c6c4f1e1d5e396cdf9bf4147e1c30a559.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-8ef8861a2c5616c744e5",
+          "file": "admin-review.spec.ts",
+          "line": 372,
+          "column": 5
+        },
+        {
+          "title": "nl: audit loading empty error recovery and technical dialog copy",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 52573,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Audit logs laden', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Audit logs laden', { exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Audit logs laden', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Audit logs laden', { exact: true })\u001b[22m\n\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:441:87",
+                    "location": {
+                      "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                      "column": 87,
+                      "line": 441
+                    },
+                    "snippet": "  439 |     });\n  440 |     await page.goto('/' + locale + '/admin/audit');\n> 441 |     await expect(page.getByText(text(locale,'adminNew.audit.loading'), {exact:true})).toBeVisible();\n      |                                                                                       ^\n  442 |     release();\n  443 |     await expect(page.getByText(text(locale,'adminNew.audit.empty'), {exact:true})).toBeVisible();\n  444 |     phase = 'error'; await page.reload();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                        "column": 87,
+                        "line": 441
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Audit logs laden', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Audit logs laden', { exact: true })\u001b[22m\n\n\n  439 |     });\n  440 |     await page.goto('/' + locale + '/admin/audit');\n> 441 |     await expect(page.getByText(text(locale,'adminNew.audit.loading'), {exact:true})).toBeVisible();\n      |                                                                                       ^\n  442 |     release();\n  443 |     await expect(page.getByText(text(locale,'adminNew.audit.empty'), {exact:true})).toBeVisible();\n  444 |     phase = 'error'; await page.reload();\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:441:87"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:48:44.190Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-nl-audit-load-56d60-y-and-technical-dialog-copy-admin-audit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-nl-audit-load-56d60-y-and-technical-dialog-copy-admin-audit\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                    "column": 87,
+                    "line": 441
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-e961d3a7307bc7bb9bf5",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        },
+        {
+          "title": "en: audit loading empty error recovery and technical dialog copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 30705,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:49:39.691Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-en-audit-load-368e4-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-a2b4d5eb01c9adc977bc715df1b48cd5bdfdd69b.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-en-audit-load-368e4-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-2c4cdb0707cfdff6c4dca6e88885025178219a3b.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-en-audit-load-368e4-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-68c410ed73c427c64c5d4c839e68a8cfae9b7103.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-5f6a3cc9959df90272fb",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        },
+        {
+          "title": "de: audit loading empty error recovery and technical dialog copy",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13022,
+                  "error": {
+                    "message": "Error: locator.click: Error: strict mode violation: locator('main').getByRole('button', { name: 'Erneut versuchen', exact: true }) resolved to 2 elements:\n    1) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 bg-navy-900 text-white hover:bg-navy-800 focus-visible:ring-navy-300 h-9 px-3 text-sm gap-1.5\">…</button> aka getByRole('button', { name: 'Erneut versuchen' }).first()\n    2) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 border border-navy-200 bg-white text-navy-800 hover:bg-navy-50 focus-visible:ring-navy-200 h-9 px-3 text-sm gap-1.5 mt-4\">…</button> aka getByRole('button', { name: 'Erneut versuchen' }).nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('main').getByRole('button', { name: 'Erneut versuchen', exact: true })\u001b[22m\n",
+                    "stack": "Error: locator.click: Error: strict mode violation: locator('main').getByRole('button', { name: 'Erneut versuchen', exact: true }) resolved to 2 elements:\n    1) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 bg-navy-900 text-white hover:bg-navy-800 focus-visible:ring-navy-300 h-9 px-3 text-sm gap-1.5\">…</button> aka getByRole('button', { name: 'Erneut versuchen' }).first()\n    2) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 border border-navy-200 bg-white text-navy-800 hover:bg-navy-50 focus-visible:ring-navy-200 h-9 px-3 text-sm gap-1.5 mt-4\">…</button> aka getByRole('button', { name: 'Erneut versuchen' }).nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('main').getByRole('button', { name: 'Erneut versuchen', exact: true })\u001b[22m\n\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:447:107",
+                    "location": {
+                      "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                      "column": 107,
+                      "line": 447
+                    },
+                    "snippet": "  445 |     await expect(page.locator('main')).toContainText('Audit service unavailable');\n  446 |     phase = 'populated';\n> 447 |     await page.locator('main').getByRole('button',{name:text(locale,'adminNew.states.retry'),exact:true}).click();\n      |                                                                                                           ^\n  448 |     await page.getByRole('button',{name:'Locale audit record',exact:true}).click();\n  449 |     const dialog=page.getByRole('dialog');\n  450 |     await dialog.getByRole('button',{name:text(locale,'adminNew.audit.technicalDetails'),exact:true}).click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                        "column": 107,
+                        "line": 447
+                      },
+                      "message": "Error: locator.click: Error: strict mode violation: locator('main').getByRole('button', { name: 'Erneut versuchen', exact: true }) resolved to 2 elements:\n    1) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 bg-navy-900 text-white hover:bg-navy-800 focus-visible:ring-navy-300 h-9 px-3 text-sm gap-1.5\">…</button> aka getByRole('button', { name: 'Erneut versuchen' }).first()\n    2) <button class=\"inline-flex items-center justify-center rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 border border-navy-200 bg-white text-navy-800 hover:bg-navy-50 focus-visible:ring-navy-200 h-9 px-3 text-sm gap-1.5 mt-4\">…</button> aka getByRole('button', { name: 'Erneut versuchen' }).nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('main').getByRole('button', { name: 'Erneut versuchen', exact: true })\u001b[22m\n\n\n  445 |     await expect(page.locator('main')).toContainText('Audit service unavailable');\n  446 |     phase = 'populated';\n> 447 |     await page.locator('main').getByRole('button',{name:text(locale,'adminNew.states.retry'),exact:true}).click();\n      |                                                                                                           ^\n  448 |     await page.getByRole('button',{name:'Locale audit record',exact:true}).click();\n  449 |     const dialog=page.getByRole('dialog');\n  450 |     await dialog.getByRole('button',{name:text(locale,'adminNew.audit.technicalDetails'),exact:true}).click();\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:447:107"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:50:11.316Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-de-audit-load-214dd-y-and-technical-dialog-copy-admin-audit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-de-audit-load-214dd-y-and-technical-dialog-copy-admin-audit\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                    "column": 107,
+                    "line": 447
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-5e555b82486e699fbda4",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        },
+        {
+          "title": "fr: audit loading empty error recovery and technical dialog copy",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 65556,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Loading audit logs', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Loading audit logs', { exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Loading audit logs', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Loading audit logs', { exact: true })\u001b[22m\n\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:441:87",
+                    "location": {
+                      "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                      "column": 87,
+                      "line": 441
+                    },
+                    "snippet": "  439 |     });\n  440 |     await page.goto('/' + locale + '/admin/audit');\n> 441 |     await expect(page.getByText(text(locale,'adminNew.audit.loading'), {exact:true})).toBeVisible();\n      |                                                                                       ^\n  442 |     release();\n  443 |     await expect(page.getByText(text(locale,'adminNew.audit.empty'), {exact:true})).toBeVisible();\n  444 |     phase = 'error'; await page.reload();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                        "column": 87,
+                        "line": 441
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Loading audit logs', { exact: true })\nExpected: visible\nTimeout: 45000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 45000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Loading audit logs', { exact: true })\u001b[22m\n\n\n  439 |     });\n  440 |     await page.goto('/' + locale + '/admin/audit');\n> 441 |     await expect(page.getByText(text(locale,'adminNew.audit.loading'), {exact:true})).toBeVisible();\n      |                                                                                       ^\n  442 |     release();\n  443 |     await expect(page.getByText(text(locale,'adminNew.audit.empty'), {exact:true})).toBeVisible();\n  444 |     phase = 'error'; await page.reload();\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:441:87"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:51:03.018Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-fr-audit-load-5b551-y-and-technical-dialog-copy-admin-audit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-final\\admin-review-fr-audit-load-5b551-y-and-technical-dialog-copy-admin-audit\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                    "column": 87,
+                    "line": 441
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-eadbf0b97f88c4133dfa",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-09T17:45:22.224Z",
+    "duration": 475504.03500000003,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

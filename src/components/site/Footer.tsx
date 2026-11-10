@@ -6,6 +6,7 @@ import { Logo } from '@/components/ui/Logo';
 import { useIntl } from '@/i18n/IntlProvider';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { EditSafeLink } from '@/components/cms/EditSafeLink';
 import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { useCms } from '@/components/cms/CmsProvider';
 
@@ -62,15 +63,15 @@ export function Footer({ className }: { className?: string }) {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-sand-100/70" />
-              <a href={companyInfo.phoneHref} className="hover:text-white">
+              <EditSafeLink href={companyInfo.phoneHref} className="hover:text-white">
                 <CompanyText field="phone" />
-              </a>
+              </EditSafeLink>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-sand-100/70" />
-              <a href={companyInfo.emailHref} className="hover:text-white">
+              <EditSafeLink href={companyInfo.emailHref} className="hover:text-white">
                 <CompanyText field="email" />
-              </a>
+              </EditSafeLink>
             </li>
           </ul>
         </div>
