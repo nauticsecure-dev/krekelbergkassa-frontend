@@ -195,7 +195,6 @@ export function AdminSearchTrigger({
   onClick: () => void;
   className?: string;
 }) {
-  const { t } = useIntl();
   return (
     <button
       type="button"

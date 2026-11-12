@@ -43,6 +43,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { workOrdersService } from '@/lib/services';
+import { usePermission } from '@/lib/permissions';
+import { WorkOrderReservation, type Reservation } from '@/components/admin/yard/WorkOrderReservation';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -119,6 +121,7 @@ export default function WorkOrderDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
   const { locale, t } = useIntl();
+  const { can } = usePermission();
   const { push, pushError } = useToast();
   const dateLocale = intlLocale(locale);
 
@@ -432,6 +435,10 @@ export default function WorkOrderDetailPage() {
                       ...(order.estimated_hours != null ? [{ label: t('adminNew.workOrders.detail.estimatedHours'), value: `${Number(order.estimated_hours).toFixed(2)}u` }] : []),
                     ]}
                   />
+                  {can('planning.manage') && can('work_orders.write') && str(order, 'boat_id') && str(order, 'assigned_to_user_id')
+                    && !['draft', 'completed', 'invoiced', 'cancelled', 'archived'].includes(status) && (
+                    <WorkOrderReservation key={id} id={id} initial={order.yard_reservation as Reservation | null | undefined} onSaved={() => { void data.refetch(); }} />
+                  )}
                   {str(order, 'description', 'notes') ? (
                     <div className="rounded-xl border border-navy-100/70 bg-sand-50/40 p-4 text-sm text-navy-700">
                       {str(order, 'description', 'notes')}

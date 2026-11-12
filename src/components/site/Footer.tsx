@@ -8,17 +8,17 @@ import { Mail, MapPin, Phone } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { EditSafeLink } from '@/components/cms/EditSafeLink';
 import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
-import { useCms } from '@/components/cms/CmsProvider';
+import { EditableGlobalText } from '@/components/cms/EditableGlobalText';
 
 export function Footer({ className }: { className?: string }) {
   const { t, locale } = useIntl();
-  const { getGlobal } = useCms();
   const companyInfo = useCompanyInfo();
   const year = new Date().getFullYear();
 
   // Trello #112: global settings flow through here read-only. Editing happens
   // via the CMS toolbar's Global modal; fall back to the existing values.
-  const tagline = getGlobal('footer.tagline', `${t('brand.tagline')}. Vakmanschap, planning en stalling sinds 1972.`);
+  const tagline = `${t('brand.tagline')}. ${({ nl: 'Vakmanschap, planning en stalling sinds 1972.', en: 'Craftsmanship, planning and boat storage since 1972.',
+    de: 'Handwerk, Planung und Bootslagerung seit 1972.', fr: 'Savoir-faire, planification et stockage de bateaux depuis 1972.' } as Record<string, string>)[locale]}`;
 
   return (
     <footer className={cn('mt-24 bg-navy-900 text-sand-100', className)}>
@@ -26,7 +26,7 @@ export function Footer({ className }: { className?: string }) {
         <div>
           <Logo variant="light" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-sand-100/80">
-            {tagline}
+            <EditableGlobalText settingKey="footer.tagline" fallback={tagline} />
           </p>
         </div>
         <div>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useCms, useCmsEditorOpen, type LocaleTag } from './CmsProvider';
+import { fieldSource } from './field-source';
 
 const PAGE = 'over-ons';
 const FIELDS = [
@@ -19,7 +20,7 @@ const fieldClass = 'w-full rounded-lg border border-navy-200 bg-white px-3 py-2 
 
 export function EditableHiswaCard() {
   const { t } = useIntl();
-  const { isCmsEditing, retainCmsDrafts, getText } = useCms();
+  const { isCmsEditing, retainCmsDrafts, getText, getContentBlock, canEdit, localeTag } = useCms();
   const [open, setOpen] = useCmsEditorOpen();
   const trigger = React.useRef<HTMLButtonElement>(null);
   return (
@@ -27,8 +28,8 @@ export function EditableHiswaCard() {
       <div data-cms-card="over-ons.hiswa" className={`mt-6 flex items-center gap-3 rounded-xl border border-navy-100 bg-sand-50/50 p-4 ${isCmsEditing ? 'outline-dashed outline-2 outline-gold-400/60' : ''}`}>
         <Award aria-hidden className="h-5 w-5 shrink-0 text-gold-600" />
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-navy-900">{getText(FIELDS[0].key, t('over.hiswaTitle'))}</div>
-          <div className="text-xs text-navy-500">{getText(FIELDS[1].key, t('over.hiswaDesc'))}</div>
+          <div {...fieldSource(FIELDS[0].key, localeTag, getContentBlock(FIELDS[0].key), canEdit)} className="text-sm font-semibold text-navy-900">{getText(FIELDS[0].key, t('over.hiswaTitle'))}</div>
+          <div {...fieldSource(FIELDS[1].key, localeTag, getContentBlock(FIELDS[1].key), canEdit)} className="text-xs text-navy-500">{getText(FIELDS[1].key, t('over.hiswaDesc'))}</div>
         </div>
         {isCmsEditing ? (
           <button ref={trigger} type="button" data-cms-edit aria-label={t('cms.editHiswa')} title={t('cms.editHiswa')}
@@ -101,7 +102,8 @@ function HiswaEditor({ onClose }: { onClose: () => void }) {
         return { key: field.key, page: PAGE, section: 'story', type: field.type,
           value_by_locale: changed, expected_revision: revisions[field.key] };
       });
-      if (blocks.some((block) => Object.keys(block.value_by_locale).length)) await saveTextBatch(blocks);
+      const changed = blocks.filter(block => Object.keys(block.value_by_locale).length);
+      if (changed.length) await saveTextBatch(changed);
       push({ tone: 'success', title: t('cms.saved') });
       onClose();
     } catch (error) {
@@ -132,7 +134,7 @@ function HiswaEditor({ onClose }: { onClose: () => void }) {
       </div>
       <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
         <Button variant="ghost" disabled={saving} onClick={onClose}>{t('cms.cancel')}</Button>
-        <Button variant="primary" disabled={busy || failed} onClick={save}>{t('cms.save')}</Button>
+        <Button variant="primary" disabled={busy || failed} onClick={save}>{t('cms.publish')}</Button>
       </div>
     </Modal>
   );

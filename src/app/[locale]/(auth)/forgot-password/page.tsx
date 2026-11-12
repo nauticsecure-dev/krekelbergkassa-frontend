@@ -6,6 +6,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/services';
+import { customerReturnTo, loginPath } from '@/lib/auth-routes';
 import { useAuth } from '@/lib/auth-context';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { ArrowLeft, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
@@ -21,6 +22,8 @@ function PasswordRecovery() {
   const { user, invalidateSession } = useAuth();
   const params = useSearchParams();
   const token = params.get('token');
+  const returnTo = customerReturnTo(params.get('returnTo'));
+  const recoveryPath = `/${locale}/forgot-password${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`;
   const emailFromLink = params.get('email');
   const setup = params.has('setup');
   const [email, setEmail] = React.useState(emailFromLink ?? '');
@@ -40,7 +43,7 @@ function PasswordRecovery() {
         await authService.resetCustomerPassword(address, token, password, confirmation);
         if (user?.role === 'customer' && user.email.toLowerCase() === address.toLowerCase()) invalidateSession();
       } else {
-        await authService.requestCustomerPassword(address, locale);
+        await authService.requestCustomerPassword(address, locale, returnTo);
       }
       setSent(true);
     } catch (err) {
@@ -61,7 +64,7 @@ function PasswordRecovery() {
         </h2>
         {!token && <p className="mt-2 text-sm text-navy-500"><TranslatedText textKey='forgot.sentDescription' vars={{ email: address }} /></p>}
 
-        <Link href={`/${locale}/login`} className="mt-7 block">
+        <Link href={loginPath(locale, returnTo)} className="mt-7 block">
           <Button
             variant="outline"
             size="lg"
@@ -120,7 +123,7 @@ function PasswordRecovery() {
           </label>
         </>}
         {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
-        {error && token && <Link className="text-sm underline" href={"/" + locale + "/forgot-password"}><TranslatedText textKey="forgot.submit" /></Link>}
+        {error && token && <Link className="text-sm underline" href={recoveryPath}><TranslatedText textKey="forgot.submit" /></Link>}
         <Button
           disabled={busy}
           type="submit"
@@ -132,7 +135,7 @@ function PasswordRecovery() {
           {<TranslatedText textKey={token ? 'login.setPassword' : 'forgot.submit'} />}
         </Button>
 
-        <Link href={`/${locale}/login`}>
+        <Link href={loginPath(locale, returnTo)}>
           <Button
             type="button"
             variant="outline"

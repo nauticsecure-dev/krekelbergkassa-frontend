@@ -1,12 +1,13 @@
 'use client';
 
+import { DraftReview } from '@/components/site/CanonicalServiceEditor';
 import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
   BarChart3,
@@ -91,6 +92,9 @@ function TariffSection({ productId }: { productId: string }) {
   const [editTarget, setEditTarget] = React.useState<PricingRule | null>(null);
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
   const [form, setForm] = React.useState<TariffForm>(EMPTY_TARIFF);
+  const [changeReason, setChangeReason] = React.useState('');
+  const [draftId, setDraftId] = React.useState('');
+  const [deactivating, setDeactivating] = React.useState(false);
 
   const rules = useQuery([productId, 'pricing-rules'], () =>
     pricingService.rules({ product_id: productId, per_page: 100 }),
@@ -105,6 +109,8 @@ function TariffSection({ productId }: { productId: string }) {
   const openCreate = () => {
     if (!canUpdatePricing) return;
     setEditTarget(null);
+    setChangeReason('');
+    setDeactivating(false);
     setForm(EMPTY_TARIFF);
     setOpen(true);
   };
@@ -112,12 +118,13 @@ function TariffSection({ productId }: { productId: string }) {
   const openEdit = (rule: PricingRule) => {
     if (!canUpdatePricing) return;
     setEditTarget(rule);
+    setChangeReason(''); setDeactivating(false);
     setForm({
       range_from_m: (rule.range_from_cm / 100).toString(),
       range_to_m: rule.range_to_cm >= 99999 ? '999' : (rule.range_to_cm / 100).toString(),
       price_incl_vat_euros: eur(rule.price_incl_vat),
       price_excl_vat_euros: eur(rule.price_excl_vat),
-      vat_rate: '21',
+      vat_rate: String(rule.vat_rate ?? 21),
       price_type: rule.price_type ?? 'fixed',
       channel: rule.channel ?? 'all',
     });
@@ -137,9 +144,12 @@ function TariffSection({ productId }: { productId: string }) {
 
     try {
       if (editTarget) {
-        await updateRule.mutate({
+        const result = await updateRule.mutate({
           id: editTarget.id,
           data: {
+            expected_revision: editTarget.revision,
+            change_reason: changeReason,
+            active: !deactivating,
             range_from_cm: rangeFrom,
             range_to_cm: rangeTo,
             price_incl_vat: inclVat,
@@ -148,8 +158,10 @@ function TariffSection({ productId }: { productId: string }) {
             channel: form.channel,
           },
         });
+        setDraftId(result.draft_id ?? '');
       } else {
-        await createRule.mutate({
+        const result = await createRule.mutate({
+          change_reason: changeReason,
           product_id: productId,
           range_from_cm: rangeFrom,
           range_to_cm: rangeTo,
@@ -159,12 +171,13 @@ function TariffSection({ productId }: { productId: string }) {
           vat_rate: parseFloat(form.vat_rate),
           channel: form.channel,
         });
+        setDraftId(result.draft_id ?? '');
       }
       push({ tone: 'success', title: t('adminNew.calculator.pricing.saved') });
       setOpen(false);
       void rules.refetch().catch(() => undefined);
-    } catch {
-      push({ tone: 'error', title: t('adminNew.common.operationFailed') });
+    } catch (error) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(error) });
     }
   };
 
@@ -187,6 +200,7 @@ function TariffSection({ productId }: { productId: string }) {
 
   return (
     <>
+      {draftId && <DraftReview draftId={draftId} onPublished={() => { setDraftId(''); void rules.refetch(); }} />}
       <AdminSectionCard
         title={t('globalUx.pricing.tariffTitle')}
         icon={Tag}
@@ -236,7 +250,7 @@ function TariffSection({ productId }: { productId: string }) {
                       {canUpdatePricing ? <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={() => openEdit(rule)}>
                           {<TranslatedText textKey={'adminNew.common.edit'} />}</Button>
-                        <Button variant="ghost" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setDeleteTarget(rule.id)}
+                        <Button variant="ghost" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => { openEdit(rule); setDeactivating(true); }}
                           className="text-rose-600 hover:bg-rose-50">
                           {<TranslatedText textKey={'adminNew.common.delete'} />}</Button>
                       </div> : null}
@@ -252,8 +266,9 @@ function TariffSection({ productId }: { productId: string }) {
       {/* Edit / Create modal */}
       <Modal open={canUpdatePricing && open} onClose={() => setOpen(false)} size="md">
         <form onSubmit={(event) => { event.preventDefault(); void onSave(); }}>
-        <AdminModalHeader title={editTarget ? t('globalUx.pricing.editTariff') : t('globalUx.pricing.newTariff')} />
+        <AdminModalHeader title={deactivating ? t('globalUx.pricing.deleteTariff') : editTarget ? t('globalUx.pricing.editTariff') : t('globalUx.pricing.newTariff')} />
         <AdminModalBody>
+          <Input label={t('smartServices.reason')} value={changeReason} required minLength={3} onChange={(e) => setChangeReason(e.target.value)} />
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{<TranslatedText textKey={'globalUx.pricing.fromMeters'} />}</label>
@@ -366,6 +381,9 @@ export default function ProductDetailPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedReturn = searchParams.get('return_to');
+  const returnTo = requestedReturn?.startsWith('/' + locale + '/') && !requestedReturn.includes('://') && !requestedReturn.includes('\\') ? requestedReturn : '/' + locale + '/admin/producten';
   const params = useParams();
   const id = String(params.id);
   const dateLocale = intlLocale(locale);
@@ -478,7 +496,7 @@ export default function ProductDetailPage() {
         subtitle={p?.code ?? t('adminNew.common.loading')}
         rightSlot={
           <div className="flex flex-wrap gap-2">
-            <Link href={`/${locale}/admin/producten`}>
+            <Link href={returnTo}>
               <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
                 {<TranslatedText textKey={'adminNew.products.backToList'} />}
               </Button>

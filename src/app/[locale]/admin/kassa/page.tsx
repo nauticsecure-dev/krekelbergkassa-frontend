@@ -1,4 +1,5 @@
 "use client";
+import { useCatalogUpdates } from '@/lib/catalog-events';
 
 import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
@@ -55,10 +56,12 @@ import type { Boat, Customer, Product, KassaCheckoutResponse, KassaQrSession } f
 import { formatCurrency, intlLocale } from "@/lib/format";
 import { productPriceExclEuros, productPriceInclEuros } from "@/lib/products";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
+import { generateRequestId } from "@/lib/api";
 import { canAccessAdminRoute } from "@/lib/auth-routes";
 import { useAuth } from "@/lib/auth-context";
 import { usePermission } from '@/lib/permissions';
 import { useIntl } from "@/i18n/IntlProvider";
+import { tEnum } from "@/i18n/admin-enums";
 import { useToast } from "@/components/ui/ToastProvider";
 import { getDeviceId } from "@/lib/device";
 import { cn } from "@/lib/cn";
@@ -103,6 +106,7 @@ function catalogIcon(name: string): LucideIcon {
 }
 
 export default function KassaPage() {
+  const catalogStatus = useCatalogUpdates();
   const { can } = usePermission();
   const { user } = useAuth();
   const canCheckout = can('kassa.checkout');
@@ -185,17 +189,45 @@ export default function KassaPage() {
 
   const searchRef = React.useRef<HTMLInputElement>(null);
 
-  const pos = (key: string) => t("adminNew.kassa.pos." + key);
+  const pos = (key: string) => tEnum(t, "adminNew.kassa.pos", key);
   const [selectedBoat, setSelectedBoat] = React.useState<Boat | null>(null);
   const [pickedCustomer, setPickedCustomer] = React.useState<(Pick<Customer, "id" | "name"> & { email?: string | null }) | null>(null);
   const [serviceProduct, setServiceProduct] = React.useState<Product | null>(null);
   const [serviceLength, setServiceLength] = React.useState("");
+  const [serviceWidth, setServiceWidth] = React.useState("");
+  const [serviceWeight, setServiceWeight] = React.useState("");
   const [serviceDate, setServiceDate] = React.useState("");
   const [editingLine, setEditingLine] = React.useState<CartItem | null>(null);
   const [showPayment, setShowPayment] = React.useState(false);
   const [showClear, setShowClear] = React.useState(false);
   const [showBoats, setShowBoats] = React.useState(false);
   const [sale, setSale] = React.useState<KassaCheckoutResponse | null>(null);
+  const [saleCustomerId, setSaleCustomerId] = React.useState("");
+  const [checkingSale, setCheckingSale] = React.useState(false);
+  const saleStorageKey = user?.id ? "kassa.sale." + user.id : null;
+  React.useEffect(() => {
+    if (!saleStorageKey) return;
+    try {
+      const saved = sessionStorage.getItem(saleStorageKey);
+      const restored = saved ? JSON.parse(saved) : null;
+      setSale(restored?.sale ?? null);
+      setSaleCustomerId(restored?.customerId ?? "");
+    } catch {
+      setSale(null);
+      setSaleCustomerId("");
+    }
+  }, [saleStorageKey]);
+  const rememberSale = React.useCallback((next: KassaCheckoutResponse | null, customerId = "") => {
+    setSale(next);
+    setSaleCustomerId(customerId);
+    if (!saleStorageKey) return;
+    try {
+      if (next) sessionStorage.setItem(saleStorageKey, JSON.stringify({ sale: next, customerId }));
+      else sessionStorage.removeItem(saleStorageKey);
+    } catch {
+      // The current sale remains open in component state.
+    }
+  }, [saleStorageKey]);
   const [receiptBusy, setReceiptBusy] = React.useState(false);
   const [receiptUrl, setReceiptUrl] = React.useState<string | null>(null);
   const [receiptStatus, setReceiptStatus] = React.useState("");
@@ -269,12 +301,17 @@ export default function KassaPage() {
   React.useEffect(() => {
     if (!checkoutStorageKey) return;
     try {
+      if (saleStorageKey && sessionStorage.getItem(saleStorageKey)) {
+        sessionStorage.removeItem(checkoutStorageKey);
+        setSubmitted(null);
+        return;
+      }
       const saved = sessionStorage.getItem(checkoutStorageKey);
       if (saved) setSubmitted(JSON.parse(saved));
     } catch {
       // Checkout still supports retry while the page remains open.
     }
-  }, [checkoutStorageKey]);
+  }, [checkoutStorageKey, saleStorageKey]);
   const rememberCheckout = (request: Parameters<typeof kassaService.checkout>[0] | null) => {
     setSubmitted(request);
     if (!checkoutStorageKey) return;
@@ -285,7 +322,8 @@ export default function KassaPage() {
       // The current attempt remains available in component state.
     }
   };
-  const quote = useMutation(kassaService.quote);
+  const quote = useMutation(kassaService.createQuotation);
+  const [quotation, setQuotation] = React.useState<{ id: string; reference: string } | null>(null);
 
   // Debounce picker search so we don't fire on every keystroke.
   React.useEffect(() => {
@@ -467,7 +505,7 @@ export default function KassaPage() {
     ["manual", "on_request"].includes(product.pricing_type ?? "") ||
     (!hasLengthPricing(product) && product.price_excl_vat <= 0);
 
-  const addProduct = (product: Product, context?: { length: number; date: string }) => {
+  const addProduct = (product: Product, context?: { length: number; date: string; width?: number; weight?: number }) => {
     if (!canCheckout || product.show_in_kassa === false || product.active === false || basketLocked || prefillLocked) return;
     if (priceOnRequest(product)) {
       push({ tone: "error", title: pos("onRequest") });
@@ -477,6 +515,8 @@ export default function KassaPage() {
       setEditingLine(null);
       setServiceProduct(product);
       setServiceLength(selectedBoat?.length_cm ? String(selectedBoat.length_cm) : "");
+      setServiceWidth(selectedBoat?.width_cm ? String(selectedBoat.width_cm) : "");
+      setServiceWeight(selectedBoat?.weight_kg ? String(selectedBoat.weight_kg) : "");
       setServiceDate("");
       return;
     }
@@ -484,32 +524,34 @@ export default function KassaPage() {
     const boatId = editingLine ? editingLine.metadata?.boat_id : selectedBoat?.id;
     const boatName = editingLine ? editingLine.boatName : selectedBoat?.name;
     const quantity = editingLine?.quantity ?? 1;
-    const id = context
-      ? JSON.stringify([product.id, boatId, context.length, context.date])
-      : product.id;
     const description = context ? product.name + ' · ' + context.length + ' cm' : product.name;
+    const metadata = context ? {
+      ...editingLine?.metadata,
+      length_cm: context.length,
+      date: context.date || undefined,
+      boat_id: boatId,
+      width_cm: context.width,
+      weight_kg: context.weight,
+    } : undefined;
+    const line: CartItem = {
+      id: editingLine?.id ?? generateRequestId(),
+      product_id: product.id,
+      description,
+      quantity,
+      unit_price_cents: context ? 0 : Math.round(productPriceExclEuros(product) * 100),
+      product: context ? product : undefined,
+      metadata,
+      boatName: context ? boatName : undefined,
+    };
     setCart((current) => {
-      const previous = context && editingLine ? current.filter((item) => item.id !== editingLine.id) : current;
-      const existing = previous.find((item) => item.id === id);
+      if (editingLine && context) return current.map((item) => item.id === editingLine.id ? line : item);
+      const existing = current.find((item) => item.product_id === product.id && JSON.stringify(item.metadata) === JSON.stringify(metadata));
       if (existing) {
-        return previous.map((item) =>
+        return current.map((item) =>
           item === existing ? { ...item, quantity: item.quantity + quantity } : item,
         );
       }
-      return [...previous, {
-        id,
-        product_id: product.id,
-        description,
-        quantity,
-        unit_price_cents: context ? 0 : Math.round(productPriceExclEuros(product) * 100),
-        product: context ? product : undefined,
-        metadata: context ? {
-          length_cm: context.length,
-          date: context.date || undefined,
-          boat_id: boatId,
-        } : undefined,
-        boatName: context ? boatName : undefined,
-      }];
+      return [...current, line];
     });
     if (context) setEditingLine(null);
     pushRecent(product.id);
@@ -581,8 +623,8 @@ export default function KassaPage() {
   const totalCents = reviewed?.total_cents ?? 0;
   const vatRates = Array.from(new Set(reviewed?.lines.map((line) => line.vat_rate) ?? []));
   const canAdjust = can("kassa.refund") && vatRates.length === 1;
-  const checkoutReady = canCheckout && !!reviewed && cart.length > 0 && totalCents > 0 &&
-    !basketLocked && !basketContextChanged;
+  const checkoutReady = canCheckout && !!reviewed && cart.length > 0 && totalCents >= 0 &&
+    !basketLocked && !basketContextChanged && !catalogStatus.changed;
   const money = (cents: number) => formatCurrency(cents / 100, localeTag);
 
   const PAYMENT_BUTTONS: Array<{
@@ -611,6 +653,11 @@ export default function KassaPage() {
       label: t("adminNew.kassa.payment.invoice"),
       icon: FileText,
     },
+    ...["ideal", "bancontact", "banktransfer", "manual", "other"].map((method) => ({
+      method,
+      label: tEnum(t, "adminNew.kassa.receiptPayment", method),
+      icon: Wallet,
+    })),
     {
       method: "downpayment",
       label: t("adminNew.kassa.downPayment"),
@@ -634,7 +681,7 @@ export default function KassaPage() {
           invoice: t("adminNew.kassa.payment.invoice"),
           creditcard: t("adminNew.kassa.payment.creditcard"),
         };
-        return labels[paymentMethod] ?? paymentMethod;
+        return labels[paymentMethod] ?? PAYMENT_BUTTONS.find((button) => button.method === paymentMethod)?.label ?? paymentMethod;
       }
     }
   };
@@ -697,7 +744,7 @@ export default function KassaPage() {
   // Trello #72: QR flow uses a payment session (no invoice up front); the
   // webhook finalizes the invoice once Mollie confirms payment.
   const startQrSession = async () => {
-    if (!canCheckout || qrSubmitting.current || (!qrAttempt && (!checkoutReady || adjustEnabled))) return;
+    if (!canCheckout || qrSubmitting.current || (!qrAttempt && (!checkoutReady || adjustEnabled || totalCents <= 0))) return;
     qrSubmitting.current = true;
     const bytes = crypto.getRandomValues(new Uint8Array(16));
     bytes[6] = (bytes[6] & 15) | 64;
@@ -719,6 +766,7 @@ export default function KassaPage() {
     setQrSession(null);
     setQrCopied(false);
     qrSettled.current = false;
+    setShowPayment(false);
     setShowQrModal(true);
     try {
       const session = await kassaService.createQrSession(request);
@@ -726,7 +774,7 @@ export default function KassaPage() {
       setQrSession(session);
       setQrAttempt(null);
     } catch (err) {
-      if ([400, 401, 403, 404, 422, 429].includes(getApiErrorStatus(err) ?? 0)) {
+      if ([400, 422].includes(getApiErrorStatus(err) ?? 0)) {
         rememberQr(null);
         void basketQuote.refetch().catch(() => undefined);
       }
@@ -751,6 +799,8 @@ export default function KassaPage() {
     if (status === "paid" || status === "completed") {
       if (!qrSettled.current) {
         qrSettled.current = true;
+        rememberSale({ payment_status: "paid", invoice_id: qrSession.invoice_id ?? undefined,
+          invoice_number: qrSession.invoice_number ?? undefined, total_amount_cents: qrSession.amount_cents }, customerId);
         rememberQr(null);
         setShowQrModal(false);
         setCart([]);
@@ -758,8 +808,6 @@ export default function KassaPage() {
         setShowPayment(false);
         setShowMobileCart(false);
         setPrefillLocked(false);
-        setSale({ payment_status: "paid", invoice_id: qrSession.invoice_id ?? undefined,
-          invoice_number: qrSession.invoice_number ?? undefined, total_amount_cents: qrSession.amount_cents });
         push({
           tone: "success",
           title: t("adminNew.kassa.toasts.checkoutDone"),
@@ -776,16 +824,22 @@ export default function KassaPage() {
       rememberQr(null);
       return;
     }
-    const timer = setTimeout(async () => {
+    let active = true;
+    let inFlight = false;
+    const timer = setInterval(async () => {
+      if (inFlight) return;
+      inFlight = true;
       try {
         const next = await kassaService.qrSession(id);
-        setQrSession(next);
+        if (active) setQrSession(next);
       } catch {
-        /* keep last state; will retry on next tick */
+        // The next poll retries the status check.
+      } finally {
+        inFlight = false;
       }
     }, 3000);
-    return () => clearTimeout(timer);
-  }, [qrSession, rememberQr, push, t]);
+    return () => { active = false; clearInterval(timer); };
+  }, [qrSession, rememberQr, rememberSale, customerId, push, t]);
 
   // Countdown ticker for QR session expiry
   React.useEffect(() => {
@@ -869,8 +923,8 @@ export default function KassaPage() {
       const request = submitted ?? payload;
       rememberCheckout(request);
       const res = await checkout.mutate(request);
+      if (typeof res !== "string") rememberSale(res, request.customer_id ?? "");
       rememberCheckout(null);
-      if (typeof res !== "string") setSale(res);
       if (request.customer_id) setCustomerId(request.customer_id);
       const checkoutUrl =
         typeof res === "string"
@@ -894,7 +948,7 @@ export default function KassaPage() {
 
 
     } catch (err) {
-      if ([400, 401, 403, 404, 422, 429].includes(getApiErrorStatus(err) ?? 0)) {
+      if ([400, 422].includes(getApiErrorStatus(err) ?? 0)) {
         rememberCheckout(null);
         void basketQuote.refetch().catch(() => undefined);
       }
@@ -909,24 +963,23 @@ export default function KassaPage() {
   };
 
   const handleQuote = async () => {
-    if (!canCheckout) return;
-    if (!cart.length) {
-      push({ tone: "error", title: t("adminNew.kassa.toasts.emptyCart") });
-      return;
-    }
+    if (!checkoutReady || !customerId || !can("invoice.create") || quote.loading) return;
     try {
-      await quote.mutate({
-        customer_id: customerId || undefined,
+      const saved = await quote.mutate({
+        customer_id: customerId,
         locale: localeTag,
+        expected_total_cents: totalCents,
+        sale_note: note || undefined,
         items: basketItems,
       });
-      push({ tone: "success", title: t("adminNew.kassa.toasts.quoteDone") });
+      setQuotation(saved);
     } catch (err) {
       push({
         tone: "error",
         title: t("adminNew.kassa.toasts.quoteFailed"),
         message: getApiErrorMessage(err),
       });
+      void basketQuote.refetch().catch(() => undefined);
     }
   };
 
@@ -956,9 +1009,11 @@ export default function KassaPage() {
 
   React.useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement;
+      const target = event.target instanceof Element ? event.target : null;
+      const modalOpen = Array.from(document.querySelectorAll('[role="dialog"], dialog[open]'))
+        .some((dialog) => dialog.getClientRects().length > 0);
       if (event.altKey || event.ctrlKey || event.metaKey || event.repeat ||
-          target.closest("input, textarea, select, [contenteditable=true]") || document.querySelector("[role=dialog]")) return;
+          target?.closest("input, textarea, select, [contenteditable=true]") || modalOpen) return;
       if (event.key === "/") searchRef.current?.focus();
       else if (event.key === "F2" && !basketLocked && !prefillLocked) setShowCustomerPicker(true);
       else if (event.key === "F4" && checkoutReady) setShowPayment(true);
@@ -985,6 +1040,44 @@ export default function KassaPage() {
     .filter((product): product is Product => !!product).slice(0, 6);
   const invoiceHref = sale?.invoice_id && "/" + locale + "/admin/facturen/" + sale.invoice_id;
   const paymentHref = sale?.checkout_url ?? sale?.payment?.checkout_url ?? sale?.payment_url ?? sale?.url;
+  const salePending = !!sale && (sale.pending_payments?.length
+    ?? Number(sale.payment?.provider === "mollie" && sale.payment.status === "pending")) > 0;
+  const refreshSale = React.useCallback(async (current: KassaCheckoutResponse, verify: boolean) => {
+    if (!current.invoice_id) return;
+    const latest = await kassaService.sale(current.invoice_id, verify);
+    const pending = (latest.payments ?? []).filter((payment) => payment.provider === "mollie" && payment.status === "pending");
+    rememberSale({
+      ...current,
+      status: latest.status,
+      payment_status: latest.payment_status,
+      paid_amount_cents: latest.paid_amount_cents,
+      outstanding_cents: latest.outstanding_cents,
+      pending_payments: pending.map((payment) => ({
+        id: payment.id, method: payment.method, checkout_url: payment.checkout_url ?? null, amount_cents: Number(payment.amount),
+      })),
+    }, saleCustomerId);
+  }, [rememberSale, saleCustomerId]);
+  React.useEffect(() => {
+    if (!salePending || !sale?.invoice_id || checkingSale) return;
+    const timer = setTimeout(() => {
+      setCheckingSale(true);
+      void refreshSale(sale, false).catch(() => undefined).finally(() => setCheckingSale(false));
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [salePending, sale, refreshSale, checkingSale]);
+
+  const checkPayment = async () => {
+    if (!sale || checkingSale) return;
+    setCheckingSale(true);
+    setReceiptStatus("");
+    try {
+      await refreshSale(sale, true);
+    } catch (error) {
+      setReceiptStatus(getApiErrorMessage(error));
+    } finally {
+      setCheckingSale(false);
+    }
+  };
   const formatDimension = (cm: number) =>
     new Intl.NumberFormat(localeTag, { maximumFractionDigits: 2 }).format(cm / 100) + " m (" +
     new Intl.NumberFormat(localeTag).format(cm) + " cm)";
@@ -1011,7 +1104,9 @@ export default function KassaPage() {
     }
   };
   const nextSale = () => {
-    setSale(null);
+    if (salePending) return;
+    rememberCheckout(null);
+    rememberSale(null);
     setReceiptUrl(null);
     setReceiptStatus("");
     setQrSession(null);
@@ -1019,22 +1114,23 @@ export default function KassaPage() {
     chooseCustomerAfterSale();
   };
   const basketAmount = reviewed ? money(totalCents) : cart.length ? "—" : money(0);
+  const serviceBoat = !editingLine || editingLine.metadata?.boat_id === selectedBoat?.id ? selectedBoat : null;
 
   return (
     <>
       <AdminContent className="space-y-5 pb-24 lg:pb-6">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-navy-900">{t("adminNew.kassa.title")}</h1>
+            <h1 className="text-2xl font-bold text-navy-900"><TranslatedText textKey={"adminNew.kassa.title"} /></h1>
             {user?.name && <p className="text-sm text-navy-600">{user.name}</p>}
           </div>
           <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-navy-700">
             {canAccessAdminRoute(user?.role, "/" + locale + "/admin/verkopen", user?.permissions) && (
-              <Link href={'/' + locale + '/admin/verkopen'}>{t("adminNew.kassa.viewAllSales")}</Link>
+              <Link href={'/' + locale + '/admin/verkopen'}><TranslatedText textKey={"adminNew.kassa.viewAllSales"} /></Link>
             )}
-            <Link href={'/' + locale + '/admin/kassa/analytics'}>{t("adminNew.kassa.analytics.title")}</Link>
+            <Link href={'/' + locale + '/admin/kassa/analytics'}><TranslatedText textKey={"adminNew.kassa.analytics.title"} /></Link>
             {(can("settings.view") || can("settings.financial.view")) && (
-              <Link href={'/' + locale + '/admin/instellingen#payments'}>{t("admin.sidebar.settings")}</Link>
+              <Link href={'/' + locale + '/admin/instellingen#payments'}><TranslatedText textKey={"admin.sidebar.settings"} /></Link>
             )}
           </nav>
         </header>
@@ -1060,7 +1156,7 @@ export default function KassaPage() {
             {((matches && (can("boats.view") || can("customers.view"))) || showBoats) && (
               <div className="grid gap-4 rounded-xl border border-navy-100 bg-white p-4 sm:grid-cols-2" aria-live="polite">
                 {can("boats.view") && <div>
-                  <h2 className="font-semibold text-navy-900">{t("adminModules.nav.boats")}</h2>
+                  <h2 className="font-semibold text-navy-900"><TranslatedText textKey={"adminModules.nav.boats"} /></h2>
                   {(boatSearch.loading || boatSearch.error) && <p className="text-sm">{boatSearch.error || t("adminNew.common.loading")}</p>}
                   {!boatSearch.loading && !boatSearch.error && !boatSearch.data?.data.length && <p className="text-sm">{pos("noResults")}</p>}
                   {!boatSearch.loading && !boatSearch.error && boatSearch.data?.data.map((boat) => (
@@ -1071,7 +1167,7 @@ export default function KassaPage() {
                   ))}
                 </div>}
                 {matches && can("customers.view") && <div>
-                  <h2 className="font-semibold text-navy-900">{t("adminModules.nav.customers")}</h2>
+                  <h2 className="font-semibold text-navy-900"><TranslatedText textKey={"adminModules.nav.customers"} /></h2>
                   {(customerSearch.loading || customerSearch.error) && <p className="text-sm">{customerSearch.error || t("adminNew.common.loading")}</p>}
                   {!customerSearch.loading && !customerSearch.error && !customerSearch.data?.data.length && <p className="text-sm">{pos("noResults")}</p>}
                   {!customerSearch.loading && !customerSearch.error && customerSearch.data?.data.map((customer) => (
@@ -1111,7 +1207,7 @@ export default function KassaPage() {
                 <div className="flex flex-wrap gap-2">
                   {can("customers.view") && (
                     <Button size="sm" variant="outline" disabled={basketLocked || prefillLocked}
-                      onClick={() => setShowCustomerPicker(true)}>{t("adminNew.kassa.selectCustomer")}</Button>
+                      onClick={() => setShowCustomerPicker(true)}><TranslatedText textKey={"adminNew.kassa.selectCustomer"} /></Button>
                   )}
                   {can("boats.view") && (
                     <Button size="sm" variant="outline" disabled={basketLocked || prefillLocked}
@@ -1176,17 +1272,17 @@ export default function KassaPage() {
           <aside id="cart" className={cn("min-w-0 rounded-2xl border border-navy-100 bg-white shadow-sm lg:sticky lg:top-24",
             showMobileCart ? "max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-50 max-lg:max-h-[85dvh] max-lg:overflow-y-auto" : "max-lg:hidden")}>
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-navy-100 p-4">
-              <h2 className="text-lg font-bold text-navy-900">{t("adminNew.kassa.cart")} ({cart.length})</h2>
+              <h2 className="text-lg font-bold text-navy-900"><TranslatedText textKey={"adminNew.kassa.cart"} /> ({cart.length})</h2>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" disabled={!cart.length || basketLocked} onClick={() => setShowClear(true)}>
-                  {t("adminNew.kassa.clearCart")}
+                  <TranslatedText textKey={"adminNew.kassa.clearCart"} />
                 </Button>
-                <Button size="sm" variant="ghost" className="lg:hidden" onClick={() => setShowMobileCart(false)}>{t("adminNew.common.close")}</Button>
+                <Button size="sm" variant="ghost" className="lg:hidden" onClick={() => setShowMobileCart(false)}><TranslatedText textKey={"adminNew.common.close"} /></Button>
               </div>
             </div>
             {selectedCustomer?.name && <p className="px-4 pt-3 text-sm text-navy-600">{selectedCustomer.name}</p>}
             <div className="divide-y divide-navy-100 px-4 lg:max-h-[38vh] lg:overflow-y-auto">
-              {!cart.length && <p className="py-6 text-sm text-navy-500">{t("adminNew.kassa.emptyCartMessage")}</p>}
+              {!cart.length && <p className="py-6 text-sm text-navy-500"><TranslatedText textKey={"adminNew.kassa.emptyCartMessage"} /></p>}
               {cart.map((item, index) => {
                 const line = reviewed?.lines[index];
                 return <div key={item.id} className="flex items-start justify-between gap-3 py-3">
@@ -1200,10 +1296,39 @@ export default function KassaPage() {
                         setEditingLine(item);
                         setServiceProduct(product);
                         setServiceLength(String(item.metadata?.length_cm ?? ""));
+                        setServiceWidth(String(item.metadata?.width_cm ?? ""));
+                        setServiceWeight(String(item.metadata?.weight_kg ?? ""));
                         setServiceDate(String(item.metadata?.date ?? ""));
-                      }}>{t("adminNew.common.edit")}</button>
+                      }}><TranslatedText textKey={"adminNew.common.edit"} /></button>
                     )}
-                    {line && <p className="text-xs text-navy-600">{money(line.unit_price)} · {t("adminNew.kassa.vatPercent", { rate: line.vat_rate })}</p>}
+                    {line && <p className="text-xs text-navy-600">{money(line.unit_price)} · <TranslatedText textKey={"adminNew.kassa.vatPercent"} vars={{ rate: line.vat_rate }} /></p>}
+                    {!!line?.included_quantity && <p className="text-xs text-marine-700"><TranslatedText textKey="adminNew.kassa.pos.includedQuantity" vars={{ quantity: line.included_quantity }} /></p>}
+                    {!!Object.keys(line?.included_services ?? {}).length && <p className="text-xs text-marine-700">
+                      {pos("packageIncludes")} · {Object.entries(line?.included_services ?? {}).map(([code, count]) =>
+                        `${count} × ${allProducts.find((product) => product.service_code === code)?.name ?? code}`).join(", ")}
+                    </p>}
+                    <details className="mt-1 text-xs text-navy-600">
+                      <summary className="cursor-pointer">{pos("lineNote")}</summary>
+                      <input className="input-base mt-1 w-full" maxLength={500} disabled={basketLocked} aria-label={pos("lineNote")}
+                        defaultValue={String(item.metadata?.line_note ?? "")} onBlur={(event) => {
+                          const line_note = event.target.value.trim();
+                          if (line_note === String(item.metadata?.line_note ?? "")) return;
+                          setCart((current) => current.map((row) => row.id === item.id
+                            ? { ...row, metadata: { ...row.metadata, line_note } } : row));
+                        }} />
+                    </details>
+                    {can('kassa.refund') && !basketLocked && !prefillLocked && <details className="mt-2 text-xs">
+                      <summary className="cursor-pointer"><TranslatedText textKey="smartServices.freeItem" /></summary>
+                      <form className="mt-2 space-y-2" onSubmit={(event) => {
+                        event.preventDefault(); const reason = String(new FormData(event.currentTarget).get('reason')).trim();
+                        if (reason.length < 3) return;
+                        setCart((current) => current.map((row) => row.id === item.id ? { ...row, metadata: { ...row.metadata, free_reason: reason } } : row));
+                      }}>
+                        <input name="reason" aria-label={t('smartServices.reason')} required minLength={3} maxLength={500} defaultValue={String(item.metadata?.free_reason ?? '')} className="input-base w-full" />
+                        <button className="underline"><TranslatedText textKey="smartServices.freeItem" /></button>
+                        {!!item.metadata?.free_reason && <button type="button" className="ml-2 underline" onClick={() => setCart((current) => current.map((row) => row.id === item.id ? { ...row, metadata: { ...row.metadata, free_reason: undefined } } : row))}><TranslatedText textKey="adminNew.common.cancel" /></button>}
+                      </form>
+                    </details>}
                     {!prefillLocked && <div className="mt-1 flex items-center gap-2 text-sm">
                       <button type="button" disabled={basketLocked} className="h-8 w-8 rounded-lg border border-navy-100" aria-label={pos("decrease")} onClick={() => changeQty(item.id, -1)}>−</button>
                       <span>{item.quantity}</span>
@@ -1222,7 +1347,22 @@ export default function KassaPage() {
             </div>
             <div className="space-y-2 border-t border-navy-100 p-4 text-sm" aria-live="polite">
               {note && <p className="break-words rounded bg-sand-50 p-2">{note}</p>}
-              {basketContextChanged && <p role="alert" className="text-amber-800">{pos("contextChanged")}</p>}
+              {basketContextChanged && <div role="alert" className="text-amber-800">
+                <p>{pos("contextChanged")}</p>
+                {!!selectedBoat?.length_cm && !basketLocked && <button type="button" className="font-semibold underline" onClick={() => {
+                  const boat = selectedBoat;
+                  setCart((current) => current.map((line) => !line.metadata?.boat_id || line.metadata.boat_id === boat.id ? line : {
+                    ...line,
+                    description: line.product ? `${line.product.name} · ${boat.length_cm} cm` : line.description,
+                    boatName: boat.name,
+                    metadata: { ...line.metadata, boat_id: boat.id, length_cm: boat.length_cm, width_cm: boat.width_cm, weight_kg: boat.weight_kg },
+                  }));
+                }}>{pos("repriceBoat")}</button>}
+              </div>}
+              {catalogStatus.changed && <div role="alert" className="rounded bg-amber-50 p-2 text-amber-900">
+                <p><TranslatedText textKey="smartServices.updated" /></p>
+                <button type="button" className="mt-1 font-semibold underline disabled:opacity-50" disabled={!reviewed} onClick={catalogStatus.acknowledge}><TranslatedText textKey="smartServices.reviewUpdated" /></button>
+              </div>}
               {cart.length > 0 && basketQuote.error && <p role="alert" className="text-rose-700">{basketQuote.error}</p>}
               {cart.length > 0 && !reviewed && !basketQuote.error && <p>{pos("pricing")}</p>}
               {reviewed && <>
@@ -1240,7 +1380,7 @@ export default function KassaPage() {
               </div>
               <Button variant="gold" fullWidth className="min-h-12" leftIcon={<CreditCard className="h-5 w-5" />}
                 disabled={!checkoutReady} onClick={() => setShowPayment(true)}>
-                {t("adminNew.kassa.payNow")} {basketAmount}
+                <TranslatedText textKey={"adminNew.kassa.payNow"} /> {basketAmount}
               </Button>
               {qrAttempt && !qrPending && <Button variant="outline" fullWidth disabled={qrStarting} onClick={() => void startQrSession()}>{pos("resumeQr")}</Button>}
               {qrPending && <Button variant="outline" fullWidth onClick={() => setShowQrModal(true)}>{pos("resumeQr")}</Button>}
@@ -1248,7 +1388,7 @@ export default function KassaPage() {
                 {pos("retry")}
               </Button>}
               <Button variant="ghost" size="sm" disabled={!cart.length || basketLocked}
-                onClick={() => { setNoteDraft(note); setShowNoteModal(true); }}>{t("adminNew.kassa.addNote")}</Button>
+                onClick={() => { setNoteDraft(note); setShowNoteModal(true); }}><TranslatedText textKey={"adminNew.kassa.addNote"} /></Button>
             </div>
           </aside>
         </div>
@@ -1256,7 +1396,7 @@ export default function KassaPage() {
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-100 bg-white p-3 lg:hidden">
         <Button variant="gold" fullWidth aria-expanded={showMobileCart} aria-controls="cart" onClick={() => setShowMobileCart(true)}>
-          {t("adminNew.kassa.cart")} ({cart.length}) · {basketAmount}
+          <TranslatedText textKey={"adminNew.kassa.cart"} /> ({cart.length}) · {basketAmount}
         </Button>
       </div>
 
@@ -1270,20 +1410,26 @@ export default function KassaPage() {
           event.preventDefault();
           const length = Number(serviceLength);
           if (!serviceProduct || !Number.isInteger(length) || length < 1 || length > 99999) return;
-          addProduct(serviceProduct, { length, date: serviceDate });
+          addProduct(serviceProduct, { length, date: serviceDate,
+            width: serviceWidth ? Number(serviceWidth) : undefined,
+            weight: serviceWeight ? Number(serviceWeight) : undefined });
           setServiceProduct(null);
         }}>
           <AdminModalHeader title={serviceProduct?.name ?? ""} subtitle={editingLine ? editingLine.boatName : selectedBoat?.name} />
           <AdminModalBody>
             <Input label={pos("length") + " (cm)"} type="number" min={1} max={99999} step={1} required
-              value={serviceLength} readOnly={editingLine ? !!editingLine.metadata?.boat_id : !!selectedBoat?.length_cm} onChange={(event) => setServiceLength(event.target.value)} />
+              value={serviceLength} readOnly={!!serviceBoat?.length_cm} onChange={(event) => setServiceLength(event.target.value)} />
             <Input label={pos("serviceDate")} type="date" value={serviceDate} onChange={(event) => setServiceDate(event.target.value)} />
+            <Input label={pos("width") + " (cm)"} type="number" min={1} max={99999} step={1}
+              value={serviceWidth} readOnly={!!serviceBoat?.width_cm} onChange={(event) => setServiceWidth(event.target.value)} />
+            <Input label={pos("weight") + " (kg)"} type="number" min={1} max={1000000} step={1}
+              value={serviceWeight} readOnly={!!serviceBoat?.weight_kg} onChange={(event) => setServiceWeight(event.target.value)} />
           </AdminModalBody>
           <AdminModalFooter><Button type="submit" variant="gold">{pos("calculate")}</Button></AdminModalFooter>
         </form>
       </Modal>
 
-      <Modal open={showPayment && !checkoutConfirm && !showSplitModal && !showQrModal} onClose={() => { setShowPayment(false); setAdjustEnabled(false); }} size="md">
+      <Modal open={showPayment && !checkoutConfirm && !showSplitModal && !showQrModal && !quotation} onClose={() => { setShowPayment(false); setAdjustEnabled(false); }} size="md">
         <AdminModalHeader title={t("adminNew.kassa.paymentMethodTitle")} subtitle={basketAmount} />
         <AdminModalBody>
           <div className="grid grid-cols-2 gap-2">
@@ -1294,21 +1440,21 @@ export default function KassaPage() {
                 aria-pressed={action ? undefined : paymentMethod === method} disabled={!checkoutReady}
                 leftIcon={<Icon className="h-4 w-4" />} onClick={action ?? (() => setPaymentMethod(method))}>{label}</Button>
             ))}
-            {enabledPayments?.online.includes("ideal") && <Button variant="outline" disabled={!checkoutReady || adjustEnabled} onClick={() => setCheckoutConfirm("qr")}>{t("adminNew.kassa.qrPayment")}</Button>}
-            <Button variant="outline" disabled={!checkoutReady || quote.loading} onClick={handleQuote}>{pos("reviewQuote")}</Button>
+            {enabledPayments?.online.includes("ideal") && <Button variant="outline" disabled={!checkoutReady || adjustEnabled || totalCents <= 0} onClick={() => setCheckoutConfirm("qr")}><TranslatedText textKey={"adminNew.kassa.qrPayment"} /></Button>}
+            {can("invoice.create") && <Button variant="outline" disabled={!checkoutReady || !customerId || quote.loading} onClick={handleQuote}>{pos("saveQuote")}</Button>}
           </div>
           {(paymentMethods.loading || paymentMethods.error) && <p role="status">{paymentMethods.error || t("adminNew.common.loading")}</p>}
           {paymentMethod === "pin" && methodEnabled("pin") && <p className="text-sm text-navy-600">{pos("manualPin")}</p>}
           {paymentMethod === "creditcard" && <p className="text-sm text-navy-600">{pos("onlineCard")}</p>}
           {paymentMethod === "invoice" && !customerId && <p role="alert" className="text-sm text-amber-800">{pos("invoiceCustomer")}</p>}
           {canAdjust && <details>
-            <summary className="cursor-pointer text-sm font-semibold">{t("adminNew.kassa.adjustTotal")}</summary>
+            <summary className="cursor-pointer text-sm font-semibold"><TranslatedText textKey={"adminNew.kassa.adjustTotal"} /></summary>
             <label className="my-2 flex items-center gap-2 text-sm">
               <input type="checkbox" checked={adjustEnabled} onChange={(event) => {
                 setAdjustEnabled(event.target.checked);
                 if (event.target.checked && !adjustedTotal) setAdjustedTotal((totalCents / 100).toFixed(2));
               }} />
-              {t("adminNew.kassa.adjustTotal")}
+              <TranslatedText textKey={"adminNew.kassa.adjustTotal"} />
             </label>
             {adjustEnabled && <>
               <Input label={t("adminNew.kassa.adjustNewTotal")} type="number" min="0" step="0.01"
@@ -1322,30 +1468,44 @@ export default function KassaPage() {
           <Button variant="gold" disabled={!checkoutReady || !methodEnabled(paymentMethod) || (paymentMethod === "invoice" && !customerId) ||
             (adjustEnabled && (!adjustmentReason.trim() || !adjustedTotal || Number(adjustedTotal) < 0 || Number(adjustedTotal) * 100 > totalCents))}
             onClick={() => setCheckoutConfirm(paymentMethod === "invoice" ? "on_account" : "standard")}>
-            {t("adminNew.kassa.checkout")}
+            <TranslatedText textKey={"adminNew.kassa.checkout"} />
           </Button>
         </AdminModalFooter>
       </Modal>
 
-      <Modal open={!!sale} onClose={nextSale} size="sm">
-        <AdminModalHeader title={sale?.payment_status === "paid" ? pos("paid") : pos("recorded")} subtitle={sale?.invoice_number} />
+      <Modal open={!!quotation} onClose={() => setQuotation(null)} size="sm">
+        <AdminModalHeader title={pos("quoteSaved")} subtitle={quotation?.reference} />
+        <AdminModalFooter>
+          {quotation && <Link href={`/${locale}/admin/facturen/${quotation.id}`} className="font-semibold text-marine-700 underline">{pos("openQuote")}</Link>}
+          <Button variant="outline" onClick={() => setQuotation(null)}><TranslatedText textKey="adminNew.common.close" /></Button>
+        </AdminModalFooter>
+      </Modal>
+
+      <Modal open={!!sale} onClose={nextSale} size="sm" showClose={!salePending} closeOnBackdrop={!salePending}>
+        <AdminModalHeader title={salePending ? pos("paymentPending") : sale?.payment_status === "paid" ? pos("paid") : pos("recorded")} subtitle={sale?.invoice_number} />
         <AdminModalBody>
           <p className="text-lg font-semibold">{money(sale?.total_amount_cents ?? 0)}</p>
-          {sale?.invoice_id && <div className="flex flex-wrap gap-2">
+          {!!sale?.outstanding_cents && <Row label={t("adminNew.invoiceDetail.summary.outstanding")} value={money(sale.outstanding_cents)} />}
+          {!salePending && sale?.invoice_id && <div className="flex flex-wrap gap-2">
             {can("invoice.view") && (receiptUrl
               ? <a href={receiptUrl} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 underline">{pos("openReceipt")}</a>
               : <Button size="sm" variant="outline" disabled={receiptBusy} onClick={() => void updateReceipt("print")}>{pos("printReceipt")}</Button>)}
-            {customerId && can("invoice.send") && <Button size="sm" variant="outline" disabled={receiptBusy}
+            {saleCustomerId && can("invoice.send") && <Button size="sm" variant="outline" disabled={receiptBusy}
               onClick={() => void updateReceipt("email")}>{pos("emailReceipt")}</Button>}
           </div>}
           {receiptStatus && <p role="status" className="text-sm text-navy-600">{receiptStatus}</p>}
-          {paymentHref && sale?.payment_status !== "paid" && (
-            <a href={paymentHref} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 underline">{pos("openPayment")}</a>
-          )}
+          {salePending && <div className="flex flex-wrap gap-3">
+            {sale?.pending_payments?.length ? sale.pending_payments.map((payment) => payment.checkout_url && (
+              <a key={payment.id} href={payment.checkout_url} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 underline">
+                {pos("openPayment")} · {money(payment.amount_cents)}
+              </a>
+            )) : paymentHref && <a href={paymentHref} target="_blank" rel="noreferrer" className="font-semibold text-marine-700 underline">{pos("openPayment")}</a>}
+            <Button size="sm" variant="outline" disabled={checkingSale} onClick={() => void checkPayment()}>{pos("checkPayment")}</Button>
+          </div>}
         </AdminModalBody>
         <AdminModalFooter>
           {invoiceHref && can("invoice.view") && <Link href={invoiceHref} className="font-semibold text-marine-700 underline">{pos("viewInvoice")}</Link>}
-          <Button variant="gold" onClick={nextSale}>{pos("newSale")}</Button>
+          <Button variant="gold" disabled={salePending} onClick={nextSale}>{pos("newSale")}</Button>
         </AdminModalFooter>
       </Modal>
       {/* Note modal */}
@@ -1502,7 +1662,7 @@ export default function KassaPage() {
               if (!qrSession?.session_id) return;
               try {
                 await kassaService.sendPaymentLinkWhatsapp(qrSession.session_id, phone ? { phone } : undefined);
-                push({ tone: "success", title: t("adminNew.kassa.qrLinkSent") });
+                push({ tone: "success", title: t('settingsHub.operational.accepted') });
                 setShowQrPhoneInput(false);
               } catch (err) {
                 const msg = getApiErrorMessage(err);
@@ -1618,6 +1778,16 @@ export default function KassaPage() {
                     ) : null}
 
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
+                      {qrSession && <Button size="sm" variant="outline" disabled={checkingSale} onClick={async () => {
+                        setCheckingSale(true);
+                        try {
+                          setQrSession(await kassaService.qrSession(qrSession.session_id, true));
+                        } catch (error) {
+                          push({ tone: "error", title: getApiErrorMessage(error) });
+                        } finally {
+                          setCheckingSale(false);
+                        }
+                      }}>{pos("checkPayment")}</Button>}
                       <Button
                         size="sm"
                         variant="outline"
@@ -1663,7 +1833,7 @@ export default function KassaPage() {
 
                     </div>
                   </>
-                ) : <p role="status" className="py-4 text-sm text-navy-600">{t("adminNew.kassa.qrCreating")}</p>}
+                ) : <p role="status" className="py-4 text-sm text-navy-600"><TranslatedText textKey={"adminNew.kassa.qrCreating"} /></p>}
               </div>
             );
           })()}

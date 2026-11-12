@@ -37,11 +37,20 @@ for (const [locale, {cms}] of Object.entries({nl,en,de,fr})) {
     await dialog.getByRole('slider',{name:cms.gradientStart,exact:true}).fill('0.8');
     await dialog.getByRole('slider',{name:cms.gradientMiddle,exact:true}).fill('0.5');
     await dialog.getByRole('slider',{name:cms.gradientEnd,exact:true}).fill('0.2');
-    const saved = page.waitForResponse(r=>r.url().includes('/media-blocks/home.hero.image') && r.request().method()==='PATCH');
+    for (const tag of ['NL','EN','DE','FR']) {
+      await dialog.getByRole('tab',{name:tag,exact:true}).click();
+      await dialog.getByLabel(cms.altText+' '+tag,{exact:true}).fill('QA boat '+tag);
+    }
+    const saved = page.waitForResponse(r=>r.url().includes('/media-blocks/home.hero.image') && r.url().endsWith('/process') && r.request().method()==='POST');
     await dialog.getByRole('button',{name:cms.save,exact:true}).click();
     const response = await saved;
     expect(response.ok(),await response.text()).toBe(true);
-    const data = await response.json();
+    let data = await response.json();
+    if (!data.revision) await expect.poll(async () => {
+      const status = await request.get('/api/v1/admin/cms/media-processing/'+data.request_id,{headers:{Authorization:'Bearer '+token}});
+      const result = await status.json(); if (result.status === 'failed') throw new Error(JSON.stringify(result.error));
+      if (result.revision) {data=result;return true;} return false;
+    },{timeout:180000,intervals:[1000,2000]}).toBe(true);
     expect(data.focal_point.x).toBe(32);
     expect(data.mobile_focal_point.x).toBe(73);
     expect(data.mobile_crop_data.unit).toBe('percent');
@@ -60,13 +69,18 @@ for (const [locale, {cms}] of Object.entries({nl,en,de,fr})) {
     await expect(dialog.getByRole('slider',{name:cms.mobileFocal.replace('{axis}','x'),exact:true})).toHaveValue('73');
     await expect(dialog.getByRole('button',{name:cms.alignment,exact:true})).toContainText(cms.customAlignment);
     await expect(dialog.locator('[data-cms-image-preview="mobile"] img')).toHaveCSS('filter','brightness(1.25) contrast(0.85) saturate(0.7)');
-    const again = page.waitForResponse(r=>r.url().includes('/media-blocks/home.hero.image') && r.request().method()==='PATCH');
+    const again = page.waitForResponse(r=>r.url().includes('/media-blocks/home.hero.image') && r.url().endsWith('/process') && r.request().method()==='POST');
     await dialog.getByRole('button',{name:cms.save,exact:true}).click();
-    const reopened = await (await again).json();
+    let reopened = await (await again).json();
+    if (!reopened.revision) await expect.poll(async () => {
+      const status = await request.get('/api/v1/admin/cms/media-processing/'+reopened.request_id,{headers:{Authorization:'Bearer '+token}});
+      const result = await status.json(); if (result.status === 'failed') throw new Error(JSON.stringify(result.error));
+      if (result.revision) {reopened=result;return true;} return false;
+    },{timeout:180000,intervals:[1000,2000]}).toBe(true);
     for (const field of ['crop_data','mobile_crop_data']) {
       for (const axis of ['x','y','width','height']) expect(reopened[field][axis]).toBeCloseTo(data[field][axis],1);
     }
-    const audit = JSON.parse(php('$a=App\\Models\\AuditLog::where("action","cms.media_block.updated")->latest("created_at")->firstOrFail(); echo json_encode(["before"=>$a->before_data,"after"=>$a->after_data]);'));
+    const audit = JSON.parse(php('$a=App\\Models\\AuditLog::where("action","cms.media_block.published")->latest("created_at")->firstOrFail(); echo json_encode(["before"=>$a->before_data,"after"=>$a->after_data]);'));
     for (const snapshot of [audit.before,audit.after]) for (const field of ['image_style','file_id','mobile_file_id','mobile_crop_data','mobile_focal_point','crop_data','focal_x']) expect(snapshot).toHaveProperty(field);
     await page.setViewportSize({width:390,height:844});
     await page.screenshot({path:info.outputPath(`${locale}-mobile.png`)});

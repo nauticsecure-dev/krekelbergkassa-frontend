@@ -24,9 +24,16 @@
     "test:global-ux": "playwright test --config playwright.global-ux.config.ts",
     "audit:cms": "node scripts/audit-cms-coverage.mjs",
     "check:cms": "node scripts/audit-cms-coverage.mjs --check",
-    "test:cms-audit": "node --test scripts/audit-cms-coverage.test.mjs",
+    "test:cms-audit": "node --test scripts/audit-cms-coverage.test.mjs scripts/verify-cms-staging.test.mjs",
     "test:cms-text": "playwright test --config playwright.cms-text.config.ts",
-    "test:cms-media": "node scripts/test-cms-media.mjs"
+    "audit:media": "node scripts/audit-media-coverage.mjs",
+    "test:media-inventory": "node --test scripts/audit-media-coverage.test.mjs",
+    "test:cms-media-complete": "node scripts/test-cms-media-complete.mjs",
+    "test:cms-media": "node scripts/test-cms-media.mjs",
+    "build:cms-registry": "node scripts/build-cms-registry.mjs",
+    "check:cms-registry": "node scripts/build-cms-registry.mjs --check",
+    "test:cms-text-live": "node scripts/test-cms-text-live.mjs",
+    "verify:cms-staging": "node scripts/verify-cms-staging.mjs"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",

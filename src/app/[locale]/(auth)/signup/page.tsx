@@ -6,6 +6,8 @@ import { intlLocale } from '@/lib/format';
 
 import * as React from "react";
 import Link from "next/link";
+import { useSearchParams } from 'next/navigation';
+import { customerReturnTo, loginPath } from '@/lib/auth-routes';
 import { ArrowRight, Mail, Phone, User2 } from "lucide-react";
 import { useIntl } from "@/i18n/IntlProvider";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +16,13 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 export default function SignupPage() {
+  return <React.Suspense fallback={null}><SignupContent /></React.Suspense>;
+}
+
+function SignupContent() {
   const { t, locale } = useIntl();
+  const params = useSearchParams();
+  const returnTo = customerReturnTo(params.get('returnTo'));
   const { push } = useToast();
 
   const [name, setName] = React.useState("");
@@ -39,6 +47,7 @@ export default function SignupPage() {
         email: email.trim(),
         phone: phone.trim() || null,
         preferred_locale: intlLocale(locale),
+        returnTo,
       });
       setSuccess(true);
       push({
@@ -59,7 +68,7 @@ export default function SignupPage() {
         <h2 className="heading-display text-3xl text-navy-900">{<TranslatedText textKey={"signupExt.title"} />}</h2>
         <p className="mt-4 text-sm leading-relaxed text-navy-600">{<TranslatedText textKey={"signupExt.checkEmail"} />}</p>
         <Link
-          href={`/${locale}/login?role=customer`}
+          href={loginPath(locale, returnTo)}
           className="mt-6 inline-flex font-semibold text-marine-700 hover:text-marine-900"
         >
           {<TranslatedText textKey={"signup.loginInstead"} />} →
@@ -177,7 +186,7 @@ export default function SignupPage() {
         <p className="pt-2 text-center text-sm text-navy-500">
           {<TranslatedText textKey={"signup.haveAccount"} />}{" "}
           <Link
-            href={`/${locale}/login?role=customer`}
+            href={loginPath(locale, returnTo)}
             className="font-semibold text-navy-900 hover:text-marine-700"
           >
             {<TranslatedText textKey={"signup.loginInstead"} />}

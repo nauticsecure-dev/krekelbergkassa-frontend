@@ -4,6 +4,7 @@ import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   AlertCircle,
   CreditCard,
@@ -41,6 +42,10 @@ const STATUS_FILTERS = ['', 'open', 'paid', 'overdue', 'credited', 'cancelled'] 
 type StatusFilter = (typeof STATUS_FILTERS)[number];
 
 export default function PortalInvoicesPage() {
+  return <React.Suspense><PortalInvoices /></React.Suspense>;
+}
+
+function PortalInvoices() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const dateLocale = intlLocale(locale);
@@ -56,6 +61,20 @@ export default function PortalInvoicesPage() {
   const invoices = useQuery([status], () =>
     portalService.invoices({ status: status || undefined, per_page: 50 })
   );
+
+  const requestedInvoiceId = useSearchParams().get('invoice');
+  const requestedInvoice = useQuery(['requested-invoice', requestedInvoiceId], () =>
+    requestedInvoiceId ? portalService.invoice(requestedInvoiceId) : Promise.resolve(null)
+  );
+  const openedInvoice = React.useRef<string>();
+  React.useEffect(() => {
+    const invoice = requestedInvoice.data;
+    if (invoice && invoice.id === requestedInvoiceId && openedInvoice.current !== invoice.id) {
+      openedInvoice.current = invoice.id;
+      setSelected(invoice);
+      setInvoiceDetail(invoice);
+    }
+  }, [requestedInvoice.data, requestedInvoiceId]);
 
   const openInvoice = async (invoice: PortalInvoice) => {
     setSelected(invoice);

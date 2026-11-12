@@ -49,7 +49,7 @@ type StatusFilter = '' | 'upcoming' | 'completed' | 'cancelled';
 
 function isUpcoming(a: Appointment): boolean {
   const s = a.status.toLowerCase();
-  if (s.includes('complete') || s.includes('cancel') || s.includes('no_show')) return false;
+  if (s.includes('complete') || s.includes('cancel') || s.includes('no_show') || s === 'rejected') return false;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const d = new Date(`${(a.appointment_date || '').slice(0, 10)}T00:00:00`);
@@ -81,22 +81,21 @@ function PortalAppointments() {
   const [reschedReason, setReschedReason] = React.useState('');
 
   const requestedId = useSearchParams().get('appointment') ?? undefined;
-  const appointments = useQuery([statusFilter, requestedId], () =>
-    portalService.appointments({
-      status: statusFilter || undefined,
-      appointment: requestedId,
-      per_page: 50,
-    })
+  const appointments = useQuery([statusFilter], () =>
+    portalService.appointments({ status: statusFilter || undefined, per_page: 50 })
+  );
+  const requestedAppointment = useQuery(['requested-appointment', requestedId], () =>
+    requestedId ? portalService.appointments({ appointment: requestedId }) : Promise.resolve(null)
   );
 
   const openedRequest = React.useRef<string>();
   React.useEffect(() => {
-    const requested = appointments.data?.data.find((item) => item.id === requestedId);
+    const requested = requestedAppointment.data?.data.find((item) => item.id === requestedId);
     if (requested && openedRequest.current !== requested.id) {
       openedRequest.current = requested.id;
       setSelected(requested);
     }
-  }, [requestedId, appointments.data]);
+  }, [requestedId, requestedAppointment.data]);
 
   const cancelMutation = useMutation((id: string, reason?: string) =>
     portalService.cancelAppointment(id, reason)
@@ -403,8 +402,13 @@ function PortalAppointments() {
                   },
                 ]}
               />
-              {selected.payment_status && selected.payment_status !== 'draft' ? (
-                <Link className="text-sm font-medium underline" href={`/${locale}/dashboard/facturen`}>
+              {selected.payment_status && (
+                <p className="text-sm"><TranslatedText textKey="crane.paymentStatus" vars={{
+                  status: t(`crane.payment.${selected.payment_status}`, { defaultValue: selected.payment_status }),
+                }} /></p>
+              )}
+              {selected.invoice_id && selected.payment_status !== 'draft' ? (
+                <Link className="text-sm font-medium underline" href={`/${locale}/dashboard/facturen?invoice=${encodeURIComponent(selected.invoice_id)}`}>
                   <TranslatedText textKey="adminNew.portal.appointments.invoiceLink" fallbackText="Bekijk uw factuur en betaalstatus" />
                 </Link>
               ) : null}

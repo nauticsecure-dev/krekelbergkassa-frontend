@@ -43,20 +43,20 @@ export default function KassaAnalyticsPage() {
     return view;
   });
   const refundSaleMutation = useMutation(
-    ({ id, reason }: { id: string; reason: string; method: string }) =>
-      kassaService.refund(id, { reason, amount: undefined })
+    ({ id, reason, method }: { id: string; reason: string; method: 'original' | 'pin' | 'cash' | 'manual' }) =>
+      kassaService.refund(id, { reason, refund_method: method })
   );
 
   const [refundSaleId, setRefundSaleId] = React.useState<string | null>(null);
   const [refundReason, setRefundReason] = React.useState('');
-  const [refundMethod, setRefundMethod] = React.useState('pin');
+  const [refundMethod, setRefundMethod] = React.useState<'original' | 'pin' | 'cash' | 'manual'>('original');
 
   return (
     <>
       <AdminPageHeader title={t("adminNew.kassa.analytics.title")} />
       <AdminContent className="space-y-4">
         <Link href={'/' + locale + '/admin/kassa'} className="font-semibold text-marine-700">
-          {t("adminNew.kassa.title")}
+          <TranslatedText textKey={"adminNew.kassa.title"} />
         </Link>
           <KassaAnalyticsDashboard
             analytics={todayQuery.data ?? null}
@@ -125,7 +125,7 @@ export default function KassaAnalyticsPage() {
                               onClick={() => {
                                 setRefundSaleId(sale.id);
                                 setRefundReason('');
-                                setRefundMethod('pin');
+                                setRefundMethod('original');
                               }}
                               className="rounded px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-50"
                             >
@@ -167,7 +167,7 @@ export default function KassaAnalyticsPage() {
                 {<TranslatedText textKey={'adminNew.kassa.refundMethod'} />}
               </label>
               <div className="grid grid-cols-3 gap-2">
-                {(['pin', 'cash', 'banktransfer'] as const).map((m) => (
+                {(['original', 'pin', 'cash', 'manual'] as const).map((m) => (
                   <button
                     key={m}
                     type="button"
@@ -179,7 +179,7 @@ export default function KassaAnalyticsPage() {
                         : 'border-navy-200 bg-white text-navy-700 hover:bg-sand-50')
                     }
                   >
-                    {tEnum(t, 'adminNew.invoiceDetail.paymentMethods', m)}
+                    {m === 'original' ? t('adminNew.kassa.pos.originalPayment') : tEnum(t, 'adminNew.invoiceDetail.paymentMethods', m)}
                   </button>
                 ))}
               </div>

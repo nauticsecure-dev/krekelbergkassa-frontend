@@ -51,6 +51,41 @@ async function passwordLogin(page: Page) {
   await page.locator('form').getByRole('button', { name: 'Sign in', exact: true }).click();
 }
 
+test('password recovery preserves the appointment through the emailed reset and subsequent login', async ({ page }) => {
+  const state = await fixture(page);
+  const destination = '/en/dashboard/afspraken?appointment=appointment-one';
+  await page.goto('/en/login?returnTo=' + encodeURIComponent(destination));
+  await page.locator('form a[href*="forgot-password"]').click();
+  await expect(page.getByRole('heading', { name: 'Forgot password', exact: true })).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('returnTo')).toBe(destination);
+  await page.locator('input[type=email]').fill(customer.email);
+  await page.locator('form button[type=submit]').click();
+  await expect(page.getByText('Check your inbox', { exact: true })).toBeVisible();
+  expect(state.posts.find(post => post.path.endsWith('/forgot-password'))?.body.returnTo).toBe(destination);
+  await page.goto('/en/forgot-password?' + new URLSearchParams({ token: 'reset-fixture', email: customer.email, returnTo: destination }));
+  await page.locator('input[type=password]').nth(0).fill('replacement-password');
+  await page.locator('input[type=password]').nth(1).fill('replacement-password');
+  await page.locator('form button[type=submit]').click();
+  await page.getByRole('link', { name: 'Back to login', exact: true }).click();
+  await expect(page.locator('#password')).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('returnTo')).toBe(destination);
+  await passwordLogin(page);
+  await expect(page.getByRole('dialog')).toBeVisible();
+});
+
+test('signup and its navigation retain the appointment destination', async ({ page }) => {
+  const state = await fixture(page);
+  const destination = '/en/dashboard/afspraken?appointment=appointment-one';
+  await page.goto('/en/login?returnTo=' + encodeURIComponent(destination));
+  await page.locator('form a[href*="signup"]').click();
+  expect(new URL(page.url()).searchParams.get('returnTo')).toBe(destination);
+  await page.locator('#name').fill(customer.name);
+  await page.locator('#email').fill(customer.email);
+  await page.locator('form button[type=submit]').click();
+  await expect.poll(() => state.posts.find(post => post.path.endsWith('/customer/register'))?.body.returnTo).toBe(destination);
+  await expect(page.locator(`a[href*="login?returnTo="]`).first()).toBeVisible();
+});
+
 test('CP09 magic callback preserves appointment and opens its details', async ({ page }) => {
   const state = await fixture(page);
   await page.goto('/en/portal/verify?token=fixture&returnTo=' + encodeURIComponent('/en/dashboard/afspraken?appointment=appointment-one'));

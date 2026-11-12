@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/Badge";
 import { useIntl } from "@/i18n/IntlProvider";
 import { cn } from "@/lib/cn";
 import { EditSafeLink } from '@/components/cms/EditSafeLink';
+import { CompanyHoursSummary } from '@/components/cms/CompanyHoursSummary';
 import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { useCms, useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
@@ -445,9 +446,7 @@ export default function HomePage() {
               </li>
               <li className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-marine-700" />{" "}
-                <EditableText blockKey="home.contact.hours" page={CMS_PAGE} section="contact">
-                  {t("home.contact.hours")}
-                </EditableText>
+                <CompanyHoursSummary />
               </li>
             </ul>
             <div className="mt-5 flex flex-wrap gap-3">

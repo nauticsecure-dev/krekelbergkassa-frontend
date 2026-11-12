@@ -36,7 +36,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataSta
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
-import { formatDate, intlLocale } from '@/lib/format';
+import { formatCurrency, formatDate, formatDateTime, intlLocale } from '@/lib/format';
 import {
   appointmentToEvent,
   calendarQueryRange,
@@ -220,10 +220,10 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
     await Promise.allSettled([appointments.refetch(), stats.refetch(), ...(selectedId ? [appointmentDetail.refetch()] : [])]);
   };
 
-  const onConfirm = async (id: string) => {
+  const onConfirm = async (id: string, amounts: ApprovalAmounts) => {
     if (!canManage) return;
     try {
-      await confirm.mutate(id);
+      await confirm.mutate(id, amounts);
       await refresh();
       push({ tone: 'success', title: t('adminNew.appointments.toasts.confirmed') });
     } catch (err) {
@@ -231,9 +231,9 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
     }
   };
 
-  const onRetryEmail = async (id: string, emailId: number) => {
+  const onRetryEmail = async (id: string, emailId: number, resend: boolean) => {
     try {
-      await appointmentsService.retryEmail(id, emailId);
+      await appointmentsService.retryEmail(id, emailId, resend);
       await refresh();
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
@@ -520,7 +520,10 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
         onReject={onReject}
         onRetryEmail={onRetryEmail}
         dateLocale={dateLocale}
-        onClose={() => setSelectedId(null)}
+        onClose={() => {
+          setSelectedId(null);
+          if (selectedId === sourceId) updateUrl({ appointment_id: null, decision: null });
+        }}
         onConfirm={onConfirm}
         onAdvance={onAdvance}
         onCancel={setCancelTarget}
@@ -546,6 +549,15 @@ function AppointmentsSchedulerPage({ embedded = false }: { embedded?: boolean })
   );
 }
 
+type ApprovalAmounts = { approved_quote_net_cents?: number; initial_payment_cents?: number };
+
+function euroInputCents(input: string): number | undefined {
+  const value = input.trim().replace(',', '.');
+  if (!/^\d{1,7}(\.\d{1,2})?$/.test(value)) return undefined;
+  const cents = Math.round(Number(value) * 100);
+  return cents >= 1 && cents <= 100000000 ? cents : undefined;
+}
+
 function AppointmentDetailModal({
   appointment,
   decision,
@@ -562,10 +574,10 @@ function AppointmentDetailModal({
   decision: string | null;
   deciding: boolean;
   onReject: (id: string, reason: string) => void;
-  onRetryEmail: (id: string, emailId: number) => void;
+  onRetryEmail: (id: string, emailId: number, resend: boolean) => void;
   dateLocale: string;
   onClose: () => void;
-  onConfirm: (id: string) => void;
+  onConfirm: (id: string, amounts: ApprovalAmounts) => void;
   onAdvance: (id: string, next: string) => void;
   onCancel: (id: string) => void;
 }) {
@@ -573,11 +585,24 @@ function AppointmentDetailModal({
   const { can } = usePermission();
   const { user } = useAuth();
   const [reason, setReason] = React.useState('');
-  React.useEffect(() => setReason(''), [appointment?.id]);
+  const [quote, setQuote] = React.useState('');
+  const [deposit, setDeposit] = React.useState('');
+  React.useEffect(() => {
+    setReason('');
+    setQuote('');
+    setDeposit('');
+  }, [appointment?.id]);
+  const amounts: ApprovalAmounts = {
+    approved_quote_net_cents: euroInputCents(quote),
+    initial_payment_cents: euroInputCents(deposit),
+  };
+  const invalidAmounts = (appointment?.requires_approved_quote && !amounts.approved_quote_net_cents)
+    || (!!deposit && !amounts.initial_payment_cents);
   const isSuperAdmin = user?.role === 'super_admin';
   const isPending = appointment ? ['pending_manual_review', 'requested'].includes(appointment.status) : false;
   const nextStep = appointment?.next_status ?? null;
-  const canCancel = appointment ? !['completed', 'cancelled', 'no_show', 'rejected'].includes(appointment.status) : false;
+  const canCancel = appointment && !(isPending && appointment.public_request)
+    && !['completed', 'cancelled', 'no_show', 'rejected'].includes(appointment.status);
 
   return (
     <Modal open={!!appointment} onClose={onClose} size="md" className="p-6">
@@ -617,34 +642,81 @@ function AppointmentDetailModal({
             ) : null}
           </dl>
           {appointment.photo_ids?.filter((photo): photo is string => typeof photo === 'string' && /^https?:\/\//i.test(photo)).map((photo, index) => (
-            <a key={photo} className="mt-2 block text-sm underline" href={photo} target="_blank" rel="noreferrer">Foto {index + 1}</a>
+            <a key={photo} className="mt-2 block text-sm underline" href={photo} target="_blank" rel="noreferrer"><TranslatedText textKey="siteCopy.77dd28617b3c573b" fallbackText={"Foto"} />{' '}{index + 1}</a>
           ))}
-          {appointment.notification_deliveries?.map((delivery) => (
-            <p key={delivery.id} className={delivery.status === 'failed' ? 'text-sm text-red-700' : 'text-sm text-navy-600'}>
-              {delivery.type} · {delivery.status} · {delivery.attempts}
-              {delivery.sent_at ? ` · ${formatDate(delivery.sent_at, dateLocale)}` : null}
-              {isSuperAdmin && delivery.status === 'failed' ? (
-                <Button size="sm" variant="ghost" onClick={() => onRetryEmail(appointment.id, delivery.id)}>Opnieuw proberen</Button>
+          {appointment.payment_status && (
+            <section className="mt-5 space-y-1 text-sm">
+              <h4 className="font-semibold"><TranslatedText textKey="crane.paymentDetails" /></h4>
+              <p><TranslatedText textKey="crane.paymentStatus" vars={{ status: tEnum(t, 'crane.payment', appointment.payment_status) }} /></p>
+              {appointment.payment_mode && <p><TranslatedText textKey="crane.paymentRequirement" vars={{ mode: tEnum(t, 'crane.mode', appointment.payment_mode) }} /></p>}
+              {appointment.invoice && (
+                <p><TranslatedText textKey="crane.invoiceTotal" vars={{ amount: formatCurrency(appointment.invoice.total_amount / 100, dateLocale, appointment.invoice.currency) }} /></p>
+              )}
+              {appointment.initial_payment_cents ? (
+                <p><TranslatedText textKey="crane.depositAmount" vars={{ amount: formatCurrency(appointment.initial_payment_cents / 100, dateLocale, appointment.invoice?.currency) }} /></p>
               ) : null}
-            </p>
-          ))}
-          {appointment.invoice ? (
-            <p className="mt-3 text-sm text-navy-600">
-              Factuur: {appointment.invoice.status}
-              {appointment.invoice.payments?.map((payment) => (
-                <span key={payment.id} className="block">{payment.status} · € {(payment.amount / 100).toFixed(2)} · {payment.provider_payment_id}</span>
+              {appointment.invoice?.payments?.map((payment) => (
+                <p key={payment.id} className="break-all">
+                  {tEnum(t, 'crane.payment', payment.status)} · {formatCurrency(payment.amount / 100, dateLocale, payment.currency)}
+                  {payment.provider_payment_id ? ` · ${payment.provider_payment_id}` : ''}
+                  {payment.refunded_cents > 0 ? ` · ${t('crane.refundedAmount', { amount: formatCurrency(payment.refunded_cents / 100, dateLocale, payment.currency) })}` : ''}
+                </p>
               ))}
-            </p>
-          ) : null}
+            </section>
+          )}
+          {!!appointment.notification_deliveries?.length && (
+            <section className="mt-5 space-y-1 text-sm">
+              <h4 className="font-semibold"><TranslatedText textKey="crane.notifications" /></h4>
+              {appointment.notification_deliveries.map((delivery) => {
+                const resend = ['accepted', 'delivered'].includes(delivery.status);
+                return (
+                  <p key={delivery.id} className="break-words">
+                    {tEnum(t, 'crane.mailType', delivery.type.replace(/^(reminder_\d+)_.*$/, '$1'), { defaultValue: delivery.type })} · {delivery.recipient}
+                    {' · '}{tEnum(t, 'crane.delivery', delivery.status)}
+                    {delivery.sent_at ? ` · ${formatDateTime(delivery.sent_at, dateLocale)}` : ''}
+                    {isSuperAdmin && (resend || delivery.status === 'failed') && (
+                      <Button size="sm" variant="ghost" onClick={() => {
+                        if (!resend || window.confirm(t('crane.confirmResend', { recipient: delivery.recipient }))) {
+                          onRetryEmail(appointment.id, delivery.id, resend);
+                        }
+                      }}><TranslatedText textKey={resend ? 'crane.resend' : 'crane.retry'} /></Button>
+                    )}
+                  </p>
+                );
+              })}
+            </section>
+          )}
+          {!!appointment.audit_history?.length && (
+            <details className="mt-5 text-sm">
+              <summary className="cursor-pointer font-semibold"><TranslatedText textKey="crane.auditHistory" /></summary>
+              <ul className="mt-2 space-y-1">
+                {appointment.audit_history.map((event) => (
+                  <li key={event.id}>{formatDateTime(event.created_at, dateLocale)} · {event.action} · {event.actor_type}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+          {isPending && isSuperAdmin && appointment.public_request && decision !== 'reject' && (
+            <div className="mt-4 space-y-3 text-sm">
+              {appointment.requires_approved_quote && (
+                <label className="block"><TranslatedText textKey="crane.approvedQuote" />
+                  <input className="mt-1 block w-full rounded border p-2" inputMode="decimal" value={quote} onChange={(event) => setQuote(event.target.value)} />
+                </label>
+              )}
+              {appointment.payment_mode && appointment.payment_mode !== 'none' && (
+                <label className="block"><TranslatedText textKey="crane.initialPayment" />
+                  <input className="mt-1 block w-full rounded border p-2" inputMode="decimal" value={deposit} onChange={(event) => setDeposit(event.target.value)} />
+                </label>
+              )}
+            </div>
+          )}
           {isPending && isSuperAdmin && decision !== 'approve' ? (
-            <label className="mt-4 block text-sm">
-              Reden voor afwijzing (optioneel)
-              <input className="mt-1 block w-full rounded border p-2" value={reason} maxLength={255} onChange={(event) => setReason(event.target.value)} />
+            <label className="mt-4 block text-sm"><TranslatedText textKey="siteCopy.2f6b9c42e1790868" fallbackText={"Reden voor afwijzing (optioneel)"} /><input className="mt-1 block w-full rounded border p-2" value={reason} maxLength={255} onChange={(event) => setReason(event.target.value)} />
             </label>
           ) : null}
           <div className="mt-6 flex flex-wrap justify-end gap-2">
             {isPending && decision !== 'reject' && can('planning.manage') && (!appointment.public_request || isSuperAdmin) ? (
-              <Button size="sm" variant="secondary" leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />} disabled={deciding} onClick={() => onConfirm(appointment.id)}>
+              <Button size="sm" variant="secondary" leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />} disabled={deciding || invalidAmounts} onClick={() => onConfirm(appointment.id, amounts)}>
                 {<TranslatedText textKey={'adminNew.appointments.confirm'} />}
               </Button>
             ) : nextStep && !isPending && can('planning.write') ? (
@@ -653,9 +725,7 @@ function AppointmentDetailModal({
               </Button>
             ) : null}
             {isPending && isSuperAdmin && decision !== 'approve' ? (
-              <Button size="sm" variant="ghost" disabled={deciding} onClick={() => onReject(appointment.id, reason)}>
-                NEE — Afwijzen
-              </Button>
+              <Button size="sm" variant="ghost" disabled={deciding} onClick={() => onReject(appointment.id, reason)}><TranslatedText textKey="siteCopy.32467f9c4e7727b6" fallbackText={"NEE — Afwijzen"} /></Button>
             ) : null}
             {canCancel && !decision && can('planning.manage') ? (
               <Button size="sm" variant="ghost" leftIcon={<XCircle className="h-3.5 w-3.5" />} onClick={() => onCancel(appointment.id)}>

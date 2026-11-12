@@ -13,7 +13,6 @@ import {
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { usePwaInstall } from "@/lib/pwa";
-import { useIntl } from "@/i18n/IntlProvider";
 import { cn } from "@/lib/cn";
 
 interface Props {
@@ -22,7 +21,6 @@ interface Props {
 }
 
 export function InstallButton({ variant = "header", className }: Props) {
-  const { t } = useIntl();
   const { canInstall, canShowInstall, platform, promptInstall, dismiss } =
     usePwaInstall();
   const [open, setOpen] = React.useState(false);

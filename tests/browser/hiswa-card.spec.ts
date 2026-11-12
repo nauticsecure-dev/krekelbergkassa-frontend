@@ -81,7 +81,7 @@ for (const [locale, tag] of Object.entries(tags)) {
     await dialog.getByRole('button', { name: locale.toUpperCase(), exact: true }).click();
     await title.fill(`Updated title ${tag}`);
     await description.fill(`Updated description ${tag}`);
-    await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+    await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
     await expect(dialog).toHaveCount(0);
     await expect(trigger).toBeFocused();
     await expect(card).toContainText(`Updated title ${tag}`);
@@ -109,13 +109,13 @@ test('HISWA editor retains both drafts after a failed atomic save', async ({ pag
   await title.fill('Changed title');
   await description.fill('Changed description');
   state.failDescription();
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
-  await expect(dialog.getByRole('button', { name: messages.save, exact: true })).toBeEnabled();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
+  await expect(dialog.getByRole('button', { name: messages.publish, exact: true })).toBeEnabled();
   await expect(description).toHaveValue('Changed description');
   expect(state.store['en-GB'][titleKey]).toBe('Title en-GB');
   expect(state.store['en-GB'][descKey]).toBe('Description en-GB');
   state.recover();
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
   await expect(dialog).toHaveCount(0);
   expect(state.writes.map(({ key }) => key)).toEqual([titleKey, descKey, titleKey, descKey]);
 });
@@ -131,8 +131,8 @@ test('HISWA editor preserves drafts after a revision conflict', async ({ page })
   await title.fill('My draft');
   state.store['en-GB'][titleKey] = 'Another editor';
   state.conflict();
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
-  await expect(dialog.getByRole('button', { name: messages.save, exact: true })).toBeEnabled();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
+  await expect(dialog.getByRole('button', { name: messages.publish, exact: true })).toBeEnabled();
   await expect(title).toHaveValue('My draft');
   expect(state.store['en-GB'][titleKey]).toBe('Another editor');
 });
@@ -146,7 +146,7 @@ test('HISWA editor blocks writes after a locale load failure', async ({ page }) 
   await page.getByRole('button', { name: messages.editHiswa }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('alert')).toBeVisible();
-  await expect(dialog.getByRole('button', { name: messages.save, exact: true })).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: messages.publish, exact: true })).toBeDisabled();
   expect(state.writes).toHaveLength(0);
 });
 

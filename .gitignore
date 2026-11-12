@@ -137,3 +137,5 @@ artifacts/admin-audit/snapshot/
 .next-home-cms/
 .next-cms-media/
 .next-cms-media*/
+
+/.next-cms-text-live/

@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 async function pricingSession(page: Page, permissions: string[]) {
   const baseURL = test.info().project.use.baseURL!;
-  const rule = { id: 'winter-rule', product_id: 'winter-product', product_name: 'Winterstalling',
+  const rule = { revision: 7, id: 'winter-rule', product_id: 'winter-product', product_name: 'Winterstalling',
     service_code: 'STALL-WINTER', range_from_cm: 0, range_to_cm: 499,
     price_incl_vat: 66000, price_excl_vat: 54545, vat_rate: 21,
     price_type: 'fixed', channel: 'all', active: true };
@@ -18,9 +18,13 @@ async function pricingSession(page: Page, permissions: string[]) {
     if (url.pathname.endsWith('/pricing/rules/winter-rule') && route.request().method() === 'PATCH') {
       const payload = route.request().postDataJSON();
       saves.push(payload);
-      Object.assign(rule, payload);
-      return route.fulfill({ json: rule });
+      return route.fulfill({ json: { ...rule, draft_id: 'winter-draft' } });
     }
+    if (url.pathname.endsWith('/pricing/drafts/winter-draft')) return route.fulfill({ json: {
+      draft: { id: 'winter-draft', change_reason: 'Reviewed tariff' }, current: rule, proposed: { ...rule, ...saves[0] }, stale: false,
+      impact: { direct_displays: ['/diensten'], derived_calculations: ['kassa'], package_consumers: [], historical_snapshots_change: false },
+    } });
+    if (url.pathname.endsWith('/pricing/drafts/winter-draft/publish')) { Object.assign(rule, saves[0], { revision: 2 }); return route.fulfill({ json: rule }); }
     if (url.pathname.endsWith('/pricing/rules')) {
       expect(url.searchParams.get('service_code')).toBe('STALL-WINTER');
       return route.fulfill({ json: [rule] });
@@ -36,10 +40,12 @@ test('employee reaches filtered rules, saves cents, and reloads the updated tari
   await page.goto('/nl/admin/calculator/pricing?service_code=STALL-WINTER&rule_id=winter-rule');
   await expect(page.getByRole('spinbutton', { name: 'Prijs incl. BTW (€)' })).toBeVisible();
   await page.getByRole('spinbutton', { name: 'Prijs incl. BTW (€)' }).fill('777.50');
+  await page.getByLabel('Reden van wijziging', { exact: true }).fill('Reviewed tariff');
   await page.getByRole('button', { name: 'Opslaan', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   expect(saves).toHaveLength(1);
-  expect(saves[0]).toMatchObject({ price_incl_vat: 77750, price_excl_vat: 64256 });
+  expect(saves[0]).toMatchObject({ price_incl_vat: 77750, price_excl_vat: 64256, expected_revision: 7, change_reason: 'Reviewed tariff' });
+  await page.getByRole('button', { name: 'Goedkeuren en publiceren', exact: true }).click();
   await page.goto('/nl/admin/calculator/pricing?service_code=STALL-WINTER');
   await expect(page.locator('tbody')).toContainText('777,50');
 });

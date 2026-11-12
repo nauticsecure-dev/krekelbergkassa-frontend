@@ -1,4 +1,5 @@
 'use client';
+import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '@/lib/api';
@@ -41,12 +42,12 @@ function PositionComparison({ move }: { move: Move }) {
         stroke={index ? '#facc15' : '#bfdbfe'} strokeWidth=".35" strokeDasharray={index && !move.metadata.final ? '.7 .4' : undefined} />)}
     </svg>
     <figcaption className="grid grid-cols-2 gap-2 text-xs">
-      <span>Voor · {describe(from)}</span><span>{move.metadata.final ? 'Werkelijk' : 'Gepland'} · {describe(to)}</span>
+      <span><TranslatedText textKey="siteCopy.4ab6e7c8492c6a4a" fallbackText={"Voor ·"} />{' '}{describe(from)}</span><span>{move.metadata.final ? 'Werkelijk' : 'Gepland'} · {describe(to)}</span>
     </figcaption>
   </figure>;
 }
 
-export function YardMoves({ mine, onChange }: { mine: boolean; onChange: () => void }) {
+export function YardMoves({ mine, taskId, onChange }: { mine: boolean; taskId?: string; onChange: () => void }) {
   const [page, setPage] = useState(1);
   const [moves, setMoves] = useState<Page<Move>>();
   const [revision, setRevision] = useState(0);
@@ -62,7 +63,7 @@ export function YardMoves({ mine, onChange }: { mine: boolean; onChange: () => v
       if (loading) return;
       loading = true;
       try {
-        const result = await api<Page<Move>>(`${yardEndpoint}/moves`, { query: { mine: mine ? 1 : 0, page } });
+        const result = await api<Page<Move>>(`${yardEndpoint}/moves`, { query: { mine: mine ? 1 : 0, page, task_id: taskId } });
         if (active) setMoves(result);
       } catch (err) {
         if (active) setError(getApiErrorMessage(err));
@@ -73,7 +74,7 @@ export function YardMoves({ mine, onChange }: { mine: boolean; onChange: () => v
     void load();
     const timer = window.setInterval(() => void load(), 30000);
     return () => { active = false; window.clearInterval(timer); };
-  }, [mine, page, revision]);
+  }, [mine, page, revision, taskId]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -109,11 +110,11 @@ export function YardMoves({ mine, onChange }: { mine: boolean; onChange: () => v
   return <section className="relative space-y-3 rounded-xl border border-slate-700 p-3">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h2 className="font-semibold">{mine ? 'Mijn werk vandaag en komende opdrachten' : 'Verplaatsingen'}</h2>
-      <button className={control} onClick={() => { setAction(undefined); setError(''); setRevision((value) => value + 1); }}>Opdrachten vernieuwen</button>
+      <button className={control} onClick={() => { setAction(undefined); setError(''); setRevision((value) => value + 1); }}><TranslatedText textKey="siteCopy.d5b1379caf95e894" fallbackText={"Opdrachten vernieuwen"} /></button>
     </div>
     {error && <p role="alert" className="text-red-300">{error}</p>}
-    {!moves && !error && <p role="status">Opdrachten laden…</p>}
-    {moves?.total === 0 && <p>Geen verplaatsingen gevonden.</p>}
+    {!moves && !error && <p role="status"><TranslatedText textKey="siteCopy.4739949e6e80ff9a" fallbackText={"Opdrachten laden…"} /></p>}
+    {moves?.total === 0 && <p><TranslatedText textKey="siteCopy.776336e2116ee5ef" fallbackText={"Geen verplaatsingen gevonden."} /></p>}
     <div className="grid gap-3 md:grid-cols-2">
       {moves?.data.map((move) => {
         const state = move.metadata.state;
@@ -133,30 +134,30 @@ export function YardMoves({ mine, onChange }: { mine: boolean; onChange: () => v
             </div>
           </header>
           <PositionComparison move={move} />
-          {move.metadata.equipment && <p className="text-sm">Materieel · {move.metadata.equipment}</p>}
+          {move.metadata.equipment && <p className="text-sm"><TranslatedText textKey="siteCopy.c1be23d5b2b09c4d" fallbackText={"Materieel ·"} />{' '}{move.metadata.equipment}</p>}
           {move.metadata.reason && <p className="text-sm">{move.metadata.reason}</p>}
           {move.description && <p className="whitespace-pre-line text-sm">{move.description}</p>}
           {state === 'blocked' && <p className="text-sm text-amber-200">{move.metadata.blocked_reason}</p>}
           {move.is_assignee && <div className="flex flex-wrap gap-2">
-            {state !== 'cancelled' && <button className={`${control} min-h-11`} onClick={() => setPhoto(move)}>Foto toevoegen</button>}
+            {state !== 'cancelled' && <button className={`${control} min-h-11`} onClick={() => setPhoto(move)}><TranslatedText textKey="siteCopy.9acd0798360586d8" fallbackText={"Foto toevoegen"} /></button>}
             {actions.map(([operation, label]) => <button key={operation} type="button" className={`${control} min-h-11`} disabled={busy}
               onClick={() => setAction({ move, operation })}>{label}</button>)}
           </div>}
           {action?.move.id === move.id && <form key={action.operation} className="grid gap-2 border-t border-slate-700 pt-3" onSubmit={submit}>
-            {action.operation === 'block' && <label className="grid gap-1">Reden<textarea className={control} name="reason" maxLength={500} required /></label>}
+            {action.operation === 'block' && <label className="grid gap-1"><TranslatedText textKey="siteCopy.705a1b36a73dd736" fallbackText={"Reden"} /><textarea className={control} name="reason" maxLength={500} required /></label>}
             {action.operation === 'complete' && <>
               <div className="grid grid-cols-2 gap-2">
-                <label className="grid min-w-0 gap-1">X (m)<input className={`${control} min-w-0 w-full`} name="x" type="number" step="any" defaultValue={move.metadata.to.x} required /></label>
-                <label className="grid min-w-0 gap-1">Y (m)<input className={`${control} min-w-0 w-full`} name="y" type="number" step="any" defaultValue={move.metadata.to.y} required /></label>
-                <label className="grid min-w-0 gap-1">Rotatie<input className={`${control} min-w-0 w-full`} name="rotation" type="number" step="any" min={0} max={360} defaultValue={move.metadata.to.rotation} required /></label>
-                <label className="grid min-w-0 gap-1">Locatiecode<input className={`${control} min-w-0 w-full`} name="location_code" defaultValue={move.metadata.to.location_code ?? ''} /></label>
+                <label className="grid min-w-0 gap-1"><TranslatedText textKey="siteCopy.b26819e5e28a5245" fallbackText={"X (m)"} /><input className={`${control} min-w-0 w-full`} name="x" type="number" step="any" defaultValue={move.metadata.to.x} required /></label>
+                <label className="grid min-w-0 gap-1"><TranslatedText textKey="siteCopy.3d5f225ed7b0bca4" fallbackText={"Y (m)"} /><input className={`${control} min-w-0 w-full`} name="y" type="number" step="any" defaultValue={move.metadata.to.y} required /></label>
+                <label className="grid min-w-0 gap-1"><TranslatedText textKey="siteCopy.d02b0a58132db682" fallbackText={"Rotatie"} /><input className={`${control} min-w-0 w-full`} name="rotation" type="number" step="any" min={0} max={360} defaultValue={move.metadata.to.rotation} required /></label>
+                <label className="grid min-w-0 gap-1"><TranslatedText textKey="siteCopy.1c27d26d9899930e" fallbackText={"Locatiecode"} /><input className={`${control} min-w-0 w-full`} name="location_code" defaultValue={move.metadata.to.location_code ?? ''} /></label>
               </div>
-              <label className="grid gap-1">Notities<textarea className={control} name="notes" maxLength={2000} /></label>
-              <label className="flex items-center gap-2"><input type="checkbox" name="confirmed" required /> De boot staat fysiek op deze locatie.</label>
+              <label className="grid gap-1"><TranslatedText textKey="siteCopy.3bf10c0c8429e5dc" fallbackText={"Notities"} /><textarea className={control} name="notes" maxLength={2000} /></label>
+              <label className="flex items-center gap-2"><input type="checkbox" name="confirmed" required />{' '}<TranslatedText textKey="siteCopy.58b8af9c29e9079f" fallbackText={"De boot staat fysiek op deze locatie."} /></label>
             </>}
             <div className="flex gap-2">
-              <button className={`${control} min-h-11 !bg-blue-800`} disabled={busy}>Bevestigen</button>
-              <button type="button" className={control} disabled={busy} onClick={() => setAction(undefined)}>Annuleren</button>
+              <button className={`${control} min-h-11 !bg-blue-800`} disabled={busy}><TranslatedText textKey="siteCopy.aa9facdc0d1ed7ca" fallbackText={"Bevestigen"} /></button>
+              <button type="button" className={control} disabled={busy} onClick={() => setAction(undefined)}><TranslatedText textKey="siteCopy.0377b4a45c52deea" fallbackText={"Annuleren"} /></button>
             </div>
           </form>}
         </article>;
@@ -164,9 +165,9 @@ export function YardMoves({ mine, onChange }: { mine: boolean; onChange: () => v
     </div>
     {photo && <YardQuickPhoto boat={{ id: photo.entity_id, name: photo.boat_name }} taskId={photo.id} onClose={() => setPhoto(undefined)} />}
     {moves && moves.last_page > 1 && <div className="flex items-center gap-2">
-      <button className={control} disabled={page <= 1 || busy} onClick={() => { setAction(undefined); setPage(page - 1); }}>Vorige</button>
+      <button className={control} disabled={page <= 1 || busy} onClick={() => { setAction(undefined); setPage(page - 1); }}><TranslatedText textKey="siteCopy.7c45ecfadb9bd8f2" fallbackText={"Vorige"} /></button>
       <span>{page} / {moves.last_page}</span>
-      <button className={control} disabled={page >= moves.last_page || busy} onClick={() => { setAction(undefined); setPage(page + 1); }}>Volgende</button>
+      <button className={control} disabled={page >= moves.last_page || busy} onClick={() => { setAction(undefined); setPage(page + 1); }}><TranslatedText textKey="siteCopy.084be3022b972ee9" fallbackText={"Volgende"} /></button>
     </div>}
   </section>;
 }

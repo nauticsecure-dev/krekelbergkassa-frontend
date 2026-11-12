@@ -31,6 +31,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { useIntl } from '@/i18n/IntlProvider';
+import { tEnum } from '@/i18n/admin-enums';
 import { cn } from '@/lib/cn';
 import type { AppSettings, SettingsOverviewCard } from '@/lib/api-types';
 
@@ -170,6 +171,9 @@ export default function SettingsPage() {
     pos_methods: [] as string[],
     online_methods: [] as string[],
     crane_mode: 'optional' as 'none' | 'optional' | 'required',
+    crane_recipients: '',
+    crane_from: '',
+    crane_reply_to: '',
   });
 
   const [localeForm, setLocaleForm] = React.useState({
@@ -211,6 +215,9 @@ export default function SettingsPage() {
       pos_methods: s.payments.pos_methods || [],
       online_methods: s.payments.online_methods || [],
       crane_mode: s.payments.crane_mode ?? 'optional',
+      crane_recipients: s.payments.crane_notifications?.recipients.join(', ') ?? '',
+      crane_from: s.payments.crane_notifications?.from ?? '',
+      crane_reply_to: s.payments.crane_notifications?.reply_to ?? '',
     });
     setLocaleForm({
       default_locale: s.locales.default_locale || 'nl-NL',
@@ -648,14 +655,35 @@ export default function SettingsPage() {
                           const value = event.target.value;
                           if (value === 'none' || value === 'optional' || value === 'required') {
                             setPaymentsForm((current) => ({ ...current, crane_mode: value }));
+                            markDirty('payments');
                           }
                         }}
                       >
-                        <option value="none">Geen online betaling</option>
-                        <option value="optional">Optioneel na goedkeuring</option>
-                        <option value="required">Verplicht na goedkeuring</option>
+                        <option value="none"><TranslatedText textKey="siteCopy.ae0ffb7b55964e31" fallbackText={"Geen online betaling"} inline={false} /></option>
+                        <option value="optional"><TranslatedText textKey="siteCopy.2db1a863be6e075f" fallbackText={"Optioneel na goedkeuring"} inline={false} /></option>
+                        <option value="required"><TranslatedText textKey="siteCopy.8cd4e3980075ba0a" fallbackText={"Verplicht na goedkeuring"} inline={false} /></option>
                       </select>
                     </label>
+                  ) : null}
+                  {isSuperAdmin ? (
+                    <fieldset className="space-y-3 rounded-lg border border-navy-100 p-4">
+                      <legend className="px-1 text-sm font-semibold"><TranslatedText textKey="crane.notificationSettings" /></legend>
+                      {(['crane_recipients', 'crane_from', 'crane_reply_to'] as const).map((key) => (
+                        <label key={key} className="block text-sm font-medium">
+                          {tEnum(t, 'crane.settings', key)}
+                          <input
+                            className="mt-1 block w-full rounded border p-2"
+                            type="email"
+                            multiple={key === 'crane_recipients'}
+                            value={paymentsForm[key]}
+                            onChange={(event) => {
+                              setPaymentsForm((current) => ({ ...current, [key]: event.target.value }));
+                              markDirty('payments');
+                            }}
+                          />
+                        </label>
+                      ))}
+                    </fieldset>
                   ) : null}
                   <fieldset className="rounded-lg border border-navy-100 p-4">
                     <legend className="px-1 text-sm font-semibold">{<TranslatedText textKey={'settingsHub.online_methods'} />}</legend>
@@ -763,7 +791,12 @@ export default function SettingsPage() {
                               : {}),
                             pos_methods: paymentsForm.pos_methods,
                             online_methods: paymentsForm.online_methods,
-                            ...(isSuperAdmin ? { crane_mode: paymentsForm.crane_mode } : {}),
+                            ...(isSuperAdmin ? {
+                              crane_mode: paymentsForm.crane_mode,
+                              crane_recipients: paymentsForm.crane_recipients.split(',').map((email) => email.trim()).filter(Boolean),
+                              crane_from: paymentsForm.crane_from.trim() || null,
+                              crane_reply_to: paymentsForm.crane_reply_to.trim() || null,
+                            } : {}),
                           }),
                         t('adminNew.settings.toasts.paymentsSaved'),
                       )

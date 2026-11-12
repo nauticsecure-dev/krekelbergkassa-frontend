@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useSyncStatus } from '@/lib/hooks/useSyncStatus';
 
 export function ConnectionIndicator() {
-  const { locale, t } = useIntl();
+  const { locale } = useIntl();
   const { online, pending, failed, loading, error, stateLabel } = useSyncStatus();
 
   if (loading) {

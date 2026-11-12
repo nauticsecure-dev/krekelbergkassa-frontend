@@ -1,3 +1,4 @@
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { cn } from '@/lib/cn';
 
 interface CrestLogoProps {
@@ -66,7 +67,7 @@ export function CrestLogo({
           letterSpacing="0.08em"
           fill="#2b3748"
         >
-          KREKELBERG
+          <TranslatedText inline={false} textKey="brand.crestName" />
         </text>
         <text
           x="105"
@@ -77,15 +78,13 @@ export function CrestLogo({
           letterSpacing="0.06em"
           fill="#182536"
         >
-          NAUTIC
+          <TranslatedText inline={false} textKey="brand.crestType" />
         </text>
       </svg>
 
       {withWordmark ? (
         <div className={cn('mt-5 text-center', labelClassName)}>
-          <h1 className="heading-display text-5xl text-navy-900 sm:text-7xl">
-            Krekelberg Nautic
-          </h1>
+          <h1 className="heading-display text-5xl text-navy-900 sm:text-7xl"><TranslatedText textKey="siteCopy.862c1714632b538e" fallbackText={"Krekelberg Nautic"} /></h1>
         </div>
       ) : null}
     </div>

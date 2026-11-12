@@ -1,6 +1,8 @@
 'use client';
 
 import { TranslatedText } from '@/components/cms/TranslatedText';
+import { DraftReview } from '@/components/site/CanonicalServiceEditor';
+import { api } from '@/lib/api';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -47,6 +49,13 @@ export default function CalculatorPricingPage() {
   const productFilter = searchParams.get('product') ?? undefined;
   const serviceCodeFilter = searchParams.get('service_code') ?? undefined;
   const ruleIdParam = searchParams.get('rule_id');
+  const requestedReturn = searchParams.get('return_to');
+  const returnTo = requestedReturn?.startsWith('/' + locale + '/') && !requestedReturn.includes('://') && !requestedReturn.includes('\\') ? requestedReturn : '/' + locale + '/admin/calculator';
+  const [draftId, setDraftId] = React.useState('');
+  const [changeReason, setChangeReason] = React.useState('');
+  const [includedQuantities, setIncludedQuantities] = React.useState('{}');
+  const [baseRevision, setBaseRevision] = React.useState(1);
+  const [impact, setImpact] = React.useState<Record<string, unknown>>();
   const deepLinkHandled = React.useRef(false);
   const [showCreate, setShowCreate] = React.useState(false);
   const [editingRule, setEditingRule] = React.useState<string | null>(null);
@@ -111,6 +120,7 @@ export default function CalculatorPricingPage() {
       const vatRate = Number(form.vat_rate);
       const price = Math.round(Number(form.price_incl_vat) * 100);
       const payload = {
+        expected_revision: baseRevision, change_reason: changeReason, included_quantities: JSON.parse(includedQuantities),
         range_from_cm: Number(form.range_from_cm),
         range_to_cm: Number(form.range_to_cm),
         price_excl_vat: Math.round(price / (1 + vatRate / 100)),
@@ -125,12 +135,13 @@ export default function CalculatorPricingPage() {
         included_service_codes: form.included_service_codes.split(',').map((code) => code.trim()).filter(Boolean),
       };
       if (editingRule) {
-        await updateRule.mutate({ id: editingRule, ...payload });
+        const result = await updateRule.mutate({ id: editingRule, ...payload });
+        setDraftId(result.draft_id ?? '');
       } else {
-        await createRule.mutate({ product_id: form.product_id, ...payload });
+        const result = await createRule.mutate({ product_id: form.product_id, ...payload });
+        setDraftId(result.draft_id ?? '');
       }
       setShowCreate(false);
-      setEditingRule(null);
       await rules.refetch();
       push({ tone: 'success', title: t('adminNew.calculator.pricing.saved') });
     } catch (err) {
@@ -140,6 +151,10 @@ export default function CalculatorPricingPage() {
 
   const openEdit = (rule: PricingRule) => {
     if (!canUpdatePricing) return;
+    setBaseRevision(rule.revision);
+    setChangeReason('');
+    setIncludedQuantities(JSON.stringify(rule.included_quantities ?? {}));
+    void api<Record<string, unknown>>('/v1/pricing/rules/' + rule.id + '/impact').then(setImpact).catch(() => setImpact(undefined));
     setEditingRule(rule.id);
     setForm({
       product_id: rule.product_id,
@@ -176,6 +191,10 @@ export default function CalculatorPricingPage() {
     const rule = rows.find((item) => item.id === ruleIdParam);
     if (!rule) return;
     deepLinkHandled.current = true;
+    setBaseRevision(rule.revision);
+    setChangeReason('');
+    setIncludedQuantities(JSON.stringify(rule.included_quantities ?? {}));
+    void api<Record<string, unknown>>('/v1/pricing/rules/' + rule.id + '/impact').then(setImpact).catch(() => setImpact(undefined));
     setEditingRule(rule.id);
     setForm({
       product_id: rule.product_id,
@@ -201,7 +220,7 @@ export default function CalculatorPricingPage() {
         subtitle={t('adminNew.calculator.pricing.subtitle')}
         rightSlot={
           <div className="flex gap-2">
-            <Link href={`/${locale}/admin/calculator`}>
+            <Link href={returnTo}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
                 {<TranslatedText textKey={'adminNew.common.back'} />}
               </Button>
@@ -213,6 +232,7 @@ export default function CalculatorPricingPage() {
         }
       />
       <AdminContent>
+        {draftId && <DraftReview draftId={draftId} onPublished={() => { setDraftId(''); void rules.refetch(); }} />}
         {activeFilterLabel ? (
           <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-navy-100 bg-sand-50 px-3 py-2 text-sm text-navy-700">
             <span>
@@ -284,7 +304,7 @@ export default function CalculatorPricingPage() {
                         <button
                           type="button"
                           aria-label={t('adminNew.common.delete')} className="text-rose-600 hover:text-rose-800"
-                          onClick={() => setDeleteTarget(rule.id)}
+                          onClick={() => { openEdit(rule); setForm((previous) => ({ ...previous, active: false })); }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -356,6 +376,9 @@ export default function CalculatorPricingPage() {
                 <Input label="Geldig tot en met" type="date" min={form.valid_from || undefined} value={form.valid_to} onChange={(e) => setForm({ ...form, valid_to: e.target.value })} />
               </div>
               <Input label="Duur compleet pakket / dienst (minuten)" type="number" min={0} value={form.duration_minutes} onChange={(e) => setForm({ ...form, duration_minutes: e.target.value })} />
+              <Input label={t('smartServices.reason')} value={changeReason} required minLength={3} onChange={(e) => setChangeReason(e.target.value)} />
+              <Input label={t('smartServices.includedQuantities')} value={includedQuantities} onChange={(e) => setIncludedQuantities(e.target.value)} />
+              {impact && <details><summary><TranslatedText textKey="smartServices.impact" /></summary><pre className="overflow-auto text-xs">{JSON.stringify(impact, null, 2)}</pre></details>}
               <Input label="Inbegrepen dienstcodes (komma gescheiden)" value={form.included_service_codes} onChange={(e) => setForm({ ...form, included_service_codes: e.target.value })} placeholder="kranen, afspuiten" />
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />

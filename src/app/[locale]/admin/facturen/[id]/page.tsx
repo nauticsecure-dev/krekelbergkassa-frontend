@@ -213,7 +213,7 @@ export default function InvoiceDetailPage() {
               variant="outline"
               size="sm"
               leftIcon={<Mail className="h-4 w-4" />}
-              disabled={invoice?.direction === 'purchase' || invoice?.invoice_status !== 'draft'}
+              disabled={invoice?.direction === 'purchase' || invoice?.invoice_status !== 'draft' || invoice?.source_type === 'kassa_quotation'}
               onClick={() => setConfirmSend(true)}
             >
               {<TranslatedText textKey={'adminNew.invoiceDetail.actions.send'} />}

@@ -40,7 +40,9 @@ export function isProtectedPath(pathname: string): boolean {
 export function loginPath(locale: string, returnTo?: string): string {
   const base = `/${locale}/login`;
   if (!returnTo) return base;
-  return `${base}?returnTo=${encodeURIComponent(returnTo)}`;
+  const query = new URLSearchParams({ returnTo });
+  if (isAdminPath(returnToParts(returnTo).pathname)) query.set('role', 'manager');
+  return `${base}?${query}`;
 }
 
 /** Use in middleware — pathname and query must be set separately on NextURL. */
@@ -49,6 +51,7 @@ export function applyLoginRedirect(url: URL, locale: string, returnTo?: string) 
   url.search = '';
   if (returnTo) {
     url.searchParams.set('returnTo', returnTo);
+    if (isAdminPath(returnToParts(returnTo).pathname)) url.searchParams.set('role', 'manager');
   }
 }
 

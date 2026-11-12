@@ -3,7 +3,6 @@
 
 import { TranslatedText } from '@/components/cms/TranslatedText';
 import { Badge } from '@/components/ui/Badge';
-import { useIntl } from '@/i18n/IntlProvider';
 
 export function InvoiceStatusBadge({
   status,
@@ -11,7 +10,6 @@ export function InvoiceStatusBadge({
   status: string;
   isOverdue?: boolean;
 }) {
-  const { t } = useIntl();
   const normalized = status.toLowerCase();
   if (normalized.includes('credit')) return <Badge tone="warning">{<TranslatedText textKey={'adminNew.status.credited'} />}</Badge>;
   if (normalized.includes('checked')) return <Badge tone="neutral">{<TranslatedText textKey={'adminNew.status.checkedOut'} />}</Badge>;
@@ -21,7 +19,6 @@ export function InvoiceStatusBadge({
 }
 
 export function PaymentStatusBadge({ status }: { status: string }) {
-  const { t } = useIntl();
   const normalized = status.toLowerCase();
   if ((normalized.includes('paid') && !normalized.includes('partial')) || normalized.includes('success')) {
     return <Badge tone="success" dot>{<TranslatedText textKey={'adminNew.status.paid'} />}</Badge>;

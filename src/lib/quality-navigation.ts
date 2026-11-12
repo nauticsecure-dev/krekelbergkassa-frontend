@@ -1,9 +1,9 @@
-import { API_BASE } from './api';
 import { getAuthToken } from './auth-storage';
 
 export function qualityUrls(locale: string) {
-  const configured = process.env.NEXT_PUBLIC_QUALITY_ORIGIN || process.env.NEXT_PUBLIC_QUALITY_ASSIGNED_URL || process.env.NEXT_PUBLIC_QUALITY_URL || API_BASE;
-  // A relative API proxy cannot establish the independent QA network boundary.
+  const directApi = process.env.NEXT_PUBLIC_API_URL;
+  const configured = process.env.NEXT_PUBLIC_QUALITY_ORIGIN || process.env.NEXT_PUBLIC_QUALITY_ASSIGNED_URL || process.env.NEXT_PUBLIC_QUALITY_URL ||
+    (directApi && /^https?:\/\//.test(directApi) ? directApi : 'https://be.krekelberg-nautic.nl');
   if (! /^https?:\/\//.test(configured)) return null;
   const root = configured.replace(/\/api(?:\/v1)?(?:\/.*)?\/?$/, '').replace(/\/$/, '');
   const base = `${root}/api/v1/quality`;

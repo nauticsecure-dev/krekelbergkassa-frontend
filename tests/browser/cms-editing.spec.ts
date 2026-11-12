@@ -47,6 +47,7 @@ test('linked text can be typed into, saved and previewed; CTA surface opens its 
   await editorSession(page);
   let saved: Record<string, unknown> | undefined;
   await page.route('**/admin/cms/content-blocks/home.werf.cta', async (route) => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { key: 'home.werf.cta', cms_revision: null, value_by_locale: {} } });
     saved = route.request().postDataJSON();
     await route.fulfill({ json: {} });
   });
@@ -67,7 +68,7 @@ test('linked text can be typed into, saved and previewed; CTA surface opens its 
   await input.press('Enter');
   await input.pressSequentially('second line');
   await expect(input).toHaveValue('Updated link label \nsecond line');
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
   await expect(dialog).toHaveCount(0);
   expect(saved).toMatchObject({ page: 'home', value_by_locale: { 'en-GB': 'Updated link label \nsecond line' } });
   await expect(label).toContainText('Updated link label');
@@ -141,10 +142,16 @@ test('certification badge saves both lines in every locale and reloads from the 
   });
   await page.route('**/admin/cms/content-blocks/home.werf.*', route => {
     const key = route.request().url().split('/').pop()!;
+    if (route.request().method() === 'GET') return route.fulfill({ json: { key, cms_revision: null, value_by_locale: stored[key] ?? {} } });
     const body = route.request().postDataJSON();
     expect(body).toMatchObject({ page: 'home', section: 'werf' });
     stored[key] = { ...stored[key], ...body.value_by_locale };
     return route.fulfill({ json: {} });
+  });
+  await page.route('**/admin/cms/content-blocks', async route => {
+    const blocks = route.request().postDataJSON().blocks;
+    for (const block of blocks) stored[block.key] = { ...stored[block.key], ...block.value_by_locale };
+    return route.fulfill({ json: { data: blocks } });
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en');
@@ -159,7 +166,7 @@ test('certification badge saves both lines in every locale and reloads from the 
     await dialog.getByLabel(messages.certificationTitle, { exact: true }).fill(`Verified badge ${tag}`);
     await dialog.getByLabel(messages.certificationSubtitle, { exact: true }).fill(`HISWA · 1976 ${tag}`);
   }
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
   await expect(dialog).toHaveCount(0);
   await expect(badge).toContainText('Verified badge EN');
   await page.evaluate(() => sessionStorage.clear());

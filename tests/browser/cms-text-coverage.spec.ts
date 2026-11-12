@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import nl from '../../src/i18n/messages/nl.json';
+import de from '../../src/i18n/messages/de.json';
 
 // Local browser fixture evidence only; never presented as staging/database PASS.
 async function fixture(page: Page, authorized = true, role = authorized ? 'super_admin' : 'customer') {
@@ -38,6 +39,10 @@ async function fixture(page: Page, authorized = true, role = authorized ? 'super
         writes.push(key); globals[key] = request.postDataJSON().value;
       }
       return route.fulfill({ json: { settings: globals } });
+    }
+    if (url.pathname.includes('/content-blocks/') && request.method() === 'GET') {
+      const key = decodeURIComponent(url.pathname.split('/').at(-1)!);
+      return route.fulfill({ json: { key, cms_revision: null, value_by_locale: blocks[key]?.values ?? {}, publication_state: 'published' } });
     }
     if (url.pathname.includes('/content-blocks/') && request.method() === 'PATCH') {
       const key = decodeURIComponent(url.pathname.split('/').at(-1)!);
@@ -80,7 +85,7 @@ test('shared translations save, survive reload and isolate languages', async ({ 
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('textbox')).toBeEnabled();
   await dialog.getByRole('textbox').fill('QA services');
-  await dialog.getByRole('button', { name: nl.cms.save, exact: true }).click();
+  await dialog.getByRole('button', { name: nl.cms.publish, exact: true }).click();
   await expect(surface).toHaveText('QA services');
   expect(state.blocks['i18n.footer.services'].values).toEqual({ 'nl-NL': 'QA services' });
   await page.evaluate(() => sessionStorage.clear());
@@ -88,6 +93,8 @@ test('shared translations save, survive reload and isolate languages', async ({ 
   await expect(page.locator('footer')).toContainText('QA services');
   await page.goto('/en');
   await expect(page.locator('footer')).not.toContainText('QA services');
+  await page.goto('/de');
+  await expect(page.locator('footer').getByText(de.footer.services, { exact: true })).toBeVisible();
 });
 
 test('two translations in one menu link open only the selected field', async ({ page }) => {
@@ -102,7 +109,7 @@ test('two translations in one menu link open only the selected field', async ({ 
   await expect(dialog).toHaveCount(1);
   await expect(dialog.getByRole('textbox')).toBeEnabled();
   await dialog.getByRole('textbox').fill('QA wash description');
-  await dialog.getByRole('button', { name: nl.cms.save, exact: true }).click();
+  await dialog.getByRole('button', { name: nl.cms.publish, exact: true }).click();
   expect(Object.keys(state.blocks)).toEqual(['i18n.services.wash.desc']);
   expect(page.url()).toBe(`${test.info().project.use.baseURL}/nl`);
 });
@@ -136,7 +143,7 @@ test('literal footer copy is editable and public navigation stays available', as
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('textbox')).toBeEnabled();
   await dialog.getByRole('textbox').fill('QA privacy');
-  await dialog.getByRole('button', { name: nl.cms.save, exact: true }).click();
+  await dialog.getByRole('button', { name: nl.cms.publish, exact: true }).click();
   await expect(link).toHaveText('QA privacy');
   expect(page.url()).toBe(`${test.info().project.use.baseURL}/nl`);
   expect(Object.keys(state.blocks)).toHaveLength(1);

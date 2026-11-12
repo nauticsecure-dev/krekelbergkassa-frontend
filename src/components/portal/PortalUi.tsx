@@ -6,7 +6,6 @@ import * as React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Badge } from '@/components/ui/Badge';
-import { useIntl } from '@/i18n/IntlProvider';
 
 export function PortalContent({
   children,
@@ -302,7 +301,6 @@ export function PortalModalFooter({ children }: { children: React.ReactNode }) {
 }
 
 export function AppointmentStatusBadge({ status, statusGeneric, tooltip }: { status: string; statusGeneric?: string | null; tooltip?: string }) {
-  const { t } = useIntl();
   // Trello #99: prefer the coarse status_generic bucket for colour when present;
   // the raw status string is exposed as a tooltip for yard staff who need detail.
   const normalized = (statusGeneric || status || '').toLowerCase();
@@ -326,7 +324,6 @@ export function AppointmentStatusBadge({ status, statusGeneric, tooltip }: { sta
 }
 
 export function ContractStatusBadge({ status }: { status: string }) {
-  const { t } = useIntl();
   const normalized = status.toLowerCase();
   if (normalized === 'active') {
     return <Badge tone="success" dot>{<TranslatedText textKey={'adminNew.portal.stalling.statusActive'} />}</Badge>;

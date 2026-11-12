@@ -68,6 +68,7 @@ export function EditSafeLink({
       </div>
     );
   }
+  if (!href) return <span className={look} aria-label={ariaLabel}>{content}</span>;
 
   const isExternal = external || /^(https?:|mailto:|tel:)/i.test(href);
   if (isExternal) {

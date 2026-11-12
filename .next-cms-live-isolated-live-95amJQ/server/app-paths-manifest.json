@@ -1,0 +1,8 @@
+{
+  "/[locale]/(site)/diensten/afspuiten/page": "app/[locale]/(site)/diensten/afspuiten/page.js",
+  "/[locale]/(site)/diensten/weekje-op-wal/page": "app/[locale]/(site)/diensten/weekje-op-wal/page.js",
+  "/[locale]/(site)/diensten/winterstalling/page": "app/[locale]/(site)/diensten/winterstalling/page.js",
+  "/[locale]/(site)/diensten/zelf-werken/page": "app/[locale]/(site)/diensten/zelf-werken/page.js",
+  "/[locale]/(site)/page": "app/[locale]/(site)/page.js",
+  "/[locale]/(site)/contact/page": "app/[locale]/(site)/contact/page.js"
+}

@@ -496,7 +496,7 @@ export default function StallingPage() {
         subtitle={t('adminNew.stalling.subtitle')}
         rightSlot={
           <div className="flex flex-wrap gap-2">
-            <WerfcanvasLink locale={locale} className="rounded-lg border border-current px-3 py-2 text-sm font-medium">Werfcanvas</WerfcanvasLink>
+            <WerfcanvasLink locale={locale} className="rounded-lg border border-current px-3 py-2 text-sm font-medium"><TranslatedText textKey="siteCopy.9185d0def20ff8c1" fallbackText={"Werfcanvas"} /></WerfcanvasLink>
             <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
               {<TranslatedText textKey={'adminNew.stalling.new'} />}
             </Button>

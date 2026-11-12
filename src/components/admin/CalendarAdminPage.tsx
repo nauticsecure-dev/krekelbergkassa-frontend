@@ -6,7 +6,6 @@ import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { WerfcanvasLink } from '@/components/admin/WerfcanvasLink';
 import {
   CalendarClock,
   CalendarDays,
@@ -44,7 +43,9 @@ import { formatTimeRange, toTimeInputValue } from '@/lib/time';
 import { formatDate, intlLocale } from '@/lib/format';
 import { usePermission } from '@/lib/permissions';
 import { api } from '@/lib/api';
+import { getAuthToken } from '@/lib/auth-storage';
 import { yardEndpoint } from './yard/YardHistory';
+import { YardPlan, yardDayOffset, yardToday, yardJobPath } from './yard/daily-plan';
 
 type ModalKind = 'regular' | 'exception' | 'lunch' | 'location' | 'editLocation' | null;
 
@@ -108,18 +109,19 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
 
   const calendar = useQuery([], () => calendarService.get());
   const locations = useQuery(['calendar-locations'], () => calendarService.locations());
-  const canSeeYardMoves = can('stalling.view') && can('boats.view') && (canManage || can('planning.write'));
+  const canSeeYardMoves = can('stalling.view') && can('boats.view') && (canManage || can('planning.write') || can('work_orders.view'));
   const [yardDate, setYardDate] = React.useState(() => new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Amsterdam', dateStyle: 'short',
   }).format(new Date()));
   const yardMoves = useQuery(['calendar-yard-moves', canSeeYardMoves, yardDate], () =>
     canSeeYardMoves && yardDate
-      ? api<{ jobs: { id: string; type?: string; title: string; due_at: string; assigned_to: string | null }[] }>(
+      ? api<YardPlan>(
           `${yardEndpoint}/daily-plan`, { query: { date: yardDate } },
         )
       : Promise.resolve(null),
   );
-  const yardRows = yardMoves.data?.jobs.filter((job) => job.type === 'yard_move') ?? [];
+  const yardRows = yardMoves.data?.jobs ?? [];
+  const nextYardTask = yardRows.find(job => (job.type === 'boat' || job.type === 'yard_move') && job.id === yardMoves.data?.next_task_id);
 
   // Trello #88: toggleable work-orders overlay for the visible month.
   const [showWorkOrders, setShowWorkOrders] = React.useState(false);
@@ -479,21 +481,26 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
               )}
             </AdminSectionCard>
 
-            {canSeeYardMoves && <AdminSectionCard title="Werfverplaatsingen" icon={CalendarClock}
-              action={<Input aria-label="Datum werfverplaatsingen" type="date" value={yardDate} onChange={(event) => setYardDate(event.target.value)} />}>
+            {canSeeYardMoves && <AdminSectionCard title={t('yardDaily.title')} icon={CalendarClock}
+              action={<div className="flex flex-wrap gap-2">
+                <Button variant="secondary" onClick={() => setYardDate(yardToday())}><TranslatedText textKey="yardDaily.today" /></Button>
+                <Button variant="secondary" onClick={() => setYardDate(yardDayOffset(yardToday(), 1))}><TranslatedText textKey="yardDaily.tomorrow" /></Button>
+                <Button variant="secondary" onClick={() => setYardDate(yardDayOffset(yardDate || yardToday(), 7))}><TranslatedText textKey="yardDaily.week" /></Button>
+                <Input aria-label={t('yardDaily.date')} type="date" value={yardDate} onChange={(event) => setYardDate(event.target.value)} />
+              </div>}>
               {yardMoves.loading ? <LoadingState /> : yardMoves.error ? (
                 <ErrorState message={yardMoves.error} onRetry={() => void yardMoves.refetch().catch(() => undefined)} />
               ) : yardRows.length ? (
                 <ul className="space-y-2">
-                  {yardRows.map((job) => <li key={job.id}>
-                    <WerfcanvasLink locale={locale} moves className="flex flex-wrap justify-between gap-2 rounded-lg border border-navy-200 px-3 py-2 text-sm">
-                      <span>{job.title}</span>
-                      <span>{new Intl.DateTimeFormat(dateLocale, { timeZone: 'Europe/Amsterdam', timeStyle: 'short' }).format(new Date(job.due_at))}
+                  {(nextYardTask ? [nextYardTask, ...yardRows.filter(job => job !== nextYardTask)] : yardRows).map((job) => <li key={`${job.type}:${job.id}`}>
+                    <Link href={yardJobPath(locale, job)} prefetch={false} onClick={() => { getAuthToken(); }} className="flex flex-wrap justify-between gap-2 rounded-lg border border-navy-200 px-3 py-2 text-sm">
+                      <span>{job === nextYardTask && <strong className="mr-2 text-marine-700"><TranslatedText textKey="yardDaily.nextTask" /></strong>}{job.boat} · {job.title}</span>
+                      <span>{job.due_at ? new Intl.DateTimeFormat(dateLocale, { timeZone: 'Europe/Amsterdam', timeStyle: 'short' }).format(new Date(job.due_at)) : t('yardDaily.allDay')}
                         {job.assigned_to && ` · ${job.assigned_to}`}</span>
-                    </WerfcanvasLink>
+                    </Link>
                   </li>)}
                 </ul>
-              ) : <p className="py-2 text-sm text-navy-500">Geen werfverplaatsingen op deze datum.</p>}
+              ) : <p className="py-2 text-sm text-navy-500"><TranslatedText textKey="yardDaily.empty" /></p>}
             </AdminSectionCard>}
             {/* Trello #88: work-orders overlay for the visible month */}
             <AdminSectionCard

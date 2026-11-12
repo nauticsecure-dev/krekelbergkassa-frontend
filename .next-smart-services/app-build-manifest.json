@@ -1,0 +1,55 @@
+{
+  "pages": {
+    "/[locale]/(site)/diensten/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/diensten/page.js"
+    ],
+    "/[locale]/(site)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/layout.js"
+    ],
+    "/[locale]/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/layout.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
+    ],
+    "/[locale]/(site)/kraanafspraak/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/kraanafspraak/page.js"
+    ],
+    "/[locale]/admin/calculator/pricing/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/calculator/pricing/page.js"
+    ],
+    "/[locale]/admin/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/admin/layout.js"
+    ],
+    "/[locale]/(site)/diensten/winterstalling/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/diensten/winterstalling/page.js"
+    ],
+    "/[locale]/(site)/diensten/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/diensten/[slug]/page.js"
+    ],
+    "/[locale]/(site)/diensten/aanvraag/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(site)/diensten/aanvraag/page.js"
+    ]
+  }
+}

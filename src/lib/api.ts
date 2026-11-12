@@ -48,6 +48,7 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
   portalAuth?: boolean;
   queueWhenOffline?: boolean;
   timeoutMs?: number;
+  onUploadProgress?: (percent: number) => void;
   /** Correlation id sent as X-Request-Id. Reused when the caller already has one. */
   requestId?: string;
 }
@@ -149,7 +150,26 @@ export async function apiResult<T = unknown>(
 
     let res: Response;
     try {
-      res = await fetch(buildUrl(path, opts.query), {
+      if (opts.onUploadProgress && opts.body instanceof FormData) {
+        res = await new Promise<Response>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open(opts.method ?? 'POST', buildUrl(path, opts.query));
+          xhr.timeout = timeoutMs;
+          xhr.withCredentials = credentialsMode === 'include';
+          headers.forEach((value, key) => xhr.setRequestHeader(key, value));
+          xhr.upload.onprogress = event => { if (event.lengthComputable) opts.onUploadProgress?.(Math.round(event.loaded / event.total * 100)); };
+          xhr.onload = () => {
+            const responseHeaders = new Headers();
+            for (const line of xhr.getAllResponseHeaders().trim().split(/[\r\n]+/)) {
+              const split = line.indexOf(':'); if (split > 0) responseHeaders.set(line.slice(0, split), line.slice(split + 1).trim());
+            }
+            resolve(new Response(xhr.responseText, {status: xhr.status, headers: responseHeaders}));
+          };
+          xhr.onerror = () => reject(new Error('Upload connection failed. Retry this draft.'));
+          xhr.ontimeout = () => reject(new Error('Processing timed out. Retry this draft to recover the saved result.'));
+          xhr.send(opts.body as FormData);
+        });
+      } else res = await fetch(buildUrl(path, opts.query), {
         ...opts,
         headers,
         signal: controller.signal,

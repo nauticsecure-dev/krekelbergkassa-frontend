@@ -67,8 +67,6 @@ export function ServicePage({
   const { can } = usePermission();
 
   useRegisterCmsPage(cmsPage ?? '');
-  const cta = primaryCta ?? { label: t('nav.bookCrane'), href: `/${locale}/kraanafspraak` };
-
   const catalogQuery = useQuery([catalogSlug ?? '', locale], () =>
     catalogSlug ? serviceCatalogService.page(catalogSlug, locale) : Promise.resolve(null),
     { immediate: !!catalogSlug && !catalogServices },
@@ -80,6 +78,9 @@ export function ServicePage({
     ),
   );
   const pricingService = yardService(service?.service_code) ?? yardService(catalogSlug);
+  const cta = primaryCta ?? (pricingService
+    ? { label: t('yardPricing.eyebrow'), href: '#prijsberekening' }
+    : { label: t('nav.bookCrane'), href: `/${locale}/kraanafspraak` });
 
   const p = cmsPage ?? '';
 
@@ -244,7 +245,7 @@ export function ServicePage({
             <div className="flex items-center gap-2">
               {isAdmin && adminProductSlug ? (
                 <Link
-                  href={`/${locale}/admin/producten?search=${encodeURIComponent(adminProductSlug)}`}
+                  href={service?.id ? `/${locale}/admin/producten/${encodeURIComponent(service.id)}?return_to=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '')}` : `/${locale}/admin/producten?search=${encodeURIComponent(adminProductSlug)}`}
                 >
                   <Button variant="outline" leftIcon={<Pencil className="h-4 w-4" />}>
                     <TranslatedText textKey={'servicePage.editService'} />
@@ -254,8 +255,8 @@ export function ServicePage({
               {can('pricing.update') && (catalogServiceCode || adminProductSlug) ? (
                 <Link
                   href={`/${locale}/admin/calculator/pricing?product=${encodeURIComponent(
-                    catalogServiceCode ?? adminProductSlug ?? '',
-                  )}`}
+                    service?.code ?? catalogServiceCode ?? adminProductSlug ?? '',
+                  )}&return_to=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '')}`}
                 >
                   <Button variant="outline" leftIcon={<Pencil className="h-4 w-4" />}>
                     <TranslatedText textKey={'servicePage.editPrices'} />

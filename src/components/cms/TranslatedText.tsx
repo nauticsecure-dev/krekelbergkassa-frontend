@@ -39,7 +39,8 @@ export function TranslatedText({ textKey, vars, fallbackText, inline = true }: {
   }, [isCmsEditing, inline, setOpen]);
   const text = t(textKey, fallbackText === undefined ? vars : { defaultValue: fallbackText, ...vars });
   const source = fieldSource(`i18n.${textKey}`, localeTag, getContentBlock(`i18n.${textKey}`), canEdit);
-  if (!inline || (!isCmsEditing && !retainCmsDrafts)) return <span {...source}>{text}</span>;
+  if (!inline) return <>{text}</>;
+  if (!isCmsEditing && !retainCmsDrafts) return <span {...source}>{text}</span>;
   const raw = textKey.split('.').reduce<unknown>((value, key) =>
     value && typeof value === 'object' ? (value as Record<string, unknown>)[key] : undefined, messages);
   const activate = (event: React.SyntheticEvent) => { event.preventDefault(); event.stopPropagation(); setOpen(true); };

@@ -19,6 +19,7 @@ interface EditableImageProps {
   /** Hardcoded source used until a CMS image is uploaded. */
   fallbackSrc: string;
   defaultStyle?: ImageStyle;
+  sizes?: string; priority?: boolean;
 }
 
 /**
@@ -36,7 +37,7 @@ export function EditableImage({
   className,
   alt,
   fallbackSrc,
-  defaultStyle,
+  defaultStyle, sizes, priority,
 }: EditableImageProps) {
   const { isCmsEditing, retainCmsDrafts, getMedia, isPageReady } = useCms();
   const { t } = useIntl();
@@ -53,17 +54,19 @@ export function EditableImage({
     stickyCmsSrc.current ||
     (pageReady ? fallbackSrc : null);
 
-  const altText = block?.alt ?? alt ?? '';
+  const altText = block?.decorative ? '' : block?.alt ?? alt ?? '';
   const focal = block?.focal_point ?? { x: 50, y: 50 };
   const overlay = block?.overlay ?? 0;
   const imageStyle = { ...defaultStyle, ...block?.image_style };
 
-  const editable = isCmsEditing;
+  // Capture the opening revision only after the current locale has loaded.
+  const editable = isCmsEditing && pageReady;
 
   return (
     <>
       <span
         data-cms-block={blockKey}
+        data-cms-image
         className={cn(
           'group/cms relative block overflow-hidden',
           !src && 'bg-navy-950',
@@ -80,6 +83,9 @@ export function EditableImage({
           // eslint-disable-next-line @next/next/no-img-element
           <CmsImage
             src={src}
+            sizes={sizes ?? (blockKey.includes('.hero.') ? '100vw' : '(max-width: 767px) 100vw, 50vw')} priority={priority ?? blockKey.includes('.hero.')}
+            rotation={block?.rotation} mobileRotation={block?.mobile_rotation}
+            adjustmentsBaked={block?.adjustments_baked} mobileAdjustmentsBaked={block?.mobile_adjustments_baked}
             alt={altText}
             title={block?.seo_title}
             className={cn('h-full w-full object-cover', editable && 'pointer-events-none')}

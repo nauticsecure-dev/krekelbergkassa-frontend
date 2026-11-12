@@ -1,4 +1,5 @@
 'use client';
+import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import { useEffect, useRef, useState } from 'react';
 import { api, type ApiError } from '@/lib/api';
@@ -6,7 +7,7 @@ import { control } from './YardHistory';
 
 type Point = [number, number];
 type Status = 'pending' | 'approved' | 'rejected';
-type Detection = { points: Point[]; confidence: number | null; status: Status };
+type Detection = { id: string; points: Point[]; confidence: number | null; status: Status; orientation?: number; parent_ids?: string[] };
 export type YardAnalysis = { image_id: string; mode: 'ai' | 'manual'; revision: number; detections: Detection[] };
 
 const colors: Record<Status, string> = { pending: '#fbbf24', approved: '#4ade80', rejected: '#f87171' };
@@ -48,7 +49,7 @@ function drawCutout(canvas: HTMLCanvasElement, image: HTMLImageElement, points: 
 export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deleting = false }: {
   path: string;
   analysis: YardAnalysis;
-  onPublish?: (file: File) => void;
+  onPublish?: (file: File, outputId: string) => void;
   onRemove?: () => void;
   deleting?: boolean;
 }) {
@@ -56,7 +57,8 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
   const [selected, setSelected] = useState(0);
   const [drawing, setDrawing] = useState<{ index: number; points: Point[] }>();
   const [source, setSource] = useState<Blob>();
-  const [empty, setEmpty] = useState<Blob>();
+  const [output, setOutput] = useState<{ blob: Blob; id: string }>();
+  const empty = output?.blob;
   const [view, setView] = useState<'source' | 'review' | 'empty'>('review');
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -88,7 +90,7 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
     detections[index] = next;
     setReview({ ...review, detections });
     setDirty(true);
-    setEmpty(undefined);
+    setOutput(undefined);
   }
 
   async function submit(generate: boolean) {
@@ -99,15 +101,17 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
       if (dirty) {
         saved = await api<YardAnalysis>(path + '/review', {
           method: 'PUT',
-          body: { revision: review.revision, detections: review.detections.map(({ points, status }) => ({ points, status })) },
+          body: { revision: review.revision, detections: review.detections.map(({ id, points, status, orientation, parent_ids }) => ({ id, points, status, orientation, parent_ids })) },
         });
         setReview(saved);
         setDirty(false);
       }
       if (generate) {
-        setEmpty(await api<Blob>(path + '/empty-yard', {
-          method: 'POST', body: { revision: saved.revision }, timeoutMs: 60000,
-        }));
+        const result = await api<{ id: string }>(path + '/empty-yard', {
+          method: 'POST', body: { revision: saved.revision, persist: true }, timeoutMs: 60000,
+        });
+        const blob = await api<Blob>(path + '/outputs/' + result.id);
+        setOutput({ blob, id: result.id });
         setView('empty');
       }
     } catch (reason) {
@@ -131,7 +135,7 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
     <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="min-w-0 space-y-2">
         {onRemove && <div className="flex justify-end">
-          <button type="button" className={`${control} !text-red-300`} disabled={busy || deleting} onClick={onRemove}>Foto verwijderen</button>
+          <button type="button" className={`${control} !text-red-300`} disabled={busy || deleting} onClick={onRemove}><TranslatedText textKey="siteCopy.cf2ac9766c096588" fallbackText={"Foto verwijderen"} /></button>
         </div>}
         <div className="max-h-[65vh] overflow-auto rounded-lg border border-slate-700 bg-slate-950">
           <div className="relative" style={{ width: zoom * 100 + '%' }}>
@@ -169,61 +173,66 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
       </div>
       <aside className="space-y-3">
         <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-900 p-3">
-          <h4 className="font-semibold">Bootdetecties</h4>
+          <h4 className="font-semibold"><TranslatedText textKey="siteCopy.8437afe2a6822c8f" fallbackText={"Bootdetecties"} /></h4>
           {detection && <>
             <select aria-label="Detectie" className={control + ' w-full'} value={selected} disabled={!!drawing}
               onChange={(event) => { setSelected(Number(event.target.value)); setView('review'); }}>
-              {review.detections.map(({ status }, index) => <option key={index} value={index}>Detectie #{index + 1} · {labels[status]}</option>)}
+              {review.detections.map(({ status }, index) => <option key={index} value={index}><TranslatedText textKey="siteCopy.00a3512d6254f6ad" fallbackText={"Detectie #"} inline={false} />{index + 1} · {labels[status]}</option>)}
             </select>
             <canvas ref={cutout} aria-label="Transparante bootuitsnede" className="mx-auto max-h-40 max-w-full rounded bg-slate-700" />
             <p className="text-sm text-slate-300">{detection.confidence === null ? 'Handmatig masker' : 'AI-confidence ' + Math.round(detection.confidence * 100) + '%'}</p>
             <div className="flex flex-wrap gap-2">
               <button className={control + ' text-green-300'} disabled={busy || !!drawing}
-                onClick={() => change(selected, { ...detection, status: 'approved' })}>Goedkeuren</button>
+                onClick={() => change(selected, { ...detection, status: 'approved' })}><TranslatedText textKey="siteCopy.32a3611bb358e472" fallbackText={"Goedkeuren"} /></button>
               <button className={control} disabled={busy || !!drawing || !loaded} onClick={() => {
                 setView('review');
                 setDrawing({ index: selected, points: [] });
-              }}>Bewerken</button>
+              }}><TranslatedText textKey="siteCopy.8cc4f65db9269747" fallbackText={"Bewerken"} /></button>
               <button className={control + ' text-red-300'} disabled={busy || !!drawing}
-                onClick={() => change(selected, { ...detection, status: 'rejected' })}>Afwijzen</button>
-              <button className={control} disabled={!loaded || detection.status !== 'approved'} onClick={() => {
-                const link = document.createElement('a');
-                link.href = cutout.current!.toDataURL('image/png');
-                link.download = 'boot-' + (selected + 1) + '.png';
-                link.click();
-              }}>PNG downloaden</button>
+                onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey="siteCopy.5ce3c1a4a26afdba" fallbackText={"Afwijzen"} /></button>
+              <button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {
+                setBusy(true); setError('');
+                try {
+                  const file = await api<{ id: string }>(path + '/cutouts/' + detection.id, { method: 'POST', body: { revision: review.revision }, timeoutMs: 60000 });
+                  const blob = await api<Blob>(path + '/outputs/' + file.id);
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement('a'); link.href = url; link.download = 'boot-' + detection.id + '.png'; link.click();
+                  setTimeout(() => URL.revokeObjectURL(url), 1000);
+                } catch (reason) { setError((reason as ApiError).message || 'De uitsnede kon niet worden gemaakt.'); }
+                finally { setBusy(false); }
+              }}><TranslatedText textKey="siteCopy.851844454ee82b41" fallbackText={"PNG downloaden"} /></button>
             </div>
           </>}
           {drawing ? <>
-            <p className="text-sm">Klik rondom de boot om het masker te tekenen.</p>
+            <p className="text-sm"><TranslatedText textKey="siteCopy.765fedf0af2c3147" fallbackText={"Klik rondom de boot om het masker te tekenen."} /></p>
             <div className="flex flex-wrap gap-2">
               <button className={control} disabled={drawing.points.length < 3} onClick={() => {
-                change(drawing.index, { points: drawing.points, confidence: null, status: 'pending' });
+                change(drawing.index, { ...review.detections[drawing.index], id: review.detections[drawing.index]?.id ?? crypto.randomUUID(), points: drawing.points, confidence: null, status: 'pending' });
                 setSelected(drawing.index);
                 setDrawing(undefined);
-              }}>Masker toepassen</button>
+              }}><TranslatedText textKey="siteCopy.3ed3f37730819382" fallbackText={"Masker toepassen"} /></button>
               <button className={control} disabled={!drawing.points.length} onClick={() =>
-                setDrawing({ ...drawing, points: drawing.points.slice(0, -1) })}>Punt wissen</button>
-              <button className={control} onClick={() => setDrawing(undefined)}>Annuleren</button>
+                setDrawing({ ...drawing, points: drawing.points.slice(0, -1) })}><TranslatedText textKey="siteCopy.c041a6d11c73cd9b" fallbackText={"Punt wissen"} /></button>
+              <button className={control} onClick={() => setDrawing(undefined)}><TranslatedText textKey="siteCopy.fd3604f2ec8ebb1a" fallbackText={"Annuleren"} /></button>
             </div>
           </> : <button className={control} disabled={busy || !loaded || review.detections.length >= 300} onClick={() => {
             setView('review');
             setDrawing({ index: review.detections.length, points: [] });
-          }}>+ Bootmasker tekenen</button>}
+          }}><TranslatedText textKey="siteCopy.9db28007cfb58d83" fallbackText={"+ Bootmasker tekenen"} /></button>}
         </div>
         <div className="space-y-2 rounded-lg border border-slate-700 bg-slate-900 p-3">
-          <h4 className="font-semibold">Sessieresultaat · {review.detections.length}</h4>
+          <h4 className="font-semibold"><TranslatedText textKey="siteCopy.a03d424cbd92f4cc" fallbackText={"Sessieresultaat ·"} />{' '}{review.detections.length}</h4>
           {(Object.keys(counts) as Status[]).map((status) => <div key={status} className="flex justify-between border-b border-slate-800 text-sm">
             <span style={{ color: colors[status] }}>{labels[status]}</span><span>{counts[status]}</span>
           </div>)}
-          <button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}>Review opslaan</button>
+          <button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey="siteCopy.13e5170f2b105372" fallbackText={"Review opslaan"} /></button>
           <button className="w-full rounded-lg bg-blue-700 px-3 py-2 font-semibold disabled:opacity-50"
-            disabled={busy || !!drawing || !!counts.pending} onClick={() => void submit(true)}>Lege werf genereren</button>
-          {busy && <p role="status" className="text-sm">Bezig met verwerken…</p>}
+            disabled={busy || !!drawing || !!counts.pending} onClick={() => void submit(true)}><TranslatedText textKey="siteCopy.3b185da8cd0488a3" fallbackText={"Lege werf genereren"} /></button>
+          {busy && <p role="status" className="text-sm"><TranslatedText textKey="siteCopy.550306513d82dae7" fallbackText={"Bezig met verwerken…"} /></p>}
           {empty && emptyUrl && <div className="flex flex-wrap gap-2">
-            <a className={control} href={emptyUrl} download="lege-werf.webp">Lege werf downloaden</a>
-            {onPublish && <button className={control} disabled={busy || !!drawing} onClick={() =>
-              onPublish(new File([empty], 'lege-werf.webp', { type: empty.type }))}>Naar uitlijning en publicatie</button>}
+            <a className={control} href={emptyUrl} download="lege-werf.webp"><TranslatedText textKey="siteCopy.a5e6a98720928496" fallbackText={"Lege werf downloaden"} /></a>
+            {onPublish && output && <button className={control} disabled={busy || !!drawing} onClick={() =>
+              onPublish(new File([output.blob], 'lege-werf.webp', { type: output.blob.type }), output.id)}><TranslatedText textKey="siteCopy.67ccd1f00c1a89c1" fallbackText={"Naar uitlijning en publicatie"} /></button>}
           </div>}
         </div>
       </aside>

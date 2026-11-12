@@ -11,8 +11,8 @@ export default defineConfig({
   reporter: [['list']],
   use: { ...ui.use, baseURL },
   webServer: {
-    command: `node --max-old-space-size=1536 node_modules/next/dist/bin/next dev -p ${port}`,
-    env: { NEXT_DIST_DIR: process.env.CMS_TEST_PORT ? `.next-cms-media-${port}` : '.next-cms-media', NEXT_PUBLIC_API_URL: '/api', E2E_LOW_MEMORY: '1' },
+    command: `node --max-old-space-size=1536 scripts/isolated-next-server.cjs ${port}`,
+    env: { NEXT_DIST_DIR: process.env.CMS_TEST_PORT ? `.next-cms-media-${port}` : '.next-cms-media', NEXT_PUBLIC_API_URL: '/api', NEXT_FONT_GOOGLE_MOCKED_RESPONSES:process.cwd()+'/tests/fixtures/journey-fonts.cjs', E2E_LOW_MEMORY: '0' },
     url: `${baseURL}/en`,
     reuseExistingServer: false,
     timeout: 240_000,

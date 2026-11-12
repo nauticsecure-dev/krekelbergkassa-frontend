@@ -21,7 +21,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClassName } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
 import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
-import { openingHoursRows } from "@/lib/company";
 import { contentService } from "@/lib/services";
 import { useQuery } from "@/lib/hooks/useAsync";
 import { cn } from "@/lib/cn";
@@ -182,29 +181,18 @@ export default function ContactPage() {
               ))}
             </ul>
           ) : (
-            <HoursTable
-              rows={openingHoursRows({
-                monday: t("contactPage.monday"),
-                tuesday: t("contactPage.tuesday"),
-                wednesday: t("contactPage.wednesday"),
-                thursday: t("contactPage.thursday"),
-                friday: t("contactPage.friday"),
-                saturday: t("contactPage.saturday"),
-                sunday: t("contactPage.sunday"),
-                closed: t("contactPage.closed"),
-              })}
-            />
+            <p role="status" className="text-sm text-navy-500"><TranslatedText textKey={hoursQuery.loading ? 'adminNew.common.loading' : 'contactPage.hoursUnavailable'} /></p>
           )}
         </Card>
 
         <Card className="overflow-hidden p-0">
-          <iframe
+          {mapsEmbed ? <iframe
             title="Google Maps · Krekelberg Nautic"
             src={mapsEmbed}
             className="h-full min-h-[420px] w-full"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-          />
+          /> : <p role="status" className="p-6 text-sm text-navy-500"><TranslatedText textKey="contactPage.addressUnavailable" /></p>}
         </Card>
       </section>
 
@@ -486,37 +474,6 @@ function ContactCard({
   );
 }
 
-function HoursTable({ rows }: { rows: { day: string; value: string }[] }) {
-  return (
-    <ul className="grid gap-1 text-sm">
-      {rows.map((r) => (
-        <li
-          key={r.day}
-          className="flex items-center justify-between border-b border-dashed border-navy-100 py-1.5 last:border-b-0"
-        >
-          <span className="text-navy-600">{r.day}</span>
-          <span className="font-semibold text-navy-900">{r.value}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function FormField({
-  label,
-  children,
-  className,
-}: {
-  label: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-widest text-navy-500">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
+function FormField({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+  return <div className={className}><label className="mb-1 block text-[11px] font-semibold uppercase tracking-widest text-navy-500">{label}</label>{children}</div>;
 }

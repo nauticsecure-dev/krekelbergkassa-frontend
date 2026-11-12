@@ -50,6 +50,7 @@ test('expired save retains the draft and resumes only for the same verified edit
   let expired = true;
   let saved: unknown;
   await page.route('**/admin/cms/content-blocks/home.hero.title', route => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { key: 'home.hero.title', cms_revision: null, value_by_locale: {} } });
     saved = route.request().postDataJSON();
     return route.fulfill({ status: expired ? 401 : 200, json: {} });
   });
@@ -58,7 +59,7 @@ test('expired save retains the draft and resumes only for the same verified edit
   await page.locator('[data-cms-block="home.hero.title"] button').click();
   const input = page.locator('[role="dialog"] textarea');
   await input.fill('Keep this unsaved label');
-  await page.getByRole('button', { name: cms.save, exact: true }).click();
+  await page.getByRole('button', { name: cms.publish, exact: true }).click();
   const recovery = page.locator('dialog[open]');
   await expect(recovery).toContainText(cms.draftRetained);
   await expect(recovery.getByRole('link', { name: cms.signInAgain })).toHaveAttribute('target', '_blank');
@@ -76,7 +77,7 @@ test('expired save retains the draft and resumes only for the same verified edit
   await recovery.getByRole('button', { name: cms.resumeEditing }).click();
   await expect(recovery).toHaveCount(0);
   await expect(input).toHaveValue('Keep this unsaved label');
-  await page.getByRole('button', { name: cms.save, exact: true }).click();
+  await page.getByRole('button', { name: cms.publish, exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   expect(saved).toMatchObject({ value_by_locale: { 'en-GB': 'Keep this unsaved label' } });
 });
@@ -133,12 +134,12 @@ test('expired image upload retains its selected file and metadata for retry', as
   await fixture(page);
   let expired = true;
   let uploads = 0;
-  await page.route('**/admin/cms/media-blocks/*/upload', route => {
+  await page.route('**/admin/cms/media-blocks/*/process', route => {
     uploads++;
     expect(route.request().headers().authorization).toBe(`Bearer ${expired ? 'cms-fixture' : 'renewed-image-session'}`);
     expect(route.request().headers()['content-type']).toContain('multipart/form-data; boundary=');
     expect(route.request().postDataBuffer()?.toString()).toContain('name="image"');
-    return route.fulfill({ status: expired ? 401 : 200, json: { image_url: '/img/krek/werf-hero.webp' } });
+    return route.fulfill({ status: expired ? 401 : 200, json: { key:'home.contact.image',revision:1,image_url: '/img/krek/werf-hero.webp' } });
   });
   expect((await page.goto('/en'))?.status()).toBe(200);
   await page.getByRole('button', { name: cms.enterEdit, exact: true }).click();

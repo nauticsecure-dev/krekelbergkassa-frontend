@@ -11,9 +11,9 @@ let pending: Promise<void> | null = null;
 let generation = 0;
 let refreshQueued = false;
 const listeners = new Set<() => void>();
-export function publishContact(company: NonNullable<FaqContent['contact']['company']>) {
+export function publishContact(company: NonNullable<FaqContent['contact']['company']>, metadata: Pick<FaqContent['contact'], 'revision' | 'field_sources'> = {}) {
   generation++;
-  snapshot = { ...snapshot, show_chat: snapshot?.show_chat ?? false, company };
+  snapshot = { ...snapshot, ...metadata, show_chat: snapshot?.show_chat ?? false, company };
   listeners.forEach(listener => listener());
 }
 function refresh() {
@@ -63,19 +63,19 @@ export function useCompanyContact() {
   const company = data?.company;
   // A successful settings response is authoritative, including cleared values.
   // Otherwise clearing a nullable phone number resurrects the static default.
-  const phone = company ? company.phone ?? '' : companyInfo.phone;
-  const email = company ? company.email ?? '' : companyInfo.email;
-  const street = company ? company.address.street ?? '' : companyInfo.street;
-  const zip = company ? company.address.postal_code ?? '' : companyInfo.zip;
-  const city = company ? company.address.city ?? '' : companyInfo.city;
+  const phone = company ? company.phone ?? '' : '';
+  const email = company ? company.email ?? '' : '';
+  const street = company ? company.address.street ?? '' : '';
+  const zip = company ? company.address.postal_code ?? '' : '';
+  const city = company ? company.address.city ?? '' : '';
   const address = company?.address
     ? [company.address.street, company.address.postal_code, company.address.city].filter(Boolean).join(', ')
-    : companyInfo.address;
+    : '';
   return {
-    ...companyInfo, company, phone, email, address, street, zip, city,
-    phoneHref: 'tel:' + phone.replace(/\(0\)/g, '').replace(/[^+\d]/g, ''),
-    emailHref: 'mailto:' + email,
-    mapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address),
-    mapsEmbed: 'https://maps.google.com/maps?q=' + encodeURIComponent(address) + '&z=14&output=embed',
+    ...companyInfo, name: company?.name ?? companyInfo.name, company, phone, email, address, street, zip, city, revision: data?.revision, fieldSources: data?.field_sources,
+    phoneHref: phone ? 'tel:' + phone.replace(/\(0\)/g, '').replace(/[^+\d]/g, '') : '',
+    emailHref: email ? 'mailto:' + email : '',
+    mapsUrl: address ? 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address) : '',
+    mapsEmbed: address ? 'https://maps.google.com/maps?q=' + encodeURIComponent(address) + '&z=14&output=embed' : '',
   };
 }

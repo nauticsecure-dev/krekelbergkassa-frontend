@@ -21,8 +21,8 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { AdminConfirmModal } from '@/components/admin/AdminConfirmModal';
 import { EmptyState, ErrorState, LoadingState } from '@/components/admin/DataState';
-import { settingsService, extractionTemplatesService, type ExtractionTemplate } from '@/lib/services';
-import { companyInfo } from '@/lib/company';
+import { extractionTemplatesService, type ExtractionTemplate } from '@/lib/services';
+import { useCompanyContact } from '@/lib/hooks/useCompanyContact';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -30,6 +30,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function ExtractionTemplatesPage() {
+  const companyInfo = useCompanyContact();
   const { locale, t } = useIntl();
   const { push } = useToast();
   const dateLocale = intlLocale(locale);

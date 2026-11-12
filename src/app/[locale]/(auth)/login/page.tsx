@@ -225,7 +225,7 @@ function LoginPageContent() {
               {<TranslatedText textKey={"login.remember"} />}
             </label>
             {role === "customer" && <Link
-              href={`/${locale}/forgot-password`}
+              href={`/${locale}/forgot-password${destination ? `?returnTo=${encodeURIComponent(destination)}` : ''}`}
               className="font-semibold text-marine-700 hover:text-marine-800"
             >
               {<TranslatedText textKey={"login.forgot"} />}
@@ -268,7 +268,7 @@ function LoginPageContent() {
         <p className="pt-2 text-center text-sm text-navy-500">
           {<TranslatedText textKey={"login.noAccount"} />}{" "}
           <Link
-            href={`/${locale}/signup?role=${role}`}
+            href={`/${locale}/signup?role=${role}${destination ? `&returnTo=${encodeURIComponent(destination)}` : ''}`}
             className="font-semibold text-navy-900 hover:text-marine-700"
           >
             {<TranslatedText textKey={"login.createAccount"} />}

@@ -27,6 +27,177 @@ async function isolatedSession(page: Page, role = 'super_admin', permissions = [
   });
 }
 
+async function posCheckoutFixture(page: Page) {
+  await isolatedSession(page);
+  const boat = { id: 'boat-pos', name: 'Harbor Star', registration_number: 'STAR-1135', length_cm: 1135, photo_url: '/pos-boat-fixture.svg',
+    width_cm: 380, weight_kg: 4200, customer_id: 'customer-1', customer: { id: 'customer-1', name: 'Hans Müller' } };
+  const secondBoat = { ...boat, id: 'boat-pos-two', name: 'Harbor Moon', photo_url: '/pos-boat-moon.svg', registration_number: 'MOON-920', length_cm: 920, width_cm: 310, weight_kg: 2900 };
+  const product = { id: 'lift-pos', code: 'LIFT-POS', name: 'Harbor lift', active: true, show_in_kassa: true,
+    pricing_type: 'length_range', price_excl_vat: 0, price_incl_vat: 0 };
+  await page.route('**/api/v1/products**', async route => {
+    if (route.request().method() !== 'GET') return route.fulfill({ json: {} });
+    return route.fulfill({ json: { data: new URL(route.request().url()).pathname.endsWith('/products') ? [product] : [] } });
+  });
+  await page.route('**/api/v1/boats?**', route => route.fulfill({ json: { data: [boat, secondBoat] } }));
+  await page.route('**/pos-boat-*.svg', route => route.fulfill({ contentType: 'image/svg+xml',
+    body: `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#17334d"/><text x="40" y="180" fill="white" font-size="36">${route.request().url().includes('moon') ? 'Harbor Moon' : 'Harbor Star'}</text></svg>` }));
+  await page.route('**/api/v1/kassa/payment-methods', route => route.fulfill({ json: { pos: ['cash', 'invoice'], online: ['creditcard', 'ideal'] } }));
+  await page.route('**/api/v1/kassa/quote', route => {
+    const request = route.request().postDataJSON();
+    const selected = request.items[0].metadata.boat_id === secondBoat.id ? secondBoat : boat;
+    expect(request).toMatchObject({ customer_id: 'customer-1', items: [{ product_id: product.id,
+      metadata: { boat_id: selected.id, length_cm: selected.length_cm, width_cm: selected.width_cm, weight_kg: selected.weight_kg } }] });
+    const subtotal = selected.id === boat.id ? 13500 : 10000;
+    const vat = Math.round(subtotal * 0.21);
+    return route.fulfill({ json: { total_cents: subtotal + vat, subtotal_cents: subtotal, vat_amount_cents: vat,
+      lines: [{ unit_price: subtotal, vat_rate: 21, vat_amount: vat, line_total: subtotal + vat, included_services: { wash: 1 } }] } });
+  });
+}
+
+async function addPricedPosService(page: Page) {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/en/admin/kassa');
+  await page.getByRole('searchbox', { name: /search boats/i }).fill('STAR-1135');
+  await page.getByRole('button', { name: /Harbor Star.*STAR-1135/ }).click();
+  await expect(page.getByRole('img', { name: 'Harbor Star', exact: true })).toHaveJSProperty('naturalWidth', 640);
+  await page.getByRole('button', { name: /Harbor lift.*Calculate price/ }).click();
+  await expect(page.getByRole('dialog').getByRole('spinbutton', { name: /Length/ })).toHaveValue('1135');
+  await page.getByRole('dialog').getByRole('button', { name: 'Calculate price', exact: true }).click();
+  await expect(page.locator('#cart')).toContainText('Package includes');
+  await expect(page.locator('#cart')).toContainText('€163.35');
+}
+
+test('POS changes boat context only after an explicit recalculation with canonical dimensions', async ({ page }, testInfo) => {
+  await posCheckoutFixture(page);
+  await addPricedPosService(page);
+  await page.getByRole('searchbox', { name: /search boats/i }).fill('MOON-920');
+  await page.getByRole('button', { name: /Harbor Moon.*MOON-920/ }).click();
+  await expect(page.getByRole('img', { name: 'Harbor Moon', exact: true })).toHaveJSProperty('naturalWidth', 640);
+  const basket = page.locator('#cart');
+  await expect(basket.getByRole('button', { name: /^Check out / })).toBeDisabled();
+  await basket.getByRole('button', { name: 'Use selected boat and recalculate' }).click();
+  await expect(basket).toContainText('920 cm');
+  await expect(basket).toContainText('€121.00');
+  await expect(basket.getByRole('button', { name: /^Check out / })).toBeEnabled();
+  await basket.getByRole('button', { name: 'Edit', exact: true }).click();
+  await expect(page.getByRole('dialog').getByRole('spinbutton', { name: /Length/ })).toHaveValue('920');
+  await page.getByRole('dialog').getByRole('button', { name: 'Calculate price', exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.getByRole('button', { name: /^Cart/ }).click();
+  await expect(basket).toContainText('Harbor Moon');
+  await expect.poll(() => page.locator('main').evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: testInfo.outputPath('pos-mobile-repriced-basket.png') });
+});
+
+test('POS accepts a reviewed boat service, saves a quotation, recovers checkout and opens receipt actions', async ({ page }, testInfo) => {
+  await posCheckoutFixture(page);
+  const attempts: Record<string, unknown>[] = [];
+  let paymentStatus = 'pending';
+  const invoice = 'pos-fixture-invoice';
+  const checkoutUrl = 'https://www.mollie.com/checkout/fixture';
+  await page.route('**/api/v1/kassa/quotations', route => {
+    expect(route.request().postDataJSON()).toMatchObject({ customer_id: 'customer-1', expected_total_cents: 16335,
+      items: [{ metadata: { line_note: 'Dockside access' } }] });
+    return route.fulfill({ status: 201, json: { id: 'pos-fixture-quotation', reference: 'OFF-POS-001' } });
+  });
+  await page.route('**/api/v1/kassa/checkout', route => {
+    attempts.push(route.request().postDataJSON());
+    if (attempts.length === 1) return route.fulfill({ status: 503, json: { message: 'Payment setup unconfirmed' } });
+    return route.fulfill({ status: 201, json: { invoice_id: invoice, invoice_number: 'INV-POS-001', total_amount_cents: 16335,
+      payment_status: 'open', pending_payments: [{ id: 'payment-1', method: 'creditcard', checkout_url: checkoutUrl, amount_cents: 16335 }] } });
+  });
+  await page.route(`**/api/v1/kassa/sales/${invoice}**`, route => {
+    if (new URL(route.request().url()).searchParams.get('verify')) paymentStatus = 'paid';
+    return route.fulfill({ json: { invoice_id: invoice, status: paymentStatus === 'paid' ? 'paid' : 'open',
+      payment_status: paymentStatus === 'paid' ? 'paid' : 'open', payments: [{ id: 'payment-1', provider: 'mollie',
+        method: 'creditcard', status: paymentStatus, amount: 16335, checkout_url: checkoutUrl }] } });
+  });
+  await page.route(`**/api/v1/invoices/${invoice}/pdf`, route => route.fulfill({ json: { status: 'ready', signed_url: '/receipt-fixture.pdf' } }));
+  await page.route(`**/api/v1/invoices/${invoice}/email`, route => route.fulfill({ json: { queued: true } }));
+
+  await addPricedPosService(page);
+  await page.locator('#cart').getByText('Line note', { exact: true }).click();
+  await page.getByRole('textbox', { name: 'Line note' }).fill('Dockside access');
+  await page.getByRole('textbox', { name: 'Line note' }).blur();
+  await page.locator('#cart').getByRole('button', { name: 'Add note', exact: true }).click();
+  await page.getByRole('dialog').getByRole('textbox').fill('Collect from dock reception');
+  await page.getByRole('dialog').getByRole('button', { name: 'Save', exact: true }).click();
+  await page.screenshot({ path: testInfo.outputPath('pos-canonical-basket.png') });
+  await page.locator('#cart').getByRole('button', { name: 'Clear cart', exact: true }).press('F8');
+  await expect(page.getByRole('dialog')).toContainText('Remove every item');
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
+  await page.locator('#cart').getByRole('button', { name: /^Check out / }).click();
+  await expect(page.getByRole('dialog').getByRole('button', { name: 'Card terminal', exact: true })).toHaveCount(0);
+  await page.getByRole('dialog').getByRole('button', { name: 'Save quotation', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('OFF-POS-001');
+  await expect(page.getByRole('link', { name: 'Open quotation' })).toHaveAttribute('href', '/en/admin/facturen/pos-fixture-quotation');
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).last().click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Credit card', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Checkout', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText(text('en', 'adminNew.kassa.confirmCheckoutTitle'));
+  await page.getByRole('dialog').getByRole('button', { name: 'Checkout', exact: true }).click();
+  await expect.poll(() => attempts.length).toBe(1);
+  expect(attempts[0]).toMatchObject({ expected_total_cents: 16335, payment_method: 'creditcard', idempotency_key: expect.any(String), sale_note: 'Collect from dock reception',
+    items: [{ metadata: { boat_id: 'boat-pos', length_cm: 1135, line_note: 'Dockside access' } }] });
+  await page.reload();
+  await page.locator('#cart').getByRole('button', { name: 'Check sale status again' }).click();
+  await expect.poll(() => attempts.length).toBe(2);
+  expect(attempts[1]).toEqual(attempts[0]);
+  await expect(page.getByRole('dialog')).toContainText('Payment pending');
+  // Recover a tab that closed after saving the sale but before clearing its request.
+  await page.evaluate(payload => sessionStorage.setItem('kassa.checkout.review-user', JSON.stringify(payload)), attempts[0]);
+  await page.reload();
+  const receipt = page.getByRole('dialog');
+  await expect(receipt).toContainText('INV-POS-001');
+  await expect(receipt.getByRole('button', { name: 'New sale' })).toBeDisabled();
+  await receipt.getByRole('button', { name: 'Check payment', exact: true }).click();
+  await expect(receipt).toContainText('Payment complete');
+  await receipt.getByRole('button', { name: 'Print receipt' }).click();
+  await expect(receipt.getByRole('link', { name: 'Open printable receipt' })).toHaveAttribute('href', '/receipt-fixture.pdf');
+  await receipt.getByRole('button', { name: 'Email receipt' }).click();
+  await expect(receipt).toContainText('The email is queued.');
+  await expect(receipt.getByRole('link', { name: 'View invoice' })).toHaveAttribute('href', `/en/admin/facturen/${invoice}`);
+  await page.screenshot({ path: testInfo.outputPath('pos-settled-receipt.png') });
+  await receipt.getByRole('button', { name: 'New sale' }).click();
+  await expect(receipt).toHaveCount(0);
+  await expect(page.locator('#cart')).toContainText('Add products');
+  expect(await page.evaluate(() => sessionStorage.getItem('kassa.checkout.review-user'))).toBeNull();
+  expect(attempts).toHaveLength(2);
+});
+
+test('POS QR resumes the same session after an uncertain response and a failed poll', async ({ page }) => {
+  await posCheckoutFixture(page);
+  const attempts: Record<string, unknown>[] = [];
+  let polls = 0;
+  await page.route('**/api/v1/kassa/qr-sessions', route => {
+    const payload = route.request().postDataJSON();
+    attempts.push(payload);
+    if (attempts.length === 1) return route.fulfill({ status: 503, json: { message: 'QR setup unconfirmed' } });
+    return route.fulfill({ status: 201, json: { session_id: payload.session_id, status: 'pending',
+      amount_cents: 16335, checkout_url: 'https://www.mollie.com/checkout/qr-fixture' } });
+  });
+  await page.route('**/api/v1/kassa/qr-sessions/*', route => {
+    polls++;
+    if (polls === 1) return route.fulfill({ status: 503, json: { message: 'Temporary lookup failure' } });
+    return route.fulfill({ json: { session_id: attempts[0].session_id, status: 'paid', amount_cents: 16335,
+      invoice_id: 'qr-pos-invoice', invoice_number: 'INV-POS-QR' } });
+  });
+  await addPricedPosService(page);
+  await page.locator('#cart').getByRole('button', { name: /^Check out / }).click();
+  await page.getByRole('dialog').getByRole('button', { name: text('en', 'adminNew.kassa.qrPayment'), exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Checkout', exact: true }).click();
+  await expect.poll(() => attempts.length).toBe(1);
+  await page.reload();
+  await page.locator('#cart').getByRole('button', { name: 'View Mollie payment' }).click();
+  await expect.poll(() => attempts.length).toBe(2);
+  expect(attempts[0]).toEqual(attempts[1]);
+  await expect(page.getByRole('dialog')).toContainText(text('en', 'adminNew.kassa.qrPayment'));
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toContainText('INV-POS-QR');
+  await expect(page.getByRole('dialog')).toContainText('Payment complete');
+  expect(polls).toBeGreaterThanOrEqual(2);
+});
+
 for (const locale of ['nl', 'en', 'de', 'fr']) {
   test(`${locale}: manual invoice fields remain inside the viewport at mobile and desktop widths`, async ({ page }, testInfo) => {
     await isolatedSession(page);
