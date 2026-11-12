@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import {
@@ -243,7 +245,7 @@ export default function AdminDashboardPage() {
         rightSlot={
           <Link href={adminHref(locale, 'admin.planning.create')}>
             <Button variant="gold" size="sm" leftIcon={<CalendarPlus className="h-4 w-4" />}>
-              {t('planning.createAppointment')}
+              {<TranslatedText textKey={'planning.createAppointment'} />}
             </Button>
           </Link>
         }
@@ -339,7 +341,7 @@ export default function AdminDashboardPage() {
             icon={Sparkles}
           >
             <div className="grid min-w-0 gap-3 grid-cols-1 sm:grid-cols-2">
-              {shortcutsQuery.error ? <p role="status" className="text-sm text-amber-700">{t('globalUx.shortcutsFailed')} {t('globalUx.shortcutsFallback')}</p> : null}
+              {shortcutsQuery.error ? <p role="status" className="text-sm text-amber-700">{<TranslatedText textKey={'globalUx.shortcutsFailed'} />} {<TranslatedText textKey={'globalUx.shortcutsFallback'} />}</p> : null}
               {shortcuts.map((shortcut) => {
                 const Icon = SHORTCUT_ICONS[shortcut.icon] ?? Sparkles;
                 return (
@@ -363,18 +365,18 @@ export default function AdminDashboardPage() {
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-500">
-                  {t('adminNew.dashboard.calculatorCard.selectService')}
+                  {<TranslatedText textKey={'adminNew.dashboard.calculatorCard.selectService'} />}
                 </label>
                 <AdminSelect value={calcService} onChange={setCalcService}>
                   <option value="winterstalling">{t('adminNew.stalling.type.winter')}</option>
-                  <option value="kranen">Kranen</option>
-                  <option value="afspuiten">Afspuiten</option>
+                  <option value="kranen"><TranslatedText textKey="siteCopy.97878ece7ede25ab" fallbackText={"Kranen"} inline={false} /></option>
+                  <option value="afspuiten"><TranslatedText textKey="siteCopy.27d867ae6d7bab4d" fallbackText={"Afspuiten"} inline={false} /></option>
                   <option value="stalling">{t('adminNew.stalling.title')}</option>
                 </AdminSelect>
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-500">
-                  {t('adminNew.calculator.lengthCm')}
+                  {<TranslatedText textKey={'adminNew.calculator.lengthCm'} />}
                 </label>
                 <input
                   type="number"
@@ -392,10 +394,10 @@ export default function AdminDashboardPage() {
               ) : null}
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                 <Button variant="gold" size="sm" onClick={() => void runQuickCalc()} disabled={calculate.loading}>
-                  {t('adminNew.calculator.calculate')}
+                  {<TranslatedText textKey={'adminNew.calculator.calculate'} />}
                 </Button>
                 <Link href={`/${locale}/admin/calculator`} className="inline-flex items-center text-sm font-semibold text-marine-700 hover:text-marine-900">
-                  {t('adminNew.dashboard.calculatorCard.openFull')} →
+                  {<TranslatedText textKey={'adminNew.dashboard.calculatorCard.openFull'} />} →
                 </Link>
               </div>
             </div>
@@ -444,22 +446,22 @@ export default function AdminDashboardPage() {
             action={
               <Link href={`/${locale}/admin/timeline`}>
                 <Button variant="ghost" size="sm">
-                  {t('adminNew.timeline.open')} →
+                  {<TranslatedText textKey={'adminNew.timeline.open'} />} →
                 </Button>
               </Link>
             }
           >
             {loading ? (
-              <p className="text-sm text-navy-500">{t('adminNew.common.loading')}</p>
+              <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.common.loading'} />}</p>
             ) : data?.activityItems == null ? (
               <div className="flex flex-wrap items-center gap-3">
-                <p className="text-sm text-rose-700">{t('adminNew.dashboard.recentActivity.loadError')}</p>
+                <p className="text-sm text-rose-700">{<TranslatedText textKey={'adminNew.dashboard.recentActivity.loadError'} />}</p>
                 <Button variant="outline" size="sm" onClick={() => void refetch()}>
-                  {t('adminNew.common.retry')}
+                  {<TranslatedText textKey={'adminNew.common.retry'} />}
                 </Button>
               </div>
             ) : data.activityItems.length === 0 ? (
-              <p className="text-sm text-navy-500">{t('adminNew.timeline.emptyMessage')}</p>
+              <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.timeline.emptyMessage'} />}</p>
             ) : (
               <ol className="space-y-2">
                 {(data?.activityItems ?? []).map((item, i) => {
@@ -483,7 +485,7 @@ export default function AdminDashboardPage() {
             icon={Receipt}
           >
             {data?.cashDifference == null ? (
-              <p className="text-sm text-navy-500">{t('adminNew.dashboard.cashDifference.none')}</p>
+              <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.dashboard.cashDifference.none'} />}</p>
             ) : (
               <AdminStatusStrip
                 label={t('adminNew.dashboard.cashDifference.title')}
@@ -492,7 +494,7 @@ export default function AdminDashboardPage() {
               />
             )}
             <Link href={`/${locale}/admin/kassa/dagafsluiting`} className="mt-3 inline-flex text-sm font-semibold text-marine-700 hover:text-marine-900">
-              {t('adminNew.dashboard.cashDifference.openClosure')} →
+              {<TranslatedText textKey={'adminNew.dashboard.cashDifference.openClosure'} />} →
             </Link>
           </AdminSectionCard>
         </AdminContentGrid>

@@ -1,6 +1,5 @@
 import Script from 'next/script';
 import { Header } from '@/components/site/Header';
-import { PublicCmsRoute } from '@/components/cms/PublicCmsRoute';
 import { Footer } from '@/components/site/Footer';
 import { PublicJourneyTracker } from '@/components/site/PublicJourneyTracker';
 
@@ -17,7 +16,6 @@ export default function PublicSiteLayout({
         data-key="01m49vdm4na4e8erpv71hwvez9"
         strategy="afterInteractive"
       />
-      <PublicCmsRoute />
       <PublicJourneyTracker />
       <Header />
       <main className="flex-1">{children}</main>

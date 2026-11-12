@@ -37,7 +37,8 @@ interface AuthState {
   signIn: (email: string, password: string, remember?: boolean) => Promise<User>;
   verifyMfa: (mfaToken: string, code: string, remember?: boolean) => Promise<User>;
   signInDemo: (role?: Role) => Promise<User>;
-  requestCustomerMagicLink: (email: string, locale?: string) => Promise<{ success: boolean; message: string }>;
+  signInCustomer: (email: string, password: string, remember?: boolean) => Promise<User>;
+  requestCustomerMagicLink: (email: string, locale?: string, returnTo?: string) => Promise<{ success: boolean; message: string }>;
   verifyCustomerMagicLink: (token: string, remember?: boolean) => Promise<User>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -328,12 +329,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [completeStaffLogin]
   );
 
-  const requestCustomerMagicLink = React.useCallback(async (email: string, locale?: string) => {
-    return authService.requestMagicLink(email, locale);
+  const requestCustomerMagicLink = React.useCallback(async (email: string, locale?: string, returnTo?: string) => {
+    return authService.requestMagicLink(email, locale, returnTo);
   }, []);
 
-  const verifyCustomerMagicLink = React.useCallback(async (token: string, remember = true) => {
-    const res = await authService.verifyMagicLink(token);
+  const completePortalLogin = React.useCallback((res: Awaited<ReturnType<typeof authService.verifyMagicLink>>, remember: boolean) => {
+    if (!res.portal_token) throw new Error('Missing portal session token.');
     refreshAttemptRef.current += 1;
     auth.clearSession();
     auth.setPortalSession(res.portal_token, remember);
@@ -352,6 +353,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
     return next;
   }, []);
+
+  const verifyCustomerMagicLink = React.useCallback(async (token: string, remember = true) => {
+    return completePortalLogin(await authService.verifyMagicLink(token), remember);
+  }, [completePortalLogin]);
+
+  const signInCustomer = React.useCallback(async (email: string, password: string, remember = true) => {
+    return completePortalLogin(await authService.customerLogin(email, password), remember);
+  }, [completePortalLogin]);
 
   const signInDemo = React.useCallback(async (role: Role = 'customer') => {
     setSessionVerified(false);
@@ -427,6 +436,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         verifyMfa,
         signInDemo,
+        signInCustomer,
         requestCustomerMagicLink,
         verifyCustomerMagicLink,
         signOut,

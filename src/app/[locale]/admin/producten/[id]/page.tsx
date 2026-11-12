@@ -1,10 +1,13 @@
 'use client';
+
+import { DraftReview } from '@/components/site/CanonicalServiceEditor';
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
   BarChart3,
@@ -89,6 +92,9 @@ function TariffSection({ productId }: { productId: string }) {
   const [editTarget, setEditTarget] = React.useState<PricingRule | null>(null);
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
   const [form, setForm] = React.useState<TariffForm>(EMPTY_TARIFF);
+  const [changeReason, setChangeReason] = React.useState('');
+  const [draftId, setDraftId] = React.useState('');
+  const [deactivating, setDeactivating] = React.useState(false);
 
   const rules = useQuery([productId, 'pricing-rules'], () =>
     pricingService.rules({ product_id: productId, per_page: 100 }),
@@ -103,6 +109,8 @@ function TariffSection({ productId }: { productId: string }) {
   const openCreate = () => {
     if (!canUpdatePricing) return;
     setEditTarget(null);
+    setChangeReason('');
+    setDeactivating(false);
     setForm(EMPTY_TARIFF);
     setOpen(true);
   };
@@ -110,12 +118,13 @@ function TariffSection({ productId }: { productId: string }) {
   const openEdit = (rule: PricingRule) => {
     if (!canUpdatePricing) return;
     setEditTarget(rule);
+    setChangeReason(''); setDeactivating(false);
     setForm({
       range_from_m: (rule.range_from_cm / 100).toString(),
       range_to_m: rule.range_to_cm >= 99999 ? '999' : (rule.range_to_cm / 100).toString(),
       price_incl_vat_euros: eur(rule.price_incl_vat),
       price_excl_vat_euros: eur(rule.price_excl_vat),
-      vat_rate: '21',
+      vat_rate: String(rule.vat_rate ?? 21),
       price_type: rule.price_type ?? 'fixed',
       channel: rule.channel ?? 'all',
     });
@@ -135,9 +144,12 @@ function TariffSection({ productId }: { productId: string }) {
 
     try {
       if (editTarget) {
-        await updateRule.mutate({
+        const result = await updateRule.mutate({
           id: editTarget.id,
           data: {
+            expected_revision: editTarget.revision,
+            change_reason: changeReason,
+            active: !deactivating,
             range_from_cm: rangeFrom,
             range_to_cm: rangeTo,
             price_incl_vat: inclVat,
@@ -146,8 +158,10 @@ function TariffSection({ productId }: { productId: string }) {
             channel: form.channel,
           },
         });
+        setDraftId(result.draft_id ?? '');
       } else {
-        await createRule.mutate({
+        const result = await createRule.mutate({
+          change_reason: changeReason,
           product_id: productId,
           range_from_cm: rangeFrom,
           range_to_cm: rangeTo,
@@ -157,12 +171,13 @@ function TariffSection({ productId }: { productId: string }) {
           vat_rate: parseFloat(form.vat_rate),
           channel: form.channel,
         });
+        setDraftId(result.draft_id ?? '');
       }
       push({ tone: 'success', title: t('adminNew.calculator.pricing.saved') });
       setOpen(false);
       void rules.refetch().catch(() => undefined);
-    } catch {
-      push({ tone: 'error', title: t('adminNew.common.operationFailed') });
+    } catch (error) {
+      push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(error) });
     }
   };
 
@@ -185,29 +200,30 @@ function TariffSection({ productId }: { productId: string }) {
 
   return (
     <>
+      {draftId && <DraftReview draftId={draftId} onPublished={() => { setDraftId(''); void rules.refetch(); }} />}
       <AdminSectionCard
         title={t('globalUx.pricing.tariffTitle')}
         icon={Tag}
         action={canUpdatePricing ? (
           <Button variant="outline" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
-            {t('globalUx.pricing.addTariff')}</Button>
+            {<TranslatedText textKey={'globalUx.pricing.addTariff'} />}</Button>
         ) : null}
       >
         {rules.loading ? (
-          <p className="text-sm text-navy-500">{t('adminNew.common.loading')}</p>
+          <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.common.loading'} />}</p>
         ) : rules.error ? (<ErrorState message={rules.error} onRetry={() => void rules.refetch().catch(() => undefined)} />) : ruleList.length === 0 ? (
-          <p className="text-sm text-navy-500">{t('globalUx.pricing.emptyTariffs')}</p>
+          <p className="text-sm text-navy-500">{<TranslatedText textKey={'globalUx.pricing.emptyTariffs'} />}</p>
         ) : (
           <AdminTableCard>
             <AdminTable minWidth={500}>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>{t('globalUx.pricing.length')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('globalUx.pricing.type')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('globalUx.pricing.exclVat')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('globalUx.pricing.inclVat')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('globalUx.pricing.channel')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('globalUx.pricing.status')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.length'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.type'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.exclVat'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.inclVat'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.channel'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'globalUx.pricing.status'} />}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
@@ -227,16 +243,16 @@ function TariffSection({ productId }: { productId: string }) {
                     <AdminTableCell>{channels[rule.channel ?? 'all'] ?? rule.channel}</AdminTableCell>
                     <AdminTableCell>
                       <Badge tone={rule.active ? 'success' : 'neutral'}>
-                        {rule.active ? t('globalUx.pricing.active') : t('globalUx.pricing.inactive')}
+                        {rule.active ? <TranslatedText textKey={'globalUx.pricing.active'} /> : <TranslatedText textKey={'globalUx.pricing.inactive'} />}
                       </Badge>
                     </AdminTableCell>
                     <AdminTableCell className="text-right">
                       {canUpdatePricing ? <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={() => openEdit(rule)}>
-                          {t('adminNew.common.edit')}</Button>
-                        <Button variant="ghost" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setDeleteTarget(rule.id)}
+                          {<TranslatedText textKey={'adminNew.common.edit'} />}</Button>
+                        <Button variant="ghost" size="sm" leftIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => { openEdit(rule); setDeactivating(true); }}
                           className="text-rose-600 hover:bg-rose-50">
-                          {t('adminNew.common.delete')}</Button>
+                          {<TranslatedText textKey={'adminNew.common.delete'} />}</Button>
                       </div> : null}
                     </AdminTableCell>
                   </AdminTableRow>
@@ -250,11 +266,12 @@ function TariffSection({ productId }: { productId: string }) {
       {/* Edit / Create modal */}
       <Modal open={canUpdatePricing && open} onClose={() => setOpen(false)} size="md">
         <form onSubmit={(event) => { event.preventDefault(); void onSave(); }}>
-        <AdminModalHeader title={editTarget ? t('globalUx.pricing.editTariff') : t('globalUx.pricing.newTariff')} />
+        <AdminModalHeader title={deactivating ? t('globalUx.pricing.deleteTariff') : editTarget ? t('globalUx.pricing.editTariff') : t('globalUx.pricing.newTariff')} />
         <AdminModalBody>
+          <Input label={t('smartServices.reason')} value={changeReason} required minLength={3} onChange={(e) => setChangeReason(e.target.value)} />
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.fromMeters')}</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{<TranslatedText textKey={'globalUx.pricing.fromMeters'} />}</label>
               <Input
                 type="number"
                 step="0.01"
@@ -265,7 +282,7 @@ function TariffSection({ productId }: { productId: string }) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.toMeters')}</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{<TranslatedText textKey={'globalUx.pricing.toMeters'} />}</label>
               <Input
                 type="number"
                 step="0.01"
@@ -276,7 +293,7 @@ function TariffSection({ productId }: { productId: string }) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.priceEuro')}</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{<TranslatedText textKey={'globalUx.pricing.priceEuro'} />}</label>
               <Input
                 type="number"
                 step="0.01"
@@ -287,7 +304,7 @@ function TariffSection({ productId }: { productId: string }) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.priceExclOptional')}</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{<TranslatedText textKey={'globalUx.pricing.priceExclOptional'} />}</label>
               <Input
                 type="number"
                 step="0.01"
@@ -298,7 +315,7 @@ function TariffSection({ productId }: { productId: string }) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.type')}</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{<TranslatedText textKey={'globalUx.pricing.type'} />}</label>
               <SearchSelect
                 className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900"
                 value={form.price_type}
@@ -311,7 +328,7 @@ function TariffSection({ productId }: { productId: string }) {
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{t('globalUx.pricing.channel')}</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-navy-500">{<TranslatedText textKey={'globalUx.pricing.channel'} />}</label>
               <SearchSelect
                 className="w-full rounded-lg border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900"
                 value={form.channel}
@@ -326,9 +343,9 @@ function TariffSection({ productId }: { productId: string }) {
           </div>
         </AdminModalBody>
         <AdminModalFooter>
-          <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={busy}>{t('adminNew.common.cancel')}</Button>
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={busy}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
           <Button variant="gold" type="submit" disabled={busy || !form.range_to_m || !form.price_incl_vat_euros}>
-            {busy ? t('globalUx.pricing.saving') : t('adminNew.common.save')}
+            {busy ? <TranslatedText textKey={'globalUx.pricing.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
           </Button>
         </AdminModalFooter>
         </form>
@@ -364,6 +381,9 @@ export default function ProductDetailPage() {
   const { locale, t } = useIntl();
   const { push } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedReturn = searchParams.get('return_to');
+  const returnTo = requestedReturn?.startsWith('/' + locale + '/') && !requestedReturn.includes('://') && !requestedReturn.includes('\\') ? requestedReturn : '/' + locale + '/admin/producten';
   const params = useParams();
   const id = String(params.id);
   const dateLocale = intlLocale(locale);
@@ -476,16 +496,16 @@ export default function ProductDetailPage() {
         subtitle={p?.code ?? t('adminNew.common.loading')}
         rightSlot={
           <div className="flex flex-wrap gap-2">
-            <Link href={`/${locale}/admin/producten`}>
+            <Link href={returnTo}>
               <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                {t('adminNew.products.backToList')}
+                {<TranslatedText textKey={'adminNew.products.backToList'} />}
               </Button>
             </Link>
             {p ? (
               <>
                 <Link href={`/${locale}/admin/kassa`}>
                   <Button variant="outline" size="sm" leftIcon={<ShoppingCart className="h-4 w-4" />}>
-                    {t('adminNew.products.openInKassa')}
+                    {<TranslatedText textKey={'adminNew.products.openInKassa'} />}
                   </Button>
                 </Link>
                 {!editing ? (
@@ -495,7 +515,7 @@ export default function ProductDetailPage() {
                     leftIcon={<Pencil className="h-4 w-4" />}
                     onClick={() => setEditing(true)}
                   >
-                    {t('adminNew.common.edit')}
+                    {<TranslatedText textKey={'adminNew.common.edit'} />}
                   </Button>
                 ) : null}
               </>
@@ -527,7 +547,7 @@ export default function ProductDetailPage() {
                       <p className="mt-1 font-mono text-sm text-navy-500">{p.code}</p>
                     </div>
                     <Badge tone={p.active ? 'success' : 'neutral'}>
-                      {p.active ? t('adminNew.products.active') : t('adminNew.products.inactive')}
+                      {p.active ? <TranslatedText textKey={'adminNew.products.active'} /> : <TranslatedText textKey={'adminNew.products.inactive'} />}
                     </Badge>
                   </div>
                   {p.description ? (
@@ -680,7 +700,7 @@ export default function ProductDetailPage() {
                   disabled={!canWrite || (uploadImage.loading)}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  {uploadImage.loading ? t('adminNew.products.ai.uploading') : t('adminNew.products.ai.upload')}
+                  {uploadImage.loading ? <TranslatedText textKey={'adminNew.products.ai.uploading'} /> : <TranslatedText textKey={'adminNew.products.ai.upload'} />}
                 </Button>
                 <Button disabled={!canWrite}
                   variant="outline"
@@ -693,7 +713,7 @@ export default function ProductDetailPage() {
                     setShowAi(true);
                   }}
                 >
-                  {t('adminNew.products.ai.generate')}
+                  {<TranslatedText textKey={'adminNew.products.ai.generate'} />}
                 </Button>
               </AdminSectionCard>
 
@@ -710,7 +730,7 @@ export default function ProductDetailPage() {
                     (Number.isFinite(qty) && Number.isFinite(min) && min > 0 && qty <= min);
                   return lowStock ? (
                     <div className="mb-3">
-                      <Badge tone="danger">{t('adminNew.products.stats.lowStock')}</Badge>
+                      <Badge tone="danger">{<TranslatedText textKey={'adminNew.products.stats.lowStock'} />}</Badge>
                     </div>
                   ) : null;
                 })()}
@@ -757,7 +777,7 @@ export default function ProductDetailPage() {
                     />
                   </div>
                 ) : (
-                  <p className="text-sm text-navy-500">{t('adminNew.products.stats.empty')}</p>
+                  <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.products.stats.empty'} />}</p>
                 )}
               </AdminSectionCard>
 
@@ -773,7 +793,7 @@ export default function ProductDetailPage() {
                   leftIcon={<Trash2 className="h-4 w-4" />}
                   onClick={() => setDeleteOpen(true)}
                 >
-                  {t('adminNew.common.delete')}
+                  {<TranslatedText textKey={'adminNew.common.delete'} />}
                 </Button>
               </AdminSectionCard>
             </div>
@@ -797,11 +817,11 @@ export default function ProductDetailPage() {
               <AdminTable minWidth={600}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.field', { defaultValue: 'Veld' })}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.oldValue', { defaultValue: 'Oud' })}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.newValue', { defaultValue: 'Nieuw' })}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.user', { defaultValue: 'Door' })}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.auditLog.columns.at', { defaultValue: 'Datum' })}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.auditLog.columns.field'} vars={{ defaultValue: 'Veld' }} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.auditLog.columns.oldValue'} vars={{ defaultValue: 'Oud' }} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.auditLog.columns.newValue'} vars={{ defaultValue: 'Nieuw' }} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.auditLog.columns.user'} vars={{ defaultValue: 'Door' }} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.auditLog.columns.at'} vars={{ defaultValue: 'Datum' }} />}</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
                 <tbody>
@@ -866,10 +886,10 @@ export default function ProductDetailPage() {
                     setForm(productToForm(p));
                   }}
                 >
-                  {t('adminNew.common.cancel')}
+                  {<TranslatedText textKey={'adminNew.common.cancel'} />}
                 </Button>
                 <Button type="submit" variant="gold" disabled={updateProduct.loading}>
-                  {t('adminNew.common.save')}
+                  {<TranslatedText textKey={'adminNew.common.save'} />}
                 </Button>
               </div>
             </AdminSectionCard>
@@ -895,14 +915,14 @@ export default function ProductDetailPage() {
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder={p ? `POS tile image for ${p.name}` : ''}
             />
-            <p className="text-xs text-navy-400">{t('adminNew.products.ai.hint')}</p>
+            <p className="text-xs text-navy-400">{<TranslatedText textKey={'adminNew.products.ai.hint'} />}</p>
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowAi(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={generateImage.loading}>
-              {generateImage.loading ? t('adminNew.products.ai.generating') : t('adminNew.products.ai.generate')}
+              {generateImage.loading ? <TranslatedText textKey={'adminNew.products.ai.generating'} /> : <TranslatedText textKey={'adminNew.products.ai.generate'} />}
             </Button>
           </AdminModalFooter>
         </form>

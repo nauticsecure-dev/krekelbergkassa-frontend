@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -186,7 +188,7 @@ export default function IncidentsPage() {
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => setShowCreate(true)}
           >
-            {t('adminNew.incidents.actions.new')}
+            {<TranslatedText textKey={'adminNew.incidents.actions.new'} />}
           </Button>
         }
       />
@@ -254,11 +256,11 @@ export default function IncidentsPage() {
               <AdminTable minWidth={900}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.incidents.columns.title')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.incidents.columns.severity')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.incidents.columns.status')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.incidents.columns.category')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.incidents.columns.created')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.incidents.columns.title'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.incidents.columns.severity'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.incidents.columns.status'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.incidents.columns.category'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.incidents.columns.created'} />}</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
                 <tbody>
@@ -305,7 +307,7 @@ export default function IncidentsPage() {
       <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
         <form onSubmit={onCreate} className="p-6">
           <h2 className="text-lg font-semibold text-navy-900">
-            {t('adminNew.incidents.modal.title')}
+            {<TranslatedText textKey={'adminNew.incidents.modal.title'} />}
           </h2>
           <div className="mt-4 space-y-3">
             <Input
@@ -316,7 +318,7 @@ export default function IncidentsPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.incidents.fields.severity')}
+                {<TranslatedText textKey={'adminNew.incidents.fields.severity'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
@@ -343,7 +345,7 @@ export default function IncidentsPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.incidents.fields.description')}
+                {<TranslatedText textKey={'adminNew.incidents.fields.description'} />}
               </label>
               <textarea
                 className="input-base min-h-24 w-full"
@@ -360,10 +362,10 @@ export default function IncidentsPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createIncident.loading}>
-              {createIncident.loading ? t('adminNew.common.saving') : t('adminNew.incidents.actions.new')}
+              {createIncident.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.incidents.actions.new'} />}
             </Button>
           </div>
         </form>
@@ -395,10 +397,10 @@ export default function IncidentsPage() {
             {/* Timeline */}
             <div>
               <h3 className="mb-2 text-sm font-semibold text-navy-900">
-                {t('adminNew.incidents.detail.timeline')}
+                {<TranslatedText textKey={'adminNew.incidents.detail.timeline'} />}
               </h3>
               {detail.loading ? (
-                <div className="text-sm text-navy-500">{t('adminNew.common.loading')}</div>
+                <div className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.common.loading'} />}</div>
               ) : timeline.length ? (
                 <ol className="space-y-3 border-l border-navy-100 pl-4">
                   {timeline.map((entry, idx) => (
@@ -412,18 +414,18 @@ export default function IncidentsPage() {
                   ))}
                 </ol>
               ) : (
-                <div className="text-sm text-navy-500">{t('adminNew.incidents.detail.noTimeline')}</div>
+                <div className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.incidents.detail.noTimeline'} />}</div>
               )}
             </div>
 
             {/* Update form */}
             <form onSubmit={onUpdate} className="space-y-3">
               <h3 className="text-sm font-semibold text-navy-900">
-                {t('adminNew.incidents.detail.updateTitle')}
+                {<TranslatedText textKey={'adminNew.incidents.detail.updateTitle'} />}
               </h3>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('adminNew.incidents.fields.status')}
+                  {<TranslatedText textKey={'adminNew.incidents.fields.status'} />}
                 </label>
                 <SearchSelect
                   className="input-base w-full"
@@ -439,7 +441,7 @@ export default function IncidentsPage() {
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('adminNew.incidents.fields.assignedTo')}
+                  {<TranslatedText textKey={'adminNew.incidents.fields.assignedTo'} />}
                 </label>
                 <SearchSelect
                   className="input-base w-full"
@@ -458,7 +460,7 @@ export default function IncidentsPage() {
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                  {t('adminNew.incidents.fields.note')}
+                  {<TranslatedText textKey={'adminNew.incidents.fields.note'} />}
                 </label>
                 <textarea
                   className="input-base min-h-24 w-full"
@@ -468,10 +470,10 @@ export default function IncidentsPage() {
               </div>
               <Button type="submit" variant="gold" disabled={updateIncident.loading}>
                 {updateIncident.loading
-                  ? t('adminNew.common.saving')
+                  ? <TranslatedText textKey={'adminNew.common.saving'} />
                   : updateForm.status === 'resolved'
-                    ? t('adminNew.incidents.detail.resolve')
-                    : t('adminNew.incidents.detail.update')}
+                    ? <TranslatedText textKey={'adminNew.incidents.detail.resolve'} />
+                    : <TranslatedText textKey={'adminNew.incidents.detail.update'} />}
               </Button>
             </form>
           </div>

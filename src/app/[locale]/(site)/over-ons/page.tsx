@@ -14,7 +14,7 @@ import {
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useIntl } from "@/i18n/IntlProvider";
-import { companyInfo } from "@/lib/company";
+import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableHiswaCard } from "@/components/cms/EditableHiswaCard";
@@ -63,6 +63,7 @@ const TEAM = [
 ] as const;
 
 export default function OverOnsPage() {
+  const companyInfo = useCompanyInfo();
   const { t, locale } = useIntl();
   useRegisterCmsPage(CMS_PAGE);
 
@@ -379,24 +380,18 @@ export default function OverOnsPage() {
           <ul className="mt-5 space-y-3 text-sm text-navy-700">
             <li className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-marine-700" />
-              <EditableText blockKey="over-ons.visit.address" page={CMS_PAGE} section="visit">
-                {companyInfo.address}
-              </EditableText>
+              <CompanyText field="address" />
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-marine-700" />
               <EditSafeLink href={companyInfo.phoneHref} className="pointer-events-auto hover:text-navy-900">
-                <EditableText blockKey="over-ons.visit.phone" page={CMS_PAGE} section="visit">
-                  {companyInfo.phone}
-                </EditableText>
+                <CompanyText field="phone" />
               </EditSafeLink>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-marine-700" />
               <EditSafeLink href={companyInfo.emailHref} className="pointer-events-auto hover:text-navy-900">
-                <EditableText blockKey="over-ons.visit.email" page={CMS_PAGE} section="visit">
-                  {companyInfo.email}
-                </EditableText>
+                <CompanyText field="email" />
               </EditSafeLink>
             </li>
             <li className="flex items-center gap-2">

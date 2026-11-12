@@ -1,7 +1,10 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
 import * as React from 'react';
+import { useAuth } from '@/lib/auth-context';
 import {
   AlertTriangle,
   Building2,
@@ -28,6 +31,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { useIntl } from '@/i18n/IntlProvider';
+import { tEnum } from '@/i18n/admin-enums';
 import { cn } from '@/lib/cn';
 import type { AppSettings, SettingsOverviewCard } from '@/lib/api-types';
 
@@ -159,11 +163,17 @@ export default function SettingsPage() {
     payment_instructions: '',
   });
 
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'super_admin';
   const [paymentsForm, setPaymentsForm] = React.useState({
     provider: 'mollie',
     test_mode: true,
     pos_methods: [] as string[],
     online_methods: [] as string[],
+    crane_mode: 'optional' as 'none' | 'optional' | 'required',
+    crane_recipients: '',
+    crane_from: '',
+    crane_reply_to: '',
   });
 
   const [localeForm, setLocaleForm] = React.useState({
@@ -204,6 +214,10 @@ export default function SettingsPage() {
       test_mode: Boolean(s.payments.test_mode),
       pos_methods: s.payments.pos_methods || [],
       online_methods: s.payments.online_methods || [],
+      crane_mode: s.payments.crane_mode ?? 'optional',
+      crane_recipients: s.payments.crane_notifications?.recipients.join(', ') ?? '',
+      crane_from: s.payments.crane_notifications?.from ?? '',
+      crane_reply_to: s.payments.crane_notifications?.reply_to ?? '',
     });
     setLocaleForm({
       default_locale: s.locales.default_locale || 'nl-NL',
@@ -270,7 +284,7 @@ export default function SettingsPage() {
     if (!enabled && (code === localeForm.default_locale || code === localeForm.fallback_locale)) {
       push({
         tone: 'error',
-        title: t('settingsHub.locale.cannotDisableDefault'),
+        title: t('settingsHub.locales.cannotDisableDefault'),
       });
       return;
     }
@@ -332,10 +346,10 @@ export default function SettingsPage() {
             )}
           >
             {saveState === 'saving'
-              ? t('settingsHub.save.saving')
+              ? <TranslatedText textKey={'settingsHub.save.saving'} />
               : saveState === 'saved'
-                ? t('settingsHub.save.saved')
-                : t('settingsHub.save.failed')}
+                ? <TranslatedText textKey={'settingsHub.save.saved'} />
+                : <TranslatedText textKey={'settingsHub.save.failed'} />}
           </p>
         ) : null}
 
@@ -366,7 +380,7 @@ export default function SettingsPage() {
                     <p className="mt-2 text-lg font-semibold text-navy-900">{item.card?.title || '—'}</p>
                     <p className="mt-1 text-sm text-navy-500">{item.card?.summary}</p>
                     <p className="mt-3 text-sm font-medium text-marine-800">
-                      → {item.card?.action === 'configure' ? t('settingsHub.actions.configure') : t('settingsHub.actions.manage')}
+                      → {item.card?.action === 'configure' ? <TranslatedText textKey={'settingsHub.actions.configure'} /> : <TranslatedText textKey={'settingsHub.actions.manage'} />}
                     </p>
                   </button>
                 ))}
@@ -376,7 +390,7 @@ export default function SettingsPage() {
               <section className="rounded-xl border border-amber-200 bg-amber-50 p-4">
                 <h2 className="flex items-center gap-2 text-sm font-semibold text-amber-950">
                   <AlertTriangle className="h-4 w-4" />
-                  {t('settingsHub.attention.title')}
+                  {<TranslatedText textKey={'settingsHub.attention.title'} />}
                 </h2>
                 <ul className="mt-3 space-y-2">
                   {attention.map((item) => {
@@ -487,7 +501,7 @@ export default function SettingsPage() {
                       )
                     }
                   >
-                    {t('adminNew.common.save')}
+                    {<TranslatedText textKey={'adminNew.common.save'} />}
                   </Button>
                 </div>
               </AdminSectionCard>
@@ -501,11 +515,11 @@ export default function SettingsPage() {
               >
                 <div className="mb-4 rounded-lg border border-navy-100 bg-sand-50 p-3 text-sm text-navy-700">
                   <p>
-                    {t('settingsHub.invoicing.numbering')}:{' '}
+                    {<TranslatedText textKey={'settingsHub.invoicing.numbering'} />}:{' '}
                     <code className="font-mono">{settings.data.invoicing.numbering_pattern || 'INV-{YYYY}-{000001}'}</code>
                   </p>
                   <p className="mt-1">
-                    {t('settingsHub.invoicing.example')}:{' '}
+                    {<TranslatedText textKey={'settingsHub.invoicing.example'} />}:{' '}
                     <code className="font-mono">{settings.data.invoicing.example_number}</code>
                   </p>
                 </div>
@@ -518,7 +532,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="mt-3 grid gap-3">
                   <label className="text-sm font-medium text-navy-800">
-                    {t('settingsHub.invoicing.bankInstructions')}
+                    {<TranslatedText textKey={'settingsHub.invoicing.bankInstructions'} />}
                     <textarea
                       className="input-base mt-1.5 min-h-[80px] w-full"
                       value={invoicingForm.bank_instructions}
@@ -526,7 +540,7 @@ export default function SettingsPage() {
                     />
                   </label>
                   <label className="text-sm font-medium text-navy-800">
-                    {t('settingsHub.invoicing.paymentInstructions')}
+                    {<TranslatedText textKey={'settingsHub.invoicing.paymentInstructions'} />}
                     <textarea
                       className="input-base mt-1.5 min-h-[80px] w-full"
                       value={invoicingForm.payment_instructions}
@@ -535,9 +549,9 @@ export default function SettingsPage() {
                   </label>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-3 text-sm">
-                  <Link className="underline" href={`/${locale}/admin/facturen/templates`}>{t('settingsHub.invoicing.openTemplates')}</Link>
-                  <Link className="underline" href={`/${locale}/admin/facturen`}>{t('settingsHub.invoicing.openInvoices')}</Link>
-                  <button type="button" className="underline" onClick={() => goTab('reminders')}>{t('settingsHub.reminderRules')}</button>
+                  <Link className="underline" href={`/${locale}/admin/facturen/templates`}>{<TranslatedText textKey={'settingsHub.invoicing.openTemplates'} />}</Link>
+                  <Link className="underline" href={`/${locale}/admin/facturen`}>{<TranslatedText textKey={'settingsHub.invoicing.openInvoices'} />}</Link>
+                  <button type="button" className="underline" onClick={() => goTab('reminders')}>{<TranslatedText textKey={'settingsHub.reminderRules'} />}</button>
                 </div>
                 <div className="sticky bottom-3 mt-5 flex justify-end rounded-xl bg-white/95 p-3 shadow-sm backdrop-blur">
                   <Button
@@ -561,7 +575,7 @@ export default function SettingsPage() {
                       )
                     }
                   >
-                    {t('adminNew.common.save')}
+                    {<TranslatedText textKey={'adminNew.common.save'} />}
                   </Button>
                 </div>
               </AdminSectionCard>
@@ -574,18 +588,18 @@ export default function SettingsPage() {
                 icon={Mail}
               >
                 <ol className="mb-4 space-y-2 text-sm text-navy-700">
-                  <li>{t('settingsHub.reminders.flowDue')}</li>
-                  <li>+7 {t('settingsHub.reminders.days')} → Reminder 1</li>
-                  <li>+14 {t('settingsHub.reminders.days')} → Reminder 2</li>
-                  <li>+30 {t('settingsHub.reminders.days')} → {t('settingsHub.reminders.final')}</li>
+                  <li>{<TranslatedText textKey={'settingsHub.reminders.flowDue'} />}</li>
+                  <li>+7 {<TranslatedText textKey={'settingsHub.reminders.days'} />} <TranslatedText textKey="siteCopy.2e80ce1c273aa439" fallbackText={" → Reminder 1"} /></li>
+                  <li>+14 {<TranslatedText textKey={'settingsHub.reminders.days'} />} <TranslatedText textKey="siteCopy.87acb8859db474e6" fallbackText={" → Reminder 2"} /></li>
+                  <li>+30 {<TranslatedText textKey={'settingsHub.reminders.days'} />} → {<TranslatedText textKey={'settingsHub.reminders.final'} />}</li>
                 </ol>
-                <p className="text-sm text-navy-600">{t('settingsHub.reminders.rulesAuthoritative')}</p>
+                <p className="text-sm text-navy-600">{<TranslatedText textKey={'settingsHub.reminders.rulesAuthoritative'} />}</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <Link href={`/${locale}/admin/reminders`}>
-                    <Button variant="gold">{t('settingsHub.reminderRules')}</Button>
+                    <Button variant="gold">{<TranslatedText textKey={'settingsHub.reminderRules'} />}</Button>
                   </Link>
                   <Link href={`/${locale}/admin/facturen/templates`} className="self-center text-sm underline">
-                    {t('settingsHub.reminders.openTemplates')}
+                    {<TranslatedText textKey={'settingsHub.reminders.openTemplates'} />}
                   </Link>
                 </div>
               </AdminSectionCard>
@@ -599,21 +613,21 @@ export default function SettingsPage() {
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge tone={settings.data.payments.test_mode ? 'warning' : 'success'} dot>
-                    Mollie · {settings.data.payments.test_mode ? 'TEST' : 'LIVE'}
+                    <TranslatedText textKey="siteCopy.a63f6151f559e740" fallbackText={"Mollie · "} />{settings.data.payments.test_mode ? 'TEST' : 'LIVE'}
                   </Badge>
                   <Badge tone={settings.data.payments.connected ? 'success' : 'danger'} dot>
                     {settings.data.payments.connected
-                      ? t('adminNew.settings.payments.connected')
-                      : t('adminNew.settings.payments.notConnected')}
+                      ? <TranslatedText textKey={'adminNew.settings.payments.connected'} />
+                      : <TranslatedText textKey={'adminNew.settings.payments.notConnected'} />}
                   </Badge>
-                  <Badge tone="navy">{t('adminNew.settings.payments.secretsBackendOnly')}</Badge>
+                  <Badge tone="navy">{<TranslatedText textKey={'adminNew.settings.payments.secretsBackendOnly'} />}</Badge>
                 </div>
-                <p className="mt-3 text-sm text-navy-500">{t('settingsHub.mollieSetup')}</p>
+                <p className="mt-3 text-sm text-navy-500">{<TranslatedText textKey={'settingsHub.mollieSetup'} />}</p>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                      {t('adminNew.settings.payments.provider')}
+                      {<TranslatedText textKey={'adminNew.settings.payments.provider'} />}
                     </label>
                     <SearchSelect
                       className="input-base"
@@ -624,16 +638,56 @@ export default function SettingsPage() {
                         markDirty('payments');
                       }}
                     >
-                      <option value="mollie">Mollie</option>
-                      <option value="manual">Manual</option>
+                      <option value="mollie"><TranslatedText textKey="siteCopy.cef6aaf3d162180c" fallbackText={"Mollie"} inline={false} /></option>
+                      <option value="manual"><TranslatedText textKey="siteCopy.2a08e143bcb908b6" fallbackText={"Manual"} inline={false} /></option>
                     </SearchSelect>
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  {isSuperAdmin ? (
+                    <label className="block text-sm font-semibold">
+                      <TranslatedText textKey="settingsHub.cranePaymentMode" fallbackText="Online betaling voor kraanafspraak" />
+                      <select
+                        className="mt-1 block w-full rounded border p-2"
+                        value={paymentsForm.crane_mode}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          if (value === 'none' || value === 'optional' || value === 'required') {
+                            setPaymentsForm((current) => ({ ...current, crane_mode: value }));
+                            markDirty('payments');
+                          }
+                        }}
+                      >
+                        <option value="none"><TranslatedText textKey="siteCopy.ae0ffb7b55964e31" fallbackText={"Geen online betaling"} inline={false} /></option>
+                        <option value="optional"><TranslatedText textKey="siteCopy.2db1a863be6e075f" fallbackText={"Optioneel na goedkeuring"} inline={false} /></option>
+                        <option value="required"><TranslatedText textKey="siteCopy.8cd4e3980075ba0a" fallbackText={"Verplicht na goedkeuring"} inline={false} /></option>
+                      </select>
+                    </label>
+                  ) : null}
+                  {isSuperAdmin ? (
+                    <fieldset className="space-y-3 rounded-lg border border-navy-100 p-4">
+                      <legend className="px-1 text-sm font-semibold"><TranslatedText textKey="crane.notificationSettings" /></legend>
+                      {(['crane_recipients', 'crane_from', 'crane_reply_to'] as const).map((key) => (
+                        <label key={key} className="block text-sm font-medium">
+                          {tEnum(t, 'crane.settings', key)}
+                          <input
+                            className="mt-1 block w-full rounded border p-2"
+                            type="email"
+                            multiple={key === 'crane_recipients'}
+                            value={paymentsForm[key]}
+                            onChange={(event) => {
+                              setPaymentsForm((current) => ({ ...current, [key]: event.target.value }));
+                              markDirty('payments');
+                            }}
+                          />
+                        </label>
+                      ))}
+                    </fieldset>
+                  ) : null}
                   <fieldset className="rounded-lg border border-navy-100 p-4">
-                    <legend className="px-1 text-sm font-semibold">{t('settingsHub.online_methods')}</legend>
-                    <p className="mb-2 text-xs text-navy-500">{t('settingsHub.payments.onlineHint')}</p>
+                    <legend className="px-1 text-sm font-semibold">{<TranslatedText textKey={'settingsHub.online_methods'} />}</legend>
+                    <p className="mb-2 text-xs text-navy-500">{<TranslatedText textKey={'settingsHub.payments.onlineHint'} />}</p>
                     {ONLINE_METHODS.map((method) => (
                       <label key={method.id} className="mb-2 flex items-center gap-2 text-sm">
                         <input
@@ -654,8 +708,8 @@ export default function SettingsPage() {
                     ))}
                   </fieldset>
                   <fieldset className="rounded-lg border border-navy-100 p-4">
-                    <legend className="px-1 text-sm font-semibold">{t('settingsHub.pos_methods')}</legend>
-                    <p className="mb-2 text-xs text-navy-500">{t('settingsHub.payments.posHint')}</p>
+                    <legend className="px-1 text-sm font-semibold">{<TranslatedText textKey={'settingsHub.pos_methods'} />}</legend>
+                    <p className="mb-2 text-xs text-navy-500">{<TranslatedText textKey={'settingsHub.payments.posHint'} />}</p>
                     {POS_METHODS.map((method) => (
                       <label key={method.id} className="mb-2 flex items-center gap-2 text-sm">
                         <input
@@ -680,19 +734,19 @@ export default function SettingsPage() {
                 <div className="mt-4 space-y-2">
                   {paymentsForm.test_mode ? (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
-                      <p className="font-medium">{t('settingsHub.payments.testModeActive')}</p>
+                      <p className="font-medium">{<TranslatedText textKey={'settingsHub.payments.testModeActive'} />}</p>
                       {liveConfirm ? (
                         <div className="mt-2 flex flex-wrap gap-2">
                           <Button variant="gold" disabled={!canUpdateOps} onClick={switchToLive}>
-                            {t('settingsHub.payments.confirmLive')}
+                            {<TranslatedText textKey={'settingsHub.payments.confirmLive'} />}
                           </Button>
                           <Button variant="outline" onClick={() => setLiveConfirm(false)}>
-                            {t('adminNew.common.cancel')}
+                            {<TranslatedText textKey={'adminNew.common.cancel'} />}
                           </Button>
                         </div>
                       ) : (
                         <Button className="mt-2" variant="outline" disabled={!canUpdateOps} onClick={switchToLive}>
-                          {t('settingsHub.payments.switchLive')}
+                          {<TranslatedText textKey={'settingsHub.payments.switchLive'} />}
                         </Button>
                       )}
                     </div>
@@ -707,7 +761,7 @@ export default function SettingsPage() {
                           markDirty('payments');
                         }}
                       />
-                      {t('adminNew.settings.payments.testMode')}
+                      {<TranslatedText textKey={'adminNew.settings.payments.testMode'} />}
                     </label>
                   )}
                 </div>
@@ -721,7 +775,7 @@ export default function SettingsPage() {
                       void save('payments', async () => { await testMollie.mutate(); }, t('adminNew.settings.toasts.mollieTestSuccess'))
                     }
                   >
-                    {t('settingsHub.runDiagnostic')}
+                    {<TranslatedText textKey={'settingsHub.runDiagnostic'} />}
                   </Button>
                   <Button
                     variant="gold"
@@ -737,12 +791,18 @@ export default function SettingsPage() {
                               : {}),
                             pos_methods: paymentsForm.pos_methods,
                             online_methods: paymentsForm.online_methods,
+                            ...(isSuperAdmin ? {
+                              crane_mode: paymentsForm.crane_mode,
+                              crane_recipients: paymentsForm.crane_recipients.split(',').map((email) => email.trim()).filter(Boolean),
+                              crane_from: paymentsForm.crane_from.trim() || null,
+                              crane_reply_to: paymentsForm.crane_reply_to.trim() || null,
+                            } : {}),
                           }),
                         t('adminNew.settings.toasts.paymentsSaved'),
                       )
                     }
                   >
-                    {t('adminNew.common.save')}
+                    {<TranslatedText textKey={'adminNew.common.save'} />}
                   </Button>
                 </div>
               </AdminSectionCard>
@@ -756,7 +816,7 @@ export default function SettingsPage() {
               >
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="text-sm">
-                    {t('adminNew.settings.locales.defaultLocale')}
+                    {<TranslatedText textKey={'adminNew.settings.locales.defaultLocale'} />}
                     <select
                       className="input-base mt-2"
                       value={localeForm.default_locale}
@@ -771,7 +831,7 @@ export default function SettingsPage() {
                     </select>
                   </label>
                   <label className="text-sm">
-                    {t('adminNew.settings.locales.fallbackLocale')}
+                    {<TranslatedText textKey={'adminNew.settings.locales.fallbackLocale'} />}
                     <select
                       className="input-base mt-2"
                       value={localeForm.fallback_locale}
@@ -798,20 +858,20 @@ export default function SettingsPage() {
                           onChange={(e) => toggleLocale(opt.code, e.target.checked)}
                         />
                         <span className="font-medium">{opt.label}</span>
-                        {isDefault ? <Badge tone="success">DEFAULT</Badge> : null}
-                        {!enabled ? <span className="text-navy-500">{t('settingsHub.locales.disabledKept')}</span> : null}
+                        {isDefault ? <Badge tone="success"><TranslatedText textKey="siteCopy.26f3ed48d5f90e54" fallbackText={"DEFAULT"} /></Badge> : null}
+                        {!enabled ? <span className="text-navy-500">{<TranslatedText textKey={'settingsHub.locales.disabledKept'} />}</span> : null}
                       </label>
                     );
                   })}
                 </div>
-                <p className="mt-3 text-xs text-navy-500">{t('settingsHub.locales.fallbackChain')}</p>
+                <p className="mt-3 text-xs text-navy-500">{<TranslatedText textKey={'settingsHub.locales.fallbackChain'} />}</p>
                 {localeImpact ? (
                   <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
-                    <p className="font-medium">{t('settingsHub.locales.disableTitle', { code: localeImpact })}</p>
-                    <p className="mt-1">{t('settingsHub.locales.disableBody')}</p>
+                    <p className="font-medium">{<TranslatedText textKey={'settingsHub.locales.disableTitle'} vars={{ code: localeImpact }} />}</p>
+                    <p className="mt-1">{<TranslatedText textKey={'settingsHub.locales.disableBody'} />}</p>
                     <div className="mt-2 flex gap-2">
-                      <Button variant="gold" onClick={confirmDisableLocale}>{t('settingsHub.locales.confirmDisable')}</Button>
-                      <Button variant="outline" onClick={() => setLocaleImpact(null)}>{t('adminNew.common.cancel')}</Button>
+                      <Button variant="gold" onClick={confirmDisableLocale}>{<TranslatedText textKey={'settingsHub.locales.confirmDisable'} />}</Button>
+                      <Button variant="outline" onClick={() => setLocaleImpact(null)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
                     </div>
                   </div>
                 ) : null}
@@ -833,7 +893,7 @@ export default function SettingsPage() {
                       )
                     }
                   >
-                    {t('adminNew.common.save')}
+                    {<TranslatedText textKey={'adminNew.common.save'} />}
                   </Button>
                 </div>
               </AdminSectionCard>
@@ -852,7 +912,7 @@ export default function SettingsPage() {
             ) : null}
 
             {financialOnly && activeTab === 'company' ? (
-              <p className="text-sm text-navy-600">{t('settingsHub.rbac.financeLimited')}</p>
+              <p className="text-sm text-navy-600">{<TranslatedText textKey={'settingsHub.rbac.financeLimited'} />}</p>
             ) : null}
           </>
         ) : null}

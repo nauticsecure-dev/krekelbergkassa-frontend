@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -40,6 +42,10 @@ import type { BoatLocation } from '@/lib/api-types';
 import { formatTimeRange, toTimeInputValue } from '@/lib/time';
 import { formatDate, intlLocale } from '@/lib/format';
 import { usePermission } from '@/lib/permissions';
+import { api } from '@/lib/api';
+import { getAuthToken } from '@/lib/auth-storage';
+import { yardEndpoint } from './yard/YardHistory';
+import { YardPlan, yardDayOffset, yardToday, yardJobPath } from './yard/daily-plan';
 
 type ModalKind = 'regular' | 'exception' | 'lunch' | 'location' | 'editLocation' | null;
 
@@ -103,6 +109,19 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
 
   const calendar = useQuery([], () => calendarService.get());
   const locations = useQuery(['calendar-locations'], () => calendarService.locations());
+  const canSeeYardMoves = can('stalling.view') && can('boats.view') && (canManage || can('planning.write') || can('work_orders.view'));
+  const [yardDate, setYardDate] = React.useState(() => new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Amsterdam', dateStyle: 'short',
+  }).format(new Date()));
+  const yardMoves = useQuery(['calendar-yard-moves', canSeeYardMoves, yardDate], () =>
+    canSeeYardMoves && yardDate
+      ? api<YardPlan>(
+          `${yardEndpoint}/daily-plan`, { query: { date: yardDate } },
+        )
+      : Promise.resolve(null),
+  );
+  const yardRows = yardMoves.data?.jobs ?? [];
+  const nextYardTask = yardRows.find(job => (job.type === 'boat' || job.type === 'yard_move') && job.id === yardMoves.data?.next_task_id);
 
   // Trello #88: toggleable work-orders overlay for the visible month.
   const [showWorkOrders, setShowWorkOrders] = React.useState(false);
@@ -312,7 +331,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => setModal('location')}
           >
-            {t('adminNew.calendar.newLocation')}
+            {<TranslatedText textKey={'adminNew.calendar.newLocation'} />}
           </Button> : null
         }
         stats={[
@@ -367,7 +386,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 icon={CalendarDays}
                 action={canManage ?
                   <Button size="sm" variant="outline" onClick={() => openRegularModal()}>
-                    {t('adminNew.calendar.actions.setRegular')}
+                    {<TranslatedText textKey={'adminNew.calendar.actions.setRegular'} />}
                   </Button> : null
                 }
               >
@@ -395,7 +414,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                 icon={UtensilsCrossed}
                 action={canManage ?
                   <Button size="sm" variant="outline" onClick={() => setModal('lunch')}>
-                    {t('adminNew.calendar.actions.setLunch')}
+                    {<TranslatedText textKey={'adminNew.calendar.actions.setLunch'} />}
                   </Button> : null
                 }
               >
@@ -413,7 +432,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
               icon={CalendarClock}
               action={canManage ?
                 <Button size="sm" variant="outline" onClick={() => setModal('exception')}>
-                  {t('adminNew.calendar.actions.addException')}
+                  {<TranslatedText textKey={'adminNew.calendar.actions.addException'} />}
                 </Button> : null
               }
             >
@@ -440,7 +459,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   leftIcon={<Plus className="h-3.5 w-3.5" />}
                   onClick={() => setModal('location')}
                 >
-                  {t('adminNew.calendar.newLocation')}
+                  {<TranslatedText textKey={'adminNew.calendar.newLocation'} />}
                 </Button> : null
               }
             >
@@ -462,6 +481,27 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
               )}
             </AdminSectionCard>
 
+            {canSeeYardMoves && <AdminSectionCard title={t('yardDaily.title')} icon={CalendarClock}
+              action={<div className="flex flex-wrap gap-2">
+                <Button variant="secondary" onClick={() => setYardDate(yardToday())}><TranslatedText textKey="yardDaily.today" /></Button>
+                <Button variant="secondary" onClick={() => setYardDate(yardDayOffset(yardToday(), 1))}><TranslatedText textKey="yardDaily.tomorrow" /></Button>
+                <Button variant="secondary" onClick={() => setYardDate(yardDayOffset(yardDate || yardToday(), 7))}><TranslatedText textKey="yardDaily.week" /></Button>
+                <Input aria-label={t('yardDaily.date')} type="date" value={yardDate} onChange={(event) => setYardDate(event.target.value)} />
+              </div>}>
+              {yardMoves.loading ? <LoadingState /> : yardMoves.error ? (
+                <ErrorState message={yardMoves.error} onRetry={() => void yardMoves.refetch().catch(() => undefined)} />
+              ) : yardRows.length ? (
+                <ul className="space-y-2">
+                  {(nextYardTask ? [nextYardTask, ...yardRows.filter(job => job !== nextYardTask)] : yardRows).map((job) => <li key={`${job.type}:${job.id}`}>
+                    <Link href={yardJobPath(locale, job)} prefetch={false} onClick={() => { getAuthToken(); }} className="flex flex-wrap justify-between gap-2 rounded-lg border border-navy-200 px-3 py-2 text-sm">
+                      <span>{job === nextYardTask && <strong className="mr-2 text-marine-700"><TranslatedText textKey="yardDaily.nextTask" /></strong>}{job.boat} · {job.title}</span>
+                      <span>{job.due_at ? new Intl.DateTimeFormat(dateLocale, { timeZone: 'Europe/Amsterdam', timeStyle: 'short' }).format(new Date(job.due_at)) : t('yardDaily.allDay')}
+                        {job.assigned_to && ` · ${job.assigned_to}`}</span>
+                    </Link>
+                  </li>)}
+                </ul>
+              ) : <p className="py-2 text-sm text-navy-500"><TranslatedText textKey="yardDaily.empty" /></p>}
+            </AdminSectionCard>}
             {/* Trello #88: work-orders overlay for the visible month */}
             <AdminSectionCard
               title={t('adminNew.workOrders.overlay.title')}
@@ -474,12 +514,12 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                     checked={showWorkOrders}
                     onChange={(e) => setShowWorkOrders(e.target.checked)}
                   />
-                  {t('adminNew.workOrders.overlay.toggle')}
+                  {<TranslatedText textKey={'adminNew.workOrders.overlay.toggle'} />}
                 </label> : null
               }
             >
               {!showWorkOrders ? (
-                <p className="py-4 text-sm text-navy-500">{t('adminNew.workOrders.overlay.hidden')}</p>
+                <p className="py-4 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.overlay.hidden'} />}</p>
               ) : workOrders.loading ? (
                 <LoadingState label={t('adminNew.common.loading')} />
               ) : workOrderRows.length === 0 ? (
@@ -530,7 +570,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
             <div className="space-y-4">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-navy-700">
-                  {t('adminNew.calendar.fields.dayOfWeek')}
+                  {<TranslatedText textKey={'adminNew.calendar.fields.dayOfWeek'} />}
                 </span>
                 <SearchSelect
                   className="input-base"
@@ -550,7 +590,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   checked={regularForm.is_closed}
                   onChange={(e) => setRegularForm({ ...regularForm, is_closed: e.target.checked })}
                 />
-                {t('adminNew.calendar.fields.closedDay')}
+                {<TranslatedText textKey={'adminNew.calendar.fields.closedDay'} />}
               </label>
               {!regularForm.is_closed ? (
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -574,10 +614,10 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setModal(null)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={setRegular.loading}>
-              {setRegular.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+              {setRegular.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -611,7 +651,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                     setExceptionForm({ ...exceptionForm, is_closed: e.target.checked })
                   }
                 />
-                {t('adminNew.calendar.fields.closedDay')}
+                {<TranslatedText textKey={'adminNew.calendar.fields.closedDay'} />}
               </label>
               {!exceptionForm.is_closed ? (
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -637,10 +677,10 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setModal(null)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={setException.loading}>
-              {setException.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+              {setException.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -672,10 +712,10 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setModal(null)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={setLunch.loading}>
-              {setLunch.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+              {setLunch.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -702,17 +742,17 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
               />
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-navy-700">
-                  {t('adminNew.calendar.columns.difficulty')}
+                  {<TranslatedText textKey={'adminNew.calendar.columns.difficulty'} />}
                 </span>
                 <SearchSelect
                   className="input-base"
                   value={locationForm.difficulty}
                   onChange={(e) => setLocationForm({ ...locationForm, difficulty: e.target.value })}
                 >
-                  <option value="easy">easy</option>
-                  <option value="medium">medium</option>
-                  <option value="difficult">difficult</option>
-                  <option value="hall">hall</option>
+                  <option value="easy"><TranslatedText textKey="siteCopy.55eeb48d3e948bc9" fallbackText={"easy"} inline={false} /></option>
+                  <option value="medium"><TranslatedText textKey="siteCopy.7da7b2fbf792dcec" fallbackText={"medium"} inline={false} /></option>
+                  <option value="difficult"><TranslatedText textKey="siteCopy.adce956c48530a8c" fallbackText={"difficult"} inline={false} /></option>
+                  <option value="hall"><TranslatedText textKey="siteCopy.d115c316bf61d185" fallbackText={"hall"} inline={false} /></option>
                 </SearchSelect>
               </label>
               <Input
@@ -732,10 +772,10 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setModal(null)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createLocation.loading}>
-              {createLocation.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+              {createLocation.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -754,17 +794,17 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
               </div>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-navy-700">
-                  {t('adminNew.calendar.columns.difficulty')}
+                  {<TranslatedText textKey={'adminNew.calendar.columns.difficulty'} />}
                 </span>
                 <SearchSelect
                   className="input-base"
                   value={editForm.difficulty}
                   onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
                 >
-                  <option value="easy">easy</option>
-                  <option value="medium">medium</option>
-                  <option value="difficult">difficult</option>
-                  <option value="hall">hall</option>
+                  <option value="easy"><TranslatedText textKey="siteCopy.55eeb48d3e948bc9" fallbackText={"easy"} inline={false} /></option>
+                  <option value="medium"><TranslatedText textKey="siteCopy.7da7b2fbf792dcec" fallbackText={"medium"} inline={false} /></option>
+                  <option value="difficult"><TranslatedText textKey="siteCopy.adce956c48530a8c" fallbackText={"difficult"} inline={false} /></option>
+                  <option value="hall"><TranslatedText textKey="siteCopy.d115c316bf61d185" fallbackText={"hall"} inline={false} /></option>
                 </SearchSelect>
               </label>
               <label className="flex items-center gap-2 text-sm text-navy-700">
@@ -774,8 +814,8 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   onChange={(e) => setEditForm({ ...editForm, is_blocked: e.target.checked })}
                 />
                 {editForm.is_blocked
-                  ? t('adminNew.calendar.blocked')
-                  : t('adminNew.calendar.open')}
+                  ? <TranslatedText textKey={'adminNew.calendar.blocked'} />
+                  : <TranslatedText textKey={'adminNew.calendar.open'} />}
               </label>
               <Input
                 label={t('adminNew.calendar.fields.notes')}
@@ -803,10 +843,10 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setModal(null)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={updateLocation.loading}>
-              {updateLocation.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+              {updateLocation.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>

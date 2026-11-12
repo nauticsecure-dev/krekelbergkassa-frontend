@@ -1,9 +1,12 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
 import Link from 'next/link';
+import { WerfcanvasLink } from '@/components/admin/WerfcanvasLink';
 import { Copy, Eye, FilePlus2, Link2, Mail, MapPin, Pencil, Plus, Receipt, Ship, ShieldCheck, Warehouse, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { adminRecordHref } from '@/config/admin-routes';
@@ -492,9 +495,12 @@ export default function StallingPage() {
         title={t('adminNew.stalling.title')}
         subtitle={t('adminNew.stalling.subtitle')}
         rightSlot={
-          <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-            {t('adminNew.stalling.new')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <WerfcanvasLink locale={locale} className="rounded-lg border border-current px-3 py-2 text-sm font-medium"><TranslatedText textKey="siteCopy.9185d0def20ff8c1" fallbackText={"Werfcanvas"} /></WerfcanvasLink>
+            <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+              {<TranslatedText textKey={'adminNew.stalling.new'} />}
+            </Button>
+          </div>
         }
         stats={[
           {
@@ -537,7 +543,7 @@ export default function StallingPage() {
           />
           <label className="flex flex-col gap-1 lg:w-auto">
             <span className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
-              {t('adminNew.stalling.columns.status')}
+              {<TranslatedText textKey={'adminNew.stalling.columns.status'} />}
             </span>
             <AdminSelect
               value={status}
@@ -564,7 +570,7 @@ export default function StallingPage() {
           </label>
           <label className="flex flex-col gap-1 lg:w-auto">
             <span className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">
-              {t('adminNew.stalling.columns.type')}
+              {<TranslatedText textKey={'adminNew.stalling.columns.type'} />}
             </span>
             <AdminSelect
               value={type}
@@ -612,14 +618,14 @@ export default function StallingPage() {
             <AdminTable minWidth={1100}>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>{t('adminNew.stalling.columns.boat')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.stalling.columns.customer')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.stalling.columns.period')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.stalling.columns.type')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.stalling.columns.paidUntil')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.stalling.columns.openBalance')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.stalling.columns.location')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.stalling.columns.status')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.stalling.columns.boat'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.stalling.columns.customer'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.stalling.columns.period'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.stalling.columns.type'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.stalling.columns.paidUntil'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.stalling.columns.openBalance'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.stalling.columns.location'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.stalling.columns.status'} />}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
@@ -639,7 +645,7 @@ export default function StallingPage() {
                           href={adminRecordHref(locale, 'klanten', contract.customer)}
                           className="text-xs font-semibold text-marine-700 hover:text-marine-900"
                         >
-                          {t('adminNew.stalling.openCustomer')}
+                          {<TranslatedText textKey={'adminNew.stalling.openCustomer'} />}
                         </Link>
                       ) : null}
                     </AdminTableCell>
@@ -659,7 +665,7 @@ export default function StallingPage() {
                             className="input-base h-8 w-36 px-2 py-1 text-xs"
                           />
                           <Button size="sm" variant="gold" onClick={() => void saveInline()} disabled={updateContract.loading}>
-                            {t('adminNew.stalling.inline.save')}
+                            {<TranslatedText textKey={'adminNew.stalling.inline.save'} />}
                           </Button>
                         </span>
                       ) : (
@@ -685,7 +691,7 @@ export default function StallingPage() {
                           </span>
                         ) : (
                           <span className="text-xs text-navy-400">
-                            {t('adminNew.stalling.quickEdit.locationEmpty')}
+                            {<TranslatedText textKey={'adminNew.stalling.quickEdit.locationEmpty'} />}
                           </span>
                         )}
                         {inlineEdit?.id === contract.id && inlineEdit.field === 'bok_number' ? (
@@ -699,7 +705,7 @@ export default function StallingPage() {
                               placeholder={t('adminNew.stalling.columns.bok')}
                             />
                             <Button size="sm" variant="gold" onClick={() => void saveInline()} disabled={updateContract.loading}>
-                              {t('adminNew.stalling.inline.save')}
+                              {<TranslatedText textKey={'adminNew.stalling.inline.save'} />}
                             </Button>
                           </span>
                         ) : (
@@ -709,7 +715,7 @@ export default function StallingPage() {
                             title={t('adminNew.stalling.inline.editBok')}
                             className="text-left text-[11px] text-navy-500 hover:text-marine-700 hover:underline"
                           >
-                            {t('adminNew.stalling.columns.bok')}: {contract.bok_number || '—'}
+                            {<TranslatedText textKey={'adminNew.stalling.columns.bok'} />}: {contract.bok_number || '—'}
                           </button>
                         )}
                       </div>
@@ -733,7 +739,7 @@ export default function StallingPage() {
                             size="sm"
                             leftIcon={<Eye className="h-3.5 w-3.5" />}
                           >
-                            {t('adminNew.common.open')}
+                            {<TranslatedText textKey={'adminNew.common.open'} />}
                           </Button>
                         </Link>
                         <Button disabled={!canWrite}
@@ -742,7 +748,7 @@ export default function StallingPage() {
                           leftIcon={<Pencil className="h-3.5 w-3.5" />}
                           onClick={() => openFullEdit(contract)}
                         >
-                          {t('adminNew.stalling.editContract')}
+                          {<TranslatedText textKey={'adminNew.stalling.editContract'} />}
                         </Button>
                         {/* Signing link actions */}
                         {contract.signing_token ? (
@@ -758,8 +764,7 @@ export default function StallingPage() {
                                 );
                               }}
                             >
-                              Link
-                            </Button>
+                              <TranslatedText textKey="siteCopy.dc402102d5e2a545" fallbackText={"Link"} /></Button>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -767,8 +772,7 @@ export default function StallingPage() {
                               disabled={sendContractEmailM.loading}
                               onClick={() => void execute('Contract e-mail verzonden', () => sendContractEmailM.mutate(contract.id))}
                             >
-                              Mail
-                            </Button>
+                              <TranslatedText textKey="siteCopy.b950bc3f97d801c5" fallbackText={"Mail"} /></Button>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -778,15 +782,14 @@ export default function StallingPage() {
                                 window.open(url, '_blank');
                               }}
                             >
-                              Open
-                            </Button>
+                              <TranslatedText textKey="siteCopy.956a9f1b67efca39" fallbackText={"Open"} /></Button>
                           </>
                         ) : null}
                         {/* Trello #107: deep link to the deposit (10%) invoice when present. */}
                         {contract.deposit_invoice_id ? (
                           <Link href={`/${locale}/admin/facturen/${contract.deposit_invoice_id}`}>
                             <Button variant="ghost" size="sm" leftIcon={<Receipt className="h-3.5 w-3.5" />}>
-                              {t('adminNew.stalling.invoiceLabels.deposit')}
+                              {<TranslatedText textKey={'adminNew.stalling.invoiceLabels.deposit'} />}
                             </Button>
                           </Link>
                         ) : null}
@@ -798,8 +801,8 @@ export default function StallingPage() {
                           onClick={() => setInvoiceTarget(contract.id)}
                         >
                           {contract.deposit_invoice_id
-                            ? t('adminNew.stalling.invoiceLabels.final')
-                            : t('adminNew.stalling.invoice')}
+                            ? <TranslatedText textKey={'adminNew.stalling.invoiceLabels.final'} />
+                            : <TranslatedText textKey={'adminNew.stalling.invoice'} />}
                         </Button>
                         <Button
                           variant="ghost"
@@ -808,7 +811,7 @@ export default function StallingPage() {
                           disabled={createInvoice.loading || cancelContract.loading}
                           onClick={() => setCancelTarget(contract.id)}
                         >
-                          {t('adminNew.stalling.cancel')}
+                          {<TranslatedText textKey={'adminNew.stalling.cancel'} />}
                         </Button>
                       </div>
                     </AdminTableCell>
@@ -834,10 +837,10 @@ export default function StallingPage() {
             <AdminTable minWidth={700}>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>{t('adminNew.audit.columns.time')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.audit.columns.actor')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.audit.columns.action')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.audit.columns.changes')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.audit.columns.time'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.audit.columns.actor'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.audit.columns.action'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.audit.columns.changes'} />}</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
               <tbody>
@@ -882,7 +885,7 @@ export default function StallingPage() {
           <AdminModalHeader title={t('adminNew.stalling.new')} subtitle={t('adminNew.stalling.createSubtitle')} />
           <AdminModalBody>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.boat')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.columns.boat'} />}</label>
               <div className="flex gap-2">
                 <SearchSelect className="input-base w-full" value={createForm.boat_id} onChange={(e) => setCreateForm({ ...createForm, boat_id: e.target.value })} required>
                   <option value="">{t('adminNew.boats.selectCustomer')}</option>
@@ -891,12 +894,12 @@ export default function StallingPage() {
                   ))}
                 </SearchSelect>
                 <Button disabled={!canCreateBoat} type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewBoat(true)}>
-                  {t('adminNew.stalling.fields.newBoat')}
+                  {<TranslatedText textKey={'adminNew.stalling.fields.newBoat'} />}
                 </Button>
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.customer')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.columns.customer'} />}</label>
               <div className="flex gap-2">
                 <SearchSelect className="input-base w-full" value={createForm.customer_id} onChange={(e) => setCreateForm({ ...createForm, customer_id: e.target.value })}>
                   <option value="">{t('adminNew.kassa.selectCustomer')}</option>
@@ -905,12 +908,12 @@ export default function StallingPage() {
                   ))}
                 </SearchSelect>
                 <Button disabled={!canCreateCustomer} type="button" variant="ghost" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewCustomer(true)}>
-                  {t('adminNew.stalling.fields.newCustomer')}
+                  {<TranslatedText textKey={'adminNew.stalling.fields.newCustomer'} />}
                 </Button>
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.type')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.columns.type'} />}</label>
               <SearchSelect
                 className="input-base w-full"
                 value={createForm.type}
@@ -940,7 +943,7 @@ export default function StallingPage() {
                 </span>
                 {createForm.deposit_pct ? (
                   <span className="ml-3 text-navy-500">
-                    {t('adminNew.stalling.pricePreview.deposit')} {createForm.deposit_pct}%:{' '}
+                    {<TranslatedText textKey={'adminNew.stalling.pricePreview.deposit'} />} {createForm.deposit_pct}%:{' '}
                     {formatCurrency((pricePreview.total_incl_vat * Number(createForm.deposit_pct)) / 10000, dateLocale)}
                   </span>
                 ) : null}
@@ -966,7 +969,7 @@ export default function StallingPage() {
               placeholder={t('adminNew.stalling.fields.bokNumberPlaceholder')}
             />
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.paymentRoute')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.fields.paymentRoute'} />}</label>
               <SearchSelect className="input-base w-full" value={createForm.payment_route} onChange={(e) => setCreateForm({ ...createForm, payment_route: e.target.value })}>
                 <option value="email">{t('adminNew.stalling.fields.payByEmail')}</option>
                 <option value="kassa">{t('adminNew.stalling.fields.payAtKassa')}</option>
@@ -991,7 +994,7 @@ export default function StallingPage() {
               placeholder="0,00"
             />
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.notes')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.fields.notes'} />}</label>
               <textarea
                 className="input-base w-full"
                 rows={2}
@@ -1001,13 +1004,13 @@ export default function StallingPage() {
             </div>
             {(contractTemplates.data ?? []).length > 0 ? (
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-navy-800">Contracttemplate</label>
+                <label className="mb-1.5 block text-sm font-medium text-navy-800"><TranslatedText textKey="siteCopy.a32e0db158a77dda" fallbackText={"Contracttemplate"} /></label>
                 <SearchSelect
                   className="input-base w-full"
                   value={createForm.contract_template_id}
                   onChange={(e) => setCreateForm({ ...createForm, contract_template_id: e.target.value })}
                 >
-                  <option value="">Geen template</option>
+                  <option value=""><TranslatedText textKey="siteCopy.30ed7e5ec22f369e" fallbackText={"Geen template"} inline={false} /></option>
                   {(contractTemplates.data ?? []).map((tpl) => (
                     <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
                   ))}
@@ -1021,7 +1024,7 @@ export default function StallingPage() {
                 onChange={(e) => setCreateForm({ ...createForm, send_contract_email: e.target.checked })}
                 className="h-4 w-4 rounded border-navy-300"
               />
-              {t('adminNew.stalling.fields.sendContractEmail')}
+              {<TranslatedText textKey={'adminNew.stalling.fields.sendContractEmail'} />}
             </label>
 
             {/* Trello #107: brokerage (makelaardij) toggle + live preview */}
@@ -1033,7 +1036,7 @@ export default function StallingPage() {
                   onChange={(e) => setBrokerage(e.target.checked)}
                   className="h-4 w-4 rounded border-navy-300"
                 />
-                {t('adminNew.stalling.brokerage.toggle')}
+                {<TranslatedText textKey={'adminNew.stalling.brokerage.toggle'} />}
               </label>
               {brokerage ? (
                 <div className="mt-2 text-sm">
@@ -1045,11 +1048,11 @@ export default function StallingPage() {
                   />
                   <div className="mt-2">
                   {!selectedBoatLength ? (
-                    <p className="text-xs text-navy-500">{t('adminNew.stalling.brokerage.needLength')}</p>
+                    <p className="text-xs text-navy-500">{<TranslatedText textKey={'adminNew.stalling.brokerage.needLength'} />}</p>
                   ) : brokeragePreview ? (
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-navy-500">{t('adminNew.stalling.brokerage.freeUntil')}</span>
+                        <span className="text-navy-500">{<TranslatedText textKey={'adminNew.stalling.brokerage.freeUntil'} />}</span>
                         <span className="font-semibold text-emerald-700">
                           {brokeragePreview.brokerage_free_until
                             ? formatDate(brokeragePreview.brokerage_free_until, dateLocale)
@@ -1057,7 +1060,7 @@ export default function StallingPage() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-navy-500">{t('adminNew.stalling.brokerage.monthlyFee')}</span>
+                        <span className="text-navy-500">{<TranslatedText textKey={'adminNew.stalling.brokerage.monthlyFee'} />}</span>
                         <span className="font-semibold text-navy-900">
                           {formatCurrency(
                             brokeragePreview.monthly_fee_euros ??
@@ -1071,7 +1074,7 @@ export default function StallingPage() {
                       ) : null}
                     </div>
                   ) : (
-                    <p className="text-xs text-navy-400">{t('adminNew.common.loading')}</p>
+                    <p className="text-xs text-navy-400">{<TranslatedText textKey={'adminNew.common.loading'} />}</p>
                   )}
                   </div>
                 </div>
@@ -1079,8 +1082,8 @@ export default function StallingPage() {
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button disabled={!canWrite} type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={createContract.loading}>{t('adminNew.common.save')}</Button>
+            <Button disabled={!canWrite} type="button" variant="ghost" onClick={() => setShowCreate(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={createContract.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>
@@ -1101,8 +1104,8 @@ export default function StallingPage() {
             <Input label={t('adminNew.stalling.fields.registration')} value={newBoat.registration_number} onChange={(e) => setNewBoat({ ...newBoat, registration_number: e.target.value })} />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button disabled={!canCreateBoat} type="button" variant="ghost" onClick={() => setShowNewBoat(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={createBoat.loading}>{t('adminNew.common.save')}</Button>
+            <Button disabled={!canCreateBoat} type="button" variant="ghost" onClick={() => setShowNewBoat(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={createBoat.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>
@@ -1128,8 +1131,8 @@ export default function StallingPage() {
             <Input label={t('adminNew.stalling.fields.companyName')} value={newCustomer.company_name} onChange={(e) => setNewCustomer({ ...newCustomer, company_name: e.target.value })} />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button disabled={!canCreateCustomer} type="button" variant="ghost" onClick={() => setShowNewCustomer(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={createCustomer.loading}>{t('adminNew.common.save')}</Button>
+            <Button disabled={!canCreateCustomer} type="button" variant="ghost" onClick={() => setShowNewCustomer(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={createCustomer.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>
@@ -1149,13 +1152,13 @@ export default function StallingPage() {
                 only the lifecycle status can actually be set. */}
             {editTarget ? (
               <div className="flex items-center gap-2 rounded-lg bg-sand-50 px-3 py-2 text-sm">
-                <span className="text-navy-500">{t('adminNew.stalling.quickEdit.statusLabel')}:</span>
+                <span className="text-navy-500">{<TranslatedText textKey={'adminNew.stalling.quickEdit.statusLabel'} />}:</span>
                 <PaymentStatusBadge status={editTarget.payment_status} />
               </div>
             ) : null}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.stalling.quickEdit.lifecycleLabel')}
+                {<TranslatedText textKey={'adminNew.stalling.quickEdit.lifecycleLabel'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
@@ -1170,7 +1173,7 @@ export default function StallingPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.stalling.quickEdit.noteLabel')}
+                {<TranslatedText textKey={'adminNew.stalling.quickEdit.noteLabel'} />}
               </label>
               <textarea
                 className="input-base w-full"
@@ -1190,10 +1193,10 @@ export default function StallingPage() {
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setEditTarget(null)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={setLifecycleM.loading || setLocationM.loading}>
-              {t('adminNew.common.save')}
+              {<TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -1208,7 +1211,7 @@ export default function StallingPage() {
           />
           <AdminModalBody>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.customer')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.columns.customer'} />}</label>
               <SearchSelect className="input-base w-full" value={editForm.customer_id} onChange={(e) => setEditForm({ ...editForm, customer_id: e.target.value })}>
                 <option value="">{t('adminNew.kassa.selectCustomer')}</option>
                 {(customers.data?.data ?? []).map((c) => (
@@ -1217,7 +1220,7 @@ export default function StallingPage() {
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.boat')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.columns.boat'} />}</label>
               <SearchSelect className="input-base w-full" value={editForm.boat_id} onChange={(e) => setEditForm({ ...editForm, boat_id: e.target.value })}>
                 <option value="">{t('adminNew.boats.selectCustomer')}</option>
                 {(boats.data?.data ?? []).map((b) => (
@@ -1226,7 +1229,7 @@ export default function StallingPage() {
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.columns.type')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.columns.type'} />}</label>
               <SearchSelect className="input-base w-full" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}>
                 <option value="winter">{t('adminNew.stalling.type.winter')}</option>
                 <option value="summer">{t('adminNew.stalling.type.summer')}</option>
@@ -1243,7 +1246,7 @@ export default function StallingPage() {
               <Input label={t('adminNew.stalling.fields.bokNumber')} value={editForm.bok_number} onChange={(e) => setEditForm({ ...editForm, bok_number: e.target.value })} />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.billingType')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.fields.billingType'} />}</label>
               <SearchSelect className="input-base w-full" value={editForm.billing_type} onChange={(e) => setEditForm({ ...editForm, billing_type: e.target.value })}>
                 <option value="one_time">{t('adminNew.stalling.billing.oneTime')}</option>
                 <option value="monthly">{t('adminNew.stalling.billing.monthly')}</option>
@@ -1251,7 +1254,7 @@ export default function StallingPage() {
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.stalling.fields.notes')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.stalling.fields.notes'} />}</label>
               <textarea className="input-base w-full" rows={2} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} />
             </div>
             <Input
@@ -1262,8 +1265,8 @@ export default function StallingPage() {
             />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setEditFullTarget(null)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={updateContract.loading}>{t('adminNew.common.save')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setEditFullTarget(null)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={updateContract.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>

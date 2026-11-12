@@ -33,12 +33,17 @@ test('real employee saves Winterstalling, sees public tariff, and unauthorized w
     const row = page.locator('tbody tr').filter({ hasText: '0 – 499 cm' });
     await row.getByRole('button', { name: 'Bewerken', exact: true }).click();
     await page.getByRole('spinbutton', { name: 'Prijs incl. BTW (€)' }).fill(euros);
+    await page.getByLabel('Reden van wijziging', { exact: true }).fill('Isolated browser verification');
     const save = page.waitForResponse((response) => response.url().includes(`/pricing/rules/${original.id}`) && response.request().method() === 'PATCH');
     await page.getByRole('button', { name: 'Opslaan', exact: true }).click();
     const saved = await save;
-    changed = saved.ok();
+    changed = false;
     expect(saved.ok(), await saved.text()).toBe(true);
     await expect(page.getByRole('dialog')).toHaveCount(0);
+    const publication = page.waitForResponse((response) => response.url().endsWith('/publish') && response.request().method() === 'POST');
+    await page.getByRole('button', { name: 'Goedkeuren en publiceren', exact: true }).click();
+    changed = (await publication).ok();
+    expect(changed).toBe(true);
     await page.reload();
     const formatted = new Intl.NumberFormat('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cents / 100);
     await expect(page.locator('tbody tr').filter({ hasText: '0 – 499 cm' })).toContainText(formatted);
@@ -47,16 +52,18 @@ test('real employee saves Winterstalling, sees public tariff, and unauthorized w
     await page.screenshot({ path: testInfo.outputPath('winterstalling-public-updated.png'), fullPage: true });
     const denied = await request.patch(`/api/v1/pricing/rules/${original.id}`, { headers: { Accept: 'application/json' }, data: { price_incl_vat: 1 } });
     expect([401, 403]).toContain(denied.status());
-    const evidence = JSON.parse(php('$a=App\\Models\\AuditLog::where("action","pricing_rule.updated")->where("entity_id",$argv[1])->latest("created_at")->firstOrFail(); echo json_encode(["before"=>$a->before_data["price_incl_vat"],"after"=>$a->after_data["price_incl_vat"],"actor"=>$a->user_id !== null]);', [original.id]));
+    const evidence = JSON.parse(php('$a=App\\Models\\AuditLog::where("action","pricing_rule.published")->where("entity_id",$argv[1])->latest("created_at")->firstOrFail(); echo json_encode(["before"=>$a->before_data["price_incl_vat"],"after"=>$a->after_data["price_incl_vat"],"actor"=>$a->user_id !== null]);', [original.id]));
     expect(evidence).toEqual({ before: original.price_incl_vat, after: cents, actor: true });
     expect(errors).toEqual([]);
   } finally {
     if (changed && credentials && original) {
       const restored = await request.patch(`/api/v1/pricing/rules/${original.id}`, {
         headers: { Authorization: `Bearer ${credentials.token}` },
-        data: { price_incl_vat: original.price_incl_vat, price_excl_vat: original.price_excl_vat },
+        data: { price_incl_vat: original.price_incl_vat, price_excl_vat: original.price_excl_vat, expected_revision: original.revision + 1, change_reason: 'Restore isolated verification tariff' },
       });
-      expect(restored.ok(), 'Restore original Winterstalling price').toBe(true);
+      expect(restored.ok(), 'Stage original Winterstalling price').toBe(true);
+      const published = await request.post('/api/v1/pricing/drafts/' + (await restored.json()).draft_id + '/publish', { headers: { Authorization: `Bearer ${credentials.token}` } });
+      expect(published.ok(), 'Restore original Winterstalling price').toBe(true);
     }
     if (credentials) php('Laravel\\Sanctum\\PersonalAccessToken::whereKey($argv[1])->delete();', [String(credentials.tokenId)]);
   }

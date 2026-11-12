@@ -1,9 +1,13 @@
 "use client";
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { intlLocale } from '@/lib/format';
 
 import * as React from "react";
 import Link from "next/link";
+import { useSearchParams } from 'next/navigation';
+import { customerReturnTo, loginPath } from '@/lib/auth-routes';
 import { ArrowRight, Mail, Phone, User2 } from "lucide-react";
 import { useIntl } from "@/i18n/IntlProvider";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +16,13 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 export default function SignupPage() {
+  return <React.Suspense fallback={null}><SignupContent /></React.Suspense>;
+}
+
+function SignupContent() {
   const { t, locale } = useIntl();
+  const params = useSearchParams();
+  const returnTo = customerReturnTo(params.get('returnTo'));
   const { push } = useToast();
 
   const [name, setName] = React.useState("");
@@ -37,6 +47,7 @@ export default function SignupPage() {
         email: email.trim(),
         phone: phone.trim() || null,
         preferred_locale: intlLocale(locale),
+        returnTo,
       });
       setSuccess(true);
       push({
@@ -54,13 +65,13 @@ export default function SignupPage() {
   if (success) {
     return (
       <div className="text-center">
-        <h2 className="heading-display text-3xl text-navy-900">{t("signupExt.title")}</h2>
-        <p className="mt-4 text-sm leading-relaxed text-navy-600">{t("signupExt.checkEmail")}</p>
+        <h2 className="heading-display text-3xl text-navy-900">{<TranslatedText textKey={"signupExt.title"} />}</h2>
+        <p className="mt-4 text-sm leading-relaxed text-navy-600">{<TranslatedText textKey={"signupExt.checkEmail"} />}</p>
         <Link
-          href={`/${locale}/login?role=customer`}
+          href={loginPath(locale, returnTo)}
           className="mt-6 inline-flex font-semibold text-marine-700 hover:text-marine-900"
         >
-          {t("signup.loginInstead")} →
+          {<TranslatedText textKey={"signup.loginInstead"} />} →
         </Link>
       </div>
     );
@@ -69,10 +80,10 @@ export default function SignupPage() {
   return (
     <div>
       <h2 className="heading-display text-3xl text-navy-900 sm:text-[34px]">
-        {t("signupExt.title")}
+        {<TranslatedText textKey={"signupExt.title"} />}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-navy-500">
-        {t("signupExt.subtitle")}
+        {<TranslatedText textKey={"signupExt.subtitle"} />}
       </p>
 
       <form onSubmit={submit} className="mt-5 space-y-4">
@@ -126,7 +137,7 @@ export default function SignupPage() {
         </Field>
 
         <div className="rounded-lg border border-marine-200 bg-marine-50 px-3 py-2 text-xs text-marine-800">
-          {t("adminNew.auth.magicInfo")}
+          {<TranslatedText textKey={"adminNew.auth.magicInfo"} />}
         </div>
 
         <label className="flex items-start gap-2 text-xs leading-relaxed text-navy-700">
@@ -137,21 +148,21 @@ export default function SignupPage() {
             className="mt-0.5 h-4 w-4 rounded border-navy-200 text-marine-600"
           />
           <span>
-            {t("signupExt.termsBefore")}
+            {<TranslatedText textKey={"signupExt.termsBefore"} />}
             <Link
               href={`/${locale}/voorwaarden`}
               className="font-semibold text-marine-700 underline-offset-2 hover:underline"
             >
-              {t("signupExt.terms")}
+              {<TranslatedText textKey={"signupExt.terms"} />}
             </Link>
-            {t("signupExt.termsMiddle")}
+            {<TranslatedText textKey={"signupExt.termsMiddle"} />}
             <Link
               href={`/${locale}/privacy`}
               className="font-semibold text-marine-700 underline-offset-2 hover:underline"
             >
-              {t("signupExt.privacy")}
+              {<TranslatedText textKey={"signupExt.privacy"} />}
             </Link>
-            {t("signupExt.termsAfter")}
+            {<TranslatedText textKey={"signupExt.termsAfter"} />}
           </span>
         </label>
 
@@ -169,16 +180,16 @@ export default function SignupPage() {
           rightIcon={<ArrowRight className="h-4 w-4" />}
           className="bg-navy-900 text-white hover:bg-navy-800"
         >
-          {loading ? t("signup.submitting") : t("signup.submit")}
+          {loading ? <TranslatedText textKey={"signup.submitting"} /> : <TranslatedText textKey={"signup.submit"} />}
         </Button>
 
         <p className="pt-2 text-center text-sm text-navy-500">
-          {t("signup.haveAccount")}{" "}
+          {<TranslatedText textKey={"signup.haveAccount"} />}{" "}
           <Link
-            href={`/${locale}/login?role=customer`}
+            href={loginPath(locale, returnTo)}
             className="font-semibold text-navy-900 hover:text-marine-700"
           >
-            {t("signup.loginInstead")}
+            {<TranslatedText textKey={"signup.loginInstead"} />}
           </Link>
         </p>
       </form>

@@ -53,6 +53,7 @@ function CmsToolbarInner() {
           onClick={toggleEditMode}
           disabled={!currentPage}
           aria-pressed={editMode}
+          data-cms-toggle
           aria-label={editMode ? t('cms.exitEdit') : t('cms.enterEdit')}
           title={editMode ? t('cms.exitEdit') : t('cms.enterEdit')}
           className={cn(
@@ -69,9 +70,9 @@ function CmsToolbarInner() {
         </button>
 
         <span className="mx-0.5 h-6 w-px bg-navy-100" aria-hidden />
-        {isCmsEditing ? <button type="button" onClick={() => setTranslationsOpen(true)}
+        {isCmsEditing ? <button type="button" data-cms-catalog-open onClick={() => setTranslationsOpen(true)}
           aria-label={t('cms.allTranslations')} title={t('cms.allTranslations')}
-          className="h-9 rounded-full px-2 text-sm font-semibold text-navy-600">Aa</button> : null}
+          className="h-9 rounded-full px-2 text-sm font-semibold text-navy-600">{t('cms.textSymbol')}</button> : null}
 
         <button
           type="button"

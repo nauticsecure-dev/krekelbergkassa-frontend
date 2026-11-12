@@ -2,6 +2,7 @@
 import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import * as React from "react";
+import { EditSafeLink } from '@/components/cms/EditSafeLink';
 import Link from "next/link";
 import {
   Anchor,
@@ -23,7 +24,7 @@ import {
   Warehouse,
 } from "lucide-react";
 import { useIntl } from "@/i18n/IntlProvider";
-import { companyInfo } from "@/lib/company";
+import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { contentService } from "@/lib/services";
 import { useQuery } from "@/lib/hooks/useAsync";
 import { Card } from "@/components/ui/Card";
@@ -86,6 +87,7 @@ const QUESTIONS: { cat: string; q: string; a: string }[] = [
 ];
 
 export default function FaqPage() {
+  const companyInfo = useCompanyInfo();
   const { t, locale } = useIntl();
   const [cat, setCat] = React.useState("all");
   const [q, setQ] = React.useState("");
@@ -116,8 +118,7 @@ export default function FaqPage() {
         <div className="container-wide grid items-center gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="text-white">
             <Badge tone="sand" className="mb-4" dot>
-              Klantenservice
-            </Badge>
+              <TranslatedText textKey="siteCopy.fee84435f4a42bb5" fallbackText={"Klantenservice"} /></Badge>
             <h1 className="heading-display text-4xl text-white sm:text-5xl">
               <TranslatedText textKey={"faq.title"} />
             </h1>
@@ -202,18 +203,18 @@ export default function FaqPage() {
               </div>
               <p className="mt-2 text-sm text-marine-50"><TranslatedText textKey={"faq.helpDesc"} /></p>
               <div className="mt-4 space-y-2 text-sm">
-                <a
+                <EditSafeLink
                   href={companyInfo.phoneHref}
                   className="flex items-center gap-2 font-medium hover:text-gold-200"
                 >
-                  <Phone className="h-4 w-4" /> {companyInfo.phone}
-                </a>
-                <a
+                  <Phone className="h-4 w-4" /> <CompanyText field="phone" />
+                </EditSafeLink>
+                <EditSafeLink
                   href={companyInfo.emailHref}
                   className="flex items-center gap-2 hover:text-gold-200"
                 >
-                  <Mail className="h-4 w-4" /> {companyInfo.email}
-                </a>
+                  <Mail className="h-4 w-4" /> <CompanyText field="email" />
+                </EditSafeLink>
               </div>
               <Link href="#" className="mt-5 block">
                 <Button
@@ -233,8 +234,7 @@ export default function FaqPage() {
         <div className="space-y-3">
           {visible.length === 0 ? (
             <Card className="p-10 text-center text-navy-500">
-              Geen vragen gevonden voor uw zoekopdracht.
-            </Card>
+              <TranslatedText textKey="siteCopy.29fd55698e5ede8f" fallbackText={"Geen vragen gevonden voor uw zoekopdracht."} /></Card>
           ) : null}
           {visible.map((item, idx) => {
             const isOpen = open === idx;
@@ -310,9 +310,9 @@ export default function FaqPage() {
             </div>
           </div>
           <div className="grid gap-3 text-sm">
-            <Row icon={Phone}><TranslatedText textKey={"footer.phone"} /></Row>
-            <Row icon={Mail}>info@krekelberg-nautic.nl</Row>
-            <Row icon={MapPin}><TranslatedText textKey={"footer.address"} /></Row>
+            <Row icon={Phone}><EditSafeLink href={companyInfo.phoneHref}><CompanyText field="phone" /></EditSafeLink></Row>
+            <Row icon={Mail}><EditSafeLink href={companyInfo.emailHref}><CompanyText field="email" /></EditSafeLink></Row>
+            <Row icon={MapPin}><CompanyText field="address" /></Row>
           </div>
         </div>
       </section>

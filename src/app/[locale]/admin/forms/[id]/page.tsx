@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -231,19 +233,19 @@ export default function FormBuilderPage() {
       <AdminModalBody>
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Vraag (NL) *</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.3abf7766bae7150a" fallbackText={"Vraag (NL) *"} /></label>
             <Input value={questionForm.label_nl} onChange={(e) => setQuestionForm((f) => ({ ...f, label_nl: e.target.value }))} placeholder="Beschrijf het probleem..." required />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Vraag (EN)</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.5bac0ce747741e28" fallbackText={"Vraag (EN)"} /></label>
             <Input value={questionForm.label_en} onChange={(e) => setQuestionForm((f) => ({ ...f, label_en: e.target.value }))} placeholder="Describe the problem..." />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Vraag (DE)</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.d7761ef556b65272" fallbackText={"Vraag (DE)"} /></label>
             <Input value={questionForm.label_de} onChange={(e) => setQuestionForm((f) => ({ ...f, label_de: e.target.value }))} placeholder="Beschreiben Sie das Problem..." />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Type</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.b4143758bbb983cd" fallbackText={"Type"} /></label>
             <AdminSelect value={questionForm.type} onChange={(v) => setQuestionForm((f) => ({ ...f, type: v }))}>
               {QUESTION_TYPES.map((qt) => <option key={qt.value} value={qt.value}>{qt.label}</option>)}
             </AdminSelect>
@@ -251,7 +253,7 @@ export default function FormBuilderPage() {
           {TYPE_NEEDS_OPTIONS.has(questionForm.type) ? (
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">
-                Opties (één per regel, formaat: <code>waarde|label NL</code>)
+                <TranslatedText textKey="siteCopy.9ba3aa45347b4a3f" fallbackText={"Opties (één per regel, formaat: "} /><code><TranslatedText textKey="siteCopy.a27c67d40f920410" fallbackText={"waarde|label NL"} /></code>)
               </label>
               <textarea
                 className="input-base w-full font-mono text-xs"
@@ -264,22 +266,21 @@ export default function FormBuilderPage() {
           ) : null}
           {questionForm.type === 'number' || questionForm.type === 'currency' ? (
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Eenheid (bijv. %, kg, m)</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.67f5a1e5807977d4" fallbackText={"Eenheid (bijv. %, kg, m)"} /></label>
               <Input value={questionForm.unit} onChange={(e) => setQuestionForm((f) => ({ ...f, unit: e.target.value }))} placeholder="%" />
             </div>
           ) : null}
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Helptext (NL)</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.1d2693f451f89920" fallbackText={"Helptext (NL)"} /></label>
             <Input value={questionForm.help_nl} onChange={(e) => setQuestionForm((f) => ({ ...f, help_nl: e.target.value }))} placeholder="Extra uitleg bij de vraag..." />
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={questionForm.required} onChange={(e) => setQuestionForm((f) => ({ ...f, required: e.target.checked }))} />
-            Verplicht
-          </label>
+            <TranslatedText textKey="siteCopy.ebdf1eb2b09900f2" fallbackText={"Verplicht"} /></label>
         </div>
       </AdminModalBody>
       <AdminModalFooter>
-        <Button variant="outline" size="sm" type="button" onClick={() => { setShowAddQuestion(false); setEditQuestion(null); setQuestionForm(EMPTY_QUESTION); }}>Annuleren</Button>
+        <Button variant="outline" size="sm" type="button" onClick={() => { setShowAddQuestion(false); setEditQuestion(null); setQuestionForm(EMPTY_QUESTION); }}><TranslatedText textKey="siteCopy.a14f3f7e6f76d344" fallbackText={"Annuleren"} /></Button>
         <Button variant="gold" size="sm" type="submit" disabled={loading || !questionForm.label_nl.trim()}>
           {loading ? 'Opslaan...' : 'Opslaan'}
         </Button>
@@ -297,7 +298,7 @@ export default function FormBuilderPage() {
             {tmpl ? <Badge tone={statusTone(tmpl.status)}>{statusLabel(tmpl.status)}</Badge> : null}
             <Link href={`/${locale}/admin/forms`}>
               <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                {t('adminNew.common.back')}
+                {<TranslatedText textKey={'adminNew.common.back'} />}
               </Button>
             </Link>
           </div>
@@ -321,8 +322,7 @@ export default function FormBuilderPage() {
               action={
                 editMeta ? null : (
                   <Button size="sm" variant="outline" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={() => setEditMeta(true)}>
-                    Bewerken
-                  </Button>
+                    <TranslatedText textKey="siteCopy.a50a8380c968b565" fallbackText={"Bewerken"} /></Button>
                 )
               }
             >
@@ -330,66 +330,65 @@ export default function FormBuilderPage() {
                 <form onSubmit={onSaveMeta} className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-3">
                     <div>
-                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Naam NL *</label>
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.2d95b36b09909e6b" fallbackText={"Naam NL *"} /></label>
                       <Input value={metaForm.name_nl} onChange={(e) => setMetaForm((f) => ({ ...f, name_nl: e.target.value }))} required />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Naam EN</label>
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.48fcb71a27d93f5f" fallbackText={"Naam EN"} /></label>
                       <Input value={metaForm.name_en} onChange={(e) => setMetaForm((f) => ({ ...f, name_en: e.target.value }))} />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Naam DE</label>
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.e9354d5656be875b" fallbackText={"Naam DE"} /></label>
                       <Input value={metaForm.name_de} onChange={(e) => setMetaForm((f) => ({ ...f, name_de: e.target.value }))} />
                     </div>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Status</label>
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.2b6146be5ee176f3" fallbackText={"Status"} /></label>
                       <AdminSelect value={metaForm.status} onChange={(v) => setMetaForm((f) => ({ ...f, status: v }))}>
-                        <option value="draft">Concept</option>
-                        <option value="active">Actief</option>
-                        <option value="archived">Gearchiveerd</option>
+                        <option value="draft"><TranslatedText textKey="siteCopy.e042e63a20eb6c92" fallbackText={"Concept"} inline={false} /></option>
+                        <option value="active"><TranslatedText textKey="siteCopy.a6fbae3305f836b1" fallbackText={"Actief"} inline={false} /></option>
+                        <option value="archived"><TranslatedText textKey="siteCopy.d7096684c425b1c0" fallbackText={"Gearchiveerd"} inline={false} /></option>
                       </AdminSelect>
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400">Categorie</label>
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.69fb3fcb8108d174" fallbackText={"Categorie"} /></label>
                       <AdminSelect value={metaForm.category} onChange={(v) => setMetaForm((f) => ({ ...f, category: v }))}>
-                        <option value="stalling">Stalling</option>
-                        <option value="inspection">Inspectie</option>
-                        <option value="handover">Overdracht</option>
-                        <option value="crane">Kraanwerk</option>
-                        <option value="repair">Reparatie</option>
-                        <option value="general">Algemeen</option>
+                        <option value="stalling"><TranslatedText textKey="siteCopy.e654d8fba017a03a" fallbackText={"Stalling"} inline={false} /></option>
+                        <option value="inspection"><TranslatedText textKey="siteCopy.2c5f77cdddca0de7" fallbackText={"Inspectie"} inline={false} /></option>
+                        <option value="handover"><TranslatedText textKey="siteCopy.f55f7b9f74492a85" fallbackText={"Overdracht"} inline={false} /></option>
+                        <option value="crane"><TranslatedText textKey="siteCopy.1395a2adf8c6b6a9" fallbackText={"Kraanwerk"} inline={false} /></option>
+                        <option value="repair"><TranslatedText textKey="siteCopy.07fa009aeadaad7c" fallbackText={"Reparatie"} inline={false} /></option>
+                        <option value="general"><TranslatedText textKey="siteCopy.74fce06c99208137" fallbackText={"Algemeen"} inline={false} /></option>
                       </AdminSelect>
                     </div>
                   </div>
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={metaForm.offline_enabled} onChange={(e) => setMetaForm((f) => ({ ...f, offline_enabled: e.target.checked }))} />
-                    Offline beschikbaar (PWA / geen internet nodig)
-                  </label>
+                    <TranslatedText textKey="siteCopy.11e7f9bc556c946b" fallbackText={"Offline beschikbaar (PWA / geen internet nodig)"} /></label>
                   <div className="flex gap-2">
                     <Button type="submit" variant="gold" size="sm" disabled={updateTemplate.loading} leftIcon={<Save className="h-3.5 w-3.5" />}>
                       {updateTemplate.loading ? 'Opslaan...' : 'Opslaan'}
                     </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => setEditMeta(false)}>Annuleren</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setEditMeta(false)}><TranslatedText textKey="siteCopy.a14f3f7e6f76d344" fallbackText={"Annuleren"} /></Button>
                   </div>
                 </form>
               ) : (
                 <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">NL</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.a5dfacda7407229d" fallbackText={"NL"} /></div>
                     <div className="font-medium">{tmpl.name_json?.nl || '—'}</div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">EN</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.9605ee38871c8d7e" fallbackText={"EN"} /></div>
                     <div className="font-medium text-navy-600">{tmpl.name_json?.en || '—'}</div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">DE</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.d00496e0580e7d58" fallbackText={"DE"} /></div>
                     <div className="font-medium text-navy-600">{tmpl.name_json?.de || '—'}</div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400">Offline</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-navy-400"><TranslatedText textKey="siteCopy.d1d5540bf692e7ef" fallbackText={"Offline"} /></div>
                     <div className="font-medium">{tmpl.offline_enabled ? 'Ja' : 'Nee'}</div>
                   </div>
                 </div>
@@ -403,15 +402,14 @@ export default function FormBuilderPage() {
               className="mt-5"
               action={
                 <Button size="sm" variant="gold" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={() => setShowAddQuestion(true)}>
-                  Vraag toevoegen
-                </Button>
+                  <TranslatedText textKey="siteCopy.ee95b39b0874ed23" fallbackText={"Vraag toevoegen"} /></Button>
               }
             >
               {questions.length === 0 ? (
                 <EmptyState
                   title="Geen vragen"
                   message="Voeg vragen toe om dit formulier compleet te maken."
-                  action={<Button variant="gold" size="sm" onClick={() => setShowAddQuestion(true)}>Eerste vraag toevoegen</Button>}
+                  action={<Button variant="gold" size="sm" onClick={() => setShowAddQuestion(true)}><TranslatedText textKey="siteCopy.32e396f0040c9aac" fallbackText={"Eerste vraag toevoegen"} /></Button>}
                 />
               ) : (
                 <div className="space-y-2">
@@ -426,7 +424,7 @@ export default function FormBuilderPage() {
                           <span className="text-xs font-bold text-navy-400">#{idx + 1}</span>
                           <span className="font-semibold text-navy-900">{q.label_json?.nl ?? '—'}</span>
                           {q.label_json?.en ? <span className="text-xs text-navy-400">/ {q.label_json.en}</span> : null}
-                          {q.required ? <Badge tone="warning">Verplicht</Badge> : null}
+                          {q.required ? <Badge tone="warning"><TranslatedText textKey="siteCopy.ebdf1eb2b09900f2" fallbackText={"Verplicht"} /></Badge> : null}
                           <Badge tone="navy">{QUESTION_TYPES.find((t) => t.value === q.type)?.label ?? q.type}</Badge>
                           {q.unit ? <span className="text-xs text-navy-500">[{q.unit}]</span> : null}
                         </div>

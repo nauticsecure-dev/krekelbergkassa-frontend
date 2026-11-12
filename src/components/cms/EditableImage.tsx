@@ -19,6 +19,7 @@ interface EditableImageProps {
   /** Hardcoded source used until a CMS image is uploaded. */
   fallbackSrc: string;
   defaultStyle?: ImageStyle;
+  sizes?: string; priority?: boolean;
 }
 
 /**
@@ -36,7 +37,7 @@ export function EditableImage({
   className,
   alt,
   fallbackSrc,
-  defaultStyle,
+  defaultStyle, sizes, priority,
 }: EditableImageProps) {
   const { isCmsEditing, retainCmsDrafts, getMedia, isPageReady } = useCms();
   const { t } = useIntl();
@@ -53,18 +54,19 @@ export function EditableImage({
     stickyCmsSrc.current ||
     (pageReady ? fallbackSrc : null);
 
-  const altText = block?.alt ?? alt ?? '';
+  const altText = block?.decorative ? '' : block?.alt ?? alt ?? '';
   const focal = block?.focal_point ?? { x: 50, y: 50 };
   const overlay = block?.overlay ?? 0;
   const imageStyle = { ...defaultStyle, ...block?.image_style };
-  const alignedFocal = imageStyle.alignment ? {x: imageStyle.alignment === 'left' ? 0 : imageStyle.alignment === 'right' ? 100 : 50, y: focal.y} : focal;
 
-  const editable = isCmsEditing;
+  // Capture the opening revision only after the current locale has loaded.
+  const editable = isCmsEditing && pageReady;
 
   return (
     <>
       <span
         data-cms-block={blockKey}
+        data-cms-image
         className={cn(
           'group/cms relative block overflow-hidden',
           !src && 'bg-navy-950',
@@ -81,10 +83,13 @@ export function EditableImage({
           // eslint-disable-next-line @next/next/no-img-element
           <CmsImage
             src={src}
+            sizes={sizes ?? (blockKey.includes('.hero.') ? '100vw' : '(max-width: 767px) 100vw, 50vw')} priority={priority ?? blockKey.includes('.hero.')}
+            rotation={block?.rotation} mobileRotation={block?.mobile_rotation}
+            adjustmentsBaked={block?.adjustments_baked} mobileAdjustmentsBaked={block?.mobile_adjustments_baked}
             alt={altText}
             title={block?.seo_title}
             className={cn('h-full w-full object-cover', editable && 'pointer-events-none')}
-            focal={alignedFocal}
+            focal={focal}
             crop={block?.crop_data}
             srcSet={block?.src_set}
             mobileSrc={block?.mobile_image_url}
@@ -93,16 +98,8 @@ export function EditableImage({
             mobileFocal={block?.mobile_focal_point}
             dimensions={block?.image_dimensions}
             mobileDimensions={block?.mobile_image_dimensions}
-            filter={`brightness(${imageStyle.brightness ?? 100}%) contrast(${imageStyle.contrast ?? 100}%) saturate(${imageStyle.saturation ?? 100}%)`}
-          />
-        ) : null}
-        {imageStyle.gradient && imageStyle.gradient !== 'none' && <span aria-hidden className="pointer-events-none absolute inset-0"
-          style={{background: `linear-gradient(to ${imageStyle.gradient}, rgba(8,19,38,${imageStyle.gradient_start ?? .9}), rgba(8,19,38,${imageStyle.gradient_middle ?? ((imageStyle.gradient_start ?? .9) + (imageStyle.gradient_end ?? .35)) / 2}), rgba(8,19,38,${imageStyle.gradient_end ?? .35}))`}} />}
-        {overlay > 0 ? (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{ backgroundColor: `rgba(8, 19, 38, ${overlay})` }}
+            imageStyle={imageStyle}
+            overlay={overlay}
           />
         ) : null}
 

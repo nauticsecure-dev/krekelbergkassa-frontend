@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import { Camera, X } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
@@ -89,7 +91,7 @@ export function BarcodeScannerModal({
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-base font-semibold text-navy-900">
             <Camera className="h-5 w-5 text-marine-600" />
-            {t('adminNew.scanner.title')}
+            {<TranslatedText textKey={'adminNew.scanner.title'} />}
           </div>
           <button
             type="button"
@@ -121,13 +123,13 @@ export function BarcodeScannerModal({
           </p>
         ) : (
           <p className="mt-3 text-center text-xs text-navy-500">
-            {starting ? t('adminNew.scanner.starting') : t('adminNew.scanner.hint')}
+            {starting ? <TranslatedText textKey={'adminNew.scanner.starting'} /> : <TranslatedText textKey={'adminNew.scanner.hint'} />}
           </p>
         )}
 
         <div className="mt-4 flex justify-end">
           <Button variant="ghost" onClick={onClose}>
-            {t('adminNew.common.close')}
+            {<TranslatedText textKey={'adminNew.common.close'} />}
           </Button>
         </div>
       </div>

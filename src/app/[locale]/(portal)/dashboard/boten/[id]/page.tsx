@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -12,6 +14,9 @@ import {
   Ship,
   Warehouse,
 } from 'lucide-react';
+import { BoatPhoto } from '@/components/portal/BoatPhoto';
+import { useBoatPhotoVersion } from '@/lib/hooks/useBoatPhotoVersion';
+import type { PortalBoat } from '@/lib/api-types';
 import { PortalPageHeader } from '@/components/portal/PortalShell';
 import {
   PortalContent,
@@ -34,7 +39,8 @@ export default function PortalBoatDossierPage() {
   const id = String(params.id);
   const dateLocale = intlLocale(locale);
 
-  const dossier = useQuery([id], () => portalService.boatDossier(id));
+  const photoVersion = useBoatPhotoVersion();
+  const dossier = useQuery([id, photoVersion], () => portalService.boatDossier(id));
   const workOrdersQuery = useQuery([id, 'work-orders'], () =>
     portalService.boatWorkOrders(id).catch(() => [] as Row[])
   );
@@ -71,7 +77,7 @@ export default function PortalBoatDossierPage() {
         rightSlot={
           <Link href={`/${locale}/dashboard/boten`}>
             <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              {t('adminNew.common.back')}
+              {<TranslatedText textKey={'adminNew.common.back'} />}
             </Button>
           </Link>
         }
@@ -108,6 +114,7 @@ export default function PortalBoatDossierPage() {
       />
 
       <PortalContent>
+        {Boolean(data.boat) && <div className="aspect-[16/7] overflow-hidden rounded-xl"><BoatPhoto boat={data.boat as PortalBoat} /></div>}
         {dossier.loading ? <LoadingState label={t('adminNew.common.loading')} variant="cards" /> : null}
         {!dossier.loading && dossier.error ? (
           <ErrorState message={dossier.error} onRetry={() => void dossier.refetch()} />

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -118,10 +120,9 @@ function AcceptDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
       <div className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl">
-        <h2 className="mb-2 text-base font-bold text-navy-900">Werkopdracht accepteren</h2>
+        <h2 className="mb-2 text-base font-bold text-navy-900"><TranslatedText textKey="siteCopy.b5940c89d1d346b1" fallbackText={"Werkopdracht accepteren"} /></h2>
         <p className="mb-4 text-sm text-navy-600">
-          Bevestig dat u akkoord gaat met de uitgevoerde werkzaamheden.
-        </p>
+          <TranslatedText textKey="siteCopy.71d9b7da5f23454d" fallbackText={"Bevestig dat u akkoord gaat met de uitgevoerde werkzaamheden."} /></p>
         <textarea
           placeholder="Optionele opmerking…"
           value={note}
@@ -137,8 +138,7 @@ function AcceptDialog({
             onClick={onCancel}
             disabled={loading}
           >
-            Annuleren
-          </Button>
+            <TranslatedText textKey="siteCopy.def2f7e6111ce018" fallbackText={"Annuleren"} /></Button>
           <Button
             size="sm"
             className="flex-1"
@@ -146,8 +146,7 @@ function AcceptDialog({
             disabled={loading}
           >
             <CheckCircle2 className="mr-1.5 h-4 w-4" />
-            Accepteren
-          </Button>
+            <TranslatedText textKey="siteCopy.9daeca4987440c65" fallbackText={"Accepteren"} /></Button>
         </div>
       </div>
     </div>
@@ -263,8 +262,7 @@ export default function PortalWorkOrderDetailPage() {
                   {order.customer_accepted_at ? (
                     <Badge tone="success">
                       <CheckCircle2 className="mr-1 h-3 w-3" />
-                      Geaccepteerd
-                    </Badge>
+                      <TranslatedText textKey="siteCopy.992f6747b1ec8f68" fallbackText={"Geaccepteerd"} /></Badge>
                   ) : null}
                 </div>
                 <PortalDetailGrid
@@ -301,7 +299,7 @@ export default function PortalWorkOrderDetailPage() {
                     // Item 29: deep link to specific invoice
                     <Link href={`/${locale}/dashboard/facturen/${invoiceId}`}>
                       <Button variant="outline" size="sm" leftIcon={<Receipt className="h-4 w-4" />}>
-                        {t('adminNew.portal.workOrders.viewInvoice')}
+                        {<TranslatedText textKey={'adminNew.portal.workOrders.viewInvoice'} />}
                       </Button>
                     </Link>
                   ) : null}
@@ -312,8 +310,7 @@ export default function PortalWorkOrderDetailPage() {
                       onClick={() => setShowAccept(true)}
                       leftIcon={<CheckCircle2 className="h-4 w-4" />}
                     >
-                      Accepteren
-                    </Button>
+                      <TranslatedText textKey="siteCopy.9daeca4987440c65" fallbackText={"Accepteren"} /></Button>
                   ) : null}
                 </div>
               </div>
@@ -322,7 +319,7 @@ export default function PortalWorkOrderDetailPage() {
             {/* Item 28 + 31: photos with extended folders and lightbox */}
             <PortalSectionCard title={t('adminNew.workOrders.detail.photos')} icon={ImageIcon}>
               {photos.length === 0 ? (
-                <p className="py-4 text-sm text-navy-500">{t('adminNew.workOrders.detail.noPhotos')}</p>
+                <p className="py-4 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.detail.noPhotos'} />}</p>
               ) : (
                 <div className="space-y-4">
                   {PHOTO_FOLDERS.map((folder) => {
@@ -361,7 +358,7 @@ export default function PortalWorkOrderDetailPage() {
               {timelineData.loading ? (
                 <LoadingState label="Activiteit laden…" variant="list" />
               ) : timelineRows.length === 0 ? (
-                <p className="py-4 text-sm text-navy-500">{t('adminNew.workOrders.detail.noActivity')}</p>
+                <p className="py-4 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.detail.noActivity'} />}</p>
               ) : (
                 <ol className="space-y-2">
                   {timelineRows.map((a, i) => (
@@ -387,7 +384,7 @@ export default function PortalWorkOrderDetailPage() {
               href={`/${locale}/dashboard/werkorders`}
               className="inline-flex text-sm font-semibold text-marine-700 hover:text-marine-800"
             >
-              {t('adminNew.workOrders.detail.back')}
+              {<TranslatedText textKey={'adminNew.workOrders.detail.back'} />}
             </Link>
           </div>
         ) : null}

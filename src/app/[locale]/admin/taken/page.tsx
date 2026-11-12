@@ -1,8 +1,11 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
+import { WerfcanvasLink } from '@/components/admin/WerfcanvasLink';
 import { CheckCircle2, ClipboardList } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { adminRecordHref } from '@/config/admin-routes';
@@ -27,6 +30,9 @@ import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { useAuth } from '@/lib/auth-context';
+import { usePermission } from '@/lib/permissions';
+import { YardQuickPhoto } from '@/components/admin/yard/YardQuickPhoto';
 
 const STATUS_GROUPS = ['open', 'in_progress', 'done'] as const;
 
@@ -52,14 +58,21 @@ const priorityTone = (p: string) => {
 };
 
 export default function TakenPage() {
+  const { user } = useAuth();
+  const { can } = usePermission();
+  const [photoTask, setPhotoTask] = React.useState<{ id: string; boatId: string; title: string }>();
   const { locale, t } = useIntl();
   const { push } = useToast();
   const dateLocale = intlLocale(locale);
   const [statusFilter, setStatusFilter] = React.useState('');
   const [page, setPage] = React.useState(1);
+  const [taskId, setTaskId] = React.useState<string>();
+  React.useEffect(() => {
+    setTaskId(new URLSearchParams(window.location.search).get('task_id') || undefined);
+  }, []);
 
-  const tasks = useQuery(['tasks', statusFilter, page], () =>
-    tasksService.list({ status: statusFilter || undefined, page, per_page: 25 })
+  const tasks = useQuery(['tasks', statusFilter, page, taskId], () =>
+    tasksService.list({ status: statusFilter || undefined, page, per_page: 25, task_id: taskId })
   );
   const completeTask = useMutation((id: string) => tasksService.complete(id));
 
@@ -106,12 +119,12 @@ export default function TakenPage() {
     <AdminTable minWidth={780}>
       <AdminTableHead>
         <tr>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.title', { defaultValue: 'Taak' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.customer', { defaultValue: 'Klant' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.entity', { defaultValue: 'Entiteit' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.priority', { defaultValue: 'Prioriteit' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.dueAt', { defaultValue: 'Deadline' })}</AdminTableHeaderCell>
-          <AdminTableHeaderCell>{t('adminNew.tasks.columns.status', { defaultValue: 'Status' })}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.title'} vars={{ defaultValue: 'Taak' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.customer'} vars={{ defaultValue: 'Klant' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.entity'} vars={{ defaultValue: 'Entiteit' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.priority'} vars={{ defaultValue: 'Prioriteit' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.dueAt'} vars={{ defaultValue: 'Deadline' }} />}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.tasks.columns.status'} vars={{ defaultValue: 'Status' }} />}</AdminTableHeaderCell>
           <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
         </tr>
       </AdminTableHead>
@@ -149,7 +162,12 @@ export default function TakenPage() {
                 </Badge>
               </AdminTableCell>
               <AdminTableCell className="text-right">
-                {!isDone ? (
+                {r.entity_type === 'boat' && user?.id && r.assigned_to_user_id === user.id && r.status !== 'cancelled' && can('planning.write') && (
+                  <Button variant="ghost" size="sm" onClick={() => setPhotoTask({ id: String(r.id), boatId: String(r.entity_id), title: String(r.title) })}><TranslatedText textKey="yardDaily.photo" /></Button>
+                )}
+                {r.entity_type === 'yard_move' ? (
+                  <WerfcanvasLink locale={locale} moves className="text-sm font-semibold text-marine-700"><TranslatedText textKey="siteCopy.5f144d1035d9c31e" fallbackText={"Werfcanvas"} /></WerfcanvasLink>
+                ) : !isDone ? (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -157,11 +175,11 @@ export default function TakenPage() {
                     disabled={completeTask.loading}
                     onClick={() => void onComplete(String(r.id))}
                   >
-                    {t('adminNew.tasks.complete', { defaultValue: 'Afronden' })}
+                    {<TranslatedText textKey={'adminNew.tasks.complete'} vars={{ defaultValue: 'Afronden' }} />}
                   </Button>
                 ) : (
                   <span className="text-xs text-navy-400">
-                    {t('adminNew.tasks.done', { defaultValue: 'Afgerond' })}
+                    {<TranslatedText textKey={'adminNew.tasks.done'} vars={{ defaultValue: 'Afgerond' }} />}
                   </span>
                 )}
               </AdminTableCell>
@@ -174,6 +192,7 @@ export default function TakenPage() {
 
   return (
     <>
+      {photoTask && <YardQuickPhoto boat={{ id: photoTask.boatId, name: photoTask.title }} taskId={photoTask.id} taskType="boat" onClose={() => setPhotoTask(undefined)} />}
       <AdminPageHeader
         title={t('adminNew.tasks.title', { defaultValue: 'Taken' })}
         subtitle={t('adminNew.tasks.subtitle', { defaultValue: 'Automatisch aangemaakte opvolgtaken vanuit herinneringen' })}

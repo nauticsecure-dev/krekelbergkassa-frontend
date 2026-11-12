@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST="{\"components\\\\admin\\\\BarcodeScannerModal.tsx -> @zxing/browser\":{\"id\":\"components\\\\admin\\\\BarcodeScannerModal.tsx -> @zxing/browser\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_zxing_browser_esm_index_js.js\"]}}"

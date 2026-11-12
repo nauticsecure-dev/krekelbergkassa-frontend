@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -160,7 +162,7 @@ export default function BundlesPage() {
         subtitle={t('adminNew.bundles.subtitle')}
         rightSlot={
           <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={openNew}>
-            {t('adminNew.bundles.new')}
+            {<TranslatedText textKey={'adminNew.bundles.new'} />}
           </Button>
         }
       />
@@ -184,8 +186,8 @@ export default function BundlesPage() {
               <AdminTable minWidth={640}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.bundles.columns.name')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.bundles.columns.items')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.bundles.columns.name'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.bundles.columns.items'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -222,7 +224,7 @@ export default function BundlesPage() {
                       <AdminTableCell>
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="sm" onClick={() => openEdit(b)}>
-                            {t('adminNew.common.edit')}
+                            {<TranslatedText textKey={'adminNew.common.edit'} />}
                           </Button>
                           <Button
                             variant="ghost"
@@ -230,7 +232,7 @@ export default function BundlesPage() {
                             leftIcon={<Trash2 className="h-3.5 w-3.5" />}
                             onClick={() => setDeleteTarget(b.id)}
                           >
-                            {t('adminNew.common.delete')}
+                            {<TranslatedText textKey={'adminNew.common.delete'} />}
                           </Button>
                         </div>
                       </AdminTableCell>
@@ -259,7 +261,7 @@ export default function BundlesPage() {
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.bundles.fields.color')}
+                {<TranslatedText textKey={'adminNew.bundles.fields.color'} />}
               </label>
               <div className="flex flex-wrap items-center gap-2">
                 <input
@@ -284,7 +286,7 @@ export default function BundlesPage() {
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.bundles.fields.description')}
+                {<TranslatedText textKey={'adminNew.bundles.fields.description'} />}
               </label>
               <textarea
                 className="input-base min-h-20 w-full"
@@ -296,7 +298,7 @@ export default function BundlesPage() {
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <label className="text-sm font-medium text-navy-800">
-                  {t('adminNew.bundles.fields.items')}
+                  {<TranslatedText textKey={'adminNew.bundles.fields.items'} />}
                 </label>
                 <Button
                   type="button"
@@ -306,12 +308,12 @@ export default function BundlesPage() {
                   disabled={!products.length}
                   onClick={addItem}
                 >
-                  {t('adminNew.bundles.addItem')}
+                  {<TranslatedText textKey={'adminNew.bundles.addItem'} />}
                 </Button>
               </div>
               {form.items.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-navy-200 bg-sand-50/50 px-3 py-4 text-center text-sm text-navy-500">
-                  {t('adminNew.bundles.noItems')}
+                  {<TranslatedText textKey={'adminNew.bundles.noItems'} />}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -363,10 +365,10 @@ export default function BundlesPage() {
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createBundle.loading || updateBundle.loading}>
-              {t('adminNew.common.save')}
+              {<TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>

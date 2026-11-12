@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import {
   BarChart3,
@@ -61,7 +63,7 @@ export function RoleTabs({ value, onChange, className }: Props) {
   return (
     <div className={cn('space-y-2', className)}>
       <div className="text-xs font-semibold uppercase tracking-widest text-navy-500">
-        {t('loginRole.question')}
+        {<TranslatedText textKey={'loginRole.question'} />}
       </div>
 
       <div
@@ -87,13 +89,13 @@ export function RoleTabs({ value, onChange, className }: Props) {
               )}
             >
               <Icon className="h-3.5 w-3.5" />
-              <span>{t(r.labelKey)}</span>
+              <span>{<TranslatedText textKey={r.labelKey} />}</span>
             </button>
           );
         })}
       </div>
 
-      <p className="px-1 text-xs text-navy-500">{t(active.descKey)}</p>
+      <p className="px-1 text-xs text-navy-500">{<TranslatedText textKey={active.descKey} />}</p>
     </div>
   );
 }

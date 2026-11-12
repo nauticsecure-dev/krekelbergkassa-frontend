@@ -3,10 +3,106 @@ import fs from 'node:fs';
 
 const nl = JSON.parse(fs.readFileSync('src/i18n/messages/nl.json', 'utf8'));
 const origin = process.env.JOURNEY_TEST_URL ?? 'http://localhost:3030';
+
+test('T01 T02 T03 T09 T10 T22 customer magic-link navigation and recovery', async ({ page, context }, testInfo) => {
+  const appointmentId = '00000000-0000-4000-8000-000000000025';
+  const appointment = '/nl/dashboard/afspraken?appointment=' + appointmentId;
+  const invoiceId = '00000000-0000-4000-8000-000000000027';
+  const customer = { id: 'customer-fixture', name: 'Portal fixture', email: 'portal@example.test', preferred_locale: 'nl-NL' };
+  const verified: string[] = [];
+  await page.route('**/api/**', async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/verify-magic-link')) {
+      const { token } = route.request().postDataJSON();
+      verified.push(token);
+      if (token === 'network-failure') return route.abort('failed');
+      return route.fulfill({ json: { portal_token: 'portal-fixture', customer } });
+    }
+    if (path.endsWith('/portal/me')) {
+      expect(route.request().headers().authorization).toBe('Bearer portal-fixture');
+      return route.fulfill({ json: { customer } });
+    }
+    if (path.endsWith('/portal/appointments')) {
+      const filter = new URL(route.request().url()).searchParams.get('appointment');
+      return route.fulfill({ json: { appointments: filter === appointmentId ? [{
+        id: appointmentId, appointment_date: '2026-11-24', start_time: '09:00',
+        end_time: '09:30', service_codes: ['crane-out'], duration_minutes: 30,
+        status: 'confirmed', customer_notes: 'Requested appointment fixture',
+        invoice_id: invoiceId, payment_status: 'partially_refunded',
+      }] : [], total: filter === appointmentId ? 1 : 0 } });
+    }
+    if (path.endsWith(`/portal/invoices/${invoiceId}`)) {
+      expect(route.request().headers().authorization).toBe('Bearer portal-fixture');
+      return route.fulfill({ json: { id: invoiceId, invoice_number: 'CRANE-TEST-1', status: 'partially_paid',
+        total_amount_euros: 125, outstanding_cents: 10000, is_fully_paid: false, created_at: '2026-11-24' } });
+    }
+    return route.fulfill({ json: { data: [], items: [], blocks: [], settings: {} } });
+  });
+
+  await page.goto('/nl/portal/verify?token=first-link&returnTo=' + encodeURIComponent(appointment), { waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveURL(origin + appointment);
+  await expect(page.getByRole('heading', { name: nl.adminNew.portal.appointments.title }).first()).toBeVisible();
+  await expect(page.getByText('Requested appointment fixture')).toBeVisible();
+  expect(verified).toEqual(['first-link']);
+  expect((await context.cookies()).find((cookie) => cookie.name === 'krek_portal_session')?.value).toBe('portal-fixture');
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: nl.adminNew.portal.appointments.title }).first()).toBeVisible();
+  await expect(page.getByText('Betaalstatus: Gedeeltelijk terugbetaald')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('portal-after-magic-link.png') });
+  await page.getByRole('link', { name: 'Bekijk uw factuur en betaalstatus' }).click();
+  await expect(page.getByRole('dialog').getByRole('heading', { name: 'CRANE-TEST-1' })).toBeVisible();
+
+  await page.goto('/nl/portal/verify?token=second-link&returnTo=' + encodeURIComponent('//example.test/evil'), { waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveURL(/\/nl\/feed$/);
+  await page.goto('/nl/portal/verify?token=network-failure', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: nl.verify.failed })).toBeVisible();
+  await expect(page.getByRole('link', { name: nl.verify.backToLogin })).toBeVisible();
+});
 type Event = { event: string; event_id?: string; request_id?: string; session_id?: string; anonymous_session_id?: string;
   http_status?: number; metadata?: Record<string, unknown> };
 
-async function bookingFixture(page: Page, status = 201, options: { photosFail?: boolean; trackingFails?: boolean; networkFails?: boolean; slotsFail?: boolean; googleScript?: string } = {}) {
+test('T04 T14 T15 T18 T20 customer password login and shared private photo on mobile', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const customer = { id: 'photo-customer', name: 'Portal fixture', email: 'portal@example.test', preferred_locale: 'nl-NL' };
+  const photoPath = '/api/v1/portal/boats/fixture-boat/photos/fixture-image';
+  const boats = [
+    { id: 'fixture-boat', name: 'Fixture Aquila', type: 'sail', photo_file_id: 'fixture-image', photo_url: photoPath },
+    { id: 'no-image', name: 'Fixture zonder foto', type: 'sail', photo_file_id: null, photo_url: null },
+  ];
+  const image = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=', 'base64');
+  let privateRequests = 0;
+  await page.route('**/api/**', async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    if (path.endsWith('/auth/customer/login')) {
+      expect(request.postDataJSON().email).toBe(customer.email);
+      return route.fulfill({ json: { portal_token: 'photo-portal-session', customer } });
+    }
+    if (path.endsWith('/portal/me')) return route.fulfill({ json: { customer } });
+    if (path.endsWith('/portal/boats')) return route.fulfill({ json: boats });
+    if (path === photoPath) {
+      expect(request.headers().authorization).toBe('Bearer photo-portal-session');
+      privateRequests += 1;
+      return route.fulfill({ body: image, contentType: 'image/png' });
+    }
+    return route.fulfill({ json: { data: [], items: [], blocks: [], settings: {} } });
+  });
+
+  const destination = '/nl/dashboard/boten';
+  await page.goto('/nl/login?returnTo=' + encodeURIComponent(destination));
+  await page.locator('#email').fill(customer.email);
+  await page.locator('#password').fill('fixture-password-2026!');
+  await page.locator('form button[type=submit]').click();
+  await expect(page).toHaveURL(new RegExp(destination + '$'));
+  await expect(page.getByRole('img', { name: 'Fixture Aquila' })).toHaveJSProperty('naturalWidth', 1);
+  await expect(page.getByRole('button', { name: /Fixture zonder foto/ }).locator('svg.lucide-ship')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('my-boats-mobile.png') });
+  await page.goto('/nl/feed');
+  await expect(page.getByRole('img', { name: 'Fixture Aquila' })).toHaveJSProperty('naturalWidth', 1);
+  expect(privateRequests).toBeGreaterThanOrEqual(2);
+});
+
+async function bookingFixture(page: Page, status = 201, options: { photosFail?: boolean; trackingFails?: boolean; networkFails?: boolean; missingIdOnce?: boolean; slotsFail?: boolean; googleScript?: string } = {}) {
   const events: Event[] = [];
   const requests: Array<{ id?: string; body: Record<string, unknown> }> = [];
   const photoRequests: string[] = [];
@@ -47,6 +143,8 @@ async function bookingFixture(page: Page, status = 201, options: { photosFail?: 
     if (url.pathname.endsWith('/booking/slots')) return route.fulfill({ status: options.slotsFail ? 503 : 200, json: options.slotsFail
       ? { message: 'Availability fixture unavailable' } : { is_open: true, slots: ['09:00', '10:00'], duration_minutes: 30 } });
     if (url.pathname.endsWith('/booking/appointment-fixture/photos')) {
+      expect(request.postData()).toContain('name="submission_key"');
+      expect(request.postData()).toContain(String(requests[0].body.submission_key));
       photoRequests.push(url.pathname);
       return route.fulfill({ status: options.photosFail && photoRequests.length === 1 ? 500 : 200, json: { uploaded: 1 } });
     }
@@ -54,7 +152,12 @@ async function bookingFixture(page: Page, status = 201, options: { photosFail?: 
       requests.push({ id: request.headers()['x-request-id'], body: request.postDataJSON() });
       if (options.networkFails) return route.abort('failed');
       return route.fulfill({ status, headers: { 'X-Request-Id': request.headers()['x-request-id'] }, json: status === 201
-        ? { appointment_id: 'appointment-fixture', status: 'pending' }
+        ? {
+          appointment_id: options.missingIdOnce && requests.length === 1 ? undefined : 'appointment-fixture',
+          reference: 'CRANE-REFERENCE',
+          status: 'pending',
+          notification_status: 'pending',
+        }
         : { message: 'Booking fixture unavailable', ...(status === 422 ? { errors: { email: ['Email is invalid'] } } : {}) } });
     }
     return route.fulfill({ json: { data: [], items: [], blocks: [], settings: {} } });
@@ -142,6 +245,71 @@ async function submit(page: Page) {
   await page.getByRole('dialog').getByRole('button', { name: nl.crane.submit, exact: true }).click();
 }
 
+test('T25 local customer journey joins booking photos login appointment boats replacement and Feed', async ({ page }, testInfo) => {
+  const fixture = await bookingFixture(page);
+  await completeForm(page);
+  await page.getByPlaceholder('Aquila', { exact: true }).fill('Journey Aquila');
+  await page.locator('input[type=file]').setInputFiles({ name: 'boat.png', mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64') });
+  await submit(page);
+  await expect(page.getByRole('heading', { name: 'Uw aanvraag is verzonden' })).toBeVisible();
+  await expect.poll(() => fixture.photoRequests.length).toBe(1);
+  expect(fixture.requests).toHaveLength(1);
+
+  const customer = { id: 'journey-customer', name: 'PrivateFirstName', email: 'private@example.test', preferred_locale: 'nl-NL' };
+  const destination = '/nl/dashboard/afspraken?appointment=appointment-fixture';
+  let photo = 'booking-photo';
+  const boat = () => ({ id: 'journey-boat', name: 'Journey Aquila', type: 'motor', length_cm: 890,
+    photo_file_id: photo, photo_url: `/api/v1/portal/boats/journey-boat/photos/${photo}` });
+  const imageReads: string[] = [];
+  await page.route('**/api/**', async route => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    if (path.endsWith('/customer/magic-link')) {
+      expect(request.postDataJSON()).toMatchObject({ email: customer.email, returnTo: destination });
+      return route.fulfill({ json: { success: true } });
+    }
+    if (path.endsWith('/verify-magic-link')) return route.fulfill({ json: { portal_token: 'journey-session', customer } });
+    if (path.includes('/portal/')) expect(request.headers().authorization).toBe('Bearer journey-session');
+    if (path.endsWith('/portal/me')) return route.fulfill({ json: { customer } });
+    if (path.endsWith('/portal/appointments')) return route.fulfill({ json: { appointments: [{
+      id: 'appointment-fixture', boat_id: 'journey-boat', appointment_date: '2027-01-12', start_time: '09:00',
+      status: 'pending_manual_review', duration_minutes: 30, customer_notes: 'Journey appointment',
+    }], total: 1 } });
+    if (path.endsWith('/journey-boat/photo')) { photo = 'replacement-photo'; return route.fulfill({ json: boat() }); }
+    if (path.includes('/journey-boat/photos/')) {
+      imageReads.push(path);
+      return route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#17334d"/></svg>' });
+    }
+    if (path.endsWith('/portal/boats')) return route.fulfill({ json: [boat()] });
+    if (path.endsWith('/portal/timeline')) return route.fulfill({ json: { items: [{ id: 'journey-event', type: 'appointment_requested',
+      title: 'Journey booking received', boat: { id: 'journey-boat', name: 'Journey Aquila' },
+      related_type: 'appointment', related_id: 'appointment-fixture', created_at: new Date().toISOString() }], pagination: {} } });
+    return route.fallback();
+  });
+  await page.goto('/nl/login?returnTo=' + encodeURIComponent(destination));
+  await page.getByRole('button', { name: nl.login.withoutPassword, exact: true }).click();
+  await page.locator('#email').fill(customer.email);
+  const sent = page.waitForResponse(response => response.url().endsWith('/customer/magic-link'));
+  await page.locator('form button[type=submit]').click();
+  await sent;
+  // The mailbox action is simulated; backend tests verify the real email URL and token contract.
+  await page.goto('/nl/portal/verify?token=journey-link&returnTo=' + encodeURIComponent(destination));
+  await expect(page.getByRole('dialog')).toContainText('Journey appointment');
+  await page.goto('/nl/dashboard/boten');
+  await expect(page.getByRole('img', { name: 'Journey Aquila' })).toHaveJSProperty('naturalWidth', 640);
+  expect(imageReads.some(path => path.endsWith('/booking-photo'))).toBe(true);
+  await page.getByRole('button', { name: /Journey Aquila/ }).click();
+  await page.locator('input[type=file]').setInputFiles({ name: 'replacement.png', mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64') });
+  await expect.poll(() => imageReads.some(path => path.endsWith('/replacement-photo'))).toBe(true);
+  await page.goto('/nl/feed');
+  await expect(page.getByText('Journey booking received', { exact: true })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Journey Aquila' }).first()).toHaveJSProperty('naturalWidth', 640);
+  expect(photo).toBe('replacement-photo');
+  await page.screenshot({ path: testInfo.outputPath('complete-customer-journey.png'), fullPage: true });
+});
+
 test('blocked booking is visible, correlated, and sends no booking request or form values', async ({ page }) => {
   const fixture = await bookingFixture(page);
   await page.getByRole('button', { name: nl.crane.submit, exact: true }).click();
@@ -172,6 +340,22 @@ for (const status of [422, 500]) {
     await expect(page.getByRole('alert').first()).toBeVisible();
   });
 }
+
+test('crane submission requires a saved appointment and retries with the same key', async ({ page }) => {
+  const fixture = await bookingFixture(page, 201, { missingIdOnce: true });
+  await completeForm(page);
+  await submit(page);
+  await expect(page.getByRole('alert').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Uw aanvraag is verzonden' })).toHaveCount(0);
+  await submit(page);
+  await expect(page.getByRole('heading', { name: 'Uw aanvraag is verzonden' })).toBeVisible();
+  await expect(page.getByText('Referentie CRANE-REFERENCE')).toBeVisible();
+  await expect(page.getByText('Ontvangstbevestiging: In wachtrij')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Bekijk uw afspraken' })).toHaveAttribute('href', /appointment=appointment-fixture$/);
+  expect(fixture.requests).toHaveLength(2);
+  expect(fixture.requests[0].body.submission_key).toMatch(/^[0-9a-f-]{36}$/i);
+  expect(fixture.requests[1].body.submission_key).toBe(fixture.requests[0].body.submission_key);
+});
 
 test('photo retry preserves the successful appointment and tracking retries reuse event IDs', async ({ page }) => {
   const fixture = await bookingFixture(page, 201, { photosFail: true, trackingFails: true });
@@ -209,6 +393,50 @@ test('failed availability is visible and correlated before a customer can submit
   const failed = fixture.events.find((event) => event.event === 'api_failed' && event.http_status === 503)!;
   expect(fixture.events).toContainEqual(expect.objectContaining({ event: 'frontend_error_shown', request_id: failed.request_id }));
   expect(fixture.requests).toHaveLength(0);
+});
+
+test('crane rejection email opens the same appointment after staff sign-in', async ({ page }, testInfo) => {
+  const id = '00000000-0000-4000-8000-000000000026';
+  const link = `/nl/admin/planning?tab=afspraken&appointment_id=${id}&decision=reject`;
+  const user = { id: 'crane-admin', name: 'Crane Admin', email: 'crane-admin@example.test', role: 'super_admin', permissions: ['*'] };
+  const appointment = {
+    id, status: 'pending_manual_review', public_request: true, appointment_date: '2026-11-17',
+    start_time: '09:00', end_time: '09:30', service_codes: ['crane-out'],
+    boat: { name: 'Crane fixture boat' }, customer: { name: 'Fixture customer' },
+  };
+  let rejected = false;
+  await page.route('**/api/**', async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    if (path.endsWith('/auth/login')) return route.fulfill({ json: { token: 'crane-admin-token', user } });
+    if (path.endsWith('/auth/me')) return route.fulfill({ json: user });
+    if (path.endsWith(`/appointments/${id}/reject`)) {
+      expect(request.headers().authorization).toBe('Bearer crane-admin-token');
+      expect(request.postDataJSON()).toEqual({ reason: 'Geen kraancapaciteit.' });
+      rejected = true;
+      return route.fulfill({ json: { ...appointment, status: 'rejected' } });
+    }
+    if (path.endsWith(`/appointments/${id}`)) return route.fulfill({ json: { ...appointment, status: rejected ? 'rejected' : appointment.status } });
+    return route.fulfill({ json: { data: [], items: [], blocks: [], settings: {} } });
+  });
+  await page.goto(link);
+  const loginUrl = new URL(page.url());
+  expect(loginUrl.pathname).toBe('/nl/login');
+  expect(loginUrl.searchParams.get('returnTo')).toBe(link);
+  expect(loginUrl.searchParams.get('role')).toBe('manager');
+  await page.locator('#email').fill(user.email);
+  await page.locator('#password').fill('fixture-password-2026!');
+  await page.locator('form button[type=submit]').click();
+  await expect(page).toHaveURL(/appointment_id=.+&decision=reject/);
+  const dialog = page.getByRole('dialog').filter({ hasText: 'Crane fixture boat' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'NEE — Afwijzen' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: nl.adminNew.appointments.confirm, exact: true })).toHaveCount(0);
+  await dialog.getByRole('textbox').fill('Geen kraancapaciteit.');
+  await page.screenshot({ path: testInfo.outputPath('authenticated-rejection.png') });
+  await dialog.getByRole('button', { name: 'NEE — Afwijzen' }).click();
+  await expect.poll(() => rejected).toBe(true);
+  await expect(dialog.getByRole('button', { name: 'NEE — Afwijzen' })).toHaveCount(0);
 });
 
 test('admin journey shows grouped failures, intent and funnels without viewport overflow', async ({ page }, testInfo) => {

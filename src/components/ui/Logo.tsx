@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Image from 'next/image';
 import { Pencil } from 'lucide-react';
@@ -110,11 +112,9 @@ export function Logo({ variant = 'dark', className, editable = true }: LogoProps
       </span>
       <div className="leading-tight">
         <div className={cn('font-display text-lg font-semibold tracking-tight', fg)}>
-          KREKELBERG
-        </div>
+          <TranslatedText textKey="siteCopy.b8f9d7da1e4dab25" fallbackText={"KREKELBERG"} /></div>
         <div className={cn('-mt-0.5 text-[10px] font-medium uppercase tracking-[0.18em]', sub)}>
-          Nautic · Jachtmakelaar
-        </div>
+          <TranslatedText textKey="siteCopy.76ce4f6e432acef7" fallbackText={"Nautic · Jachtmakelaar"} /></div>
       </div>
     </div>
   );

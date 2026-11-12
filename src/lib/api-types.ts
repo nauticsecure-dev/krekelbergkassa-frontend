@@ -77,6 +77,8 @@ export interface Boat {
   registration_number: string | null;
   length_cm: number | null;
   width_cm: number | null;
+  draft_cm?: number | null;
+  weight_kg?: number | null;
   length_metres: number | null;
   surface_area_cm2: number | null;
   location_code: string | null;
@@ -276,6 +278,9 @@ export interface Product {
   aliases?: string[] | null;
   product_group_id?: string | null;
   group?: { code?: string; name?: string; color?: string } | null;
+  pricing_type?: string;
+  has_pricing_rules?: boolean;
+  pricing_rules?: PricingRule[];
   show_in_kassa?: boolean;
   show_in_public?: boolean;
   show_in_calculator?: boolean;
@@ -289,6 +294,10 @@ export interface Product {
 }
 
 export interface PricingRule {
+  revision: number;
+  draft_id?: string;
+  publication_status?: string;
+  included_quantities?: Record<string, number>;
   included_service_codes?: string[];
   duration_minutes?: number;
   id: string;
@@ -317,6 +326,8 @@ export interface PricingRule {
 }
 
 export interface Sale {
+  paid_amount_cents?: number;
+  outstanding_cents?: number;
   id: string;
   invoice_number: string;
   idempotency_key: string;
@@ -363,6 +374,8 @@ export interface KassaCheckoutLine {
 }
 
 export interface KassaCheckoutResponse {
+  paid_amount_cents?: number;
+  outstanding_cents?: number;
   sale_id?: string;
   invoice_id?: string;
   invoice_number?: string;
@@ -377,6 +390,7 @@ export interface KassaCheckoutResponse {
   device_id?: string;
   created_at?: string;
   payment?: KassaCheckoutPayment | null;
+  pending_payments?: Array<{ id: string; method: string | null; checkout_url: string | null; amount_cents: number }>;
   checkout_url?: string | null;
   payment_url?: string | null;
   url?: string | null;
@@ -527,6 +541,8 @@ export interface AppSettings {
     enabled_methods: string[];
     pos_methods: string[];
     online_methods: string[];
+    crane_mode?: 'none' | 'optional' | 'required';
+    crane_notifications?: { recipients: string[]; from: string | null; reply_to: string | null };
     key_configured: boolean;
   };
   locales: {
@@ -539,6 +555,7 @@ export interface AppSettings {
 }
 
 export interface PortalCustomer {
+  has_password?: boolean;
   id: string;
   customer_number: string;
   name: string;
@@ -615,9 +632,11 @@ export interface PortalBoat {
   registration_number: string;
   length_cm: number | string;
   width_cm: number | string;
+  weight_kg?: number | string | null;
   length_metres: number | string;
   location_code: string;
-  photo_url: string;
+  photo_url: string | null;
+  photo_file_id?: string | null;
 }
 
 export interface Appointment {
@@ -635,6 +654,16 @@ export interface Appointment {
   location_extra_minutes: number;
   status: string;
   approval_type: string;
+  public_request?: boolean;
+  payment_status?: string;
+  payment_mode?: 'none' | 'optional' | 'required' | null;
+  requires_approved_quote?: boolean;
+  initial_payment_cents?: number | null;
+  notification_deliveries?: { id: number; type: string; recipient: string; status: string; attempts: number; sent_at?: string | null }[];
+  audit_history?: { id: string; action: string; actor_type: string; created_at: string }[];
+  invoice?: { status: string; total_amount: number; currency: string; payments?: {
+    id: string; status: string; amount: number; currency: string; refunded_cents: number; provider_payment_id?: string;
+  }[] } | null;
   cancellation_reason: string | null;
   invoice_id: string | null;
   customer_notes: string | null;

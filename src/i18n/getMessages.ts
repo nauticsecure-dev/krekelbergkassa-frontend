@@ -7,7 +7,7 @@ import en from './messages/en.json';
 import de from './messages/de.json';
 import fr from './messages/fr.json';
 
-const all: Record<Locale, Record<string, unknown>> = { nl, en, de, fr: fr as typeof nl };
+const all: Record<Locale, Record<string, unknown>> = { nl, en, de, fr };
 
 export type Messages = typeof nl;
 

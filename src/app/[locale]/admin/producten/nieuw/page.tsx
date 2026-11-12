@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -59,7 +61,7 @@ export default function NewProductPage() {
         rightSlot={
           <Link href={`/${locale}/admin/producten`}>
             <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              {t('adminNew.products.backToList')}
+              {<TranslatedText textKey={'adminNew.products.backToList'} />}
             </Button>
           </Link>
         }
@@ -71,11 +73,11 @@ export default function NewProductPage() {
             <div className="mt-6 flex justify-end gap-2 border-t border-navy-100 pt-4">
               <Link href={`/${locale}/admin/producten`}>
                 <Button type="button" variant="ghost">
-                  {t('adminNew.common.cancel')}
+                  {<TranslatedText textKey={'adminNew.common.cancel'} />}
                 </Button>
               </Link>
               <Button type="submit" variant="gold" leftIcon={<Plus className="h-4 w-4" />} disabled={createProduct.loading}>
-                {t('adminNew.common.save')}
+                {<TranslatedText textKey={'adminNew.common.save'} />}
               </Button>
             </div>
           </AdminSectionCard>

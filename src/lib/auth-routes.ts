@@ -40,7 +40,9 @@ export function isProtectedPath(pathname: string): boolean {
 export function loginPath(locale: string, returnTo?: string): string {
   const base = `/${locale}/login`;
   if (!returnTo) return base;
-  return `${base}?returnTo=${encodeURIComponent(returnTo)}`;
+  const query = new URLSearchParams({ returnTo });
+  if (isAdminPath(returnToParts(returnTo).pathname)) query.set('role', 'manager');
+  return `${base}?${query}`;
 }
 
 /** Use in middleware — pathname and query must be set separately on NextURL. */
@@ -49,6 +51,7 @@ export function applyLoginRedirect(url: URL, locale: string, returnTo?: string) 
   url.search = '';
   if (returnTo) {
     url.searchParams.set('returnTo', returnTo);
+    if (isAdminPath(returnToParts(returnTo).pathname)) url.searchParams.set('role', 'manager');
   }
 }
 
@@ -57,8 +60,12 @@ export function isSafeReturnTo(returnTo: string | null): returnTo is string {
   if (!returnTo.startsWith('/') || returnTo.startsWith('//')) return false;
   if (returnTo.includes('\\') || returnTo.includes('://')) return false;
   const path = returnTo.split(/[?#]/)[0] ?? '';
-  if (!path.startsWith('/') || path.startsWith('//') || path.includes('@')) return false;
-  return true;
+  return /^\/(?:[a-z]{2}\/)?(?:dashboard|feed|planning|admin)(?:\/[a-z0-9_-]+)*\/?$/i.test(path)
+    && !/[\u0000-\u001f\u007f]/.test(returnTo);
+}
+
+export function customerReturnTo(value: string | null): string | undefined {
+  return isSafeReturnTo(value) && isPortalPath(returnToParts(value).pathname) ? value : undefined;
 }
 
 /** Split a same-origin return path into pathname and search (`?view=week&date=...`). */

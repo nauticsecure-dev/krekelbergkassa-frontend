@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
@@ -491,12 +493,12 @@ export default function CalculatorPage() {
               disabled={exporting}
             >
               {exporting
-                ? t('adminNew.calculator.records.exporting')
-                : t('adminNew.calculator.records.exportCsv')}
+                ? <TranslatedText textKey={'adminNew.calculator.records.exporting'} />
+                : <TranslatedText textKey={'adminNew.calculator.records.exportCsv'} />}
             </Button>
             <Link href={`/${locale}/admin/calculator/pricing`}>
               <Button variant="outline" size="sm" leftIcon={<Settings className="h-4 w-4" />}>
-                {t('adminNew.calculator.editPricing')}
+                {<TranslatedText textKey={'adminNew.calculator.editPricing'} />}
               </Button>
             </Link>
           </div>
@@ -546,7 +548,7 @@ export default function CalculatorPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.calculator.contractType')}
+                {<TranslatedText textKey={'adminNew.calculator.contractType'} />}
               </label>
               <SearchSelect
                 className="input-base"
@@ -563,20 +565,20 @@ export default function CalculatorPage() {
 
           <div className="mt-4">
             <div className="mb-2 text-sm font-medium text-navy-800">
-              {t('adminNew.calculator.services')}
+              {<TranslatedText textKey={'adminNew.calculator.services'} />}
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               {serviceCatalog.error ? (
                 <p role="status" className="text-sm text-red-700">
-                  {t('adminNew.calculator.catalogUnavailable', { defaultValue: 'Diensten konden niet worden geladen.' })}
+                  {<TranslatedText textKey={'adminNew.calculator.catalogUnavailable'} vars={{ defaultValue: 'Diensten konden niet worden geladen.' }} />}
                 </p>
               ) : serviceCatalog.loading ? (
                 <p role="status" className="text-sm text-navy-500">
-                  {t('adminNew.common.loading')}
+                  {<TranslatedText textKey={'adminNew.common.loading'} />}
                 </p>
               ) : availableServiceIds.length === 0 ? (
                 <p role="status" className="text-sm text-navy-500">
-                  {t('adminNew.calculator.noAvailableServices', { defaultValue: 'Er zijn geen diensten beschikbaar voor de calculator.' })}
+                  {<TranslatedText textKey={'adminNew.calculator.noAvailableServices'} vars={{ defaultValue: 'Er zijn geen diensten beschikbaar voor de calculator.' }} />}
                 </p>
               ) : availableServiceIds.map((service) => {
                 const active = selectedServices.includes(service);
@@ -601,7 +603,7 @@ export default function CalculatorPage() {
 
           <div className="mt-4">
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.calculator.customerOptional')}
+              {<TranslatedText textKey={'adminNew.calculator.customerOptional'} />}
             </label>
             <SearchSelect
               className="input-base"
@@ -622,7 +624,7 @@ export default function CalculatorPage() {
               <div className="flex items-center gap-2 text-sm text-navy-800">
                 <Pencil className="h-4 w-4 text-marine-700" />
                 <span>
-                  {t('adminNew.calculator.records.editingRecord')}{' '}
+                  {<TranslatedText textKey={'adminNew.calculator.records.editingRecord'} />}{' '}
                   <span className="font-semibold">{editingRecordId}</span>
                 </span>
               </div>
@@ -632,7 +634,7 @@ export default function CalculatorPage() {
                 leftIcon={<X className="h-4 w-4" />}
                 onClick={startNewRecord}
               >
-                {t('adminNew.calculator.records.newRecord')}
+                {<TranslatedText textKey={'adminNew.calculator.records.newRecord'} />}
               </Button>
             </div>
           ) : null}
@@ -645,29 +647,29 @@ export default function CalculatorPage() {
               disabled={calculate.loading || preview.loading || serviceCatalog.loading || !!serviceCatalog.error || availableServiceIds.length === 0}
             >
               {calculate.loading || preview.loading
-                ? t('adminNew.calculator.calculating')
-                : t('adminNew.calculator.calculate')}
+                ? <TranslatedText textKey={'adminNew.calculator.calculating'} />
+                : <TranslatedText textKey={'adminNew.calculator.calculate'} />}
             </Button>
             <Button
               variant="outline"
               leftIcon={<Receipt className="h-4 w-4" />}
               onClick={() => setCreateConfirm('quote')}
             >
-              {t('adminNew.calculator.createQuote')}
+              {<TranslatedText textKey={'adminNew.calculator.createQuote'} />}
             </Button>
             <Button
               variant="outline"
               leftIcon={<FilePlus2 className="h-4 w-4" />}
               onClick={() => setCreateConfirm('invoice')}
             >
-              {t('adminNew.calculator.createInvoice')}
+              {<TranslatedText textKey={'adminNew.calculator.createInvoice'} />}
             </Button>
             <Button
               variant="ghost"
               leftIcon={<UserPlus className="h-4 w-4" />}
               onClick={() => (window.location.href = `/${locale}/admin/klanten`)}
             >
-              {t('adminNew.calculator.newCustomer')}
+              {<TranslatedText textKey={'adminNew.calculator.newCustomer'} />}
             </Button>
           </div>
         </AdminSectionCard>
@@ -680,7 +682,7 @@ export default function CalculatorPage() {
         >
           {!result ? (
             <div className="text-sm text-navy-500">
-              {t('adminNew.calculator.result.empty')}
+              {<TranslatedText textKey={'adminNew.calculator.result.empty'} />}
             </div>
           ) : (
             <div className="space-y-3 text-sm">
@@ -691,14 +693,14 @@ export default function CalculatorPage() {
                 </div>
               ))}
               <div className="rounded-xl border border-marine-200/80 bg-gradient-to-r from-marine-50 to-white px-3 py-2">
-                <div className="text-xs text-navy-500">{t('adminNew.calculator.result.totalPrice')}</div>
+                <div className="text-xs text-navy-500">{<TranslatedText textKey={'adminNew.calculator.result.totalPrice'} />}</div>
                 <div className="text-xl font-semibold text-navy-900">
                   {formatCurrency(resolveTotal, intlLocale(locale))}
                 </div>
               </div>
               <details className="rounded-xl border border-navy-100 p-3">
                 <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-navy-500">
-                  {t('adminNew.calculator.result.rawApi')}
+                  {<TranslatedText textKey={'adminNew.calculator.result.rawApi'} />}
                 </summary>
                 <pre className="mt-2 max-h-64 overflow-auto text-xs text-navy-700">
                   {JSON.stringify(result, null, 2)}
@@ -774,7 +776,7 @@ export default function CalculatorPage() {
           <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-navy-500">
-                {t('adminNew.calculator.records.createdRange')}
+                {<TranslatedText textKey={'adminNew.calculator.records.createdRange'} />}
               </label>
               <div className="flex gap-2">
                 <Input
@@ -793,7 +795,7 @@ export default function CalculatorPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-navy-500">
-                {t('adminNew.calculator.records.updatedRange')}
+                {<TranslatedText textKey={'adminNew.calculator.records.updatedRange'} />}
               </label>
               <div className="flex gap-2">
                 <Input
@@ -812,7 +814,7 @@ export default function CalculatorPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-navy-500">
-                {t('adminNew.calculator.records.totalRange')}
+                {<TranslatedText textKey={'adminNew.calculator.records.totalRange'} />}
               </label>
               <div className="flex gap-2">
                 <Input
@@ -851,7 +853,7 @@ export default function CalculatorPage() {
                   disabled={bulkRecords.loading}
                   onClick={() => void runBulkAction('duplicate')}
                 >
-                  {t('adminNew.calculator.records.duplicate')}
+                  {<TranslatedText textKey={'adminNew.calculator.records.duplicate'} />}
                 </Button>
                 <Button
                   variant="outline"
@@ -860,7 +862,7 @@ export default function CalculatorPage() {
                   disabled={bulkRecords.loading}
                   onClick={() => setBulkConfirm('archive')}
                 >
-                  {t('adminNew.calculator.records.archive')}
+                  {<TranslatedText textKey={'adminNew.calculator.records.archive'} />}
                 </Button>
                 <Button
                   variant="ghost"
@@ -868,14 +870,14 @@ export default function CalculatorPage() {
                   leftIcon={<X className="h-4 w-4" />}
                   onClick={() => setSelectedIds([])}
                 >
-                  {t('adminNew.calculator.records.clearSelection')}
+                  {<TranslatedText textKey={'adminNew.calculator.records.clearSelection'} />}
                 </Button>
               </div>
             </div>
           ) : null}
 
           {(records.data?.data ?? []).length === 0 ? (
-            <div className="text-sm text-navy-500">{t('adminNew.calculator.records.empty')}</div>
+            <div className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.calculator.records.empty'} />}</div>
           ) : (
             <AdminTableCard
               footer={
@@ -900,31 +902,31 @@ export default function CalculatorPage() {
                     </AdminTableHeaderCell>
                     <AdminTableHeaderCell>
                       <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('number')}>
-                        {t('adminNew.calculator.records.number')} {sortIcon('number')}
+                        {<TranslatedText textKey={'adminNew.calculator.records.number'} />} {sortIcon('number')}
                       </button>
                     </AdminTableHeaderCell>
                     <AdminTableHeaderCell>
                       <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('created_at')}>
-                        {t('adminNew.calculator.records.date')} {sortIcon('created_at')}
+                        {<TranslatedText textKey={'adminNew.calculator.records.date'} />} {sortIcon('created_at')}
                       </button>
                     </AdminTableHeaderCell>
                     <AdminTableHeaderCell>
                       <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('updated_at')}>
-                        {t('adminNew.calculator.records.updatedAt', { defaultValue: 'Bijgewerkt' })} {sortIcon('updated_at')}
+                        {<TranslatedText textKey={'adminNew.calculator.records.updatedAt'} vars={{ defaultValue: 'Bijgewerkt' }} />} {sortIcon('updated_at')}
                       </button>
                     </AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.calculator.records.customer')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.calculator.records.service')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.calculator.records.customer'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.calculator.records.service'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>
                       <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('status')}>
-                        {t('adminNew.calculator.records.status')} {sortIcon('status')}
+                        {<TranslatedText textKey={'adminNew.calculator.records.status'} />} {sortIcon('status')}
                       </button>
                     </AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.calculator.records.documents')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.calculator.records.createdBy')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.calculator.records.documents'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.calculator.records.createdBy'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>
                       <button type="button" className="flex items-center gap-1 hover:text-navy-900" onClick={() => toggleSort('total_amount')}>
-                        {t('adminNew.calculator.records.total')} {sortIcon('total_amount')}
+                        {<TranslatedText textKey={'adminNew.calculator.records.total'} />} {sortIcon('total_amount')}
                       </button>
                     </AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
@@ -977,10 +979,10 @@ export default function CalculatorPage() {
                         <AdminTableCell>
                           <div className="flex gap-1">
                             {rec.has_quote ? (
-                              <Badge tone="navy">{t('adminNew.calculator.records.quote')}</Badge>
+                              <Badge tone="navy">{<TranslatedText textKey={'adminNew.calculator.records.quote'} />}</Badge>
                             ) : null}
                             {rec.has_invoice ? (
-                              <Badge tone="success">{t('adminNew.calculator.records.invoice')}</Badge>
+                              <Badge tone="success">{<TranslatedText textKey={'adminNew.calculator.records.invoice'} />}</Badge>
                             ) : null}
                             {!rec.has_quote && !rec.has_invoice ? (
                               <span className="text-xs text-navy-400">—</span>
@@ -996,7 +998,7 @@ export default function CalculatorPage() {
                         <AdminTableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex flex-wrap justify-end gap-1">
                             <Button variant="ghost" size="sm" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void loadRecord(id)}>
-                              {t('adminNew.calculator.records.edit', { defaultValue: 'Bewerken' })}
+                              {<TranslatedText textKey={'adminNew.calculator.records.edit'} vars={{ defaultValue: 'Bewerken' }} />}
                             </Button>
                             {actions.create_quote !== false && !rec.has_quote ? (
                               <Button
@@ -1004,7 +1006,7 @@ export default function CalculatorPage() {
                                 size="sm"
                                 onClick={() => void createFromRecord(id, 'quote')}
                               >
-                                {t('adminNew.calculator.records.createQuote')}
+                                {<TranslatedText textKey={'adminNew.calculator.records.createQuote'} />}
                               </Button>
                             ) : null}
                             {actions.create_invoice !== false && !rec.has_invoice ? (
@@ -1013,7 +1015,7 @@ export default function CalculatorPage() {
                                 size="sm"
                                 onClick={() => void createFromRecord(id, 'invoice')}
                               >
-                                {t('adminNew.calculator.records.createInvoice')}
+                                {<TranslatedText textKey={'adminNew.calculator.records.createInvoice'} />}
                               </Button>
                             ) : null}
                             {actions.duplicate !== false ? (
@@ -1028,7 +1030,7 @@ export default function CalculatorPage() {
                                   )
                                 }
                               >
-                                {t('adminNew.calculator.records.duplicate')}
+                                {<TranslatedText textKey={'adminNew.calculator.records.duplicate'} />}
                               </Button>
                             ) : null}
                             {actions.archive !== false && String(rec.status) !== 'archived' ? (
@@ -1037,7 +1039,7 @@ export default function CalculatorPage() {
                                 size="sm"
                                 onClick={() => setArchiveTarget(id)}
                               >
-                                {t('adminNew.calculator.records.archive')}
+                                {<TranslatedText textKey={'adminNew.calculator.records.archive'} />}
                               </Button>
                             ) : null}
                           </div>

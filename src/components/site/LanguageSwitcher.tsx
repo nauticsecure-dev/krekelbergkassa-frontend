@@ -1,5 +1,7 @@
 "use client";
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Check, ChevronDown } from "lucide-react";
@@ -89,8 +91,7 @@ export function LanguageSwitcher({
       {open ? (
         <div className="anim-zoom absolute right-0 z-[999999999] mt-2 w-52 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-elev ring-1 ring-black/5">
           <div className="border-b border-navy-50 bg-sand-50/60 px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-navy-500">
-            Taal · Sprache · Language
-          </div>
+            <TranslatedText textKey="siteCopy.a71d24d101b7b76f" fallbackText={"Taal · Sprache · Language"} /></div>
           <ul role="listbox" className="py-1">
             {activeLocales.map((l) => {
               const active = l === locale;

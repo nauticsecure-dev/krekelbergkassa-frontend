@@ -7,7 +7,8 @@ import { cmsService } from '@/lib/services';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/ToastProvider';
-import { useCms, useCmsEditorOpen, type ContentBlock, type LocaleTag } from './CmsProvider';
+import { useCms, useCmsEditorOpen, type LocaleTag } from './CmsProvider';
+import { fieldSource } from './field-source';
 
 const PAGE = 'over-ons';
 const FIELDS = [
@@ -19,7 +20,7 @@ const fieldClass = 'w-full rounded-lg border border-navy-200 bg-white px-3 py-2 
 
 export function EditableHiswaCard() {
   const { t } = useIntl();
-  const { isCmsEditing, retainCmsDrafts, getText } = useCms();
+  const { isCmsEditing, retainCmsDrafts, getText, getContentBlock, canEdit, localeTag } = useCms();
   const [open, setOpen] = useCmsEditorOpen();
   const trigger = React.useRef<HTMLButtonElement>(null);
   return (
@@ -27,8 +28,8 @@ export function EditableHiswaCard() {
       <div data-cms-card="over-ons.hiswa" className={`mt-6 flex items-center gap-3 rounded-xl border border-navy-100 bg-sand-50/50 p-4 ${isCmsEditing ? 'outline-dashed outline-2 outline-gold-400/60' : ''}`}>
         <Award aria-hidden className="h-5 w-5 shrink-0 text-gold-600" />
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-navy-900">{getText(FIELDS[0].key, t('over.hiswaTitle'))}</div>
-          <div className="text-xs text-navy-500">{getText(FIELDS[1].key, t('over.hiswaDesc'))}</div>
+          <div {...fieldSource(FIELDS[0].key, localeTag, getContentBlock(FIELDS[0].key), canEdit)} className="text-sm font-semibold text-navy-900">{getText(FIELDS[0].key, t('over.hiswaTitle'))}</div>
+          <div {...fieldSource(FIELDS[1].key, localeTag, getContentBlock(FIELDS[1].key), canEdit)} className="text-xs text-navy-500">{getText(FIELDS[1].key, t('over.hiswaDesc'))}</div>
         </div>
         {isCmsEditing ? (
           <button ref={trigger} type="button" data-cms-edit aria-label={t('cms.editHiswa')} title={t('cms.editHiswa')}
@@ -45,12 +46,13 @@ export function EditableHiswaCard() {
 
 function HiswaEditor({ onClose }: { onClose: () => void }) {
   const { t } = useIntl();
-  const { localeTag, editorLocales, getText, saveText } = useCms();
+  const { localeTag, editorLocales, getText, saveTextBatch } = useCms();
   const { push, pushError } = useToast();
   const [active, setActive] = React.useState(localeTag);
   React.useEffect(() => { if (editorLocales.length && !editorLocales.includes(active)) setActive(editorLocales[0]); }, [active, editorLocales]);
   const [values, setValues] = React.useState<Draft>({});
   const [base, setBase] = React.useState<Draft>({});
+  const [revisions, setRevisions] = React.useState<Record<string, string | null>>({});
   const [loading, setLoading] = React.useState(true);
   const [failed, setFailed] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
@@ -63,15 +65,16 @@ function HiswaEditor({ onClose }: { onClose: () => void }) {
       [FIELDS[0].key]: getText(FIELDS[0].key, t('over.hiswaTitle')),
       [FIELDS[1].key]: getText(FIELDS[1].key, t('over.hiswaDesc')),
     };
-    void Promise.all(editorLocales.map(async (tag) => {
-      const response = await cmsService.pageContent(PAGE, tag) as { content_blocks?: ContentBlock[] };
-      const fields = Object.fromEntries(FIELDS.map(({ key }) => [key,
-        response.content_blocks?.find((block) => block.key === key)?.value ?? (tag === localeTag ? fallback[key] : ''),
-      ]));
-      return [tag, fields] as const;
-    })).then((entries) => {
+    void cmsService.contentBlocks(PAGE).then((response) => {
       if (cancelled) return;
-      const loaded = Object.fromEntries(entries);
+      const loaded = Object.fromEntries(editorLocales.map((tag) => [tag,
+        Object.fromEntries(FIELDS.map(({ key }) => [key,
+          response.data.find((block) => block.key === key)?.value_by_locale[tag] ?? (tag === localeTag ? fallback[key] : ''),
+        ])),
+      ]));
+      setRevisions(Object.fromEntries(FIELDS.map(({ key }) => [key,
+        response.data.find((block) => block.key === key)?.cms_revision ?? null,
+      ])));
       setValues(loaded);
       setBase(loaded);
     }).catch((error) => {
@@ -90,23 +93,17 @@ function HiswaEditor({ onClose }: { onClose: () => void }) {
     if (loading || failed || saving) return;
     setSaving(true);
     try {
-      for (const field of FIELDS) {
+      const blocks = FIELDS.map((field) => {
         const changed: Partial<Record<LocaleTag, string>> = {};
         for (const tag of editorLocales) {
           const value = values[tag]?.[field.key] ?? '';
           if (value !== (base[tag]?.[field.key] ?? '')) changed[tag] = value;
         }
-        if (!Object.keys(changed).length) continue;
-        await saveText(field.key, { page: PAGE, section: 'story', type: field.type, value_by_locale: changed });
-        // Track each successful field so a retry after a partial failure is safe.
-        setBase((previous) => {
-          const next = { ...previous };
-          for (const tag of editorLocales) {
-            if (changed[tag] !== undefined) next[tag] = { ...next[tag], [field.key]: changed[tag]! };
-          }
-          return next;
-        });
-      }
+        return { key: field.key, page: PAGE, section: 'story', type: field.type,
+          value_by_locale: changed, expected_revision: revisions[field.key] };
+      });
+      const changed = blocks.filter(block => Object.keys(block.value_by_locale).length);
+      if (changed.length) await saveTextBatch(changed);
       push({ tone: 'success', title: t('cms.saved') });
       onClose();
     } catch (error) {
@@ -137,7 +134,7 @@ function HiswaEditor({ onClose }: { onClose: () => void }) {
       </div>
       <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
         <Button variant="ghost" disabled={saving} onClick={onClose}>{t('cms.cancel')}</Button>
-        <Button variant="primary" disabled={busy || failed} onClick={save}>{t('cms.save')}</Button>
+        <Button variant="primary" disabled={busy || failed} onClick={save}>{t('cms.publish')}</Button>
       </div>
     </Modal>
   );

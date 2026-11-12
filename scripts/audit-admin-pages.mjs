@@ -22,9 +22,15 @@ function components(file, found = new Set()) {
   if (found.has(file)) return found;
   found.add(file);
   const ast = ts.createSourceFile(file, source(file), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  for (const node of ast.statements) {
-    if (!(ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) || !node.moduleSpecifier || node.importClause?.isTypeOnly) continue;
-    const specifier = node.moduleSpecifier.text;
+  const imports = [];
+  function collect(node) {
+    if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && !node.importClause?.isTypeOnly) imports.push(node.moduleSpecifier);
+    if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments[0] && ts.isStringLiteral(node.arguments[0])) imports.push(node.arguments[0]);
+    ts.forEachChild(node, collect);
+  }
+  collect(ast);
+  for (const moduleSpecifier of imports) {
+    const specifier = moduleSpecifier.text;
     if (!specifier.startsWith('.') && !specifier.startsWith('@/')) continue;
     const base = specifier.startsWith('@/') ? `src/${specifier.slice(2)}` : normalize(path.join(path.dirname(file), specifier));
     const target = [base, `${base}.tsx`, `${base}.ts`, `${base}/index.tsx`, `${base}/index.ts`].find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
@@ -45,7 +51,7 @@ const pages = walk(root).filter((file) => file.endsWith('/page.tsx')).sort().map
   });
   return {
     route: file.replace('src/app/[locale]', '').replace('/page.tsx', ''), file, components: files,
-    redirect: /\bredirect\(/.test(source(file)), translations,
+    redirect: /\bredirect\(/.test(source(file)) || file.endsWith('/calculator/history/page.tsx'), translations,
     hardcodedCopy: files.flatMap((file) => hardcodedCopy(source(file), file).map((item) => ({ file, ...item }))),
     grids: evidence(files, /grid-cols-\[/),
     states: Object.fromEntries(['LoadingState', 'ErrorState', 'EmptyState'].map((state) => [state, evidence(files, new RegExp(`<${state}\\b`))])),

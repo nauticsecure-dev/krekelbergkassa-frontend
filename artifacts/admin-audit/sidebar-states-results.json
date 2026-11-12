@@ -1,0 +1,419 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-audit.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/sidebar-states",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/sidebar-states-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node --v8-pool-size=1 scripts/admin-audit-server.cjs",
+      "env": {
+        "NEXT_DIST_DIR": ".next-admin-audit",
+        "NEXT_PUBLIC_API_URL": "/api",
+        "API_PROXY_TARGET": "http://127.0.0.1:9",
+        "RAYON_NUM_THREADS": "1",
+        "NEXT_FONT_GOOGLE_MOCKED_RESPONSES": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\fixtures\\journey-fonts.cjs"
+      },
+      "url": "http://localhost:3047/sw.js",
+      "timeout": 300000,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "admin-review.spec.ts",
+      "file": "admin-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "populated kassa POS, analytics charts and address grids stay inside the viewport [sidebar expanded]",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 181325,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                        "column": 91,
+                        "line": 244
+                      },
+                      "message": "Error: locator.click: Test timeout of 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Winkelmand/ })\u001b[22m\n\n\n  242 |     await page.screenshot({ path: testInfo.outputPath(`kassa-pos-${width}.png`), fullPage: true });\n  243 |   }\n> 244 |   await page.getByRole('button', { name: new RegExp(text('nl', 'adminNew.kassa.cart')) }).click();\n      |                                                                                           ^\n  245 |   await page.getByRole('button', { name: new RegExp(text('nl', 'adminNew.kassa.payNow')) }).click();\n  246 |   await expect(page.getByRole('dialog')).toContainText(text('nl', 'adminNew.kassa.pos.manualPin'));\n  247 |   await page.keyboard.press('Escape');\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:244:91"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:35:35.113Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-states\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-states\\admin-review-populated-kas-94eba--viewport-sidebar-expanded--admin-audit\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-81d84fb34aa60013bf5e",
+          "file": "admin-review.spec.ts",
+          "line": 157,
+          "column": 5
+        },
+        {
+          "title": "AdminSplitLayout start sidebar (cash close) holds populated history at lg and xl [sidebar expanded]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25514,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:38:40.464Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-fa791aa1159e95ec6c48",
+          "file": "admin-review.spec.ts",
+          "line": 286,
+          "column": 5
+        },
+        {
+          "title": "DocumentZoneEditor loaded zones and drag stay inside the viewport [sidebar expanded]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 26208,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:39:06.915Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-554665b010deff1b68eb",
+          "file": "admin-review.spec.ts",
+          "line": 316,
+          "column": 5
+        },
+        {
+          "title": "audit detail modal wraps long before/after values without page overflow [sidebar expanded]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28488,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:39:33.214Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-df11c95182c08f99d024",
+          "file": "admin-review.spec.ts",
+          "line": 365,
+          "column": 5
+        },
+        {
+          "title": "populated kassa POS, analytics charts and address grids stay inside the viewport [sidebar collapsed]",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 180907,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts",
+                        "column": 91,
+                        "line": 244
+                      },
+                      "message": "Error: locator.click: Test timeout of 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Winkelmand/ })\u001b[22m\n\n\n  242 |     await page.screenshot({ path: testInfo.outputPath(`kassa-pos-${width}.png`), fullPage: true });\n  243 |   }\n> 244 |   await page.setViewportSize({ width: 390, height: 1000 });\n      |                                                            ^\n  245 |   await page.getByRole('button', { name: new RegExp(text('nl', 'adminNew.kassa.cart')) }).click();\n  246 |   await page.getByRole('button', { name: new RegExp(text('nl', 'adminNew.kassa.payNow')) }).click();\n  247 |   await expect(page.getByRole('dialog')).toContainText(text('nl', 'adminNew.kassa.pos.manualPin'));\n    at C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\browser\\admin-review.spec.ts:244:91"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:40:01.888Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-states\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\sidebar-states\\admin-review-populated-kas-e23ac-viewport-sidebar-collapsed--admin-audit\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-dda55fd509f41ba5efff",
+          "file": "admin-review.spec.ts",
+          "line": 157,
+          "column": 5
+        },
+        {
+          "title": "AdminSplitLayout start sidebar (cash close) holds populated history at lg and xl [sidebar collapsed]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8024,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:43:05.095Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-22f0c1b442ffb31a2252",
+          "file": "admin-review.spec.ts",
+          "line": 286,
+          "column": 5
+        },
+        {
+          "title": "DocumentZoneEditor loaded zones and drag stay inside the viewport [sidebar collapsed]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10086,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:43:13.758Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-304a4e2d04a3e688f20a",
+          "file": "admin-review.spec.ts",
+          "line": 316,
+          "column": 5
+        },
+        {
+          "title": "audit detail modal wraps long before/after values without page overflow [sidebar collapsed]",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9646,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T17:43:23.903Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-8ef8861a2c5616c744e5",
+          "file": "admin-review.spec.ts",
+          "line": 365,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-09T17:35:21.612Z",
+    "duration": 589264.8019999999,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

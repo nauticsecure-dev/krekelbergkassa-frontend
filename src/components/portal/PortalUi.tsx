@@ -1,10 +1,11 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Badge } from '@/components/ui/Badge';
-import { useIntl } from '@/i18n/IntlProvider';
 
 export function PortalContent({
   children,
@@ -300,43 +301,41 @@ export function PortalModalFooter({ children }: { children: React.ReactNode }) {
 }
 
 export function AppointmentStatusBadge({ status, statusGeneric, tooltip }: { status: string; statusGeneric?: string | null; tooltip?: string }) {
-  const { t } = useIntl();
   // Trello #99: prefer the coarse status_generic bucket for colour when present;
   // the raw status string is exposed as a tooltip for yard staff who need detail.
   const normalized = (statusGeneric || status || '').toLowerCase();
   const title = tooltip ?? status;
   if (normalized.includes('confirm') || normalized.includes('approved')) {
-    return <Badge tone="success" dot><span title={title}>{t('adminNew.portal.appointments.statusConfirmed')}</span></Badge>;
+    return <Badge tone="success" dot><span title={title}>{<TranslatedText textKey={'adminNew.portal.appointments.statusConfirmed'} />}</span></Badge>;
   }
   if (normalized.includes('complete') || normalized.includes('done')) {
-    return <Badge tone="marine" dot><span title={title}>{t('adminNew.portal.appointments.statusCompleted')}</span></Badge>;
+    return <Badge tone="marine" dot><span title={title}>{<TranslatedText textKey={'adminNew.portal.appointments.statusCompleted'} />}</span></Badge>;
   }
   if (normalized.includes('cancel') || normalized.includes('no_show')) {
-    return <Badge tone="sand"><span title={title}>{t('adminNew.portal.appointments.statusCancelled')}</span></Badge>;
+    return <Badge tone="sand"><span title={title}>{<TranslatedText textKey={'adminNew.portal.appointments.statusCancelled'} />}</span></Badge>;
   }
   if (normalized.includes('progress') || normalized.includes('started') || normalized.includes('water') || normalized.includes('wash')) {
-    return <Badge tone="gold" dot><span title={title}>{t('adminNew.portal.appointments.statusInProgress')}</span></Badge>;
+    return <Badge tone="gold" dot><span title={title}>{<TranslatedText textKey={'adminNew.portal.appointments.statusInProgress'} />}</span></Badge>;
   }
   if (normalized.includes('pending') || normalized.includes('request') || normalized.includes('review')) {
-    return <Badge tone="warning" dot><span title={title}>{t('adminNew.portal.appointments.statusPending')}</span></Badge>;
+    return <Badge tone="warning" dot><span title={title}>{<TranslatedText textKey={'adminNew.portal.appointments.statusPending'} />}</span></Badge>;
   }
   return <Badge tone="navy"><span title={title}>{status}</span></Badge>;
 }
 
 export function ContractStatusBadge({ status }: { status: string }) {
-  const { t } = useIntl();
   const normalized = status.toLowerCase();
   if (normalized === 'active') {
-    return <Badge tone="success" dot>{t('adminNew.portal.stalling.statusActive')}</Badge>;
+    return <Badge tone="success" dot>{<TranslatedText textKey={'adminNew.portal.stalling.statusActive'} />}</Badge>;
   }
   if (normalized.includes('overdue')) {
-    return <Badge tone="danger" dot>{t('adminNew.status.overdue')}</Badge>;
+    return <Badge tone="danger" dot>{<TranslatedText textKey={'adminNew.status.overdue'} />}</Badge>;
   }
   if (normalized.includes('expir')) {
-    return <Badge tone="warning" dot>{t('adminNew.portal.stalling.statusExpiring')}</Badge>;
+    return <Badge tone="warning" dot>{<TranslatedText textKey={'adminNew.portal.stalling.statusExpiring'} />}</Badge>;
   }
   if (normalized.includes('cancel')) {
-    return <Badge tone="sand">{t('adminNew.status.cancelled')}</Badge>;
+    return <Badge tone="sand">{<TranslatedText textKey={'adminNew.status.cancelled'} />}</Badge>;
   }
   return <Badge tone="navy">{status}</Badge>;
 }

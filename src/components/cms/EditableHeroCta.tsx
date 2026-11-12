@@ -12,6 +12,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { useIntl } from '@/i18n/IntlProvider';
 import { cmsService } from '@/lib/services';
 import { initialEditorLocale, useCms, useCmsEditorOpen, type LocaleTag } from './CmsProvider';
+import { fieldSource } from './field-source';
 
 type CtaLinkType = 'internal' | 'external' | 'phone' | 'email' | 'anchor';
 type CtaStyle = 'primary' | 'secondary';
@@ -140,7 +141,7 @@ export function EditableHeroCta({
 }) {
   const { t, locale } = useIntl();
   const { push, pushError } = useToast();
-  const { isCmsEditing, retainCmsDrafts, localeTag, editorLocales, getText, saveText } = useCms();
+  const { isCmsEditing, retainCmsDrafts, localeTag, editorLocales, getText, getContentBlock, canEdit, saveTextBatch } = useCms();
   const configKey = `${blockKey}.link`;
   const labelKey = labelBlockKey ?? `${blockKey}.label`;
   const config = React.useMemo(
@@ -151,10 +152,13 @@ export function EditableHeroCta({
   const [open, setOpen] = useCmsEditorOpen();
   const [saving, setSaving] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [loadFailed, setLoadFailed] = React.useState(false);
+  const [revisions, setRevisions] = React.useState<Record<string, string | null>>({});
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
   const [labels, setLabels] = React.useState<Partial<Record<LocaleTag, string>>>({});
   const [baseLabels, setBaseLabels] = React.useState<Partial<Record<LocaleTag, string>>>({});
   const [draft, setDraft] = React.useState<CtaConfig>(config);
+  const [baseConfig, setBaseConfig] = React.useState<CtaConfig>(config);
   const editing = isCmsEditing || retainCmsDrafts;
   const destination = resolveHref(config, locale);
 
@@ -164,19 +168,16 @@ export function EditableHeroCta({
     setActive(initialEditorLocale(localeTag, editorLocales));
     setDraft(config);
     setLoading(true);
-    void Promise.all(editorLocales.map(async (tag) => {
-      const response = await cmsService.pageContent(page, tag).catch(() => null) as
-        | { content_blocks?: Array<{ key?: string; value?: string }> }
-        | null;
-      return [tag, response?.content_blocks?.find((block) => block.key === labelKey)?.value ?? ''] as const;
-    })).then((entries) => {
+    setLoadFailed(false);
+    void Promise.all([cmsService.contentBlock(labelKey), cmsService.contentBlock(configKey)]).then(([textBlock, linkBlock]) => {
       if (cancelled) return;
-      const loaded = Object.fromEntries(entries) as Partial<Record<LocaleTag, string>>;
-      loaded[localeTag] ||= label;
-      setLabels(loaded);
-      setBaseLabels(loaded);
+      setRevisions({ [labelKey]: textBlock.cms_revision, [configKey]: linkBlock.cms_revision });
+      const loadedConfig = parseConfig(linkBlock.value_by_locale[localeTag] ?? '', href, locale);
+      setDraft(loadedConfig); setBaseConfig(loadedConfig);
+      const loaded = Object.fromEntries(editorLocales.map(tag => [tag, textBlock.value_by_locale[tag] ?? (tag === localeTag ? label : '')]));
+      setLabels(loaded); setBaseLabels(loaded);
     }).catch((error) => {
-      if (!cancelled) pushError(error, t('cms.loadError'));
+      if (!cancelled) { setLoadFailed(true); pushError(error, t('cms.loadError')); }
     }).finally(() => {
       if (!cancelled) setLoading(false);
     });
@@ -194,15 +195,11 @@ export function EditableHeroCta({
       for (const tag of editorLocales) {
         if ((labels[tag] ?? '') !== (baseLabels[tag] ?? '')) changedLabels[tag] = labels[tag] ?? '';
       }
-      if (Object.keys(changedLabels).length) {
-        await saveText(labelKey, { page, section, value_by_locale: changedLabels });
-      }
-      await saveText(configKey, {
-        page,
-        section,
-        type: 'short_text',
-        value_by_locale: { [localeTag]: JSON.stringify(draft) },
-      });
+      const blocks = [
+        ...(Object.keys(changedLabels).length ? [{ key: labelKey, page, section, value_by_locale: changedLabels, expected_revision: revisions[labelKey] }] : []),
+        ...(JSON.stringify(draft) !== JSON.stringify(baseConfig) ? [{ key: configKey, page, section, type: 'short_text', value_by_locale: { [localeTag]: JSON.stringify(draft) }, expected_revision: revisions[configKey] }] : []),
+      ];
+      if (blocks.length) await saveTextBatch(blocks);
       push({ tone: 'success', title: t('cms.saved') });
       setOpen(false);
     } catch (error) {
@@ -234,7 +231,7 @@ export function EditableHeroCta({
             })}
           >
             {leftIcon ? <span className="-ml-0.5">{leftIcon}</span> : null}
-            <span>{config.enabled ? text : t('cms.disabledCta')}</span>
+            <span {...fieldSource(labelKey, localeTag, getContentBlock(labelKey), canEdit)}>{config.enabled ? text : t('cms.disabledCta')}</span>
             {rightIcon ? <span className="-mr-0.5">{rightIcon}</span> : null}
           </div>
           <button
@@ -259,7 +256,7 @@ export function EditableHeroCta({
           onLabelChange={(value) => setLabels((prev) => ({ ...prev, [active]: value }))}
           config={draft}
           setConfig={setDraft}
-          loading={loading}
+          loading={loading || loadFailed}
           saving={saving}
           onSave={onSave}
         />
@@ -276,7 +273,7 @@ export function EditableHeroCta({
   const labelContent = (
     <>
       {leftIcon ? <span className="-ml-0.5">{leftIcon}</span> : null}
-      <span className="whitespace-pre-line">{text}</span>
+      <span {...fieldSource(labelKey, localeTag, getContentBlock(labelKey), canEdit)} className="whitespace-pre-line">{text}</span>
       {icon ? <span className="-mr-0.5">{icon}</span> : null}
     </>
   );
@@ -416,7 +413,7 @@ function CtaEditModal({
       </fieldset>
       <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
         <Button variant="ghost" onClick={onClose} disabled={saving}>{t('cms.cancel')}</Button>
-        <Button variant="primary" onClick={onSave} disabled={saving || loading}>{t('cms.save')}</Button>
+        <Button variant="primary" onClick={onSave} disabled={saving || loading}>{t('cms.publish')}</Button>
       </div>
     </Modal>
   );

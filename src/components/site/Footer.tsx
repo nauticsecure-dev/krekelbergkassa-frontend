@@ -6,25 +6,27 @@ import { Logo } from '@/components/ui/Logo';
 import { useIntl } from '@/i18n/IntlProvider';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { companyInfo } from '@/lib/company';
-import { useCms } from '@/components/cms/CmsProvider';
+import { EditSafeLink } from '@/components/cms/EditSafeLink';
+import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
+import { EditableGlobalText } from '@/components/cms/EditableGlobalText';
 
 export function Footer({ className }: { className?: string }) {
   const { t, locale } = useIntl();
-  const { getGlobal } = useCms();
+  const companyInfo = useCompanyInfo();
   const year = new Date().getFullYear();
 
   // Trello #112: global settings flow through here read-only. Editing happens
   // via the CMS toolbar's Global modal; fall back to the existing values.
-  const tagline = getGlobal('footer.tagline', `${t('brand.tagline')}. Vakmanschap, planning en stalling sinds 1972.`);
-  const phone = getGlobal('company.phone', t('footer.phone'));
+  const tagline = `${t('brand.tagline')}. ${({ nl: 'Vakmanschap, planning en stalling sinds 1972.', en: 'Craftsmanship, planning and boat storage since 1972.',
+    de: 'Handwerk, Planung und Bootslagerung seit 1972.', fr: 'Savoir-faire, planification et stockage de bateaux depuis 1972.' } as Record<string, string>)[locale]}`;
+
   return (
     <footer className={cn('mt-24 bg-navy-900 text-sand-100', className)}>
       <div className="container-wide grid gap-10 py-14 md:grid-cols-4">
         <div>
           <Logo variant="light" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-sand-100/80">
-            {tagline}
+            <EditableGlobalText settingKey="footer.tagline" fallback={tagline} />
           </p>
         </div>
         <div>
@@ -53,24 +55,23 @@ export function Footer({ className }: { className?: string }) {
         </div>
         <div>
           <div className="text-xs font-semibold uppercase tracking-widest text-sand-100/60">
-            Contact
-          </div>
+            <TranslatedText textKey="siteCopy.ad3cb498e357eae5" fallbackText={"Contact"} /></div>
           <ul className="mt-3 space-y-3 text-sm">
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 text-sand-100/70" />
-              <span><TranslatedText textKey={'footer.address'} /></span>
+              <span><CompanyText field="address" /></span>
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-sand-100/70" />
-              <a href={companyInfo.phoneHref} className="hover:text-white">
-                {phone}
-              </a>
+              <EditSafeLink href={companyInfo.phoneHref} className="hover:text-white">
+                <CompanyText field="phone" />
+              </EditSafeLink>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-sand-100/70" />
-              <a href="mailto:info@krekelberg-nautic.nl" className="hover:text-white">
-                <TranslatedText textKey={'footer.email'} />
-              </a>
+              <EditSafeLink href={companyInfo.emailHref} className="hover:text-white">
+                <CompanyText field="email" />
+              </EditSafeLink>
             </li>
           </ul>
         </div>
@@ -79,9 +80,9 @@ export function Footer({ className }: { className?: string }) {
         <div className="container-wide flex flex-col items-center justify-between gap-2 py-5 text-xs text-sand-100/60 sm:flex-row">
           <span><TranslatedText textKey={'footer.copyright'} vars={{ year }} /></span>
           <div className="flex gap-5">
-            <Link href={`/${locale}/privacy`} className="hover:text-white">Privacy</Link>
-            <Link href={`/${locale}/voorwaarden`} className="hover:text-white">Voorwaarden</Link>
-            <Link href={`/${locale}/cookies`} className="hover:text-white">Cookies</Link>
+            <Link href={`/${locale}/privacy`} className="hover:text-white"><TranslatedText textKey="siteCopy.2497dc9161825940" fallbackText={"Privacy"} /></Link>
+            <Link href={`/${locale}/voorwaarden`} className="hover:text-white"><TranslatedText textKey="siteCopy.e83d644ea357c8e0" fallbackText={"Voorwaarden"} /></Link>
+            <Link href={`/${locale}/cookies`} className="hover:text-white"><TranslatedText textKey="siteCopy.275e32e765abdeb0" fallbackText={"Cookies"} /></Link>
           </div>
         </div>
       </div>

@@ -19,7 +19,9 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useIntl } from "@/i18n/IntlProvider";
 import { cn } from "@/lib/cn";
-import { companyInfo } from "@/lib/company";
+import { EditSafeLink } from '@/components/cms/EditSafeLink';
+import { CompanyHoursSummary } from '@/components/cms/CompanyHoursSummary';
+import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { useCms, useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
@@ -68,6 +70,7 @@ const SERVICES = [
 ] as const;
 
 export default function HomePage() {
+  const companyInfo = useCompanyInfo();
   const { t, locale } = useIntl();
   const { isCmsEditing } = useCms();
   const editingCards = isCmsEditing;
@@ -433,19 +436,17 @@ export default function HomePage() {
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm text-navy-700">
               <li className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-marine-700" /> {companyInfo.address}
+                <MapPin className="h-4 w-4 text-marine-700" /> <CompanyText field="address" />
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-marine-700" />{" "}
-                <a href={companyInfo.phoneHref} className="hover:text-navy-900">
-                  {companyInfo.phone}
-                </a>
+                <EditSafeLink href={companyInfo.phoneHref} className="hover:text-navy-900">
+                  <CompanyText field="phone" />
+                </EditSafeLink>
               </li>
               <li className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-marine-700" />{" "}
-                <EditableText blockKey="home.contact.hours" page={CMS_PAGE} section="contact">
-                  {t("home.contact.hours")}
-                </EditableText>
+                <CompanyHoursSummary />
               </li>
             </ul>
             <div className="mt-5 flex flex-wrap gap-3">

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
@@ -254,7 +256,7 @@ function AuditPageContent() {
               ))}
             </AdminSelect>
             <label className="flex items-center gap-2 text-sm text-navy-700">
-              <span>{t('adminNew.audit.dateFrom')}</span>
+              <span>{<TranslatedText textKey={'adminNew.audit.dateFrom'} />}</span>
               <input
                 className="input-base w-auto"
                 type="date"
@@ -263,7 +265,7 @@ function AuditPageContent() {
               />
             </label>
             <label className="flex items-center gap-2 text-sm text-navy-700">
-              <span>{t('adminNew.audit.dateTo')}</span>
+              <span>{<TranslatedText textKey={'adminNew.audit.dateTo'} />}</span>
               <input
                 className="input-base w-auto"
                 type="date"
@@ -282,21 +284,21 @@ function AuditPageContent() {
                   page: null,
                 })}
               />
-              {t('adminNew.audit.showTechnical')}
+              {<TranslatedText textKey={'adminNew.audit.showTechnical'} />}
             </label>
           </AdminToolbar>
 
           {category === 'technical' && !technical ? (
             <p className="mb-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-              {t('adminNew.audit.technicalHidden')}
+              {<TranslatedText textKey={'adminNew.audit.technicalHidden'} />}
             </p>
           ) : null}
 
           {groupId ? (
             <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
-              <span className="break-all">Request: {groupId}</span>
+              <span className="break-all"><TranslatedText textKey="siteCopy.750449027d48e548" fallbackText={"Request: "} />{groupId}</span>
               <Button variant="ghost" size="sm" onClick={() => updateFilters({ group_id: null, page: null })}>
-                {t('adminNew.common.clear')}
+                {<TranslatedText textKey={'adminNew.common.clear'} />}
               </Button>
             </div>
           ) : null}
@@ -312,12 +314,12 @@ function AuditPageContent() {
               <table className="w-full min-w-[900px] text-left text-sm">
                 <thead className="bg-navy-50 text-xs uppercase tracking-wide text-navy-500">
                   <tr>
-                    <th className="px-4 py-3">{t('adminNew.audit.columns.time')}</th>
-                    <th className="px-4 py-3">{t('adminNew.audit.columns.action')}</th>
-                    <th className="px-4 py-3">{t('adminNew.audit.columns.entity')}</th>
-                    <th className="px-4 py-3">{t('adminNew.audit.columns.actor')}</th>
-                    <th className="px-4 py-3">{t('adminNew.audit.columns.status')}</th>
-                    <th className="px-4 py-3">{t('adminNew.audit.columns.details')}</th>
+                    <th className="px-4 py-3">{<TranslatedText textKey={'adminNew.audit.columns.time'} />}</th>
+                    <th className="px-4 py-3">{<TranslatedText textKey={'adminNew.audit.columns.action'} />}</th>
+                    <th className="px-4 py-3">{<TranslatedText textKey={'adminNew.audit.columns.entity'} />}</th>
+                    <th className="px-4 py-3">{<TranslatedText textKey={'adminNew.audit.columns.actor'} />}</th>
+                    <th className="px-4 py-3">{<TranslatedText textKey={'adminNew.audit.columns.status'} />}</th>
+                    <th className="px-4 py-3">{<TranslatedText textKey={'adminNew.audit.columns.details'} />}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-navy-100">
@@ -343,12 +345,12 @@ function AuditPageContent() {
                           {log.group_id && (log.group_size ?? 1) > 1 ? (
                             <button type="button" className="ml-2 text-xs text-marine-700 hover:underline"
                               onClick={() => updateFilters({ group_id: log.group_id ?? null, page: null })}>
-                              {t('adminNew.audit.events', { count: log.group_size ?? 1 })}
+                              {<TranslatedText textKey={'adminNew.audit.events'} vars={{ count: log.group_size ?? 1 }} />}
                             </button>
                           ) : null}
                           <p className="mt-1 max-w-lg text-xs text-navy-500">
                             {changes.length
-                              ? t('adminNew.audit.changeSummary', { count: changes.length })
+                              ? <TranslatedText textKey={'adminNew.audit.changeSummary'} vars={{ count: changes.length }} />
                               : tEnum(t, 'adminNew.audit.categories', categoryKey)}
                           </p>
                         </td>
@@ -385,7 +387,7 @@ function AuditPageContent() {
                         </td>
                         <td className="px-4 py-3">
                           <Button variant="ghost" size="sm" onClick={() => setSelectedLog(log)}>
-                            {t('adminNew.audit.openDetails')}
+                            {<TranslatedText textKey={'adminNew.audit.openDetails'} />}
                           </Button>
                         </td>
                       </tr>
@@ -456,20 +458,20 @@ function AuditDetailsModal({
 
       <dl className="mt-5 grid gap-4 rounded-xl bg-sand-50 p-4 sm:grid-cols-2">
         <div>
-          <dt className="text-xs font-semibold uppercase text-navy-400">{t('adminNew.audit.columns.actor')}</dt>
+          <dt className="text-xs font-semibold uppercase text-navy-400">{<TranslatedText textKey={'adminNew.audit.columns.actor'} />}</dt>
           <dd className="mt-1 text-sm font-medium text-navy-800">
             {log.user?.name || t('adminNew.audit.actorFallback')}
           </dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase text-navy-400">{t('adminNew.audit.columns.entity')}</dt>
+          <dt className="text-xs font-semibold uppercase text-navy-400">{<TranslatedText textKey={'adminNew.audit.columns.entity'} />}</dt>
           <dd className="mt-1 text-sm font-medium text-navy-800">
             {entityLabel(log.entity_type, t)} · {log.entity_name || log.entity_number || t('adminNew.audit.entity.record')}
             {log.entity_url ? (
               <>
                 {' · '}
                 <Link href={`/${routeLocale}${log.entity_url}`} className="font-semibold text-marine-700 hover:underline">
-                  {t('adminNew.audit.openDetails')}
+                  {<TranslatedText textKey={'adminNew.audit.openDetails'} />}
                 </Link>
               </>
             ) : null}
@@ -477,7 +479,7 @@ function AuditDetailsModal({
         </div>
         {log.reason ? (
           <div className="sm:col-span-2">
-            <dt className="text-xs font-semibold uppercase text-navy-400">{t('adminNew.audit.summary')}</dt>
+            <dt className="text-xs font-semibold uppercase text-navy-400">{<TranslatedText textKey={'adminNew.audit.summary'} />}</dt>
             <dd className="mt-1 text-sm text-navy-700">{log.reason}</dd>
           </div>
         ) : null}
@@ -485,7 +487,7 @@ function AuditDetailsModal({
 
       <section className="mt-5">
         <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-navy-500">
-          {t('adminNew.audit.changes')}
+          {<TranslatedText textKey={'adminNew.audit.changes'} />}
         </h3>
         {changes.length ? (
           <div className="overflow-hidden rounded-lg border border-navy-100">
@@ -499,7 +501,7 @@ function AuditDetailsModal({
             ))}
           </div>
         ) : (
-          <p className="text-sm text-navy-500">{t('adminNew.audit.noChanges')}</p>
+          <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.audit.noChanges'} />}</p>
         )}
       </section>
 
@@ -511,19 +513,19 @@ function AuditDetailsModal({
           className="inline-flex items-center gap-2 text-sm font-semibold text-marine-700 hover:text-marine-900"
         >
           <ChevronDown className={`h-4 w-4 transition-transform ${technicalOpen ? 'rotate-180' : ''}`} />
-          {t('adminNew.audit.technicalDetails')}
+          {<TranslatedText textKey={'adminNew.audit.technicalDetails'} />}
         </button>
         {technicalOpen ? (
           <dl className="mt-3 grid gap-3 rounded-xl border border-navy-100 bg-white p-4 text-sm sm:grid-cols-2">
-            <TechnicalDetail label="Event" value={log.event_code || log.action} />
-            <TechnicalDetail label="ID" value={log.id} />
-            <TechnicalDetail label="Entity ID" value={log.entity_id} />
-            <TechnicalDetail label="Request ID" value={log.request_id} />
-            <TechnicalDetail label="Correlation ID" value={log.correlation_id} />
-            <TechnicalDetail label="IP" value={log.ip_address} />
-            <TechnicalDetail label="Endpoint" value={log.endpoint} />
-            <TechnicalDetail label="HTTP method" value={log.method} />
-            <TechnicalDetail label="Browser" value={log.user_agent} />
+            <TechnicalDetail label={t('adminNew.audit.technical.event')} value={log.event_code || log.action} />
+            <TechnicalDetail label={t('adminNew.audit.technical.id')} value={log.id} />
+            <TechnicalDetail label={t('adminNew.audit.technical.entityId')} value={log.entity_id} />
+            <TechnicalDetail label={t('adminNew.audit.technical.requestId')} value={log.request_id} />
+            <TechnicalDetail label={t('adminNew.audit.technical.correlationId')} value={log.correlation_id} />
+            <TechnicalDetail label={t('adminNew.audit.technical.ip')} value={log.ip_address} />
+            <TechnicalDetail label={t('adminNew.audit.technical.endpoint')} value={log.endpoint} />
+            <TechnicalDetail label={t('adminNew.audit.technical.method')} value={log.method} />
+            <TechnicalDetail label={t('adminNew.audit.technical.browser')} value={log.user_agent} />
           </dl>
         ) : null}
       </section> : null}

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
@@ -37,7 +39,7 @@ export function ImpersonationBanner() {
       <div className="sticky top-0 z-[60] flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-sm font-semibold text-navy-950">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
-          {t('adminNew.impersonation.banner', { name: impersonatingAs || user?.name || '—' })}
+          {<TranslatedText textKey={'adminNew.impersonation.banner'} vars={{ name: impersonatingAs || user?.name || '—' }} />}
         </span>
         <button
           type="button"
@@ -45,7 +47,7 @@ export function ImpersonationBanner() {
           className="inline-flex items-center gap-1 rounded-md bg-navy-950/10 px-2 py-0.5 text-xs hover:bg-navy-950/20"
         >
           <X className="h-3 w-3" />
-          {t('adminNew.impersonation.stop')}
+          {<TranslatedText textKey={'adminNew.impersonation.stop'} />}
         </button>
       </div>
 

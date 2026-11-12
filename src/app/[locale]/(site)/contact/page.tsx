@@ -20,7 +20,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClassName } from "@/components/ui/Button";
 import { useIntl } from "@/i18n/IntlProvider";
-import { companyInfo, openingHoursRows } from "@/lib/company";
+import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { contentService } from "@/lib/services";
 import { useQuery } from "@/lib/hooks/useAsync";
 import { cn } from "@/lib/cn";
@@ -39,17 +39,8 @@ export default function ContactPage() {
 
   const localeTag = intlLocale(locale);
   const language = ['nl', 'en', 'de', 'fr'].includes(locale) ? locale : 'nl';
-  const contactQuery = useQuery(['contact-company'], () => contentService.contact());
-  const company = contactQuery.data?.company;
-  const phone = company?.phone ?? companyInfo.phone;
-  const phoneHref = 'tel:' + phone.replace(/\(0\)/g, '').replace(/[^+\d]/g, '');
-  const email = company?.email ?? companyInfo.email;
-  const address = company?.address
-    ? [company.address.street, company.address.postal_code, company.address.city].filter(Boolean).join(', ')
-    : companyInfo.address;
-  const mapsQuery = encodeURIComponent(address);
-  const mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + mapsQuery;
-  const mapsEmbed = 'https://maps.google.com/maps?q=' + mapsQuery + '&z=14&output=embed';
+  const companyInfo = useCompanyInfo();
+  const { phoneHref, emailHref, mapsUrl, mapsEmbed } = companyInfo;
 
   const hoursQuery = useQuery([localeTag], () =>
     contentService.openingHours(localeTag).catch(() => null),
@@ -93,7 +84,7 @@ export default function ContactPage() {
           </p>
           <div className="pointer-events-none mt-8 flex w-fit flex-wrap gap-3">
             <EditSafeLink href={phoneHref} className={buttonClassName({ variant: 'gold', size: 'lg', className: 'pointer-events-auto' })}><Phone className="h-4 w-4" /><EditableText blockKey="contact.hero.cta_primary.label" page={CMS_PAGE}>{t('contactPage.ctaCall')}</EditableText></EditSafeLink>
-            <EditSafeLink href={`mailto:${email}`} className={buttonClassName({ variant: 'outline', size: 'lg', className: 'pointer-events-auto border-white/30 bg-white/5 text-white hover:bg-white/10' })}><Mail className="h-4 w-4" /><EditableText blockKey="contact.hero.cta_secondary.label" page={CMS_PAGE}>{t('contactPage.ctaMail')}</EditableText></EditSafeLink>
+            <EditSafeLink href={emailHref} className={buttonClassName({ variant: 'outline', size: 'lg', className: 'pointer-events-auto border-white/30 bg-white/5 text-white hover:bg-white/10' })}><Mail className="h-4 w-4" /><EditableText blockKey="contact.hero.cta_secondary.label" page={CMS_PAGE}>{t('contactPage.ctaMail')}</EditableText></EditSafeLink>
           </div>
         </div>
       </section>
@@ -102,7 +93,7 @@ export default function ContactPage() {
         <ContactCard
           icon={MapPin}
           label={<EditableText blockKey="contact.card.address.label" page={CMS_PAGE} section="cards">{t("contactPage.addressLabel")}</EditableText>}
-          value={address}
+          value={<CompanyText field="address" />}
           actionLabel={t("contactPage.ctaRoute")}
           actionHref={mapsUrl}
           external
@@ -110,16 +101,16 @@ export default function ContactPage() {
         <ContactCard
           icon={Phone}
           label={<EditableText blockKey="contact.card.phone.label" page={CMS_PAGE} section="cards">{t("contactPage.phoneLabel")}</EditableText>}
-          value={phone}
+          value={<CompanyText field="phone" />}
           actionLabel={t("contactPage.ctaCall")}
           actionHref={phoneHref}
         />
         <ContactCard
           icon={Mail}
           label={<EditableText blockKey="contact.card.email.label" page={CMS_PAGE} section="cards">{t("contactPage.emailLabel")}</EditableText>}
-          value={email}
+          value={<CompanyText field="email" />}
           actionLabel={t("contactPage.ctaMail")}
-          actionHref={`mailto:${email}`}
+          actionHref={emailHref}
         />
       </section>
 
@@ -184,35 +175,24 @@ export default function ContactPage() {
                     )}
                   </span>
                   <span className="font-semibold text-navy-900">
-                    {h.closed ? t("contactPage.closed") : h.display}
+                    {h.closed ? <TranslatedText textKey={"contactPage.closed"} /> : h.display}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <HoursTable
-              rows={openingHoursRows({
-                monday: t("contactPage.monday"),
-                tuesday: t("contactPage.tuesday"),
-                wednesday: t("contactPage.wednesday"),
-                thursday: t("contactPage.thursday"),
-                friday: t("contactPage.friday"),
-                saturday: t("contactPage.saturday"),
-                sunday: t("contactPage.sunday"),
-                closed: t("contactPage.closed"),
-              })}
-            />
+            <p role="status" className="text-sm text-navy-500"><TranslatedText textKey={hoursQuery.loading ? 'adminNew.common.loading' : 'contactPage.hoursUnavailable'} /></p>
           )}
         </Card>
 
         <Card className="overflow-hidden p-0">
-          <iframe
+          {mapsEmbed ? <iframe
             title="Google Maps · Krekelberg Nautic"
             src={mapsEmbed}
             className="h-full min-h-[420px] w-full"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-          />
+          /> : <p role="status" className="p-6 text-sm text-navy-500"><TranslatedText textKey="contactPage.addressUnavailable" /></p>}
         </Card>
       </section>
 
@@ -310,6 +290,19 @@ function ContactForm({
   const [phone, setPhone] = React.useState("");
   const [subjectKey, setSubjectKey] = React.useState("");
   const [message, setMessage] = React.useState("");
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const codes = params.get("services")?.split(",") ?? [];
+    const allowed = ["kranen", "afspuiten", "weekje-op-wal", "winterstalling"];
+    if (!codes.length || codes.length > 2 || !codes.every((code) => allowed.includes(code))) return;
+    const length = params.get("length_cm") ?? "";
+    const serviceNames = codes.map((code) => t("yardPricing." + code)).join(" + ");
+    const lengthLine = /^[1-9]\d{0,3}$/.test(length)
+      ? "\n" + t("servicePage.length") + " " + (Number(length) / 100).toLocaleString(localeTag) + " " + t("yardPricing.unit")
+      : "";
+    setMessage((previous) => previous || serviceNames + lengthLine);
+  }, [localeTag, t]);
 
   const submission = React.useRef<{ payload: string; id: string } | null>(null);
 
@@ -434,7 +427,7 @@ function ContactForm({
           disabled={!canSubmit}
           rightIcon={<Send className="h-4 w-4" />}
         >
-          {status === "sending" ? t("contactPage.fSending") : t("contactPage.fSubmit")}
+          {status === "sending" ? <TranslatedText textKey={"contactPage.fSending"} /> : <TranslatedText textKey={"contactPage.fSubmit"} />}
         </Button>
       </div>
     </form>
@@ -481,37 +474,6 @@ function ContactCard({
   );
 }
 
-function HoursTable({ rows }: { rows: { day: string; value: string }[] }) {
-  return (
-    <ul className="grid gap-1 text-sm">
-      {rows.map((r) => (
-        <li
-          key={r.day}
-          className="flex items-center justify-between border-b border-dashed border-navy-100 py-1.5 last:border-b-0"
-        >
-          <span className="text-navy-600">{r.day}</span>
-          <span className="font-semibold text-navy-900">{r.value}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function FormField({
-  label,
-  children,
-  className,
-}: {
-  label: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-widest text-navy-500">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
+function FormField({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+  return <div className={className}><label className="mb-1 block text-[11px] font-semibold uppercase tracking-widest text-navy-500">{label}</label>{children}</div>;
 }

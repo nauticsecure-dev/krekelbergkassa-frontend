@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useIntl } from '@/i18n/IntlProvider';
-import { companyInfo } from '@/lib/company';
+import { CompanyText, useCompanyInfo } from '@/components/cms/CompanyText';
 import { cn } from '@/lib/cn';
 import { useQuery } from '@/lib/hooks/useAsync';
 import {
@@ -30,6 +30,7 @@ import {
 import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
 import { EditableText } from '@/components/cms/EditableText';
 import { EditableImage } from '@/components/cms/EditableImage';
+import { ServicePricing, YARD_SERVICES, type YardService } from '@/components/site/ServicePricing';
 import { EditSafeLink } from '@/components/cms/EditSafeLink';
 
 const CMS_PAGE = 'diensten';
@@ -91,8 +92,10 @@ function groupLiveServices(services: ServiceCatalogService[] | undefined): LiveG
 }
 
 export default function DienstenPage() {
+  const companyInfo = useCompanyInfo();
   const { t, locale } = useIntl();
   useRegisterCmsPage(CMS_PAGE);
+  const [active, setActive] = React.useState<YardService>('kranen');
   const [openFaq, setOpenFaq] = React.useState<string | null>('faq1');
 
   // Trello #100: drive the service overview from the shared product DB, falling
@@ -121,7 +124,7 @@ export default function DienstenPage() {
           />
         </div>
 
-        <div className="container-wide pointer-events-none relative pb-20 pt-16 text-white sm:pb-28 sm:pt-24 lg:pb-32 lg:pt-28">
+        <div className="container-wide pointer-events-none relative pb-10 pt-10 text-white sm:pb-12 sm:pt-12">
           <Badge tone="sand" dot className="pointer-events-auto mb-4">
             <EditableText blockKey="diensten.hero.badge" page={CMS_PAGE} section="hero">
               {t('werf.heroBadge')}
@@ -138,23 +141,23 @@ export default function DienstenPage() {
             </EditableText>
           </p>
 
-          {/* Anchor nav */}
-          <div className="pointer-events-auto mt-8 flex w-fit flex-wrap gap-2">
-            {liveGroups ? liveGroups.map((group) => (
-              <a key={group.key} href={'#service-' + group.key} className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-sand-100">{group.name}</a>
-            )) : catalogQuery.error ? SECTIONS.map((s) => (
-              <a
-                key={s.key}
-                href={`#${s.key}`}
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-sand-100 backdrop-blur transition hover:bg-white/10"
-              >
-                <s.icon className="h-3.5 w-3.5 text-gold-300" />
-                <TranslatedText textKey={`werf.s.${s.key}.title`} />
-              </a>
-            )) : null}
+          <div className="pointer-events-auto mt-7 grid max-w-4xl grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
+            {YARD_SERVICES.map(({ code, icon: Icon }) => (
+              <button key={code} type="button" aria-pressed={active === code} aria-controls="prijsberekening"
+                onClick={() => setActive(code)}
+                className={cn('flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-3 text-center text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300', active === code ? 'border-gold-300 bg-navy-950/90 text-gold-100' : 'border-white/60 bg-white/90 text-navy-950 hover:bg-white')}>
+                <Icon aria-hidden="true" className="h-6 w-6" /><TranslatedText textKey={'yardPricing.' + code} />
+              </button>
+            ))}
+            <Link href="#meer-diensten" className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border border-white/60 bg-white/90 px-2 py-3 text-center text-sm font-bold text-navy-950 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300">
+              <Plus aria-hidden="true" className="h-6 w-6" /><TranslatedText textKey={'yardPricing.moreServices'} />
+            </Link>
           </div>
         </div>
       </section>
+
+      <ServicePricing services={catalogQuery.data ?? []} loading={catalogQuery.loading}
+        active={active} onActiveChange={setActive} cmsPage={CMS_PAGE} />
 
       {/* ───────── Intro paragraph ───────── */}
       <section className="container-wide py-12">
@@ -166,7 +169,7 @@ export default function DienstenPage() {
       </section>
 
       {/* ───────── Sections (alternating photo/text) ───────── */}
-      <section className="bg-white py-6">
+      <section id="meer-diensten" className="scroll-mt-24 bg-white py-6">
         <div className="container-wide space-y-20">
           {liveGroups ? (
             <div className="space-y-14">
@@ -182,7 +185,7 @@ export default function DienstenPage() {
                 </p>
               </div>
               {liveGroups.map((group) => (
-                <LiveServiceGroup key={group.key} group={group} locale={locale} t={t} />
+                <LiveServiceGroup key={group.key} group={group} locale={locale} />
               ))}
             </div>
           ) : catalogQuery.error ? (
@@ -195,7 +198,7 @@ export default function DienstenPage() {
                 t={t}
               />
             ))
-          ) : <p role="status" className="py-8 text-center text-navy-500">{t(catalogQuery.loading ? 'adminNew.common.loading' : 'globalUx.servicesEmpty')}</p>}
+          ) : <p role="status" className="py-8 text-center text-navy-500">{<TranslatedText textKey={catalogQuery.loading ? 'adminNew.common.loading' : 'globalUx.servicesEmpty'} />}</p>}
         </div>
       </section>
 
@@ -296,13 +299,13 @@ export default function DienstenPage() {
               <ul className="mt-5 space-y-2.5 text-sm text-navy-700">
                 <li className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-marine-700" />
-                  {companyInfo.address}
+                  <CompanyText field="address" />
                 </li>
                 <li className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-marine-700" />
-                  <a href={companyInfo.phoneHref} className="hover:text-navy-900">
-                    {companyInfo.phone}
-                  </a>
+                  <EditSafeLink href={companyInfo.phoneHref} className="hover:text-navy-900">
+                    <CompanyText field="phone" />
+                  </EditSafeLink>
                 </li>
               </ul>
               <div className="mt-6 flex flex-wrap gap-2">
@@ -418,11 +421,9 @@ function ServiceBlock({
 function LiveServiceGroup({
   group,
   locale,
-  t,
 }: {
   group: LiveGroup;
   locale: string;
-  t: (key: string) => string;
 }) {
   return (
     <article id={'service-' + group.key} className="scroll-mt-24">
@@ -437,9 +438,6 @@ function LiveServiceGroup({
       </div>
       <div className="grid gap-5 md:grid-cols-2">
         {group.services.map((svc) => {
-          const tariffs = (svc.tariffs ?? [])
-            .slice()
-            .sort((a, b) => a.range_from_cm - b.range_from_cm);
           return (
             <Card key={svc.code} className="flex flex-col p-6">
               <h4 className="text-base font-semibold text-navy-900">
@@ -450,24 +448,7 @@ function LiveServiceGroup({
                   {svc.description}
                 </p>
               ) : null}
-              {tariffs.length ? (
-                <ul className="mt-4 space-y-1.5 border-t border-navy-100 pt-4">
-                  {tariffs.map((tf) => (
-                    <li
-                      key={`${tf.range_from_cm}-${tf.range_to_cm}`}
-                      className="flex items-center justify-between gap-4 text-sm"
-                    >
-                      <span className="text-navy-600">
-                        {tf.range_from_cm === 0 ? `${t('servicePage.from')} ` : ''}
-                        {tf.range_label}
-                      </span>
-                      <span className="font-semibold text-navy-900">
-                        {tf.is_on_request ? t('servicePage.onRequest') : tf.display_price}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+
             </Card>
           );
         })}

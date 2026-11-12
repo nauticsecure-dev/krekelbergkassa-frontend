@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { intlLocale } from '@/lib/format';
 
 import * as React from 'react';
@@ -105,10 +107,10 @@ export default function SyncStatusPage() {
               leftIcon={<RefreshCw className="h-4 w-4" />}
               onClick={() => void load()}
             >
-              {t('adminNew.sync.refresh')}
+              {<TranslatedText textKey={'adminNew.sync.refresh'} />}
             </Button>
             <Button variant="gold" size="sm" onClick={() => void syncAll()} disabled={!items.length || syncing}>
-              {syncing ? t('adminNew.sync.syncing') : t('adminNew.sync.syncAll')}
+              {syncing ? <TranslatedText textKey={'adminNew.sync.syncing'} /> : <TranslatedText textKey={'adminNew.sync.syncAll'} />}
             </Button>
           </>
         }
@@ -159,7 +161,7 @@ export default function SyncStatusPage() {
                 leftIcon={<Trash2 className="h-4 w-4" />}
                 onClick={() => setConfirmClear(true)}
               >
-                {t('adminNew.sync.clear')}
+                {<TranslatedText textKey={'adminNew.sync.clear'} />}
               </Button>
             ) : null
           }
@@ -176,14 +178,14 @@ export default function SyncStatusPage() {
                     <>
                       <Badge tone={item.status === 'failed' ? 'danger' : 'warning'}>{item.status}</Badge>
                       <Button variant="outline" size="sm" onClick={() => void retryItem(item)}>
-                        {t('adminNew.sync.retry')}
+                        {<TranslatedText textKey={'adminNew.sync.retry'} />}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setDeleteTarget(item.id)}
                       >
-                        {t('adminNew.common.delete')}
+                        {<TranslatedText textKey={'adminNew.common.delete'} />}
                       </Button>
                     </>
                   }
@@ -192,7 +194,7 @@ export default function SyncStatusPage() {
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-6 py-10 text-center text-sm text-navy-500">
-              {t('adminNew.sync.noPending')}
+              {<TranslatedText textKey={'adminNew.sync.noPending'} />}
             </div>
           )}
         </AdminSectionCard>
@@ -211,7 +213,7 @@ export default function SyncStatusPage() {
                   subtitle={`ID: ${device.device_id ?? '—'}`}
                   meta={
                     <>
-                      {t('adminNew.sync.lastSync')}:{' '}
+                      {<TranslatedText textKey={'adminNew.sync.lastSync'} />}:{' '}
                       {device.last_sync_at
                         ? new Date(device.last_sync_at).toLocaleString(dateLocale)
                         : '—'}
@@ -222,7 +224,7 @@ export default function SyncStatusPage() {
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-navy-200 bg-sand-50/50 px-6 py-10 text-center text-sm text-navy-500">
-              {t('adminNew.sync.noDevices')}
+              {<TranslatedText textKey={'adminNew.sync.noDevices'} />}
             </div>
           )}
         </AdminSectionCard>

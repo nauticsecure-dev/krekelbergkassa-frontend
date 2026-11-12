@@ -1,0 +1,137 @@
+[
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.boats.fields.mmsi",
+      "text": "MMSI"
+    },
+    "decision": "intentional",
+    "reason": "International maritime identifier abbreviation; preserve MMSI."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.audit.title",
+      "text": "Audit"
+    },
+    "decision": "intentional",
+    "reason": "Established Dutch administrative term for this immutable audit log."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.credentials.environments.staging",
+      "text": "Staging"
+    },
+    "decision": "intentional",
+    "reason": "Named deployment environment shared with API configuration."
+  },
+  {
+    "match": {
+      "file": "src/app/[locale]/admin/beheer/dashboard-shortcuts/page.tsx",
+      "kind": "attribute",
+      "text": "/admin/kassa"
+    },
+    "decision": "intentional",
+    "reason": "Example internal URL, not a translatable sentence."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.audit.events",
+      "text": "{count} events"
+    },
+    "decision": "translate",
+    "reason": "Visible event count should use Dutch wording; not a proper name."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.audit.columns.entity",
+      "text": "Entity"
+    },
+    "decision": "translate",
+    "reason": "Visible audit entity heading requires Dutch wording."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.audit.columns.actor",
+      "text": "Actor"
+    },
+    "decision": "translate",
+    "reason": "Visible audit actor heading requires Dutch wording."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.audit.technical.id",
+      "text": "ID"
+    },
+    "decision": "intentional",
+    "reason": "International technical identifier abbreviation; preserved in audit metadata."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.audit.technical.ip",
+      "text": "IP"
+    },
+    "decision": "intentional",
+    "reason": "International technical identifier abbreviation; preserved in audit metadata."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.audit.technical.id",
+      "text": "ID"
+    },
+    "decision": "intentional",
+    "reason": "International technical identifier abbreviation; preserved in audit metadata."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.audit.technical.ip",
+      "text": "IP"
+    },
+    "decision": "intentional",
+    "reason": "International technical identifier abbreviation; preserved in audit metadata."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.audit.technical.id",
+      "text": "ID"
+    },
+    "decision": "intentional",
+    "reason": "International technical identifier abbreviation; preserved in audit metadata."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.audit.technical.ip",
+      "text": "IP"
+    },
+    "decision": "intentional",
+    "reason": "International technical identifier abbreviation; preserved in audit metadata."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.audit.technical.browser",
+      "text": "Browser"
+    },
+    "decision": "intentional",
+    "reason": "Established browser terminology in Dutch/German technical metadata."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.audit.technical.browser",
+      "text": "Browser"
+    },
+    "decision": "intentional",
+    "reason": "Established browser terminology in Dutch/German technical metadata."
+  }
+]

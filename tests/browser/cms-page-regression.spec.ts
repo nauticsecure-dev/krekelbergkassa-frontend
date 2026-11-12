@@ -28,6 +28,10 @@ async function fixture(page: Page) {
       } });
     }
     const match = url.pathname.match(/\/admin\/cms\/(content-blocks|media-blocks)\/([^/]+)(\/upload)?$/);
+    if (match && request.method() === 'GET' && match[1] === 'content-blocks') {
+      const key = decodeURIComponent(match[2]);
+      return route.fulfill({ json: { key, cms_revision: null, value_by_locale: content[key]?.value_by_locale ?? {} } });
+    }
     if (match && request.method() !== 'GET') {
       const key = decodeURIComponent(match[2]);
       if (match[3]) {
@@ -159,13 +163,13 @@ for (const [locale, tag] of Object.entries(tags)) {
     await page.locator('[data-cms-block="verkoop.step1.number"] button').click();
     await dialog.getByRole('textbox').fill(`Step ${locale}`);
     await dialog.locator('input[type=checkbox]').uncheck();
-    await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+    await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
     await expect(dialog).toHaveCount(0);
     await page.locator('[data-cms-block="verkoop.sell.cta_primary"] > div').click({ position: { x: 5, y: 5 } });
     await dialog.getByRole('textbox', { name: messages.ctaLabel, exact: true }).fill(`Contact ${locale}`);
     await dialog.locator('label').filter({ hasText: messages.ctaRoute }).getByRole('button').click();
     await page.getByRole('option', { name: 'over-ons', exact: true }).click();
-    await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+    await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
     await expect(dialog).toHaveCount(0);
     // Remove all optimistic browser state before reloading.
     await page.evaluate(() => sessionStorage.clear());

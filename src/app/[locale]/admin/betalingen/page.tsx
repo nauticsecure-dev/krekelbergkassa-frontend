@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import { CreditCard, RefreshCw } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
@@ -89,11 +91,11 @@ export default function PaymentsPage() {
               <AdminTable>
                 <AdminTableHead>
                   <AdminTableRow>
-                    <AdminTableHeaderCell>{t('adminNew.payments.columns.date')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.payments.columns.customer')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.payments.columns.method')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.payments.columns.amount')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.payments.columns.status')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.payments.columns.date'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.payments.columns.customer'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.payments.columns.method'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.payments.columns.amount'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.payments.columns.status'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
                   </AdminTableRow>
                 </AdminTableHead>
@@ -122,12 +124,12 @@ export default function PaymentsPage() {
                             leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
                             onClick={() => setReconcileTarget(row.id)}
                           >
-                            {t('adminNew.payments.reconcile')}
+                            {<TranslatedText textKey={'adminNew.payments.reconcile'} />}
                           </Button>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 text-xs text-navy-400">
                             <RefreshCw className="h-3.5 w-3.5" />
-                            {t('adminNew.payments.reconciled')}
+                            {<TranslatedText textKey={'adminNew.payments.reconciled'} />}
                           </span>
                         )}
                       </AdminTableCell>

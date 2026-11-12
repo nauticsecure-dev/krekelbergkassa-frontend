@@ -1,0 +1,281 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-warm.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/locale-completed",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/locale-completed-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "admin-review.spec.ts",
+      "file": "admin-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "nl: audit loading empty error recovery and technical dialog copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11174,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T18:04:48.261Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-nl-audit-load-56d60-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-f985c7d6723aed8256dc3d7373bd1af15e63ffdf.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-nl-audit-load-56d60-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-e7d6a590e62146740eb36779acd7ee43b7e73ad7.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-nl-audit-load-56d60-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-ed6c066de8fd48ae6ca71e94483775bbad8636fd.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-e961d3a7307bc7bb9bf5",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        },
+        {
+          "title": "en: audit loading empty error recovery and technical dialog copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12231,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T18:04:59.765Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-en-audit-load-368e4-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-ec526bbbef0b830d06028aad4615eb93d4110f5e.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-en-audit-load-368e4-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-9e276b22a5d56526dbd188c2abf60dca9cc648cc.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-en-audit-load-368e4-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-e68f2db5bc3154dcf275f605c81ce7226cd5a99f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-5f6a3cc9959df90272fb",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        },
+        {
+          "title": "de: audit loading empty error recovery and technical dialog copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11826,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T18:05:12.038Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-de-audit-load-214dd-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-263681b5becef3c9e7a29479e13b168aa68c2767.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-de-audit-load-214dd-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-35f5133e1ab06a5211602438b31dcd8bdb788c94.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-de-audit-load-214dd-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-6fd8a0d65f7e32a16b94426961f056e7fe3e1940.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-5e555b82486e699fbda4",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        },
+        {
+          "title": "fr: audit loading empty error recovery and technical dialog copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11076,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T18:05:23.908Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-fr-audit-load-5b551-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-219ae28b15f28b35e51383e7580d8368783f2031.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-fr-audit-load-5b551-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-11301f1c7a1421b5d8f5fd23b396b15a5da310f5.png"
+                    },
+                    {
+                      "name": "layout-evidence",
+                      "contentType": "image/png",
+                      "path": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\artifacts\\admin-audit\\locale-completed\\admin-review-fr-audit-load-5b551-y-and-technical-dialog-copy-admin-audit\\attachments\\layout-evidence-2d36bd0c8af662ab6f1d29c8e1f7669e07976479.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da1b70dc7fc5f05e6570-eadbf0b97f88c4133dfa",
+          "file": "admin-review.spec.ts",
+          "line": 426,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-09T18:04:47.041Z",
+    "duration": 48252.253000000004,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

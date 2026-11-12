@@ -49,6 +49,19 @@ export function useQuery<T>(
     };
   }, [refetch, options?.immediate]);
 
+  React.useEffect(() => {
+    if (options?.immediate === false) return;
+    const refresh = () => { void refetch().catch(() => undefined); };
+    const storage = (event: StorageEvent) => { if (event.key === 'catalog-published') refresh(); };
+    window.addEventListener('catalog-published', refresh);
+    window.addEventListener('storage', storage);
+    window.addEventListener('focus', refresh);
+    return () => {
+      window.removeEventListener('catalog-published', refresh);
+      window.removeEventListener('storage', storage);
+      window.removeEventListener('focus', refresh);
+    };
+  }, [refetch, options?.immediate]);
   return { data, loading, error, errorStatus, refetch, setData };
 }
 

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import {
@@ -45,7 +47,7 @@ export default function PortalStallingPage() {
         rightSlot={
           <Link href={`/${locale}/diensten/winterstalling`}>
             <Button variant="outline" size="sm">
-              {t('adminNew.portal.stalling.requestStorage')}
+              {<TranslatedText textKey={'adminNew.portal.stalling.requestStorage'} />}
             </Button>
           </Link>
         }
@@ -104,7 +106,7 @@ export default function PortalStallingPage() {
             action={
               <Link href={`/${locale}/contact`}>
                 <Button variant="gold" size="sm">
-                  {t('adminNew.portal.stalling.contact')}
+                  {<TranslatedText textKey={'adminNew.portal.stalling.contact'} />}
                 </Button>
               </Link>
             }
@@ -180,7 +182,7 @@ export default function PortalStallingPage() {
               {selected.boat ? (
                 <div className="rounded-xl border border-navy-100 bg-sand-50/60 p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-navy-400">
-                    {t('adminNew.portal.stalling.linkedBoat')}
+                    {<TranslatedText textKey={'adminNew.portal.stalling.linkedBoat'} />}
                   </div>
                   <div className="mt-2 flex items-center gap-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-marine-50 text-marine-700">
@@ -198,10 +200,10 @@ export default function PortalStallingPage() {
             </PortalModalBody>
             <PortalModalFooter>
               <Button variant="outline" onClick={() => setSelected(null)}>
-                {t('adminNew.common.cancel')}
+                {<TranslatedText textKey={'adminNew.common.cancel'} />}
               </Button>
               <Link href={`/${locale}/dashboard/facturen`}>
-                <Button variant="gold">{t('adminNew.portal.stalling.viewInvoices')}</Button>
+                <Button variant="gold">{<TranslatedText textKey={'adminNew.portal.stalling.viewInvoices'} />}</Button>
               </Link>
             </PortalModalFooter>
           </>

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Wallet } from 'lucide-react';
@@ -85,7 +87,7 @@ export default function CashClosePage() {
         rightSlot={
           <Link href={`/${locale}/admin/rapportages`}>
             <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              {t('adminNew.reports.title')}
+              {<TranslatedText textKey={'adminNew.reports.title'} />}
             </Button>
           </Link>
         }
@@ -96,12 +98,12 @@ export default function CashClosePage() {
           {cashReceivedCents != null ? (
             <div className="mb-4 rounded-lg bg-sand-50 px-4 py-3">
               <div className="text-xs font-semibold uppercase tracking-widest text-navy-400">
-                {t('adminNew.cashClose.cashReceivedToday', { defaultValue: 'Contante ontvangsten vandaag' })}
+                {<TranslatedText textKey={'adminNew.cashClose.cashReceivedToday'} vars={{ defaultValue: 'Contante ontvangsten vandaag' }} />}
               </div>
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="text-xl font-bold text-navy-900">{money(cashReceivedCents)}</span>
                 <span className="text-xs text-navy-400">
-                  {t('adminNew.cashClose.cashReceivedNote', { defaultValue: 'automatisch berekend uit kassabetalingen' })}
+                  {<TranslatedText textKey={'adminNew.cashClose.cashReceivedNote'} vars={{ defaultValue: 'automatisch berekend uit kassabetalingen' }} />}
                 </span>
               </div>
             </div>
@@ -134,7 +136,7 @@ export default function CashClosePage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.cashClose.fields.note')}
+                {<TranslatedText textKey={'adminNew.cashClose.fields.note'} />}
               </label>
               <textarea
                 className="input-base min-h-16 w-full"
@@ -143,7 +145,7 @@ export default function CashClosePage() {
               />
             </div>
             <Button type="submit" variant="gold" fullWidth disabled={createClosure.loading}>
-              {t('adminNew.cashClose.submit')}
+              {<TranslatedText textKey={'adminNew.cashClose.submit'} />}
             </Button>
           </form>
         </AdminSectionCard>
@@ -161,10 +163,10 @@ export default function CashClosePage() {
               <AdminTable minWidth={620}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.cashClose.columns.date')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.cashClose.columns.expected')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.cashClose.columns.counted')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.cashClose.columns.difference')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.cashClose.columns.date'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.cashClose.columns.expected'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.cashClose.columns.counted'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.cashClose.columns.difference'} />}</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
                 <tbody>

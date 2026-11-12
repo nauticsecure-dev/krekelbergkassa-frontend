@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -180,7 +182,7 @@ export default function BoatsPage() {
           icon={Ship}
           action={
             <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-              {t('adminNew.boats.new')}
+              {<TranslatedText textKey={'adminNew.boats.new'} />}
             </Button>
           }
         >
@@ -233,14 +235,14 @@ export default function BoatsPage() {
             <AdminTable minWidth={1160}>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>{t('adminNew.boats.columns.boat')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.boats.columns.owner')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.boats.fields.brand')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.boats.columns.type')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.boats.columns.status')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.boats.columns.length', { defaultValue: 'Lengte' })}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.boats.columns.currentStorageLocation')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.boats.columns.lastActivity')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.boats.columns.boat'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.boats.columns.owner'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.boats.fields.brand'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.boats.columns.type'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.boats.columns.status'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.boats.columns.length'} vars={{ defaultValue: 'Lengte' }} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.boats.columns.currentStorageLocation'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.boats.columns.lastActivity'} />}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
@@ -295,25 +297,25 @@ export default function BoatsPage() {
                           href={adminRecordHref(locale, 'boten', boat, '?tab=storage')}
                           className="font-semibold text-marine-700 hover:text-marine-900"
                         >
-                          {t('adminNew.boats.tabs.storage')}
+                          {<TranslatedText textKey={'adminNew.boats.tabs.storage'} />}
                         </Link>
                         <Link
                           href={adminRecordHref(locale, 'boten', boat, '?tab=financial')}
                           className="font-semibold text-marine-700 hover:text-marine-900"
                         >
-                          {t('adminNew.boats.tabs.financial')}
+                          {<TranslatedText textKey={'adminNew.boats.tabs.financial'} />}
                         </Link>
                         <Link
                           href={adminRecordHref(locale, 'boten', boat, '?tab=workOrders')}
                           className="font-semibold text-marine-700 hover:text-marine-900"
                         >
-                          {t('adminNew.boats.tabs.workOrders')}
+                          {<TranslatedText textKey={'adminNew.boats.tabs.workOrders'} />}
                         </Link>
                       </div>
                       <div className="mt-1 flex items-center justify-end">
                         <Link href={adminRecordHref(locale, 'boten', boat)}>
                           <Button variant="ghost" size="sm">
-                            {t('adminNew.common.edit')}
+                            {<TranslatedText textKey={'adminNew.common.edit'} />}
                           </Button>
                         </Link>
                         <Button disabled={!canDelete}
@@ -322,7 +324,7 @@ export default function BoatsPage() {
                           leftIcon={<Trash2 className="h-3.5 w-3.5" />}
                           onClick={() => setDeleteTarget(boat.id)}
                         >
-                          {t('adminNew.common.delete')}
+                          {<TranslatedText textKey={'adminNew.common.delete'} />}
                         </Button>
                       </div>
                     </AdminTableCell>
@@ -341,7 +343,7 @@ export default function BoatsPage() {
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.boats.columns.owner')}
+                {<TranslatedText textKey={'adminNew.boats.columns.owner'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
@@ -365,7 +367,7 @@ export default function BoatsPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.boats.columns.type')}
+                {<TranslatedText textKey={'adminNew.boats.columns.type'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
@@ -374,8 +376,8 @@ export default function BoatsPage() {
               >
                 <option value="motor">{t('adminNew.boats.type.motor')}</option>
                 <option value="sail">{t('adminNew.boats.type.sail')}</option>
-                <option value="rib">RIB</option>
-                <option value="trailer">Trailer</option>
+                <option value="rib"><TranslatedText textKey="siteCopy.f1d367d8e2ae901c" fallbackText={"RIB"} inline={false} /></option>
+                <option value="trailer"><TranslatedText textKey="siteCopy.a52b2dbc30fe11cd" fallbackText={"Trailer"} inline={false} /></option>
                 <option value="other">{t('adminNew.boats.type.other')}</option>
               </SearchSelect>
             </div>
@@ -464,10 +466,10 @@ export default function BoatsPage() {
           </AdminModalBody>
           <AdminModalFooter>
             <Button disabled={!canWrite} type="button" variant="ghost" onClick={() => setShowCreate(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createBoat.loading}>
-              {createBoat.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+              {createBoat.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>

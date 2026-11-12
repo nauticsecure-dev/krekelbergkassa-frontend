@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
@@ -97,7 +99,7 @@ export default function ProductsPage() {
         rightSlot={
           <Link aria-disabled={!canWrite} tabIndex={canWrite ? undefined : -1} href={canWrite ? `/${locale}/admin/producten/nieuw` : `/${locale}/admin/producten`}>
             <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-              {t('adminNew.products.new')}
+              {<TranslatedText textKey={'adminNew.products.new'} />}
             </Button>
           </Link>
         }
@@ -204,7 +206,7 @@ export default function ProductsPage() {
                       </div>
                       {!row.active ? (
                         <div className="absolute right-1.5 top-2.5">
-                          <Badge tone="neutral" className="text-[10px]">{t('adminNew.products.inactive')}</Badge>
+                          <Badge tone="neutral" className="text-[10px]">{<TranslatedText textKey={'adminNew.products.inactive'} />}</Badge>
                         </div>
                       ) : null}
                     </Link>
@@ -224,12 +226,12 @@ export default function ProductsPage() {
               <AdminTable>
                 <AdminTableHead>
                   <AdminTableRow>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.name')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.code')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.fields.productGroup', { defaultValue: 'Groep' })}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.category')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.price')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.products.columns.status')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.products.columns.name'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.products.columns.code'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.products.fields.productGroup'} vars={{ defaultValue: 'Groep' }} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.products.columns.category'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.products.columns.price'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.products.columns.status'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell>{''}</AdminTableHeaderCell>
                   </AdminTableRow>
                 </AdminTableHead>
@@ -270,14 +272,14 @@ export default function ProductsPage() {
                       <AdminTableCell>{formatCurrency(productPriceInclEuros(row), dateLocale)}</AdminTableCell>
                       <AdminTableCell>
                         <Badge tone={row.active ? 'success' : 'neutral'}>
-                          {row.active ? t('adminNew.products.active') : t('adminNew.products.inactive')}
+                          {row.active ? <TranslatedText textKey={'adminNew.products.active'} /> : <TranslatedText textKey={'adminNew.products.inactive'} />}
                         </Badge>
                       </AdminTableCell>
                       <AdminTableCell>
                         <div className="flex justify-end gap-1">
                           <Link href={adminRecordHref(locale, 'producten', row)}>
                             <Button size="sm" variant="ghost" leftIcon={<Pencil className="h-3.5 w-3.5" />}>
-                              {t('adminNew.common.view')}
+                              {<TranslatedText textKey={'adminNew.common.view'} />}
                             </Button>
                           </Link>
                           <Button disabled={!canWrite}
@@ -286,7 +288,7 @@ export default function ProductsPage() {
                             leftIcon={<Trash2 className="h-3.5 w-3.5" />}
                             onClick={() => setDeleteTarget(row.id)}
                           >
-                            {t('adminNew.common.delete')}
+                            {<TranslatedText textKey={'adminNew.common.delete'} />}
                           </Button>
                         </div>
                       </AdminTableCell>

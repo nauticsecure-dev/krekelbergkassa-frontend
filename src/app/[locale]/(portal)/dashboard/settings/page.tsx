@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import {
@@ -30,6 +32,7 @@ import { formatCurrency, intlLocale } from '@/lib/format';
 import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { PasswordForm } from '@/components/portal/PasswordForm';
 
 export default function PortalSettingsPage() {
   const { t, locale } = useIntl();
@@ -99,13 +102,13 @@ export default function PortalSettingsPage() {
                     <Avatar name={displayName} size="lg" />
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-widest text-sand-100/60">
-                        {t('adminNew.portal.settings.account')}
+                        {<TranslatedText textKey={'adminNew.portal.settings.account'} />}
                       </div>
                       <h2 className="heading-display mt-1 text-2xl text-white">{displayName}</h2>
                       <div className="mt-1 text-sm text-sand-100/75">{displayEmail}</div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Badge tone="success" dot>
-                          {t('adminNew.portal.settings.magicActive')}
+                          {<TranslatedText textKey={'adminNew.portal.settings.magicActive'} />}
                         </Badge>
                         <Badge tone="gold">{me.data.customer.customer_number}</Badge>
                       </div>
@@ -132,7 +135,7 @@ export default function PortalSettingsPage() {
                       })()
                     }
                   >
-                    {t('adminNew.portal.settings.refreshSession')}
+                    {<TranslatedText textKey={'adminNew.portal.settings.refreshSession'} />}
                   </Button>
                 </div>
               </div>
@@ -162,14 +165,15 @@ export default function PortalSettingsPage() {
                 description={t('adminNew.portal.settings.securityText')}
                 icon={Shield}
               >
+                <PasswordForm hasPassword={!!me.data.customer.has_password} onSaved={me.refetch} />
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 rounded-xl border border-navy-100 bg-sand-50/60 px-3 py-2.5 text-sm text-navy-700">
                     <Mail className="h-4 w-4 text-navy-400" />
-                    {t('adminNew.portal.settings.securityEmail')}
+                    {<TranslatedText textKey={'adminNew.portal.settings.securityEmail'} />}
                   </div>
                   <div className="flex items-center gap-2 rounded-xl border border-navy-100 bg-sand-50/60 px-3 py-2.5 text-sm text-navy-700">
                     <Phone className="h-4 w-4 text-navy-400" />
-                    {t('adminNew.portal.settings.securitySupport')}
+                    {<TranslatedText textKey={'adminNew.portal.settings.securitySupport'} />}
                   </div>
                 </div>
               </PortalSectionCard>
@@ -182,13 +186,13 @@ export default function PortalSettingsPage() {
             >
               <div className="flex flex-wrap gap-2">
                 <Link href={`/${locale}/dashboard/facturen`}>
-                  <Button variant="outline" size="sm">{t('login.invoices')}</Button>
+                  <Button variant="outline" size="sm">{<TranslatedText textKey={'login.invoices'} />}</Button>
                 </Link>
                 <Link href={`/${locale}/dashboard/boten`}>
-                  <Button variant="outline" size="sm">{t('login.yourBoats')}</Button>
+                  <Button variant="outline" size="sm">{<TranslatedText textKey={'login.yourBoats'} />}</Button>
                 </Link>
                 <Link href={`/${locale}/faq`}>
-                  <Button variant="gold" size="sm">{t('admin.sidebar.help')}</Button>
+                  <Button variant="gold" size="sm">{<TranslatedText textKey={'admin.sidebar.help'} />}</Button>
                 </Link>
               </div>
             </PortalSectionCard>

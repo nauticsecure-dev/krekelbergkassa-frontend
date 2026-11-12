@@ -1,19 +1,56 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { authService } from '@/lib/services';
+import { customerReturnTo, loginPath } from '@/lib/auth-routes';
+import { useAuth } from '@/lib/auth-context';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { ArrowLeft, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
 import { useIntl } from '@/i18n/IntlProvider';
 import { Button } from '@/components/ui/Button';
 
 export default function ForgotPasswordPage() {
+  return <React.Suspense><PasswordRecovery /></React.Suspense>;
+}
+
+function PasswordRecovery() {
   const { t, locale } = useIntl();
-  const [email, setEmail] = React.useState('');
+  const { user, invalidateSession } = useAuth();
+  const params = useSearchParams();
+  const token = params.get('token');
+  const returnTo = customerReturnTo(params.get('returnTo'));
+  const recoveryPath = `/${locale}/forgot-password${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`;
+  const emailFromLink = params.get('email');
+  const setup = params.has('setup');
+  const [email, setEmail] = React.useState(emailFromLink ?? '');
+  const address = setup && user?.role === 'customer' ? user.email : email;
+  const [password, setPassword] = React.useState('');
+  const [confirmation, setConfirmation] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string>();
   const [sent, setSent] = React.useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    setBusy(true);
+    setError(undefined);
+    try {
+      if (token) {
+        await authService.resetCustomerPassword(address, token, password, confirmation);
+        if (user?.role === 'customer' && user.email.toLowerCase() === address.toLowerCase()) invalidateSession();
+      } else {
+        await authService.requestCustomerPassword(address, locale, returnTo);
+      }
+      setSent(true);
+    } catch (err) {
+      setError(getApiErrorMessage(err, t('login.requestFailed')));
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (sent) {
@@ -23,14 +60,11 @@ export default function ForgotPasswordPage() {
           <CheckCircle2 className="h-6 w-6" />
         </span>
         <h2 className="heading-display mt-5 text-3xl text-navy-900 sm:text-[34px]">
-          {t('forgot.sentTitle')}
+          {<TranslatedText textKey={token ? 'login.passwordSaved' : 'forgot.sentTitle'} />}
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-navy-500">
-          {t('forgot.sentDescription', { email })}
-        </p>
-        <p className="mt-3 text-xs text-navy-400">{t('forgot.checkSpam')}</p>
+        {!token && <p className="mt-2 text-sm text-navy-500"><TranslatedText textKey='forgot.sentDescription' vars={{ email: address }} /></p>}
 
-        <Link href={`/${locale}/login`} className="mt-7 block">
+        <Link href={loginPath(locale, returnTo)} className="mt-7 block">
           <Button
             variant="outline"
             size="lg"
@@ -38,7 +72,7 @@ export default function ForgotPasswordPage() {
             leftIcon={<ArrowLeft className="h-4 w-4" />}
             className="border-navy-200 bg-white text-navy-800 hover:bg-sand-100"
           >
-            {t('forgot.backToLogin')}
+            {<TranslatedText textKey={'forgot.backToLogin'} />}
           </Button>
         </Link>
       </div>
@@ -48,10 +82,10 @@ export default function ForgotPasswordPage() {
   return (
     <div>
       <h2 className="heading-display text-3xl text-navy-900 sm:text-[34px]">
-        {t('forgot.title')}
+        {<TranslatedText textKey={token || setup ? 'login.setPassword' : 'forgot.title'} />}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-navy-500">
-        {t('forgot.subtitle')}
+        {<TranslatedText textKey={'forgot.subtitle'} />}
       </p>
 
       <form onSubmit={submit} className="mt-6 space-y-4">
@@ -60,7 +94,7 @@ export default function ForgotPasswordPage() {
             htmlFor="email"
             className="mb-1.5 block text-[11px] font-semibold uppercase tracking-widest text-navy-500"
           >
-            {t('login.email')}
+            {<TranslatedText textKey={'login.email'} />}
           </label>
           <div className="relative">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">
@@ -69,7 +103,8 @@ export default function ForgotPasswordPage() {
             <input
               id="email"
               type="email"
-              value={email}
+              value={address}
+              readOnly={Boolean(emailFromLink || (setup && user?.role === "customer"))}
               onChange={(e) => setEmail(e.target.value)}
               className="auth-input"
               required
@@ -79,17 +114,28 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
 
+        {token && <>
+          <label className="block text-sm"><TranslatedText textKey="login.password" />
+            <input className="auth-input w-full" type="password" autoComplete="new-password" minLength={12} maxLength={72} required value={password} onChange={(event) => setPassword(event.target.value)} />
+          </label>
+          <label className="block text-sm"><TranslatedText textKey="login.confirmPassword" />
+            <input className="auth-input w-full" type="password" autoComplete="new-password" minLength={12} maxLength={72} required value={confirmation} onChange={(event) => setConfirmation(event.target.value)} />
+          </label>
+        </>}
+        {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
+        {error && token && <Link className="text-sm underline" href={recoveryPath}><TranslatedText textKey="forgot.submit" /></Link>}
         <Button
+          disabled={busy}
           type="submit"
           size="lg"
           fullWidth
           rightIcon={<ArrowRight className="h-4 w-4" />}
           className="bg-navy-900 text-white hover:bg-navy-800"
         >
-          {t('forgot.submit')}
+          {<TranslatedText textKey={token ? 'login.setPassword' : 'forgot.submit'} />}
         </Button>
 
-        <Link href={`/${locale}/login`}>
+        <Link href={loginPath(locale, returnTo)}>
           <Button
             type="button"
             variant="outline"
@@ -98,7 +144,7 @@ export default function ForgotPasswordPage() {
             leftIcon={<ArrowLeft className="h-4 w-4" />}
             className="border-navy-200 bg-white text-navy-800 hover:bg-sand-100"
           >
-            {t('forgot.backToLogin')}
+            {<TranslatedText textKey={'forgot.backToLogin'} />}
           </Button>
         </Link>
       </form>

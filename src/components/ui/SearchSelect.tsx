@@ -35,32 +35,39 @@ type SearchSelectProps = {
   onSearchChange?: (query: string) => void;
 };
 
-function nodeText(node: React.ReactNode): string {
+function nodeText(node: React.ReactNode, t: ReturnType<typeof useT>): string {
   if (node == null || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
-  if (Array.isArray(node)) return node.map(nodeText).join('');
+  if (Array.isArray(node)) return node.map(child => nodeText(child, t)).join('');
   if (React.isValidElement(node)) {
-    return nodeText((node.props as { children?: React.ReactNode }).children);
+    const props = node.props as { children?: React.ReactNode; textKey?: string; inline?: boolean;
+      fallbackText?: string; vars?: Record<string, string | number | undefined> };
+    // Catalog-managed option labels are resolved here: this control reads its
+    // option children as data rather than mounting their React components.
+    if (props.inline === false && typeof props.textKey === 'string') {
+      return t(props.textKey, { defaultValue: props.fallbackText, ...props.vars });
+    }
+    return nodeText(props.children, t);
   }
   return '';
 }
 
-function collectOptions(children: React.ReactNode, group?: string): SearchSelectOption[] {
+function collectOptions(children: React.ReactNode, t: ReturnType<typeof useT>, group?: string): SearchSelectOption[] {
   const options: SearchSelectOption[] = [];
   React.Children.forEach(children, (child) => {
     if (!React.isValidElement(child)) return;
     if (child.type === React.Fragment) {
-      options.push(...collectOptions((child.props as { children?: React.ReactNode }).children, group));
+      options.push(...collectOptions((child.props as { children?: React.ReactNode }).children, t, group));
       return;
     }
     if (child.type === 'optgroup') {
       const props = child.props as { label?: string; children?: React.ReactNode };
-      options.push(...collectOptions(props.children, props.label ? String(props.label) : group));
+      options.push(...collectOptions(props.children, t, props.label ? String(props.label) : group));
       return;
     }
     if (child.type !== 'option') return;
     const props = child.props as { value?: string | number; disabled?: boolean; children?: React.ReactNode };
-    const label = nodeText(props.children).trim();
+    const label = nodeText(props.children, t).trim();
     const value = props.value == null ? label : String(props.value);
     options.push({
       value,
@@ -72,7 +79,7 @@ function collectOptions(children: React.ReactNode, group?: string): SearchSelect
   return options;
 }
 
-function safeOptions(options: SearchSelectOption[] | undefined, children: React.ReactNode): SearchSelectOption[] {
+function safeOptions(options: SearchSelectOption[] | undefined, children: React.ReactNode, t: ReturnType<typeof useT>): SearchSelectOption[] {
   if (options != null) {
     if (!Array.isArray(options)) return [];
     return options.flatMap((option) => {
@@ -88,7 +95,7 @@ function safeOptions(options: SearchSelectOption[] | undefined, children: React.
     });
   }
   try {
-    return collectOptions(children);
+    return collectOptions(children, t);
   } catch {
     return [];
   }
@@ -144,7 +151,7 @@ export function SearchSelect({
   const [box, setBox] = React.useState<{ left: number; top: number; width: number; flip: boolean; maxHeight: number } | null>(null);
   const isControlled = value !== undefined;
   const current = isControlled ? toValue(value) : uncontrolled;
-  const options = safeOptions(optionsProp, children);
+  const options = safeOptions(optionsProp, children, t);
   const resolvedPlaceholder = placeholder ?? t('admin.common.select', { defaultValue: 'Selecteer' });
   const resolvedSearch = searchPlaceholder ?? t('admin.common.search', { defaultValue: 'Zoeken…' });
   const resolvedEmpty = emptyLabel ?? t('admin.common.noResults', { defaultValue: 'Geen resultaten' });

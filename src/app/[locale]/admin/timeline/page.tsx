@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { adminRecordHref } from '@/config/admin-routes';
 
 import { tEnum } from '@/i18n/admin-enums';
@@ -303,7 +305,7 @@ export default function TimelinePage() {
         rightSlot={
           <Button variant="gold" size="sm" onClick={() => setShowMessageModal(true)}>
             <MessageSquarePlus className="mr-1.5 h-4 w-4" />
-            {t('adminNew.timeline.sendMessage', { defaultValue: 'Bericht sturen' })}
+            {<TranslatedText textKey={'adminNew.timeline.sendMessage'} vars={{ defaultValue: 'Bericht sturen' }} />}
           </Button>
         }
       />
@@ -349,7 +351,7 @@ export default function TimelinePage() {
                 className="flex items-center gap-1 rounded-full border border-navy-200 px-3 py-1 text-xs font-medium text-navy-500 hover:bg-sand-50"
               >
                 <X className="h-3 w-3" />
-                {t('adminNew.common.clear', { defaultValue: 'Wis datum' })}
+                {<TranslatedText textKey={'adminNew.common.clear'} vars={{ defaultValue: 'Wis datum' }} />}
               </button>
             )}
           </div>
@@ -378,10 +380,10 @@ export default function TimelinePage() {
               onChange={(v) => { setPriority(v); setPage(1); }}
             >
               <option value="">{t('adminNew.timeline.allPriorities', { defaultValue: 'Alle prioriteiten' })}</option>
-              <option value="urgent">Urgent</option>
-              <option value="high">Hoog</option>
-              <option value="normal">Normaal</option>
-              <option value="low">Laag</option>
+              <option value="urgent"><TranslatedText textKey="siteCopy.b28ee0cc5c255315" fallbackText={"Urgent"} inline={false} /></option>
+              <option value="high"><TranslatedText textKey="siteCopy.b592adce085cfe41" fallbackText={"Hoog"} inline={false} /></option>
+              <option value="normal"><TranslatedText textKey="siteCopy.9fa2b65f041cb0b3" fallbackText={"Normaal"} inline={false} /></option>
+              <option value="low"><TranslatedText textKey="siteCopy.bb2550785fa52452" fallbackText={"Laag"} inline={false} /></option>
             </AdminSelect>
             <AdminSelect
               value={visibility}
@@ -462,14 +464,12 @@ export default function TimelinePage() {
                             {isInternal && (
                               <span className="flex items-center gap-0.5 rounded-full bg-navy-50 px-2 py-0.5 text-xs font-medium text-navy-500">
                                 <EyeOff className="h-3 w-3" />
-                                Intern
-                              </span>
+                                <TranslatedText textKey="siteCopy.031a3ff52ee3b05f" fallbackText={"Intern"} /></span>
                             )}
                             {itemSource === 'audit' && (
                               <span className="flex items-center gap-0.5 rounded-full bg-sand-100 px-2 py-0.5 text-xs font-medium text-navy-500">
                                 <Bot className="h-3 w-3" />
-                                Audit
-                              </span>
+                                <TranslatedText textKey="siteCopy.e0398a9e55fbea69" fallbackText={"Audit"} /></span>
                             )}
                           </div>
                           <span className="text-xs text-navy-400">
@@ -554,7 +554,7 @@ export default function TimelinePage() {
                                         {cu?.name ? String(cu.name) : str(cr, 'actor_type')}
                                       </span>
                                       {isInternalComment && (
-                                        <span className="rounded bg-navy-50 px-1 text-[10px] text-navy-400">intern</span>
+                                        <span className="rounded bg-navy-50 px-1 text-[10px] text-navy-400"><TranslatedText textKey="siteCopy.2c5c734b1848f46e" fallbackText={"intern"} /></span>
                                       )}
                                       <span>{str(cr, 'created_at') ? formatDateTime(str(cr, 'created_at'), dateLocale) : ''}</span>
                                     </div>
@@ -564,7 +564,7 @@ export default function TimelinePage() {
                               })}
                             </ol>
                           ) : (
-                            <p className="mb-3 text-xs text-navy-400">Nog geen reacties.</p>
+                            <p className="mb-3 text-xs text-navy-400"><TranslatedText textKey="siteCopy.88ad85e5d65b7379" fallbackText={"Nog geen reacties."} /></p>
                           )}
                           <div className="flex gap-2">
                             <textarea
@@ -579,8 +579,8 @@ export default function TimelinePage() {
                                 value={commentVisibility}
                                 onChange={(e) => setCommentVisibility(e.target.value as 'customer' | 'internal')}
                               >
-                                <option value="customer">Klant</option>
-                                <option value="internal">Intern</option>
+                                <option value="customer"><TranslatedText textKey="siteCopy.450a99241e6aecf6" fallbackText={"Klant"} inline={false} /></option>
+                                <option value="internal"><TranslatedText textKey="siteCopy.031a3ff52ee3b05f" fallbackText={"Intern"} inline={false} /></option>
                               </SearchSelect>
                               <Button
                                 size="sm"
@@ -620,12 +620,11 @@ export default function TimelinePage() {
       >
         <div className="space-y-3">
           <h2 className="text-base font-semibold text-navy-900">
-            {t('adminNew.timeline.sendMessage', { defaultValue: 'Bericht naar klant' })}
+            {<TranslatedText textKey={'adminNew.timeline.sendMessage'} vars={{ defaultValue: 'Bericht naar klant' }} />}
           </h2>
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-500">
-              Klant ID
-            </label>
+              <TranslatedText textKey="siteCopy.138076770b9ccd1e" fallbackText={"Klant ID"} /></label>
             <Input
               value={msgCustomerId}
               onChange={(e) => setMsgCustomerId(e.target.value)}
@@ -634,8 +633,7 @@ export default function TimelinePage() {
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-500">
-              Onderwerp
-            </label>
+              <TranslatedText textKey="siteCopy.dd2834da0ff4d22c" fallbackText={"Onderwerp"} /></label>
             <Input
               value={msgTitle}
               onChange={(e) => setMsgTitle(e.target.value)}
@@ -644,8 +642,7 @@ export default function TimelinePage() {
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-500">
-              Bericht
-            </label>
+              <TranslatedText textKey="siteCopy.bd0fd8760f7b95da" fallbackText={"Bericht"} /></label>
             <textarea
               className="input-base min-h-[100px] w-full resize-none text-sm"
               value={msgBody}
@@ -656,37 +653,33 @@ export default function TimelinePage() {
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-500">
-                Prioriteit
-              </label>
+                <TranslatedText textKey="siteCopy.c9732b9ce2085532" fallbackText={"Prioriteit"} /></label>
               <AdminSelect value={msgPriority} onChange={setMsgPriority}>
-                <option value="low">Laag</option>
-                <option value="normal">Normaal</option>
-                <option value="high">Hoog</option>
-                <option value="urgent">Urgent</option>
+                <option value="low"><TranslatedText textKey="siteCopy.bb2550785fa52452" fallbackText={"Laag"} inline={false} /></option>
+                <option value="normal"><TranslatedText textKey="siteCopy.9fa2b65f041cb0b3" fallbackText={"Normaal"} inline={false} /></option>
+                <option value="high"><TranslatedText textKey="siteCopy.b592adce085cfe41" fallbackText={"Hoog"} inline={false} /></option>
+                <option value="urgent"><TranslatedText textKey="siteCopy.b28ee0cc5c255315" fallbackText={"Urgent"} inline={false} /></option>
               </AdminSelect>
             </div>
             <div className="flex-1">
               <label className="mb-1 block text-xs font-semibold uppercase tracking-widest text-navy-500">
-                Zichtbaar voor
-              </label>
+                <TranslatedText textKey="siteCopy.81c71b071ad2ed4d" fallbackText={"Zichtbaar voor"} /></label>
               <AdminSelect value={msgVisibility} onChange={(v) => setMsgVisibility(v as 'customer' | 'internal')}>
-                <option value="customer">Klant</option>
-                <option value="internal">Alleen intern</option>
+                <option value="customer"><TranslatedText textKey="siteCopy.450a99241e6aecf6" fallbackText={"Klant"} inline={false} /></option>
+                <option value="internal"><TranslatedText textKey="siteCopy.8449e4c35a32d54f" fallbackText={"Alleen intern"} inline={false} /></option>
               </AdminSelect>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" size="sm" onClick={() => setShowMessageModal(false)}>
-              Annuleren
-            </Button>
+              <TranslatedText textKey="siteCopy.d65efb8f02407a26" fallbackText={"Annuleren"} /></Button>
             <Button
               variant="gold"
               size="sm"
               onClick={() => void handleSendMessage()}
               disabled={sendMessage.loading || !msgCustomerId || !msgTitle || !msgBody}
             >
-              Verzenden
-            </Button>
+              <TranslatedText textKey="siteCopy.423c652e7d76faf7" fallbackText={"Verzenden"} /></Button>
           </div>
         </div>
       </Modal>

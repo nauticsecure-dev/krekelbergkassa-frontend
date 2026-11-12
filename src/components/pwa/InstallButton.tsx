@@ -1,5 +1,7 @@
 "use client";
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from "react";
 import {
   ArrowRight,
@@ -11,7 +13,6 @@ import {
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { usePwaInstall } from "@/lib/pwa";
-import { useIntl } from "@/i18n/IntlProvider";
 import { cn } from "@/lib/cn";
 
 interface Props {
@@ -20,7 +21,6 @@ interface Props {
 }
 
 export function InstallButton({ variant = "header", className }: Props) {
-  const { t } = useIntl();
   const { canInstall, canShowInstall, platform, promptInstall, dismiss } =
     usePwaInstall();
   const [open, setOpen] = React.useState(false);
@@ -73,8 +73,8 @@ export function InstallButton({ variant = "header", className }: Props) {
       <span className="relative flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-marine-500 to-navy-900 text-white">
         <Download className="h-3 w-3" />
       </span>
-      <span className="hidden lg:inline">{t("install.trigger")}</span>
-      <span className="lg:hidden">{t("nav.installShort")}</span>
+      <span className="hidden lg:inline">{<TranslatedText textKey={"install.trigger"} />}</span>
+      <span className="lg:hidden">{<TranslatedText textKey={"nav.installShort"} />}</span>
     </button>
   );
 
@@ -88,7 +88,7 @@ export function InstallButton({ variant = "header", className }: Props) {
       )}
     >
       <MonitorSmartphone className="h-4 w-4" />
-      {t("install.trigger")}
+      {<TranslatedText textKey={"install.trigger"} />}
     </button>
   );
 
@@ -106,18 +106,18 @@ export function InstallButton({ variant = "header", className }: Props) {
 
           <h2 className="font-display text-xl text-navy-900">
             {status === "installed"
-              ? t("install.installed")
-              : t("install.modalTitle")}
+              ? <TranslatedText textKey={"install.installed"} />
+              : <TranslatedText textKey={"install.modalTitle"} />}
           </h2>
           <p className="mt-1.5 text-sm text-navy-600">
             {status === "installed"
-              ? t("install.stepsDescDone")
-              : t("install.modalDescShort")}
+              ? <TranslatedText textKey={"install.stepsDescDone"} />
+              : <TranslatedText textKey={"install.modalDescShort"} />}
           </p>
 
           {status !== "installed" ? (
             <p className="mt-1 text-xs text-navy-400">
-              {t("install.benefitLine")}
+              {<TranslatedText textKey={"install.benefitLine"} />}
             </p>
           ) : null}
 
@@ -125,14 +125,14 @@ export function InstallButton({ variant = "header", className }: Props) {
           {status !== "installed" && isIos ? (
             <div className="mt-4 flex items-center gap-2 rounded-xl border border-navy-100 bg-sand-50/70 px-4 py-3 text-left text-xs text-navy-600">
               <Share2 className="h-4 w-4 flex-shrink-0 text-marine-700" />
-              <span>{t("install.iosShort")}</span>
+              <span>{<TranslatedText textKey={"install.iosShort"} />}</span>
             </div>
           ) : null}
 
           {/* Desktop/Android without a captured prompt → manual fallback */}
           {status !== "installed" && !isIos && !canInstall ? (
             <p className="mt-4 rounded-xl border border-navy-100 bg-sand-50/70 px-4 py-3 text-left text-xs text-navy-600">
-              {t("install.fallbackUnavailable")}
+              {<TranslatedText textKey={"install.fallbackUnavailable"} />}
             </p>
           ) : null}
 
@@ -145,12 +145,12 @@ export function InstallButton({ variant = "header", className }: Props) {
                 leftIcon={<Check className="h-4 w-4" />}
                 onClick={() => setOpen(false)}
               >
-                {t("install.installed")}
+                {<TranslatedText textKey={"install.installed"} />}
               </Button>
             ) : isIos || !canInstall ? (
               // No programmatic install available → single dismiss action
               <Button variant="primary" size="lg" fullWidth onClick={closeAndRemember}>
-                {t("install.close")}
+                {<TranslatedText textKey={"install.close"} />}
               </Button>
             ) : (
               <>
@@ -163,17 +163,17 @@ export function InstallButton({ variant = "header", className }: Props) {
                   disabled={status === "installing"}
                 >
                   {status === "installing"
-                    ? t("install.installing")
-                    : t("install.installCta")}
+                    ? <TranslatedText textKey={"install.installing"} />
+                    : <TranslatedText textKey={"install.installCta"} />}
                 </Button>
                 <Button variant="ghost" size="md" fullWidth onClick={closeAndRemember}>
-                  {t("install.later")}
+                  {<TranslatedText textKey={"install.later"} />}
                 </Button>
               </>
             )}
           </div>
 
-          <p className="mt-3 text-[11px] text-navy-400">{t("install.noStore")}</p>
+          <p className="mt-3 text-[11px] text-navy-400">{<TranslatedText textKey={"install.noStore"} />}</p>
         </div>
       </Modal>
     </>

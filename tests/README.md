@@ -18,6 +18,8 @@ Run commands from the frontend directory after `npm ci` and installation of the 
 
 Browser UI tests intercept API requests and abort non-local browser origins. They cover fixture data, responsive layout, form payloads, error/retry handling and selected permissions. They do not prove persistence, financial effects, provider behavior, or complete business E2E. Provider sandbox credentials must never be needed for this suite.
 
+`npm run test:ui -- werfcanvas-daily.spec.ts` checks the mobile daily calendar, date navigation, the print layout and categorized task photo uploads with intercepted HTTP. The print case exports a sample PDF to its test output directory. Backend behavior is covered by `php artisan test --filter=YardCanvasTest` in the backend checkout.
+
 The real-login smoke reads the local configured backend and must use a designated test account. It does not exercise Stalling, checkout, import, CMS publishing, or paid/external actions. Add full business scenarios only after provisioning an isolated backend/database and provider fakes; keep those claims separate from the UI suite.
 
 The isolated live runner writes fixture databases, server logs and test results to a fresh workspace `_audit/isolated-live-*` directory. It creates random temporary credentials in memory, restores its modified tariff, and stops only its own server processes in `finally`. The ordinary browser suite continues to skip `pricing-live.spec.ts`; use the isolated runner to opt into that test safely.

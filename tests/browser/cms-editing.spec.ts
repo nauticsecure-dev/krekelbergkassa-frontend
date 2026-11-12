@@ -47,6 +47,7 @@ test('linked text can be typed into, saved and previewed; CTA surface opens its 
   await editorSession(page);
   let saved: Record<string, unknown> | undefined;
   await page.route('**/admin/cms/content-blocks/home.werf.cta', async (route) => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { key: 'home.werf.cta', cms_revision: null, value_by_locale: {} } });
     saved = route.request().postDataJSON();
     await route.fulfill({ json: {} });
   });
@@ -67,7 +68,7 @@ test('linked text can be typed into, saved and previewed; CTA surface opens its 
   await input.press('Enter');
   await input.pressSequentially('second line');
   await expect(input).toHaveValue('Updated link label \nsecond line');
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
   await expect(dialog).toHaveCount(0);
   expect(saved).toMatchObject({ page: 'home', value_by_locale: { 'en-GB': 'Updated link label \nsecond line' } });
   await expect(label).toContainText('Updated link label');
@@ -95,6 +96,31 @@ test('certification badge without stored content shows 1976 and can be edited at
   for (const width of [320, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(badge).toBeVisible();
+    await expect(badge).toHaveCSS('outline-style', 'dashed');
+    await expect(badge).toHaveCSS('outline-width', '2px');
+    await badge.scrollIntoViewIfNeeded();
+    // Check the outline's painted bounds against clipping ancestors, not just
+    // whether the card or its pencil is visible.
+    const clippedBy = await badge.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      const outset = parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+      const clipped: string[] = [];
+      for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+        const css = getComputedStyle(parent);
+        const box = parent.getBoundingClientRect();
+        const left = box.left + parent.clientLeft;
+        const top = box.top + parent.clientTop;
+        const clipsX = /^(hidden|clip|scroll|auto)$/.test(css.overflowX);
+        const clipsY = /^(hidden|clip|scroll|auto)$/.test(css.overflowY);
+        if ((clipsX && (rect.left - outset < left || rect.right + outset > left + parent.clientWidth)) ||
+            (clipsY && (rect.top - outset < top || rect.bottom + outset > top + parent.clientHeight))) {
+          clipped.push(`${parent.tagName}.${parent.className}`);
+        }
+      }
+      return clipped;
+    });
+    expect(clippedBy).toEqual([]);
     await badge.getByRole('button', { name: messages.editCertificationBadge }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByLabel(messages.certificationSubtitle, { exact: true })).toHaveValue('HISWA · 1976');
@@ -102,7 +128,7 @@ test('certification badge without stored content shows 1976 and can be edited at
   }
 });
 
-test('certification badge is editable on mobile and preserves locale edits after reload', async ({ page }) => {
+test('certification badge saves both lines in every locale and reloads from the mocked API', async ({ page }) => {
   test.setTimeout(180_000);
   await editorSession(page);
   const stored: Record<string, Record<string, string>> = {
@@ -116,10 +142,16 @@ test('certification badge is editable on mobile and preserves locale edits after
   });
   await page.route('**/admin/cms/content-blocks/home.werf.*', route => {
     const key = route.request().url().split('/').pop()!;
+    if (route.request().method() === 'GET') return route.fulfill({ json: { key, cms_revision: null, value_by_locale: stored[key] ?? {} } });
     const body = route.request().postDataJSON();
     expect(body).toMatchObject({ page: 'home', section: 'werf' });
     stored[key] = { ...stored[key], ...body.value_by_locale };
     return route.fulfill({ json: {} });
+  });
+  await page.route('**/admin/cms/content-blocks', async route => {
+    const blocks = route.request().postDataJSON().blocks;
+    for (const block of blocks) stored[block.key] = { ...stored[block.key], ...block.value_by_locale };
+    return route.fulfill({ json: { data: blocks } });
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en');
@@ -129,29 +161,31 @@ test('certification badge is editable on mobile and preserves locale edits after
   await badge.getByRole('button', { name: messages.editCertificationBadge }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByLabel(messages.certificationSubtitle, { exact: true })).toHaveValue('HISWA · 1972');
-  await dialog.getByLabel(messages.certificationTitle, { exact: true }).fill('Verified badge');
   for (const tag of ['EN', 'NL', 'DE', 'FR']) {
     await dialog.getByRole('tab', { name: tag, exact: true }).click();
-    await dialog.getByLabel(messages.certificationSubtitle, { exact: true }).fill('HISWA · 1976');
+    await dialog.getByLabel(messages.certificationTitle, { exact: true }).fill(`Verified badge ${tag}`);
+    await dialog.getByLabel(messages.certificationSubtitle, { exact: true }).fill(`HISWA · 1976 ${tag}`);
   }
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await expect(badge).toContainText('Verified badge');
+  await expect(badge).toContainText('Verified badge EN');
   await page.evaluate(() => sessionStorage.clear());
   await page.reload();
-  await expect(badge).toContainText('HISWA · 1976');
+  await expect(badge).toContainText('Verified badge EN');
+  await expect(badge).toContainText('HISWA · 1976 EN');
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole('button', { name: messages.enterEdit, exact: true }).click();
   const desktopEdit = badge.getByRole('button', { name: messages.editCertificationBadge });
   await expect(desktopEdit).toBeVisible();
   await desktopEdit.focus();
   await desktopEdit.press('Enter');
-  await expect(dialog.getByLabel(messages.certificationSubtitle, { exact: true })).toHaveValue('HISWA · 1976');
+  await expect(dialog.getByLabel(messages.certificationTitle, { exact: true })).toHaveValue('Verified badge EN');
+  await expect(dialog.getByLabel(messages.certificationSubtitle, { exact: true })).toHaveValue('HISWA · 1976 EN');
   await dialog.getByRole('button', { name: messages.cancel, exact: true }).click();
   for (const locale of ['de', 'nl', 'fr']) {
     await page.goto(`/${locale}`);
-    await expect(badge).toContainText('HISWA · 1976');
-    await expect(badge).toContainText(stored['home.werf.cert'][({ de: 'de-DE', nl: 'nl-NL', fr: 'fr-FR' } as Record<string, string>)[locale]]);
+    await expect(badge).toContainText(`Verified badge ${locale.toUpperCase()}`);
+    await expect(badge).toContainText(`HISWA · 1976 ${locale.toUpperCase()}`);
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
   await expect(badge).toBeVisible();

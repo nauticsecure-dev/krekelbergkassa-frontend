@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import * as React from 'react';
 import Link from 'next/link';
@@ -100,7 +102,7 @@ export default function AccountingPage() {
             />
             <Link href={`/${locale}/admin/leveranciers`}>
               <Button variant="outline" size="sm" leftIcon={<Building2 className="h-4 w-4" />}>
-                {t('adminNew.suppliers.title')}
+                {<TranslatedText textKey={'adminNew.suppliers.title'} />}
               </Button>
             </Link>
           </div>
@@ -148,7 +150,7 @@ export default function AccountingPage() {
                 onClick={() => setPayStatus(s)}
                 className={`rounded-full px-3 py-1 text-xs font-semibold transition ${payStatus === s ? 'bg-navy-900 text-white' : 'bg-navy-50 text-navy-600 hover:bg-navy-100'}`}
               >
-                {s ? tEnum(t, 'adminNew.status', s) : t('adminNew.common.all')}
+                {s ? tEnum(t, 'adminNew.status', s) : <TranslatedText textKey={'adminNew.common.all'} />}
               </button>
             ))}
           </div>
@@ -163,11 +165,11 @@ export default function AccountingPage() {
               <AdminTable minWidth={860}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.accounting.payColumns.supplier')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.accounting.payColumns.reference')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.accounting.payColumns.due')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.accounting.payColumns.amount')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.accounting.payColumns.status')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.accounting.payColumns.supplier'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.accounting.payColumns.reference'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.accounting.payColumns.due'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.accounting.payColumns.amount'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.accounting.payColumns.status'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -191,7 +193,7 @@ export default function AccountingPage() {
                           <div className="flex justify-end">
                             {!paid ? (
                               <Button variant="outline" size="sm" disabled={markPaid.loading} onClick={() => void onMarkPaid(id)}>
-                                {t('adminNew.accounting.markPaid')}
+                                {<TranslatedText textKey={'adminNew.accounting.markPaid'} />}
                               </Button>
                             ) : null}
                           </div>
@@ -230,7 +232,7 @@ function LedgerBreakdown({
   const costRows = (Array.isArray(data.costs_by_ledger) ? data.costs_by_ledger : []) as Rec[];
 
   if (revenueRows.length === 0 && costRows.length === 0) {
-    return <p className="text-sm text-navy-500">{t('adminNew.accounting.ledgerEmpty')}</p>;
+    return <p className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.accounting.ledgerEmpty'} />}</p>;
   }
 
   const num = (r: Rec, ...keys: string[]) => {

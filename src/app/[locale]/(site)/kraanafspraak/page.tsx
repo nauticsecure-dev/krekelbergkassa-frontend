@@ -1,4 +1,6 @@
 'use client';
+import type { ServiceSelectionOptions } from '@/lib/services';
+import { useCatalogUpdates } from '@/lib/catalog-events';
 import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import * as React from 'react';
@@ -27,7 +29,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { bookingService } from '@/lib/services';
+import { portalService, bookingService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
 import {
   getApiErrorMessage,
@@ -151,7 +153,15 @@ const MAX_IMAGES = 5;
 export default function KraanAfspraakPage() {
   const { t, locale } = useIntl();
   const { push } = useToast();
-  const { user, isDemo } = useAuth();
+  const { user, isDemo, isPortalSession } = useAuth();
+  const [boatId, setBoatId] = React.useState('');
+  const [ownedBoats, setOwnedBoats] = React.useState<Awaited<ReturnType<typeof portalService.boats>>>([]);
+  React.useEffect(() => {
+    if (!isPortalSession || isDemo || !user) return;
+    let active = true;
+    void portalService.boats().then((boats) => { if (active) setOwnedBoats(boats); }).catch(() => undefined);
+    return () => { active = false; };
+  }, [user, isPortalSession, isDemo]);
   const canManageProducts = canAccessAdmin(user?.role, isDemo);
   const currencyLocale = intlLocale(locale);
   useRegisterCmsPage(CMS_PAGE);
@@ -177,7 +187,6 @@ export default function KraanAfspraakPage() {
   const [time, setTime]                     = React.useState<string | null>(null);
   const [selectedServices, setSelectedServices] = React.useState<string[]>(['afspuiten']);
   const [submitting, setSubmitting]         = React.useState(false);
-  const [submitted, setSubmitted]           = React.useState(false);
   const [confirmSubmit, setConfirmSubmit]   = React.useState(false);
   const [openDays, setOpenDays]             = React.useState<Record<string, boolean>>({});
   const [timeSlots, setTimeSlots]           = React.useState<string[]>([]);
@@ -191,6 +200,9 @@ export default function KraanAfspraakPage() {
   const [uploadingPhotos, setUploadingPhotos] = React.useState(false);
   const photoUploadLock = React.useRef(false);
   const submitLock = React.useRef(false);
+  const submission = React.useRef<{ payload: string; key: string } | null>(null);
+  const [receipt, setReceipt] = React.useState<{ appointmentId: string; reference: string; notificationStatus: string | null } | null>(null);
+  const submitted = receipt !== null;
   const journeyStarted = React.useRef(false);
   const journeyCompleted = React.useRef(false);
   const changedFields = React.useRef(new Set<string>());
@@ -269,6 +281,72 @@ export default function KraanAfspraakPage() {
     weight: '',
     notes: '',
   });
+
+  const [prefill, setPrefill] = React.useState<{ length_cm: number; service_codes: string[]; total_incl_vat: number; options?: ServiceSelectionOptions; pricing_date?: string; pricing_version?: string }>();
+  useCatalogUpdates();
+  const selectedOptions = React.useMemo(() => {
+    if (!prefill?.options) return undefined;
+    const quantities = Object.fromEntries(Object.entries(prefill.options.quantities ?? {}).filter(([code]) => selectedServices.includes(code)));
+    return { ...prefill.options, quantities: Object.keys(quantities).length ? quantities : undefined,
+      direction: selectedServices.includes('kranen') ? prefill.options.direction : undefined,
+      width_cm: form.width ? Number(form.width) : undefined, weight_kg: form.weight ? Number(form.weight) : undefined };
+  }, [prefill, selectedServices, form.width, form.weight]);
+  const [prefillError, setPrefillError] = React.useState(false);
+  const [prefillBoatId, setPrefillBoatId] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('selection');
+    if (token) {
+      let cancelled = false;
+      void serviceCatalogService.bookingSelection(token).then((selection) => {
+        if (cancelled) return;
+        setPrefill(selection);
+        setForm((previous) => ({ ...previous, length: previous.length || String(selection.length_cm),
+          width: previous.width || String(selection.options?.width_cm ?? ''), weight: previous.weight || String(selection.options?.weight_kg ?? '') }));
+        if (selection.selected_date && selection.selected_date >= toLocalDateKey(today)) {
+          const [year, month, day] = selection.selected_date.split('-').map(Number);
+          const date = new Date(year, month - 1, day);
+          setPicked(date); setView(new Date(year, month - 1, 1));
+        }
+        setSelectedServices(selection.service_codes);
+        setPrefillBoatId(selection.boat_id ?? null);
+      }).catch(() => {
+        if (!cancelled) setPrefillError(true);
+      });
+      return () => { cancelled = true; };
+    }
+    setPrefillBoatId(params.get('boat_id'));
+    const length = params.get('length_cm') ?? '';
+    if (/^[1-9]\d{0,3}$/.test(length)) {
+      setForm((previous) => ({ ...previous, length: previous.length || length }));
+    }
+    const requested = [...new Set(params.get('services')?.split(','))];
+    if (requested.length && requested.every((code) => code === 'kranen' || code === 'afspuiten')) {
+      setSelectedServices(requested);
+    }
+  }, []);
+
+  const selectOwnedBoat = React.useCallback((id: string) => {
+    const boat = ownedBoats.find((item) => item.id === id);
+    setBoatId(boat?.id ?? '');
+    if (boat) setForm((previous) => ({
+      ...previous,
+      email: user?.email ?? previous.email,
+      boatName: boat.name,
+      length: boat.length_cm ? String(boat.length_cm) : '',
+      width: boat.width_cm ? String(boat.width_cm) : '',
+      weight: boat.weight_kg ? String(boat.weight_kg) : '',
+    }));
+  }, [ownedBoats, user?.email]);
+
+  const appliedBoatPrefill = React.useRef(false);
+  React.useEffect(() => {
+    if (appliedBoatPrefill.current || !isPortalSession || !user) return;
+    const id = prefillBoatId;
+    if (!id || !ownedBoats.some((boat) => boat.id === id)) return;
+    appliedBoatPrefill.current = true;
+    selectOwnedBoat(id);
+  }, [isPortalSession, user, ownedBoats, selectOwnedBoat, prefillBoatId]);
 
   const clearFieldError = (key: BookingField) =>
     setFieldErrors((prev) => {
@@ -421,7 +499,7 @@ export default function KraanAfspraakPage() {
     let current = true;
     trackEvent('api_requested', { ...props, metadata: { date: dateKey, service_codes: selectedServices } });
     void bookingService
-      .slots({ date: dateKey, length_cm: Math.max(100, lengthCm), service_codes: selectedServices }, { requestId })
+      .slots({ date: dateKey, length_cm: Math.max(100, lengthCm), service_codes: selectedServices, options: selectedOptions }, { requestId })
       .then(res => {
         trackEvent('api_succeeded', { ...props, http_status: 200 });
         if (!current) return;
@@ -446,7 +524,7 @@ export default function KraanAfspraakPage() {
       })
       .finally(() => { if (current) setLoadingSlots(false); });
     return () => { current = false; };
-  }, [picked, selectedServices, lengthCm, t]);
+  }, [picked, selectedServices, lengthCm, t, selectedOptions]);
 
   const toggleService = (code: string) => {
     startJourney();
@@ -463,14 +541,19 @@ export default function KraanAfspraakPage() {
 
   const selectedBookableServices = bookableServices.filter((service) => selectedServices.includes(service.code));
   const quote = useQuery(
-    ['booking-quote', pricingDate, lengthCm, selectedServices.join(',')],
+    ['booking-quote', pricingDate, lengthCm, selectedServices.join(','), JSON.stringify(selectedOptions)],
     async () => selectedServices.length && lengthCm > 0
-      ? bookingService.preview({ date: pricingDate, length_cm: lengthCm, service_codes: selectedServices })
+      ? bookingService.preview({ date: pricingDate, length_cm: lengthCm, service_codes: selectedServices, options: selectedOptions })
       : null,
   );
   const totalDuration = quote.data?.total_duration_minutes ?? 0;
   const finalPrice = quote.data && !quote.loading && !quote.error && !quote.data.requires_manual_price && !quote.data.requires_on_request
     ? quote.data.total_incl_vat / 100 : null;
+  const previousPrice = prefill && prefill.length_cm === lengthCm
+    && prefill.service_codes.length === selectedServices.length
+    && prefill.service_codes.every((code) => selectedServices.includes(code))
+    && finalPrice !== null && prefill.total_incl_vat !== quote.data?.total_incl_vat
+    ? formatCurrency(prefill.total_incl_vat / 100, currencyLocale) : null;
 
   const isPast       = (d: Date) => d.getTime() < today.getTime();
   const isOtherMonth = (d: Date) => d.getMonth() !== view.getMonth();
@@ -638,7 +721,7 @@ export default function KraanAfspraakPage() {
     });
     try {
       trackEvent('api_requested', { request_id: requestId, intent: 'crane_booking', api_method: 'POST', api_endpoint: '/v1/booking' });
-      const result = await bookingService.book({
+      const payload = {
         first_name:  form.voornaam,
         last_name:   form.achternaam,
         phone:       form.phone || null,
@@ -666,11 +749,20 @@ export default function KraanAfspraakPage() {
           weight_kg:   form.weight ? Number(form.weight) : null,
         },
         service_codes: selectedServices,
-      }, { requestId });
+        options: selectedOptions,
+        expected_total_cents: quote.data?.total_incl_vat,
+      };
+      const booking = { ...payload, boat_id: boatId || undefined };
+      const serialized = JSON.stringify(booking);
+      if (submission.current?.payload !== serialized) {
+        submission.current = { payload: serialized, key: crypto.randomUUID() };
+      }
+      const result = await bookingService.book({ ...booking, submission_key: submission.current.key }, { requestId });
       const correlatedRequestId = result.requestId || requestId;
       const appointmentId = result.data?.appointment_id;
+      if (!appointmentId) throw new Error(t('crane.submitFailed'));
       journeyCompleted.current = true;
-      if (images.length && appointmentId) await uploadPhotos(appointmentId, correlatedRequestId);
+      if (images.length) await uploadPhotos(appointmentId, correlatedRequestId);
 
       trackEvent('booking_succeeded', {
         request_id: correlatedRequestId,
@@ -681,7 +773,11 @@ export default function KraanAfspraakPage() {
         api_method: 'POST',
         api_endpoint: '/v1/booking',
       });
-      setSubmitted(true);
+      setReceipt({
+        appointmentId,
+        reference: result.data?.reference || appointmentId,
+        notificationStatus: result.data?.notification_status ?? null,
+      });
       push({ tone: 'success', title: t('crane.submitSuccess') });
     } catch (err) {
       const failedRequestId = getApiRequestId(err) ?? requestId;
@@ -725,6 +821,8 @@ export default function KraanAfspraakPage() {
     trackEvent('photo_upload_started', props);
     try {
       const fd = new FormData();
+      if (!submission.current) throw new Error(t('crane.submitFailed'));
+      fd.append('submission_key', submission.current.key);
       images.forEach((image) => fd.append('photos[]', image));
       const result = await bookingService.uploadBookingPhotos(appointmentId, fd, { requestId });
       trackEvent('photo_upload_succeeded', { ...props, http_status: result.status });
@@ -764,7 +862,7 @@ export default function KraanAfspraakPage() {
     setConfirmSubmit(true);
   };
 
-  if (submitted) {
+  if (receipt) {
     return (
       <div className="bg-sand-50/80">
         <div className="container-wide flex min-h-[60vh] items-center justify-center py-24">
@@ -772,25 +870,29 @@ export default function KraanAfspraakPage() {
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
               <CheckCircle2 className="h-8 w-8 text-emerald-600" />
             </div>
-            <Badge tone="gold" className="mb-4">Aanvraag ontvangen</Badge>
-            <h2 className="font-display text-2xl font-bold text-navy-900">Uw aanvraag is verzonden</h2>
+            <Badge tone="gold" className="mb-4"><TranslatedText textKey="siteCopy.4076d1efe4558f24" fallbackText={"Aanvraag ontvangen"} /></Badge>
+            <h2 className="font-display text-2xl font-bold text-navy-900"><TranslatedText textKey="siteCopy.7a6599c7ba7be129" fallbackText={"Uw aanvraag is verzonden"} /></h2>
             <p className="mt-3 text-sm leading-relaxed text-navy-500">
-              Wij bekijken uw aanvraag zo snel mogelijk en bevestigen de afspraak per e-mail.
-              U kunt de status volgen via het klantportaal.
-            </p>
+              <TranslatedText textKey="siteCopy.bed33ffdae766260" fallbackText={"Wij bekijken uw aanvraag zo snel mogelijk en bevestigen de afspraak per e-mail. U kunt de status volgen via het klantportaal."} /></p>
+            <p className="mt-3 break-all text-sm text-navy-700"><TranslatedText textKey="crane.requestReference" vars={{ reference: receipt.reference }} /></p>
+            {receipt.notificationStatus && (
+              <p className="mt-2 text-sm text-navy-500">
+                <TranslatedText textKey="crane.receiptStatus" vars={{ status: t(`crane.delivery.${receipt.notificationStatus}`, { defaultValue: receipt.notificationStatus }) }} />
+              </p>
+            )}
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Link href={`/${locale}/dashboard/afspraken`}>
+              <Link href={`/${locale}/dashboard/afspraken?appointment=${encodeURIComponent(receipt.appointmentId)}`}>
                 <Button variant="gold" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  Bekijk uw afspraken
-                </Button>
+                  <TranslatedText textKey="siteCopy.cd43e8905a540bb0" fallbackText={"Bekijk uw afspraken"} /></Button>
               </Link>
               <Button variant="outline" disabled={!!photoRetry} onClick={() => {
                 journeyStarted.current = false;
                 journeyCompleted.current = false;
                 changedFields.current.clear();
                 setImages([]);
-                setSubmitted(false);
-              }}>Nieuwe aanvraag</Button>
+                submission.current = null;
+                setReceipt(null);
+              }}><TranslatedText textKey="siteCopy.e4408ed48c63ecb6" fallbackText={"Nieuwe aanvraag"} /></Button>
             </div>
             {photoRetry ? (
               <div role="alert" className="mt-5 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
@@ -841,7 +943,7 @@ export default function KraanAfspraakPage() {
 
             <Card className="p-6 sm:p-8">
               {/* Personal data */}
-              <SectionTitle icon={<User2 className="h-4 w-4" />}>Uw gegevens</SectionTitle>
+              <SectionTitle icon={<User2 className="h-4 w-4" />}><TranslatedText textKey="siteCopy.63fee9e23d59345e" fallbackText={"Uw gegevens"} /></SectionTitle>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <Input
                   ref={(el) => { fieldRefs.current.voornaam = el; }}
@@ -956,7 +1058,14 @@ export default function KraanAfspraakPage() {
               </div>
 
               {/* Boat */}
-              <SectionTitle icon={<Ship className="h-4 w-4" />} className="mt-8">Uw boot</SectionTitle>
+              <SectionTitle icon={<Ship className="h-4 w-4" />} className="mt-8"><TranslatedText textKey="siteCopy.a2a65e407664c210" fallbackText={"Uw boot"} /></SectionTitle>
+              {ownedBoats.length > 0 && <label className="mt-4 block text-sm font-medium">
+                <TranslatedText textKey="login.chooseBoat" />
+                <select className="auth-input mt-2 w-full" value={boatId} onChange={(event) => selectOwnedBoat(event.target.value)}>
+                  <option value=""><TranslatedText textKey="login.newBoat" /></option>
+                  {ownedBoats.map((boat) => <option key={boat.id} value={boat.id}>{boat.name}</option>)}
+                </select>
+              </label>}
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <Input
                   label="Naam boot"
@@ -971,7 +1080,7 @@ export default function KraanAfspraakPage() {
                   onChange={setField('boatEngine')}
                 />
                 <div className="sm:col-span-2">
-                  <p className="mb-1.5 text-sm font-medium text-navy-800">Merk en model</p>
+                  <p className="mb-1.5 text-sm font-medium text-navy-800"><TranslatedText textKey="siteCopy.9b59c4de138c7882" fallbackText={"Merk en model"} /></p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Input
                       label="Merk"
@@ -1100,17 +1209,16 @@ export default function KraanAfspraakPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-semibold">{s.label}</div>
-                          {line?.included_by ? <div className="text-xs">Inbegrepen: {line.included_by}</div> : null}
+                          {line?.included_by ? <div className="text-xs"><TranslatedText textKey="siteCopy.c1468588762401a7" fallbackText={"Inbegrepen: "} />{line.included_by}</div> : null}
                           <div className={cn('text-xs', active ? 'text-sand-100/80' : 'text-navy-400')}>
                             {duration != null ? `Ca. ${duration} min` : '—'}
                           </div>
                         </div>
                         <div className={cn('shrink-0 text-sm font-semibold', active ? 'text-gold-300' : 'text-navy-900')}>
-                          {price == null ? t('servicePage.onRequest') : formatCurrency(price, currencyLocale)}
+                          {price == null ? <TranslatedText textKey={'servicePage.onRequest'} /> : formatCurrency(price, currencyLocale)}
                           {price != null && !lengthCm ? (
                             <span className={cn('ml-0.5 text-[10px] font-normal', active ? 'text-sand-100/70' : 'text-navy-400')}>
-                              v.a.
-                            </span>
+                              <TranslatedText textKey="siteCopy.3f25c808648f54aa" fallbackText={"v.a."} /></span>
                           ) : null}
                         </div>
                       </button>
@@ -1275,8 +1383,8 @@ export default function KraanAfspraakPage() {
               >
                 <SectionTitle icon={<Clock className="h-4 w-4" />}>
                   {picked
-                    ? t('crane.timeSlots', { date: `${picked.getDate()} ${DUTCH_MONTHS[picked.getMonth()]}` })
-                    : t('crane.selectDate')}
+                    ? <TranslatedText textKey={'crane.timeSlots'} vars={{ date: `${picked.getDate()} ${DUTCH_MONTHS[picked.getMonth()]}` }} />
+                    : <TranslatedText textKey={'crane.selectDate'} />}
                 </SectionTitle>
                 {slotsError === 'closed' && (
                   <p
@@ -1300,8 +1408,7 @@ export default function KraanAfspraakPage() {
                 )}
                 {!slotsError && !loadingSlots && picked && !lengthCm && (
                   <p className="mt-3 rounded-lg border border-navy-100 bg-sand-50 px-3 py-2.5 text-xs text-navy-500">
-                    Voer eerst de lengte van uw boot in om beschikbare tijden te zien.
-                  </p>
+                    <TranslatedText textKey="siteCopy.00cc8b1576199e33" fallbackText={"Voer eerst de lengte van uw boot in om beschikbare tijden te zien."} /></p>
                 )}
                 {!slotsError && (
                   <div className="mt-3 grid grid-cols-4 gap-2">
@@ -1328,7 +1435,7 @@ export default function KraanAfspraakPage() {
                       );
                     })}
                     {!loadingSlots && timeSlots.length === 0 && picked && lengthCm && !slotsError && (
-                      <p className="col-span-4 text-xs text-navy-400">Geen beschikbare tijden op deze dag.</p>
+                      <p className="col-span-4 text-xs text-navy-400"><TranslatedText textKey="siteCopy.77957011d12a0a5e" fallbackText={"Geen beschikbare tijden op deze dag."} /></p>
                     )}
                   </div>
                 )}
@@ -1370,7 +1477,9 @@ export default function KraanAfspraakPage() {
                     <TranslatedText textKey={'crane.estimate'} />
                   </span>
                   <span className="text-2xl font-semibold">
-                    {finalPrice == null ? t('servicePage.onRequest') : `€${finalPrice.toFixed(2)}`}
+                    {finalPrice == null ? <TranslatedText textKey={'servicePage.onRequest'} /> : formatCurrency(finalPrice, currencyLocale)}
+                    {previousPrice && <span className="block text-sm font-normal"><TranslatedText textKey={'yardPricing.previousEstimate'} vars={{ amount: previousPrice }} /></span>}
+                    {prefillError && <span role="alert" className="block text-sm font-normal"><TranslatedText textKey={'yardPricing.selectionUnavailable'} /></span>}
                   </span>
                 </div>
               </div>
@@ -1410,7 +1519,7 @@ export default function KraanAfspraakPage() {
                     }
                     onClick={onSubmitClick}
                   >
-                    {submitted ? t('crane.submitSuccess') : t('crane.submit')}
+                    {submitted ? <TranslatedText textKey={'crane.submitSuccess'} /> : <TranslatedText textKey={'crane.submit'} />}
                   </Button>
                 </div>
               </div>

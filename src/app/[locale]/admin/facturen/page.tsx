@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -198,12 +200,12 @@ function InvoicesPage() {
             <div className="flex gap-2">
               <Link href={`/${locale}/admin/facturen/import`}>
                 <Button variant="outline" size="sm" leftIcon={<Upload className="h-4 w-4" />}>
-                  {t('adminNew.invoiceImports.title')}
+                  {<TranslatedText textKey={'adminNew.invoiceImports.title'} />}
                 </Button>
               </Link>
               <Link href={`/${locale}/admin/facturen/nieuw`}>
                 <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-                  {t('adminNew.invoices.new')}
+                  {<TranslatedText textKey={'adminNew.invoices.new'} />}
                 </Button>
               </Link>
             </div>
@@ -248,7 +250,7 @@ function InvoicesPage() {
                   });
                 }}
               >
-                {t('adminNew.invoices.onAccount', { defaultValue: 'Op rekening' })}
+                {<TranslatedText textKey={'adminNew.invoices.onAccount'} vars={{ defaultValue: 'Op rekening' }} />}
               </AdminFilterPill>
             </div>
           </div>
@@ -322,7 +324,7 @@ function InvoicesPage() {
             <option value="">{t('adminNew.invoices.allMethods')}</option>
             <option value="pin">{t('adminNew.invoiceDetail.paymentMethods.pin')}</option>
             <option value="cash">{t('adminNew.invoiceDetail.paymentMethods.cash')}</option>
-            <option value="ideal">iDEAL</option>
+            <option value="ideal"><TranslatedText textKey="siteCopy.9e8d1c1e1c2631bb" fallbackText={"iDEAL"} inline={false} /></option>
             <option value="banktransfer">{t('adminNew.invoiceDetail.paymentMethods.banktransfer')}</option>
           </AdminSelect>
           <div className="flex h-10 items-center gap-1 rounded-lg border border-navy-200 bg-white px-2 text-sm text-navy-600">
@@ -399,10 +401,10 @@ function InvoicesPage() {
                   <AdminTableHeaderCell>{sortHeader(t('adminNew.invoices.columns.source'), 'source')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{sortHeader(t('adminNew.invoices.columns.amount'), 'total_amount')}</AdminTableHeaderCell>
                   <AdminTableHeaderCell>{sortHeader(t('adminNew.invoices.columns.dueDate'), 'due_date')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.columns.paymentMethod')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.columns.paidDate')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.invoiceState', { defaultValue: 'Factuurstatus' })}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.invoices.paymentState', { defaultValue: 'Betaalstatus' })}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoices.columns.paymentMethod'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoices.columns.paidDate'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoices.invoiceState'} vars={{ defaultValue: 'Factuurstatus' }} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.invoices.paymentState'} vars={{ defaultValue: 'Betaalstatus' }} />}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
@@ -422,10 +424,10 @@ function InvoicesPage() {
                         <div className="text-xs text-navy-500">{invoice.customer?.email ?? '—'}</div>
                       </AdminTableCell>
                       <AdminTableCell>
-                        <div className="capitalize">{invoice.source}</div><div className="text-xs text-navy-500">{invoice.direction === 'purchase' ? t('adminNew.invoices.purchase', { defaultValue: 'Inkoop' }) : t('adminNew.invoices.sales', { defaultValue: 'Verkoop' })}</div>
+                        <div className="capitalize">{invoice.source}</div><div className="text-xs text-navy-500">{invoice.direction === 'purchase' ? <TranslatedText textKey={'adminNew.invoices.purchase'} vars={{ defaultValue: 'Inkoop' }} /> : <TranslatedText textKey={'adminNew.invoices.sales'} vars={{ defaultValue: 'Verkoop' }} />}</div>
                         {provenance ? (
                           <Link href={provenance.href} className="mt-1 block text-sm font-medium text-marine-700 hover:underline">
-                            {t('adminNew.invoices.provenanceLabel', { defaultValue: 'Bron' })}: {provenance.label}
+                            {<TranslatedText textKey={'adminNew.invoices.provenanceLabel'} vars={{ defaultValue: 'Bron' }} />}: {provenance.label}
                           </Link>
                         ) : null}
                       </AdminTableCell>
@@ -435,7 +437,7 @@ function InvoicesPage() {
                         </div>
                         {invoice.outstanding_cents > 0 ? (
                           <div className="text-xs font-medium text-amber-700">
-                            {t('adminNew.invoices.openAmount')}:{' '}
+                            {<TranslatedText textKey={'adminNew.invoices.openAmount'} />}:{' '}
                             {formatCurrency(centsToEuro(invoice.outstanding_cents), dateLocale)}
                           </div>
                         ) : null}
@@ -451,7 +453,7 @@ function InvoicesPage() {
                       </AdminTableCell>
                       <AdminTableCell className="text-right">
                         <AdminLinkButton href={`/${locale}/admin/facturen/${invoice.id}`}>
-                          {t('adminNew.invoices.details')}
+                          {<TranslatedText textKey={'adminNew.invoices.details'} />}
                         </AdminLinkButton>
                       </AdminTableCell>
                     </AdminTableRow>

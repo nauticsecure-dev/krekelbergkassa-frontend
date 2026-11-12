@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import { ImagePlus, ScanLine } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
@@ -116,7 +118,7 @@ export function ProductForm({
           />
           <div className="sm:col-span-2 xl:col-span-3">
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.products.fields.description')}
+              {<TranslatedText textKey={'adminNew.products.fields.description'} />}
             </label>
             <textarea
               className="input-base min-h-24 w-full"
@@ -127,7 +129,7 @@ export function ProductForm({
           </div>
           <label className="flex items-center gap-2 text-sm sm:col-span-2 xl:col-span-3">
             <input type="checkbox" checked={form.active} onChange={(e) => set({ active: e.target.checked })} />
-            {t('adminNew.products.active')}
+            {<TranslatedText textKey={'adminNew.products.active'} />}
           </label>
         </AdminFormGrid>
       </AdminFormSection>
@@ -136,7 +138,7 @@ export function ProductForm({
         <AdminFormGrid className="xl:grid-cols-3">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.products.columns.category')}
+              {<TranslatedText textKey={'adminNew.products.columns.category'} />}
             </label>
             <AdminSelect value={form.category} onChange={(v) => set({ category: v })}>
               <option value="">{t('adminNew.products.fields.categoryNone')}</option>
@@ -149,7 +151,7 @@ export function ProductForm({
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.products.fields.serviceCode')}
+              {<TranslatedText textKey={'adminNew.products.fields.serviceCode'} />}
             </label>
             <AdminSelect value={form.service_code} onChange={(v) => set({ service_code: v })}>
               <option value="">{t('adminNew.products.fields.serviceCodeNone')}</option>
@@ -162,7 +164,7 @@ export function ProductForm({
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.products.fields.productGroup', { defaultValue: 'Productgroep' })}
+              {<TranslatedText textKey={'adminNew.products.fields.productGroup'} vars={{ defaultValue: 'Productgroep' }} />}
             </label>
             <AdminSelect value={form.product_group_id} onChange={(v) => set({ product_group_id: v })}>
               <option value="">{t('adminNew.products.fields.productGroupNone', { defaultValue: 'Geen groep' })}</option>
@@ -208,7 +210,7 @@ export function ProductForm({
           />
           <div>
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.products.fields.priceIncl')}
+              {<TranslatedText textKey={'adminNew.products.fields.priceIncl'} />}
             </label>
             <div className="input-base flex items-center bg-sand-50 text-navy-700">
               {formatCurrency(priceInclCents / 100, dateLocale)}
@@ -245,7 +247,7 @@ export function ProductForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.products.fields.barcode')}
+              {<TranslatedText textKey={'adminNew.products.fields.barcode'} />}
             </label>
             <div className="flex items-end gap-2">
               <div className="flex-1">
@@ -262,7 +264,7 @@ export function ProductForm({
                 leftIcon={<ScanLine className="h-4 w-4" />}
                 onClick={() => setShowScanner(true)}
               >
-                {t('adminNew.products.fields.scanBarcode')}
+                {<TranslatedText textKey={'adminNew.products.fields.scanBarcode'} />}
               </Button>
             </div>
           </div>
@@ -283,7 +285,7 @@ export function ProductForm({
           />
           <div>
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.products.fields.color')}
+              {<TranslatedText textKey={'adminNew.products.fields.color'} />}
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -297,7 +299,7 @@ export function ProductForm({
           </div>
           <div className="sm:col-span-2">
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.products.fields.imageUrl')}
+              {<TranslatedText textKey={'adminNew.products.fields.imageUrl'} />}
             </label>
             <div className="flex items-start gap-3">
               {form.image_url ? (
@@ -330,10 +332,10 @@ export function ProductForm({
                   disabled={!productId || uploading}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  {uploading ? t('adminNew.products.ai.uploading') : t('adminNew.products.fields.uploadImage')}
+                  {uploading ? <TranslatedText textKey={'adminNew.products.ai.uploading'} /> : <TranslatedText textKey={'adminNew.products.fields.uploadImage'} />}
                 </Button>
                 {!productId ? (
-                  <p className="text-xs text-navy-400">{t('adminNew.products.fields.uploadHint')}</p>
+                  <p className="text-xs text-navy-400">{<TranslatedText textKey={'adminNew.products.fields.uploadHint'} />}</p>
                 ) : null}
               </div>
             </div>

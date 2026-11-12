@@ -1,11 +1,14 @@
 "use client";
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useIntl } from "@/i18n/IntlProvider";
 import { Button } from "@/components/ui/Button";
+import { customerReturnTo, isSafeReturnTo } from "@/lib/auth-routes";
 import { useAuth, MfaRequiredError } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/ToastProvider";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -27,11 +30,13 @@ function LoginPageContent() {
   const { t, locale } = useIntl();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, verifyMfa, requestCustomerMagicLink, verifyCustomerMagicLink } =
+  const { signIn, signInCustomer, verifyMfa, requestCustomerMagicLink } =
     useAuth();
   const { push } = useToast();
 
   const role: LoginRole = coerceLoginRole(searchParams.get("role"));
+  const [passwordless, setPasswordless] = React.useState(false);
+  const magicMode = role === "customer" && passwordless;
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [remember, setRemember] = React.useState(true);
@@ -42,44 +47,28 @@ function LoginPageContent() {
   const [mfaToken, setMfaToken] = React.useState<string | null>(null);
   const [mfaCode, setMfaCode] = React.useState("");
 
-  const dest =
-    searchParams.get('returnTo')?.startsWith('/') && !searchParams.get('returnTo')?.includes('://')
-      ? searchParams.get('returnTo')!
-      : `/${locale}${ROLE_REDIRECTS[role]}`;
-
-  React.useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("token")
-        : null;
-    if (!token) return;
-    setLoading(true);
-    void verifyCustomerMagicLink(token)
-      .then(() => {
-        push({
-          tone: "success",
-          title: t("adminNew.auth.portalSessionActive"),
-          message: t("adminNew.auth.portalSessionActiveMsg"),
-        });
-        router.push(`/${locale}/feed`);
-      })
-      .catch((err) => {
-        setError(getApiErrorMessage(err, t("common.loginFailed")));
-      })
-      .finally(() => setLoading(false));
-  }, [verifyCustomerMagicLink, push, router, locale, t]);
+  const returnTo = searchParams.get('returnTo');
+  const destination = role === 'customer'
+    ? customerReturnTo(returnTo)
+    : (isSafeReturnTo(returnTo) ? returnTo : undefined);
+  const dest = destination ?? `/${locale}${ROLE_REDIRECTS[role]}`;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      if (role === "customer") {
-        await requestCustomerMagicLink(email, locale);
+      if (magicMode) {
+        await requestCustomerMagicLink(email, locale, destination);
         push({
           tone: "success",
           title: t("adminNew.auth.magicSentTitle"),
         });
+        return;
+      }
+      if (role === "customer") {
+        await signInCustomer(email, password, remember);
+        window.location.replace(dest);
         return;
       }
       await signIn(email, password, remember);
@@ -118,10 +107,10 @@ function LoginPageContent() {
     return (
       <div>
         <h2 className="heading-display text-3xl text-navy-900 sm:text-[34px]">
-          {t("adminNew.auth.mfaTitle")}.
+          {<TranslatedText textKey={"adminNew.auth.mfaTitle"} />}.
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-navy-500">
-          {t("adminNew.auth.mfaSubtitle")}
+          {<TranslatedText textKey={"adminNew.auth.mfaSubtitle"} />}
         </p>
         <form onSubmit={submitMfa} className="mt-6 space-y-4">
           <Field id="mfa-code" label={t("adminNew.auth.mfaCode")} icon={<Lock className="h-4 w-4" />}>
@@ -150,14 +139,14 @@ function LoginPageContent() {
             rightIcon={<ArrowRight className="h-4 w-4" />}
             className="bg-navy-900 text-white hover:bg-navy-800"
           >
-            {loading ? t("common.loggingIn") : t("adminNew.auth.mfaVerify")}
+            {loading ? <TranslatedText textKey={"common.loggingIn"} /> : <TranslatedText textKey={"adminNew.auth.mfaVerify"} />}
           </Button>
           <button
             type="button"
             onClick={() => { setMfaToken(null); setMfaCode(""); setError(null); }}
             className="block w-full pt-1 text-center text-sm font-semibold text-navy-500 hover:text-navy-800"
           >
-            {t("adminNew.common.back")}
+            {<TranslatedText textKey={"adminNew.common.back"} />}
           </button>
         </form>
       </div>
@@ -167,10 +156,10 @@ function LoginPageContent() {
   return (
     <div>
       <h2 className="heading-display text-3xl text-navy-900 sm:text-[34px]">
-        {t("login.title")}.
+        {<TranslatedText textKey={"login.title"} />}.
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-navy-500">
-        {t("loginExt.subtitle")}
+        {<TranslatedText textKey={"loginExt.subtitle"} />}
       </p>
 
       <form onSubmit={submit} className="mt-6 space-y-4">
@@ -191,7 +180,7 @@ function LoginPageContent() {
           />
         </Field>
 
-        {role !== "customer" ? (
+        {!magicMode ? (
           <Field
             id="password"
             label={t("login.password")}
@@ -224,7 +213,7 @@ function LoginPageContent() {
           </Field>
         ) : null}
 
-        {role !== "customer" ? (
+        {!magicMode ? (
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-navy-700">
               <input
@@ -233,18 +222,18 @@ function LoginPageContent() {
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
               />
-              {t("login.remember")}
+              {<TranslatedText textKey={"login.remember"} />}
             </label>
-            <Link
-              href={`/${locale}/forgot-password`}
+            {role === "customer" && <Link
+              href={`/${locale}/forgot-password${destination ? `?returnTo=${encodeURIComponent(destination)}` : ''}`}
               className="font-semibold text-marine-700 hover:text-marine-800"
             >
-              {t("login.forgot")}
-            </Link>
+              {<TranslatedText textKey={"login.forgot"} />}
+            </Link>}
           </div>
         ) : (
           <div className="rounded-lg border border-marine-200 bg-marine-50 px-3 py-2 text-xs text-marine-800">
-            {t("adminNew.auth.magicInfo")}
+            {<TranslatedText textKey={"login.emailLinkHelp"} />}
           </div>
         )}
 
@@ -263,19 +252,26 @@ function LoginPageContent() {
           className="bg-navy-900 text-white hover:bg-navy-800"
         >
           {loading
-            ? t("common.loggingIn")
-            : role === "customer"
-              ? t("adminNew.auth.sendMagicLink")
+            ? <TranslatedText textKey={"common.loggingIn"} />
+            : magicMode
+              ? <TranslatedText textKey={"login.emailLink"} />
               : `${t("login.submit")}`}
         </Button>
 
+        {role === "customer" && (
+          <button type="button" disabled={loading} className="w-full text-sm font-semibold text-marine-700"
+            onClick={() => { setPasswordless(!passwordless); setError(null); }}>
+            <TranslatedText textKey={magicMode ? "login.withPassword" : "login.withoutPassword"} />
+          </button>
+        )}
+
         <p className="pt-2 text-center text-sm text-navy-500">
-          {t("login.noAccount")}{" "}
+          {<TranslatedText textKey={"login.noAccount"} />}{" "}
           <Link
-            href={`/${locale}/signup?role=${role}`}
+            href={`/${locale}/signup?role=${role}${destination ? `&returnTo=${encodeURIComponent(destination)}` : ''}`}
             className="font-semibold text-navy-900 hover:text-marine-700"
           >
-            {t("login.createAccount")}
+            {<TranslatedText textKey={"login.createAccount"} />}
           </Link>
         </p>
       </form>

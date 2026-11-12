@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { adminRecordHref } from '@/config/admin-routes';
@@ -116,11 +118,11 @@ export default function SuppliersPage() {
           <div className="flex gap-2">
             <Link href={`/${locale}/admin/boekhouding`}>
               <Button variant="outline" size="sm" leftIcon={<Receipt className="h-4 w-4" />}>
-                {t('adminNew.accounting.title')}
+                {<TranslatedText textKey={'adminNew.accounting.title'} />}
               </Button>
             </Link>
             <Button disabled={!canWrite} variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
-              {t('adminNew.suppliers.new')}
+              {<TranslatedText textKey={'adminNew.suppliers.new'} />}
             </Button>
           </div>
         }
@@ -141,10 +143,10 @@ export default function SuppliersPage() {
               <AdminTable minWidth={820}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.suppliers.columns.name')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.suppliers.columns.contact')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.suppliers.columns.vat')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.suppliers.columns.terms')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.suppliers.columns.name'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.suppliers.columns.contact'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.suppliers.columns.vat'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.suppliers.columns.terms'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -160,16 +162,16 @@ export default function SuppliersPage() {
                         </AdminTableCell>
                         <AdminTableCell className="text-sm">{str(row, 'vat_number') || '—'}</AdminTableCell>
                         <AdminTableCell className="text-sm">
-                          {str(row, 'payment_terms_days') ? t('adminNew.suppliers.termDays', { days: str(row, 'payment_terms_days') }) : '—'}
+                          {str(row, 'payment_terms_days') ? <TranslatedText textKey={'adminNew.suppliers.termDays'} vars={{ days: str(row, 'payment_terms_days') }} /> : '—'}
                         </AdminTableCell>
                         <AdminTableCell>
                           <div className="flex justify-end gap-2">
                             <Button disabled={!canWrite} variant="ghost" size="sm" onClick={() => openEdit(row)}>
-                              {t('adminNew.common.edit')}
+                              {<TranslatedText textKey={'adminNew.common.edit'} />}
                             </Button>
                             <Link href={adminRecordHref(locale, 'leveranciers', { id, public_id: str(row, 'public_id'), slug: str(row, 'slug') })}>
                               <Button variant="outline" size="sm" leftIcon={<Eye className="h-3.5 w-3.5" />}>
-                                {t('adminNew.common.open')}
+                                {<TranslatedText textKey={'adminNew.common.open'} />}
                               </Button>
                             </Link>
                           </div>
@@ -210,8 +212,8 @@ export default function SuppliersPage() {
             <Input label={t('adminNew.suppliers.fields.ledgerAccount')} value={form.default_ledger_account} onChange={(e) => setForm({ ...form, default_ledger_account: e.target.value })} placeholder={t('adminNew.suppliers.fields.ledgerAccountPlaceholder')} />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={createM.loading || updateM.loading}>{t('adminNew.common.save')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={createM.loading || updateM.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>

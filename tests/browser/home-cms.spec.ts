@@ -39,6 +39,7 @@ async function fixture(page: Page) {
     }
     if (url.pathname.includes('/admin/cms/content-blocks/')) {
       const key = decodeURIComponent(url.pathname.split('/').at(-1)!);
+      if (request.method() === 'GET') return route.fulfill({ json: { key, cms_revision: null, value_by_locale: blocks[key] ?? {}, publication_state: 'published' } });
       const payload = request.postDataJSON();
       expect(payload).toMatchObject({ page: 'home', section: 'services' });
       blocks[key] = { ...blocks[key], ...payload.value_by_locale };
@@ -73,7 +74,7 @@ test('all service titles, taglines and descriptions save using mouse, touch and 
       await expect(dialog.getByRole('textbox')).toBeEnabled();
       let value = `${info.project.name} ${service} ${field}`;
       await dialog.getByRole('textbox').fill(value);
-      await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+      await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
       await expect(dialog).toHaveCount(0);
       await expect(surface).toContainText(value);
       expect(blocks[key]['nl-NL']).toBe(value);
@@ -88,7 +89,7 @@ test('all service titles, taglines and descriptions save using mouse, touch and 
           await page.keyboard.press('ControlOrMeta+A');
           value += ' keyboard';
           await page.keyboard.insertText(value);
-          await dialog.getByRole('button', { name: messages.save, exact: true }).focus();
+          await dialog.getByRole('button', { name: messages.publish, exact: true }).focus();
           await page.keyboard.press('Enter');
         } else {
           await page.keyboard.press('Escape');
@@ -101,7 +102,7 @@ test('all service titles, taglines and descriptions save using mouse, touch and 
         await pencil.tap();
         await expect(dialog.getByRole('textbox')).toBeEnabled();
         await dialog.getByRole('textbox').fill(`${value} touch`);
-        await dialog.getByRole('button', { name: messages.save, exact: true }).tap();
+        await dialog.getByRole('button', { name: messages.publish, exact: true }).tap();
         await expect(dialog).toHaveCount(0);
         expect(blocks[key]['nl-NL']).toBe(`${value} touch`);
         expect(page.url()).toBe(originalURL);
@@ -164,7 +165,7 @@ test('cached session refresh preserves the open editor and reload never replays 
   await expect.poll(() => state.authRequests).toBeGreaterThan(requests);
   await refreshed;
   await expect(dialog.getByRole('textbox')).toHaveValue('Saved description');
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
   await expect(dialog).toHaveCount(0);
   expect(await page.evaluate(key => JSON.parse(sessionStorage.getItem('cms:page:home:nl-NL')!).content_blocks.find((b: any) => b.key === key).value, key)).toBe('Saved description');
   state.contentDelay = 2000;

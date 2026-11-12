@@ -72,7 +72,7 @@ for (const locale of ['nl', 'en', 'de', 'fr']) {
   });
 }
 
-test('customer creation persists and the generated readable link opens the created record', async ({ page, request }) => {
+test('customer creation persists and the generated readable link opens the created record', async ({ page, request }, info) => {
   const headers = await session(page, request);
   await page.goto('/en/admin/klanten?new=1');
   const dialog = page.getByRole('dialog');
@@ -94,6 +94,9 @@ test('customer creation persists and the generated readable link opens the creat
   await expect(page.locator('main')).toContainText('Created Through Live Browser');
   const fetched = await request.get('/api/v1/customers/' + customer.public_id, { headers });
   expect(unwrap(await fetched.json()).id).toBe(customer.id);
+  const stored = php('echo json_encode(App\\Models\\Customer::where("email", "created@global-ux.example.test")->firstOrFail(["id", "name", "email"]));');
+  expect(stored).toMatchObject({ id: customer.id, name: 'Created Through Live Browser', email: 'created@global-ux.example.test' });
+  await info.attach('database-persistence', { body: JSON.stringify({ engine: 'isolated SQLite file', browserReload: true, apiReadback: true, databaseReadback: true, customerId: stored.id }), contentType: 'application/json' });
 });
 
 test('all five readable routes and legacy UUIDs resolve against the actual API', async ({ page, request }) => {

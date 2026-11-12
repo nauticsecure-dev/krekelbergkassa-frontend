@@ -1,5 +1,6 @@
 import { api, apiResult } from '@/lib/api';
 import { getDeviceId } from '@/lib/device';
+import { publishBoatPhotoChange } from '@/lib/portal-events';
 import { getAuthToken, getPortalToken } from '@/lib/auth-storage';
 import type {
   AdminUser,
@@ -111,17 +112,23 @@ export const authService = {
   logout() {
     return api<{ message: string }>('/v1/auth/logout', { method: 'POST' });
   },
-  requestMagicLink(email: string, locale?: string) {
+  requestMagicLink(email: string, locale?: string, returnTo?: string) {
     return api<{ success: boolean; message: string }>(
       '/v1/auth/customer/magic-link',
       {
         method: 'POST',
         auth: false,
-        body: { email, locale },
+        body: { email, locale, returnTo },
       }
     );
   },
   verifyMagicLink(token: string) {
+    return this.completeCustomerLogin("verify-magic-link", { token });
+  },
+  customerLogin(email: string, password: string) {
+    return this.completeCustomerLogin("login", { email, password });
+  },
+  completeCustomerLogin(action: "verify-magic-link" | "login", body: object) {
     return api<{
       success: boolean;
       portal_token: string;
@@ -132,13 +139,22 @@ export const authService = {
         email: string;
         preferred_locale: string;
       };
-    }>('/v1/auth/customer/verify-magic-link', {
+    }>(`/v1/auth/customer/${action}`, {
       method: 'POST',
       auth: false,
-      body: { token },
+      body,
+    });
+  },
+  requestCustomerPassword(email: string, locale: string, returnTo?: string) {
+    return api('/v1/auth/customer/forgot-password', { method: 'POST', auth: false, body: { email, locale, returnTo } });
+  },
+  resetCustomerPassword(email: string, token: string, password: string, password_confirmation: string) {
+    return api('/v1/auth/customer/reset-password', {
+      method: 'POST', auth: false, body: { email, token, password, password_confirmation },
     });
   },
   registerCustomer(payload: {
+    returnTo?: string;
     name: string;
     email: string;
     phone?: string | null;
@@ -519,7 +535,7 @@ export const invoicesService = {
     });
   },
   email(id: string, payload?: { to?: string; subject?: string; body?: string; locale?: string }) {
-    return api<{ message?: string }>(`/v1/invoices/${id}/email`, {
+    return api<{ message?: string; queued?: boolean }>(`/v1/invoices/${id}/email`, {
       method: 'POST',
       body: payload,
       queueWhenOffline: true,
@@ -600,6 +616,8 @@ export const paymentsService = {
 export const kassaService = {
   checkout(payload: {
     idempotency_key?: string;
+    expected_total_cents?: number;
+    sale_note?: string;
     device_id: string;
     customer_id?: string | null;
     payment_method?: string;
@@ -610,14 +628,17 @@ export const kassaService = {
     // changes product prices); a reason is required when adjusting.
     adjusted_total_cents?: number;
     adjustment_reason?: string;
+    adjustment_vat_rate?: number;
     on_account_note?: string;
     items: Array<{ product_id?: string; description?: string; quantity: number; unit_price_cents?: number; price_cents?: number; vat_rate?: number }>;
   }) {
     return api<string | KassaCheckoutResponse>('/v1/kassa/checkout', {
       method: 'POST',
       body: payload,
-      queueWhenOffline: true,
     });
+  },
+  paymentMethods() {
+    return api<{ pos: string[]; online: string[] }>('/v1/kassa/payment-methods');
   },
   analytics(query?: Record<string, string | number | boolean | undefined>) {
     return api<Record<string, unknown>>('/v1/kassa/analytics', { query });
@@ -649,6 +670,9 @@ export const kassaService = {
   // Trello #72: Mollie QR sessions — created before an invoice exists, the
   // invoice/payment are finalized by the webhook once paid.
   async createQrSession(payload: {
+    session_id?: string;
+    expected_total_cents?: number;
+    sale_note?: string;
     device_id: string;
     customer_id?: string | null;
     method?: string;
@@ -658,8 +682,8 @@ export const kassaService = {
     const res = await api<unknown>('/v1/kassa/qr-sessions', { method: 'POST', body: payload });
     return maybeResource<KassaQrSession>(res, 'data');
   },
-  async qrSession(id: string) {
-    const res = await api<unknown>(`/v1/kassa/qr-sessions/${id}`);
+  async qrSession(id: string, verify = false) {
+    const res = await api<unknown>(`/v1/kassa/qr-sessions/${id}`, { query: verify ? { verify: true } : undefined });
     return maybeResource<KassaQrSession>(res, 'data');
   },
   cancelQrSession(id: string) {
@@ -679,17 +703,25 @@ export const kassaService = {
   },
   // Trello #72: send the payment link to the customer over WhatsApp.
   sendPaymentLinkWhatsapp(id: string, payload?: { phone?: string }) {
-    return api<{ message?: string }>(`/v1/kassa/qr-sessions/${id}/send-link-whatsapp`, {
+    return api<{ accepted: boolean; sent: boolean; status: string; delivery_id: string; provider_message_id: string }>(`/v1/kassa/qr-sessions/${id}/send-link-whatsapp`, {
       method: 'POST',
       body: payload ?? {},
       queueWhenOffline: true,
     });
   },
   quote(payload: { customer_id?: string; locale?: string; items: Array<Record<string, unknown>> }) {
-    return api<Record<string, unknown>>('/v1/kassa/quote', {
+    return api<{
+      subtotal_cents: number;
+      vat_amount_cents: number;
+      total_cents: number;
+      lines: Array<{ unit_price: number; vat_rate: number; vat_amount: number; line_total: number; included_quantity?: number; included_services?: Record<string, number> }>;
+    }>('/v1/kassa/quote', {
       method: 'POST',
       body: payload,
     });
+  },
+  createQuotation(payload: { customer_id: string; locale: string; expected_total_cents: number; sale_note?: string; items: Array<Record<string, unknown>> }) {
+    return api<{ id: string; reference: string }>('/v1/kassa/quotations', { method: 'POST', body: payload });
   },
   async recentSales(query?: Record<string, string | number | boolean | undefined>) {
     const res = await api<unknown>('/v1/kassa/recent-sales', { query });
@@ -701,14 +733,13 @@ export const kassaService = {
         : '';
     return { data, emptyMessage };
   },
-  sale(id: string) {
-    return api<Sale>(`/v1/kassa/sales/${id}`);
+  sale(id: string, verify = false) {
+    return api<Sale>(`/v1/kassa/sales/${id}`, { query: verify ? { verify: true } : undefined });
   },
-  refund(id: string, payload: { amount?: number; reason?: string }) {
+  refund(id: string, payload: { reason: string; refund_method: 'cash' | 'pin' | 'manual' | 'original' }) {
     return api<unknown>(`/v1/kassa/sales/${id}/refund`, {
       method: 'POST',
       body: payload,
-      queueWhenOffline: true,
     });
   },
 };
@@ -876,20 +907,18 @@ export const pricingService = {
     return api<PricingRule>('/v1/pricing/rules', {
       method: 'POST',
       body: payload,
-      queueWhenOffline: true,
     });
   },
   updateRule(id: string, payload: Record<string, unknown>) {
     return api<PricingRule>(`/v1/pricing/rules/${id}`, {
       method: 'PATCH',
       body: payload,
-      queueWhenOffline: true,
     });
   },
-  deleteRule(id: string) {
-    return api<{ message: string }>(`/v1/pricing/rules/${id}`, {
+  deleteRule(id: string, payload?: { expected_revision: number; change_reason: string }) {
+    return api<{ draft_id: string; publication_status: string }>(`/v1/pricing/rules/${id}`, {
       method: 'DELETE',
-      queueWhenOffline: true,
+      body: payload,
     });
   },
   async calculatorRecords(query?: Record<string, string | number | boolean | undefined>) {
@@ -1139,11 +1168,22 @@ export const i18nService = {
 };
 
 export interface IntegrationDiagnostic { ok: boolean; status: string; message: string; checked_at: string; }
+export interface OperationalVerification {
+  id: string;
+  integration: string;
+  status: string;
+  references: Record<string, unknown>;
+  evidence: Record<string, unknown> | null;
+  created_at: string;
+  completed_at: string | null;
+  current_configuration?: boolean;
+}
 export interface IntegrationSettings {
   configuration: {inbound_address: string | null; ocr_model: string; whatsapp_enabled: boolean};
-  health: Record<string, {configured: boolean; setup: string; description: string; path: string; last_test: IntegrationDiagnostic | null}>;
+  health: Record<string, {configured: boolean; setup: string; description: string; path: string; verification?: string; runtime_configured?: boolean | null; last_test: IntegrationDiagnostic | null; last_verification: OperationalVerification | null}>;
 }
 export const settingsService = {
+  verifyIntegration(name: string, body: Record<string, unknown>) { return api<OperationalVerification>(`/v1/admin/settings/integrations/${name}/verify`, {method: 'POST', body}); },
   integrations() { return api<IntegrationSettings>('/v1/admin/settings/integrations'); },
   updateIntegrations(body: IntegrationSettings['configuration']) { return api<IntegrationSettings>('/v1/admin/settings/integrations', {method: 'PATCH', body}); },
   testIntegration(name: string, transaction_id?: string) { return api<IntegrationDiagnostic>(`/v1/admin/settings/integrations/${name}/test`, {method: 'POST', body: {transaction_id}}); },
@@ -1177,7 +1217,11 @@ export const settingsService = {
   payments() {
     return api<AppSettings['payments']>('/v1/admin/settings/payments');
   },
-  updatePayments(payload: Partial<AppSettings['payments']>) {
+  updatePayments(payload: Partial<AppSettings['payments']> & {
+    crane_recipients?: string[];
+    crane_from?: string | null;
+    crane_reply_to?: string | null;
+  }) {
     return api<AppSettings['payments']>('/v1/admin/settings/payments', {
       method: 'PATCH',
       body: payload,
@@ -1498,6 +1542,23 @@ export const portalService = {
     return asArray<PortalBoat>(res);
   },
   // Trello #87/#90: customer-facing boat dossier (portal).
+  changePassword(password: string, password_confirmation: string, current_password?: string) {
+    return api('/v1/portal/password', {
+      method: 'PUT', auth: false, portalAuth: true,
+      body: { password, password_confirmation, current_password },
+    });
+  },
+  boatPhoto(boatId: string, fileId: string, thumbnail: boolean) {
+    const path = '/v1/portal/boats/' + encodeURIComponent(boatId) + '/photos/' + encodeURIComponent(fileId);
+    return api<Blob>(path, { auth: false, portalAuth: true, query: { thumbnail } });
+  },
+  async replaceBoatPhoto(id: string, photo: File) {
+    const body = new FormData();
+    body.append('photo', photo);
+    const boat = await api<PortalBoat>('/v1/portal/boats/' + id + '/photo', { method: 'POST', auth: false, portalAuth: true, body });
+    publishBoatPhotoChange();
+    return boat;
+  },
   boatDossier(id: string) {
     return api<Record<string, unknown>>(`/v1/portal/boats/${id}/dossier`, { portalAuth: true, auth: false });
   },
@@ -1670,11 +1731,18 @@ export const appointmentsService = {
   get(id: string) {
     return api<Appointment>(`/v1/appointments/${id}`);
   },
-  confirm(id: string) {
+  confirm(id: string, amounts?: { approved_quote_net_cents?: number; initial_payment_cents?: number }) {
     return api<Appointment>(`/v1/appointments/${id}/confirm`, {
       method: 'POST',
-      queueWhenOffline: true,
+      body: amounts,
+      queueWhenOffline: false,
     });
+  },
+  retryEmail(id: string, emailId: number, resend: boolean) {
+    return api<{ status: string }>(`/v1/appointments/${id}/emails/${emailId}/retry`, { method: 'POST', body: { resend }, queueWhenOffline: false });
+  },
+  reject(id: string, reason: string) {
+    return api<Appointment>(`/v1/appointments/${id}/reject`, { method: 'POST', body: { reason }, queueWhenOffline: false });
   },
   updateStatus(
     id: string,
@@ -1741,6 +1809,11 @@ export const appointmentsService = {
 };
 
 export interface BookingQuoteLine {
+  quantity?: number;
+  included_quantity?: number;
+  billable_quantity?: number;
+  rule_id?: string | null;
+  vat_rate?: number;
   service_code: string;
   product_id: string | null;
   price_incl_vat: number;
@@ -1750,6 +1823,17 @@ export interface BookingQuoteLine {
   is_on_request: boolean;
 }
 export interface BookingQuote {
+  pricing_version?: string;
+  pricing_date?: string;
+  price_status?: 'indicative' | 'on_request';
+  pricing_conditions?: {
+    subject_to_confirmation: boolean;
+    capacity_check: boolean;
+    capacity_restricted: boolean;
+    period_affects_price: boolean;
+  };
+  options?: ServiceSelectionOptions;
+  total_vat?: number;
   services: BookingQuoteLine[];
   total_incl_vat: number;
   total_duration_minutes: number;
@@ -1757,10 +1841,10 @@ export interface BookingQuote {
   requires_on_request: boolean;
 }
 export const bookingService = {
-  preview(payload: { date?: string; length_cm: number; service_codes: string[] }) {
+  preview(payload: { date?: string; length_cm: number; service_codes: string[]; options?: ServiceSelectionOptions }) {
     return api<BookingQuote>('/v1/booking/preview', { auth: false, method: 'POST', body: payload });
   },
-  slots(params: { date: string; length_cm: number; service_codes: string[] }, opts?: { requestId?: string }) {
+  slots(params: { date: string; length_cm: number; service_codes: string[]; options?: ServiceSelectionOptions }, opts?: { requestId?: string }) {
     return api<BookingSlotsResponse>('/v1/booking/slots', {
       auth: false,
       requestId: opts?.requestId,
@@ -1768,6 +1852,8 @@ export const bookingService = {
         date: params.date,
         length_cm: params.length_cm,
         'service_codes[]': params.service_codes,
+        ...(params.options?.direction ? { 'options[direction]': params.options.direction } : {}),
+        ...Object.fromEntries(Object.entries(params.options?.quantities ?? {}).map(([code, count]) => ['options[quantities][' + code + ']', count])),
       },
     });
   },
@@ -1779,6 +1865,8 @@ export const bookingService = {
     });
   },
   book(payload: {
+    options?: ServiceSelectionOptions;
+    expected_total_cents?: number;
     first_name: string;
     last_name?: string | null;
     email: string;
@@ -1809,10 +1897,13 @@ export const bookingService = {
       registration_number?: string | null;
     };
     service_codes: string[];
+    submission_key?: string;
+    boat_id?: string;
   }, opts?: { requestId?: string }) {
-    return apiResult<{ appointment_id: string; status: string }>('/v1/booking', {
+    return apiResult<{ appointment_id: string; reference?: string; status: string; notification_status?: string | null }>(payload.boat_id ? '/v1/portal/booking' : '/v1/booking', {
       method: 'POST',
       auth: false,
+      portalAuth: Boolean(payload.boat_id),
       body: payload,
       requestId: opts?.requestId,
     });
@@ -2675,6 +2766,8 @@ export interface FaqContent {
   };
   contact: {
     show_chat: boolean;
+    revision?: string;
+    field_sources?: Partial<Record<'email' | 'phone' | 'address', Array<{ record_id: string; field: string }>>>;
     chat_label?: string | null;
     company?: Pick<AppSettings['company'], 'name' | 'email' | 'phone' | 'address'>;
   };
@@ -2705,6 +2798,21 @@ export interface OpeningHoursResponse {
 
 // Trello #112: Inline CMS / Visual Editor — public read + admin upsert endpoints.
 export const cmsService = {
+  previewCraneEmail(body: { type: string; locale: string; draft: boolean }) {
+    return api<{ subject: string; html: string }>('/v1/admin/cms/crane-email/preview', { method: 'POST', body, queueWhenOffline: false });
+  },
+  testCraneEmail(body: { type: string; locale: string; draft: boolean }) {
+    return api<{ message_id: string }>('/v1/admin/cms/crane-email/test', { method: 'POST', body, queueWhenOffline: false });
+  },
+  contentBlock(key: string) {
+    return api<{ key: string; cms_revision: string | null; value_by_locale: Record<string, string>; publication_state: string;
+      versions?: { id: string; version: number | null; created_at: string; value_by_locale: Record<string, string> }[];
+    }>(
+      `/v1/admin/cms/content-blocks/${encodeURIComponent(key)}`);
+  },
+  updateContact(body: Partial<AppSettings['company']>) {
+    return api<{ company: AppSettings['company']; revision?: string; field_sources?: FaqContent['contact']['field_sources'] }>('/v1/admin/cms/contact-settings', { method: 'PATCH', body });
+  },
   mediaLibrary() { return api<{data: Array<{id: string; filename: string; url: string; usage: Array<{key: string; page: string}>}>}>('/v1/admin/cms/media-library'); },
   deleteLibraryMedia(id: string) { return api('/v1/admin/cms/media-library/'+encodeURIComponent(id), {method:'DELETE'}); },
   // Public: fetch all editable content/media/seo/global blocks for a page.
@@ -2715,12 +2823,57 @@ export const cmsService = {
     });
   },
   // Admin upserts (key-addressed; partial value_by_locale merges server-side).
+  contentBlocks(page: string) {
+    return api<{ data: Array<{ key: string; cms_revision: string; value_by_locale: Record<string, string | null> }> }>('/v1/admin/cms/content-blocks', { query: { page } });
+  },
+  saveContentBlocks(blocks: Array<Record<string, unknown>>) {
+    return api<{ data: Array<{ key: string; id?: string; cms_revision: string; value_by_locale: Record<string, string>; published_value_by_locale?: Record<string, string> | null; source?: Record<string, unknown> }> }>('/v1/admin/cms/content-blocks', { method: 'PATCH', body: { blocks } });
+  },
   saveContentBlock(key: string, payload: Record<string, unknown>) {
     return api<Record<string, unknown>>(`/v1/admin/cms/content-blocks/${encodeURIComponent(key)}`, {
       method: 'PATCH',
       body: payload,
     });
   },
+  async publishMediaBlock(key: string, metadata: Record<string, unknown>, image?: File | null, mobileImage?: File | null, onProgress?: (percent: number) => void) {
+    const body = new FormData(); body.append('metadata', JSON.stringify(metadata));
+    if (image) body.append('image', image);
+    if (mobileImage) body.append('mobile_image', mobileImage);
+    try { localStorage.setItem('cms-media-pending:'+key, String(metadata.request_id)); } catch { /* Storage may be disabled. */ }
+    const statusPath = '/v1/admin/cms/media-processing/' + encodeURIComponent(String(metadata.request_id));
+    let result: Record<string, unknown>;
+    try { result = await api<Record<string, unknown>>('/v1/admin/cms/media-blocks/' + encodeURIComponent(key) + '/process', {method:'POST', body, timeoutMs:120000, onUploadProgress:onProgress}); if (!result) throw {status:502,message:'Processing returned an unreadable response.'}; }
+    catch(error) {
+      if (error && typeof error === 'object' && 'status' in error && Number(error.status) > 0 && Number(error.status) < 500) throw error;
+      // A lost HTTP response does not imply a lost publication. Recover its durable status.
+      try { result = await api<Record<string, unknown>>(statusPath); } catch { throw error; }
+    }
+    const deadline = Date.now() + 240000;
+    while (result.status === 'queued' || result.status === 'processing') {
+      if (Date.now() > deadline) throw {status:503,message:'Processing is still pending. Retry this draft to resume.'};
+      await new Promise(resolve => setTimeout(resolve,800));
+      result = await api<Record<string, unknown>>(statusPath);
+    }
+    if (result.status === 'failed') throw result.error;
+    if (typeof result.revision !== 'number' || result.key !== key) throw {status:502,message:'Invalid processing status response.'};
+    try { localStorage.removeItem('cms-media-pending:'+key); } catch { /* Storage may be disabled. */ }
+    return result;
+  },
+  async resumeMediaProcessing(id: string) {
+    const path = '/v1/admin/cms/media-processing/' + encodeURIComponent(id);
+    let result = await api<Record<string, unknown>>(path + '/retry', {method:'POST'});
+    const deadline = Date.now() + 240000;
+    while (result.status === 'queued' || result.status === 'processing') {
+      if (Date.now() > deadline) throw {status:503,message:'Processing is pending. Resume again later.'};
+      await new Promise(resolve => setTimeout(resolve,800)); result = await api<Record<string, unknown>>(path);
+    }
+    if (result.status === 'failed') throw result.error;
+    if (typeof result.revision !== 'number' || typeof result.key !== 'string') throw {status:502,message:'Invalid processing status response.'};
+    return result;
+  },
+  mediaBlock(key: string) { return api<{key:string;alt_by_locale?:Record<string,string>;seo_title_by_locale?:Record<string,string>}>('/v1/admin/cms/media-blocks/' + encodeURIComponent(key)); },
+  mediaVersions(key: string) { return api<{data:Array<{revision:number;created_at:string}>}>('/v1/admin/cms/media-blocks/' + encodeURIComponent(key) + '/versions'); },
+  restoreMedia(key: string, revision: number, expected_revision: number) { return api<Record<string, unknown>>('/v1/admin/cms/media-blocks/' + encodeURIComponent(key) + '/restore', {method:'POST', body:{revision,expected_revision}}); },
   uploadMediaBlock(key: string, formData: FormData) {
     return api<Record<string, unknown>>(`/v1/admin/cms/media-blocks/${encodeURIComponent(key)}/upload`, {
       method: 'POST',
@@ -2766,6 +2919,7 @@ export const contentService = {
   contact(locale?: string) {
     return api<FaqContent['contact']>('/v1/content/contact', {
       auth: false,
+      cache: 'no-store',
       query: locale ? { locale } : undefined,
     });
   },
@@ -2814,6 +2968,10 @@ export const contentService = {
 // Trello #98 / #100: public service catalog — diensten pages read tariffs
 // from the single product DB instead of the static front-end table.
 export interface ServiceCatalogTariff {
+  revision?: number;
+  included_quantities?: Record<string, number>;
+  included_service_codes?: string[];
+  id?: string;
   price_excl_vat?: number;
   range_from_cm: number;
   range_to_cm: number;
@@ -2828,6 +2986,11 @@ export interface ServiceCatalogTariff {
   is_on_request: boolean;
 }
 export interface ServiceCatalogService {
+  business_revision?: string;
+  options?: {
+    compatible_with?: string[]; optional_extras?: string[]; exclusive_group?: string; requires?: string[];
+    directions?: string[]; max_operations?: number; period?: 'week' | 'season';
+  };
   id?: string;
   public_id?: string;
   short_description?: string | null;
@@ -2847,7 +3010,31 @@ export interface ServiceCatalogPage {
   page?: { slug?: string; title?: string };
   services: ServiceCatalogService[];
 }
+export interface ServiceSelectionOptions {
+  quantities?: Record<string, number>;
+  direction?: string;
+  period_from?: string;
+  period_to?: string;
+  width_cm?: number;
+  weight_kg?: number;
+}
 export const serviceCatalogService = {
+  createBookingSelection(length_cm: number, service_codes: string[], options?: ServiceSelectionOptions, date?: string, boat_id?: string, reviewed?: BookingQuote) {
+    return api<{ token: string; journey?: string }>('/v1/service-catalog/booking-selections', {
+      auth: false, portalAuth: !!boat_id, method: 'POST',
+      body: { length_cm, service_codes, options, date, boat_id, expected_total_cents: reviewed?.total_incl_vat, expected_pricing_version: reviewed?.pricing_version },
+    });
+  },
+  bookingSelection(token: string) {
+    return api<{ length_cm: number; service_codes: string[]; total_incl_vat: number; total_duration_minutes?: number; options?: ServiceSelectionOptions; pricing_version?: string; pricing_date?: string; selected_date?: string; journey?: string; boat_id?: string }>(
+      `/v1/service-catalog/booking-selections/${encodeURIComponent(token)}`, { auth: false, portalAuth: true },
+    );
+  },
+  preview(length_cm: number, service_codes: string[], options?: ServiceSelectionOptions, date?: string, boat_id?: string) {
+    return api<BookingQuote>('/v1/service-catalog/preview', {
+      auth: false, portalAuth: !!boat_id, method: 'POST', body: { length_cm, service_codes, options, date, boat_id },
+    });
+  },
   page(slug: string, locale?: string) {
     return api<ServiceCatalogPage>(`/v1/service-catalog/pages/${encodeURIComponent(slug)}`, { auth: false, query: { locale } });
   },

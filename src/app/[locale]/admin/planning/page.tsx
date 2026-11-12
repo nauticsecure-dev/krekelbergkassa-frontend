@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -78,10 +80,10 @@ function PlanningWorkspace() {
         rightSlot={
           <div className="flex flex-wrap gap-2">
             {can('planning.manage') ? <Link href={adminHref(locale, 'admin.planning.create')}>
-              <Button variant="gold" size="sm">{t('adminModules.create.appointment')}</Button>
+              <Button variant="gold" size="sm">{<TranslatedText textKey={'adminModules.create.appointment'} />}</Button>
             </Link> : null}
             <Link href={`/${locale}/kraanafspraak`}>
-              <Button variant="outline" size="sm">{t(`${prefix}.crane`)}</Button>
+              <Button variant="outline" size="sm">{<TranslatedText textKey={`${prefix}.crane`} />}</Button>
             </Link>
           </div>
         }

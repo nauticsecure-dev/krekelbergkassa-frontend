@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -16,6 +18,7 @@ import { Header } from '@/components/site/Header';
 import { Footer } from '@/components/site/Footer';
 import { Logo } from '@/components/ui/Logo';
 import { RedirectIfAuthed } from '@/components/auth/RedirectIfAuthed';
+import { customerReturnTo, loginPath } from '@/lib/auth-routes';
 import {
   LOGIN_ROLES,
   coerceLoginRole,
@@ -142,9 +145,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 </span>
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sand-100/70">
-                    {t('authLayout.physicalSupport')}
+                    {<TranslatedText textKey={'authLayout.physicalSupport'} />}
                   </div>
-                  <div className="text-sm font-medium text-white">{t('authLayout.address')}</div>
+                  <div className="text-sm font-medium text-white">{<TranslatedText textKey={'authLayout.address'} />}</div>
                 </div>
               </div>
             </div>
@@ -157,7 +160,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               'bg-sand-50 shadow-elev ring-1 ring-navy-100/40',
             )}
           >
-            {isSignup ? <SignupSigninTabs /> : null}
+            {isSignup ? <React.Suspense fallback={null}><SignupSigninTabs /></React.Suspense> : null}
             {!isForgot && !isSignup ? (
               <React.Suspense fallback={<AuthTopTabsFallback label={t('loginRole.question')} />}>
                 <LoginRoleTabs />
@@ -196,14 +199,16 @@ function AuthTopTabsFallback({ label }: { label: string }) {
 
 function SignupSigninTabs() {
   const pathname = usePathname();
+  const params = useSearchParams();
+  const returnTo = customerReturnTo(params.get('returnTo'));
   const { t, locale } = useIntl();
   const isSignup = pathname.endsWith('/signup');
 
   return (
     <div className="border-b border-navy-100/60 bg-white px-4 py-3">
       <div className="flex items-center gap-1.5 rounded-full bg-sand-100 p-1">
-        <PageTabLink href={`/${locale}/signup`} active={isSignup} label={t('signup.title')} glyph="+" />
-        <PageTabLink href={`/${locale}/login`} active={!isSignup} label={t('login.title')} glyph="→" />
+        <PageTabLink href={`/${locale}/signup${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`} active={isSignup} label={t('signup.title')} glyph="+" />
+        <PageTabLink href={loginPath(locale, returnTo)} active={!isSignup} label={t('login.title')} glyph="→" />
       </div>
     </div>
   );
@@ -219,7 +224,7 @@ function LoginRoleTabs() {
   return (
     <div className="border-b border-navy-100/60 bg-white px-4 py-3">
       <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-widest text-navy-500">
-        {t('loginRole.question')}
+        {<TranslatedText textKey={'loginRole.question'} />}
       </div>
       <div className="flex items-center gap-1 rounded-full bg-sand-100 p-1">
         {LOGIN_ROLES.map((item) => (

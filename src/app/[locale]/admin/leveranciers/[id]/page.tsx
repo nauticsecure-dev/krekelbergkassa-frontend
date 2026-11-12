@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import * as React from 'react';
@@ -91,7 +93,7 @@ export default function SupplierDetailPage() {
         rightSlot={
           <Link href={`/${locale}/admin/leveranciers`}>
             <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              {t('adminNew.common.back')}
+              {<TranslatedText textKey={'adminNew.common.back'} />}
             </Button>
           </Link>
         }
@@ -121,7 +123,7 @@ export default function SupplierDetailPage() {
           className="mt-5"
           action={
             <Button size="sm" variant="outline" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={() => setShowMap(true)}>
-              {t('adminNew.suppliers.addMapping')}
+              {<TranslatedText textKey={'adminNew.suppliers.addMapping'} />}
             </Button>
           }
         >
@@ -134,9 +136,9 @@ export default function SupplierDetailPage() {
               <AdminTable minWidth={680}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.suppliers.mapColumns.sku')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.suppliers.mapColumns.description')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.suppliers.mapColumns.product')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.suppliers.mapColumns.sku'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.suppliers.mapColumns.description'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.suppliers.mapColumns.product'} />}</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
                 <tbody>
@@ -163,7 +165,7 @@ export default function SupplierDetailPage() {
             <Input label={t('adminNew.suppliers.mapColumns.sku')} value={mapForm.supplier_sku} onChange={(e) => setMapForm({ ...mapForm, supplier_sku: e.target.value })} />
             <Input label={t('adminNew.suppliers.mapColumns.description')} value={mapForm.supplier_description} onChange={(e) => setMapForm({ ...mapForm, supplier_description: e.target.value })} />
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.suppliers.mapColumns.product')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.suppliers.mapColumns.product'} />}</label>
               <SearchSelect className="input-base w-full" value={mapForm.product_id} onChange={(e) => setMapForm({ ...mapForm, product_id: e.target.value })} required>
                 <option value="">{t('adminNew.suppliers.selectProduct')}</option>
                 {productOptions.map((p, i) => (
@@ -173,8 +175,8 @@ export default function SupplierDetailPage() {
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowMap(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={createMap.loading}>{t('adminNew.common.save')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setShowMap(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={createMap.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>

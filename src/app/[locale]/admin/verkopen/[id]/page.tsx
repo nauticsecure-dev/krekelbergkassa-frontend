@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Receipt } from 'lucide-react';
@@ -32,7 +34,7 @@ export default function SaleDetailPage() {
         </div>
         <p className="mb-4 font-semibold">{formatCurrency(Number(sale.data.total_amount_cents) / 100, intlLocale(locale))}</p>
         <Link className="font-semibold text-marine-700 hover:underline" href={`/${locale}/admin/facturen/${id}`}>
-          {t('adminNew.invoices.details')}
+          {<TranslatedText textKey={'adminNew.invoices.details'} />}
         </Link>
       </AdminSectionCard> : null}
     </AdminContent>

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import { Coins, Plus, XCircle } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
@@ -98,7 +100,7 @@ export default function BrokerageTariffsPage() {
         subtitle={t('adminNew.brokerage.subtitle')}
         rightSlot={
           <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={openNew}>
-            {t('adminNew.brokerage.new')}
+            {<TranslatedText textKey={'adminNew.brokerage.new'} />}
           </Button>
         }
       />
@@ -122,10 +124,10 @@ export default function BrokerageTariffsPage() {
               <AdminTable minWidth={680}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.brokerage.columns.range')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.brokerage.columns.perMonth')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.brokerage.columns.activeFrom')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.brokerage.columns.status')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.brokerage.columns.range'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.brokerage.columns.perMonth'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.brokerage.columns.activeFrom'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.brokerage.columns.status'} />}</AdminTableHeaderCell>
                     <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
@@ -147,14 +149,14 @@ export default function BrokerageTariffsPage() {
                       <AdminTableCell>
                         <Badge tone={tf.active === false ? 'neutral' : 'success'}>
                           {tf.active === false
-                            ? t('adminNew.brokerage.inactive')
-                            : t('adminNew.brokerage.active')}
+                            ? <TranslatedText textKey={'adminNew.brokerage.inactive'} />
+                            : <TranslatedText textKey={'adminNew.brokerage.active'} />}
                         </Badge>
                       </AdminTableCell>
                       <AdminTableCell>
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="sm" onClick={() => openEdit(tf)}>
-                            {t('adminNew.common.edit')}
+                            {<TranslatedText textKey={'adminNew.common.edit'} />}
                           </Button>
                           {tf.active !== false ? (
                             <Button
@@ -163,7 +165,7 @@ export default function BrokerageTariffsPage() {
                               leftIcon={<XCircle className="h-3.5 w-3.5" />}
                               onClick={() => setDeactivateTarget(tf.id)}
                             >
-                              {t('adminNew.brokerage.deactivate')}
+                              {<TranslatedText textKey={'adminNew.brokerage.deactivate'} />}
                             </Button>
                           ) : null}
                         </div>
@@ -223,10 +225,10 @@ export default function BrokerageTariffsPage() {
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createT.loading || updateT.loading}>
-              {t('adminNew.common.save')}
+              {<TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>

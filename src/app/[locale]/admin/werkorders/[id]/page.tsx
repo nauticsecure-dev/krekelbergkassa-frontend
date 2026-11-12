@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { adminRecordHref } from '@/config/admin-routes';
 
 import { tEnum } from '@/i18n/admin-enums';
@@ -41,6 +43,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { LoadingState, ErrorState } from '@/components/admin/DataState';
 import { workOrdersService } from '@/lib/services';
+import { usePermission } from '@/lib/permissions';
+import { WorkOrderReservation, type Reservation } from '@/components/admin/yard/WorkOrderReservation';
 import { useMutation, useQuery } from '@/lib/hooks/useAsync';
 import { formatDate, intlLocale } from '@/lib/format';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -117,6 +121,7 @@ export default function WorkOrderDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
   const { locale, t } = useIntl();
+  const { can } = usePermission();
   const { push, pushError } = useToast();
   const dateLocale = intlLocale(locale);
 
@@ -315,7 +320,7 @@ export default function WorkOrderDetailPage() {
                 leftIcon={<Edit className="h-4 w-4" />}
                 onClick={onOpenEdit}
               >
-                {t('adminNew.common.edit')}
+                {<TranslatedText textKey={'adminNew.common.edit'} />}
               </Button>
               <Button
                 variant="outline"
@@ -326,7 +331,7 @@ export default function WorkOrderDetailPage() {
                   setShowAssign(true);
                 }}
               >
-                {t('adminNew.workOrders.detail.assign')}
+                {<TranslatedText textKey={'adminNew.workOrders.detail.assign'} />}
               </Button>
               <Button
                 variant="outline"
@@ -335,7 +340,7 @@ export default function WorkOrderDetailPage() {
                 disabled={startM.loading || statusTone(status) === 'marine'}
                 onClick={() => void run(t('adminNew.workOrders.toasts.started'), startM.mutate)}
               >
-                {t('adminNew.workOrders.detail.start')}
+                {<TranslatedText textKey={'adminNew.workOrders.detail.start'} />}
               </Button>
               <Button
                 variant="outline"
@@ -343,8 +348,7 @@ export default function WorkOrderDetailPage() {
                 leftIcon={<PauseCircle className="h-4 w-4" />}
                 onClick={() => setShowWaiting(true)}
               >
-                Wachten
-              </Button>
+                <TranslatedText textKey="siteCopy.8244f054663672d9" fallbackText={"Wachten"} /></Button>
               <Button
                 variant="gold"
                 size="sm"
@@ -355,7 +359,7 @@ export default function WorkOrderDetailPage() {
                   setShowComplete(true);
                 }}
               >
-                {t('adminNew.workOrders.detail.complete')}
+                {<TranslatedText textKey={'adminNew.workOrders.detail.complete'} />}
               </Button>
               <Button
                 variant="outline"
@@ -363,8 +367,7 @@ export default function WorkOrderDetailPage() {
                 leftIcon={<QrCode className="h-4 w-4" />}
                 onClick={() => void onQr()}
               >
-                QR
-              </Button>
+                <TranslatedText textKey="siteCopy.5c20c3c6174178e6" fallbackText={"QR"} /></Button>
             </div>
           ) : null
         }
@@ -432,6 +435,10 @@ export default function WorkOrderDetailPage() {
                       ...(order.estimated_hours != null ? [{ label: t('adminNew.workOrders.detail.estimatedHours'), value: `${Number(order.estimated_hours).toFixed(2)}u` }] : []),
                     ]}
                   />
+                  {can('planning.manage') && can('work_orders.write') && str(order, 'boat_id') && str(order, 'assigned_to_user_id')
+                    && !['draft', 'completed', 'invoiced', 'cancelled', 'archived'].includes(status) && (
+                    <WorkOrderReservation key={id} id={id} initial={order.yard_reservation as Reservation | null | undefined} onSaved={() => { void data.refetch(); }} />
+                  )}
                   {str(order, 'description', 'notes') ? (
                     <div className="rounded-xl border border-navy-100/70 bg-sand-50/40 p-4 text-sm text-navy-700">
                       {str(order, 'description', 'notes')}
@@ -454,7 +461,7 @@ export default function WorkOrderDetailPage() {
                           href={adminRecordHref(locale, 'boten', { ...((order?.boat ?? {}) as Record<string, unknown>), id: boatId })}
                           className="mt-1 inline-flex text-sm font-semibold text-marine-700 hover:text-marine-900"
                         >
-                          {t('adminNew.boats.title')} →
+                          {<TranslatedText textKey={'adminNew.boats.title'} />} →
                         </Link>
                       ) : null}
                     </div>
@@ -478,7 +485,7 @@ export default function WorkOrderDetailPage() {
                         })
                       }
                     >
-                      {t('adminNew.workOrders.detail.generateInvoice')}
+                      {<TranslatedText textKey={'adminNew.workOrders.detail.generateInvoice'} />}
                     </Button>
                     {!availableActions.generate_invoice ? (
                       <p className="text-xs text-navy-400">
@@ -534,7 +541,7 @@ export default function WorkOrderDetailPage() {
                     })}
                   </ul>
                 ) : (
-                  <p className="mb-3 text-sm text-navy-500">{t('adminNew.workOrders.detail.noTime')}</p>
+                  <p className="mb-3 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.detail.noTime'} />}</p>
                 )}
                 <form onSubmit={onAddTime} className="grid grid-cols-3 gap-2">
                   <input
@@ -552,7 +559,7 @@ export default function WorkOrderDetailPage() {
                     onChange={(e) => setTimeForm({ ...timeForm, rate: e.target.value })}
                   />
                   <Button type="submit" size="sm" variant="outline" leftIcon={<Plus className="h-3.5 w-3.5" />} disabled={addTime.loading}>
-                    {t('adminNew.common.add')}
+                    {<TranslatedText textKey={'adminNew.common.add'} />}
                   </Button>
                   <input
                     className="input-base col-span-3"
@@ -591,7 +598,7 @@ export default function WorkOrderDetailPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="mb-3 text-sm text-navy-500">{t('adminNew.workOrders.detail.noMaterials')}</p>
+                  <p className="mb-3 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.detail.noMaterials'} />}</p>
                 )}
                 <form onSubmit={onAddMaterial} className="grid grid-cols-4 gap-2">
                   <input
@@ -616,7 +623,7 @@ export default function WorkOrderDetailPage() {
                     onChange={(e) => setMaterialForm({ ...materialForm, unit_price: e.target.value })}
                   />
                   <Button type="submit" size="sm" variant="outline" leftIcon={<Plus className="h-3.5 w-3.5" />} disabled={addMaterial.loading} className="col-span-4">
-                    {t('adminNew.common.add')}
+                    {<TranslatedText textKey={'adminNew.common.add'} />}
                   </Button>
                 </form>
               </AdminSectionCard>
@@ -657,7 +664,7 @@ export default function WorkOrderDetailPage() {
                       disabled={uploadPhoto.loading}
                       onClick={() => photoInputRef.current?.click()}
                     >
-                      {t('adminNew.common.add')}
+                      {<TranslatedText textKey={'adminNew.common.add'} />}
                     </Button>
                   </div>
                 }
@@ -687,7 +694,7 @@ export default function WorkOrderDetailPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="py-6 text-sm text-navy-500">{t('adminNew.workOrders.detail.noPhotos')}</p>
+                  <p className="py-6 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.detail.noPhotos'} />}</p>
                 )}
               </AdminSectionCard>
 
@@ -722,7 +729,7 @@ export default function WorkOrderDetailPage() {
                         disabled={uploadDoc.loading}
                         onClick={() => docInputRef.current?.click()}
                       >
-                        {t('adminNew.common.add')}
+                        {<TranslatedText textKey={'adminNew.common.add'} />}
                       </Button>
                     </div>
                   </>
@@ -745,7 +752,7 @@ export default function WorkOrderDetailPage() {
                               rel="noreferrer"
                               className="font-semibold text-marine-700 hover:text-marine-900"
                             >
-                              {t('adminNew.invoiceDetail.actions.openPdf')}
+                              {<TranslatedText textKey={'adminNew.invoiceDetail.actions.openPdf'} />}
                             </a>
                             {fileId ? (
                               <button
@@ -762,7 +769,7 @@ export default function WorkOrderDetailPage() {
                     })}
                   </ul>
                 ) : (
-                  <p className="py-6 text-sm text-navy-500">{t('adminNew.workOrders.detail.noDocuments')}</p>
+                  <p className="py-6 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.detail.noDocuments'} />}</p>
                 )}
               </AdminSectionCard>
             </div>
@@ -784,7 +791,7 @@ export default function WorkOrderDetailPage() {
                           : 'rounded-md px-3 py-1.5 text-navy-500 hover:text-navy-800'
                       }
                     >
-                      {t(`adminNew.workOrders.detail.${tab === 'timeline' ? 'tabTimeline' : 'tabAudit'}`)}
+                      {<TranslatedText textKey={`adminNew.workOrders.detail.${tab === 'timeline' ? 'tabTimeline' : 'tabAudit'}`} />}
                     </button>
                   ))}
                 </div>
@@ -792,7 +799,7 @@ export default function WorkOrderDetailPage() {
             >
               {activityTab === 'timeline' ? (
                 timeline.loading ? (
-                  <p className="py-4 text-sm text-navy-500">{t('adminNew.common.loading')}</p>
+                  <p className="py-4 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.common.loading'} />}</p>
                 ) : timelineRows.length ? (
                   <ol className="space-y-2">
                     {timelineRows.map((a, i) => (
@@ -816,10 +823,10 @@ export default function WorkOrderDetailPage() {
                     ))}
                   </ol>
                 ) : (
-                  <p className="py-4 text-sm text-navy-500">{t('adminNew.workOrders.detail.noActivity')}</p>
+                  <p className="py-4 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.detail.noActivity'} />}</p>
                 )
               ) : audit.loading ? (
-                <p className="py-4 text-sm text-navy-500">{t('adminNew.common.loading')}</p>
+                <p className="py-4 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.common.loading'} />}</p>
               ) : auditRows.length ? (
                 <ol className="space-y-2">
                   {auditRows.map((a, i) => {
@@ -842,7 +849,7 @@ export default function WorkOrderDetailPage() {
                           {changedKeys.length ? (
                             <details className="mt-1.5 rounded-lg border border-navy-100/70 bg-sand-50/40">
                               <summary className="cursor-pointer select-none px-3 py-1.5 text-xs font-semibold text-marine-700">
-                                {t('adminNew.workOrders.detail.changes', { count: changedKeys.length })}
+                                {<TranslatedText textKey={'adminNew.workOrders.detail.changes'} vars={{ count: changedKeys.length }} />}
                               </summary>
                               <div className="divide-y divide-navy-100/70 px-3 pb-2 text-xs">
                                 {changedKeys.map((k) => (
@@ -862,7 +869,7 @@ export default function WorkOrderDetailPage() {
                   })}
                 </ol>
               ) : (
-                <p className="py-4 text-sm text-navy-500">{t('adminNew.workOrders.detail.noActivity')}</p>
+                <p className="py-4 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.workOrders.detail.noActivity'} />}</p>
               )}
             </AdminSectionCard>
 
@@ -870,7 +877,7 @@ export default function WorkOrderDetailPage() {
               href={`/${locale}/admin/werkorders`}
               className="inline-flex text-sm font-semibold text-marine-700 hover:text-marine-800"
             >
-              {t('adminNew.workOrders.detail.back')}
+              {<TranslatedText textKey={'adminNew.workOrders.detail.back'} />}
             </Link>
           </>
         ) : null}
@@ -894,7 +901,7 @@ export default function WorkOrderDetailPage() {
           <AdminModalBody>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.workOrders.detail.assignee')}
+                {<TranslatedText textKey={'adminNew.workOrders.detail.assignee'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
@@ -912,10 +919,10 @@ export default function WorkOrderDetailPage() {
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowAssign(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={assignM.loading}>
-              {t('adminNew.common.save')}
+              {<TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -954,10 +961,10 @@ export default function WorkOrderDetailPage() {
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowComplete(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={completeM.loading}>
-              {t('adminNew.workOrders.detail.complete')}
+              {<TranslatedText textKey={'adminNew.workOrders.detail.complete'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -969,7 +976,7 @@ export default function WorkOrderDetailPage() {
           <AdminModalHeader title={t('adminNew.common.edit')} subtitle={str(order, 'number') || ''} />
           <AdminModalBody>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.type')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.workOrders.columns.type'} />}</label>
               <SearchSelect className="input-base w-full" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}>
                 {(types.length ? types : Object.keys(TYPE_LABELS).map((v) => ({ value: v, label: TYPE_LABELS[v] }))).map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -977,7 +984,7 @@ export default function WorkOrderDetailPage() {
               </SearchSelect>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">{t('adminNew.workOrders.columns.priority')}</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.workOrders.columns.priority'} />}</label>
               <SearchSelect className="input-base w-full" value={editForm.priority} onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}>
                 {['low', 'normal', 'high', 'urgent', 'emergency'].map((p) => (
                   <option key={p} value={p}>{p}</option>
@@ -1006,8 +1013,8 @@ export default function WorkOrderDetailPage() {
             />
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowEdit(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={editM.loading}>{t('adminNew.common.save')}</Button>
+            <Button type="button" variant="ghost" onClick={() => setShowEdit(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={editM.loading}>{<TranslatedText textKey={'adminNew.common.save'} />}</Button>
           </AdminModalFooter>
         </form>
       </Modal>
@@ -1026,7 +1033,7 @@ export default function WorkOrderDetailPage() {
           <AdminModalHeader title="Wachtstatus instellen" subtitle="Selecteer de reden van wachten" />
           <AdminModalBody>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-navy-800">Status</label>
+              <label className="mb-1.5 block text-sm font-medium text-navy-800"><TranslatedText textKey="siteCopy.69d60af66b0856ea" fallbackText={"Status"} /></label>
               <SearchSelect
                 className="input-base w-full"
                 value={waitingStatus}
@@ -1039,8 +1046,8 @@ export default function WorkOrderDetailPage() {
             </div>
           </AdminModalBody>
           <AdminModalFooter>
-            <Button type="button" variant="ghost" onClick={() => setShowWaiting(false)}>{t('adminNew.common.cancel')}</Button>
-            <Button type="submit" variant="gold" disabled={waitingM.loading}>Instellen</Button>
+            <Button type="button" variant="ghost" onClick={() => setShowWaiting(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
+            <Button type="submit" variant="gold" disabled={waitingM.loading}><TranslatedText textKey="siteCopy.e4941ff1bb536f64" fallbackText={"Instellen"} /></Button>
           </AdminModalFooter>
         </form>
       </Modal>
@@ -1061,11 +1068,11 @@ export default function WorkOrderDetailPage() {
               <p className="font-mono text-xs text-navy-400">{str(qrData ?? {}, 'payload')}</p>
             </div>
           ) : (
-            <p className="py-4 text-sm text-navy-500">QR code niet beschikbaar.</p>
+            <p className="py-4 text-sm text-navy-500"><TranslatedText textKey="siteCopy.56aa4c1438281bf1" fallbackText={"QR code niet beschikbaar."} /></p>
           )}
         </AdminModalBody>
         <AdminModalFooter>
-          <Button variant="ghost" onClick={() => setShowQr(false)}>{t('adminNew.common.cancel')}</Button>
+          <Button variant="ghost" onClick={() => setShowQr(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>
           {qrData?.qr_url ? (
             <a
               href={String(qrData.qr_url)}
@@ -1074,8 +1081,7 @@ export default function WorkOrderDetailPage() {
               rel="noreferrer"
               className="inline-flex items-center rounded-lg bg-marine-700 px-4 py-2 text-sm font-semibold text-white hover:bg-marine-800"
             >
-              Downloaden
-            </a>
+              <TranslatedText textKey="siteCopy.c0d8851d906865a8" fallbackText={"Downloaden"} /></a>
           ) : null}
         </AdminModalFooter>
       </Modal>

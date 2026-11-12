@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { tEnum } from '@/i18n/admin-enums';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 import { JourneyPanel } from '@/components/admin/JourneyPanel';
@@ -417,7 +419,7 @@ export default function CustomerDetailPage() {
               leftIcon={<UserRound className="h-4 w-4" />}
               onClick={() => setShowImpersonateConfirm(true)}
             >
-              {t('adminNew.impersonation.action')}
+              {<TranslatedText textKey={'adminNew.impersonation.action'} />}
             </Button>
             <Button
               variant="outline"
@@ -425,7 +427,7 @@ export default function CustomerDetailPage() {
               leftIcon={<Save className="h-4 w-4" />}
               onClick={() => setShowEdit(true)}
             >
-              {t('adminNew.customerDetail.actions.editCustomer')}
+              {<TranslatedText textKey={'adminNew.customerDetail.actions.editCustomer'} />}
             </Button>
             <Button
               variant="gold"
@@ -433,7 +435,7 @@ export default function CustomerDetailPage() {
               leftIcon={<FilePlus2 className="h-4 w-4" />}
               onClick={() => setConfirmNewInvoice(true)}
             >
-              {t('adminNew.customerDetail.actions.newInvoice')}
+              {<TranslatedText textKey={'adminNew.customerDetail.actions.newInvoice'} />}
             </Button>
           </>
         }
@@ -513,7 +515,7 @@ export default function CustomerDetailPage() {
                   ]}
                 />
                 <div className="mt-4 rounded-xl border border-navy-100/70 bg-sand-50/60 p-4 text-sm text-navy-700">
-                  <div className="font-medium text-navy-900">{t('adminNew.customerDetail.notes')}</div>
+                  <div className="font-medium text-navy-900">{<TranslatedText textKey={'adminNew.customerDetail.notes'} />}</div>
                   <div className="mt-1 whitespace-pre-wrap text-sm">
                     {data.data.customer.notes ?? t('adminNew.customerDetail.noNotes')}
                   </div>
@@ -551,7 +553,7 @@ export default function CustomerDetailPage() {
                   href={`/${locale}/admin/klanten/${customerId}/timeline`}
                   className="mt-3 inline-flex text-sm font-semibold text-marine-700 hover:text-marine-900"
                 >
-                  {t('adminNew.customerDetail.viewTimeline')} →
+                  {<TranslatedText textKey={'adminNew.customerDetail.viewTimeline'} />} →
                 </Link>
               </AdminSectionCard>
 
@@ -574,7 +576,7 @@ export default function CustomerDetailPage() {
                     icon={Activity}
                     action={
                       <Button size="sm" variant="ghost" onClick={() => void onRecomputeHealth()} disabled={recomputeHealth.loading}>
-                        {t('adminNew.customerDetail.health.recompute')}
+                        {<TranslatedText textKey={'adminNew.customerDetail.health.recompute'} />}
                       </Button>
                     }
                   >
@@ -585,10 +587,10 @@ export default function CustomerDetailPage() {
                       <Badge tone={tone}>{tEnum(t, 'adminNew.customerDetail.health.labels', label)}</Badge>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-navy-600">
-                      <span>{t('adminNew.customerDetail.health.recentPaid')}: <strong>{String(breakdown.recent_paid_invoices ?? 0)}</strong></span>
-                      <span>{t('adminNew.customerDetail.health.overdue')}: <strong>{String(breakdown.overdue_invoices ?? 0)}</strong></span>
-                      <span>{t('adminNew.customerDetail.health.activeContract')}: <strong>{breakdown.active_contract ? t('adminNew.common.yes') : t('adminNew.common.no')}</strong></span>
-                      <span>{t('adminNew.customerDetail.health.openOrders')}: <strong>{String(breakdown.open_work_orders ?? 0)}</strong></span>
+                      <span>{<TranslatedText textKey={'adminNew.customerDetail.health.recentPaid'} />}: <strong>{String(breakdown.recent_paid_invoices ?? 0)}</strong></span>
+                      <span>{<TranslatedText textKey={'adminNew.customerDetail.health.overdue'} />}: <strong>{String(breakdown.overdue_invoices ?? 0)}</strong></span>
+                      <span>{<TranslatedText textKey={'adminNew.customerDetail.health.activeContract'} />}: <strong>{breakdown.active_contract ? <TranslatedText textKey={'adminNew.common.yes'} /> : <TranslatedText textKey={'adminNew.common.no'} />}</strong></span>
+                      <span>{<TranslatedText textKey={'adminNew.customerDetail.health.openOrders'} />}: <strong>{String(breakdown.open_work_orders ?? 0)}</strong></span>
                     </div>
                   </AdminSectionCard>
                 );
@@ -601,10 +603,10 @@ export default function CustomerDetailPage() {
                 action={
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => setShowMonthlyStatement(true)}>
-                      {t('adminNew.wallet.monthlyStatement')}
+                      {<TranslatedText textKey={'adminNew.wallet.monthlyStatement'} />}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setShowWalletCredit(true)}>
-                      {t('adminNew.wallet.credit')}
+                      {<TranslatedText textKey={'adminNew.wallet.credit'} />}
                     </Button>
                   </div>
                 }
@@ -615,7 +617,7 @@ export default function CustomerDetailPage() {
                     intlLocale(locale)
                   )}
                 </div>
-                <p className="mt-1 text-xs text-navy-500">{t('adminNew.wallet.balanceHint')}</p>
+                <p className="mt-1 text-xs text-navy-500">{<TranslatedText textKey={'adminNew.wallet.balanceHint'} />}</p>
                 {(data.data.wallet?.transactions ?? []).slice(0, 3).map((tx) => (
                   <div key={tx.id} className="mt-3 flex items-center justify-between border-t border-navy-100 pt-3 text-sm">
                     <span className="text-navy-600">{tx.description}</span>
@@ -637,17 +639,17 @@ export default function CustomerDetailPage() {
                   leftIcon={<Ship className="h-4 w-4" />}
                   onClick={() => setShowBoat(true)}
                 >
-                  {t('adminNew.customerDetail.actions.addBoat')}
+                  {<TranslatedText textKey={'adminNew.customerDetail.actions.addBoat'} />}
                 </Button>
               }
             >
               <AdminTable minWidth={760}>
                 <AdminTableHead>
                   <tr>
-                    <AdminTableHeaderCell>{t('adminNew.customerDetail.table.boats.name')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.customerDetail.table.boats.type')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.customerDetail.table.boats.length')}</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>{t('adminNew.customerDetail.table.boats.location')}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customerDetail.table.boats.name'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customerDetail.table.boats.type'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customerDetail.table.boats.length'} />}</AdminTableHeaderCell>
+                    <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customerDetail.table.boats.location'} />}</AdminTableHeaderCell>
                   </tr>
                 </AdminTableHead>
                 <tbody>
@@ -667,7 +669,7 @@ export default function CustomerDetailPage() {
                   ) : (
                     <tr>
                       <td colSpan={4} className="border-t border-navy-100 px-4 py-8 text-center text-sm text-navy-500">
-                        {t('adminNew.customerDetail.noBoats')}
+                        {<TranslatedText textKey={'adminNew.customerDetail.noBoats'} />}
                       </td>
                     </tr>
                   )}
@@ -692,7 +694,7 @@ export default function CustomerDetailPage() {
                         <div>
                           <div className="font-medium text-navy-900">{invoice.invoice_number}</div>
                           <div className="text-xs text-navy-500">
-                            {t('adminNew.customerDetail.dueDate')}:{' '}
+                            {<TranslatedText textKey={'adminNew.customerDetail.dueDate'} />}:{' '}
                             {formatDate(invoice.due_date)}
                           </div>
                         </div>
@@ -709,7 +711,7 @@ export default function CustomerDetailPage() {
                     ))
                   ) : (
                     <div className="px-4 py-6 text-sm text-navy-500">
-                      {t('adminNew.customerDetail.noInvoices')}
+                      {<TranslatedText textKey={'adminNew.customerDetail.noInvoices'} />}
                     </div>
                   )}
                 </div>
@@ -744,7 +746,7 @@ export default function CustomerDetailPage() {
                     ))
                   ) : (
                     <div className="px-4 py-6 text-sm text-navy-500">
-                      {t('adminNew.customerDetail.noContracts')}
+                      {<TranslatedText textKey={'adminNew.customerDetail.noContracts'} />}
                     </div>
                   )}
                 </div>
@@ -785,8 +787,8 @@ export default function CustomerDetailPage() {
                         }
                       >
                         {v === 'internal'
-                          ? t('adminNew.customerDetail.timelineInternal')
-                          : t('adminNew.customerDetail.timelineCustomer')}
+                          ? <TranslatedText textKey={'adminNew.customerDetail.timelineInternal'} />
+                          : <TranslatedText textKey={'adminNew.customerDetail.timelineCustomer'} />}
                       </button>
                     ))}
                   </div>
@@ -820,8 +822,8 @@ export default function CustomerDetailPage() {
                     onClick={() => setTlShowCta((v) => !v)}
                   >
                     {tlShowCta
-                      ? t('adminNew.customerDetail.timelineHideCta', { defaultValue: 'Verberg knop' })
-                      : t('adminNew.customerDetail.timelineAddCta', { defaultValue: '+ CTA knop' })}
+                      ? <TranslatedText textKey={'adminNew.customerDetail.timelineHideCta'} vars={{ defaultValue: 'Verberg knop' }} />
+                      : <TranslatedText textKey={'adminNew.customerDetail.timelineAddCta'} vars={{ defaultValue: '+ CTA knop' }} />}
                   </button>
                   <div className="ml-auto">
                     <Button
@@ -830,7 +832,7 @@ export default function CustomerDetailPage() {
                       disabled={!tlTitle.trim() || !tlBody.trim() || postTimeline.loading}
                       onClick={() => void handlePostTimeline()}
                     >
-                      {t('adminNew.customerDetail.timelinePost')}
+                      {<TranslatedText textKey={'adminNew.customerDetail.timelinePost'} />}
                     </Button>
                   </div>
                 </div>
@@ -864,7 +866,7 @@ export default function CustomerDetailPage() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-medium text-navy-900">{String(item.title ?? item.type ?? '—')}</span>
                             {internal ? (
-                              <Badge tone="sand">{t('adminNew.customerDetail.timelineInternal')}</Badge>
+                              <Badge tone="sand">{<TranslatedText textKey={'adminNew.customerDetail.timelineInternal'} />}</Badge>
                             ) : null}
                             {String(item.priority ?? '') === 'high' || String(item.priority ?? '') === 'urgent' ? (
                               <Badge tone="danger">{String(item.priority)}</Badge>
@@ -901,10 +903,10 @@ export default function CustomerDetailPage() {
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handlePostComment(itemId); } }}
                               />
                               <Button size="sm" variant="outline" disabled={cs.loading || !cs.body.trim()} onClick={() => void handlePostComment(itemId)}>
-                                {t('adminNew.customerDetail.commentSend', { defaultValue: 'Stuur' })}
+                                {<TranslatedText textKey={'adminNew.customerDetail.commentSend'} vars={{ defaultValue: 'Stuur' }} />}
                               </Button>
                               <Button size="sm" variant="ghost" onClick={() => setCommentState((prev) => ({ ...prev, [itemId]: { open: false, body: '', loading: false } }))}>
-                                {t('adminNew.common.cancel')}
+                                {<TranslatedText textKey={'adminNew.common.cancel'} />}
                               </Button>
                             </div>
                           ) : (
@@ -913,7 +915,7 @@ export default function CustomerDetailPage() {
                               className="mt-1.5 text-xs text-marine-700 hover:text-marine-900 underline"
                               onClick={() => setCommentState((prev) => ({ ...prev, [itemId]: { open: true, body: '', loading: false } }))}
                             >
-                              {t('adminNew.customerDetail.addComment', { defaultValue: '+ Opmerking' })}
+                              {<TranslatedText textKey={'adminNew.customerDetail.addComment'} vars={{ defaultValue: '+ Opmerking' }} />}
                             </button>
                           )}
                         </div>
@@ -926,7 +928,7 @@ export default function CustomerDetailPage() {
                   })}
                 </div>
               ) : (
-                <div className="text-sm text-navy-500">{t('adminNew.customerDetail.timelineEmpty')}</div>
+                <div className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.customerDetail.timelineEmpty'} />}</div>
               )}
             </AdminSectionCard>
 
@@ -952,7 +954,7 @@ export default function CustomerDetailPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-sm text-navy-500">{t('adminNew.customerDetail.noFiles')}</div>
+                <div className="text-sm text-navy-500">{<TranslatedText textKey={'adminNew.customerDetail.noFiles'} />}</div>
               )}
             </AdminSectionCard>
 
@@ -970,7 +972,7 @@ export default function CustomerDetailPage() {
                   disabled={gdprExport.loading}
                   onClick={() => void onGdprExport()}
                 >
-                  {gdprExport.loading ? t('adminNew.common.loading') : t('adminNew.gdpr.export')}
+                  {gdprExport.loading ? <TranslatedText textKey={'adminNew.common.loading'} /> : <TranslatedText textKey={'adminNew.gdpr.export'} />}
                 </Button>
                 <Button
                   variant="danger"
@@ -982,10 +984,10 @@ export default function CustomerDetailPage() {
                     setShowAnonymize(true);
                   }}
                 >
-                  {t('adminNew.gdpr.anonymize')}
+                  {<TranslatedText textKey={'adminNew.gdpr.anonymize'} />}
                 </Button>
               </div>
-              <p className="mt-3 text-xs text-navy-500">{t('adminNew.gdpr.hint')}</p>
+              <p className="mt-3 text-xs text-navy-500">{<TranslatedText textKey={'adminNew.gdpr.hint'} />}</p>
             </AdminSectionCard>
           </>
         ) : null}
@@ -994,7 +996,7 @@ export default function CustomerDetailPage() {
       <Modal open={showEdit} onClose={() => setShowEdit(false)} size="md">
         <form onSubmit={handleSaveCustomer} className="p-6">
           <h2 className="text-lg font-semibold text-navy-900">
-            {t('adminNew.customerDetail.modals.editTitle')}
+            {<TranslatedText textKey={'adminNew.customerDetail.modals.editTitle'} />}
           </h2>
           <div className="mt-4 space-y-3">
             <Input
@@ -1015,22 +1017,22 @@ export default function CustomerDetailPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.customerDetail.preferredLocale')}
+                {<TranslatedText textKey={'adminNew.customerDetail.preferredLocale'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
                 value={editForm.preferred_locale}
                 onChange={(e) => setEditForm((p) => ({ ...p, preferred_locale: e.target.value }))}
               >
-                <option value="nl-NL">Nederlands (NL)</option>
-                <option value="en-GB">English (EN)</option>
-                <option value="de-DE">Deutsch (DE)</option>
-                <option value="fr-FR">Français (FR)</option>
+                <option value="nl-NL"><TranslatedText textKey="siteCopy.605d0a536696813a" fallbackText={"Nederlands (NL)"} inline={false} /></option>
+                <option value="en-GB"><TranslatedText textKey="siteCopy.c09c6392461099fa" fallbackText={"English (EN)"} inline={false} /></option>
+                <option value="de-DE"><TranslatedText textKey="siteCopy.e9ae1cb6e599f52d" fallbackText={"Deutsch (DE)"} inline={false} /></option>
+                <option value="fr-FR"><TranslatedText textKey="siteCopy.eda439d03aed4a41" fallbackText={"Français (FR)"} inline={false} /></option>
               </SearchSelect>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.customerDetail.gender')}
+                {<TranslatedText textKey={'adminNew.customerDetail.gender'} />}
               </label>
               <SearchSelect
                 className="input-base w-full"
@@ -1079,7 +1081,7 @@ export default function CustomerDetailPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.customerDetail.notes')}
+                {<TranslatedText textKey={'adminNew.customerDetail.notes'} />}
               </label>
               <textarea
                 className="input-base min-h-24"
@@ -1090,12 +1092,12 @@ export default function CustomerDetailPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowEdit(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={updateCustomer.loading}>
               {updateCustomer.loading
-                ? t('adminNew.common.saving')
-                : t('adminNew.common.save')}
+                ? <TranslatedText textKey={'adminNew.common.saving'} />
+                : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </div>
         </form>
@@ -1104,7 +1106,7 @@ export default function CustomerDetailPage() {
       <Modal open={showBoat} onClose={() => setShowBoat(false)} size="md">
         <form onSubmit={handleCreateBoat} className="p-6">
           <h2 className="text-lg font-semibold text-navy-900">
-            {t('adminNew.customerDetail.modals.addBoatTitle')}
+            {<TranslatedText textKey={'adminNew.customerDetail.modals.addBoatTitle'} />}
           </h2>
           <div className="mt-4 space-y-3">
             <Input
@@ -1115,7 +1117,7 @@ export default function CustomerDetailPage() {
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                {t('adminNew.customerDetail.boatType')}
+                {<TranslatedText textKey={'adminNew.customerDetail.boatType'} />}
               </label>
               <SearchSelect
                 className="input-base"
@@ -1124,8 +1126,8 @@ export default function CustomerDetailPage() {
               >
                 <option value="motor">{t('adminNew.boats.type.motor')}</option>
                 <option value="sail">{t('adminNew.boats.type.sail')}</option>
-                <option value="rib">RIB</option>
-                <option value="trailer">Trailer</option>
+                <option value="rib"><TranslatedText textKey="siteCopy.a9fe99ecc8b93744" fallbackText={"RIB"} inline={false} /></option>
+                <option value="trailer"><TranslatedText textKey="siteCopy.b39f87fba6a1b971" fallbackText={"Trailer"} inline={false} /></option>
                 <option value="other">{t('adminNew.boats.type.other')}</option>
               </SearchSelect>
             </div>
@@ -1144,12 +1146,12 @@ export default function CustomerDetailPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowBoat(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createBoat.loading}>
               {createBoat.loading
-                ? t('adminNew.common.saving')
-                : t('adminNew.customerDetail.actions.addBoat')}
+                ? <TranslatedText textKey={'adminNew.common.saving'} />
+                : <TranslatedText textKey={'adminNew.customerDetail.actions.addBoat'} />}
             </Button>
           </div>
         </form>
@@ -1157,7 +1159,7 @@ export default function CustomerDetailPage() {
 
       <Modal open={showWalletCredit} onClose={() => setShowWalletCredit(false)} size="md">
         <form onSubmit={onCreditWallet} className="p-6">
-          <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.wallet.creditModal.title')}</h2>
+          <h2 className="text-lg font-semibold text-navy-900">{<TranslatedText textKey={'adminNew.wallet.creditModal.title'} />}</h2>
           <div className="mt-4 space-y-3">
             <Input
               label={t('adminNew.wallet.creditModal.amount')}
@@ -1175,10 +1177,10 @@ export default function CustomerDetailPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowWalletCredit(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={creditWallet.loading}>
-              {creditWallet.loading ? t('adminNew.common.saving') : t('adminNew.wallet.credit')}
+              {creditWallet.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.wallet.credit'} />}
             </Button>
           </div>
         </form>
@@ -1208,8 +1210,8 @@ export default function CustomerDetailPage() {
             })();
           }}
         >
-          <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.wallet.statementModal.title')}</h2>
-          <p className="mt-1 text-sm text-navy-500">{t('adminNew.wallet.statementModal.subtitle')}</p>
+          <h2 className="text-lg font-semibold text-navy-900">{<TranslatedText textKey={'adminNew.wallet.statementModal.title'} />}</h2>
+          <p className="mt-1 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.wallet.statementModal.subtitle'} />}</p>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Input
               label={t('adminNew.wallet.statementModal.year')}
@@ -1232,12 +1234,12 @@ export default function CustomerDetailPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowMonthlyStatement(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={monthlyStatement.loading}>
               {monthlyStatement.loading
-                ? t('adminNew.common.saving')
-                : t('adminNew.wallet.statementModal.generate')}
+                ? <TranslatedText textKey={'adminNew.common.saving'} />
+                : <TranslatedText textKey={'adminNew.wallet.statementModal.generate'} />}
             </Button>
           </div>
         </form>
@@ -1330,8 +1332,8 @@ export default function CustomerDetailPage() {
               <UserX className="h-5 w-5" />
             </span>
             <div>
-              <h2 className="text-lg font-semibold text-navy-900">{t('adminNew.gdpr.anonymizeModal.title')}</h2>
-              <p className="mt-1 text-sm text-navy-500">{t('adminNew.gdpr.anonymizeModal.message')}</p>
+              <h2 className="text-lg font-semibold text-navy-900">{<TranslatedText textKey={'adminNew.gdpr.anonymizeModal.title'} />}</h2>
+              <p className="mt-1 text-sm text-navy-500">{<TranslatedText textKey={'adminNew.gdpr.anonymizeModal.message'} />}</p>
             </div>
           </div>
           <div className="mt-4 space-y-3">
@@ -1351,7 +1353,7 @@ export default function CustomerDetailPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setShowAnonymize(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button
               type="submit"
@@ -1362,7 +1364,7 @@ export default function CustomerDetailPage() {
                 anonymizeReason.trim().length < 5
               }
             >
-              {gdprAnonymize.loading ? t('adminNew.common.saving') : t('adminNew.gdpr.anonymize')}
+              {gdprAnonymize.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.gdpr.anonymize'} />}
             </Button>
           </div>
         </form>

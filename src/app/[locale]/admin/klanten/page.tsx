@@ -1,4 +1,6 @@
 'use client';
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import { SearchSelect } from '@/components/ui/SearchSelect';
 
 import { intlLocale } from '@/lib/format';
@@ -207,7 +209,7 @@ export default function CustomersPage() {
         rightSlot={
           <Link href={`/${locale}/admin/gebruikers`}>
             <Button variant="outline" size="sm" leftIcon={<UserCog className="h-4 w-4" />}>
-              {t('adminNew.users.title', { defaultValue: 'Gebruikers' })}
+              {<TranslatedText textKey={'adminNew.users.title'} vars={{ defaultValue: 'Gebruikers' }} />}
             </Button>
           </Link>
         }
@@ -246,7 +248,7 @@ export default function CustomersPage() {
           icon={Users}
           action={
             canWrite ? <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
-              {t('adminNew.customers.new')}
+              {<TranslatedText textKey={'adminNew.customers.new'} />}
             </Button> : null
           }
         >
@@ -268,9 +270,9 @@ export default function CustomersPage() {
             }}
           >
             <option value="">{t('adminNew.customers.allLanguages')}</option>
-            <option value="nl">NL</option>
-            <option value="en">EN</option>
-            <option value="de">DE</option>
+            <option value="nl"><TranslatedText textKey="siteCopy.eccb86bd9646d6b7" fallbackText={"NL"} inline={false} /></option>
+            <option value="en"><TranslatedText textKey="siteCopy.7415ed937db839cb" fallbackText={"EN"} inline={false} /></option>
+            <option value="de"><TranslatedText textKey="siteCopy.3c948a29b8f059bd" fallbackText={"DE"} inline={false} /></option>
           </AdminSelect>
           <AdminSelect
             value={status}
@@ -344,7 +346,7 @@ export default function CustomersPage() {
               message={t('adminNew.customers.emptyMessage')}
               action={
                 canWrite ? <Button variant="outline" size="sm" onClick={() => setShowCreate(true)}>
-                  {t('adminNew.customers.new')}
+                  {<TranslatedText textKey={'adminNew.customers.new'} />}
                 </Button> : null
               }
             />
@@ -354,12 +356,12 @@ export default function CustomersPage() {
             <AdminTable minWidth={880}>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>{t('adminNew.customers.columns.customer')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.customers.columns.contact')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.customers.columns.locale')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.customers.columns.city', { defaultValue: 'Stad / Land' })}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.customers.columns.status')}</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>{t('adminNew.customers.columns.lastLogin')}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customers.columns.customer'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customers.columns.contact'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customers.columns.locale'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customers.columns.city'} vars={{ defaultValue: 'Stad / Land' }} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customers.columns.status'} />}</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>{<TranslatedText textKey={'adminNew.customers.columns.lastLogin'} />}</AdminTableHeaderCell>
                   <AdminTableHeaderCell className="text-right">&nbsp;</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
@@ -397,14 +399,14 @@ export default function CustomersPage() {
                       <div className="flex flex-col items-start gap-1">
                         <Badge tone={blocked ? 'danger' : 'success'}>
                           {blocked
-                            ? t('adminNew.customers.statusBlocked')
-                            : t('adminNew.customers.statusActive')}
+                            ? <TranslatedText textKey={'adminNew.customers.statusBlocked'} />
+                            : <TranslatedText textKey={'adminNew.customers.statusActive'} />}
                         </Badge>
                         {blocked && customer.blocked_at ? (
                           <span className="text-xs text-navy-400">
-                            {t('adminNew.customers.blockedOn', {
+                            {<TranslatedText textKey={'adminNew.customers.blockedOn'} vars={{
                               date: new Date(customer.blocked_at).toLocaleDateString(dateLocale),
-                            })}
+                            }} />}
                           </span>
                         ) : null}
                       </div>
@@ -418,7 +420,7 @@ export default function CustomersPage() {
                           ) : null}
                         </div>
                       ) : (
-                        <Badge tone="warning">{t('adminNew.customers.neverLoggedIn')}</Badge>
+                        <Badge tone="warning">{<TranslatedText textKey={'adminNew.customers.neverLoggedIn'} />}</Badge>
                       )}
                     </AdminTableCell>
                     <AdminTableCell className="text-right">
@@ -431,7 +433,7 @@ export default function CustomersPage() {
                           disabled={sendMagicLink.loading}
                           onClick={() => void onSendMagicLink(customer.id)}
                         >
-                          {t('adminNew.customers.sendLoginLink')}
+                          {<TranslatedText textKey={'adminNew.customers.sendLoginLink'} />}
                         </Button>
                         <Button
                           variant="ghost"
@@ -439,7 +441,7 @@ export default function CustomersPage() {
                           leftIcon={<LogIn className="h-3.5 w-3.5" />}
                           onClick={() => setImpersonateTarget({ id: customer.id, name: customer.name })}
                         >
-                          {t('adminNew.customers.impersonate')}
+                          {<TranslatedText textKey={'adminNew.customers.impersonate'} />}
                         </Button>
                         {blocked ? (
                           <Button
@@ -449,7 +451,7 @@ export default function CustomersPage() {
                             disabled={unblockCustomer.loading}
                             onClick={() => void onUnblock(customer.id)}
                           >
-                            {t('adminNew.customers.unblock')}
+                            {<TranslatedText textKey={'adminNew.customers.unblock'} />}
                           </Button>
                         ) : (
                           <Button
@@ -458,12 +460,12 @@ export default function CustomersPage() {
                             leftIcon={<Ban className="h-3.5 w-3.5" />}
                             onClick={() => setBlockTarget({ id: customer.id, name: customer.name })}
                           >
-                            {t('adminNew.customers.block')}
+                            {<TranslatedText textKey={'adminNew.customers.block'} />}
                           </Button>
                         )}
                         </> : null}
                         <AdminLinkButton href={adminRecordHref(locale, 'klanten', customer)}>
-                          {t('adminNew.customers.details')}
+                          {<TranslatedText textKey={'adminNew.customers.details'} />}
                         </AdminLinkButton>
                       </div>
                     </AdminTableCell>
@@ -504,7 +506,7 @@ export default function CustomersPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label className="block text-sm">
                 <span className="mb-1.5 block font-medium text-navy-800">
-                  {t('adminNew.customers.fields.gender')}
+                  {<TranslatedText textKey={'adminNew.customers.fields.gender'} />}
                 </span>
                 <SearchSelect
                   className="input-base w-full"
@@ -519,7 +521,7 @@ export default function CustomersPage() {
               </label>
               <label className="block text-sm">
                 <span className="mb-1.5 block font-medium text-navy-800">
-                  {t('adminNew.customers.fields.preferredLocale')}
+                  {<TranslatedText textKey={'adminNew.customers.fields.preferredLocale'} />}
                 </span>
                 <SearchSelect
                   className="input-base w-full"
@@ -529,16 +531,16 @@ export default function CustomersPage() {
                   }
                 >
                   <option value="">{t('adminNew.customers.localeDefault')}</option>
-                  <option value="nl">NL</option>
-                  <option value="en">EN</option>
-                  <option value="de">DE</option>
+                  <option value="nl"><TranslatedText textKey="siteCopy.eccb86bd9646d6b7" fallbackText={"NL"} inline={false} /></option>
+                  <option value="en"><TranslatedText textKey="siteCopy.7415ed937db839cb" fallbackText={"EN"} inline={false} /></option>
+                  <option value="de"><TranslatedText textKey="siteCopy.3c948a29b8f059bd" fallbackText={"DE"} inline={false} /></option>
                 </SearchSelect>
               </label>
             </div>
 
             <div className="border-t border-navy-100 pt-4">
               <h3 className="mb-3 text-sm font-semibold text-navy-800">
-                {t('adminNew.customers.address.title')}
+                {<TranslatedText textKey={'adminNew.customers.address.title'} />}
               </h3>
               <AddressAutocomplete
                 label={t('adminNew.customers.address.search')}
@@ -584,23 +586,23 @@ export default function CustomersPage() {
                 />
                 <label className="block text-sm">
                   <span className="mb-1.5 block font-medium text-navy-800">
-                    {t('adminNew.customers.address.country')}
+                    {<TranslatedText textKey={'adminNew.customers.address.country'} />}
                   </span>
                   <SearchSelect
                     className="input-base w-full"
                     value={form.country}
                     onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
                   >
-                    <option value="NL">Nederland</option>
-                    <option value="BE">België</option>
-                    <option value="DE">Deutschland</option>
-                    <option value="FR">France</option>
-                    <option value="GB">United Kingdom</option>
-                    <option value="LU">Luxembourg</option>
-                    <option value="DK">Denmark</option>
-                    <option value="NO">Norway</option>
-                    <option value="SE">Sweden</option>
-                    <option value="US">United States</option>
+                    <option value="NL"><TranslatedText textKey="siteCopy.9808925600eb0e5f" fallbackText={"Nederland"} inline={false} /></option>
+                    <option value="BE"><TranslatedText textKey="siteCopy.2c13b0001ebff432" fallbackText={"België"} inline={false} /></option>
+                    <option value="DE"><TranslatedText textKey="siteCopy.6444a31cc693e11d" fallbackText={"Deutschland"} inline={false} /></option>
+                    <option value="FR"><TranslatedText textKey="siteCopy.09d7258b3929de0e" fallbackText={"France"} inline={false} /></option>
+                    <option value="GB"><TranslatedText textKey="siteCopy.50f80052ec07b0a4" fallbackText={"United Kingdom"} inline={false} /></option>
+                    <option value="LU"><TranslatedText textKey="siteCopy.d7c909f443594aee" fallbackText={"Luxembourg"} inline={false} /></option>
+                    <option value="DK"><TranslatedText textKey="siteCopy.171c7f6153035d73" fallbackText={"Denmark"} inline={false} /></option>
+                    <option value="NO"><TranslatedText textKey="siteCopy.16ce6c8542e9ea90" fallbackText={"Norway"} inline={false} /></option>
+                    <option value="SE"><TranslatedText textKey="siteCopy.420c249384e7cccf" fallbackText={"Sweden"} inline={false} /></option>
+                    <option value="US"><TranslatedText textKey="siteCopy.c8e0cd985349f697" fallbackText={"United States"} inline={false} /></option>
                     <option value="">—</option>
                   </SearchSelect>
                 </label>
@@ -609,10 +611,10 @@ export default function CustomersPage() {
           </AdminModalBody>
           <AdminModalFooter>
             <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="gold" disabled={createCustomer.loading}>
-              {createCustomer.loading ? t('adminNew.common.saving') : t('adminNew.common.save')}
+              {createCustomer.loading ? <TranslatedText textKey={'adminNew.common.saving'} /> : <TranslatedText textKey={'adminNew.common.save'} />}
             </Button>
           </AdminModalFooter>
         </form>
@@ -637,14 +639,14 @@ export default function CustomersPage() {
         >
           <h2 className="flex items-center gap-2 text-lg font-semibold text-navy-900">
             <Ban className="h-5 w-5 text-rose-500" />
-            {t('adminNew.customers.block')}
+            {<TranslatedText textKey={'adminNew.customers.block'} />}
           </h2>
           <p className="mt-2 text-sm text-navy-600">
-            {t('adminNew.customers.confirmBlock', { name: blockTarget?.name ?? '' })}
+            {<TranslatedText textKey={'adminNew.customers.confirmBlock'} vars={{ name: blockTarget?.name ?? '' }} />}
           </p>
           <div className="mt-4">
             <label className="mb-1.5 block text-sm font-medium text-navy-800">
-              {t('adminNew.customers.blockReason')}
+              {<TranslatedText textKey={'adminNew.customers.blockReason'} />}
             </label>
             <textarea
               className="input-base min-h-20 w-full"
@@ -655,10 +657,10 @@ export default function CustomersPage() {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => { setBlockTarget(null); setBlockReason(''); }}>
-              {t('adminNew.common.cancel')}
+              {<TranslatedText textKey={'adminNew.common.cancel'} />}
             </Button>
             <Button type="submit" variant="danger" disabled={blockCustomer.loading}>
-              {t('adminNew.customers.block')}
+              {<TranslatedText textKey={'adminNew.customers.block'} />}
             </Button>
           </div>
         </form>

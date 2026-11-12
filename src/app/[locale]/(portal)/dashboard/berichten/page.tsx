@@ -1,5 +1,7 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import {
   Bell,
@@ -158,7 +160,7 @@ export default function PortalMessagesPage() {
                 disabled={markAllRead.loading}
                 onClick={() => setConfirmMarkAll(true)}
               >
-                {t('adminNew.portal.messages.markAll')}
+                {<TranslatedText textKey={'adminNew.portal.messages.markAll'} />}
               </Button>
             ) : null
           }
@@ -202,7 +204,7 @@ export default function PortalMessagesPage() {
               <div key={dateKey}>
                 <PortalSectionLabel>
                   {dateKey === 'unknown'
-                    ? t('adminNew.portal.messages.unknownDate')
+                    ? <TranslatedText textKey={'adminNew.portal.messages.unknownDate'} />
                     : formatDateTime(`${dateKey}T12:00:00`, dateLocale).split(',')[0]}
                 </PortalSectionLabel>
                 <div className="space-y-2.5">
@@ -245,7 +247,7 @@ export default function PortalMessagesPage() {
         {!timeline.loading && timeline.data?.pagination?.has_more ? (
           <div className="mt-4 flex justify-center">
             <Button variant="outline" size="sm" onClick={() => setPerPage((p) => p + 50)}>
-              {t('adminNew.portal.messages.loadMore')}
+              {<TranslatedText textKey={'adminNew.portal.messages.loadMore'} />}
             </Button>
           </div>
         ) : null}
@@ -284,7 +286,7 @@ export default function PortalMessagesPage() {
               {Array.isArray(selected.comments) && (selected.comments as Record<string, unknown>[]).length > 0 ? (
                 <div className="mt-4 space-y-2 border-t border-navy-100 pt-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-navy-400">
-                    {t('adminNew.portal.messages.replies', { defaultValue: 'Reacties' })}
+                    {<TranslatedText textKey={'adminNew.portal.messages.replies'} vars={{ defaultValue: 'Reacties' }} />}
                   </p>
                   {(selected.comments as Record<string, unknown>[]).map((c, ci) => {
                     const isCustomer = String(c.actor_type ?? '') === 'customer';
@@ -292,8 +294,8 @@ export default function PortalMessagesPage() {
                       <div key={String(c.id ?? ci)} className={`rounded-lg px-3 py-2 text-sm ${isCustomer ? 'bg-marine-50 text-marine-900' : 'bg-sand-50 text-navy-700'}`}>
                         <span className="font-semibold">
                           {isCustomer
-                            ? t('adminNew.portal.messages.you', { defaultValue: 'Jij' })
-                            : t('adminNew.portal.messages.marina', { defaultValue: 'Krekelberg' })}:
+                            ? <TranslatedText textKey={'adminNew.portal.messages.you'} vars={{ defaultValue: 'Jij' }} />
+                            : <TranslatedText textKey={'adminNew.portal.messages.marina'} vars={{ defaultValue: 'Krekelberg' }} />}:
                         </span>{' '}
                         {String(c.message ?? '')}
                       </div>
@@ -313,7 +315,7 @@ export default function PortalMessagesPage() {
             </PortalModalBody>
             <PortalModalFooter>
               <Button variant="outline" onClick={() => setSelected(null)}>
-                {t('adminNew.common.cancel')}
+                {<TranslatedText textKey={'adminNew.common.cancel'} />}
               </Button>
               {/* CTA button when present */}
               {selected.cta_url ? (
@@ -341,8 +343,8 @@ export default function PortalMessagesPage() {
                 }}
               >
                 {postComment.loading
-                  ? t('adminNew.common.saving')
-                  : t('adminNew.portal.messages.reply', { defaultValue: 'Reageer' })}
+                  ? <TranslatedText textKey={'adminNew.common.saving'} />
+                  : <TranslatedText textKey={'adminNew.portal.messages.reply'} vars={{ defaultValue: 'Reageer' }} />}
               </Button>
             </PortalModalFooter>
           </>

@@ -1,5 +1,9 @@
 'use client';
 
+
+import { TranslatedText } from '@/components/cms/TranslatedText';
+import { BoatPhoto } from '@/components/portal/BoatPhoto';
+import { useSearchParams } from 'next/navigation';
 import * as React from 'react';
 import Link from 'next/link';
 import {
@@ -45,7 +49,7 @@ type StatusFilter = '' | 'upcoming' | 'completed' | 'cancelled';
 
 function isUpcoming(a: Appointment): boolean {
   const s = a.status.toLowerCase();
-  if (s.includes('complete') || s.includes('cancel') || s.includes('no_show')) return false;
+  if (s.includes('complete') || s.includes('cancel') || s.includes('no_show') || s === 'rejected') return false;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const d = new Date(`${(a.appointment_date || '').slice(0, 10)}T00:00:00`);
@@ -57,6 +61,10 @@ function isPast(a: Appointment): boolean {
 }
 
 export default function PortalAppointmentsPage() {
+  return <React.Suspense><PortalAppointments /></React.Suspense>;
+}
+
+function PortalAppointments() {
   const { t, locale } = useIntl();
   const { push } = useToast();
   const dateLocale = intlLocale(locale);
@@ -72,12 +80,22 @@ export default function PortalAppointmentsPage() {
   const [prefTime, setPrefTime] = React.useState('');
   const [reschedReason, setReschedReason] = React.useState('');
 
+  const requestedId = useSearchParams().get('appointment') ?? undefined;
   const appointments = useQuery([statusFilter], () =>
-    portalService.appointments({
-      status: statusFilter || undefined,
-      per_page: 50,
-    })
+    portalService.appointments({ status: statusFilter || undefined, per_page: 50 })
   );
+  const requestedAppointment = useQuery(['requested-appointment', requestedId], () =>
+    requestedId ? portalService.appointments({ appointment: requestedId }) : Promise.resolve(null)
+  );
+
+  const openedRequest = React.useRef<string>();
+  React.useEffect(() => {
+    const requested = requestedAppointment.data?.data.find((item) => item.id === requestedId);
+    if (requested && openedRequest.current !== requested.id) {
+      openedRequest.current = requested.id;
+      setSelected(requested);
+    }
+  }, [requestedId, requestedAppointment.data]);
 
   const cancelMutation = useMutation((id: string, reason?: string) =>
     portalService.cancelAppointment(id, reason)
@@ -206,7 +224,7 @@ export default function PortalAppointmentsPage() {
           action={
             <Link href={`/${locale}/kraanafspraak`}>
               <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-                {t('adminNew.portal.appointments.book')}
+                {<TranslatedText textKey={'adminNew.portal.appointments.book'} />}
               </Button>
             </Link>
           }
@@ -245,7 +263,7 @@ export default function PortalAppointmentsPage() {
             action={
               <Link href={`/${locale}/kraanafspraak`}>
                 <Button variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-                  {t('adminNew.portal.appointments.book')}
+                  {<TranslatedText textKey={'adminNew.portal.appointments.book'} />}
                 </Button>
               </Link>
             }
@@ -257,13 +275,13 @@ export default function PortalAppointmentsPage() {
             {/* Upcoming appointments */}
             {upcomingGrouped.length > 0 ? (
               <div>
-                <div className="mb-3 text-sm font-semibold text-navy-700">Aankomende afspraken</div>
+                <div className="mb-3 text-sm font-semibold text-navy-700"><TranslatedText textKey="siteCopy.ae021d52f0e3c507" fallbackText={"Aankomende afspraken"} /></div>
                 <div className="space-y-5">
                   {upcomingGrouped.map(([dateKey, dayItems]) => (
                     <div key={dateKey}>
                       <PortalSectionLabel>
                         {dateKey === 'unknown'
-                          ? t('adminNew.portal.appointments.unknownDate')
+                          ? <TranslatedText textKey={'adminNew.portal.appointments.unknownDate'} />
                           : formatDate(dateKey, dateLocale)}
                       </PortalSectionLabel>
                       <div className="space-y-2.5">
@@ -291,20 +309,19 @@ export default function PortalAppointmentsPage() {
               </div>
             ) : (
               <div className="rounded-lg border border-dashed border-navy-100 px-4 py-6 text-center text-sm text-navy-400">
-                Geen aankomende afspraken
-              </div>
+                <TranslatedText textKey="siteCopy.78e1489147a1ee27" fallbackText={"Geen aankomende afspraken"} /></div>
             )}
 
             {/* Past appointments */}
             {pastGrouped.length > 0 ? (
               <div>
-                <div className="mb-3 text-sm font-semibold text-navy-500">Afgelopen afspraken</div>
+                <div className="mb-3 text-sm font-semibold text-navy-500"><TranslatedText textKey="siteCopy.05c10032916e708c" fallbackText={"Afgelopen afspraken"} /></div>
                 <div className="space-y-5">
                   {pastGrouped.map(([dateKey, dayItems]) => (
                     <div key={dateKey}>
                       <PortalSectionLabel>
                         {dateKey === 'unknown'
-                          ? t('adminNew.portal.appointments.unknownDate')
+                          ? <TranslatedText textKey={'adminNew.portal.appointments.unknownDate'} />
                           : formatDate(dateKey, dateLocale)}
                       </PortalSectionLabel>
                       <div className="space-y-2.5">
@@ -348,11 +365,14 @@ export default function PortalAppointmentsPage() {
               subtitle={`${selected.start_time} – ${selected.end_time}`}
             />
             <PortalModalBody>
+              {selected.boat && (
+                <div className="aspect-[16/7] overflow-hidden rounded-xl"><BoatPhoto boat={selected.boat} /></div>
+              )}
               <div className="flex flex-wrap items-center gap-2">
                 <AppointmentStatusBadge status={selected.status} statusGeneric={selected.status_generic} />
                 {selected.approval_type ? (
                   <span className="text-xs text-navy-500">
-                    {t('adminNew.portal.appointments.approval')}: {selected.approval_type}
+                    {<TranslatedText textKey={'adminNew.portal.appointments.approval'} />}: {selected.approval_type}
                   </span>
                 ) : null}
               </div>
@@ -382,10 +402,20 @@ export default function PortalAppointmentsPage() {
                   },
                 ]}
               />
+              {selected.payment_status && (
+                <p className="text-sm"><TranslatedText textKey="crane.paymentStatus" vars={{
+                  status: t(`crane.payment.${selected.payment_status}`, { defaultValue: selected.payment_status }),
+                }} /></p>
+              )}
+              {selected.invoice_id && selected.payment_status !== 'draft' ? (
+                <Link className="text-sm font-medium underline" href={`/${locale}/dashboard/facturen?invoice=${encodeURIComponent(selected.invoice_id)}`}>
+                  <TranslatedText textKey="adminNew.portal.appointments.invoiceLink" fallbackText="Bekijk uw factuur en betaalstatus" />
+                </Link>
+              ) : null}
               {selected.customer_notes ? (
                 <div className="rounded-xl border border-navy-100 bg-sand-50/60 p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-navy-400">
-                    {t('adminNew.portal.appointments.notes')}
+                    {<TranslatedText textKey={'adminNew.portal.appointments.notes'} />}
                   </div>
                   <p className="mt-2 text-sm text-navy-700">{selected.customer_notes}</p>
                 </div>
@@ -393,15 +423,14 @@ export default function PortalAppointmentsPage() {
               {selected.public_notes ? (
                 <div className="rounded-xl border border-marine-200 bg-marine-50/40 p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-marine-600">
-                    Instructies
-                  </div>
+                    <TranslatedText textKey="siteCopy.4dd8cd386d0c6800" fallbackText={"Instructies"} /></div>
                   <p className="mt-2 text-sm text-marine-800">{selected.public_notes}</p>
                 </div>
               ) : null}
             </PortalModalBody>
             <PortalModalFooter>
               <Button variant="outline" onClick={() => setSelected(null)}>
-                {t('adminNew.common.cancel')}
+                {<TranslatedText textKey={'adminNew.common.cancel'} />}
               </Button>
               {/* Download confirmation PDF */}
               {!selected.status.toLowerCase().includes('cancel') ? (
@@ -425,7 +454,7 @@ export default function PortalAppointmentsPage() {
                       setPrefTime((selected.start_time || '').slice(0, 5));
                     }}
                   >
-                    {t('adminNew.portal.appointments.requestReschedule')}
+                    {<TranslatedText textKey={'adminNew.portal.appointments.requestReschedule'} />}
                   </Button>
                   <Button
                     variant="danger"
@@ -435,13 +464,13 @@ export default function PortalAppointmentsPage() {
                       setCancelReason('');
                     }}
                   >
-                    {t('adminNew.portal.appointments.cancelAppointment')}
+                    {<TranslatedText textKey={'adminNew.portal.appointments.cancelAppointment'} />}
                   </Button>
                 </>
               ) : (
                 <Link href={`/${locale}/kraanafspraak`}>
                   <Button variant="gold" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                    {t('adminNew.portal.appointments.bookAnother')}
+                    {<TranslatedText textKey={'adminNew.portal.appointments.bookAnother'} />}
                   </Button>
                 </Link>
               )}
@@ -474,10 +503,10 @@ export default function PortalAppointmentsPage() {
         {rescheduleFor ? (
           <div>
             <h3 className="font-display text-xl text-navy-900">
-              {t('adminNew.portal.appointments.requestReschedule')}
+              {<TranslatedText textKey={'adminNew.portal.appointments.requestReschedule'} />}
             </h3>
             <p className="mt-1 text-sm text-navy-500">
-              {t('adminNew.portal.appointments.rescheduleHint')}
+              {<TranslatedText textKey={'adminNew.portal.appointments.rescheduleHint'} />}
             </p>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -497,7 +526,7 @@ export default function PortalAppointmentsPage() {
 
             <label className="mt-4 block text-sm">
               <span className="mb-1 block font-medium text-navy-700">
-                {t('adminNew.portal.appointments.rescheduleReason')}
+                {<TranslatedText textKey={'adminNew.portal.appointments.rescheduleReason'} />}
               </span>
               <textarea
                 className="input-base min-h-24 w-full"
@@ -509,14 +538,14 @@ export default function PortalAppointmentsPage() {
 
             <div className="mt-6 flex justify-end gap-2">
               <Button variant="outline" onClick={closeReschedule}>
-                {t('adminNew.common.cancel')}
+                {<TranslatedText textKey={'adminNew.common.cancel'} />}
               </Button>
               <Button
                 variant="gold"
                 onClick={() => void onReschedule()}
                 disabled={!prefDate || reschedMutation.loading}
               >
-                {t('adminNew.portal.appointments.sendRequest')}
+                {<TranslatedText textKey={'adminNew.portal.appointments.sendRequest'} />}
               </Button>
             </div>
           </div>

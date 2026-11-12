@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 
 async function fixture(page: Page, editorLocales = ['nl-NL', 'en-GB', 'de-DE', 'fr-FR']) {
-  const origin = process.env.CMS_TEST_BASE_URL ?? 'http://localhost:3030';
+  const origin = String(test.info().project.use.baseURL ?? process.env.CMS_TEST_BASE_URL ?? 'http://localhost:3030');
   const globals: Record<string, unknown> = {};
   const media: Record<string, any> = {};
   const content: Record<string, { page: string; values: Record<string, string> }> = {};
@@ -25,6 +25,7 @@ async function fixture(page: Page, editorLocales = ['nl-NL', 'en-GB', 'de-DE', '
     } });
     if (url.pathname.includes('/content-blocks/')) {
       const key = decodeURIComponent(url.pathname.split('/').at(-1)!);
+      if (route.request().method() === 'GET') return route.fulfill({ json: { key, cms_revision: null, value_by_locale: content[key]?.values ?? {} } });
       const payload = route.request().postDataJSON();
       content[key] = { page: payload.page, values: { ...content[key]?.values, ...payload.value_by_locale } };
       return route.fulfill({ json: { key } });
@@ -34,13 +35,18 @@ async function fixture(page: Page, editorLocales = ['nl-NL', 'en-GB', 'de-DE', '
       return route.fulfill({ json: { settings: globals } });
     }
     if (url.pathname.includes('/media-blocks/')) {
-      const parts = url.pathname.split('/');
-      const upload = parts.at(-1) === 'upload';
-      const key = decodeURIComponent(parts.at(upload ? -2 : -1)!);
-      media[key] ??= { key, image_url: '/img/krek/werf-hero.webp', alt: '', focal_point: { x: 50, y: 50 }, overlay: 0 };
-      if (upload) { uploads++; media[key].image_url = '/img/krek/werf-hero.webp?uploaded=1'; }
-      else Object.assign(media[key], route.request().postDataJSON());
-      return route.fulfill({ json: media[key] });
+      const parts = url.pathname.split('/'), processing = parts.at(-1) === 'process';
+      const key = decodeURIComponent(parts.at(processing ? -2 : -1)!);
+      if (parts.at(-1) === 'versions') return route.fulfill({json:{data:[]}});
+      if (route.request().method() === 'GET') return route.fulfill({status:media[key] ? 200 : 404,json:media[key] ?? {message:'Not found'}});
+      const raw = route.request().postDataBuffer()?.toString() ?? '';
+      const metadata = raw.match(/name="metadata"\r\n\r\n([\s\S]*?)\r\n--/);
+      const data = processing ? JSON.parse(metadata![1]) : route.request().postDataJSON();
+      media[key] ??= {key,image_url:'/img/krek/werf-hero.webp',alt:'',focal_point:{x:50,y:50},overlay:0,revision:0};
+      Object.assign(media[key],data,{revision:media[key].revision+1,adjustments_baked:true,mobile_adjustments_baked:true});
+      if (raw.includes('name="image"')) { uploads++; media[key].image_url='/img/krek/werf-hero.webp?uploaded=1'; }
+      if (raw.includes('name="mobile_image"')) { uploads++; media[key].mobile_file_id='mobile-fixture'; media[key].mobile_image_url='/img/krek/werf-hero.webp?mobile=1'; }
+      return route.fulfill({json:media[key]});
     }
     return route.fulfill({ json: { data: [], settings: {}, items: [] } });
   });
@@ -78,21 +84,47 @@ for (const mobile of [false, true]) {
     expect(state.uploads()).toBe(0);
     await image.getByRole('button', { name: messages.editImage, exact: true }).click();
     await dialog.locator('input[type=file]').first().setInputFiles('public/img/krek/werf-hero.webp');
-    await expect(dialog.locator('.reactEasyCrop_Image')).toBeVisible();
+    await expect(dialog.locator('.reactEasyCrop_Image').first()).toBeVisible();
     await dialog.getByRole('slider', { name: messages.zoom, exact: true }).focus();
     await dialog.getByRole('slider', { name: messages.zoom, exact: true }).press('End');
+    await dialog.getByLabel(messages.uploadMobileImage, { exact: true }).setInputFiles('public/img/krek/werf-hero.webp');
+    expect(state.uploads()).toBe(0);
+    for (const [label, value] of [
+      [messages.brightness, '115'], [messages.contrast, '90'], [messages.saturation, '80'],
+      [messages.mobileFocal.replace('{axis}', 'x'), '20'],
+      [messages.mobileFocal.replace('{axis}', 'y'), '80'],
+      [messages.gradientStart, '0.2'], [messages.gradientMiddle, '0.4'], [messages.gradientEnd, '0.6'],
+    ]) await dialog.getByRole('slider', { name: label, exact: true }).fill(value);
+    await dialog.getByRole('button', { name: messages.gradient, exact: true }).click();
+    await page.getByRole('option', { name: messages.gradientBottom, exact: true }).click();
     await page.waitForTimeout(200);
     await dialog.getByRole('button', { name: messages.save, exact: true }).click();
     await expect(dialog).toHaveCount(0);
-    expect(state.uploads()).toBe(1);
+    expect(state.uploads()).toBe(2);
+    expect(state.media['home.hero.image']).toMatchObject({
+      mobile_file_id: 'mobile-fixture', mobile_focal_point: { x: 20, y: 80 },
+      image_style: { brightness: 115, contrast: 90, saturation: 80,
+        gradient: 'bottom', gradient_start: 0.2, gradient_middle: 0.4, gradient_end: 0.6 },
+    });
     const savedCrop = state.media['home.hero.image'].crop_data;
     expect(savedCrop.unit).toBe('percent');
     expect(savedCrop.width).toBeLessThan(100);
     await page.reload();
-    await expect(image.locator('img')).toHaveCSS('position', 'absolute');
+    await expect(image.locator('img')).toHaveCSS('filter', 'none');
+    await expect(image.locator('span[aria-hidden]').first()).toHaveCSS('background-image',
+      'linear-gradient(rgba(8, 19, 38, 0.2), rgba(8, 19, 38, 0.4), rgba(8, 19, 38, 0.6))');
+    if (mobile) {
+      await expect.poll(() => image.locator('img').evaluate((el: HTMLImageElement) => el.currentSrc)).toContain('?mobile=1');
+      await expect(image.locator('img')).toHaveCSS('object-position', '20% 80%');
+    } else await expect(image.locator('img')).toHaveCSS('position', 'static');
     await page.getByRole('button', { name: messages.enterEdit, exact: true }).click();
     await image.getByRole('button', { name: messages.editImage, exact: true }).click();
-    await expect(dialog.locator('.reactEasyCrop_Image')).toBeVisible();
+    await expect(dialog.locator('.reactEasyCrop_Image').first()).toBeVisible();
+    await expect(dialog.getByRole('slider', { name: messages.brightness, exact: true })).toHaveValue('115');
+    await expect(dialog.getByRole('button', { name: messages.gradient, exact: true })).toContainText(messages.gradientBottom);
+    await expect(dialog.getByRole('slider', { name: messages.gradientEnd, exact: true })).toHaveValue('0.6');
+    await expect(dialog.getByRole('slider', { name: messages.mobileFocal.replace('{axis}', 'x'), exact: true })).toHaveValue('20');
+    await expect(dialog.getByRole('slider', { name: messages.mobileFocal.replace('{axis}', 'y'), exact: true })).toHaveValue('80');
     await dialog.getByRole('button', { name: messages.save, exact: true }).click();
     await expect(dialog).toHaveCount(0);
     expect(state.media['home.hero.image'].crop_data.width).toBeCloseTo(savedCrop.width, 0);
@@ -112,6 +144,31 @@ for (const mobile of [false, true]) {
   });
 }
 
+for (const mobile of [false, true]) {
+  test(`hero CTA text and destination survive save/reload/reopening (${mobile ? 'mobile' : 'desktop'})`, async ({ page }) => {
+    await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 });
+    await fixture(page);
+    const messages = JSON.parse(fs.readFileSync('src/i18n/messages/en.json', 'utf8')).cms;
+    await page.goto('/en');
+    await page.getByRole('button', { name: messages.enterEdit, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await page.locator('[data-cms-block="home.hero.cta_primary"]').getByRole('button', { name: messages.editCta, exact: true }).click();
+    await dialog.getByRole('textbox', { name: messages.ctaLabel, exact: true }).fill('Explore winter storage');
+    await dialog.getByRole('button', { name: messages.ctaRoute, exact: true }).click();
+    await page.getByRole('option', { name: 'diensten/winterstalling', exact: true }).click();
+    await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page).toHaveURL('/en');
+    await page.reload();
+    await expect(page.getByRole('link', { name: 'Explore winter storage', exact: true }))
+      .toHaveAttribute('href', '/en/diensten/winterstalling');
+    await page.getByRole('button', { name: messages.enterEdit, exact: true }).click();
+    await page.locator('[data-cms-block="home.hero.cta_primary"]').getByRole('button', { name: messages.editCta, exact: true }).click();
+    await expect(dialog.getByRole('textbox', { name: messages.ctaLabel, exact: true })).toHaveValue('Explore winter storage');
+    await expect(dialog.getByRole('button', { name: messages.ctaRoute, exact: true })).toContainText('diensten/winterstalling');
+  });
+}
+
 test('shared translated text can be edited inline and from the catalog, then reloaded', async ({ page }) => {
   await fixture(page);
   const messages = JSON.parse(fs.readFileSync('src/i18n/messages/en.json', 'utf8')).cms;
@@ -121,7 +178,7 @@ test('shared translated text can be edited inline and from the catalog, then rel
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('textbox')).toBeEnabled();
   await dialog.getByRole('textbox').fill('Local boat sales');
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('header [data-cms-translation="nav.salesLocation"]').first()).toHaveText('Local boat sales');
   await page.getByRole('button', { name: messages.allTranslations, exact: true }).click();
@@ -129,7 +186,7 @@ test('shared translated text can be edited inline and from the catalog, then rel
   await dialog.getByRole('button').filter({ hasText: 'nav.contact' }).click();
   await expect(dialog.getByRole('textbox')).toBeEnabled();
   await dialog.getByRole('textbox').fill('Get in touch');
-  await dialog.getByRole('button', { name: messages.save, exact: true }).click();
+  await dialog.getByRole('button', { name: messages.publish, exact: true }).click();
   await page.reload();
   await expect(page.locator('header').getByRole('link', { name: 'Local boat sales', exact: true })).toBeVisible();
   await expect(page.locator('header').getByRole('link', { name: 'Get in touch', exact: true })).toBeVisible();

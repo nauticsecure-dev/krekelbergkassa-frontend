@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { IntlProvider, useIntl } from '@/i18n/IntlProvider';
 import { cmsService } from '@/lib/services';
+import { publishContact } from '@/lib/hooks/useCompanyContact';
 import { locales } from '@/i18n/config';
 import { CmsSessionRecovery } from './CmsSessionRecovery';
 
@@ -52,7 +53,8 @@ export function appLocaleToTag(locale: string): LocaleTag {
 export interface ContentBlock {
   key: string;
   type: string;
-  value: string;
+  value: string | null;
+  source?: { field_id: string; record_id: string | null; field: string; source_type: string; locale: string; publication_state: string; version: string | null; permissions: { edit: string; role: string } };
 }
 
 export interface FocalPoint {
@@ -66,6 +68,10 @@ export interface ImageStyle {
   gradient_start?: number; gradient_middle?: number; gradient_end?: number;
 }
 export interface MediaBlock {
+  revision?: number; rotation?: number; mobile_rotation?: number; decorative?: boolean;
+  original_url?: string | null; mobile_original_url?: string | null;
+  adjustments_baked?: boolean; mobile_adjustments_baked?: boolean;
+  mobile_uses_desktop?: boolean;
   key: string;
   image_url: string;
   alt: string;
@@ -82,7 +88,7 @@ export interface MediaBlock {
   image_style?: ImageStyle | null;
   focal_point: FocalPoint;
   overlay: number;
-  crop_data?: { x: number; y: number; width: number; height: number; unit?: 'percent' } | null;
+  crop_data?: { x: number; y: number; width: number; height: number; aspect?: number; unit?: 'percent' } | null;
 }
 
 export interface SeoData {
@@ -112,6 +118,9 @@ interface GlobalSettingsResponse {
 // --- Save payload shapes (what the modals build) ----------------------------
 
 export interface SaveContentArgs {
+  expected_revision?: string | null;
+  publication?: 'draft' | 'publish';
+  publish_locales?: string[];
   page: string;
   section?: string;
   type?: string;
@@ -120,6 +129,10 @@ export interface SaveContentArgs {
 }
 
 export interface SaveMediaMetaArgs {
+  image_url?: string;
+  expected_revision?: number; request_id?: string;
+  rotation?: number; mobile_rotation?: number; decorative?: boolean;
+  image?: File | null; mobile_image?: File | null; onProgress?: (percent: number) => void;
   page?: string;
   alt_by_locale?: Partial<Record<LocaleTag, string>>;
   seo_title_by_locale?: Partial<Record<LocaleTag, string>>;
@@ -183,10 +196,12 @@ interface CmsContextValue {
 
   // Save helpers — call cmsService then update local state optimistically.
   saveText: (key: string, args: SaveContentArgs) => Promise<void>;
+  saveTextBatch: (blocks: Array<SaveContentArgs & { key: string; expected_revision: string | null }>) => Promise<void>;
   uploadImage: (key: string, file: File, page?: string) => Promise<string>;
   saveMediaMeta: (key: string, args: SaveMediaMetaArgs) => Promise<void>;
   saveSeo: (slug: string, args: SaveSeoArgs) => Promise<void>;
   saveGlobal: (key: string, value: GlobalValue) => Promise<void>;
+  saveContact: (data: Parameters<typeof cmsService.updateContact>[0]) => Promise<void>;
   guardCms: <T>(fn: () => Promise<T>) => Promise<T>;
 }
 
@@ -250,7 +265,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   const [editorLocales, setEditorLocales] = React.useState<LocaleTag[]>(EDITABLE_LOCALE_TAGS);
   const [expiredEditor, setExpiredEditor] = React.useState<string | null>(null);
-  const canEdit = sessionVerified && !!user?.permissions?.includes('cms.manage');
+  const [previewMode, setPreviewMode] = React.useState(false);
+  React.useEffect(() => setPreviewMode(window.parent !== window && new URLSearchParams(window.location.search).get('cms-media-preview') === '1'), []);
+  const canEdit = !previewMode && sessionVerified && user?.role === 'super_admin' && !!user?.permissions?.includes('cms.manage');
 
   // Wraps every CMS write call: if the server returns 401 the stored token has
   // been invalidated (server deploy / token rotation). Clear the local session
@@ -286,6 +303,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   // Keyed block stores. Maps keep last-write-wins semantics simple.
   const [content, setContent] = React.useState<Record<string, ContentBlock>>({});
+  const [previewMedia, setPreviewMedia] = React.useState<MediaBlock | null>(null);
   const [media, setMedia] = React.useState<Record<string, MediaBlock>>({});
   const [seo, setSeo] = React.useState<SeoData | null>(null);
   const [globals, setGlobals] = React.useState<Record<string, GlobalValue>>({});
@@ -451,7 +469,22 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     (key: string, fallback = '') => content[key]?.value ?? fallback,
     [content],
   );
-  const getMedia = React.useCallback((key: string) => media[key] ?? null, [media]);
+  React.useEffect(() => {
+    if (!previewMode) return;
+    const receive = (event:MessageEvent) => {
+      if (event.origin !== window.location.origin || event.source !== window.parent || event.data?.type !== 'cms-media-preview' || typeof event.data.draft?.key !== 'string') return;
+      setPreviewMedia(event.data.draft);
+      requestAnimationFrame(() => {
+        const block = Array.from(document.querySelectorAll('[data-cms-block]')).find(node => node.getAttribute('data-cms-block') === event.data.draft.key);
+        const top = block?.getBoundingClientRect().top;
+        if (top !== undefined) window.scrollTo(0, window.scrollY + top - 100);
+      });
+    };
+    window.addEventListener('message', receive);
+    window.parent.postMessage({type:'cms-media-preview-ready'}, window.location.origin);
+    return () => window.removeEventListener('message', receive);
+  }, [previewMode]);
+  const getMedia = React.useCallback((key: string) => previewMedia?.key === key ? previewMedia : media[key] ?? null, [media, previewMedia]);
   const getContentBlock = React.useCallback(
     (key: string) => content[key] ?? null,
     [content],
@@ -478,41 +511,58 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     (key: string, args: SaveContentArgs) =>
       guardCms(async () => {
         assertWritablePage(args.page);
-        await cmsService.saveContentBlock(key, {
+        const saved = await cmsService.saveContentBlock(key, {
           page: args.page,
           section: args.section,
           type: args.type ?? 'short_text',
           value_by_locale: args.value_by_locale,
+          expected_revision: args.expected_revision,
+          publication: args.publication ?? 'publish',
+          publish_locales: args.publish_locales ?? (Object.keys(args.value_by_locale).length ? Object.keys(args.value_by_locale) : [localeTag]),
         });
-        if (args.page === 'global' && /^(company|footer|header|social|cta|maps)\./.test(key)) {
-          let merged: GlobalValue = args.value_by_locale;
-          setGlobals((prev) => {
-            const existing = prev[key];
-            merged = {
-              ...(typeof existing === 'object' && existing ? existing : {}),
-              ...args.value_by_locale,
-            };
-            return { ...prev, [key]: merged };
-          });
-          await cmsService.saveGlobalSetting(key, { value: merged });
-        }
-        const optimistic = args.value_by_locale[localeTag];
+        if (args.publication === 'draft') return;
+        const publicValues = saved.published_value_by_locale ?? saved.value_by_locale;
+        const optimistic = (publicValues as Record<string, string> | undefined)?.[localeTag] ?? args.value_by_locale[localeTag];
         if (optimistic != null) {
           // Registration replays this cache before the network responds. Keep it
           // in step with saves so a reload cannot briefly restore the old text.
           const cached = readPageCache(args.page, localeTag) ?? {};
-          const block = { key, type: args.type ?? 'short_text', value: optimistic };
+          const block: ContentBlock = { key, type: args.type ?? 'short_text', value: optimistic, source: saved.source as ContentBlock['source'] };
           writePageCache(args.page, localeTag, {
             ...cached,
             content_blocks: [...(cached.content_blocks ?? []).filter((b) => b.key !== key), block],
           });
           setContent((prev) => ({
             ...prev,
-            [key]: { key, type: args.type ?? prev[key]?.type ?? 'short_text', value: optimistic },
+            [key]: block,
           }));
         }
       }),
     [guardCms, localeTag, assertWritablePage],
+  );
+
+  const saveTextBatch = React.useCallback(
+    (blocks: Array<SaveContentArgs & { key: string; expected_revision: string | null }>) => guardCms(async () => {
+      for (const block of blocks) assertWritablePage(block.page);
+      const response = await cmsService.saveContentBlocks(blocks.map((block) => ({ ...block, publication: block.publication ?? 'publish',
+        publish_locales: block.publish_locales ?? (Object.keys(block.value_by_locale).length ? Object.keys(block.value_by_locale) : [localeTag]),
+      })));
+      // Update state and the reload cache only after the entire transaction commits.
+      const updates: Record<string, ContentBlock> = {};
+      for (const block of blocks) {
+        if (block.publication === 'draft') continue;
+        const serverRecord = response.data?.find(saved => saved.key === block.key);
+        const value = (serverRecord?.published_value_by_locale ?? serverRecord?.value_by_locale)?.[localeTag] ?? block.value_by_locale[localeTag];
+        if (value == null) continue;
+        const saved: ContentBlock = { key: block.key, type: block.type ?? 'short_text', value, source: serverRecord?.source as ContentBlock['source'] };
+        updates[block.key] = saved;
+        const cached = readPageCache(block.page, localeTag) ?? {};
+        writePageCache(block.page, localeTag, { ...cached, content_blocks: [
+          ...(cached.content_blocks ?? []).filter((item) => item.key !== block.key), saved,
+        ] });
+      }
+      setContent((previous) => ({ ...previous, ...updates }));
+    }), [guardCms, assertWritablePage, localeTag],
   );
 
   const uploadImage = React.useCallback(
@@ -549,23 +599,19 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     (key: string, args: SaveMediaMetaArgs) =>
       guardCms(async () => {
         assertWritablePage(args.page);
-        const saved = await cmsService.saveMediaBlock(key, {
-          ...args,
-          page: args.page || currentPage || undefined,
-          alt_by_locale: args.alt_by_locale,
-          seo_title_by_locale: args.seo_title_by_locale,
-          focal_x: args.focal_x,
-          focal_y: args.focal_y,
-          overlay: args.overlay,
-          crop_data: args.crop_data,
-        });
+        const {image, mobile_image, onProgress, ...metadata} = args;
+        const saved = await cmsService.publishMediaBlock(key, {
+          ...metadata, page:args.page || currentPage || undefined,
+        }, image, mobile_image, onProgress);
+        const canonicalAlts = saved.alt_by_locale as SaveMediaMetaArgs['alt_by_locale'];
+        const canonicalTitles = saved.seo_title_by_locale as SaveMediaMetaArgs['seo_title_by_locale'];
         setMedia((prev) => {
           const existing = prev[key] ?? { key, image_url: '', alt: '', focal_point: { x: 50, y: 50 }, overlay: 0 };
           const next: MediaBlock = {
             ...existing,
             ...(saved as Partial<MediaBlock>),
-            alt: args.alt_by_locale?.[localeTag] ?? existing.alt,
-            seo_title: args.seo_title_by_locale?.[localeTag] ?? existing.seo_title,
+            alt: saved.decorative ? '' : canonicalAlts?.[localeTag] ?? args.alt_by_locale?.[localeTag] ?? existing.alt,
+            seo_title: canonicalTitles?.[localeTag] ?? args.seo_title_by_locale?.[localeTag] ?? existing.seo_title,
             focal_point: {
               x: args.focal_x ?? existing.focal_point.x,
               y: args.focal_y ?? existing.focal_point.y,
@@ -600,12 +646,27 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     [guardCms, localeTag, assertWritablePage],
   );
 
+  const saveContact = React.useCallback(
+    (data: Parameters<typeof cmsService.updateContact>[0]) => guardCms(async () => {
+      assertWritablePage();
+      const { company, revision, field_sources } = await cmsService.updateContact(data);
+      publishContact(company, { revision, field_sources });
+      setGlobals(prev => ({ ...prev,
+        'company.email': company.email, 'company.phone': company.phone ?? '',
+        'company.address.street': company.address.street,
+        'company.address.postal_code': company.address.postal_code,
+        'company.address.city': company.address.city,
+      }));
+    }), [guardCms, assertWritablePage],
+  );
+
   const saveGlobal = React.useCallback(
     (key: string, value: GlobalValue) =>
       guardCms(async () => {
         assertWritablePage();
         await cmsService.saveGlobalSetting(key, { value });
         setGlobals((prev) => ({ ...prev, [key]: value }));
+        if (key.startsWith('company.')) window.dispatchEvent(new Event('company-contact-changed'));
       }),
     [guardCms, assertWritablePage],
   );
@@ -632,10 +693,12 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       getSeo,
       getGlobalRaw,
       saveText,
+      saveTextBatch,
       uploadImage,
       saveMediaMeta,
       saveSeo,
       saveGlobal,
+      saveContact,
       guardCms,
     }),
     [
@@ -659,17 +722,19 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       getSeo,
       getGlobalRaw,
       saveText,
+      saveTextBatch,
       uploadImage,
       saveMediaMeta,
       saveSeo,
       saveGlobal,
+      saveContact,
       guardCms,
     ],
   );
 
   const translationOverrides = React.useMemo(() => Object.fromEntries(
-    Object.values(content).filter((block) => block.key.startsWith('i18n.'))
-      .map((block) => [block.key.slice(5), block.value]),
+    Object.values(content).flatMap((block) => block.key.startsWith('i18n.') && typeof block.value === 'string'
+      ? [[block.key.slice(5), block.value]] : []),
   ), [content]);
   return <CmsContext.Provider value={value}>
     <IntlProvider locale={locale} messages={messages} overrides={translationOverrides}>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useCms, useCmsEditorOpen, type LocaleTag } from './CmsProvider';
+import { fieldSource } from './field-source';
 
 const fields = ['home.werf.cert', 'home.werf.cert_sub'] as const;
 type Draft = Record<string, Partial<Record<LocaleTag, string>>>;
@@ -15,7 +16,7 @@ type Draft = Record<string, Partial<Record<LocaleTag, string>>>;
 /** Edit both badge lines together, keeping the existing CMS keys and translations. */
 export function EditableCertificationBadge() {
   const { t } = useIntl();
-  const { isCmsEditing, retainCmsDrafts, getText, localeTag, editorLocales, saveText } = useCms();
+  const { isCmsEditing, retainCmsDrafts, getText, getContentBlock, canEdit, localeTag, editorLocales, saveTextBatch } = useCms();
   const { push, pushError } = useToast();
   const [open, setOpen] = useCmsEditorOpen();
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
@@ -24,6 +25,7 @@ export function EditableCertificationBadge() {
   const [base, setBase] = React.useState<Draft>({});
   const [loading, setLoading] = React.useState(false);
   const [loadFailed, setLoadFailed] = React.useState(false);
+  const [revisions, setRevisions] = React.useState<Record<string, string | null>>({});
   const [saving, setSaving] = React.useState(false);
   const fallback = [t('home.werf.cert'), 'HISWA · 1976'];
 
@@ -33,18 +35,12 @@ export function EditableCertificationBadge() {
     setActive(localeTag);
     setLoading(true);
     setLoadFailed(false);
-    void Promise.all(editorLocales.map(async (tag) => {
-      const response = await cmsService.pageContent('home', tag) as {
-        content_blocks?: Array<{ key: string; value: string }>;
-      };
-      return { tag, blocks: response.content_blocks ?? [] };
-    })).then((results) => {
+    void Promise.all(fields.map(key => cmsService.contentBlock(key))).then((results) => {
       if (cancelled) return;
       const draft: Draft = {};
+      setRevisions(Object.fromEntries(results.map(result => [result.key, result.cms_revision])));
       fields.forEach((key, index) => {
-        draft[key] = Object.fromEntries(results.map(({ tag, blocks }) => [
-          tag, blocks.find((block) => block.key === key)?.value || (tag === localeTag ? fallback[index] : ''),
-        ]));
+        draft[key] = Object.fromEntries(editorLocales.map(tag => [tag, results[index].value_by_locale[tag] ?? (tag === localeTag ? fallback[index] : '')]));
       });
       setValues(draft);
       setBase(draft);
@@ -65,15 +61,10 @@ export function EditableCertificationBadge() {
     if (busy || loadFailed) return;
     setSaving(true);
     try {
-      for (const key of fields) {
-        const changed = Object.fromEntries(editorLocales
-          .filter((tag) => (values[key]?.[tag] ?? '') !== (base[key]?.[tag] ?? ''))
-          .map((tag) => [tag, values[key]?.[tag] ?? '']));
-        if (!Object.keys(changed).length) continue;
-        await saveText(key, { page: 'home', section: 'werf', type: 'short_text', value_by_locale: changed });
-        // A failed second write can be retried without rewriting the first line.
-        setBase((previous) => ({ ...previous, [key]: { ...values[key] } }));
-      }
+      const blocks = fields.map(key => ({ key, page: 'home', section: 'werf', type: 'short_text', expected_revision: revisions[key],
+        value_by_locale: Object.fromEntries(editorLocales.filter(tag => (values[key]?.[tag] ?? '') !== (base[key]?.[tag] ?? '')).map(tag => [tag, values[key]?.[tag] ?? ''])),
+      })).filter(block => Object.keys(block.value_by_locale).length);
+      if (blocks.length) await saveTextBatch(blocks);
       push({ tone: 'success', title: t('cms.saved') });
       setOpen(false);
     } catch (error) {
@@ -85,12 +76,12 @@ export function EditableCertificationBadge() {
 
   return (
     <>
-      <div data-cms-badge="home.werf.cert" className="relative mt-4 w-fit max-w-full rounded-xl bg-white p-5 shadow-elev lg:absolute lg:-bottom-6 lg:-right-6 lg:mt-0">
+      <div data-cms-badge="home.werf.cert" className={`relative mt-4 w-fit max-w-full rounded-xl bg-white p-5 shadow-elev lg:absolute lg:-bottom-6 lg:-right-6 lg:mt-0 ${isCmsEditing ? 'outline-dashed outline-2 outline-gold-400/60' : ''}`}>
         <ShieldCheck aria-hidden className="h-6 w-6 text-gold-500" />
-        <div className="mt-2 break-words text-xs font-semibold uppercase tracking-widest text-navy-500">
+        <div {...fieldSource(fields[0], localeTag, getContentBlock(fields[0]), canEdit)} className="mt-2 break-words text-xs font-semibold uppercase tracking-widest text-navy-500">
           {getText(fields[0], fallback[0])}
         </div>
-        <div className="break-words text-sm font-semibold text-navy-900">
+        <div {...fieldSource(fields[1], localeTag, getContentBlock(fields[1]), canEdit)} className="break-words text-sm font-semibold text-navy-900">
           {getText(fields[1], fallback[1])}
         </div>
         {isCmsEditing && (
@@ -124,7 +115,7 @@ export function EditableCertificationBadge() {
         </div>
         <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
           <Button variant="ghost" onClick={close} disabled={busy}>{t('cms.cancel')}</Button>
-          <Button onClick={save} disabled={busy || loadFailed}>{t('cms.save')}</Button>
+          <Button onClick={save} disabled={busy || loadFailed}>{t('cms.publish')}</Button>
         </div>
       </Modal>
     </>
