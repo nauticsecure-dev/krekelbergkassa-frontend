@@ -2,7 +2,7 @@
 import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '@/lib/api';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { control, yardEndpoint, type Page } from './YardHistory';
@@ -11,14 +11,56 @@ import { YardSchedulingSettings } from './YardSchedulingSettings';
 
 type Column = { id: string; label: string; state: string; archived: boolean; replacement_id?: string };
 type Config = { version: number; columns: Column[] };
+type Allocation = { payment_id: string; paid_cents: number; refunded_cents: number };
+type FinanceLine = { invoice_id: string; invoice_line_id: string; currency: string; invoice_status: string; total_cents: number;
+  paid_cents: number; credited_cents: number; refunded_cents: number; outstanding_cents: number; credit_balance_cents: number;
+  payments: Allocation[]; credit_note_ids: string[]; allocation_revision: string };
 type Card = { id: string; boat_id: string; boat_name: string; title: string; status: string; column_id: string; service_code: string | null;
   version: number; ready: boolean; entity_type: string; priority: string; assigned_to: string | null; due_at: string | null;
-  actual: { x: number; y: number } | null; planned: { x: number; y: number } | null };
-type Board = { config: Config; can_configure: boolean; can_transition?: boolean; cards: Page<Card>; services: { id: string; name: string; service_code: string }[] };
+  actual: { x: number; y: number } | null; planned: { x: number; y: number } | null;
+  can_execute?: boolean; appointment_id?: string | null; appointment_action?: string | null; financial_evidence?: FinanceLine[] };
+type Board = { config: Config; can_configure: boolean; can_transition?: boolean; can_allocate?: boolean; cards: Page<Card>; services: { id: string; name: string; service_code: string }[] };
 const stateLabels: Record<string, string> = { open: 'Te doen', in_progress: 'Bezig', done: 'Gereed', cancelled: 'Geannuleerd' };
 const priorityLabels: Record<string, string> = { low: 'Laag', normal: 'Normaal', high: 'Hoog', urgent: 'Urgent' };
+const milestoneLabels: Record<string, string> = { started: 'Kraanwerk starten', out_of_water: 'Boot uit het water bevestigen',
+  in_water: 'Boot te water bevestigen', wash_started: 'Wassen registreren', completed: 'Afspraak afronden' };
 
-export function YardServiceBoard({ locale, boatId, onChange }: { locale: string; boatId?: string; onChange: () => void }) {
+function FinanceEditor({ card, line, onSaved }: { card: Card; line?: FinanceLine; onSaved: () => void }) {
+  const [rows, setRows] = useState<Allocation[]>(line?.payments ?? []);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const fields = new FormData(event.currentTarget);
+    setBusy(true); setError('');
+    try {
+      await api(`${yardEndpoint}/service-board/tasks/${card.id}/finance`, { method: 'PUT', body: {
+        invoice_line_id: fields.get('line'), expected_revision: line?.allocation_revision,
+        allocations: rows.map(({ payment_id, paid_cents, refunded_cents }) => ({ payment_id, paid_cents, refunded_cents })),
+      } });
+      onSaved();
+    } catch (err) { setError(getApiErrorMessage(err)); }
+    finally { setBusy(false); }
+  }
+
+  return <form onSubmit={save} className="grid gap-2">
+    {error && <p role="alert" className="text-red-300">{error}</p>}
+    <label className="grid">ID factuurregel<input className={control} name="line" defaultValue={line?.invoice_line_id} readOnly={!!line} required /></label>
+    {rows.map((row, index) => <fieldset key={index} className="grid gap-1 border-t border-slate-700 pt-2" disabled={busy}>
+      <label className="grid">ID betaling<input className={control} required value={row.payment_id} onChange={e => setRows(rows.map((item, i) => i === index ? { ...item, payment_id: e.target.value } : item))} /></label>
+      {(['paid_cents', 'refunded_cents'] as const).map(field => <label key={field} className="grid">
+        {field === 'paid_cents' ? 'Betaald (cent)' : 'Terugbetaald (cent)'}
+        <input className={control} type="number" required min={field === 'paid_cents' ? 1 : 0} value={row[field]} onChange={e => setRows(rows.map((item, i) => i === index ? { ...item, [field]: Number(e.target.value) } : item))} />
+      </label>)}
+      <button className={control} type="button" onClick={() => setRows(rows.filter((_, i) => i !== index))}>Betaling verwijderen</button>
+    </fieldset>)}
+    <button className={control} type="button" disabled={busy} onClick={() => setRows([...rows, { payment_id: '', paid_cents: 0, refunded_cents: 0 }])}>Betaling toewijzen</button>
+    <button className={control} disabled={busy}>Toewijzing opslaan</button>
+  </form>;
+}
+
+export function YardServiceBoard({ locale, boatId, taskId, refreshRevision, onChange }: { locale: string; boatId?: string; taskId?: string; refreshRevision: number; onChange: () => void }) {
   const [board, setBoard] = useState<Board>();
   const [editing, setEditing] = useState<Config>();
   const [service, setService] = useState('');
@@ -29,15 +71,17 @@ export function YardServiceBoard({ locale, boatId, onChange }: { locale: string;
   const [error, setError] = useState('');
   const [planningBoat, setPlanningBoat] = useState<string>();
   const [scheduleSettings, setScheduleSettings] = useState(false);
+  const [editingFinance, setEditingFinance] = useState<{ taskId: string; line?: FinanceLine }>();
+  const refreshFinance = () => { setEditingFinance(undefined); setRevision(value => value + 1); onChange(); };
   useEffect(() => {
     let active = true;
-    const load = () => api<Board>(`${yardEndpoint}/service-board`, { query: { service_code: service, date, page } })
+    const load = () => api<Board>(`${yardEndpoint}/service-board`, { query: { service_code: service, date, page, task_id: taskId } })
       .then((data) => { if (active) { setBoard(data); setError(''); } })
       .catch((err) => { if (active) setError(getApiErrorMessage(err)); });
     void load();
     const timer = setInterval(() => void load(), 30000);
     return () => { active = false; clearInterval(timer); };
-  }, [service, date, page, revision]);
+  }, [service, date, page, revision, refreshRevision, taskId]);
 
   async function transition(card: Card, column: string) {
     setBusy(true); setError('');
@@ -45,6 +89,15 @@ export function YardServiceBoard({ locale, boatId, onChange }: { locale: string;
       await api(`${yardEndpoint}/service-board/tasks/${card.id}`, { method: 'PATCH', body: { version: card.version, expected_status: card.status, column_id: column } });
       setRevision((n) => n + 1); onChange();
     } catch (err) { setError(getApiErrorMessage(err)); setRevision((n) => n + 1); }
+    finally { setBusy(false); }
+  }
+
+  async function recordMilestone(card: Card) {
+    setBusy(true); setError('');
+    try {
+      await api(`/v1/appointments/${card.appointment_id}/status`, { method: 'POST', body: { status: card.appointment_action }, queueWhenOffline: false });
+      setRevision(value => value + 1); onChange();
+    } catch (err) { setError(getApiErrorMessage(err)); }
     finally { setBusy(false); }
   }
   return <section aria-label="Dienstenbord" className="min-w-0 space-y-3">
@@ -93,12 +146,29 @@ export function YardServiceBoard({ locale, boatId, onChange }: { locale: string;
             <h4>{card.title}</h4><Link className="text-blue-300 underline" href={`/${locale}/admin/boten/${card.boat_id}`}>{card.boat_name}</Link>
             <p>{board.services.find((service) => service.service_code === card.service_code)?.name ?? card.service_code ?? 'Algemene taak'} · {priorityLabels[card.priority] ?? card.priority} · {card.assigned_to ?? 'Niet toegewezen'}</p>
             {card.due_at && <time>{new Date(card.due_at).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam' })}</time>}
-            <p>{card.status === 'done' ? 'Afgerond' : card.status === 'cancelled' ? 'Geannuleerd' : card.status === 'in_progress' ? 'In uitvoering' : card.ready ? 'Gereed voor uitvoering' : 'Wacht op voorgaande taken'}</p>
+            <p>{card.status === 'done' ? 'Afgerond' : card.status === 'cancelled' ? 'Geannuleerd' : card.status === 'in_progress' ? 'In uitvoering' : card.ready ? 'Gereed voor uitvoering' : 'Wacht op voorgaande taken of afspraak'}</p>
+            {card.appointment_id && <Link className="underline" href={`/${locale}/admin/afspraken?appointment_id=${card.appointment_id}`}>Gekoppelde afspraak</Link>}
+            {card.appointment_id && card.appointment_action && <button className={`${control} block`} disabled={busy}
+              onClick={() => void recordMilestone(card)}>{milestoneLabels[card.appointment_action]}</button>}
             <p><TranslatedText textKey="siteCopy.5582787500bff01d" fallbackText={"Actueel: "} />{card.actual ? `${card.actual.x.toFixed(1)} / ${card.actual.y.toFixed(1)} m` : 'Niet geplaatst'}<br /><TranslatedText textKey="siteCopy.50eb57912e8bf207" fallbackText={"Gepland: "} />{card.planned ? `${card.planned.x.toFixed(1)} / ${card.planned.y.toFixed(1)} m` : 'Geen verplaatsing'}</p>
-            <p className="text-xs text-slate-400"><TranslatedText textKey="siteCopy.606d372e3a33109a" fallbackText={"Betaling per dienst: nog niet toegewezen"} /></p>
+            {card.financial_evidence?.length === 0 && <p className="text-xs text-slate-400"><TranslatedText textKey="siteCopy.606d372e3a33109a" fallbackText={"Betaling per dienst: nog niet toegewezen"} /></p>}
+            {card.financial_evidence?.map(line => {
+              const amount = (cents: number) => new Intl.NumberFormat(locale, { style: 'currency', currency: line.currency }).format(cents / 100);
+              return <div key={line.invoice_line_id} className="space-y-1 border-t border-slate-700 pt-2">
+                <Link className="underline" href={`/${locale}/admin/facturen/${line.invoice_id}`}>{line.invoice_status === 'draft' ? 'Conceptfactuur' : 'Factuur'} · {amount(line.total_cents)}</Link>
+                <p>Toegewezen betaald {amount(line.paid_cents)} · Openstaand {amount(line.outstanding_cents)}</p>
+                {line.credit_note_ids.map(id => <Link key={id} className="block underline" href={`/${locale}/admin/facturen/${id}`}>Creditnota</Link>)}
+                {line.credited_cents > 0 && <p>Gecrediteerd {amount(line.credited_cents)}</p>}
+                {line.refunded_cents > 0 && <p>Terugbetaald {amount(line.refunded_cents)}</p>}
+                {line.credit_balance_cents > 0 && <p>Terug te betalen {amount(line.credit_balance_cents)}</p>}
+                {board.can_allocate && line.invoice_status !== 'draft' && <button type="button" className={control} onClick={() => setEditingFinance({ taskId: card.id, line })}>Toewijzing wijzigen</button>}
+              </div>;
+            })}
+            {board.can_allocate && card.entity_type === 'boat' && card.service_code && <button type="button" className={control} onClick={() => setEditingFinance({ taskId: card.id })}>Factuurregel koppelen</button>}
+            {editingFinance?.taskId === card.id && <FinanceEditor key={editingFinance.line?.invoice_line_id ?? card.id} card={card} line={editingFinance.line} onSaved={refreshFinance} />}
             {board.can_configure && <button className={control} onClick={() => setPlanningBoat(card.boat_id)}><TranslatedText textKey="yardSchedule.plan" inline={false} /></button>}
-            {card.entity_type === 'yard_move' ? <Link href={`/${locale}/admin/stalling/werfcanvas#verplaatsingen`} className="text-blue-300 underline"><TranslatedText textKey="siteCopy.81a7471c091f539c" fallbackText={"Open fysieke werfopdracht"} /></Link>
-              : <select aria-label={`Kolom voor ${card.title}`} className={`${control} w-full`} value={card.column_id} disabled={busy || board.can_transition === false} onChange={(e) => void transition(card, e.target.value)}>
+            {card.entity_type === 'yard_move' ? <Link href={`/${locale}/admin/stalling/werfcanvas?task_id=${card.id}#verplaatsingen`} className="text-blue-300 underline"><TranslatedText textKey="siteCopy.81a7471c091f539c" fallbackText={"Open fysieke werfopdracht"} /></Link>
+              : <select aria-label={`Kolom voor ${card.title}`} className={`${control} w-full`} value={card.column_id} disabled={busy || board.can_transition === false || card.can_execute === false} onChange={(e) => void transition(card, e.target.value)}>
                 {board.config.columns.filter((c) => !c.archived).map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>}
           </article>)}

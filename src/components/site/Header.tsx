@@ -37,6 +37,7 @@ export function Header() {
   const { t, locale } = useIntl();
   const { user, loading } = useAuth();
   const pathname = usePathname();
+  const servicesOverview = pathname === `/${locale}/diensten`;
   const loginHref = `/${locale}/login`;
   const accountHref = user ? defaultRedirectForRole(user.role, locale) : loginHref;
   const accountLabel = !user
@@ -85,13 +86,13 @@ export function Header() {
       )}
     >
       {/* Main bar */}
-      <div className="container-wide flex h-[72px] items-center justify-between gap-2 md:gap-4 xl:gap-8">
+      <div className={cn('container-wide flex items-center justify-between gap-2 md:gap-4 xl:gap-8', servicesOverview ? 'h-[58px] lg:px-[4.65%]' : 'h-[72px]')}>
         <EditSafeLink href={`/${locale}`} aria-label="Krekelberg Nautic" className="shrink-0">
-          <Logo className="max-[380px]:[&>div]:hidden" />
+          <Logo className={cn('max-[380px]:[&>div]:hidden', servicesOverview && '[&_img]:h-9 [&>div>div:first-child]:font-sans [&>div>div:first-child]:tracking-wide')} />
         </EditSafeLink>
 
         {/* Desktop nav */}
-        <nav className="hidden flex-1 items-center justify-center xl:flex">
+        <nav className={cn('hidden flex-1 items-center justify-center xl:flex', servicesOverview && 'lg:flex')}>
           <ul className="flex items-center gap-1">
             <li
               onMouseEnter={() => openMenu('services')}
@@ -146,10 +147,10 @@ export function Header() {
 
         {/* Actions */}
         <div className="flex shrink-0 items-center gap-2">
-          <InstallButton variant="header" className="hidden md:inline-flex" />
+          <InstallButton variant="header" className={servicesOverview ? 'hidden' : 'hidden md:inline-flex'} />
           <LanguageSwitcher />
           {!loading ? (
-            <Link href={accountHref} className="hidden xl:inline-flex">
+            <Link href={accountHref} className={cn('hidden xl:inline-flex', servicesOverview && 'lg:inline-flex')}>
               <Button variant="ghost" size="md">
                 {accountLabel}
               </Button>
@@ -157,7 +158,7 @@ export function Header() {
           ) : null}
           <div className="hidden md:inline-flex"><EditableHeaderCta /></div>
           <button
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 bg-white text-navy-700 transition hover:bg-sand-50 xl:hidden"
+            className={cn('inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 bg-white text-navy-700 transition hover:bg-sand-50 xl:hidden', servicesOverview && 'lg:hidden')}
             onClick={() => setOpen((v) => !v)}
             aria-label={t('header.mainMenu')}
           >
@@ -168,7 +169,7 @@ export function Header() {
 
       {/* Mobile drawer */}
       {open ? (
-        <div className="border-t border-navy-100 bg-white xl:hidden">
+        <div className={cn('border-t border-navy-100 bg-white xl:hidden', servicesOverview && 'lg:hidden')}>
           <div className="container-wide grid gap-1 py-4">
             <MobileGroup label={t('header.groupServices')}>
               {servicesMega.map((m) => (

@@ -3,8 +3,8 @@
 
 import { TranslatedText } from '@/components/cms/TranslatedText';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { openQuality, qualityAccess, qualityUrls } from '@/lib/quality-navigation';
+import { useState } from 'react';
+import { openQuality, type QualityAccess, type qualityUrls } from '@/lib/quality-navigation';
 import { usePathname } from 'next/navigation';
 import {
   CalendarDays,
@@ -38,34 +38,29 @@ interface NavItem {
   matches?: string[];
   permission?: string;
   backendPage?: boolean;
+  unread?: number;
 }
 
 interface Props {
   variant?: 'desktop' | 'mobile';
   collapsed?: boolean;
   onToggleCollapse?: () => void;
+  qa: ReturnType<typeof qualityUrls>;
+  qaAccess: QualityAccess;
 }
 
-export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleCollapse }: Props) {
+export function AdminSidebar({ variant = 'desktop', collapsed = false, onToggleCollapse, qa, qaAccess }: Props) {
   const { t, locale } = useIntl();
   const pathname = usePathname();
   const { user } = useAuth();
   const isSuperAdmin = user?.role === 'super_admin';
   const { can } = usePermission();
   const { requestLogout } = useConfirmLogout();
-  const qa = useMemo(() => qualityUrls(locale), [locale]);
-  const [qaAccess, setQaAccess] = useState({ assigned: false, portal: false });
-  useEffect(() => {
-    setQaAccess({ assigned: false, portal: false });
-    if (!qa || !user || !['super_admin', 'admin', 'employee', 'finance'].includes(user.role)) return;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10000);
-    qualityAccess(qa.base, controller.signal).then(setQaAccess).catch(() => {}).finally(() => clearTimeout(timer));
-    return () => { controller.abort(); clearTimeout(timer); };
-  }, [qa, user]);
-
   const main: NavItem[] = [
-    ...(qa && qaAccess.assigned ? [{ href: qa.assigned, icon: Wrench, label: t('adminModules.nav.myQaFindings'), backendPage: true }] : []),
+    ...(qa && qaAccess.assigned ? [{
+      href: qa.assigned, icon: Wrench, label: t('adminModules.nav.myQaFindings'),
+      backendPage: true, unread: qaAccess.unread,
+    }] : []),
     { href: `/${locale}/admin`, icon: Home, label: t('adminModules.nav.overview') },
     {
       href: `/${locale}/admin/planning`,
@@ -245,6 +240,7 @@ function Item({
   active,
   collapsed,
   backendPage,
+  unread = 0,
 }: {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -252,11 +248,13 @@ function Item({
   active: boolean;
   collapsed?: boolean;
   backendPage?: boolean;
+  unread?: number;
 }) {
   const { locale, t } = useIntl();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const NavLink = backendPage ? 'a' : Link;
+  const unreadLabel = unread > 0 ? t('adminModules.nav.qaUnread', { count: unread }) : '';
   return (
     <>
     <NavLink
@@ -269,6 +267,7 @@ function Item({
         try { await openQuality(href, locale); } catch { setError(t('adminModules.nav.qaUnavailable')); } finally { setPending(false); }
       } : undefined}
       title={collapsed ? label : undefined}
+      aria-label={unreadLabel ? `${label}, ${unreadLabel}` : collapsed ? label : undefined}
       className={cn(
         'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
         collapsed && 'justify-center px-2',
@@ -277,7 +276,12 @@ function Item({
     >
       {active ? <span aria-hidden className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-gold-400" /> : null}
       <Icon className={cn('h-4 w-4 transition', active ? 'text-gold-300' : 'text-sand-100/50 group-hover:text-white')} />
-      <span className="flex-1">{!collapsed ? label : null}</span>
+      {!collapsed ? <span className="flex-1">{label}</span> : null}
+      {unread > 0 ? (
+        <span aria-hidden className={cn('rounded-full bg-gold-400 px-1.5 text-xs font-bold text-navy-950', collapsed && 'absolute -right-1 -top-0.5')}>
+          {unread}
+        </span>
+      ) : null}
     </NavLink>
     {error ? <p role="alert" className="px-3 text-xs text-red-300">{error}</p> : null}
     </>

@@ -37,8 +37,9 @@ async function fixture(page: Page, authorized = true, role = authorized ? 'super
       if (request.method() === 'PATCH') {
         const key = decodeURIComponent(url.pathname.split('/').at(-1)!);
         writes.push(key); globals[key] = request.postDataJSON().value;
+        return route.fulfill({ json: { value: globals[key], cms_revision: 'fixture' } });
       }
-      return route.fulfill({ json: { settings: globals } });
+      return route.fulfill({ json: { settings: globals, revisions: Object.fromEntries(Object.keys(globals).map(key => [key, null])) } });
     }
     if (url.pathname.includes('/content-blocks/') && request.method() === 'GET') {
       const key = decodeURIComponent(url.pathname.split('/').at(-1)!);

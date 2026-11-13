@@ -66,6 +66,7 @@
     "periodConditions": "Les dates choisies sont transmises avec votre demande. Le prix indicatif couvre le forfait.",
     "invalidLength": "Saisissez une longueur entière de 1 à 9999 cm.",
     "estimate": "Votre estimation",
+    "priceOnRequest": "Prix sur demande",
     "breakdown": "Détail du prix",
     "included": "Inclus",
     "vat": "TVA incluse",
@@ -121,6 +122,7 @@
     },
     "nav": {
       "myQaFindings": "Mes constats QA",
+      "qaUnread": "Affectations QA non lues ({count})",
       "qualityCenter": "Centre qualité",
       "qaUnavailable": "QA est indisponible. Vérifiez votre réseau et réessayez.",
       "overview": "Vue d’ensemble",
@@ -1554,10 +1556,10 @@
       "delete": "Delete",
       "logout": "Se déconnecter",
       "noEmail": "no email",
-      "operationFailed": "Action failed",
+      "operationFailed": "L’action a échoué",
       "confirm": "Confirm",
       "reasonTooShort": "Enter at least {min} characters",
-      "back": "Back",
+      "back": "Retour",
       "edit": "Edit",
       "view": "View",
       "confirmLogout": "Voulez-vous vraiment vous déconnecter ?",
@@ -4252,45 +4254,45 @@
       "editRule": "Modifier la règle"
     },
     "suppliers": {
-      "title": "Suppliers",
-      "subtitle": "Manage suppliers, product mappings and ledger defaults.",
-      "listTitle": "Suppliers",
-      "new": "New supplier",
-      "editTitle": "Edit supplier",
-      "searchPlaceholder": "Search by name, email or VAT…",
-      "emptyTitle": "No suppliers yet",
-      "emptyMessage": "Add your first supplier to start matching imported invoices.",
-      "formSubtitle": "Contact details and accounting defaults.",
-      "termDays": "{days} days",
-      "detailsTitle": "Supplier details",
-      "mappingsTitle": "Product mappings",
-      "mappingsSubtitle": "Link supplier SKUs to your products for automatic matching.",
-      "addMapping": "Add mapping",
-      "mappingsEmptyTitle": "No mappings",
-      "mappingsEmptyMessage": "Add a mapping so imports auto-match this supplier’s line items.",
-      "selectProduct": "Select a product…",
+      "title": "Fournisseurs",
+      "subtitle": "Gérez les fournisseurs, les correspondances de produits et les comptes par défaut.",
+      "listTitle": "Fournisseurs",
+      "new": "Nouveau fournisseur",
+      "editTitle": "Modifier le fournisseur",
+      "searchPlaceholder": "Rechercher par nom, e-mail ou numéro de TVA…",
+      "emptyTitle": "Aucun fournisseur",
+      "emptyMessage": "Ajoutez un fournisseur pour rapprocher les factures importées.",
+      "formSubtitle": "Coordonnées et paramètres comptables par défaut.",
+      "termDays": "{days} jours",
+      "detailsTitle": "Détails du fournisseur",
+      "mappingsTitle": "Correspondances de produits",
+      "mappingsSubtitle": "Associez les références fournisseur à vos produits pour les identifier automatiquement.",
+      "addMapping": "Ajouter une correspondance",
+      "mappingsEmptyTitle": "Aucune correspondance",
+      "mappingsEmptyMessage": "Ajoutez une correspondance pour identifier automatiquement les produits de ce fournisseur à l’importation.",
+      "selectProduct": "Sélectionner un produit…",
       "columns": {
-        "name": "Name",
+        "name": "Nom",
         "contact": "Contact",
-        "vat": "VAT number",
-        "terms": "Payment terms"
+        "vat": "Numéro de TVA",
+        "terms": "Conditions de paiement"
       },
       "fields": {
-        "email": "Email",
-        "phone": "Phone",
-        "paymentTerms": "Payment terms (days)",
-        "ledgerAccount": "Default ledger account",
-        "ledgerAccountPlaceholder": "e.g. 4000 — Purchases"
+        "email": "E-mail",
+        "phone": "Téléphone",
+        "paymentTerms": "Délai de paiement (jours)",
+        "ledgerAccount": "Compte comptable par défaut",
+        "ledgerAccountPlaceholder": "p. ex. 4000 — Achats"
       },
       "mapColumns": {
-        "sku": "Supplier SKU",
-        "description": "Supplier description",
-        "product": "Product"
+        "sku": "Référence fournisseur",
+        "description": "Description du fournisseur",
+        "product": "Produit"
       },
       "toasts": {
-        "created": "Supplier created",
-        "updated": "Supplier updated",
-        "mappingCreated": "Mapping added"
+        "created": "Fournisseur créé",
+        "updated": "Fournisseur mis à jour",
+        "mappingCreated": "Correspondance ajoutée"
       }
     },
     "accounting": {

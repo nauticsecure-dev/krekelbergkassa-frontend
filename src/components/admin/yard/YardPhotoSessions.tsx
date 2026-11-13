@@ -7,12 +7,52 @@ import { tEnum } from '@/i18n/admin-enums';
 import { api, type ApiError } from '@/lib/api';
 import { control, yardEndpoint, type Page } from './YardHistory';
 import { YardPhotoWorkflow, type YardAnalysis } from './YardPhotoWorkflow';
+import type { PhotoPlacement } from './YardPhotoMatch';
 
 const endpoint = yardEndpoint + '/photo-sessions';
 type Processing = { id: string; state: string; progress: number; error?: string };
 type Session = { id: string; name: string; captured_at: string; status: string; notes: string | null; processing?: Processing };
-type Original = { id: string; filename: string; category?: string; metadata: { width: number; height: number } };
+type Original = { id: string; filename: string; category?: string; metadata: { width: number; height: number; revision?: number;
+  source_image_id?: string; detection_id?: string } };
 type Detail = { session: Session; images: Original[]; outputs?: Original[]; analysis: YardAnalysis | null };
+
+function PhotoQuality({ path, images, source }: { path: string; images: Original[]; source: string }) {
+  const [comparison, setComparison] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [quality, setQuality] = useState<{ blur_variance: number; missing_regions: { missing_fraction?: number };
+    pair: { overlap_fraction?: number; opposite_edge_ratio?: number; overlap_warning?: boolean; perspective_warning?: boolean } }>();
+  const percent = (value?: number) => value === undefined ? 'Geen meetbare dekking' : Math.round(value * 100) + '%';
+
+  return <details className="space-y-2 rounded border border-slate-700 p-2">
+    <summary className="cursor-pointer">Fotokwaliteit</summary>
+    <label className="block">Vergelijkingsfoto
+      <select className={control + ' block'} value={comparison} onChange={event => { setComparison(event.target.value); setQuality(undefined); }}>
+        <option value="">Alleen geselecteerde foto</option>
+        {images.filter(image => image.id !== source).map(image => <option key={image.id} value={image.id}>{image.filename}</option>)}
+      </select>
+    </label>
+    <button type="button" className={control} disabled={busy} onClick={async () => {
+      setBusy(true); setError(''); setQuality(undefined);
+      try {
+        const result = await api<{ quality: NonNullable<typeof quality> }>(path + '/quality', {
+          method: 'POST', body: { image_id: source, comparison_id: comparison || null },
+        });
+        setQuality(result.quality);
+      } catch (reason) { setError((reason as Error).message); }
+      finally { setBusy(false); }
+    }}>Fotokwaliteit meten</button>
+    {error && <p role="alert">{error}</p>}
+    {quality && <dl className="grid grid-cols-2 gap-x-3 text-sm">
+      <dt>Scherpte (variantie)</dt><dd>{quality.blur_variance}</dd>
+      <dt>Ontbrekende pixels</dt><dd>{percent(quality.missing_regions.missing_fraction)}</dd>
+      {comparison && <>
+        <dt>Geschatte overlap</dt><dd>{percent(quality.pair.overlap_fraction)}{quality.pair.overlap_warning ? ' · Laag' : ''}</dd>
+        <dt>Perspectief (randverhouding)</dt><dd>{quality.pair.opposite_edge_ratio ?? 'Onvoldoende overeenkomsten'}{quality.pair.perspective_warning ? ' · Afwijking' : ''}</dd>
+      </>}
+    </dl>}
+  </details>;
+}
 
 function errorMessage(error: ApiError, fallback: string) {
   const payload = error.data as { errors?: Record<string, string[]> } | undefined;
@@ -58,7 +98,8 @@ function OriginalPreview({ path, filename, onRemove, busy }: { path: string; fil
   </div> : <p role="status"><TranslatedText textKey="yardPhotos.loading" /></p>;
 }
 
-export function YardPhotoSessions({ onPublish }: { onPublish?: (file: File, outputId: string) => void }) {
+export function YardPhotoSessions({ onPublish, onPlacement }: { onPublish?: (file: File, outputId: string) => void;
+  onPlacement?: (boat: string, proposal: PhotoPlacement) => Promise<void> }) {
   const intl = useIntl();
   const [sessions, setSessions] = useState<Page<Session>>();
   const [detail, setDetail] = useState<Detail>();
@@ -253,6 +294,9 @@ export function YardPhotoSessions({ onPublish }: { onPublish?: (file: File, outp
             aria-label={`Foto ${original.filename} verwijderen`} onClick={() => void removeImage(original)}><TranslatedText textKey="siteCopy.46a92181eff2e5ac" fallbackText={"Verwijderen"} /></button>
           }
         </div>)}</div>
+        {(detail.analysis?.image_id || image?.id) && !processingSession && <PhotoQuality
+          key={detail.analysis?.image_id ?? image?.id} path={endpoint + '/' + detail.session.id}
+          images={detail.images} source={(detail.analysis?.image_id ?? image?.id)!} />}
         {processingSession ? <div className="space-y-2" role="status">
           <p><TranslatedText textKey="siteCopy.7c6f9816f7da118c" fallbackText={"Verwerking: "} />{detail.session.processing?.state ?? 'queued'}<TranslatedText textKey="siteCopy.4aaa1287f6f5ae0d" fallbackText={". Je kunt deze pagina sluiten en later terugkomen."} /></p>
           <progress aria-label="Voortgang verwerking" max={100} value={detail.session.processing?.progress ?? 0} />
@@ -263,7 +307,7 @@ export function YardPhotoSessions({ onPublish }: { onPublish?: (file: File, outp
             finally { setBusy(false); }
           }}><TranslatedText textKey="siteCopy.8be1800522be7714" fallbackText={"Verwerking annuleren"} /></button>
         </div> : detail.analysis ? <YardPhotoWorkflow key={detail.session.id} path={endpoint + '/' + detail.session.id}
-          analysis={detail.analysis} onPublish={onPublish} deleting={busy} onRemove={() => {
+          analysis={detail.analysis} images={detail.images} outputs={detail.outputs} onPublish={onPublish} onPlacement={onPlacement} deleting={busy} onRemove={() => {
             const original = detail.images.find((item) => item.id === detail.analysis?.image_id);
             if (original) void removeImage(original);
           }} /> : <>

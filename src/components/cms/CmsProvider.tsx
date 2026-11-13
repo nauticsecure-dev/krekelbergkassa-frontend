@@ -111,10 +111,6 @@ interface PageContentResponse {
   global_settings?: Record<string, GlobalValue> | null;
 }
 
-interface GlobalSettingsResponse {
-  settings?: Record<string, GlobalValue> | null;
-}
-
 // --- Save payload shapes (what the modals build) ----------------------------
 
 export interface SaveContentArgs {
@@ -200,7 +196,7 @@ interface CmsContextValue {
   uploadImage: (key: string, file: File, page?: string) => Promise<string>;
   saveMediaMeta: (key: string, args: SaveMediaMetaArgs) => Promise<void>;
   saveSeo: (slug: string, args: SaveSeoArgs) => Promise<void>;
-  saveGlobal: (key: string, value: GlobalValue) => Promise<void>;
+  saveGlobal: (key: string, value: GlobalValue, revision: string | null, mergeLocales: boolean) => Promise<string>;
   saveContact: (data: Parameters<typeof cmsService.updateContact>[0]) => Promise<void>;
   guardCms: <T>(fn: () => Promise<T>) => Promise<T>;
 }
@@ -450,7 +446,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     void (async () => {
       try {
-        const res = (await cmsService.globalSettings()) as GlobalSettingsResponse;
+        const res = await cmsService.globalSettings();
         if (!cancelled && res?.settings) {
           setGlobals((prev) => ({ ...prev, ...res.settings }));
         }
@@ -492,7 +488,11 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const getSeo = React.useCallback(() => seo, [seo]);
   const getGlobalRaw = React.useCallback((key: string) => globals[key], [globals]);
   const getGlobal = React.useCallback(
-    (key: string, fallback = '') => resolveGlobal(globals[key], localeTag) ?? fallback,
+    (key: string, fallback = '') => {
+      const value = globals[key];
+      if ((key === 'header.cta.label' || key === 'footer.tagline') && value && typeof value === 'object') return value[localeTag] ?? fallback;
+      return resolveGlobal(value, localeTag) ?? fallback;
+    },
     [globals, localeTag],
   );
 
@@ -661,12 +661,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const saveGlobal = React.useCallback(
-    (key: string, value: GlobalValue) =>
+    (key: string, value: GlobalValue, revision: string | null, mergeLocales: boolean) =>
       guardCms(async () => {
         assertWritablePage();
-        await cmsService.saveGlobalSetting(key, { value });
-        setGlobals((prev) => ({ ...prev, [key]: value }));
+        const saved = await cmsService.saveGlobalSetting(key, { value, expected_revision: revision, merge_locales: mergeLocales });
+        setGlobals((prev) => ({ ...prev, [key]: saved.value }));
         if (key.startsWith('company.')) window.dispatchEvent(new Event('company-contact-changed'));
+        return saved.cms_revision;
       }),
     [guardCms, assertWritablePage],
   );

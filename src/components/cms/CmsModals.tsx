@@ -88,10 +88,12 @@ function ModalFooter({
   onCancel,
   onSave,
   saving,
+  disabled = false,
 }: {
   onCancel: () => void;
   onSave: () => void;
   saving: boolean;
+  disabled?: boolean;
 }) {
   const { t } = useIntl();
   return (
@@ -102,8 +104,9 @@ function ModalFooter({
       <Button
         variant="primary"
         onClick={onSave}
-        disabled={saving}
+        disabled={saving || disabled}
         leftIcon={saving ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined}
+        data-cms-save
       >
         {t('cms.save')}
       </Button>
@@ -1006,7 +1009,7 @@ export function GlobalSettingsModal({
 }) {
   const { t } = useIntl();
   const { push, pushError } = useToast();
-  const { getGlobalRaw, saveGlobal, localeTag, editorLocales } = useCms();
+  const { saveGlobal, localeTag, editorLocales } = useCms();
 
   const [active, setActive] = React.useState<LocaleTag>(localeTag);
   // Plain string values, keyed by global key.
@@ -1014,43 +1017,60 @@ export function GlobalSettingsModal({
   // Per-locale values, keyed by global key then locale tag.
   const [maps, setMaps] = React.useState<Record<string, ByTag>>({});
   const dirty = React.useRef(new Set<string>());
+  const dirtyLocales = React.useRef(new Map<string, Set<LocaleTag>>());
+  const revisions = React.useRef<Record<string, string | null>>({});
   const [saving, setSaving] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [failed, setFailed] = React.useState(false);
+  const defaults = React.useRef(fallbackValues);
+  defaults.current = fallbackValues;
 
   React.useEffect(() => {
-    if (!open) { dirty.current.clear(); return; }
-    // A late settings refresh must not replace a draft the editor has started.
-    if (dirty.current.size) return;
+    if (!open) return;
+    let cancelled = false;
     dirty.current.clear();
-    const nextStrings: Record<string, string> = {};
-    const nextMaps: Record<string, ByTag> = {};
-    for (const def of GLOBAL_KEYS) {
-      const raw = getGlobalRaw(def.key) ?? fallbackValues?.[def.key];
-      if (def.perLocale) {
-        nextMaps[def.key] = typeof raw === 'object' && raw ? { ...raw } :
-          Object.fromEntries(editorLocales.map((tag) => [tag, typeof raw === 'string' ? raw : def.key === 'header.cta.label' ? 'Stalling' : '']));
-      } else {
-        nextStrings[def.key] =
-          typeof raw === 'string' && (raw !== '' || def.key === 'header.cta.path')
-            ? raw
-            : (def.placeholder ?? '');
+    dirtyLocales.current.clear();
+    setLoading(true);
+    setFailed(false);
+    void cmsService.globalSettings().then(result => {
+      if (cancelled) return;
+      const { settings, revisions: loaded } = result;
+      if (!settings || !loaded) throw new Error('Settings revisions are missing.');
+      revisions.current = loaded;
+      const nextStrings: Record<string, string> = {};
+      const nextMaps: Record<string, ByTag> = {};
+      for (const def of GLOBAL_KEYS) {
+        const raw = settings[def.key] ?? defaults.current?.[def.key];
+        if (def.perLocale) {
+          nextMaps[def.key] = Object.fromEntries(editorLocales.map(tag => [
+            tag, typeof raw === 'string' ? raw : raw?.[tag] ?? (def.key === 'header.cta.label' ? 'Stalling' : ''),
+          ]));
+        } else {
+          nextStrings[def.key] = typeof raw === 'string' ? raw : def.placeholder ?? '';
+        }
       }
-    }
-    setStrings(nextStrings);
-    setMaps(nextMaps);
-    setActive(initialEditorLocale(localeTag, editorLocales));
-  }, [open, localeTag, getGlobalRaw, editorLocales, fallbackValues]);
+      setStrings(nextStrings);
+      setMaps(nextMaps);
+      setActive(initialEditorLocale(localeTag, editorLocales));
+    }).catch(() => { if (!cancelled) setFailed(true); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [open, localeTag, editorLocales]);
 
   const onSave = async () => {
     setSaving(true);
     try {
-      try { if (dirty.current.has('header.cta.path')) strings['header.cta.path'] = normalizeHeaderDestination(strings['header.cta.path'] ?? ''); }
+      let headerPath = strings['header.cta.path'];
+      try { if (dirty.current.has('header.cta.path')) headerPath = normalizeHeaderDestination(headerPath ?? ''); }
       catch { push({ tone: 'error', title: t('cms.invalidCtaLink') }); return; }
       for (const def of GLOBAL_KEYS.filter((def) => (!headerOnly || def.key.startsWith('header.cta.')) && (!onlyKeys || onlyKeys.includes(def.key)))) {
-        const value: GlobalValue = def.perLocale
-          ? (maps[def.key] ?? {})
-          : (strings[def.key] ?? '');
         if (dirty.current.has(def.key)) {
-          await saveGlobal(def.key, value);
+          const value: GlobalValue = def.perLocale
+            ? Object.fromEntries([...(dirtyLocales.current.get(def.key) ?? [])].map(tag => [tag, maps[def.key]?.[tag] ?? '']))
+            : (def.key === 'header.cta.path' ? headerPath : strings[def.key]) ?? '';
+          revisions.current[def.key] = await saveGlobal(def.key, value, revisions.current[def.key], !!def.perLocale);
+          dirty.current.delete(def.key);
+          dirtyLocales.current.delete(def.key);
         }
       }
       push({ tone: 'success', title: t('cms.saved') });
@@ -1065,9 +1085,10 @@ export function GlobalSettingsModal({
   return (
     <Modal open={open} onClose={onClose} size="lg">
       <ModalHeader title={t('cms.globalTitle')} desc={t('cms.globalDesc')} />
-      <div className="space-y-4 overflow-y-auto px-6 py-5">
+      {failed && <p role="alert" className="px-6 pt-4 text-sm text-red-700">{t('cms.loadError')}</p>}
+      <fieldset disabled={loading || failed || saving} className="min-w-0 space-y-4 overflow-y-auto px-6 py-5">
         {GLOBAL_KEYS.filter((def) => (!headerOnly || def.key.startsWith('header.cta.')) && (!onlyKeys || onlyKeys.includes(def.key))).map((def) => (
-          <div key={def.key}>
+          <div key={def.key} data-cms-setting-editor={def.key}>
             <label className="mb-1.5 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-navy-500">
               {t(def.labelKey)}
               {def.perLocale ? (
@@ -1083,9 +1104,13 @@ export function GlobalSettingsModal({
                 </div>
                 <input
                   key={`${def.key}-${active}`}
+                  data-cms-setting-input={def.key}
                   type="text"
                   value={maps[def.key]?.[active] ?? ''}
                   onChange={(e) => { dirty.current.add(def.key);
+                    const locales = dirtyLocales.current.get(def.key) ?? new Set<LocaleTag>();
+                    locales.add(active);
+                    dirtyLocales.current.set(def.key, locales);
                     setMaps((m) => ({
                       ...m,
                       [def.key]: { ...m[def.key], [active]: e.target.value },
@@ -1096,11 +1121,12 @@ export function GlobalSettingsModal({
                 />
               </>
             ) : def.key === 'header.cta.path' ? (
-              <SearchSelect className={fieldClass} aria-label={t(def.labelKey)} value={strings[def.key] ?? ''} onChange={e => { dirty.current.add(def.key); setStrings(s => ({...s,[def.key]:e.target.value})); }}>
+            <SearchSelect className={fieldClass} aria-label={t(def.labelKey)} value={strings[def.key] ?? ''} onChange={e => { dirty.current.add(def.key); setStrings(s => ({...s,[def.key]:e.target.value})); }}>
                 {CTA_ROUTES.map(route => <option key={route} value={route}>{route || 'Home'}</option>)}
               </SearchSelect>
             ) : (
               <input
+                data-cms-setting-input={def.key}
                 type="text"
                 value={strings[def.key] ?? ''}
                 onChange={(e) => { dirty.current.add(def.key);
@@ -1113,8 +1139,8 @@ export function GlobalSettingsModal({
             )}
           </div>
         ))}
-      </div>
-      <ModalFooter onCancel={onClose} onSave={onSave} saving={saving} />
+      </fieldset>
+      <ModalFooter onCancel={onClose} onSave={onSave} saving={saving} disabled={loading || failed} />
     </Modal>
   );
 }

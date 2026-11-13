@@ -99,6 +99,84 @@ test('customer creation persists and the generated readable link opens the creat
   await info.attach('database-persistence', { body: JSON.stringify({ engine: 'isolated SQLite file', browserReload: true, apiReadback: true, databaseReadback: true, customerId: stored.id }), contentType: 'application/json' });
 });
 
+test('supplier mapping enforces write permission and persists SKU and keyword after reload', async ({ page, browser, request }, info) => {
+  const supplier = records.leveranciers;
+  const product = records.producten;
+  const endpoint = '/api/v1/suppliers/' + supplier.id + '/mappings';
+  const detail = '/admin/leveranciers/' + supplier.public_id + '/' + supplier.slug;
+  const sku = 'LIVE-MAPPING-SKU';
+  const keyword = 'Live supplier line item';
+  const reader = await browser.newPage({ baseURL: String(info.project.use.baseURL) });
+  try {
+    const headers = await session(reader, request, 'reader');
+    await reader.goto('/en' + detail);
+    await expect(reader.locator('main h1')).toHaveText(supplier.name);
+    await expect(reader.getByText('No mappings', { exact: true })).toBeVisible();
+    await expect(reader.getByRole('button', { name: 'Add mapping', exact: true })).toHaveCount(0);
+    await expect(reader.getByRole('dialog')).toHaveCount(0);
+    const denied = await request.post(endpoint, { headers, data: { product_id: product.id, supplier_sku: sku, keyword } });
+    expect(denied.status()).toBe(403);
+    expect(await (await request.get(endpoint, { headers })).json()).toEqual([]);
+  } finally {
+    await reader.close();
+  }
+
+  const headers = await session(page, request);
+  const postMapping = (response: import('@playwright/test').Response) =>
+    new URL(response.url()).pathname.endsWith('/mappings') && response.request().method() === 'POST';
+  for (const [locale, add, empty, required] of [
+    ['nl', 'Koppeling toevoegen', 'Geen koppelingen', 'Kies een optie.'],
+    ['de', 'Zuordnung hinzufügen', 'Keine Zuordnungen', 'Wählen Sie eine Option.'],
+    ['fr', 'Ajouter une correspondance', 'Aucune correspondance', 'Choisissez une option.'],
+    ['en', 'Add mapping', 'No mappings', 'Choose an option.'],
+  ]) {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/' + locale + detail);
+    await expect(page.locator('main h1')).toHaveText(supplier.name);
+    await expect(page.getByText(empty, { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: add, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('heading', { name: add, exact: true })).toBeVisible();
+    const skuField = dialog.getByRole('textbox', { name: label(locale, 'adminNew.suppliers.mapColumns.sku'), exact: true });
+    await skuField.fill(sku);
+    await dialog.getByRole('button', { name: label(locale, 'adminNew.common.save'), exact: true }).click();
+    await expect(dialog.getByText(required, { exact: true })).toBeVisible();
+    await expect(skuField).toHaveValue(sku);
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  }
+
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('textbox', { name: 'Supplier description', exact: true }).fill(keyword);
+  await dialog.getByRole('button', { name: 'Product', exact: true }).click();
+  await page.getByRole('option', { name: product.name, exact: true }).click();
+  const saved = page.waitForResponse(postMapping);
+  await dialog.getByRole('button', { name: label('en', 'adminNew.common.save'), exact: true }).click();
+  const response = await saved;
+  expect(response.status(), await response.text()).toBe(201);
+  const mapping = await response.json();
+  await expect(dialog).toHaveCount(0);
+  await page.reload();
+  const row = page.getByRole('row').filter({ hasText: sku });
+  await expect(row).toContainText(keyword);
+  await expect(row).toContainText(product.name);
+  for (const width of [390, 1280, 1536]) {
+    await page.setViewportSize({ width, height: 900 });
+    if (width > 390) {
+      await page.getByRole('button', { name: label('en', 'adminNew.shell.collapseSidebar'), exact: true }).click();
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      await page.getByRole('button', { name: label('en', 'adminNew.shell.expandSidebar'), exact: true }).click();
+    }
+    await expect(row).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  }
+  const fetched = await request.get(endpoint, { headers });
+  expect(fetched.ok(), await fetched.text()).toBe(true);
+  expect(await fetched.json()).toEqual([expect.objectContaining({ id: mapping.id, supplier_sku: sku, keyword, product_id: product.id })]);
+  const stored = php('echo json_encode(App\\Models\\SupplierProductMapping::where("supplier_sku", "LIVE-MAPPING-SKU")->firstOrFail());');
+  expect(stored).toMatchObject({ id: mapping.id, supplier_id: supplier.id, product_id: product.id, supplier_sku: sku, keyword });
+  await info.attach('database-persistence', { body: JSON.stringify({ engine: 'isolated SQLite file', browserReload: true, apiReadback: true, databaseReadback: true, mappingId: stored.id }), contentType: 'application/json' });
+});
+
 test('all five readable routes and legacy UUIDs resolve against the actual API', async ({ page, request }) => {
   const headers = await session(page, request);
   const routes: Record<string, string> = { producten: 'products', klanten: 'customers', boten: 'boats', stalling: 'stalling', leveranciers: 'suppliers' };

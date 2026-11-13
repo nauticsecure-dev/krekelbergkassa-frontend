@@ -117,7 +117,7 @@ function HiswaEditor({ onClose }: { onClose: () => void }) {
       <div className="border-b border-navy-100 px-6 py-5"><h2 className="text-lg font-semibold text-navy-900">{t('cms.editHiswa')}</h2></div>
       <div className="space-y-4 overflow-y-auto px-6 py-5">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Locale">
-          {editorLocales.map((tag) => <button key={tag} type="button" disabled={busy || failed} aria-pressed={active === tag} onClick={() => setActive(tag)}
+          {editorLocales.map((tag) => <button key={tag} type="button" disabled={busy || failed} data-cms-editor-locale={tag} aria-pressed={active === tag} onClick={() => setActive(tag)}
             className={`min-h-11 rounded-lg px-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 ${active === tag ? 'bg-navy-900 text-white' : 'bg-navy-50 text-navy-600'}`}>
             {tag.split('-')[0].toUpperCase()}
           </button>)}
@@ -126,15 +126,15 @@ function HiswaEditor({ onClose }: { onClose: () => void }) {
         {failed ? <p role="alert">{t('cms.loadError')}</p> : null}
         {FIELDS.map((field, index) => <div key={field.key} className="space-y-1 text-sm font-medium text-navy-700">
           <label className="block" htmlFor={`${fieldId}-${index}`}>{t(field.label)}</label>
-          {index === 0 ? <input id={`${fieldId}-${index}`} ref={firstInput} className={fieldClass} disabled={busy || failed} value={values[active]?.[field.key] ?? ''}
+          {index === 0 ? <input data-cms-text-input={field.key} id={`${fieldId}-${index}`} ref={firstInput} className={fieldClass} disabled={busy || failed} value={values[active]?.[field.key] ?? ''}
             onChange={(event) => setValues((previous) => ({ ...previous, [active]: { ...previous[active], [field.key]: event.target.value } }))} />
-            : <textarea id={`${fieldId}-${index}`} rows={4} className={fieldClass} disabled={busy || failed} value={values[active]?.[field.key] ?? ''}
+            : <textarea data-cms-text-input={field.key} id={`${fieldId}-${index}`} rows={4} className={fieldClass} disabled={busy || failed} value={values[active]?.[field.key] ?? ''}
               onChange={(event) => setValues((previous) => ({ ...previous, [active]: { ...previous[active], [field.key]: event.target.value } }))} />}
         </div>)}
       </div>
       <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
         <Button variant="ghost" disabled={saving} onClick={onClose}>{t('cms.cancel')}</Button>
-        <Button variant="primary" disabled={busy || failed} onClick={save}>{t('cms.publish')}</Button>
+        <Button data-cms-publish variant="primary" disabled={busy || failed} onClick={save}>{t('cms.publish')}</Button>
       </div>
     </Modal>
   );

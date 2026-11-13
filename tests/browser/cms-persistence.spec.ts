@@ -31,8 +31,13 @@ async function fixture(page: Page, editorLocales = ['nl-NL', 'en-GB', 'de-DE', '
       return route.fulfill({ json: { key } });
     }
     if (url.pathname.includes('/global-settings')) {
-      if (route.request().method() === 'PATCH') globals[decodeURIComponent(url.pathname.split('/').at(-1)!)] = route.request().postDataJSON().value;
-      return route.fulfill({ json: { settings: globals } });
+      if (route.request().method() === 'PATCH') {
+        const key = decodeURIComponent(url.pathname.split('/').at(-1)!);
+        const { value } = route.request().postDataJSON();
+        globals[key] = value;
+        return route.fulfill({ json: { value, cms_revision: 'fixture' } });
+      }
+      return route.fulfill({ json: { settings: globals, revisions: { 'header.cta.label': null, 'header.cta.path': null } } });
     }
     if (url.pathname.includes('/media-blocks/')) {
       const parts = url.pathname.split('/'), processing = parts.at(-1) === 'process';

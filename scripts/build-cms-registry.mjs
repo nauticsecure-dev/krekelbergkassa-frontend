@@ -20,6 +20,16 @@ export function buildRegistry(root) {
     const collect = node => { if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) constants.set(node.name.text, node.initializer); ts.forEachChild(node, collect); };
     collect(tree);
     const resolve = node => node && ts.isIdentifier(node) ? constants.get(node.text) ?? node : node;
+    const addFields = (stems, fields) => {
+      for (const stem of stems) for (const field of fields) keys.add(`${stem}.${field}`);
+    };
+    // TEAM is indexed by its rendered row position. Read the finite set from
+    // the same array used by the page so a new card gets writable keys.
+    if (file.replaceAll('\\', '/').endsWith('/(site)/over-ons/page.tsx')) {
+      const team = constants.get('TEAM');
+      const rows = team && ts.isAsExpression(team) ? team.expression : team;
+      if (rows && ts.isArrayLiteralExpression(rows)) addFields(rows.elements.map((_, index) => `over-ons.team.${index}`), ['name', 'role']);
+    }
     const attrValue = (node, name) => { const attr = node.attributes.properties.find(attr => ts.isJsxAttribute(attr) && attr.name.getText(tree) === name); return resolve(attr?.initializer && ts.isJsxExpression(attr.initializer) ? attr.initializer.expression : attr?.initializer); };
     function visit(node) {
       if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
@@ -82,8 +92,26 @@ export function buildRegistry(root) {
   for (const binding of bindings.filter(binding => !binding.pattern.startsWith('[') && binding.component !== 'EditableImage')) {
     for (const key of dictionaryKeys) if (new RegExp('^' + binding.pattern + '$').test(key)) keys.add(key);
   }
+  // These repeaters deliberately use different CMS and translation namespaces.
+  const dutch = JSON.parse(fs.readFileSync(path.join(root, 'src/i18n/messages/nl.json'), 'utf8'));
+  for (const [prefix, entries, fields] of [
+    ['over-ons.stat', dutch.over.stats, ['value', 'label']],
+    ['over-ons.value', dutch.over.values, ['title', 'desc']],
+    ['over-ons.timeline', dutch.over.timeline, ['year', 'title', 'desc']],
+    ['diensten.faq', dutch.werf.faq, ['a']],
+  ]) {
+    for (const id of Object.keys(entries)) for (const field of fields) keys.add(`${prefix}.${id}.${field}`);
+  }
+  for (const key of Object.keys(dutch.verkoopPage)) {
+    if (/^stat\d+$/.test(key)) {
+      for (const field of ['value', 'label']) keys.add(`verkoop.stat.${key.slice(4)}.${field}`);
+    }
+    if (/^step\d+$/.test(key)) {
+      for (const field of ['number', 'title', 'desc']) keys.add(`verkoop.${key}.${field}`);
+    }
+  }
   // Pricing copy is a finite vocabulary, shared by each registered service page.
-  const pricing = flatten(JSON.parse(fs.readFileSync(path.join(root, 'src/i18n/messages/nl.json'), 'utf8'))).filter(key => key.startsWith('yardPricing.')).map(key => key.slice(12));
+  const pricing = flatten(dutch).filter(key => key.startsWith('yardPricing.')).map(key => key.slice(12));
   for (const page of ['diensten', 'diensten/afspuiten', 'diensten/winterstalling', 'diensten/weekje-op-wal', 'diensten/zelf-werken']) for (const name of pricing) keys.add(`${page}.pricing.${name}`);
   return { schema: 2, content_keys: [...keys].sort(), content_patterns: [...patterns].sort(), bindings };
 }

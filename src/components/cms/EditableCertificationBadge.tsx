@@ -107,7 +107,7 @@ export function EditableCertificationBadge() {
           {fields.map((key, index) => (
             <label key={key} className="block text-sm font-semibold text-navy-700">
               {t(index === 0 ? 'cms.certificationTitle' : 'cms.certificationSubtitle')}
-              <input value={values[key]?.[active] ?? ''} disabled={busy || loadFailed}
+              <input data-cms-text-input={key} value={values[key]?.[active] ?? ''} disabled={busy || loadFailed}
                 onChange={(event) => setValues((previous) => ({ ...previous, [key]: { ...previous[key], [active]: event.target.value } }))}
                 className="mt-2 w-full rounded-lg border border-navy-200 px-3 py-2 font-normal text-navy-900" />
             </label>
@@ -115,7 +115,7 @@ export function EditableCertificationBadge() {
         </div>
         <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
           <Button variant="ghost" onClick={close} disabled={busy}>{t('cms.cancel')}</Button>
-          <Button onClick={save} disabled={busy || loadFailed}>{t('cms.publish')}</Button>
+          <Button data-cms-publish onClick={save} disabled={busy || loadFailed}>{t('cms.publish')}</Button>
         </div>
       </Modal>
     </>

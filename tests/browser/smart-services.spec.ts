@@ -73,27 +73,31 @@ async function fixture(page: Page, editor = false, stale = false, portal = false
   return { services, staged, business, requests, catalogDates, previews, bookings, boat, get selection() { return selection; }, get publishes() { return publishes; } };
 }
 
-test('T26 expandable cards retain compatible choices, centimetres and keyboard tariff tabs', async ({ page }) => {
+test('T26 live calculator retains compatible choices, length and keyboard tariff tabs', async ({ page }) => {
   const state = await fixture(page); await page.goto('/nl/diensten');
   const calc = page.locator('#prijsberekening');
-  await calc.getByLabel(messages.yardPricing.lengthCm, { exact: true }).fill('820');
+  await expect(calc.getByLabel(messages.yardPricing.lengthMetres, { exact: true })).toHaveValue('8,20');
+  await expect.poll(() => state.previews.at(-1)?.length_cm).toBe(820);
   await calc.getByRole('button', { name: 'Afspuiten', exact: true }).click();
-  await expect(calc.getByRole('button', { name: 'Kranen', exact: true })).toHaveAttribute('aria-expanded', 'true');
-  await expect(calc.getByRole('button', { name: 'Afspuiten', exact: true })).toHaveAttribute('aria-expanded', 'true');
+  await expect(calc.getByRole('button', { name: 'Kranen', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(calc.getByRole('button', { name: 'Afspuiten', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(calc).toContainText('242,00');
   await calc.getByRole('button', { name: 'Winterstalling', exact: true }).click();
-  await expect(calc.getByLabel(messages.yardPricing.lengthCm, { exact: true })).toHaveValue('820');
-  await expect(calc.getByRole('button', { name: 'Afspuiten', exact: true })).toHaveAttribute('aria-expanded', 'false');
+  await expect(calc.getByLabel(messages.yardPricing.lengthMetres, { exact: true })).toHaveValue('8,20');
+  await expect(calc.getByRole('button', { name: 'Afspuiten', exact: true })).toHaveAttribute('aria-pressed', 'false');
   await page.getByRole('tab', { name: 'Winterstalling', exact: true }).focus();
   await page.keyboard.press('Home');
   await expect(page.getByRole('tab', { name: 'Kranen', exact: true })).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('tr[aria-current=true]')).toHaveCount(1);
+  await calc.getByLabel(messages.yardPricing.lengthUnit).selectOption('cm');
+  await expect(calc.getByLabel(messages.yardPricing.lengthCm, { exact: true })).toHaveValue('820');
   await calc.getByLabel(messages.yardPricing.lengthUnit).selectOption('m');
   const metres = calc.getByLabel(messages.yardPricing.lengthMetres, { exact: true });
   await metres.fill('8,21');
   await expect.poll(() => state.previews.at(-1)?.length_cm).toBe(821);
   await metres.fill('8.20');
   await expect.poll(() => state.previews.at(-1)?.length_cm).toBe(820);
+  await calc.getByText(messages.smartServices.options, { exact: true }).click();
   await calc.getByLabel(messages.smartServices.pricingDate).fill('2027-01-01');
   await expect.poll(() => state.catalogDates.at(-1)).toBe('2027-01-01');
   await expect.poll(() => state.previews.at(-1)?.date).toBe('2027-01-01');
@@ -102,7 +106,8 @@ test('T26 expandable cards retain compatible choices, centimetres and keyboard t
 
 test('T27 crane booking sends an opaque token and preserves the two-operation selection', async ({ page }) => {
   const state = await fixture(page); await page.goto('/nl/diensten'); const calc = page.locator('#prijsberekening');
-  await calc.getByLabel(messages.yardPricing.lengthCm, { exact: true }).fill('820');
+  await calc.getByLabel(messages.yardPricing.lengthMetres, { exact: true }).fill('8,20');
+  await calc.getByText(messages.smartServices.options, { exact: true }).click();
   await calc.getByLabel(messages.smartServices.direction).selectOption('both');
   await expect(calc).toContainText('242,00');
   await calc.getByLabel(messages.smartServices.pricingDate).fill('2027-01-01');
@@ -166,7 +171,7 @@ test('T28 canonical inline edits and exact-rule return links use publication pre
   const state = await fixture(page, true); await page.goto('/nl/diensten');
   await page.getByRole('button', { name: messages.cms.enterEdit, exact: true }).click();
   const calc = page.locator('#prijsberekening');
-  await calc.getByLabel(messages.yardPricing.lengthCm, { exact: true }).fill('820');
+  await calc.getByLabel(messages.yardPricing.lengthMetres, { exact: true }).fill('8,20');
   await expect(calc).toContainText('121,00');
   await calc.getByRole('button', { name: messages.smartServices.editService, exact: true }).click();
   const editor = calc.locator('form');
@@ -207,7 +212,8 @@ test('T30 mobile storage journey preserves dates through request submission', as
   await page.setViewportSize({ width: 390, height: 844 }); const state = await fixture(page);
   await page.goto('/nl/diensten'); const calc = page.locator('#prijsberekening');
   await calc.getByRole('button', { name: 'Winterstalling', exact: true }).click();
-  await calc.getByLabel(messages.yardPricing.lengthCm, { exact: true }).fill('820');
+  await calc.getByLabel(messages.yardPricing.lengthMetres, { exact: true }).fill('8,20');
+  await calc.getByText(messages.smartServices.options, { exact: true }).click();
   await calc.getByLabel(messages.smartServices.periodFrom).fill('2026-11-10');
   await calc.getByLabel(messages.smartServices.periodTo).fill('2027-04-01');
   await calc.screenshot({ path: test.info().outputPath('mobile-calculator.png') });

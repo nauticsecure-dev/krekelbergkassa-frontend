@@ -148,7 +148,7 @@ export function EditableHeroCta({
     () => parseConfig(getText(configKey, ''), href, locale),
     [configKey, getText, href, locale],
   );
-  const text = getText(labelKey, label).trim() || label;
+  const text = getText(labelKey, label);
   const [open, setOpen] = useCmsEditorOpen();
   const [saving, setSaving] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -161,6 +161,7 @@ export function EditableHeroCta({
   const [baseConfig, setBaseConfig] = React.useState<CtaConfig>(config);
   const editing = isCmsEditing || retainCmsDrafts;
   const destination = resolveHref(config, locale);
+  const linkSource = fieldSource(configKey, localeTag, getContentBlock(configKey), canEdit);
 
   React.useEffect(() => {
     if (!open) return;
@@ -219,6 +220,7 @@ export function EditableHeroCta({
     return (
       <>
         <div
+          {...linkSource}
           data-cms-block={blockKey}
           className="group/cms pointer-events-auto relative inline-flex cursor-text"
           onClick={(event) => { event.preventDefault(); event.stopPropagation(); setOpen(true); }}
@@ -278,9 +280,10 @@ export function EditableHeroCta({
     </>
   );
   return config.link_type === 'internal' && config.target === '_self' ? (
-    <Link href={destination} className={classes}>{labelContent}</Link>
+    <Link {...linkSource} href={destination} className={classes}>{labelContent}</Link>
   ) : (
     <a
+      {...linkSource}
       href={destination}
       className={classes}
       target={config.target}
@@ -294,6 +297,7 @@ export function EditableHeroCta({
 function CtaEditModal({
   open,
   onClose,
+  labelKey,
   labels,
   active,
   setActive,
@@ -350,7 +354,7 @@ function CtaEditModal({
         </div>
         <label className="block space-y-1 text-sm font-medium text-navy-700">
           {t('cms.ctaLabel')}
-          <textarea rows={2} className={inputClass} value={labels[active] ?? ''} onChange={(e) => onLabelChange(e.target.value)} />
+          <textarea data-cms-text-input={labelKey} rows={2} className={inputClass} value={labels[active] ?? ''} onChange={(e) => onLabelChange(e.target.value)} />
         </label>
         <label className="block space-y-1 text-sm font-medium text-navy-700">
           {t('cms.ctaLinkType')}
@@ -413,7 +417,7 @@ function CtaEditModal({
       </fieldset>
       <div className="flex justify-end gap-2 border-t border-navy-100 px-6 py-4">
         <Button variant="ghost" onClick={onClose} disabled={saving}>{t('cms.cancel')}</Button>
-        <Button variant="primary" onClick={onSave} disabled={saving || loading}>{t('cms.publish')}</Button>
+        <Button data-cms-publish variant="primary" onClick={onSave} disabled={saving || loading}>{t('cms.publish')}</Button>
       </div>
     </Modal>
   );

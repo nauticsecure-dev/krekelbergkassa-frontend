@@ -1,6 +1,15 @@
 [
   {
     "match": {
+      "locale": "de",
+      "key": "adminNew.suppliers.columns.name",
+      "text": "Name"
+    },
+    "decision": "intentional",
+    "reason": "Name is the German noun for the supplier name."
+  },
+  {
+    "match": {
       "locale": "nl",
       "key": "adminNew.boats.fields.mmsi",
       "text": "MMSI"
