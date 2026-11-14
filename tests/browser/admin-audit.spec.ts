@@ -379,6 +379,37 @@ for (const write of [false, true]) {
   });
 }
 
+test('supplier mapping loading and retry recover from a failed request', async ({ page }) => {
+  await session(page, 'super_admin', false);
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.route('**/api/v1/suppliers/supplier-1', route => route.fulfill({ json: { id: 'supplier-1', name: 'Audit Supplier' } }));
+  let fail = true;
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/api/v1/suppliers/supplier-1/mappings', async route => {
+    await held;
+    if (fail) return route.fulfill({ status: 503, json: { message: failure } });
+    return route.fulfill({ json: [] });
+  });
+  await page.goto('/fr/admin/leveranciers/supplier-1');
+  const main = page.locator('main');
+  await expect(main.getByRole('heading', { name: 'Audit Supplier', exact: true })).toBeVisible();
+  await expect(main.getByText(label('fr', 'adminNew.common.loading'), { exact: true })).toBeVisible();
+  release();
+  const retry = main.getByRole('button', { name: 'Réessayer', exact: true });
+  await expect(main.getByText('Une erreur est survenue', { exact: true })).toBeVisible();
+  const failedRetry = page.waitForResponse(response =>
+    response.url().endsWith('/suppliers/supplier-1/mappings') && response.status() === 503);
+  await retry.click();
+  await failedRetry;
+  await expect(main.getByText(failure)).toBeVisible();
+  fail = false;
+  await retry.click();
+  await expect(main.getByText('Aucune correspondance', { exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test('supplier loading empty validation create and update retain data then mutate', async ({ page }, info) => {
   await session(page, 'staff', false);
   let release!: () => void;

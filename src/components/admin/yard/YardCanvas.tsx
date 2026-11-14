@@ -14,13 +14,16 @@ import { YardServiceBoard } from './YardServiceBoard';
 import type { ScheduleResources } from './YardSchedulingSettings';
 import { YardMapManagement, YardSafetyProposal, YardRestoreReview, type YardGeometry } from './YardMapManagement';
 import { useYardDraftRecovery } from './useYardDraftRecovery';
+import { useYardRefresh } from './useYardRefresh';
+import { YardArrival, type Arrival } from './YardArrival';
 import { YardPhotoSessions, useYardPhotoCopy } from './YardPhotoSessions';
+import type { PhotoPlacement } from './YardPhotoMatch';
 
 type Point = { x: number; y: number };
 type Position = Point & { rotation: number; scale: number; location_code?: string | null };
-type Placement = { actual: Position | null; planned: (Position & { appointment_id?: string; task_id?: string }) | null; previous: Position | null; presence: 'arrived' | 'departed' | null; version: number; interaction_locked?: boolean };
+type Placement = { actual: Position | null; planned: (Position & { appointment_id?: string; task_id?: string }) | null; previous: Position | null; presence: 'arrived' | 'departed' | null; version: number; interaction_locked?: boolean; arrival?: Arrival | null; arrived_at?: string | null };
 type Zone = Point & { name: string; type: 'building' | 'restricted' | 'route'; width: number; height: number };
-type Conflict = Placement & { assignment?: { assignee_id?: string; due_at?: string; state?: string } | null };
+type Conflict = Placement & { assignment?: { assignee_id?: string; due_at?: string; state?: string; instructions?: string; equipment?: string; priority?: string } | null };
 
 function ConflictDetails({ placement }: { placement: Conflict }) {
   return <div role="status" className="space-y-1 text-xs text-red-200">
@@ -28,6 +31,9 @@ function ConflictDetails({ placement }: { placement: Conflict }) {
     <p><TranslatedText textKey="siteCopy.0a2ff586ab739698" fallbackText={"Gepland: "} />{describePosition(placement.planned)}</p>
     {placement.assignment && <p><TranslatedText textKey="siteCopy.27c1d56b137c3f82" fallbackText={"Opdracht: "} />{placement.assignment.state} · {placement.assignment.due_at
       ? new Date(placement.assignment.due_at).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam' }) : 'Geen tijd'} <TranslatedText textKey="siteCopy.06e40c58ac4673b6" fallbackText={" · Medewerker: "} />{placement.assignment.assignee_id ?? 'Niet toegewezen'}</p>}
+    {placement.assignment?.equipment && <p>Materieel · {placement.assignment.equipment}</p>}
+    {placement.assignment?.priority && <p>Prioriteit · {placement.assignment.priority}</p>}
+    {placement.assignment?.instructions && <p className="whitespace-pre-wrap">{placement.assignment.instructions}</p>}
     <p><TranslatedText textKey="siteCopy.a269ce62c9cb05d5" fallbackText={"Je concept blijft zichtbaar. Annuleer het concept en laad de huidige plaatsing voordat je opnieuw plant."} /></p>
   </div>;
 }
@@ -39,7 +45,7 @@ type Boat = {
   top_view?: { id: string; url: string } | null;
   action_route?: string | null;
   services?: string[];
-  move_job?: { date: string; assignee_id?: string; state: string; due_at: string };
+  move_job?: NonNullable<Conflict['assignment']> & { date: string; due_at: string };
 };
 type Yard = {
   width: number; height: number; can_edit: boolean; can_publish: boolean;
@@ -66,6 +72,7 @@ type Operation = 'move_now' | 'arrive' | 'depart' | 'place' | 'plan' | 'replan' 
 type MoveChoice = 'now' | 'today' | 'tomorrow' | 'next';
 type MoveOptions = {
   assigned_to_user_id: string | null;
+  team_id?: string | null;
   choices: Record<MoveChoice, string | null>;
   current: { due_at: string | null; duration: number; equipment: string; team_id?: string | null; reason: string; priority: string; instructions: string } | null;
 };
@@ -225,6 +232,11 @@ export default function YardCanvas({ locale }: { locale: string }) {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
+  const [refreshRevision, setRefreshRevision] = useState(0);
+  const [arrival, setArrival] = useState<{ id: string; version: number }>();
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
+  useYardRefresh(() => setRefreshRevision(value => value + 1));
   const admin = `/${locale}/admin`;
   const recovery = useYardDraftRecovery<SavedDraft>(draft && selected ? {
     draft, placement: selected.placement, reason, dueAt, assignee, teamId, equipment, duration, priority, instructions,
@@ -238,6 +250,10 @@ export default function YardCanvas({ locale }: { locale: string }) {
     if (window.location.hash === '#verplaatsingen') {
       setLinkedMoveId(new URLSearchParams(window.location.search).get('task_id') || undefined);
       setTab('Verplaatsingen');
+    }
+    if (window.location.hash === '#dienstenbord') {
+      setLinkedMoveId(new URLSearchParams(window.location.search).get('task_id') || undefined);
+      setTab('Dienstenbord');
     }
   }, []);
 
@@ -261,6 +277,12 @@ export default function YardCanvas({ locale }: { locale: string }) {
         const next = await api<Yard>(yardEndpoint, { query: { placed: 1, page } });
         rows.push(...next.boats.data);
       }
+      const opened = selectedRef.current;
+      let latest = rows.find(boat => boat.id === opened?.id);
+      if (active && opened && !latest) {
+        const current = await api<Yard>(yardEndpoint, { query: { search: opened.id } });
+        latest = current.boats.data.find(boat => boat.id === opened.id);
+      }
       if (active) {
         if (!initialTabResolved.current) {
           initialTabResolved.current = true;
@@ -271,12 +293,23 @@ export default function YardCanvas({ locale }: { locale: string }) {
         setYard(first);
         setPlaced(rows);
         setLoadedAt(new Date());
-        setSelected((previous) => draftRef.current ? previous : rows.find((boat) => boat.id === previous?.id) ?? previous);
+        if (opened && selectedRef.current?.id === opened.id) {
+          const current = selectedRef.current;
+          const currentDraft = draftRef.current;
+          if (currentDraft?.id === opened.id) {
+            const changedMember = currentDraft.group?.map(member => rows.find(boat => boat.id === member.id && boat.placement.version !== member.version)).find(Boolean);
+            const changed = latest && latest.placement.version !== current.placement.version ? latest : changedMember;
+            if (changed) {
+              setConflict({ ...changed.placement, assignment: changed.move_job });
+              if (changed.id !== opened.id) setError(`De plaatsing van ${changed.name} in deze groep is gewijzigd.`);
+            }
+          } else if (latest) setSelected(latest);
+        }
       }
     }
     load().catch((err) => { if (active) setError(errorMessage(err)); });
     return () => { active = false; };
-  }, [revision]);
+  }, [revision, refreshRevision]);
 
   useEffect(() => {
     if (tab !== 'Werfcanvas') return;
@@ -286,7 +319,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
       .then((result) => { if (active) setUnplaced(result.boats); })
       .catch((err) => { if (active) setUnplacedError(errorMessage(err)); });
     return () => { active = false; };
-  }, [revision, unplacedPage, retry, tab]);
+  }, [revision, refreshRevision, unplacedPage, retry, tab]);
 
   useEffect(() => {
     if (tab !== 'Botenlijst' && !search.trim()) return;
@@ -308,7 +341,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
         .catch((err) => { if (active) setSearchError(errorMessage(err)); });
     }, 180);
     return () => { active = false; window.clearTimeout(timer); };
-  }, [search, length, storage, site, resultPage, tab, revision, retry, combinedStatuses, service, zone, employee, date]);
+  }, [search, length, storage, site, resultPage, tab, revision, refreshRevision, retry, combinedStatuses, service, zone, employee, date]);
 
   useEffect(() => {
     setWarnings(undefined);
@@ -502,7 +535,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
       if (request !== moveOptionsRequest.current) return;
       if (!choice) {
         setAssignee(options.assigned_to_user_id ?? '');
-        setTeamId(options.current?.team_id ?? undefined);
+        setTeamId(options.team_id ?? options.current?.team_id ?? undefined);
         if (options.current) {
           setDuration(String(options.current.duration));
           setEquipment(options.current.equipment);
@@ -722,6 +755,23 @@ export default function YardCanvas({ locale }: { locale: string }) {
     if (!point) setView(initialView);
   }
 
+  async function openPhotoPlacement(boatId: string, proposal: PhotoPlacement) {
+    if (!yard?.can_edit || locked || draftRef.current) throw new Error('Sluit eerst het bestaande kaartconcept.');
+    const current = await api<Yard>(yardEndpoint, { query: { search: boatId } });
+    const boat = current.boats.data.find(item => item.id === boatId);
+    if (!boat || boat.placement.version !== proposal.placement_version || current.geometry?.version !== proposal.assessment.geometry_version) {
+      throw new Error('De werfgeometrie of plaatsing is gewijzigd. Controleer het voorstel opnieuw.');
+    }
+    if (boat.placement.planned || boat.placement.interaction_locked || boat.placement.presence === 'departed'
+      || (boat.placement.actual && !current.can_plan)) {
+      throw new Error('Deze boot kan op dit moment geen kaartconcept krijgen.');
+    }
+    choose(boat);
+    edit({ id: boat.id, position: { ...proposal.position, location_code: boat.placement.actual?.location_code ?? boat.location_code } });
+    setView(initialView);
+    setTab('Werfcanvas');
+  }
+
   function resetView() {
     setView(initialView);
     setHover(undefined);
@@ -865,7 +915,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
         else if (['delete', 'backspace'].includes(key)) removePlacement();
         else if (event.code === 'Space' && target.closest('svg')) space.current = true;
         else if (key.startsWith('arrow') && target.closest('svg') && !locked && !busy && yard?.can_edit && selected &&
-          !selected.placement.planned && (draft || (yard.can_plan && selected.placement.actual))) {
+          !selected.placement.interaction_locked && !selected.placement.planned && (draft || (yard.can_plan && selected.placement.actual))) {
           const origin = draft?.position ?? (selected.placement.actual && { ...selected.placement.actual, location_code: selected.placement.actual.location_code ?? selected.location_code });
           if (origin) {
             const step = event.shiftKey ? 1 : 0.1;
@@ -905,15 +955,15 @@ export default function YardCanvas({ locale }: { locale: string }) {
       }}><TranslatedText textKey="siteCopy.08bc775747052d17" fallbackText={"Vernieuwen"} /></button>
     </div>}
     {notice && <p role="status" className="text-sm text-green-300">{notice}</p>}
-    {yard?.can_manage_photos && tab === 'photos' && <YardPhotoSessions onPublish={yard.can_publish ? (file, outputId) => {
+    {yard?.can_manage_photos && tab === 'photos' && <YardPhotoSessions onPlacement={yard.can_edit ? openPhotoPlacement : undefined} onPublish={yard.can_publish ? (file, outputId) => {
       setPreparedBackground({ file, outputId });
       setPreview(URL.createObjectURL(file));
       setEditingMap(true);
       setTab('Werfcanvas');
     } : undefined} />}
-    {(yard?.can_plan || yard?.can_execute) && tab === 'Dienstenbord' && <YardServiceBoard locale={locale} boatId={selected?.id} onChange={() => setRevision((value) => value + 1)} />}
+    {(yard?.can_plan || yard?.can_execute) && tab === 'Dienstenbord' && <YardServiceBoard locale={locale} boatId={selected?.id} taskId={linkedMoveId} refreshRevision={refreshRevision} onChange={() => setRevision((value) => value + 1)} />}
     {(yard?.can_execute || yard?.can_plan) && (tab === 'Verplaatsingen' || tab === 'Mijn werk vandaag') &&
-      <YardMoves key={tab} taskId={linkedMoveId} mine={tab === 'Mijn werk vandaag'} onChange={() => setRevision((value) => value + 1)} />}
+      <YardMoves key={tab} taskId={linkedMoveId} mine={tab === 'Mijn werk vandaag'} refreshRevision={refreshRevision} onChange={() => setRevision((value) => value + 1)} />}
     {recovery.recovered && !draft && <div role="status" className="flex flex-wrap items-center gap-2 rounded border border-amber-400 p-3 text-sm">
       <p><TranslatedText textKey="siteCopy.300496bb45b4ba9e" fallbackText={"Er is een niet-opgeslagen concept uit deze sessie beschikbaar."} /></p>
       <button className={control} disabled={busy || !yard?.can_edit} onClick={async () => {
@@ -927,7 +977,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
           recovery.discard(); setSelected({ ...boat, placement: saved.placement }); setSelectedIds([boat.id]);
           setDraft(saved.draft); setReason(saved.reason); setDueAt(saved.dueAt); setAssignee(saved.assignee); setTeamId(saved.teamId); setEquipment(saved.equipment);
           setDuration(saved.duration); setPriority(saved.priority); setInstructions(saved.instructions); setDrawer(true); setTab('Werfcanvas');
-          if (boat.placement.version !== saved.placement.version) setConflict(boat.placement);
+          if (boat.placement.version !== saved.placement.version) setConflict({ ...boat.placement, assignment: boat.move_job });
           setNotice('Concept hersteld. Controleer de huidige werfinstructies voordat je opslaat.');
         } catch (err) { setError(errorMessage(err as ApiError)); }
         finally { setBusy(false); }
@@ -1024,6 +1074,8 @@ export default function YardCanvas({ locale }: { locale: string }) {
               if (event.pointerType !== 'touch') return;
               touches.current.set(event.pointerId, pointer(event));
               if (touches.current.size > 1) {
+                const drag = gesture.current;
+                if (drag?.moved && drag.draft) setDraft(drag.originalDraft);
                 gesture.current = null;
                 svg.current?.setPointerCapture(event.pointerId);
                 event.stopPropagation();
@@ -1099,7 +1151,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
                       <path d={hull} fill={highlighted ? '#1d4ed8' : '#dbeafe'} stroke={highlighted ? '#93c5fd' : '#1e293b'} strokeWidth=".35" />
                       {boat.top_view && <image href={boat.top_view.url} x={-length / 2} y={-width / 2} width={length} height={width} preserveAspectRatio="none" pointerEvents="none" />}
                     </g>
-                    {highlighted && yard.can_edit && !boat.placement.planned && (!boat.placement.actual || yard.can_plan) && <circle cx={(draftPosition?.x ?? position.x) - position.x + Math.cos((draftPosition ?? position).rotation * Math.PI / 180) * (length / 2 + 1.2)}
+                    {highlighted && yard.can_edit && !locked && !boat.placement.interaction_locked && !boat.placement.planned && (!boat.placement.actual || yard.can_plan) && <circle cx={(draftPosition?.x ?? position.x) - position.x + Math.cos((draftPosition ?? position).rotation * Math.PI / 180) * (length / 2 + 1.2)}
                       cy={(draftPosition?.y ?? position.y) - position.y + Math.sin((draftPosition ?? position).rotation * Math.PI / 180) * (length / 2 + 1.2)} r=".65" fill="#facc15" className="cursor-crosshair"
                       onPointerDown={(event) => start(event, boat, draftPosition ?? position, true)}><title><TranslatedText inline={false} textKey="yardPricing.rotateVerb" /> {boat.name}</title></circle>}
                     {showStatus && statusKeys(boat).map((key, index) => {
@@ -1232,10 +1284,19 @@ export default function YardCanvas({ locale }: { locale: string }) {
               {selected.placement.presence && <p className="text-sm text-slate-300">
                 {selected.placement.presence === 'departed' ? 'Vertrokken' : selected.placement.actual ? 'Aangekomen' : 'Aangekomen — Nog plaatsen'}
               </p>}
+              {selected.placement.arrival && <div className="grid gap-1 text-sm">
+                {selected.placement.arrived_at && <time dateTime={selected.placement.arrived_at}>{new Date(selected.placement.arrived_at).toLocaleString(locale, { timeZone: 'Europe/Amsterdam' })}</time>}
+                {selected.placement.arrival.appointment_id && <Link href={`${admin}/afspraken?appointment_id=${selected.placement.arrival.appointment_id}`}>Aankomstafspraak {selected.placement.arrival.service_code}</Link>}
+                {selected.placement.arrival.condition && <p className="whitespace-pre-wrap">{selected.placement.arrival.condition}</p>}
+                {!!selected.placement.arrival.photo_ids?.length && <Link href={`${admin}/boten/${selected.id}`}>Aankomstfoto’s in het bootdossier ({selected.placement.arrival.photo_ids.length})</Link>}
+              </div>}
+              {yard.can_edit && !draft && arrival?.id === selected.id && <YardArrival key={selected.id}
+                boatId={selected.id} name={selected.name} version={arrival.version}
+                onSaved={() => { setArrival(undefined); setNotice('Aankomst opgeslagen.'); setRevision(value => value + 1); }}
+                onClose={() => setArrival(undefined)} />}
               {yard.can_edit && !draft && !selected.placement.planned && <div className="flex flex-wrap gap-1">
-                {selected.placement.presence !== 'arrived' && <button className={control} disabled={busy} onClick={() => {
-                  if (window.confirm(`Bevestig dat ${selected.name} fysiek op de werf is aangekomen.`)) void save('arrive');
-                }}><TranslatedText textKey="siteCopy.0ee007c720047379" fallbackText={"Aankomst bevestigen"} /></button>}
+                {selected.placement.presence !== 'arrived' && arrival?.id !== selected.id && <button className={control} disabled={busy}
+                  onClick={() => setArrival({ id: selected.id, version: selected.placement.version })}><TranslatedText textKey="siteCopy.0ee007c720047379" fallbackText={"Aankomst bevestigen"} /></button>}
                 {(selected.placement.presence === 'arrived' || selected.placement.actual) && <button className={control} disabled={busy} onClick={() => {
                   if (window.confirm(`Bevestig dat ${selected.name} de werf fysiek heeft verlaten.`)) void save('depart');
                 }}><TranslatedText textKey="siteCopy.99b4e5571abdfd74" fallbackText={"Vertrek bevestigen"} /></button>}
@@ -1382,7 +1443,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
       </form>
     </dialog>}
     {photo && <YardQuickPhoto boat={photo} canApproveTopView={yard?.can_manage_photos} onChange={() => setRevision((value) => value + 1)} onClose={() => setPhoto(undefined)} />}
-    {dailyPlan && <YardDailyPlan date={date && date !== 'week' ? date : yardDay(0)} onClose={() => setDailyPlan(false)} />}
+    {dailyPlan && <YardDailyPlan date={date && date !== 'week' ? date : yardDay(0)} refreshRevision={refreshRevision} onClose={() => setDailyPlan(false)} />}
   </section>;
 }
 

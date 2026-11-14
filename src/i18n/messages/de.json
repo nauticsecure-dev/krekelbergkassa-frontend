@@ -66,6 +66,7 @@
     "periodConditions": "Die gewählten Daten werden mit Ihrer Anfrage übermittelt. Der Richtpreis gilt für das Paket.",
     "invalidLength": "Geben Sie eine ganze Länge von 1 bis 9999 cm ein.",
     "estimate": "Ihre Preisschätzung",
+    "priceOnRequest": "Preis auf Anfrage",
     "breakdown": "Preisübersicht",
     "included": "Enthalten",
     "vat": "Enthaltene MwSt.",
@@ -121,6 +122,7 @@
     },
     "nav": {
       "myQaFindings": "Meine QA-Befunde",
+      "qaUnread": "Ungelesene QA-Zuweisungen ({count})",
       "qualityCenter": "Qualitätszentrum",
       "qaUnavailable": "QA ist nicht verfügbar. Prüfen Sie Ihr Netzwerk und versuchen Sie es erneut.",
       "overview": "Übersicht",

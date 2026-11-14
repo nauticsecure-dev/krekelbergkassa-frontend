@@ -4,6 +4,7 @@ import { TranslatedText } from '@/components/cms/TranslatedText';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '@/lib/api';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { usePermission } from '@/lib/permissions';
 import { YardQuickPhoto } from './YardQuickPhoto';
 import { control, yardEndpoint, type Page } from './YardHistory';
 
@@ -47,7 +48,11 @@ function PositionComparison({ move }: { move: Move }) {
   </figure>;
 }
 
-export function YardMoves({ mine, taskId, onChange }: { mine: boolean; taskId?: string; onChange: () => void }) {
+export function YardMoves({ mine, taskId, refreshRevision, onChange }: { mine: boolean; taskId?: string; refreshRevision: number; onChange: () => void }) {
+  const { can } = usePermission();
+  const canSeePlanning = can('planning.view');
+  const canSeeFinance = can('invoice.view');
+  const [filters, setFilters] = useState({ from: '', to: '', state: '', priority: '', group_id: '', service_code: '', payment_state: '' });
   const [page, setPage] = useState(1);
   const [moves, setMoves] = useState<Page<Move>>();
   const [revision, setRevision] = useState(0);
@@ -63,7 +68,7 @@ export function YardMoves({ mine, taskId, onChange }: { mine: boolean; taskId?: 
       if (loading) return;
       loading = true;
       try {
-        const result = await api<Page<Move>>(`${yardEndpoint}/moves`, { query: { mine: mine ? 1 : 0, page, task_id: taskId } });
+        const result = await api<Page<Move>>(`${yardEndpoint}/moves`, { query: { ...filters, mine: mine ? 1 : 0, page, task_id: taskId } });
         if (active) setMoves(result);
       } catch (err) {
         if (active) setError(getApiErrorMessage(err));
@@ -74,7 +79,18 @@ export function YardMoves({ mine, taskId, onChange }: { mine: boolean; taskId?: 
     void load();
     const timer = window.setInterval(() => void load(), 30000);
     return () => { active = false; window.clearInterval(timer); };
-  }, [mine, page, revision, taskId]);
+  }, [mine, page, revision, taskId, refreshRevision, filters]);
+
+  function applyFilters(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setFilters({ from: String(form.get('from') ?? ''), to: String(form.get('to') ?? ''), state: String(form.get('state') ?? ''),
+      priority: String(form.get('priority') ?? ''), group_id: String(form.get('group_id') ?? ''),
+      service_code: String(form.get('service_code') ?? ''), payment_state: String(form.get('payment_state') ?? '') });
+    setPage(1);
+    setAction(undefined);
+    setError('');
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -112,12 +128,30 @@ export function YardMoves({ mine, taskId, onChange }: { mine: boolean; taskId?: 
       <h2 className="font-semibold">{mine ? 'Mijn werk vandaag en komende opdrachten' : 'Verplaatsingen'}</h2>
       <button className={control} onClick={() => { setAction(undefined); setError(''); setRevision((value) => value + 1); }}><TranslatedText textKey="siteCopy.d5b1379caf95e894" fallbackText={"Opdrachten vernieuwen"} /></button>
     </div>
+    {!taskId && <form onSubmit={applyFilters} className="flex flex-wrap items-end gap-2">
+      <label className="grid">Van<input name="from" type="date" className={control} /></label>
+      <label className="grid">Tot en met<input name="to" type="date" className={control} /></label>
+      <label className="grid">Status<select name="state" className={control}><option value="">Alle</option>
+        {Object.entries(labels).map(([key, value]) => <option key={key} value={key}>{value}</option>)}</select></label>
+      <label className="grid">Prioriteit<select name="priority" className={control}><option value="">Alle</option>
+        {Object.entries({ low: 'Laag', normal: 'Normaal', high: 'Hoog', urgent: 'Dringend' }).map(([key, value]) => <option key={key} value={key}>{value}</option>)}</select></label>
+      <label className="grid">Groep-ID<input name="group_id" className={control} /></label>
+      {canSeePlanning && <label className="grid">Dienstcode<input name="service_code" className={control} maxLength={100} /></label>}
+      {canSeeFinance && <label className="grid">Afspraakbetaling<select name="payment_state" className={control}><option value="">Alle</option>
+        {Object.entries({ not_invoiced: 'Geen factuur', open: 'Open', partial: 'Deels betaald', overdue: 'Te laat', paid: 'Betaald', outstanding: 'Openstaand' })
+          .map(([key, value]) => <option key={key} value={key}>{value}</option>)}</select></label>}
+      <button className={control}>Filteren</button>
+    </form>}
     {error && <p role="alert" className="text-red-300">{error}</p>}
+    {action && moves && !moves.data.some(move => move.id === action.move.id) && <p role="status" className="text-amber-200">
+      Deze opdracht staat niet meer in je lijst. Controleer de huidige toewijzing.
+    </p>}
     {!moves && !error && <p role="status"><TranslatedText textKey="siteCopy.4739949e6e80ff9a" fallbackText={"Opdrachten laden…"} /></p>}
     {moves?.total === 0 && <p><TranslatedText textKey="siteCopy.776336e2116ee5ef" fallbackText={"Geen verplaatsingen gevonden."} /></p>}
     <div className="grid gap-3 md:grid-cols-2">
       {moves?.data.map((move) => {
         const state = move.metadata.state;
+        const staleAction = action?.move.id === move.id && action.move.placement_version !== move.placement_version;
         const actions: [Operation, string][] = [];
         if (state === 'assigned') actions.push(['accept', 'Accepteren']);
         if (['accepted', 'blocked'].includes(state)) actions.push(['start', 'Starten']);
@@ -143,7 +177,8 @@ export function YardMoves({ mine, taskId, onChange }: { mine: boolean; taskId?: 
             {actions.map(([operation, label]) => <button key={operation} type="button" className={`${control} min-h-11`} disabled={busy}
               onClick={() => setAction({ move, operation })}>{label}</button>)}
           </div>}
-          {action?.move.id === move.id && <form key={action.operation} className="grid gap-2 border-t border-slate-700 pt-3" onSubmit={submit}>
+          {staleAction && <p role="status" className="text-amber-200">De werfopdracht is gewijzigd. Controleer de actuele instructies en open de actie opnieuw.</p>}
+          {move.is_assignee && !staleAction && action?.move.id === move.id && <form key={action.operation} className="grid gap-2 border-t border-slate-700 pt-3" onSubmit={submit}>
             {action.operation === 'block' && <label className="grid gap-1"><TranslatedText textKey="siteCopy.705a1b36a73dd736" fallbackText={"Reden"} /><textarea className={control} name="reason" maxLength={500} required /></label>}
             {action.operation === 'complete' && <>
               <div className="grid grid-cols-2 gap-2">

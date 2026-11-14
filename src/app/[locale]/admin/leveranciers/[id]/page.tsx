@@ -30,6 +30,7 @@ import { productsService, suppliersService } from '@/lib/services';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useIntl } from '@/i18n/IntlProvider';
+import { usePermission } from '@/lib/permissions';
 
 type Rec = Record<string, unknown>;
 const str = (r: Rec, ...keys: string[]): string => {
@@ -52,12 +53,14 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default function SupplierDetailPage() {
   const { locale, t } = useIntl();
+  const { can } = usePermission();
+  const canWrite = can('products.write');
   const { push } = useToast();
   const params = useParams();
   const id = String(params.id);
 
   const [showMap, setShowMap] = React.useState(false);
-  const [mapForm, setMapForm] = React.useState({ supplier_sku: '', supplier_description: '', product_id: '' });
+  const [mapForm, setMapForm] = React.useState({ supplier_sku: '', keyword: '', product_id: '' });
 
   const supplier = useQuery([id], () => suppliersService.get(id));
   const mappings = useQuery([id, 'mappings'], () => suppliersService.mappings(id));
@@ -70,19 +73,21 @@ export default function SupplierDetailPage() {
 
   const onCreateMapping = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite || !mapForm.product_id || createMap.loading) return;
     try {
       await createMap.mutate({
         supplier_sku: mapForm.supplier_sku || undefined,
-        supplier_description: mapForm.supplier_description || undefined,
-        product_id: mapForm.product_id || undefined,
+        keyword: mapForm.keyword || undefined,
+        product_id: mapForm.product_id,
       });
       push({ tone: 'success', title: t('adminNew.suppliers.toasts.mappingCreated') });
       setShowMap(false);
-      setMapForm({ supplier_sku: '', supplier_description: '', product_id: '' });
-      await mappings.refetch();
+      setMapForm({ supplier_sku: '', keyword: '', product_id: '' });
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
+      return;
     }
+    await mappings.refetch().catch(() => undefined);
   };
 
   return (
@@ -104,32 +109,36 @@ export default function SupplierDetailPage() {
         ]}
       />
       <AdminContent>
-        {supplier.error ? <ErrorState message={supplier.error} onRetry={() => void supplier.refetch()} /> : null}
-
-        <AdminSectionCard title={t('adminNew.suppliers.detailsTitle')} icon={Building2}>
-          <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
+        {supplier.loading ? (
+          <LoadingState variant="detail" />
+        ) : supplier.error ? (
+          <ErrorState message={supplier.error} onRetry={() => void supplier.refetch().catch(() => undefined)} />
+        ) : <AdminSectionCard title={t('adminNew.suppliers.detailsTitle')} icon={Building2}>
+          <div className="grid grid-cols-1 gap-3 break-words text-sm sm:grid-cols-2 md:grid-cols-3">
             <Field label={t('adminNew.suppliers.fields.email')} value={str(data, 'email')} />
             <Field label={t('adminNew.suppliers.fields.phone')} value={str(data, 'phone')} />
             <Field label={t('adminNew.suppliers.columns.vat')} value={str(data, 'vat_number')} />
             <Field label={t('adminNew.suppliers.fields.paymentTerms')} value={str(data, 'payment_terms_days')} />
             <Field label={t('adminNew.suppliers.fields.ledgerAccount')} value={str(data, 'default_purchase_ledger', 'default_ledger_account', 'ledger_account')} />
           </div>
-        </AdminSectionCard>
+        </AdminSectionCard>}
 
         <AdminSectionCard
           title={t('adminNew.suppliers.mappingsTitle')}
           description={t('adminNew.suppliers.mappingsSubtitle')}
           icon={Link2}
           className="mt-5"
-          action={
+          action={canWrite && supplier.data ? (
             <Button size="sm" variant="outline" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={() => setShowMap(true)}>
               {<TranslatedText textKey={'adminNew.suppliers.addMapping'} />}
             </Button>
-          }
+          ) : undefined}
         >
           <AdminTableCard>
             {mappings.loading ? (
               <LoadingState label={t('adminNew.common.loading')} variant="table" />
+            ) : mappings.error ? (
+              <ErrorState message={mappings.error} onRetry={() => void mappings.refetch().catch(() => undefined)} />
             ) : mapRows.length === 0 ? (
               <EmptyState title={t('adminNew.suppliers.mappingsEmptyTitle')} message={t('adminNew.suppliers.mappingsEmptyMessage')} />
             ) : (
@@ -145,7 +154,7 @@ export default function SupplierDetailPage() {
                   {mapRows.map((row, i) => (
                     <AdminTableRow key={str(row, 'id') || i}>
                       <AdminTableCell className="font-medium text-navy-900">{str(row, 'supplier_sku') || '—'}</AdminTableCell>
-                      <AdminTableCell className="text-sm text-navy-600">{str(row, 'supplier_description') || '—'}</AdminTableCell>
+                      <AdminTableCell className="text-sm text-navy-600">{str(row, 'keyword', 'supplier_description') || '—'}</AdminTableCell>
                       <AdminTableCell className="text-sm">
                         {str(row, 'product_name') || str((row.product as Rec) ?? {}, 'name') || str(row, 'product_id') || '—'}
                       </AdminTableCell>
@@ -158,15 +167,15 @@ export default function SupplierDetailPage() {
         </AdminSectionCard>
       </AdminContent>
 
-      <Modal open={showMap} onClose={() => setShowMap(false)} size="md">
+      <Modal open={canWrite && showMap} onClose={() => setShowMap(false)} size="md">
         <form onSubmit={onCreateMapping}>
           <AdminModalHeader title={t('adminNew.suppliers.addMapping')} subtitle={t('adminNew.suppliers.mappingsSubtitle')} />
           <AdminModalBody>
-            <Input label={t('adminNew.suppliers.mapColumns.sku')} value={mapForm.supplier_sku} onChange={(e) => setMapForm({ ...mapForm, supplier_sku: e.target.value })} />
-            <Input label={t('adminNew.suppliers.mapColumns.description')} value={mapForm.supplier_description} onChange={(e) => setMapForm({ ...mapForm, supplier_description: e.target.value })} />
+            <Input label={t('adminNew.suppliers.mapColumns.sku')} maxLength={100} value={mapForm.supplier_sku} onChange={(e) => setMapForm({ ...mapForm, supplier_sku: e.target.value })} />
+            <Input label={t('adminNew.suppliers.mapColumns.description')} maxLength={255} value={mapForm.keyword} onChange={(e) => setMapForm({ ...mapForm, keyword: e.target.value })} />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-navy-800">{<TranslatedText textKey={'adminNew.suppliers.mapColumns.product'} />}</label>
-              <SearchSelect className="input-base w-full" value={mapForm.product_id} onChange={(e) => setMapForm({ ...mapForm, product_id: e.target.value })} required>
+              <SearchSelect aria-label={t('adminNew.suppliers.mapColumns.product')} className="input-base w-full" value={mapForm.product_id} onChange={(e) => setMapForm({ ...mapForm, product_id: e.target.value })} required>
                 <option value="">{t('adminNew.suppliers.selectProduct')}</option>
                 {productOptions.map((p, i) => (
                   <option key={str(p, 'id') || i} value={str(p, 'id')}>{str(p, 'name')}</option>

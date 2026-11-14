@@ -5,6 +5,7 @@ export type YardDailyJob = {
   actual?: YardPoint | null; planned?: YardPoint | null; assigned_to?: string | null;
   due_at?: string | null; duration_minutes?: number | null; priority: string;
   equipment?: string | null; instructions?: string | null; status: string;
+  service_board?: boolean;
 };
 export type YardPlan = { date: string; timezone: string; generated_at: string; next_task_id?: string | null; jobs: YardDailyJob[] };
 
@@ -23,6 +24,8 @@ export function yardJobPath(locale: string, job: YardDailyJob): string {
   const base = `/${locale}/admin`;
   if (job.type === 'appointment') return `${base}/afspraken?appointment_id=${encodeURIComponent(job.id)}`;
   if (job.type === 'work_order') return `${base}/werkorders/${encodeURIComponent(job.id)}`;
-  if (job.type === 'boat') return `${base}/taken?task_id=${encodeURIComponent(job.id)}`;
+  if (job.type === 'boat') return job.service_board
+    ? `${base}/stalling/werfcanvas?task_id=${encodeURIComponent(job.id)}#dienstenbord`
+    : `${base}/taken?task_id=${encodeURIComponent(job.id)}`;
   return `${base}/stalling/werfcanvas?task_id=${encodeURIComponent(job.id)}#verplaatsingen`;
 }

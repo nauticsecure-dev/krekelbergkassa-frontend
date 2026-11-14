@@ -4,6 +4,8 @@ import { TranslatedText } from '@/components/cms/TranslatedText';
 import { useEffect, useRef, useState } from 'react';
 import { api, type ApiError } from '@/lib/api';
 import { control } from './YardHistory';
+import { YardPhotoMatch, type PhotoPlacement } from './YardPhotoMatch';
+import { YardPhotoTiles, type YardTileMetadata } from './YardPhotoTiles';
 
 type Point = [number, number];
 type Status = 'pending' | 'approved' | 'rejected';
@@ -13,6 +15,24 @@ export type YardAnalysis = { image_id: string; mode: 'ai' | 'manual'; revision: 
 const colors: Record<Status, string> = { pending: '#fbbf24', approved: '#4ade80', rejected: '#f87171' };
 const labels: Record<Status, string> = { pending: 'Ter review', approved: 'Goedgekeurd', rejected: 'Afgewezen' };
 const stages = ['Uploaden', 'Orthofoto kiezen', 'Detecteren', 'Controleren', 'Lege werf', 'Publiceren'];
+
+type RenderJob = { id?: string | null; metadata?: YardTileMetadata; processing?: { id: string; state: string; error?: string } };
+
+async function renderOutput(path: string, action: string, body: object, signal: AbortSignal, onQueued: (id: string) => void) {
+  let result = await api<RenderJob>(path + action, { method: 'POST', body });
+  const job = result.processing?.id;
+  if (job && !signal.aborted) onQueued(job);
+  while (job && !result.id && !signal.aborted) {
+    if (['failed', 'cancelled'].includes(result.processing?.state ?? '')) {
+      throw new Error(result.processing?.error ?? 'De verwerking is geannuleerd.');
+    }
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    if (signal.aborted) break;
+    result = await api<RenderJob>(path + '/jobs/' + job);
+  }
+  if (!result.id) throw new Error('Het resultaat is nog niet beschikbaar.');
+  return { id: result.id, metadata: result.metadata };
+}
 
 function useObjectUrl(blob: Blob | undefined) {
   const [url, setUrl] = useState('');
@@ -46,10 +66,13 @@ function drawCutout(canvas: HTMLCanvasElement, image: HTMLImageElement, points: 
   context.drawImage(image, -left, -top);
 }
 
-export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deleting = false }: {
+export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], onPublish, onPlacement, onRemove, deleting = false }: {
   path: string;
   analysis: YardAnalysis;
+  images?: { id: string; filename: string }[];
+  outputs?: { id: string; category?: string; metadata?: { revision?: number; source_image_id?: string; detection_id?: string } }[];
   onPublish?: (file: File, outputId: string) => void;
+  onPlacement?: (boat: string, proposal: PhotoPlacement) => Promise<void>;
   onRemove?: () => void;
   deleting?: boolean;
 }) {
@@ -57,18 +80,24 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
   const [selected, setSelected] = useState(0);
   const [drawing, setDrawing] = useState<{ index: number; points: Point[] }>();
   const [source, setSource] = useState<Blob>();
-  const [output, setOutput] = useState<{ blob: Blob; id: string }>();
-  const empty = output?.blob;
+  const [output, setOutput] = useState<{ blob?: Blob; id: string; metadata?: YardTileMetadata }>();
   const [view, setView] = useState<'source' | 'review' | 'empty'>('review');
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [renderJob, setRenderJob] = useState('');
   const [error, setError] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [ground, setGround] = useState('');
+  const [groundConfirmed, setGroundConfirmed] = useState(false);
+  const [cutouts, setCutouts] = useState<Record<string, string>>({});
   const photo = useRef<HTMLImageElement>(null);
+  const viewport = useRef<HTMLDivElement>(null);
   const cutout = useRef<HTMLCanvasElement>(null);
+  const renderRequest = useRef<AbortController>();
+  useEffect(() => () => renderRequest.current?.abort(), []);
   const photoUrl = useObjectUrl(source);
-  const emptyUrl = useObjectUrl(empty);
+  const emptyUrl = useObjectUrl(output?.blob);
   const detection = review.detections[selected];
 
   useEffect(() => {
@@ -91,6 +120,7 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
     setReview({ ...review, detections });
     setDirty(true);
     setOutput(undefined);
+    setView('review');
   }
 
   async function submit(generate: boolean) {
@@ -107,16 +137,19 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
         setDirty(false);
       }
       if (generate) {
-        const result = await api<{ id: string }>(path + '/empty-yard', {
-          method: 'POST', body: { revision: saved.revision, persist: true }, timeoutMs: 60000,
-        });
-        const blob = await api<Blob>(path + '/outputs/' + result.id);
-        setOutput({ blob, id: result.id });
+        const request = new AbortController();
+        renderRequest.current = request;
+        const result = await renderOutput(path, '/empty-yard', { revision: saved.revision, persist: true,
+          ...(ground ? { ground_image_id: ground, ground_confirmed: groundConfirmed } : {}),
+        }, request.signal, setRenderJob);
+        const blob = result.metadata?.tile_size ? undefined : await api<Blob>(path + '/outputs/' + result.id);
+        setOutput({ ...result, blob });
         setView('empty');
       }
     } catch (reason) {
       setError((reason as ApiError).message || 'De verwerking is mislukt.');
     } finally {
+      setRenderJob('');
       setBusy(false);
     }
   }
@@ -126,8 +159,8 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
 
   return <section className="space-y-3">
     <ol aria-label="Verwerkingsstappen" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-      {stages.map((stage, index) => <li key={stage} aria-current={index === (empty ? 4 : 3) ? 'step' : undefined}
-        className={'rounded-full border border-slate-700 px-3 py-2 text-sm ' + (index === (empty ? 4 : 3) ? 'bg-blue-700' : 'bg-slate-900')}>
+      {stages.map((stage, index) => <li key={stage} aria-current={index === (output ? 4 : 3) ? 'step' : undefined}
+        className={'rounded-full border border-slate-700 px-3 py-2 text-sm ' + (index === (output ? 4 : 3) ? 'bg-blue-700' : 'bg-slate-900')}>
         <span className={index < 3 ? 'text-green-300' : 'text-slate-200'}>{index + 1}</span> {index === 2 && analysis.mode === 'manual' ? 'Handmatig' : stage}
       </li>)}
     </ol>
@@ -137,12 +170,13 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
         {onRemove && <div className="flex justify-end">
           <button type="button" className={`${control} !text-red-300`} disabled={busy || deleting} onClick={onRemove}><TranslatedText textKey="siteCopy.cf2ac9766c096588" fallbackText={"Foto verwijderen"} /></button>
         </div>}
-        <div className="max-h-[65vh] overflow-auto rounded-lg border border-slate-700 bg-slate-950">
+        <div ref={viewport} className="max-h-[65vh] overflow-auto rounded-lg border border-slate-700 bg-slate-950">
           <div className="relative" style={{ width: zoom * 100 + '%' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {photoUrl && <img ref={photo} onLoad={() => setLoaded(true)} alt="Orthofoto van de werf" src={photoUrl} className="block w-full" />}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {view === 'empty' && emptyUrl && <img alt="Gegenereerde lege werf" src={emptyUrl} className="absolute inset-0 size-full" />}
+            {view === 'empty' && output?.metadata?.tile_size && <YardPhotoTiles key={output.id} path={path + '/outputs/' + output.id} metadata={output.metadata} viewport={viewport} />}
             {view === 'review' && loaded && <svg className={'absolute inset-0 size-full ' + (drawing ? 'cursor-crosshair' : '')}
               viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-label="Bootmaskers op de orthofoto"
               onClick={(event) => {
@@ -165,7 +199,7 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
         </div>
         <div className="flex flex-wrap gap-2">
           {([['source', 'Origineel (orthofoto)'], ['review', 'Bootmaskers'], ['empty', 'Lege werf']] as const).map(([mode, label]) =>
-            <button key={mode} className={control} disabled={(mode === 'empty' && !empty) || !!drawing}
+            <button key={mode} className={control} disabled={(mode === 'empty' && !output) || !!drawing}
               aria-pressed={view === mode} onClick={() => setView(mode)}>{label}</button>)}
           <button className={control} aria-label="Uitzoomen" disabled={zoom <= 1} onClick={() => setZoom(zoom - 0.5)}>−</button>
           <button className={control} aria-label="Inzoomen" disabled={zoom >= 3} onClick={() => setZoom(zoom + 0.5)}>+</button>
@@ -188,20 +222,38 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
                 setView('review');
                 setDrawing({ index: selected, points: [] });
               }}><TranslatedText textKey="siteCopy.8cc4f65db9269747" fallbackText={"Bewerken"} /></button>
+              <label className="flex w-full items-center gap-2 text-sm">Boegrotatie (°)
+                <input className={control + ' w-24'} type="number" min={0} max={360} disabled={busy || !!drawing}
+                  value={detection.orientation ?? 0} onChange={event => {
+                    const value = Number(event.target.value);
+                    if (Number.isFinite(value) && value >= 0 && value <= 360) change(selected, { ...detection, orientation: value });
+                  }} />
+              </label>
               <button className={control + ' text-red-300'} disabled={busy || !!drawing}
                 onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey="siteCopy.5ce3c1a4a26afdba" fallbackText={"Afwijzen"} /></button>
               <button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {
                 setBusy(true); setError('');
                 try {
-                  const file = await api<{ id: string }>(path + '/cutouts/' + detection.id, { method: 'POST', body: { revision: review.revision }, timeoutMs: 60000 });
-                  const blob = await api<Blob>(path + '/outputs/' + file.id);
+                  const request = new AbortController();
+                  renderRequest.current = request;
+                  const { id } = await renderOutput(path, '/cutouts/' + detection.id, { revision: review.revision }, request.signal, setRenderJob);
+                  if (request.signal.aborted) return;
+                  setCutouts(current => ({ ...current, [review.revision + ':' + detection.id]: id }));
+                  const blob = await api<Blob>(path + '/outputs/' + id);
                   const url = URL.createObjectURL(blob);
                   const link = document.createElement('a'); link.href = url; link.download = 'boot-' + detection.id + '.png'; link.click();
                   setTimeout(() => URL.revokeObjectURL(url), 1000);
                 } catch (reason) { setError((reason as ApiError).message || 'De uitsnede kon niet worden gemaakt.'); }
-                finally { setBusy(false); }
+                finally { setRenderJob(''); setBusy(false); }
               }}><TranslatedText textKey="siteCopy.851844454ee82b41" fallbackText={"PNG downloaden"} /></button>
             </div>
+            {!dirty && !busy && detection.status === 'approved' && <YardPhotoMatch
+              key={review.revision + ':' + detection.id} path={path} revision={review.revision} detection={detection.id}
+              onPlacement={onPlacement}
+              duplicates={review.detections.map((item, index) => ({ ...item, index })).filter(item => item.status === 'approved' && item.id !== detection.id)}
+              cutout={cutouts[review.revision + ':' + detection.id] ?? outputs.find(file => file.category === 'cutout'
+                && file.metadata?.revision === review.revision && file.metadata.source_image_id === review.image_id
+                && file.metadata.detection_id === detection.id)?.id} />}
           </>}
           {drawing ? <>
             <p className="text-sm"><TranslatedText textKey="siteCopy.765fedf0af2c3147" fallbackText={"Klik rondom de boot om het masker te tekenen."} /></p>
@@ -226,13 +278,36 @@ export function YardPhotoWorkflow({ path, analysis, onPublish, onRemove, deletin
             <span style={{ color: colors[status] }}>{labels[status]}</span><span>{counts[status]}</span>
           </div>)}
           <button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey="siteCopy.13e5170f2b105372" fallbackText={"Review opslaan"} /></button>
+          {images.some(image => image.id !== analysis.image_id) && <label className="block text-sm">Bronfoto met vrije grond
+            <select className={control + ' block w-full'} value={ground} disabled={busy} onChange={event => { setGround(event.target.value); setGroundConfirmed(false); }}>
+              <option value="">Gebruik beeldreconstructie</option>
+              {images.filter(image => image.id !== analysis.image_id).map(image => <option key={image.id} value={image.id}>{image.filename}</option>)}
+            </select>
+          </label>}
+          {ground && <label className="block text-sm"><input type="checkbox" checked={groundConfirmed}
+            onChange={event => setGroundConfirmed(event.target.checked)} /> De grond onder de maskers is vrij op deze bronfoto</label>}
           <button className="w-full rounded-lg bg-blue-700 px-3 py-2 font-semibold disabled:opacity-50"
-            disabled={busy || !!drawing || !!counts.pending} onClick={() => void submit(true)}><TranslatedText textKey="siteCopy.3b185da8cd0488a3" fallbackText={"Lege werf genereren"} /></button>
+            disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey="siteCopy.3b185da8cd0488a3" fallbackText={"Lege werf genereren"} /></button>
           {busy && <p role="status" className="text-sm"><TranslatedText textKey="siteCopy.550306513d82dae7" fallbackText={"Bezig met verwerken…"} /></p>}
-          {empty && emptyUrl && <div className="flex flex-wrap gap-2">
-            <a className={control} href={emptyUrl} download="lege-werf.webp"><TranslatedText textKey="siteCopy.a5e6a98720928496" fallbackText={"Lege werf downloaden"} /></a>
-            {onPublish && output && <button className={control} disabled={busy || !!drawing} onClick={() =>
-              onPublish(new File([output.blob], 'lege-werf.webp', { type: output.blob.type }), output.id)}><TranslatedText textKey="siteCopy.67ccd1f00c1a89c1" fallbackText={"Naar uitlijning en publicatie"} /></button>}
+          {renderJob && <button type="button" className={control} onClick={async () => {
+            try { await api(path + '/cancel-processing', { method: 'POST', body: { job_id: renderJob } }); }
+            catch (reason) { setError((reason as Error).message); }
+          }}>Verwerking annuleren</button>}
+          {output && <div className="flex flex-wrap gap-2">
+            {[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {
+              setBusy(true); setError('');
+              try {
+                const blob = output.blob ?? await api<Blob>(path + '/outputs/' + output.id);
+                if (publish && onPublish) onPublish(new File([blob], 'lege-werf.webp', { type: blob.type }), output.id);
+                else {
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement('a'); link.href = url; link.download = 'lege-werf.webp'; link.click();
+                  setTimeout(() => URL.revokeObjectURL(url), 1000);
+                }
+              } catch (reason) { setError((reason as Error).message); }
+              finally { setBusy(false); }
+            }}>{publish ? <TranslatedText textKey="siteCopy.67ccd1f00c1a89c1" fallbackText={"Naar uitlijning en publicatie"} />
+              : <TranslatedText textKey="siteCopy.a5e6a98720928496" fallbackText={"Lege werf downloaden"} />}</button>)}
           </div>}
         </div>
       </aside>

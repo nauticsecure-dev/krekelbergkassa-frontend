@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { scanSource } from './audit-cms-coverage.mjs';
+import { audit, scanSource } from './audit-cms-coverage.mjs';
 import { buildRegistry } from './build-cms-registry.mjs';
 import { fileURLToPath } from 'node:url';
 
@@ -25,8 +25,11 @@ test('dynamic record values require source review and changes invalidate fingerp
 test('registry authorizes exact real fields and generated legal/service fields, never arbitrary wildcard keys', () => {
   const registry = buildRegistry(fileURLToPath(new URL('../', import.meta.url)));
   for (const key of ['home.hero.title', 'home.hero.cta_primary.link', 'home.werf.cert_sub', 'over-ons.hiswa.desc',
-    'privacy.section.0.body.0', 'diensten/winterstalling.feature.0.title', 'i18n.email.greeting']) assert.ok(registry.content_keys.includes(key), key);
-  for (const key of ['arbitrary.unregistered', 'home.unregistered_random_field', 'i18n.unregistered_random_field']) assert.ok(!registry.content_keys.includes(key), key);
+    'privacy.section.0.body.0', 'diensten/winterstalling.feature.0.title', 'i18n.email.greeting',
+    'diensten.faq.faq5.a', 'over-ons.stat.years.value', 'over-ons.value.safe.desc', 'over-ons.timeline.start.year',
+    'over-ons.team.3.role', 'verkoop.stat.3.label', 'verkoop.step4.desc']) assert.ok(registry.content_keys.includes(key), key);
+  for (const key of ['arbitrary.unregistered', 'home.unregistered_random_field', 'i18n.unregistered_random_field',
+    'over-ons.team.400.name', 'verkoop.step400.desc']) assert.ok(!registry.content_keys.includes(key), key);
 });
 
 test('specialized dialogs remain visible in the denominator and cannot masquerade as main text editors', () => {
@@ -34,4 +37,12 @@ test('specialized dialogs remain visible in the denominator and cannot masquerad
   assert.equal(result.fields.length, 8);
   assert.ok(result.fields.every(field => field.editor));
   assert.equal(result.fields.filter(field => field.source === 'media_block').length, 2);
+});
+
+test('repeaters expand to the exact registered page keys', () => {
+  const fields = audit(fileURLToPath(new URL('../', import.meta.url))).required_fields.filter(field => field.locale === 'nl');
+  assert.equal(fields.filter(field => field.key === 'verkoop.stat.1.label').length, 1);
+  assert.equal(fields.filter(field => field.key === 'verkoop.step4.desc').length, 1);
+  assert.equal(fields.filter(field => field.key === 'diensten.faq.faq1.a').length, 1);
+  assert.ok(fields.some(field => field.key === 'diensten/winterstalling.faq.0.a'));
 });

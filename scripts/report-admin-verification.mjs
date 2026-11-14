@@ -71,6 +71,12 @@ for (const locale of ['nl','en','de','fr']) mark('/admin/audit', locale+': audit
  row.error='pass: 503 surfaced, retry recovers populated audit list';
  row.modals='partial: technical detail expansion and nine localized labels';
 });
+mark('/admin/leveranciers/[id]', 'supplier mapping loading and retry recover from a failed request', row => {
+ row.loading = 'partial: held mapping request displays loading label';
+ row.error = 'partial: mapping 503, repeated failure and retry recovery verified';
+ row.empty = 'partial: retry shows the empty mapping state';
+ row.locales.fr = 'partial: mapping loading, error, retry and empty state';
+});
 for (const route of ['kassa','kalender','audit']) mark(`/admin/${route}`,`${route}: empty page renders without overflow or JavaScript errors`,row=>{row.responsive='partial: empty fixture 390/1440';row.empty='pass: empty fixture renders';});
 mark('/admin/kassa','populated kassa POS, analytics charts and address grids stay inside the viewport',row=>{row.responsive='pass: populated POS/analytics/address grids 390/1280/1536';row.detail='partial: analytics + cart + customer address grids';});
 mark('/admin/kassa/dagafsluiting','AdminSplitLayout start sidebar (cash close) holds populated history at lg and xl',row=>{row.responsive='pass: populated split-start 390/1280/1536';row.crud.read='partial: populated cash closure history fixture';});
@@ -196,25 +202,74 @@ const coverageGates=fs.existsSync(directory+'/coverage-gates.json')?JSON.parse(f
 Object.assign(verificationGates,coverageGates);
 const liveManifest = fs.existsSync(directory+'/live-latest.json') ? JSON.parse(fs.readFileSync(directory+'/live-latest.json','utf8')) : null;
 const persistence = { status:'pending', scope:'Production/deployed environment remains unverified; intercepted HTTP tests cannot establish persistence.' };
+const liveRoutes = new Map([
+ ['customer creation persists and the generated readable link opens the created record', '/admin/klanten'],
+ ['supplier mapping enforces write permission and persists SKU and keyword after reload', '/admin/leveranciers/[id]/[slug]'],
+]);
+let mappingEvidence;
 if (liveManifest?.status === 'passed' && liveManifest.mockedApplicationHttp === false && fs.existsSync(liveManifest.report)) {
  const report=JSON.parse(fs.readFileSync(liveManifest.report,'utf8'));
  const observations=[];
  function findLive(suite) {
   for(const spec of suite.specs??[]) for(const test of spec.tests??[]) {
    const result=test.results.at(-1);
-   if(spec.title==='customer creation persists and the generated readable link opens the created record' && result?.status==='passed' && result.attachments?.some(item=>item.name==='database-persistence')) observations.push({title:spec.title,attachments:result.attachments});
+   const route = liveRoutes.get(spec.title);
+   if (route && result?.status === 'passed' && result.attachments?.some(item => item.name === 'database-persistence')) {
+    observations.push({ route, title: spec.title, attachments: result.attachments });
+   }
   }
   for(const child of suite.suites??[]) findLive(child);
  }
  for(const suite of report.suites??[]) findLive(suite);
  if(observations.length) {
   Object.assign(persistence,{status:'passed: isolated local deployment only',report:liveManifest.report,database:liveManifest.database,observations});
-  page('/admin/klanten').persistence=persistence;
+  for (const observation of observations) {
+   const row = page(observation.route);
+   const evidence = { ...observation, status:'passed', report:liveManifest.report };
+   row.persistence = { status:persistence.status, report:liveManifest.report, database:liveManifest.database, observations:[observation] };
+   row.evidence.push(evidence);
+   if (observation.route === '/admin/leveranciers/[id]/[slug]') {
+    mappingEvidence = evidence;
+    row.crud.create = 'partial: product mapping persisted after browser reload and direct database readback';
+    row.crud.read = 'partial: supplier detail and saved product mapping verified';
+    row.detail = 'partial: populated supplier detail and product mapping';
+    row.empty = 'partial: empty mapping table verified';
+    row.validation = 'partial: required product message and retained SKU in all four locales';
+    row.modals = 'partial: localized mapping dialog, required product, successful submit and close';
+    row.permissions.ui = 'partial: product mapping create control hidden for reader and visible for writer';
+    row.permissions.backend = 'partial: reader POST returns 403, writer POST returns 201';
+    row.responsive = 'partial: populated mapping table at 390/1280/1536 with both desktop sidebar states; modal at 390';
+    for (const locale of Object.keys(row.locales)) row.locales[locale] = 'partial: mapping empty state, dialog title and required product validation';
+   }
+  }
  }
 }
 const actions=actionInventory(matrix.pages);
+const supplierMappingSource = 'src/app/[locale]/admin/leveranciers/[id]/page.tsx';
+for (const action of actions) {
+ if (action.source.file.replaceAll('\\', '/') !== supplierMappingSource) continue;
+ if (action.source.text.includes('onClick={() => setShowMap(true)}')) action.classification = 'open product mapping dialog';
+ else if (action.source.text.includes('onSubmit={onCreateMapping}')) action.classification = 'create product mapping';
+ else continue;
+ action.permission = 'products.write';
+ if (mappingEvidence) {
+  action.uiVisibility = 'pass: reader cannot open the dialog; writer can';
+  if (action.classification === 'create product mapping') {
+   action.directApiDenial = 'pass: read-only POST returned 403';
+   action.authorizedExecution = 'pass: authorized POST returned 201 and survived reload';
+  } else {
+   action.directApiDenial = 'n/a: opening the dialog does not send a mutation request';
+   action.authorizedExecution = 'pass: writer opened the localized dialog';
+  }
+  action.evidence = mappingEvidence;
+ }
+}
 fs.writeFileSync(`${directory}/action-matrix.json`,JSON.stringify({boundary:'Source-discovered action candidates; classify navigation/filter/export/mutation before sign-off. No permission coverage is inferred from page-level passes.',actions},null,2)+'\n');
-const copyAudit=fs.existsSync(directory+'/i18n.json')?JSON.parse(fs.readFileSync(directory+'/i18n.json','utf8').replace(/^\uFEFF/,'')):null;
+const copyAuditJson = execFileSync(process.execPath, ['scripts/check-admin-i18n.mjs', '--json'], {
+ encoding:'utf8', maxBuffer:20*1024*1024, windowsHide:true,
+});
+const copyAudit = JSON.parse(copyAuditJson);
+fs.writeFileSync(`${directory}/i18n.json`, copyAuditJson);
 const result={retiredTests,copyReview:copyAudit?.reviewSummary,actions,persistence,generatedAt:new Date().toISOString(),boundary:'The admin audit browser suite intercepts HTTP; backend permission tests use SQLite in memory. Separate real-browser persistence evidence, when present below, uses an isolated local Laravel/Next deployment and file-backed SQLite. Browser smoke proves neither CRUD persistence nor complete localization. Pending is unverified. Source signal counts are not test passes.',environmentProblems,verificationGates,browserTests:[...tests.values()],backend,pages};
 fs.writeFileSync(`${directory}/verification.json`,JSON.stringify(result,null,2)+'\n');
 const short=verificationLabel;
@@ -234,6 +289,10 @@ let markdown=fs.readFileSync('ADMIN_VERIFICATION.md','utf8').replace(/Browser re
 markdown=markdown.replace('## Backend permission evidence',`## Verification gates\n\n${Object.entries(verificationGates).map(([name,gate])=>`- ${name}: **${gate.status}** ([log](${gate.evidence})).`).join('\n')}\n\n## Backend permission evidence`);
 markdown=markdown.replace('## Verification gates',`## Persistence evidence\n\n- **${persistence.status}**. ${persistence.scope} ${persistence.report ? 'Report: ['+path.basename(persistence.report)+'](<'+path.relative(process.cwd(),persistence.report).replaceAll('\\','/')+'>)' : 'Run: node scripts/test-global-ux-live.mjs'}\n\n## Verification gates`);
 markdown=markdown.replace('## Verification gates','## Changes made\n\n- Follow extracted component imports and preserve file/line source evidence for every route.\n- Gate customer list mutations, handlers and create deep links with `customers.write`, alongside direct API denial tests.\n- Use native `[id]/[slug]` pages instead of the redundant middleware self-proxy; all five aliases are rechecked. Authentication and no-cache handling remain in place.\n- Hide the closed mobile drawer from keyboard navigation, contain focus, support Escape and restore focus; translate sidebar controls.\n- Translate 88 French shell/dashboard strings and assert real French copy in the browser. Check bounded dynamic settings keys and collect hardcoded/English-identical copy for review.\n- Standardize the document split layout and shrinkable chart tracks. Keep five header KPIs at `2xl`, documented in [layout patterns](ADMIN_LAYOUT_PATTERNS.md).\n\n## Verification gates');
+if (persistence.observations?.length) {
+ const routes = persistence.observations.map(({route}) => `\`${route}\``).join(', ');
+ markdown = markdown.replace('## Changes made', `Verified persistence on ${routes}.\n\n## Changes made`);
+}
 markdown+='\n## Browser screenshots\n\nOnly screenshots from passing scenarios are listed; failed-run traces remain in the JSON ledger.\n\n';
 for(const row of pages.filter(row=>row.screenshots.length)) markdown+=`- \`${row.route}\`: ${row.screenshots.map((file,index)=>`[${path.basename(file)}](${file.includes(' ') ? '<'+file+'>' : file})`).join(', ')}\n`;
 markdown+='\n## Copy review decisions\n\nExact candidate decisions and reasons: `scripts/admin-copy-decisions.json`. Current classifications: '+JSON.stringify(copyAudit?.reviewSummary??{})+'. Fixed candidates no longer appear in the current queue; historical translate decisions remain recorded. Run `node scripts/check-admin-i18n.mjs --strict-copy` to fail on untranslated or unreviewed candidates.\n';

@@ -18,6 +18,7 @@
     "test:e2e": "playwright test",
     "test:contracts": "playwright test --config playwright.contracts.config.ts",
     "test:ui": "playwright test --config playwright.ui.config.ts",
+    "test:pos-browser": "node scripts/test-pos-browser.mjs",
     "test:i18n": "node --test scripts/admin-i18n-audit.test.mjs",
     "check:admin-i18n:strict": "node scripts/check-admin-i18n.mjs --strict-dynamic",
     "check:types": "tsc --project tsconfig.check.json",

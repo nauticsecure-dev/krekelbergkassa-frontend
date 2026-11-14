@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import ts from 'typescript';
 import { fileURLToPath } from 'node:url';
+import { buildRegistry } from './build-cms-registry.mjs';
 
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 const slash = value => value.replaceAll('\\', '/');
@@ -25,6 +26,16 @@ function flatten(value, prefix = '', result = {}) {
 export function scanSource(file, source) {
   const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const fields = [], references = [], findings = [], catalog = [];
+  function literalAlternatives(node) {
+    if (!node) return [];
+    if (ts.isStringLiteralLike(node)) return [node.text];
+    if (ts.isParenthesizedExpression(node)) return literalAlternatives(node.expression);
+    if (ts.isConditionalExpression(node)) {
+      const left = literalAlternatives(node.whenTrue), right = literalAlternatives(node.whenFalse);
+      if (left.length && right.length) return [...new Set([...left, ...right])];
+    }
+    return [];
+  }
   function entry(node, kind, extra = {}) {
     const line = tree.getLineAndCharacterOfPosition(node.getStart(tree)).line + 1;
     const fingerprint = hash(`${slash(file)}\0${node.getText(tree)}`);
@@ -75,9 +86,12 @@ export function scanSource(file, source) {
         const expression = keyAttribute?.initializer && ts.isJsxExpression(keyAttribute.initializer) ? keyAttribute.initializer.expression : null;
         const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const keyPattern = expression && ts.isTemplateExpression(expression) ? '^' + (keyAttribute.name.getText(tree) === 'textKey' ? 'i18n\\.' : '')
-          + escape(expression.head.text) + expression.templateSpans.map(span => '[a-zA-Z0-9_/-]+' + escape(span.literal.text)).join('') + '$' : null;
+          + escape(expression.head.text) + expression.templateSpans.map(span => '[a-zA-Z0-9_./-]+' + escape(span.literal.text)).join('') + '$' : null;
         const catalogOnly = node.attributes.properties.some(attr => ts.isJsxAttribute(attr) && attr.name.getText(tree) === 'inline' && attr.initializer?.getText(tree) === '{false}');
-        (catalogOnly ? catalog : fields).push(entry(node, catalogOnly ? 'catalog_binding' : 'binding', { key, key_pattern: keyPattern, expression: key ? null : node.getText(tree),
+        const alternatives = key ? [key] : literalAlternatives(expression).map(value => name === 'TranslatedText' ? 'i18n.' + value : value);
+        for (const candidate of alternatives.length ? alternatives : [null]) (catalogOnly ? catalog : fields).push(entry(node, catalogOnly ? 'catalog_binding' : 'binding', {
+          key: candidate, key_pattern: keyPattern, expression: candidate ? null : node.getText(tree),
+          ...(alternatives.length > 1 ? { fingerprint: hash(`${slash(file)}\0${node.getText(tree)}\0${candidate}`) } : {}),
           source: name === 'CompanyText' ? 'company_settings' : name === 'TranslatedText' ? 'i18n' : 'content_block',
           status: 'UNTESTED', reason: 'Requires real staging edit/database/reload/audit/restore evidence.' }));
         if (attributes.textKey) references.push({ key: attributes.textKey, ...entry(node, 'translation') });
@@ -171,9 +185,21 @@ export function audit(root = process.cwd()) {
     status: /\[(?!locale\])/.test(route.route) ? 'BLOCKED' : 'UNTESTED',
     reason: /\[(?!locale\])/.test(route.route) ? 'Needs an authorized record fixture.' : 'Needs a browser scenario or a reviewed not-applicable exclusion.',
   })))));
+  const registered = buildRegistry(root).content_keys;
   const resolvedFields = fields.flatMap(field => {
+    if (field.file === 'src/components/site/LegalPage.tsx' && field.source === 'content_block') {
+      return registered.filter(key => /^(privacy|voorwaarden|cookies)\./.test(key) && !key.endsWith('.image'))
+        .map(key => ({ ...field, key, fingerprint: hash(`${field.fingerprint}\0${key}`) }));
+    }
+    if (field.file === 'src/components/site/ServicePricing.tsx' && field.source === 'content_block') {
+      return registered.filter(key => /^(?:diensten|diensten\/[^.]+)\.pricing\./.test(key))
+        .map(key => ({ ...field, key, fingerprint: hash(`${field.fingerprint}\0${key}`) }));
+    }
     if (field.key || !field.key_pattern) return [field];
-    const candidates = keys.flatMap(key => [key, `i18n.${key}`]).filter(key => new RegExp(field.key_pattern).test(key));
+    const pattern = new RegExp(field.key_pattern);
+    const candidates = registered.filter(key => (field.source === 'i18n') === key.startsWith('i18n.') && pattern.test(key)
+      && (field.file !== 'src/components/site/ServicePage.tsx' || key.startsWith('diensten/'))
+      && (!field.file.endsWith('/verkoop/page.tsx') || !field.key_pattern.startsWith('^[') || key.startsWith('verkoop.stat.')));
     return candidates.length ? candidates.map(key => ({ ...field, key, fingerprint: hash(`${field.fingerprint}\0${key}`) })) : [field];
   });
   const requiredFields = [...new Map(resolvedFields.map(field => [field.fingerprint, field])).values()].flatMap(field => locales.map(locale => ({

@@ -68,7 +68,8 @@
     ".next-cms-live-isolated-live-95amJQ/types/**/*.ts",
     ".next-cms-live-isolated-live-0i4p28/types/**/*.ts",
     ".next-cms-live-isolated-live-sH7Pcw/types/**/*.ts",
-    ".next-smart-services/types/**/*.ts"
+    ".next-smart-services/types/**/*.ts",
+    ".next-journey-tests-3107/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

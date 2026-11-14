@@ -6,7 +6,7 @@ import { TranslatedText } from '@/components/cms/TranslatedText';
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CalendarDays, Check, Droplets, Info, Ship, Warehouse } from 'lucide-react';
+import { Anchor, ArrowRight, CalendarDays, Check, ChevronDown, Drill, Info, Ship, Warehouse } from 'lucide-react';
 import { EditableText } from '@/components/cms/EditableText';
 import { useCms } from '@/components/cms/CmsProvider';
 import { useIntl } from '@/i18n/IntlProvider';
@@ -18,8 +18,8 @@ import { useQuery } from '@/lib/hooks/useAsync';
 import { portalService, serviceCatalogService, type BookingQuote, type ServiceCatalogService } from '@/lib/services';
 
 export const YARD_SERVICES = [
-  { code: 'kranen', product: 'KRANEN', icon: Ship },
-  { code: 'afspuiten', product: 'AFSPUITEN', icon: Droplets },
+  { code: 'kranen', product: 'KRANEN', icon: Anchor },
+  { code: 'afspuiten', product: 'AFSPUITEN', icon: Drill },
   { code: 'weekje-op-wal', product: 'WEEK-OP-WAL', icon: CalendarDays },
   { code: 'winterstalling', product: 'STALL-WINTER', icon: Warehouse },
 ] as const;
@@ -44,11 +44,18 @@ function tariffRange(rule: { range_from_cm: number; range_to_cm: number }) {
   return rule.range_from_cm + (rule.range_to_cm >= 99999 ? '+' : '–' + rule.range_to_cm);
 }
 
+function tariffRangeMetres(rule: { range_from_cm: number; range_to_cm: number }, locale: string) {
+  const format = new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 2 });
+  const from = format.format(rule.range_from_cm / 100);
+  return rule.range_to_cm >= 99999 ? from + '+' : `${from} – ${format.format(rule.range_to_cm / 100)}`;
+}
+
 export function ServicePricing({
-  services, loading, active, onActiveChange, single = false, cmsPage,
+  services, loading, catalogUnavailable = false, active, onActiveChange, single = false, cmsPage,
 }: {
   services: ServiceCatalogService[];
   loading: boolean;
+  catalogUnavailable?: boolean;
   active: YardService;
   onActiveChange?: (service: YardService) => void;
   single?: boolean;
@@ -62,8 +69,9 @@ export function ServicePricing({
   const customerId = isPortalSession && !isDemo ? user?.id : undefined;
   const boats = useQuery([customerId], async () => customerId ? { customerId, items: await portalService.boats() } : null);
   const ownedBoats = boats.data?.customerId === customerId ? boats.data?.items ?? [] : [];
-  const [length, setLength] = React.useState('');
-  const [lengthUnit, setLengthUnit] = React.useState<'cm' | 'm'>('cm');
+  const [length, setLength] = React.useState(() => single ? '' : new Intl.NumberFormat(intlLocale(locale), { minimumFractionDigits: 2 }).format(8.2));
+  const [lengthUnit, setLengthUnit] = React.useState<'cm' | 'm'>(single ? 'cm' : 'm');
+  const [lengthTouched, setLengthTouched] = React.useState(false);
   const [boatId, setBoatId] = React.useState('');
   const [direction, setDirection] = React.useState('out');
   const [operationCounts, setOperationCounts] = React.useState<Partial<Record<YardService, number>>>({});
@@ -89,7 +97,7 @@ export function ServicePricing({
   const catalog = (code: YardService) => currentServices.find((service) =>
     service.code === YARD_SERVICES.find((item) => item.code === code)?.product,
   );
-  const label = (code: YardService) => catalog(code)?.name ?? t('yardPricing.' + code);
+  const label = (code: YardService) => single ? catalog(code)?.name ?? t('yardPricing.' + code) : t('yardPricing.' + code);
   const enabled = (code: YardService) => !!catalog(code);
   const companion = (catalog(active)?.options?.optional_extras ?? catalog(active)?.options?.compatible_with ?? [])
     .map((code) => yardService(code)).find((code): code is YardService => !!code) ?? null;
@@ -101,6 +109,7 @@ export function ServicePricing({
   const displayWeight = selectedBoat?.weight_kg ?? weight;
   const text = displayLength.trim();
   const cm = lengthInCentimetres(text, lengthUnit);
+  const invalidLength = !cm && (!!text || lengthTouched);
   const craneOptions = catalog('kranen')?.options;
   const maxOperations = (code: YardService) => Math.min(10, catalog(code)?.options?.max_operations ?? 1);
   const directions = (craneOptions?.directions ?? []).filter((option) => option !== 'both' || maxOperations('kranen') >= 2);
@@ -116,6 +125,8 @@ export function ServicePricing({
   const key = cm > 0 && codes.every(enabled) && (!boatId || selectedBoat) ? JSON.stringify({ cm, codes, options, date: pricingDate || undefined, boatId: selectedBoat?.id, catalogTick, revisions: currentServices.map((s) => s.tariffs?.map((r) => [r.id, r.revision])) }) : '';
   const current = key && estimate?.key === key ? estimate : undefined;
   const quote = current?.quote;
+  const catalogLoading = pricingDate ? datedCatalog.loading || (!datedCatalog.error && datedCatalog.data?.date !== pricingDate) : loading;
+  const catalogFailed = pricingDate ? !!datedCatalog.error : catalogUnavailable;
   const priced = quote && quote.price_status !== 'on_request' && !quote.requires_manual_price && !quote.requires_on_request;
   const bookable = priced && quote.total_incl_vat > 0;
   const shownService = catalog(tab);
@@ -229,20 +240,22 @@ export function ServicePricing({
       setOpeningBooking(false);
     }
   };
-  const ctaClass = 'mt-auto flex items-center justify-center gap-2 rounded-lg bg-gold-500 px-3 py-3 text-center text-sm font-bold text-navy-950 hover:bg-gold-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-60';
+  const ctaClass = 'flex w-full items-center justify-center gap-2 rounded-lg bg-[#ad7320] px-3 py-3 text-center text-sm font-bold text-white hover:bg-gold-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-60';
   const pickedRule = quote?.services.find((line) => line.service_code === tab)?.rule_id;
   const quotedRule = catalog(active)?.tariffs?.find((rule) =>
     rule.id === quote?.services.find((line) => line.service_code === active)?.rule_id && cm >= rule.range_from_cm && cm <= rule.range_to_cm,
   );
+  const infoSection = { kranen: 'crane', afspuiten: 'wash', winterstalling: 'storage', 'weekje-op-wal': null }[tab];
+  const rangeLabel = quotedRule && (single ? tariffRange(quotedRule) + ' ' + t('yardPricing.unitCm') : tariffRangeMetres(quotedRule, locale) + ' ' + t('yardPricing.unit'));
   return (
     <>
-      <section id="prijsberekening" className={cn('scroll-mt-24', !single && 'container-wide relative z-10 sm:-mt-4')}>
-        <div className="grid gap-6 rounded-2xl border border-navy-100 bg-gradient-to-b from-white to-sand-50 p-5 shadow-elev sm:p-7 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-x-10">
+      <section id="prijsberekening" className={cn('scroll-mt-24', !single && 'container-wide relative z-10 sm:-mt-5 lg:px-[4.65%]')}>
+        <div className={cn('grid gap-6 rounded-[1.125rem] border border-white bg-gradient-to-b from-white to-[#faf8f5] p-5 shadow-[0_8px_28px_-14px_#50412b80,0_3px_7px_#50412b19] sm:px-6 sm:py-7', single ? 'lg:grid-cols-2' : 'lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1.18fr)_minmax(0,1fr)] lg:gap-7')}>
           <div>
-            <p className="mb-1 text-sm font-bold uppercase tracking-wider text-gold-800">{copy('eyebrow')}</p>
-            <h2 className="heading-display text-3xl sm:text-4xl">{copy('title')}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-navy-700">{copy('intro')}</p>
-            <ul className={cn('mt-4 flex-wrap gap-x-5 gap-y-2 text-sm text-navy-700 sm:flex', isCmsEditing ? 'flex' : 'hidden')}>
+            <p className="mb-1 text-sm font-bold uppercase tracking-wide text-gold-600">{copy('eyebrow')}</p>
+            <h2 className="heading-display text-4xl font-bold leading-none sm:text-[2.625rem]">{copy('title')}</h2>
+            <p className="mt-4 text-[.8125rem] leading-relaxed text-navy-700">{copy('intro')}</p>
+            <ul className="mt-5 grid gap-2.5 text-sm text-navy-700">
               {(['live', 'direct', 'request'] as const).map((item) => (
                 <li key={item} className="flex items-start gap-2">
                   <Check aria-hidden="true" className="h-5 w-5 shrink-0 text-gold-800" /> {copy(item)}
@@ -250,38 +263,17 @@ export function ServicePricing({
               ))}
             </ul>
           </div>
-          <div className="min-w-0 space-y-4 lg:col-start-1 lg:row-start-2">
+          <div className={cn('min-w-0 space-y-3', single && 'lg:col-start-1 lg:row-start-2')}>
             <fieldset>
               <legend className="mb-2 text-sm font-bold">{copy('select')}</legend>
-              <div className={cn('grid items-start gap-2', !single && 'sm:grid-cols-2')}>
+              <div className={cn('grid gap-2.5', !single && 'grid-cols-2')}>
                 {tabs.map(({ code, icon: Icon }) => (
-                  <article key={code} className="overflow-hidden rounded-xl border border-navy-200 bg-white">
-                  <button key={code} type="button" aria-pressed={codes.includes(code)} aria-expanded={codes.includes(code)} aria-controls={inputId + '-card-' + code}
+                  <button key={code} type="button" aria-pressed={codes.includes(code)} title={catalog(code)?.name}
                     disabled={single || !enabled(code)} onClick={() => selectService(code)}
-                    className={cn(tile, 'w-full justify-start border-0', codes.includes(code) ? 'border-gold-600 bg-gold-50 text-navy-950' : 'border-navy-200 bg-white hover:border-gold-600', !enabled(code) && 'opacity-60')}>
-                    <Icon aria-hidden="true" className="h-5 w-5" />{label(code)}
+                    className={cn(tile, 'min-h-[3.875rem] flex-col gap-1 rounded-[.625rem] px-1 py-2 text-xs sm:text-sm', codes.includes(code) ? 'border-gold-500 bg-[#f8f1df] text-navy-950' : 'border-navy-200 bg-white hover:border-gold-600', !enabled(code) && 'opacity-60')}>
+                    <Icon aria-hidden="true" className={cn('h-5 w-5 shrink-0', codes.includes(code) ? 'text-gold-600' : 'text-navy-600')} />
+                    {single ? label(code) : <TranslatedText textKey={'yardPricing.' + code} />}
                   </button>
-                  {codes.includes(code) && <div id={inputId + '-card-' + code} className="space-y-2 border-t p-3 text-sm">
-                    <p>{catalog(code)?.description}</p>
-                    {catalog(code) && <CanonicalServiceEditor service={catalog(code)!} />}
-                    {code === 'kranen' && directions.length > 0 && <label className="block"><TranslatedText textKey="smartServices.direction" />
-                      <select className="input-base mt-1 w-full" value={selectedDirection} onChange={(e) => setDirection(e.target.value)}>
-                        {directions.map((d) => <option key={d} value={d}>{t('smartServices.' + d)}</option>)}
-                      </select>
-                    </label>}
-                    {maxOperations(code) > 1 && <label className="block"><TranslatedText textKey="yardPricing.operations" />
-                      <select className="input-base mt-1 w-full" value={operationCount(code)} disabled={code === 'kranen' && selectedDirection === 'both'}
-                        onChange={(event) => setOperationCounts((counts) => ({ ...counts, [code]: Number(event.target.value) }))}>
-                        {Array.from({ length: maxOperations(code) }, (_, index) => <option key={index + 1}>{index + 1}</option>)}
-                      </select>
-                    </label>}
-                    {catalog(code)?.options?.period && <div className="grid grid-cols-2 gap-2">
-                      <label><TranslatedText textKey="smartServices.periodFrom" /><input className="input-base w-full" type="date" value={periodFrom} onChange={(e) => setPeriodFrom(e.target.value)} /></label>
-                      <label><TranslatedText textKey="smartServices.periodTo" /><input className="input-base w-full" type="date" min={periodFrom || undefined} value={periodTo} onChange={(e) => setPeriodTo(e.target.value)} /></label>
-                    </div>}
-                    {Object.entries(catalog(code)?.tariffs?.find((r) => cm >= r.range_from_cm && cm <= r.range_to_cm)?.included_quantities ?? {}).map(([included, count]) => <span key={included} className="mr-1 inline-block rounded bg-emerald-50 px-2 py-1 text-emerald-800">{count} × {included} · <TranslatedText textKey="yardPricing.included" /></span>)}
-                  </div>}
-                  </article>
                 ))}
               </div>
             </fieldset>
@@ -302,10 +294,14 @@ export function ServicePricing({
               </label>
             )}
             <div>
-              <label htmlFor={inputId} className="mb-2 block text-sm font-bold"><TranslatedText textKey={lengthUnit === 'm' ? 'yardPricing.lengthMetres' : 'yardPricing.lengthCm'} /></label>
+              <label htmlFor={inputId} className="mb-1.5 block text-sm font-bold">
+                <span aria-hidden="true">{copy('length')}</span>
+              </label>
               <div className="flex items-center rounded-lg border border-navy-200 bg-white focus-within:border-gold-600">
                 <input id={inputId} value={displayLength} inputMode={lengthUnit === 'm' ? 'decimal' : 'numeric'} placeholder={lengthUnit === 'm' ? '8,20' : '820'} readOnly={!!selectedBoat}
-                  aria-invalid={!!text && !cm} aria-describedby={text && !cm ? inputId + '-error' : undefined}
+                  aria-label={t(lengthUnit === 'm' ? 'yardPricing.lengthMetres' : 'yardPricing.lengthCm')}
+                  aria-invalid={invalidLength} aria-describedby={invalidLength ? inputId + '-error' : undefined}
+                  onBlur={() => setLengthTouched(true)}
                   onChange={(event) => {
                     setLength(event.target.value);
                   }}
@@ -317,40 +313,80 @@ export function ServicePricing({
                     setLength(cm ? unit === 'cm' ? String(cm) : String(cm / 100) : '');
                   }}>
                   <option value="cm"><TranslatedText textKey="siteCopy.77c8e93c6b38736a" fallbackText={"cm"} inline={false} /></option>
-                  <option value="m"><TranslatedText textKey="siteCopy.3c3ff96a108e7fd9" fallbackText={"m"} inline={false} /></option>
+                  <option value="m">{t('yardPricing.unit')}</option>
                 </select>
               </div>
-              {cm > 0 && <p className="mt-1 text-sm text-navy-700">{lengthUnit === 'm' ? '= ' + cm + ' cm' : <> = {new Intl.NumberFormat(intlLocale(locale), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cm / 100)} <TranslatedText textKey={'yardPricing.unit'} /></>}</p>}
-              {text && !cm && <p id={inputId + '-error'} className="mt-1 text-sm text-red-700"><TranslatedText textKey={lengthUnit === 'm' ? 'yardPricing.invalidMetres' : 'yardPricing.invalidLength'} /></p>}
+              {invalidLength && <p id={inputId + '-error'} className="mt-1 text-sm text-red-700"><TranslatedText textKey={lengthUnit === 'm' ? 'yardPricing.invalidMetres' : 'yardPricing.invalidLength'} /></p>}
             </div>
-            <label className="block text-sm font-semibold"><TranslatedText textKey="smartServices.pricingDate" /><input type="date" className="input-base mt-1 w-full" value={pricingDate} onChange={(e) => setPricingDate(e.target.value)} /></label>
-            <details className="text-sm"><summary className="cursor-pointer"><TranslatedText textKey="smartServices.dimensions" /></summary><div className="mt-2 grid grid-cols-2 gap-2">
-              <label><TranslatedText textKey="smartServices.width" /><input type="number" min="1" className="input-base w-full" value={displayWidth} readOnly={selectedBoat?.width_cm != null} onChange={(e) => setWidth(e.target.value)} /></label>
-              <label><TranslatedText textKey="smartServices.weight" /><input type="number" min="1" className="input-base w-full" value={displayWeight} readOnly={selectedBoat?.weight_kg != null} onChange={(e) => setWeight(e.target.value)} /></label>
-            </div></details>
+            {isCmsEditing && codes.map((code) => {
+              const service = catalog(code);
+              return service && <CanonicalServiceEditor key={code} service={service} />;
+            })}
+            <details className="group/options text-sm">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-semibold text-navy-600 marker:content-none">
+                <TranslatedText textKey="smartServices.options" />
+                <ChevronDown aria-hidden="true" className="h-4 w-4 group-open/options:rotate-180" />
+              </summary>
+              <div className="mt-3 space-y-3">
+                {codes.map((code) => (
+                  <div key={code} className="space-y-2">
+                    {code === 'kranen' && directions.length > 0 && <label className="block"><TranslatedText textKey="smartServices.direction" />
+                      <select className="input-base mt-1 w-full" value={selectedDirection} onChange={(event) => setDirection(event.target.value)}>
+                        {directions.map((option) => <option key={option} value={option}>{t('smartServices.' + option)}</option>)}
+                      </select>
+                    </label>}
+                    {maxOperations(code) > 1 && <label className="block"><TranslatedText textKey="yardPricing.operations" />
+                      <select className="input-base mt-1 w-full" value={operationCount(code)} disabled={code === 'kranen' && selectedDirection === 'both'}
+                        onChange={(event) => setOperationCounts((counts) => ({ ...counts, [code]: Number(event.target.value) }))}>
+                        {Array.from({ length: maxOperations(code) }, (_, index) => <option key={index + 1}>{index + 1}</option>)}
+                      </select>
+                    </label>}
+                    {catalog(code)?.options?.period && <div className="grid gap-2 min-[420px]:grid-cols-2">
+                      <label><TranslatedText textKey="smartServices.periodFrom" /><input className="input-base w-full" type="date" value={periodFrom} onChange={(event) => setPeriodFrom(event.target.value)} /></label>
+                      <label><TranslatedText textKey="smartServices.periodTo" /><input className="input-base w-full" type="date" min={periodFrom || undefined} value={periodTo} onChange={(event) => setPeriodTo(event.target.value)} /></label>
+                    </div>}
+                    {Object.entries(catalog(code)?.tariffs?.find((rule) => cm >= rule.range_from_cm && cm <= rule.range_to_cm)?.included_quantities ?? {}).map(([included, count]) => (
+                      <span key={included} className="mr-1 inline-block rounded bg-emerald-50 px-2 py-1 text-emerald-800">
+                        {count} × {included} · <TranslatedText textKey="yardPricing.included" />
+                      </span>
+                    ))}
+                  </div>
+                ))}
+                <label className="block"><TranslatedText textKey="smartServices.pricingDate" /><input type="date" className="input-base mt-1 w-full" value={pricingDate} onChange={(event) => setPricingDate(event.target.value)} /></label>
+                <details>
+                  <summary className="cursor-pointer"><TranslatedText textKey="smartServices.dimensions" /></summary>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <label className="min-w-0"><TranslatedText textKey="smartServices.width" /><input type="number" min="1" className="input-base w-full" value={displayWidth} readOnly={selectedBoat?.width_cm != null} onChange={(e) => setWidth(e.target.value)} /></label>
+                    <label className="min-w-0"><TranslatedText textKey="smartServices.weight" /><input type="number" min="1" className="input-base w-full" value={displayWeight} readOnly={selectedBoat?.weight_kg != null} onChange={(e) => setWeight(e.target.value)} /></label>
+                  </div>
+                </details>
+              </div>
+            </details>
           </div>
-          <div className="flex min-w-0 flex-col self-start rounded-xl bg-navy-950 p-5 text-white sm:p-6 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <div className={cn('min-w-0 self-start rounded-xl bg-[linear-gradient(150deg,#122d47,#091e34)] p-[1.125rem] text-white', single && 'lg:col-start-2 lg:row-span-2 lg:row-start-1')}>
             <h3 className="text-sm font-bold uppercase tracking-wider">{copy('estimate')}</h3>
             {catalogStatus.changed && <p role="status" className="mt-2 text-sm"><TranslatedText textKey="smartServices.updated" /></p>}
-            <div aria-live="polite" aria-atomic="true" className="mt-2">
-              <p className="heading-display break-words text-3xl text-white sm:text-4xl">
-                {priced ? currency(quote.total_incl_vat) : quote ? t('servicePage.onRequest') : cm && (loading || key && !current) ? '…' : '—'}
+            <div aria-live="polite" aria-atomic="true" className="mt-1.5">
+              <p className="heading-display break-words text-4xl font-bold leading-none text-white sm:text-5xl">
+                {priced ? currency(quote.total_incl_vat) : quote ? <TranslatedText textKey="yardPricing.priceOnRequest" /> : cm && (catalogLoading || key && !current) ? '…' : '—'}
               </p>
               <p className="mt-2 text-sm text-sand-100">
                 {codes.map(label).join(' + ')}
-                {quotedRule && ' · ' + tariffRange(quotedRule) + ' ' + t('yardPricing.unitCm')}
+                {rangeLabel && ` (${rangeLabel})`}
               </p>
-              {current && !quote && <p className="mt-2 text-sm text-sand-100"><TranslatedText textKey={'servicePage.pricingUnavailable'} /></p>}
+              {((current && !quote) || (catalogFailed && !quote)) && <p className="mt-2 text-sm text-sand-100"><TranslatedText textKey={'servicePage.pricingUnavailable'} /></p>}
               {quote?.pricing_conditions?.capacity_restricted && <p className="mt-2 text-sm text-sand-100"><TranslatedText textKey="yardPricing.capacityReview" /></p>}
-              {quote && quote.total_duration_minutes > 0 && <p className="mt-2 text-sm text-sand-100"><TranslatedText textKey="yardPricing.estimatedDuration" vars={{ minutes: quote.total_duration_minutes }} /></p>}
             </div>
-            {quote && quote.services.length > 0 && (
-              <div className="my-3 border-y border-white/25 py-3 text-sm">
-                <p className="font-semibold">{copy('breakdown')}</p>
-                <dl className="mt-2 space-y-2">
+            <details className="group/breakdown my-4 border-y border-white/30 text-sm">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-1 py-3.5 font-semibold marker:content-none">
+                {copy('breakdown')}
+                <ChevronDown aria-hidden="true" className="h-4 w-4 group-open/breakdown:rotate-180" />
+              </summary>
+              <div className="space-y-3 px-1 pb-3">
+                {quote && quote.services.length > 0 && <dl className="space-y-2">
                   {quote.services.map((line) => (
                     <div key={line.service_code} className="flex justify-between gap-2">
-                      <dt>{line.quantity && line.quantity > 1 ? line.quantity + ' × ' : ''}{services.find((s) => s.id === line.product_id)?.name ?? line.service_code}</dt>
+                      <dt>{line.quantity && line.quantity > 1 ? line.quantity + ' × ' : ''}{currentServices.find((service) => service.id === line.product_id)?.name ?? line.service_code}</dt>
                       <dd className="text-right">
                         {line.is_on_request || line.is_manual ? t('servicePage.onRequest') : line.included_by && !line.billable_quantity ? t('yardPricing.included') : currency(line.price_incl_vat)}
                         {!line.is_on_request && !line.is_manual && !line.included_by && line.vat_rate !== undefined && (
@@ -362,16 +398,17 @@ export function ServicePricing({
                   {priced && quote.total_vat !== undefined && (
                     <div className="flex justify-between gap-2"><dt><TranslatedText textKey={'yardPricing.vat'} /></dt><dd>{currency(quote.total_vat)}</dd></div>
                   )}
-                </dl>
+                </dl>}
+                {quote && quote.total_duration_minutes > 0 && <p className="text-xs text-sand-100"><TranslatedText textKey="yardPricing.estimatedDuration" vars={{ minutes: quote.total_duration_minutes }} /></p>}
+                <p className="text-xs text-sand-100">{copy('conditions')}</p>
               </div>
-            )}
-            <p className="mb-4 mt-3 text-xs text-sand-100">{copy('conditions')}</p>
+            </details>
             {quote?.pricing_conditions?.period_affects_price === false && (options.period_from || options.period_to) && (
               <p className="mb-4 text-xs text-sand-100"><TranslatedText textKey="yardPricing.periodConditions" /></p>
             )}
             {key && bookingErrorKey === key && <p role="alert" className="mb-2 text-sm"><TranslatedText textKey={'servicePage.pricingUnavailable'} /></p>}
             {bookable ? (
-              <button type="button" className={ctaClass} disabled={openingBooking} onClick={openBooking}>
+              <button type="button" className={ctaClass} disabled={openingBooking || catalogLoading} onClick={openBooking}>
                 <TranslatedText textKey={openingBooking ? 'adminNew.common.loading' : (codes.every((c) => catalog(c)?.visibility?.booking) ? 'nav.bookCrane' : 'yardPricing.requestStorage')} /> <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
               </button>
             ) : (
@@ -383,18 +420,18 @@ export function ServicePricing({
         </div>
       </section>
 
-      <section className={cn('py-9', !single && 'container-wide')} aria-labelledby={inputId + '-tariffs'}>
+      <section className={cn('py-8', !single && 'container-wide lg:px-[5.4%]')} aria-labelledby={inputId + '-tariffs'}>
         <div className="mb-5 text-center">
-          <p className="mb-1 text-sm font-bold uppercase tracking-wider text-gold-800"><TranslatedText textKey={'servicePage.pricesBadge'} /></p>
-          <h2 id={inputId + '-tariffs'} className="heading-display text-3xl">{copy('tariffs')}</h2>
-          <p className="mt-1 text-sm text-navy-700">{copy('tariffsIntro')}</p>
+          <p className="mb-1 text-sm font-bold uppercase tracking-wide text-gold-600"><TranslatedText textKey={'servicePage.pricesBadge'} /></p>
+          <h2 id={inputId + '-tariffs'} className="heading-display text-4xl font-bold leading-none">{copy('tariffs')}</h2>
+          <p className="mt-1.5 text-navy-700">{copy('tariffsIntro')}</p>
           <div className="mx-auto mt-3 h-0.5 w-14 bg-gold-600" />
         </div>
         {!single && (
-          <div role="tablist" aria-labelledby={inputId + '-tariffs'} className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div role="tablist" aria-labelledby={inputId + '-tariffs'} className="mb-5 grid grid-cols-2 gap-1 sm:grid-cols-4">
             {tabs.map(({ code, icon: Icon }, index) => (
               <button key={code} id={'prijzen-' + code} ref={(element) => { tabRefs.current[index] = element; }}
-                type="button" role="tab" aria-selected={tab === code} aria-controls={inputId + '-table'}
+                type="button" role="tab" aria-selected={tab === code} aria-controls={inputId + '-table'} title={catalog(code)?.name}
                 tabIndex={tab === code ? 0 : -1} onClick={() => changeTab(code)}
                 onKeyDown={(event) => {
                   const next = { ArrowRight: (index + 1) % tabs.length, ArrowLeft: (index + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
@@ -403,21 +440,32 @@ export function ServicePricing({
                   changeTab(tabs[next].code);
                   tabRefs.current[next]?.focus();
                 }}
-                className={cn(tile, 'scroll-mt-24', tab === code ? 'border-navy-950 bg-navy-950 text-sand-100' : 'border-navy-100 bg-white hover:border-gold-600')}>
-                <Icon aria-hidden="true" className="h-5 w-5 shrink-0" />{label(code)}
+                className={cn(tile, 'scroll-mt-24 rounded-[.875rem] shadow-sm', tab === code ? 'border-[#102940] bg-[#102940] text-sand-100' : 'border-navy-200 bg-navy-50 hover:border-gold-600')}>
+                <Icon aria-hidden="true" className={cn('h-6 w-6 shrink-0', tab === code ? 'text-gold-300' : 'text-navy-600')} /><TranslatedText textKey={'yardPricing.' + code} />
               </button>
             ))}
           </div>
         )}
-        <div className="grid items-start gap-4 lg:grid-cols-[1.75fr_1fr]">
+        <div className="grid items-start gap-5 lg:grid-cols-[1.77fr_1fr]">
           <div id={inputId + '-table'} role={single ? undefined : 'tabpanel'} aria-labelledby={single ? undefined : 'prijzen-' + tab} tabIndex={single ? undefined : 0}
-            className="min-w-0 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-card">
-            <ServiceTariffTable tariffs={shownService?.tariffs ?? []} cm={cm} ruleId={pickedRule} loading={loading || !!pricingDate && datedCatalog.loading}
+            className="min-w-0 overflow-hidden rounded-[.875rem] border border-navy-100 bg-white shadow-card">
+            <ServiceTariffTable tariffs={shownService?.tariffs ?? []} cm={cm} ruleId={pickedRule} loading={catalogLoading}
+              metres={!single}
               editProductCode={isCmsEditing && user?.permissions?.includes('pricing.update') ? shownService?.code : undefined} />
           </div>
-          <aside className="rounded-xl border border-navy-100 bg-sand-50 p-5 text-sm text-navy-800 shadow-card">
-            <h3 className="mb-2 flex items-center gap-2 font-bold"><Info aria-hidden="true" className="h-5 w-5 text-gold-800" />{copy('info')}</h3>
-            <p>{shownService?.description ?? t('yardPricing.conditions')}</p>
+          <aside className="relative isolate min-h-48 overflow-hidden rounded-[.875rem] border border-navy-100 bg-gradient-to-b from-[#f7f4ef] to-navy-50 p-6 text-sm text-navy-800 shadow-card lg:min-h-[19rem]">
+            <Ship aria-hidden="true" className="pointer-events-none absolute -bottom-11 right-1 -z-10 h-48 w-48 text-navy-200/55" strokeWidth={1} />
+            <h3 className="mb-3 flex items-center gap-2.5 text-base font-bold"><Info aria-hidden="true" className="h-6 w-6 text-gold-600" />{copy('info')}</h3>
+            {!single && shownService && infoSection ? (
+              <ul className="space-y-2">
+                {(['b1', 'b2', 'b3', 'b4'] as const).map((item) => (
+                  <li key={item} className="flex items-start gap-2.5">
+                    <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-gold-600" />
+                    <TranslatedText textKey={`werf.s.${infoSection}.${item}`} />
+                  </li>
+                ))}
+              </ul>
+            ) : <p>{shownService?.description ?? t('yardPricing.conditions')}</p>}
             {shownService && <CanonicalServiceEditor service={shownService} />}
             {isCmsEditing && user?.permissions?.includes('products.write') && shownService?.id && (
               <Link className="mt-3 block font-semibold underline" href={`/${locale}/admin/producten/${encodeURIComponent(shownService.id)}`}>
@@ -434,12 +482,13 @@ export function ServicePricing({
   );
 }
 
-export function ServiceTariffTable({ tariffs, cm = 0, ruleId, loading, editProductCode }: {
+export function ServiceTariffTable({ tariffs, cm = 0, ruleId, loading, editProductCode, metres = false }: {
   tariffs: NonNullable<ServiceCatalogService['tariffs']>;
   cm?: number;
   ruleId?: string | null;
   loading: boolean;
   editProductCode?: string;
+  metres?: boolean;
 }) {
   const { t, locale } = useIntl();
   const matching = tariffs.find((rule) => (!ruleId || rule.id === ruleId) && cm > 0 && cm >= rule.range_from_cm && cm <= rule.range_to_cm);
@@ -447,18 +496,22 @@ export function ServiceTariffTable({ tariffs, cm = 0, ruleId, loading, editProdu
 
   return (
     <table className="w-full text-sm">
-      <thead className="bg-navy-950 text-white">
+      <thead className="bg-[#102940] text-white">
         <tr>
-          <th scope="col" className="px-4 py-2 text-left"><TranslatedText textKey={'yardPricing.lengthCm'} /></th>
-          <th scope="col" className="px-4 py-2 text-right"><TranslatedText textKey={'yardPricing.tariff'} /></th>
+          <th scope="col" className="px-5 py-1.5 text-left"><TranslatedText textKey={metres ? 'yardPricing.lengthMetres' : 'yardPricing.lengthCm'} /></th>
+          <th scope="col" className="px-5 py-1.5 text-right"><TranslatedText textKey={'yardPricing.tariff'} /></th>
         </tr>
       </thead>
       <tbody>
         {tariffs.slice().sort((a, b) => a.range_from_cm - b.range_from_cm).map((rule, index) => (
           <tr key={rule.id ? rule.id + ':' + rule.range_from_cm : index} aria-current={matching === rule ? 'true' : undefined}
             className={cn('border-b border-navy-100 last:border-b-0', matching === rule && 'bg-gold-100 font-bold')}>
-            <th scope="row" className="px-4 py-1.5 text-left font-medium">{tariffRange(rule)} <TranslatedText textKey="yardPricing.unitCm" /></th>
-            <td className="px-4 py-1.5 text-right font-semibold">{rule.is_on_request || rule.price_type === 'manual' ? t('servicePage.onRequest') : rule.display_price}
+            <th scope="row" className={cn('px-5 py-1 text-left', matching === rule ? 'font-bold' : 'font-medium')}>
+              {metres ? tariffRangeMetres(rule, locale) : tariffRange(rule)} <TranslatedText textKey={metres ? 'yardPricing.unit' : 'yardPricing.unitCm'} />
+            </th>
+            <td className="relative px-5 py-1 text-right font-semibold tabular-nums sm:pr-12">
+              {rule.is_on_request || rule.price_type === 'manual' ? t('servicePage.onRequest') : rule.display_price}
+              {matching === rule && <Check aria-hidden="true" className="absolute right-3 top-1.5 hidden h-4 w-4 rounded-full bg-gold-600 p-0.5 text-white sm:block" />}
               {rule.price_type === 'per_meter' && !rule.display_price.endsWith(' / m') && ' / m'}
               <InlineTariffEditor rule={rule} />
               {editProductCode && rule.id && (

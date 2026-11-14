@@ -66,6 +66,7 @@
     "periodConditions": "Your request includes the selected dates. The estimate covers the package.",
     "invalidLength": "Enter a whole length from 1 to 9999 cm.",
     "estimate": "Your estimate",
+    "priceOnRequest": "Price on request",
     "breakdown": "Price breakdown",
     "included": "Included",
     "vat": "VAT included",
@@ -121,6 +122,7 @@
     },
     "nav": {
       "myQaFindings": "My QA findings",
+      "qaUnread": "Unread QA assignments ({count})",
       "qualityCenter": "Quality Center",
       "qaUnavailable": "QA is unavailable. Check your network and try again.",
       "overview": "Overview",

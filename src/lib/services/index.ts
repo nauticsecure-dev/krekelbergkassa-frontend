@@ -2893,10 +2893,10 @@ export const cmsService = {
     });
   },
   globalSettings() {
-    return api<Record<string, unknown>>('/v1/admin/cms/global-settings');
+    return api<{ settings: Record<string, string | Record<string, string>>; revisions: Record<string, string | null> }>('/v1/admin/cms/global-settings', { cache: 'no-store' });
   },
-  saveGlobalSetting(key: string, payload: { value: unknown }) {
-    return api<Record<string, unknown>>(`/v1/admin/cms/global-settings/${encodeURIComponent(key)}`, {
+  saveGlobalSetting(key: string, payload: { value: unknown; expected_revision: string | null; merge_locales: boolean }) {
+    return api<{ value: string | Record<string, string>; cms_revision: string }>(`/v1/admin/cms/global-settings/${encodeURIComponent(key)}`, {
       method: 'PATCH',
       body: payload,
     });

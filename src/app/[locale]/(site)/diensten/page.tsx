@@ -101,9 +101,7 @@ export default function DienstenPage() {
   // Trello #100: drive the service overview from the shared product DB, falling
   // back to the static SECTIONS content when the API is empty or unreachable.
   const catalogQuery = useQuery([locale], () =>
-    serviceCatalogService
-      .services(undefined, locale)
-.then((res) => res.services),
+    serviceCatalogService.services(undefined, locale).then((res) => res.services),
   );
   const liveGroups = React.useMemo(
     () => groupLiveServices(catalogQuery.data ?? undefined),
@@ -113,51 +111,53 @@ export default function DienstenPage() {
   return (
     <>
       {/* ───────── Hero ───────── */}
-      <section className="relative isolate overflow-hidden bg-navy-950">
-        <div className="absolute inset-0 overflow-hidden">
-          <EditableImage defaultStyle={{gradient:'right',gradient_start:0.9,gradient_middle:0.7,gradient_end:0.35}}
+      <section className="relative isolate overflow-hidden bg-[#06223e]">
+        <div className="absolute inset-y-0 right-0 w-full overflow-hidden sm:w-[66%] sm:[mask-image:linear-gradient(to_right,transparent,black_26%)]">
+          <EditableImage
             blockKey="diensten.hero.image"
             page={CMS_PAGE}
-            fallbackSrc="/img/krek/boot-kranen.webp"
-            alt="Diensten hero"
+            fallbackSrc="/img/krek/kranen-hero.webp"
+            alt=""
             className="h-full w-full"
+            sizes="(min-width: 640px) 66vw, 100vw"
           />
         </div>
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#04223e_0%,#04223edb_23%,#04223e40_58%,transparent_88%)]" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#f7f9fb] to-transparent" />
 
-        <div className="container-wide pointer-events-none relative pb-10 pt-10 text-white sm:pb-12 sm:pt-12">
-          <Badge tone="sand" dot className="pointer-events-auto mb-4">
+        <div className="container-wide pointer-events-none relative pb-8 pt-9 text-white sm:pb-10 sm:pt-10 lg:px-[4.65%]">
+          <p className="pointer-events-auto mb-1 text-sm font-bold uppercase tracking-widest">
             <EditableText blockKey="diensten.hero.badge" page={CMS_PAGE} section="hero">
               {t('werf.heroBadge')}
             </EditableText>
-          </Badge>
-          <h1 className="heading-display pointer-events-auto max-w-2xl text-4xl text-white sm:text-5xl">
+          </p>
+          <h1 className="heading-display pointer-events-auto max-w-[38rem] text-4xl font-bold leading-none text-white sm:text-5xl">
             <EditableText blockKey="diensten.hero.title" page={CMS_PAGE} section="hero" type="heading">
               {t('werf.heroTitle')}
             </EditableText>
           </h1>
-          <p className="pointer-events-auto mt-4 max-w-xl text-sand-100/85">
+          <p className="pointer-events-auto mt-3 max-w-[30rem] text-white">
             <EditableText blockKey="diensten.hero.subtitle" page={CMS_PAGE} section="hero" type="paragraph">
               {t('werf.heroSubtitle')}
             </EditableText>
           </p>
 
-          <div className="pointer-events-auto mt-7 grid max-w-4xl grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
+          <div className="pointer-events-auto mt-6 grid max-w-[42rem] grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
             {YARD_SERVICES.map(({ code, icon: Icon }) => (
               <button key={code} type="button" aria-pressed={active === code} aria-controls="prijsberekening"
                 onClick={() => setActive(code)}
-                className={cn('flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-3 text-center text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300', active === code ? 'border-gold-300 bg-navy-950/90 text-gold-100' : 'border-white/60 bg-white/90 text-navy-950 hover:bg-white')}>
-                <Icon aria-hidden="true" className="h-6 w-6" /><TranslatedText textKey={'yardPricing.' + code} />
+                className={cn('flex min-h-[5.25rem] flex-col items-center justify-center gap-2 rounded-[.875rem] border-2 px-2 py-3 text-center text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300', active === code ? 'border-gold-200 bg-[#102b44]/90 text-gold-100' : 'border-white/50 bg-white/90 text-navy-950 hover:bg-white')}>
+                <Icon aria-hidden="true" className={cn('h-7 w-7', active === code ? 'text-gold-300' : 'text-navy-600')} /><TranslatedText textKey={'yardPricing.' + code} />
               </button>
             ))}
-            <Link href="#meer-diensten" className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border border-white/60 bg-white/90 px-2 py-3 text-center text-sm font-bold text-navy-950 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300">
-              <Plus aria-hidden="true" className="h-6 w-6" /><TranslatedText textKey={'yardPricing.moreServices'} />
-            </Link>
           </div>
         </div>
       </section>
 
-      <ServicePricing services={catalogQuery.data ?? []} loading={catalogQuery.loading}
-        active={active} onActiveChange={setActive} cmsPage={CMS_PAGE} />
+      <div className="bg-[linear-gradient(180deg,#f7f9fb_0%,#faf7f2_20rem,#f7f9fb_33rem)]">
+        <ServicePricing services={catalogQuery.data ?? []} loading={catalogQuery.loading} catalogUnavailable={!!catalogQuery.error}
+          active={active} onActiveChange={setActive} cmsPage={CMS_PAGE} />
+      </div>
 
       {/* ───────── Intro paragraph ───────── */}
       <section className="container-wide py-12">

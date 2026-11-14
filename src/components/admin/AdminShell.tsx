@@ -36,12 +36,58 @@ import { PageHeaderStatsGrid, type PageHeaderStat } from '@/components/shell/Pag
 import { useQuery } from '@/lib/hooks/useAsync';
 import { adminService, boatsService, invoicesService, productsService, stallingService } from '@/lib/services';
 import { trackEvent } from '@/lib/track-event';
+import { openQuality, qualityAccess, qualityUrls, type QualityAccess } from '@/lib/quality-navigation';
+
+const noQaAccess: QualityAccess = { assigned: false, portal: false, unread: 0 };
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [searchOpen, setSearchOpen] = React.useState(false);
   const pathname = usePathname();
+  const { locale } = useIntl();
+  const { user } = useAuth();
+  const userId = user?.id;
+  const role = user?.role;
+  const qa = React.useMemo(() => qualityUrls(locale), [locale]);
+  const [qaState, setQaState] = React.useState<{ userId: string; base: string; access: QualityAccess }>();
+  const qaAccess = qaState && qaState.userId === userId && qaState.base === qa?.base ? qaState.access : noQaAccess;
+
+  React.useEffect(() => {
+    if (!qa || !userId || !role || !['super_admin', 'admin', 'employee', 'finance'].includes(role)) {
+      setQaState(undefined);
+      return;
+    }
+
+    const base = qa.base;
+    let request: AbortController | undefined;
+    const refresh = async () => {
+      if (document.visibilityState === 'hidden' || request) return;
+      const controller = new AbortController();
+      request = controller;
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      try {
+        const access = await qualityAccess(base, controller.signal);
+        if (!controller.signal.aborted) setQaState({ userId, base, access });
+      } catch {
+        // Keep the last successful count during a temporary connection failure.
+      } finally {
+        clearTimeout(timeout);
+        request = undefined;
+      }
+    };
+
+    void refresh();
+    const interval = setInterval(refresh, 30000);
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('pageshow', refresh);
+    return () => {
+      request?.abort();
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('pageshow', refresh);
+    };
+  }, [qa, userId, role]);
 
   useGlobalSearchShortcut(() => setSearchOpen(true));
 
@@ -63,17 +109,21 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <ConfirmLogoutProvider>
       <div className="flex h-screen overflow-hidden bg-sand-50">
       <AdminSidebar
+        qa={qa}
+        qaAccess={qaAccess}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
       />
 
       <MobileDrawer open={open} onClose={() => setOpen(false)}>
-        <AdminSidebar variant="mobile" />
+        <AdminSidebar variant="mobile" qa={qa} qaAccess={qaAccess} />
       </MobileDrawer>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <ImpersonationBanner />
         <GlobalTopbar
+          qa={qa}
+          qaUnread={qaAccess.assigned ? qaAccess.unread : 0}
           onMenuClick={() => setOpen(true)}
           onSearchClick={() => setSearchOpen(true)}
         />
@@ -93,9 +143,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 /* -------------------------------------------------------------------------- */
 
 function GlobalTopbar({
+  qa,
+  qaUnread,
   onMenuClick,
   onSearchClick,
 }: {
+  qa: ReturnType<typeof qualityUrls>;
+  qaUnread: number;
   onMenuClick: () => void;
   onSearchClick: () => void;
 }) {
@@ -138,6 +192,8 @@ function GlobalTopbar({
   const { requestLogout } = useConfirmLogout();
   const { bellOpen, menuOpen, toggleBell, toggleMenu, closeAll } = useShellDropdowns();
   const [createOpen, setCreateOpen] = React.useState(false);
+  const [qaOpening, setQaOpening] = React.useState(false);
+  const [qaOpenError, setQaOpenError] = React.useState(false);
   const notifications = useQuery([locale], async () => {
     const [invoices, stalling, reminders] = await Promise.all([
       invoicesService.list({ per_page: 30 }).catch(() => ({ data: [] as Array<{ is_overdue?: boolean; is_fully_paid?: boolean }> })),
@@ -190,7 +246,8 @@ function GlobalTopbar({
     return items;
   });
 
-  const unreadCount = notifications.data?.length ?? 0;
+  const hasQaAssignments = Boolean(qa && qaUnread > 0);
+  const unreadCount = (notifications.data?.length ?? 0) + qaUnread;
 
   return (
     <div className="sticky top-0 z-40 shrink-0 border-b border-navy-100 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
@@ -283,7 +340,9 @@ function GlobalTopbar({
               onClick={toggleBell}
               aria-expanded={bellOpen}
               className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-navy-100 bg-white text-navy-700 hover:bg-sand-50"
-              aria-label={t('adminNew.shell.notifications')}
+              aria-label={hasQaAssignments
+                ? `${t('adminNew.shell.notifications')}, ${t('adminModules.nav.qaUnread', { count: qaUnread })}`
+                : t('adminNew.shell.notifications')}
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 ? (
@@ -298,6 +357,32 @@ function GlobalTopbar({
                   <span className="font-semibold text-navy-900">{<TranslatedText textKey={'adminNew.shell.notifications'} />}</span>
                   <Badge tone="gold">{unreadCount}</Badge>
                 </div>
+                {qa && hasQaAssignments ? (
+                  <div className="border-b border-navy-50">
+                    <a
+                      href={qa.assigned}
+                      aria-disabled={qaOpening}
+                      className="block px-4 py-3 hover:bg-sand-50"
+                      onClick={async event => {
+                        event.preventDefault();
+                        if (qaOpening) return;
+                        setQaOpening(true);
+                        setQaOpenError(false);
+                        try {
+                          await openQuality(qa.assigned, locale);
+                        } catch {
+                          setQaOpenError(true);
+                        } finally {
+                          setQaOpening(false);
+                        }
+                      }}
+                    >
+                      <div className="text-sm font-semibold text-navy-900">{t('adminModules.nav.myQaFindings')}</div>
+                      <div className="text-xs text-navy-500">{t('adminModules.nav.qaUnread', { count: qaUnread })}</div>
+                    </a>
+                    {qaOpenError ? <p role="alert" className="px-4 pb-3 text-xs text-rose-600">{t('adminModules.nav.qaUnavailable')}</p> : null}
+                  </div>
+                ) : null}
                 {notifications.loading ? (
                   <div className="space-y-2 p-4">
                     {Array.from({ length: 3 }).map((_, i) => (

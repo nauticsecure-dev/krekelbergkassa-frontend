@@ -1,8 +1,1 @@
-{
-  "/[locale]/(site)/diensten/page": "app/[locale]/(site)/diensten/page.js",
-  "/[locale]/admin/calculator/pricing/page": "app/[locale]/admin/calculator/pricing/page.js",
-  "/[locale]/(site)/kraanafspraak/page": "app/[locale]/(site)/kraanafspraak/page.js",
-  "/[locale]/(site)/diensten/winterstalling/page": "app/[locale]/(site)/diensten/winterstalling/page.js",
-  "/[locale]/(site)/diensten/[slug]/page": "app/[locale]/(site)/diensten/[slug]/page.js",
-  "/[locale]/(site)/diensten/aanvraag/page": "app/[locale]/(site)/diensten/aanvraag/page.js"
-}
+{}

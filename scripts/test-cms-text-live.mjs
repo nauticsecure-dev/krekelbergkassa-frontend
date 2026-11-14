@@ -48,7 +48,13 @@ try {
   run('php', ['artisan', 'migrate', '--force', '--no-interaction'], backend, 'migrations.log');
   for (const seeder of ['UserSeeder', 'ServiceProductSeeder', 'SettingsSeeder']) run('php', ['artisan', 'db:seed', '--class=' + seeder, '--force', '--no-interaction'], backend, seeder + '.log');
   run('php', ['scripts/seed-cms-text-live.php'], backend, 'fixtures.log');
-  env.CMS_LOCAL_EDITOR_TOKEN = fs.readFileSync(env.CMS_TEXT_TOKEN_FILE, 'utf8');
+  const credentials = JSON.parse(fs.readFileSync(env.CMS_TEXT_TOKEN_FILE, 'utf8'));
+  fs.unlinkSync(env.CMS_TEXT_TOKEN_FILE);
+  const roles = Object.fromEntries(Object.entries(credentials.sessions).map(([role, token]) => {
+    const tokenEnv = 'CMS_LOCAL_' + role.toUpperCase() + '_TOKEN';
+    env[tokenEnv] = token;
+    return [role, { tokenEnv }];
+  }));
   const apiPort = await port(); env.APP_URL = 'http://127.0.0.1:' + apiPort;
   const api = start('php', ['-d', 'zend_extension=opcache', '-d', 'opcache.enable_cli=1', '-S', '127.0.0.1:' + apiPort,
     path.join(backend, 'vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')], path.join(backend, 'public'), 'backend.log');
@@ -57,18 +63,55 @@ try {
   const web = start(process.execPath, ['scripts/isolated-next-server.cjs', String(webPort)], frontend, 'frontend.log');
   for (const locale of ['nl', 'en', 'de', 'fr']) { console.log('Warming local /' + locale); await ready(env.QA_STAGING_URL + '/' + locale, web); }
   run('php', ['artisan', 'quality:cms-inventory'], backend, 'inventory.log');
+  const selectedKeys = process.env.CMS_LOCAL_TEXT_KEYS?.split(',') ?? [
+    'home.hero.title', 'i18n.footer.services', 'footer.tagline', 'header.cta.label',
+    'home.hero.cta_primary.label', 'home.werf.cert', 'over-ons.hiswa.desc', 'over-ons.stat.years.value',
+    'verkoop.stat.1.label', 'diensten.faq.faq1.a',
+    ...['crane', 'wash', 'storage', 'diy', 'sale', 'week'].flatMap(service => ['title', 'tagline', 'desc'].map(field => `home.svc.${service}.${field}`)),
+  ];
+  const home = 'src/app/[locale]/(site)';
+  const scenarios = Object.fromEntries([
+    ['page.tsx', 'home.hero.title'], ['over-ons/page.tsx', 'over-ons.stat.years.value'],
+    ['verkoop/page.tsx', 'verkoop.stat.1.label'], ['diensten/page.tsx', 'diensten.faq.faq1.a'],
+  ].map(([file, key]) => [`${home}/${file}:super_admin:default`, { assertions: [
+    { visible: `[data-cms-key="${key}"]` }, { visible: '[data-cms-toggle]' },
+  ] }]));
+  for (const role of ['guest', ...Object.keys(roles).filter(role => role !== 'super_admin')]) {
+    scenarios[`${home}/page.tsx:${role}:default`] = { assertions: [
+      { visible: '[data-cms-key="home.hero.title"]' }, { hidden: '[data-cms-toggle]' },
+    ] };
+  }
+  scenarios['src/app/[locale]/admin/klanten/[id]/page.tsx:super_admin:default'] = {
+    url: '/[locale]/admin/klanten/' + credentials.customer_id,
+    assertions: [{ text: { selector: 'h1', value: 'CMS Fixture Customer' } }],
+  };
+  scenarios[`${home}/page.tsx:super_admin:modal`] = {
+    readOnly: true,
+    actions: [{ click: '[data-cms-toggle]' }, { click: '[data-cms-key="home.hero.title"]:visible' }],
+    assertions: [{ visible: '[role=dialog] [data-cms-input]' }],
+  };
   const fixtures = { environment: 'local', frozenLocalSource: process.env.CMS_FROZEN_LOCAL_SOURCE === '1', baseURL: env.QA_STAGING_URL, evidenceDirectory: path.join(storage, 'quality-private'),
-    roles: { super_admin: { tokenEnv: 'CMS_LOCAL_EDITOR_TOKEN' } },
-    scenarios: { 'src/app/[locale]/(site)/page.tsx:super_admin:default': { assertions: [{ visible: 'main h1' }, { visible: '[data-cms-key="home.hero.title"]' }] } },
-    onlyKeys: ['home.hero.title', 'i18n.footer.services', ...['crane', 'wash', 'storage', 'diy', 'sale', 'week'].flatMap(service => ['title', 'tagline', 'desc'].map(field => `home.svc.${service}.${field}`))] };
+    roles, scenarios,
+    onlyKeys: selectedKeys };
   const fixtureFile = path.join(runtime, 'scenarios.json'); fs.writeFileSync(fixtureFile, JSON.stringify(fixtures, null, 2));
   console.log('Verifying real local UI saves, database, reloads, audits, isolation and restoration in all four locales.');
   run(process.execPath, ['scripts/verify-cms-staging.mjs', '--fixtures', fixtureFile], frontend, 'verification.log', [0, 1]);
   const report = JSON.parse(fs.readFileSync(path.join(storage, 'quality-private/cms-functional-local.json'), 'utf8'));
   const selected = readRows(report, 'fields', 'field_manifest', path.join(storage, 'quality-private')).filter(row => row.status !== 'UNTESTED');
   const passed = selected.filter(row => row.status === 'PASS');
-  const result = { status: selected.length === fixtures.onlyKeys.length * 4 && passed.length === selected.length ? 'PASS' : 'FAIL',
+  const routes = readRows(report, 'routes', 'route_manifest', path.join(storage, 'quality-private'));
+  const routeProof = new Map(routes.map(row => [row.id, row]));
+  const manifest = JSON.parse(fs.readFileSync(path.join(storage, 'quality-private/cms-static.json'), 'utf8')).inventory;
+  const required = readRows(manifest, 'required_fields', 'field_manifest', path.join(storage, 'quality-private'))
+    .filter(field => selectedKeys.includes(field.key));
+  const proven = new Set(passed.map(row => row.id));
+  const requiredRoutes = readRows(manifest, 'route_matrix', 'route_manifest', path.join(storage, 'quality-private'))
+    .filter(route => Object.hasOwn(scenarios, `${route.file}:${route.role}:${route.state}`));
+  const passedRoutes = requiredRoutes.filter(route => routeProof.get(route.id)?.status === 'PASS');
+  const result = { status: selectedKeys.every(key => required.filter(field => field.key === key).length >= 4)
+      && required.every(field => proven.has(field.id)) && passedRoutes.length === requiredRoutes.length ? 'PASS' : 'FAIL',
     environment: 'isolated-local', selected: selected.length, passed: passed.length, productionWrites: false,
+    routes: { selected: requiredRoutes.length, passed: passedRoutes.length },
     allWebsiteCoverage: 'UNTESTED', report: path.join(storage, 'quality-private/cms-functional-local.json') };
   fs.writeFileSync(path.join(runtime, 'result.json'), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result, null, 2));

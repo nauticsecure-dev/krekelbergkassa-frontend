@@ -10,7 +10,7 @@ import { YardPlan, YardPoint, yardDayOffset, yardToday } from './daily-plan';
 const position = (point?: YardPoint | null) => point ? point.location_code || `${point.x.toFixed(1)} / ${point.y.toFixed(1)} m` : '—';
 const amsterdam = { timeZone: 'Europe/Amsterdam' };
 
-export function YardDailyPlan({ date, onClose }: { date: string; onClose: () => void }) {
+export function YardDailyPlan({ date, refreshRevision, onClose }: { date: string; refreshRevision: number; onClose: () => void }) {
   const [day, setDay] = useState(date);
   const [plan, setPlan] = useState<YardPlan>();
   const [error, setError] = useState('');
@@ -23,7 +23,7 @@ export function YardDailyPlan({ date, onClose }: { date: string; onClose: () => 
       .then((result) => { if (active) setPlan(result); })
       .catch((err) => { if (active) setError(getApiErrorMessage(err)); });
     return () => { active = false; };
-  }, [day, retry]);
+  }, [day, retry, refreshRevision]);
 
   return <div role="dialog" aria-label="Dagplanning" className="absolute inset-0 z-40 overflow-auto bg-slate-950 p-4 text-white" data-yard-print-wrapper>
     <style>{`@media print {
