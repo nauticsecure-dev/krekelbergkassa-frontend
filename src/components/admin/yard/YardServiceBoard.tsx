@@ -46,17 +46,17 @@ function FinanceEditor({ card, line, onSaved }: { card: Card; line?: FinanceLine
 
   return <form onSubmit={save} className="grid gap-2">
     {error && <p role="alert" className="text-red-300">{error}</p>}
-    <label className="grid">ID factuurregel<input className={control} name="line" defaultValue={line?.invoice_line_id} readOnly={!!line} required /></label>
+    <label className="grid"><TranslatedText textKey="siteCopy.88ddc9b03452a5a8" fallbackText={"ID factuurregel"} /><input className={control} name="line" defaultValue={line?.invoice_line_id} readOnly={!!line} required /></label>
     {rows.map((row, index) => <fieldset key={index} className="grid gap-1 border-t border-slate-700 pt-2" disabled={busy}>
-      <label className="grid">ID betaling<input className={control} required value={row.payment_id} onChange={e => setRows(rows.map((item, i) => i === index ? { ...item, payment_id: e.target.value } : item))} /></label>
+      <label className="grid"><TranslatedText textKey="siteCopy.1ccd972ab34d3289" fallbackText={"ID betaling"} /><input className={control} required value={row.payment_id} onChange={e => setRows(rows.map((item, i) => i === index ? { ...item, payment_id: e.target.value } : item))} /></label>
       {(['paid_cents', 'refunded_cents'] as const).map(field => <label key={field} className="grid">
         {field === 'paid_cents' ? 'Betaald (cent)' : 'Terugbetaald (cent)'}
         <input className={control} type="number" required min={field === 'paid_cents' ? 1 : 0} value={row[field]} onChange={e => setRows(rows.map((item, i) => i === index ? { ...item, [field]: Number(e.target.value) } : item))} />
       </label>)}
-      <button className={control} type="button" onClick={() => setRows(rows.filter((_, i) => i !== index))}>Betaling verwijderen</button>
+      <button className={control} type="button" onClick={() => setRows(rows.filter((_, i) => i !== index))}><TranslatedText textKey="siteCopy.1d61fba23d34dad0" fallbackText={"Betaling verwijderen"} /></button>
     </fieldset>)}
-    <button className={control} type="button" disabled={busy} onClick={() => setRows([...rows, { payment_id: '', paid_cents: 0, refunded_cents: 0 }])}>Betaling toewijzen</button>
-    <button className={control} disabled={busy}>Toewijzing opslaan</button>
+    <button className={control} type="button" disabled={busy} onClick={() => setRows([...rows, { payment_id: '', paid_cents: 0, refunded_cents: 0 }])}><TranslatedText textKey="siteCopy.ee4d2bcdf955a840" fallbackText={"Betaling toewijzen"} /></button>
+    <button className={control} disabled={busy}><TranslatedText textKey="siteCopy.1ec475ea9f28662b" fallbackText={"Toewijzing opslaan"} /></button>
   </form>;
 }
 
@@ -147,7 +147,7 @@ export function YardServiceBoard({ locale, boatId, taskId, refreshRevision, onCh
             <p>{board.services.find((service) => service.service_code === card.service_code)?.name ?? card.service_code ?? 'Algemene taak'} · {priorityLabels[card.priority] ?? card.priority} · {card.assigned_to ?? 'Niet toegewezen'}</p>
             {card.due_at && <time>{new Date(card.due_at).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam' })}</time>}
             <p>{card.status === 'done' ? 'Afgerond' : card.status === 'cancelled' ? 'Geannuleerd' : card.status === 'in_progress' ? 'In uitvoering' : card.ready ? 'Gereed voor uitvoering' : 'Wacht op voorgaande taken of afspraak'}</p>
-            {card.appointment_id && <Link className="underline" href={`/${locale}/admin/afspraken?appointment_id=${card.appointment_id}`}>Gekoppelde afspraak</Link>}
+            {card.appointment_id && <Link className="underline" href={`/${locale}/admin/afspraken?appointment_id=${card.appointment_id}`}><TranslatedText textKey="siteCopy.52313174c41e5ba7" fallbackText={"Gekoppelde afspraak"} /></Link>}
             {card.appointment_id && card.appointment_action && <button className={`${control} block`} disabled={busy}
               onClick={() => void recordMilestone(card)}>{milestoneLabels[card.appointment_action]}</button>}
             <p><TranslatedText textKey="siteCopy.5582787500bff01d" fallbackText={"Actueel: "} />{card.actual ? `${card.actual.x.toFixed(1)} / ${card.actual.y.toFixed(1)} m` : 'Niet geplaatst'}<br /><TranslatedText textKey="siteCopy.50eb57912e8bf207" fallbackText={"Gepland: "} />{card.planned ? `${card.planned.x.toFixed(1)} / ${card.planned.y.toFixed(1)} m` : 'Geen verplaatsing'}</p>
@@ -156,15 +156,15 @@ export function YardServiceBoard({ locale, boatId, taskId, refreshRevision, onCh
               const amount = (cents: number) => new Intl.NumberFormat(locale, { style: 'currency', currency: line.currency }).format(cents / 100);
               return <div key={line.invoice_line_id} className="space-y-1 border-t border-slate-700 pt-2">
                 <Link className="underline" href={`/${locale}/admin/facturen/${line.invoice_id}`}>{line.invoice_status === 'draft' ? 'Conceptfactuur' : 'Factuur'} · {amount(line.total_cents)}</Link>
-                <p>Toegewezen betaald {amount(line.paid_cents)} · Openstaand {amount(line.outstanding_cents)}</p>
-                {line.credit_note_ids.map(id => <Link key={id} className="block underline" href={`/${locale}/admin/facturen/${id}`}>Creditnota</Link>)}
-                {line.credited_cents > 0 && <p>Gecrediteerd {amount(line.credited_cents)}</p>}
-                {line.refunded_cents > 0 && <p>Terugbetaald {amount(line.refunded_cents)}</p>}
-                {line.credit_balance_cents > 0 && <p>Terug te betalen {amount(line.credit_balance_cents)}</p>}
-                {board.can_allocate && line.invoice_status !== 'draft' && <button type="button" className={control} onClick={() => setEditingFinance({ taskId: card.id, line })}>Toewijzing wijzigen</button>}
+                <p><TranslatedText textKey="siteCopy.a10a8ff3ca0ed08a" fallbackText={"Toegewezen betaald "} />{amount(line.paid_cents)} <TranslatedText textKey="siteCopy.fb883d2b31f04e12" fallbackText={" · Openstaand "} />{amount(line.outstanding_cents)}</p>
+                {line.credit_note_ids.map(id => <Link key={id} className="block underline" href={`/${locale}/admin/facturen/${id}`}><TranslatedText textKey="siteCopy.99857a4c2bd59b59" fallbackText={"Creditnota"} /></Link>)}
+                {line.credited_cents > 0 && <p><TranslatedText textKey="siteCopy.67aa04af518cfe11" fallbackText={"Gecrediteerd "} />{amount(line.credited_cents)}</p>}
+                {line.refunded_cents > 0 && <p><TranslatedText textKey="siteCopy.cd2b44de1118a81d" fallbackText={"Terugbetaald "} />{amount(line.refunded_cents)}</p>}
+                {line.credit_balance_cents > 0 && <p><TranslatedText textKey="siteCopy.32feeb4b89ea5f17" fallbackText={"Terug te betalen "} />{amount(line.credit_balance_cents)}</p>}
+                {board.can_allocate && line.invoice_status !== 'draft' && <button type="button" className={control} onClick={() => setEditingFinance({ taskId: card.id, line })}><TranslatedText textKey="siteCopy.1325baf008940212" fallbackText={"Toewijzing wijzigen"} /></button>}
               </div>;
             })}
-            {board.can_allocate && card.entity_type === 'boat' && card.service_code && <button type="button" className={control} onClick={() => setEditingFinance({ taskId: card.id })}>Factuurregel koppelen</button>}
+            {board.can_allocate && card.entity_type === 'boat' && card.service_code && <button type="button" className={control} onClick={() => setEditingFinance({ taskId: card.id })}><TranslatedText textKey="siteCopy.36111a33e6eb1161" fallbackText={"Factuurregel koppelen"} /></button>}
             {editingFinance?.taskId === card.id && <FinanceEditor key={editingFinance.line?.invoice_line_id ?? card.id} card={card} line={editingFinance.line} onSaved={refreshFinance} />}
             {board.can_configure && <button className={control} onClick={() => setPlanningBoat(card.boat_id)}><TranslatedText textKey="yardSchedule.plan" inline={false} /></button>}
             {card.entity_type === 'yard_move' ? <Link href={`/${locale}/admin/stalling/werfcanvas?task_id=${card.id}#verplaatsingen`} className="text-blue-300 underline"><TranslatedText textKey="siteCopy.81a7471c091f539c" fallbackText={"Open fysieke werfopdracht"} /></Link>

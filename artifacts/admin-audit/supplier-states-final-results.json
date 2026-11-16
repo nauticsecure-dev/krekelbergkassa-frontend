@@ -1,0 +1,365 @@
+{
+  "config": {
+    "configFile": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\playwright.admin-audit.config.ts",
+    "rootDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/supplier-states-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-audit",
+        "name": "admin-audit",
+        "testDir": "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-audit.spec.ts",
+          "admin-review.spec.ts",
+          "pricing-permissions.spec.ts"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/admin-audit/supplier-states-final-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node --v8-pool-size=1 scripts/admin-audit-server.cjs",
+      "env": {
+        "NEXT_DIST_DIR": ".next-admin-audit",
+        "NEXT_PUBLIC_API_URL": "/api",
+        "API_PROXY_TARGET": "http://127.0.0.1:9",
+        "RAYON_NUM_THREADS": "1",
+        "NEXT_FONT_GOOGLE_MOCKED_RESPONSES": "C:\\wamp64\\www\\krekelbergkassa\\krekelbergkassa-frontend\\tests\\fixtures\\journey-fonts.cjs"
+      },
+      "url": "http://localhost:3069/sw.js",
+      "timeout": 300000,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "admin-audit.spec.ts",
+      "file": "admin-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "supplier list write controls and create deep link (false)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25195,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T17:08:57.078Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-740bcb1c3f494629d2b7",
+          "file": "admin-audit.spec.ts",
+          "line": 345,
+          "column": 7
+        },
+        {
+          "title": "supplier list write controls and create deep link (true)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3595,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T17:09:22.857Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-3ee866300c58e76a3e3b",
+          "file": "admin-audit.spec.ts",
+          "line": 345,
+          "column": 7
+        },
+        {
+          "title": "nl: supplier list loading, repeated failure, empty state and required field",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4827,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T17:09:26.485Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-1da43b2040cd8dd109e6",
+          "file": "admin-audit.spec.ts",
+          "line": 388,
+          "column": 7
+        },
+        {
+          "title": "en: supplier list loading, repeated failure, empty state and required field",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4583,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T17:09:31.342Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-1147533697ec8403382f",
+          "file": "admin-audit.spec.ts",
+          "line": 388,
+          "column": 7
+        },
+        {
+          "title": "de: supplier list loading, repeated failure, empty state and required field",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5371,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T17:09:35.956Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-b8ed3f8c0653a6e75fff",
+          "file": "admin-audit.spec.ts",
+          "line": 388,
+          "column": 7
+        },
+        {
+          "title": "fr: supplier list loading, repeated failure, empty state and required field",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6577,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T17:09:41.354Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-466c6c599d405e70ab02",
+          "file": "admin-audit.spec.ts",
+          "line": 388,
+          "column": 7
+        },
+        {
+          "title": "supplier mapping loading and retry recover from a failed request",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6499,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T17:09:47.967Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-80855cdd2718e2958b33",
+          "file": "admin-audit.spec.ts",
+          "line": 431,
+          "column": 5
+        },
+        {
+          "title": "supplier loading empty validation create and update retain data then mutate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "admin-audit",
+              "projectName": "admin-audit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8385,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T17:09:54.493Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1e4164cbcd7d7052b193-de0ba70e7ac1c6d83176",
+          "file": "admin-audit.spec.ts",
+          "line": 462,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-15T17:08:51.680Z",
+    "duration": 94892.685,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -5,6 +5,7 @@ import { randomBytes } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { readRows } from './lib/cms-manifests.mjs';
+import { scenarioFor } from './lib/cms-scenarios.mjs';
 
 const frontend = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const backend = path.resolve(frontend, '../krekelbergkassa-backend');
@@ -63,16 +64,17 @@ try {
   const web = start(process.execPath, ['scripts/isolated-next-server.cjs', String(webPort)], frontend, 'frontend.log');
   for (const locale of ['nl', 'en', 'de', 'fr']) { console.log('Warming local /' + locale); await ready(env.QA_STAGING_URL + '/' + locale, web); }
   run('php', ['artisan', 'quality:cms-inventory'], backend, 'inventory.log');
-  const selectedKeys = process.env.CMS_LOCAL_TEXT_KEYS?.split(',') ?? [
+  const selectedKeys = process.env.CMS_LOCAL_TEXT_KEYS?.split(',').map(key => key.replace('[product]', credentials.product_id)) ?? [
     'home.hero.title', 'i18n.footer.services', 'footer.tagline', 'header.cta.label',
-    'home.hero.cta_primary.label', 'home.werf.cert', 'over-ons.hiswa.desc', 'over-ons.stat.years.value',
+    'home.hero.cta_primary.label', 'home.hero.cta_primary.link', 'header.cta.path',
+    'home.werf.cert', 'over-ons.hiswa.desc', 'over-ons.stat.years.value', 'company.email',
+    ...['title', 'tagline', 'desc'].map(field => `catalog.product.${credentials.product_id}.${field}`),
     'verkoop.stat.1.label', 'diensten.faq.faq1.a',
     ...['crane', 'wash', 'storage', 'diy', 'sale', 'week'].flatMap(service => ['title', 'tagline', 'desc'].map(field => `home.svc.${service}.${field}`)),
   ];
   const home = 'src/app/[locale]/(site)';
   const scenarios = Object.fromEntries([
-    ['page.tsx', 'home.hero.title'], ['over-ons/page.tsx', 'over-ons.stat.years.value'],
-    ['verkoop/page.tsx', 'verkoop.stat.1.label'], ['diensten/page.tsx', 'diensten.faq.faq1.a'],
+    ['page.tsx', 'home.hero.title'], ['verkoop/page.tsx', 'verkoop.stat.1.label'],
   ].map(([file, key]) => [`${home}/${file}:super_admin:default`, { assertions: [
     { visible: `[data-cms-key="${key}"]` }, { visible: '[data-cms-toggle]' },
   ] }]));
@@ -92,6 +94,10 @@ try {
   };
   const fixtures = { environment: 'local', frozenLocalSource: process.env.CMS_FROZEN_LOCAL_SOURCE === '1', baseURL: env.QA_STAGING_URL, evidenceDirectory: path.join(storage, 'quality-private'),
     roles, scenarios,
+    routeFixtures: { '/[locale]/diensten/[slug]': '/[locale]/diensten/' + encodeURIComponent(credentials.product_slug) },
+    onlyRoutes: process.env.CMS_LOCAL_TEXT_ROUTES?.split(',') ??
+      ['/[locale]', '/[locale]/over-ons', '/[locale]/verkoop', '/[locale]/diensten', '/[locale]/contact', '/[locale]/faq', '/[locale]/diensten/[slug]', '/[locale]/admin/klanten/[id]'],
+    onlyRouteRoles: process.env.CMS_LOCAL_TEXT_ROLES?.split(','),
     onlyKeys: selectedKeys };
   const fixtureFile = path.join(runtime, 'scenarios.json'); fs.writeFileSync(fixtureFile, JSON.stringify(fixtures, null, 2));
   console.log('Verifying real local UI saves, database, reloads, audits, isolation and restoration in all four locales.');
@@ -106,7 +112,8 @@ try {
     .filter(field => selectedKeys.includes(field.key));
   const proven = new Set(passed.map(row => row.id));
   const requiredRoutes = readRows(manifest, 'route_matrix', 'route_manifest', path.join(storage, 'quality-private'))
-    .filter(route => Object.hasOwn(scenarios, `${route.file}:${route.role}:${route.state}`));
+    .filter(route => fixtures.onlyRoutes.includes(route.route) &&
+      (!fixtures.onlyRouteRoles || fixtures.onlyRouteRoles.includes(route.role)) && scenarioFor(route, fixtures));
   const passedRoutes = requiredRoutes.filter(route => routeProof.get(route.id)?.status === 'PASS');
   const result = { status: selectedKeys.every(key => required.filter(field => field.key === key).length >= 4)
       && required.every(field => proven.has(field.id)) && passedRoutes.length === requiredRoutes.length ? 'PASS' : 'FAIL',

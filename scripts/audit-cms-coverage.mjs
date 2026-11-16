@@ -89,9 +89,13 @@ export function scanSource(file, source) {
           + escape(expression.head.text) + expression.templateSpans.map(span => '[a-zA-Z0-9_./-]+' + escape(span.literal.text)).join('') + '$' : null;
         const catalogOnly = node.attributes.properties.some(attr => ts.isJsxAttribute(attr) && attr.name.getText(tree) === 'inline' && attr.initializer?.getText(tree) === '{false}');
         const alternatives = key ? [key] : literalAlternatives(expression).map(value => name === 'TranslatedText' ? 'i18n.' + value : value);
-        for (const candidate of alternatives.length ? alternatives : [null]) (catalogOnly ? catalog : fields).push(entry(node, catalogOnly ? 'catalog_binding' : 'binding', {
+        const candidates = name === 'CompanyText' && attributes.field === 'address'
+          ? ['company.address.street', 'company.address.postal_code', 'company.address.city']
+          : alternatives.length ? alternatives : [null];
+        for (const candidate of candidates) (catalogOnly ? catalog : fields).push(entry(node, catalogOnly ? 'catalog_binding' : 'binding', {
           key: candidate, key_pattern: keyPattern, expression: candidate ? null : node.getText(tree),
-          ...(alternatives.length > 1 ? { fingerprint: hash(`${slash(file)}\0${node.getText(tree)}\0${candidate}`) } : {}),
+          ...(candidates.length > 1 ? { fingerprint: hash(`${slash(file)}\0${node.getText(tree)}\0${candidate}`) } : {}),
+          ...(name === 'CompanyText' ? { editor: name } : {}),
           source: name === 'CompanyText' ? 'company_settings' : name === 'TranslatedText' ? 'i18n' : 'content_block',
           status: 'UNTESTED', reason: 'Requires real staging edit/database/reload/audit/restore evidence.' }));
         if (attributes.textKey) references.push({ key: attributes.textKey, ...entry(node, 'translation') });
@@ -121,7 +125,7 @@ export function scanSource(file, source) {
   return { fields, references, findings, catalog };
 }
 
-export function audit(root = process.cwd()) {
+export function audit(root = process.cwd(), catalogProducts = []) {
   const sources = files(path.join(root, 'src')).filter(file => /\.(tsx|ts|json)$/.test(file));
   const config = fs.readFileSync(path.join(root, 'src/i18n/config.ts'), 'utf8');
   const locales = [...config.match(/export const locales = \[([^\]]+)\]/)[1].matchAll(/'([^']+)'/g)].map(match => match[1]);
@@ -131,6 +135,7 @@ export function audit(root = process.cwd()) {
   const sourcePaths = new Set(sources.map(file => slash(path.relative(root, file))));
   const sourceHash = crypto.createHash('sha256');
   sourceHash.update(fs.readFileSync(fileURLToPath(import.meta.url)));
+  if (catalogProducts.length) sourceHash.update(JSON.stringify(catalogProducts));
   for (const file of sources) {
     const relative = slash(path.relative(root, file)), source = fs.readFileSync(file, 'utf8');
     sourceHash.update(relative + '\0' + source);
@@ -187,6 +192,17 @@ export function audit(root = process.cwd()) {
   })))));
   const registered = buildRegistry(root).content_keys;
   const resolvedFields = fields.flatMap(field => {
+    if (field.expression?.includes('blockKey={`catalog.product.')) {
+      if (!catalogProducts.length) return [{ ...field, source: 'product' }];
+      const detailPage = field.file === 'src/components/site/ServicePage.tsx';
+      const suffixes = detailPage ? ['title', 'tagline', 'desc']
+        : [field.expression.match(/\.(title|tagline)`/)?.[1]].filter(Boolean);
+      return catalogProducts.filter(product => !detailPage || (product.slug && !routes.some(route => route.route === '/[locale]/diensten/' + product.slug)))
+        .flatMap(product => suffixes.map(suffix => {
+          const key = `catalog.product.${product.id}.${suffix}`;
+          return { ...field, key, source: 'product', fingerprint: hash(`${field.fingerprint}\0${key}`) };
+        }));
+    }
     if (field.file === 'src/components/site/LegalPage.tsx' && field.source === 'content_block') {
       return registered.filter(key => /^(privacy|voorwaarden|cookies)\./.test(key) && !key.endsWith('.image'))
         .map(key => ({ ...field, key, fingerprint: hash(`${field.fingerprint}\0${key}`) }));
@@ -231,7 +247,7 @@ export function audit(root = process.cwd()) {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  const report = audit();
+  const report = audit(process.cwd(), process.argv.includes('--catalog-stdin') ? JSON.parse(fs.readFileSync(0, 'utf8')) : []);
   const output = process.argv.indexOf('--output');
   if (output >= 0) {
     const file = process.argv[output + 1];

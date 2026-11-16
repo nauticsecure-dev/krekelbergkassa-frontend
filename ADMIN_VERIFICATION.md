@@ -1,10 +1,10 @@
 # Admin page-by-page verification
 
-Generated 2026-11-13T09:57:21.242Z. 73 routes.
+Generated 2026-11-15T17:11:07.734Z. 73 routes.
 
 The admin audit browser suite intercepts HTTP; backend permission tests use SQLite in memory. Separate real-browser persistence evidence, when present below, uses an isolated local Laravel/Next deployment and file-backed SQLite. Browser smoke proves neither CRUD persistence nor complete localization. Pending is unverified. Source signal counts are not test passes.
 
-Browser results: **116 completed browser scenarios passed**, 0 earlier log-only smoke passes, 0 latest failures/interrupted observations. Log-only passes remain partial evidence. This is scenario coverage, not complete page sign-off.
+Browser results: **120 completed browser scenarios passed**, 0 earlier log-only smoke passes, 0 latest failures/interrupted observations. Log-only passes remain partial evidence. This is scenario coverage, not complete page sign-off.
 
 Reproduce: `node scripts/audit-admin-pages.mjs`, `node scripts/verify-admin-batches.mjs`, then `node scripts/report-admin-verification.mjs`. Each small batch restarts Next to bound memory and retains its own report. Remove only the specific report for a changed scenario before rerunning it; existing passing evidence is reused. Run backend permission suites separately.
 
@@ -15,9 +15,11 @@ Reproduce: `node scripts/audit-admin-pages.mjs`, `node scripts/verify-admin-batc
 
 ## Persistence evidence
 
-- **passed: isolated local deployment only**. Production/deployed environment remains unverified; intercepted HTTP tests cannot establish persistence. Report: [browser-results.json](<../_audit/global-ux-live-yApjcl/browser-results.json>)
+**passed: isolated local deployment only**. Production/deployed environment remains unverified; intercepted HTTP tests cannot establish persistence.
 
-Verified persistence on `/admin/klanten`, `/admin/leveranciers/[id]/[slug]`.
+- `/admin/leveranciers` — supplier create and edit enforce write permission and persist through browser reload. [Browser report](<../_audit/global-ux-live-BY1VOx/browser-results.json>).
+- `/admin/klanten` — customer creation persists and the generated readable link opens the created record. [Browser report](<../_audit/global-ux-live-yApjcl/browser-results.json>).
+- `/admin/leveranciers/[id]/[slug]` — supplier mapping enforces write permission and persists SKU and keyword after reload. [Browser report](<../_audit/global-ux-live-yApjcl/browser-results.json>).
 
 ## Changes made
 
@@ -93,7 +95,7 @@ CRUD letters are create/read/update/delete. n/a has a reviewed route-specific re
 | `/admin/klanten` | pass | C:pass R:pass U:pending D:pending | partial | pass / pass / pass | partial / partial | partial / pending | nl | partial |
 | `/admin/leveranciers/[id]/[slug]` | pass | C:partial R:partial U:pending D:pending | partial | pending / pass / partial | partial / partial | partial / partial | nl, en, de, fr | partial |
 | `/admin/leveranciers/[id]` | pass | C:pending R:pending U:pending D:pending | pending | partial / partial / partial | pending / pending | pending / pending | nl, fr | pending |
-| `/admin/leveranciers` | pass | C:pass R:pass U:pass D:pending | partial | pass / pass / pass | partial / partial | partial / pending | nl | partial |
+| `/admin/leveranciers` | pass | C:pass R:pass U:pass D:pending | partial | pass / pass / pass | partial / partial | partial / partial | nl, en, de, fr | partial |
 | `/admin/makelaardij` | pass | C:n/a R:pending U:n/a D:n/a | n/a | pending / pending / pending | pending / pending | n/a / n/a | nl | pending |
 | `/admin/ocr-review` | pass | C:n/a R:n/a U:n/a D:n/a | n/a | n/a / n/a / n/a | pending / pending | n/a / n/a | nl | n/a |
 | `/admin/ocr/templates` | pass | C:n/a R:n/a U:n/a D:n/a | n/a | n/a / n/a / n/a | pending / pending | n/a / n/a | nl | n/a |
@@ -212,7 +214,7 @@ Only screenshots from passing scenarios are listed; failed-run traces remain in 
 
 ## Copy review decisions
 
-Exact candidate decisions and reasons: `scripts/admin-copy-decisions.json`. Current classifications: {"intentional":13,"translate":0,"unreviewed":1933}. Fixed candidates no longer appear in the current queue; historical translate decisions remain recorded. Run `node scripts/check-admin-i18n.mjs --strict-copy` to fail on untranslated or unreviewed candidates.
+Exact candidate decisions and reasons: `scripts/admin-copy-decisions.json`. Current classifications: {"intentional":14,"translate":0,"unreviewed":1828}. Fixed candidates no longer appear in the current queue; historical translate decisions remain recorded. Run `node scripts/check-admin-i18n.mjs --strict-copy` to fail on untranslated or unreviewed candidates.
 
 ## Localization limits
 
@@ -237,3 +239,7 @@ Earlier failures are retained in the JSON attempt history and original reports. 
 - de: audit loading empty error recovery and technical dialog copy: passed on recheck; earlier report(s): [sidebar-final-results.json](artifacts/admin-audit/sidebar-final-results.json).
 - fr: audit loading empty error recovery and technical dialog copy: passed on recheck; earlier report(s): [sidebar-final-results.json](artifacts/admin-audit/sidebar-final-results.json).
 - supplier mapping loading and retry recover from a failed request: passed on recheck; earlier report(s): [supplier-mapping-results.json](artifacts/admin-audit/supplier-mapping-results.json).
+- nl: supplier list loading, repeated failure, empty state and required field: passed on recheck; earlier report(s): [supplier-list-states-results.json](artifacts/admin-audit/supplier-list-states-results.json).
+- en: supplier list loading, repeated failure, empty state and required field: passed on recheck; earlier report(s): [supplier-list-states-results.json](artifacts/admin-audit/supplier-list-states-results.json).
+- de: supplier list loading, repeated failure, empty state and required field: passed on recheck; earlier report(s): [supplier-list-states-results.json](artifacts/admin-audit/supplier-list-states-results.json).
+- fr: supplier list loading, repeated failure, empty state and required field: passed on recheck; earlier report(s): [supplier-list-states-results.json](artifacts/admin-audit/supplier-list-states-results.json).

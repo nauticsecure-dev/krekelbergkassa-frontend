@@ -179,7 +179,7 @@ export default function KassaAnalyticsPage() {
                         : 'border-navy-200 bg-white text-navy-700 hover:bg-sand-50')
                     }
                   >
-                    {m === 'original' ? t('adminNew.kassa.pos.originalPayment') : tEnum(t, 'adminNew.invoiceDetail.paymentMethods', m)}
+                    {m === 'original' ? <TranslatedText textKey={'adminNew.kassa.pos.originalPayment'} /> : tEnum(t, 'adminNew.invoiceDetail.paymentMethods', m)}
                   </button>
                 ))}
               </div>

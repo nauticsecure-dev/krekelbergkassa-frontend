@@ -1,4 +1,5 @@
 'use client';
+import { TranslatedText } from '@/components/cms/TranslatedText';
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
@@ -45,22 +46,21 @@ export function YardArrival({ boatId, name, version, onSaved, onClose }: {
       } catch (err) { setError(getApiErrorMessage(err)); }
       finally { setBusy(false); }
     }}>
-    <h3 className="font-semibold">Aankomst · {name}</h3>
-    {!!context?.appointments.length && <div className="grid gap-1"><label htmlFor="yard-arrival-appointment">Afspraak</label>
+    <h3 className="font-semibold"><TranslatedText textKey="siteCopy.8db211d8e7048a84" fallbackText={"Aankomst · "} />{name}</h3>
+    {!!context?.appointments.length && <div className="grid gap-1"><label htmlFor="yard-arrival-appointment"><TranslatedText textKey="siteCopy.de8bd8f90ac59d5f" fallbackText={"Afspraak"} /></label>
       <select id="yard-arrival-appointment" className={control} value={appointment} onChange={event => { setAppointment(event.target.value); setService(''); }}>
-        <option value="">Geen afspraak</option>
+        <option value=""><TranslatedText textKey="siteCopy.41b78d59f2c2883e" fallbackText={"Geen afspraak"} inline={false} /></option>
         {context.appointments.map(row => <option key={row.id} value={row.id}>{row.appointment_date.slice(0, 10)} · {row.start_time} · {row.service_codes?.join(', ')}</option>)}
       </select>
     </div>}
-    {appointment && <div className="grid gap-1"><label htmlFor="yard-arrival-service">Dienst</label>
+    {appointment && <div className="grid gap-1"><label htmlFor="yard-arrival-service"><TranslatedText textKey="siteCopy.d65b13eacebd7cd3" fallbackText={"Dienst"} /></label>
       <select id="yard-arrival-service" className={control} value={service} onChange={event => setService(event.target.value)}>
-        <option value="">Geen specifieke dienst</option>
+        <option value=""><TranslatedText textKey="siteCopy.995cecf80b9722a8" fallbackText={"Geen specifieke dienst"} inline={false} /></option>
         {context?.appointments.find(row => row.id === appointment)?.service_codes?.map(code => <option key={code}>{code}</option>)}
       </select>
     </div>}
-    <label className="grid gap-1">Conditierapport<textarea className={control} name="condition" maxLength={2000} /></label>
-    <label className="grid gap-1">Aankomstfoto uploaden
-      <input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || uploading || photos.length >= 12}
+    <label className="grid gap-1"><TranslatedText textKey="siteCopy.cf1317ea1f614274" fallbackText={"Conditierapport"} /><textarea className={control} name="condition" maxLength={2000} /></label>
+    <label className="grid gap-1"><TranslatedText textKey="siteCopy.ee218ddb47208a3d" fallbackText={"Aankomstfoto uploaden"} /><input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || uploading || photos.length >= 12}
         onChange={async event => {
           const input = event.currentTarget;
           const file = input.files?.[0];
@@ -80,21 +80,21 @@ export function YardArrival({ boatId, name, version, onSaved, onClose }: {
         }} />
     </label>
     {!!context?.photos.length && <fieldset className="grid gap-1">
-      <legend>Aankomstfoto’s uit het bootdossier</legend>
+      <legend><TranslatedText textKey="siteCopy.bd176859630ae11d" fallbackText={"Aankomstfoto’s uit het bootdossier"} /></legend>
       {context.photos.map(photo => <div key={photo.id} className="flex flex-wrap items-center gap-2">
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={photos.includes(photo.id)} disabled={uploading || (photos.length >= 12 && !photos.includes(photo.id))}
             onChange={event => setPhotos(current => event.target.checked ? [...current, photo.id] : current.filter(id => id !== photo.id))} />
           {photo.name}
         </label>
-        {photo.url && <a className="underline" href={photo.url} target="_blank" rel="noreferrer">Bekijken</a>}
+        {photo.url && <a className="underline" href={photo.url} target="_blank" rel="noreferrer"><TranslatedText textKey="siteCopy.5dccbda797292f05" fallbackText={"Bekijken"} /></a>}
       </div>)}
     </fieldset>}
-    <label className="flex items-center gap-2"><input type="checkbox" name="confirmed" required />Boot fysiek aangekomen</label>
+    <label className="flex items-center gap-2"><input type="checkbox" name="confirmed" required /><TranslatedText textKey="siteCopy.6c372c5fece451fc" fallbackText={"Boot fysiek aangekomen"} /></label>
     {error && <p role="alert" className="text-red-300">{error}</p>}
     <div className="flex flex-wrap gap-2">
-      <button className={control} disabled={busy || uploading}>Aankomst opslaan</button>
-      <button className={control} disabled={busy || uploading} type="button" onClick={onClose}>Sluiten</button>
+      <button className={control} disabled={busy || uploading}><TranslatedText textKey="siteCopy.f08bc87340cc8d09" fallbackText={"Aankomst opslaan"} /></button>
+      <button className={control} disabled={busy || uploading} type="button" onClick={onClose}><TranslatedText textKey="siteCopy.d4edef5df714c528" fallbackText={"Sluiten"} /></button>
     </div>
   </form>;
 }

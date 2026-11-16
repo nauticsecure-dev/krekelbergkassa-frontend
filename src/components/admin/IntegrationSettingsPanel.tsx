@@ -110,13 +110,13 @@ export function IntegrationSettingsPanel() {
             <div className="flex justify-between gap-2">
               <h3 className="font-semibold">{tEnum(t, 'settingsHub.integrations', name)}</h3>
               <Badge tone={item.configured ? 'navy' : 'danger'}>
-                {item.configured ? t('settingsHub.configurationPresent') : t('settingsHub.setupRequired')}
+                {item.configured ? <TranslatedText textKey={'settingsHub.configurationPresent'} /> : <TranslatedText textKey={'settingsHub.setupRequired'} />}
               </Badge>
             </div>
             <p className="text-sm">{item.description}</p>
             <p className="text-sm text-navy-500">{item.setup}</p>
             {item.runtime_configured != null ? (
-              <p className="text-sm"><TranslatedText textKey={'settingsHub.signingConfiguration'} />: {item.runtime_configured ? t('settingsHub.configurationPresent') : t('settingsHub.setupRequired')}</p>
+              <p className="text-sm"><TranslatedText textKey={'settingsHub.signingConfiguration'} />: {item.runtime_configured ? <TranslatedText textKey={'settingsHub.configurationPresent'} /> : <TranslatedText textKey={'settingsHub.setupRequired'} />}</p>
             ) : null}
             <div className="flex items-center gap-2 text-sm">
               <span><TranslatedText textKey={'settingsHub.diagnosticResult'} /></span>
@@ -140,7 +140,7 @@ export function IntegrationSettingsPanel() {
                 <p className="font-medium"><TranslatedText textKey="settingsHub.operational.title" /></p>
                 <p><TranslatedText textKey="settingsHub.operational.warning" /></p>
                 <label className="block">
-                  {name === 'email' || name === 'whatsapp' ? t('settingsHub.operational.recipient') : t('settingsHub.operational.references')}
+                  {name === 'email' || name === 'whatsapp' ? <TranslatedText textKey={'settingsHub.operational.recipient'} /> : <TranslatedText textKey={'settingsHub.operational.references'} />}
                   <textarea className="mt-1 block w-full rounded border p-2" rows={3}
                     aria-label={`${t('settingsHub.operational.title')} ${name}`}
                     value={verificationInput[name] ?? ''}

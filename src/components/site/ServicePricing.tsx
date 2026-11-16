@@ -388,7 +388,7 @@ export function ServicePricing({
                     <div key={line.service_code} className="flex justify-between gap-2">
                       <dt>{line.quantity && line.quantity > 1 ? line.quantity + ' × ' : ''}{currentServices.find((service) => service.id === line.product_id)?.name ?? line.service_code}</dt>
                       <dd className="text-right">
-                        {line.is_on_request || line.is_manual ? t('servicePage.onRequest') : line.included_by && !line.billable_quantity ? t('yardPricing.included') : currency(line.price_incl_vat)}
+                        {line.is_on_request || line.is_manual ? <TranslatedText textKey={'servicePage.onRequest'} /> : line.included_by && !line.billable_quantity ? <TranslatedText textKey={'yardPricing.included'} /> : currency(line.price_incl_vat)}
                         {!line.is_on_request && !line.is_manual && !line.included_by && line.vat_rate !== undefined && (
                           <span className="block text-xs text-sand-100"><TranslatedText textKey={'servicePage.inclVat'} vars={{ rate: line.vat_rate }} /></span>
                         )}
@@ -510,7 +510,7 @@ export function ServiceTariffTable({ tariffs, cm = 0, ruleId, loading, editProdu
               {metres ? tariffRangeMetres(rule, locale) : tariffRange(rule)} <TranslatedText textKey={metres ? 'yardPricing.unit' : 'yardPricing.unitCm'} />
             </th>
             <td className="relative px-5 py-1 text-right font-semibold tabular-nums sm:pr-12">
-              {rule.is_on_request || rule.price_type === 'manual' ? t('servicePage.onRequest') : rule.display_price}
+              {rule.is_on_request || rule.price_type === 'manual' ? <TranslatedText textKey={'servicePage.onRequest'} /> : rule.display_price}
               {matching === rule && <Check aria-hidden="true" className="absolute right-3 top-1.5 hidden h-4 w-4 rounded-full bg-gold-600 p-0.5 text-white sm:block" />}
               {rule.price_type === 'per_meter' && !rule.display_price.endsWith(' / m') && ' / m'}
               <InlineTariffEditor rule={rule} />

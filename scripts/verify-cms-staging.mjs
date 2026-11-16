@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { readRows, writeRows } from './lib/cms-manifests.mjs';
+import { scenarioFor } from './lib/cms-scenarios.mjs';
 
 const frontend = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const backend = path.resolve(frontend, '../krekelbergkassa-backend');
@@ -98,7 +99,9 @@ async function actions(page, steps = []) {
     if (step.click) await page.locator(step.click).click();
     else if (step.fill) await page.locator(step.fill.selector).fill(step.fill.value);
     else if (step.visible) await page.locator(step.visible).waitFor({ state: 'visible' });
+    else if (step.attached) await page.locator(step.attached).first().waitFor({ state: 'attached' });
     else if (step.hidden) await page.locator(step.hidden).waitFor({ state: 'hidden' });
+    else if (step.enabled) await page.locator(step.enabled).and(page.locator(':enabled')).waitFor({ state: 'visible' });
     else if (step.text) {
       const locator = page.locator(step.text.selector);
       await locator.filter({ hasText: step.text.value }).waitFor({ state: 'visible' });
@@ -121,12 +124,19 @@ function waitForApi(page, endpoint, method) {
   pending.catch(() => {});
   return pending;
 }
+async function chooseOption(page, combo, value) {
+  await combo.click();
+  const id = await combo.getAttribute('aria-controls');
+  await page.locator(`[id=${JSON.stringify(id)}] [data-option-value=${JSON.stringify(value)}]`).click();
+}
 try {
   // The denominator is discovered, never reduced to the configured happy paths.
   for (const row of inventory.route_matrix ?? []) {
     const result = { id: row.id, run_id: runId, status: 'UNTESTED', reason: row.reason, steps: {} };
     report.routes.push(result);
-    const scenario = config.scenarios?.[row.id] ?? config.scenarios?.[`${row.file}:${row.role}:${row.state}`];
+    if (config.environment === 'local' &&
+      ((config.onlyRoutes && !config.onlyRoutes.includes(row.route)) || (config.onlyRouteRoles && !config.onlyRouteRoles.includes(row.role)))) continue;
+    const scenario = scenarioFor(row, config);
     if (!scenario) { result.status = 'BLOCKED'; result.reason = 'A state scenario and expected authorization outcome are required.'; continue; }
     if (scenario.excluded) { result.status = 'EXCLUDED'; result.reason = scenario.excluded; continue; }
     const ctx = await context(row.role);
@@ -146,7 +156,7 @@ try {
       if (scenario.expectedURL) assert.equal(page.url(), onSiteURL(scenario.expectedURL, row.locale));
       assert.equal(new URL(page.url()).origin, baseURL);
       result.steps = { browser: true, assertions: true }; result.status = 'PASS'; result.reason = '';
-      const surfaces = await page.locator('[data-cms-field-id]').evaluateAll(nodes => nodes.map(node => ({
+      const surfaces = await page.locator('[data-cms-field-id]:visible').evaluateAll(nodes => nodes.map(node => ({
         key: node.getAttribute('data-cms-key'), field_id: node.getAttribute('data-cms-field-id'), source: node.getAttribute('data-cms-source'),
         record_id: node.getAttribute('data-cms-record-id'), version: node.getAttribute('data-cms-version'),
       })));
@@ -170,16 +180,21 @@ try {
     const row = { id: field.id, run_id: runId, status: 'UNTESTED', reason: 'Not selected in this run.', steps: {} };
     report.fields.push(row);
     if (config.onlyKeys && !config.onlyKeys.includes(field.key)) continue;
-    const variants = (observed.get(`${field.key}:${field.locale}`) ?? []).filter(surface => surface.file === field.file || surface.dependencies.includes(field.file));
-    const surface = variants[0];
     const fixture = config.fields?.[field.key];
-    const settings = ['EditableGlobalText', 'EditableHeaderCta'].includes(field.editor) && field.key !== 'header.cta.path';
+    const contact = field.editor === 'CompanyText';
+    const presentationKey = contact && field.key?.startsWith('company.address.') ? 'company.address' : field.key;
+    const variants = (observed.get(`${presentationKey}:${field.locale}`) ?? []).filter(surface => surface.file === field.file || surface.dependencies.includes(field.file));
+    const surface = variants[0];
+    const settings = contact || ['EditableGlobalText', 'EditableHeaderCta'].includes(field.editor);
+    const headerPath = field.key === 'header.cta.path';
+    const heroLink = field.editor === 'EditableHeroCta' && field.key?.endsWith('.link');
+    const shared = contact || headerPath;
     const cards = { EditableCertificationBadge: '[data-cms-badge]', EditableHiswaCard: '[data-cms-card]' };
-    const batch = !!cards[field.editor] || (field.editor === 'EditableHeroCta' && !field.key?.endsWith('.link'));
+    const batch = !!cards[field.editor] || field.editor === 'EditableHeroCta';
     if (!editor || !token || !field.key || (!surface && !fixture && field.surface !== 'catalog')) {
       row.status = 'BLOCKED'; row.reason = 'Missing canonical field, reachable editor surface or authorized editor session.'; continue;
     }
-    if (!settings && !['content_block', 'i18n'].includes(field.source)) {
+    if (!settings && !['content_block', 'i18n', 'product'].includes(field.source)) {
       row.status = 'BLOCKED'; row.reason = 'Canonical settings/record adapter requires its own versioned mutation and restore scenario.'; continue;
     }
     if (field.editor && !settings && !batch) {
@@ -191,17 +206,32 @@ try {
     const tag = tags[field.locale];
     const valuesByLocale = values => settings && typeof values === 'string'
       ? Object.fromEntries(Object.values(tags).map(locale => [locale, values])) : values;
-    const fieldSelector = fixture?.selector ?? `[data-cms-key=${JSON.stringify(key)}]`;
+    const fieldSelector = fixture?.selector ?? `[data-cms-key=${JSON.stringify(presentationKey)}]`;
     const rendered = page => page.locator(fieldSelector + ':visible').first();
-    const visibleMarker = page => page.locator(fieldSelector + ':visible').filter({ hasText: marker }).first();
-    const marker = 'CMS_QA_' + runId.slice(0, 8) + '_' + field.locale;
-    let before, after, page, savedRevision, restoreRequired = false;
+    let marker = 'CMS_QA_' + runId.slice(0, 8) + '_' + field.locale;
+    if (key === 'company.email') marker = marker.toLowerCase() + '@example.test';
+    if (key === 'company.phone') marker = '+31 000 ' + String(parseInt(runId.slice(0, 6), 16)).padStart(8, '0');
+    if (key === 'company.address.postal_code') marker = '9999 ZZ';
+    let before, after, page, savedRevision, savedValue, restoreRequired = false;
+    const storedValue = record => shared ? record.values : record.values?.[tag];
+    const renderedAttribute = (headerPath || heroLink) ? 'href' : null;
+    const waitForPresentation = async (page, locale = field.locale) => {
+      const selector = renderedAttribute
+        ? fieldSelector + `[href=${JSON.stringify(headerPath ? '/' + locale + '/' + marker : marker)}]:visible`
+        : fieldSelector + ':visible';
+      const matches = page.locator(selector);
+      await (renderedAttribute ? matches : matches.filter({ hasText: marker })).first().waitFor();
+    };
     const proof = {};
     try {
       before = probe(key);
+      if (headerPath) marker = before.values === 'contact' ? 'faq' : 'contact';
+      if (heroLink) marker = 'https://example.test/' + marker;
+      if (key === 'company.address.postal_code' && before.values === marker) marker = '9999 ZA';
+      savedValue = marker;
       Object.assign(proof, { key, locale: field.locale, marker, before });
       row.artifacts = [artifact(field.id, proof)]; checkpoint();
-      if (!before.record_id && /^(?:i18n\.)?home\.svc\./.test(key)) {
+      if (!before.record_id && /^(?:(?:i18n\.)?home\.svc\.|catalog\.product\.)/.test(key)) {
         const error = new Error('The canonical service record needs a fixture.'); error.blocked = true; throw error;
       }
       page = await editor.newPage();
@@ -209,7 +239,8 @@ try {
       const pageActions = fixture?.actions ?? surface?.actions;
       await actions(page, pageActions);
       proof.url = page.url();
-      if (field.surface !== 'catalog') proof.rendered_before = await rendered(page).textContent();
+      if (field.surface !== 'catalog') proof.rendered_before = renderedAttribute
+        ? await rendered(page).getAttribute(renderedAttribute) : await rendered(page).textContent();
       await page.locator('[data-cms-toggle]').click();
       const hiswa = field.editor === 'EditableHiswaCard';
       const loaded = waitForApi(page, settings ? 'global-settings' : hiswa ? 'content-blocks' : endpoint, 'GET');
@@ -219,7 +250,7 @@ try {
         await page.locator(`[data-cms-catalog-key=${JSON.stringify(key.slice(5))}]`).click();
       } else if (cards[field.editor]) {
         await page.locator(cards[field.editor]).filter({ has: page.locator(fieldSelector) }).locator('[data-cms-edit]').click();
-      } else if (field.editor === 'EditableGlobalText') await rendered(page).locator('[data-cms-edit]').click();
+      } else if (field.editor === 'EditableGlobalText' || contact) await rendered(page).locator('[data-cms-edit]').click();
       else await rendered(page).click();
       const loadedRecord = await (await loaded).json();
       const loadedRevision = settings ? loadedRecord.revisions?.[key] : hiswa
@@ -229,43 +260,59 @@ try {
       const input = settings ? dialog.locator(`[data-cms-setting-input=${JSON.stringify(key)}]`)
         : batch ? dialog.locator(`[data-cms-text-input=${JSON.stringify(key)}]`) : dialog.locator('textarea');
       if (field.editor === 'EditableHiswaCard') await dialog.locator(`[data-cms-editor-locale="${tag}"]`).click();
-      else {
+      else if (!shared && !heroLink) {
         const tab = dialog.getByRole('tab', { name: field.locale.toUpperCase(), exact: true });
         if (settings) await dialog.locator(`[data-cms-setting-editor=${JSON.stringify(key)}]`).getByRole('tab', { name: field.locale.toUpperCase(), exact: true }).click();
         else await tab.click();
       }
-      await input.fill(marker); row.steps.edit = true;
+      if (headerPath) await chooseOption(page, dialog.locator('[data-cms-setting-editor="header.cta.path"] button[aria-haspopup="listbox"]'), marker);
+      else if (heroLink) {
+        await chooseOption(page, dialog.locator('#cms-cta-link-type'), 'external');
+        await dialog.locator('[data-cms-cta-url]').fill(marker);
+      } else await input.fill(marker);
+      row.steps.edit = true;
       row.artifacts = [artifact(field.id, proof)]; checkpoint();
       restoreRequired = true;
-      const saved = waitForApi(page, batch ? 'content-blocks' : endpoint, 'PATCH');
+      const saved = waitForApi(page, contact ? 'contact-settings' : batch ? 'content-blocks' : endpoint, 'PATCH');
       await dialog.locator(settings ? '[data-cms-save]' : '[data-cms-publish]').click();
       const savedResponse = await saved;
       assert.equal(savedResponse.status(), 200);
       const savedRecord = await savedResponse.json();
-      savedRevision = (batch ? savedRecord.data.find(record => record.key === key) : savedRecord)?.cms_revision;
+      const savedBlock = batch ? savedRecord.data.find(record => record.key === key) : savedRecord;
+      savedRevision = contact ? savedRecord.saved_revisions?.[key] : savedBlock?.cms_revision;
+      if (heroLink) savedValue = savedBlock?.value_by_locale?.[tag];
       assert.ok(savedRevision, 'Mutation did not return a revision.');
       proof.saved_revision = savedRevision;
       row.artifacts = [artifact(field.id, proof)]; checkpoint();
       await dialog.waitFor({ state: 'hidden' }); row.steps.save = true;
       after = probe(key); proof.before = before; proof.after = after;
       assert.equal(after.revision, savedRevision, 'Record changed after this run saved');
-      assert.equal(after.values[tag], marker); assert.equal(after.published_values[tag], marker); row.steps.database = true;
+      if (heroLink) {
+        const destination = JSON.parse(savedValue);
+        assert.equal(destination.link_type, 'external');
+        assert.equal(destination.url, marker);
+      }
+      assert.equal(storedValue(after), savedValue);
+      assert.equal(shared ? after.published_values : after.published_values[tag], savedValue);
+      row.steps.database = true;
       assert.equal(after.unrelated_hash, before.unrelated_hash);
       if (before.record_id) assert.equal(after.other_fields_hash, before.other_fields_hash);
       row.steps.unrelated_fields = true;
       const untouched = values => Object.fromEntries(Object.entries(valuesByLocale(values)).filter(([locale]) => locale !== tag));
-      assert.deepEqual(untouched(after.values), untouched(before.values));
-      assert.deepEqual(untouched(after.published_values), untouched(before.published_values)); row.steps.other_locales = true;
+      if (!shared) {
+        assert.deepEqual(untouched(after.values), untouched(before.values));
+        assert.deepEqual(untouched(after.published_values), untouched(before.published_values));
+      } else assert.equal(typeof after.values, 'string', 'Shared settings must remain unlocalized');
       assert.ok(after.audit?.id && after.audit.id !== before.audit?.id);
       assert.equal(after.audit.user_id, actor);
       const auditField = after.field;
       const auditedValues = after.audit.after_data?.[auditField];
-      assert.equal(auditedValues?.[tag], marker);
+      assert.equal(shared ? auditedValues : auditedValues?.[tag], savedValue);
       assert.deepEqual(after.audit.before_data?.[auditField] ?? [], before.values);
       row.steps.audit = true;
       await page.evaluate(() => sessionStorage.clear()); await page.reload();
       await actions(page, pageActions);
-      if (field.surface !== 'catalog') await visibleMarker(page).waitFor();
+      if (field.surface !== 'catalog') await waitForPresentation(page);
       else {
         const publicRead = await page.request.get(baseURL + '/api/v1/cms/page-content?page=global&locale=' + tags[field.locale]);
         assert.equal((await publicRead.json()).content_blocks.find(block => block.key === key)?.value, marker);
@@ -275,8 +322,18 @@ try {
       // discovered presentation for this source, not just the editor trigger.
       for (const presentation of variants.filter(item => item.url !== surface?.url || item.state !== surface?.state)) {
         await page.goto(presentation.url); await actions(page, presentation.actions);
-        await visibleMarker(page).waitFor();
+        await waitForPresentation(page);
       }
+      if (shared) {
+        const presentation = new URL(proof.url);
+        for (const locale of Object.keys(tags).filter(locale => locale !== field.locale)) {
+          const localized = new URL(presentation);
+          localized.pathname = localized.pathname.replace(new RegExp('^/' + field.locale + '(?=/|$)'), '/' + locale);
+          await page.goto(localized.href); await actions(page, pageActions);
+          await waitForPresentation(page, locale);
+        }
+      }
+      row.steps.other_locales = true;
     } catch (error) { row.status = error.code === 'CMS_SOURCE_CHANGED' ? 'STALE' : error.blocked ? 'BLOCKED' : 'FAIL'; row.reason = error.message; }
     finally {
       if (restoreRequired) {
@@ -291,7 +348,7 @@ try {
           } else {
             assert.equal(after.revision, savedRevision, 'Newer changes exist; automatic restore refused');
             assert.ok(after.audit?.id && after.audit.id !== before?.audit?.id, 'No audited mutation to restore');
-            assert.equal(after.values[tags[field.locale]], marker, 'Newer editor data detected');
+            assert.equal(storedValue(after), savedValue, 'Newer editor data detected');
             const response = await editor.request.post(baseURL + '/api/v1/admin/cms/' + endpoint + '/restore', {
               headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' }, data: { expected_revision: savedRevision, audit_id: after.audit.id },
             });
@@ -301,8 +358,9 @@ try {
             if (restored.build_hash !== report.build_hash) { row.status = 'STALE'; row.reason = 'Source changed during verification. This proof cannot approve a release.'; }
             if (row.status !== 'STALE' && proof.rendered_before !== undefined) {
               await page.evaluate(() => sessionStorage.clear()); await page.goto(proof.url); await actions(page, fixture?.actions ?? surface?.actions);
-              await page.waitForFunction(({ selector, text }) => [...document.querySelectorAll(selector)]
-                .some(node => node.getClientRects().length && node.textContent === text), { selector: fieldSelector, text: proof.rendered_before });
+              await page.waitForFunction(({ selector, value, attribute }) => [...document.querySelectorAll(selector)]
+                .some(node => node.getClientRects().length && (attribute ? node.getAttribute(attribute) : node.textContent) === value),
+              { selector: fieldSelector, value: proof.rendered_before, attribute: renderedAttribute });
             }
           }
         } catch (error) { row.status = 'BLOCKED'; row.reason = 'RESTORE NEEDS ATTENTION: ' + error.message; }

@@ -100,19 +100,19 @@ export function YardServicePlan({ boatId, services, onClose, onSaved }: {
   return <form className="space-y-3 rounded border border-slate-600 p-3" onChange={() => setPreview(undefined)} onSubmit={event => { event.preventDefault(); void review(); }}>
     <h3 className="font-semibold"><TranslatedText textKey="yardSchedule.plan" inline={false} /></h3>
     {error && <p role="alert" className="text-red-300">{error}</p>}
-    <label className="grid">Actie<select className={control} value={kind} disabled={busy} onChange={event => {
+    <label className="grid"><TranslatedText textKey="siteCopy.b9db7ea785cc61a0" fallbackText={"Actie"} /><select className={control} value={kind} disabled={busy} onChange={event => {
       setKind(event.target.value); setWorkflow(false);
     }}>
-      <option value="">Werktaken plannen</option>
-      {context?.can_add_services && <option value="add">Diensten toevoegen aan afspraak</option>}
-      {context?.can_terminate && <option value="terminate">Stallingscontract opzeggen</option>}
+      <option value=""><TranslatedText textKey="siteCopy.30a6e17bf499cab4" fallbackText={"Werktaken plannen"} inline={false} /></option>
+      {context?.can_add_services && <option value="add"><TranslatedText textKey="siteCopy.75b208e1c55d5fca" fallbackText={"Diensten toevoegen aan afspraak"} inline={false} /></option>}
+      {context?.can_terminate && <option value="terminate"><TranslatedText textKey="siteCopy.b92663d689c90239" fallbackText={"Stallingscontract opzeggen"} inline={false} /></option>}
     </select></label>
     {!terminating && <label className="flex items-center gap-2"><input type="checkbox" checked={workflow} disabled={busy} onChange={event => {
       const enabled = event.target.checked;
       setWorkflow(enabled);
       setPreview(undefined);
       if (enabled) setSteps(current => [0, 1, 2].map(index => current[index] ?? emptyStep((current.at(-1)?.id ?? 0) + index + 1)));
-    }} />Verplaatsing → kraan → wassen → stalling</label>}
+    }} /><TranslatedText textKey="siteCopy.6bb0cf89de82c3bd" fallbackText={"Verplaatsing → kraan → wassen → stalling"} /></label>}
     <fieldset disabled={busy} className="flex flex-wrap gap-2">
       {([
         ['appointment_id', 'yardSchedule.appointment', context?.appointments?.map(row => [row.id, `${row.appointment_date.slice(0, 10)} ${row.start_time} · ${row.status}`])],
@@ -129,20 +129,19 @@ export function YardServicePlan({ boatId, services, onClose, onSaved }: {
         </select>
       </label>)}
     </fieldset>
-    {kind === 'add' && <label className="grid">Nieuwe starttijd afspraak (optioneel)
-      <input className={control} type="datetime-local" value={bookingStart} disabled={busy} onChange={event => setBookingStart(event.target.value)} />
+    {kind === 'add' && <label className="grid"><TranslatedText textKey="siteCopy.2859607861a0c6c7" fallbackText={"Nieuwe starttijd afspraak (optioneel)"} /><input className={control} type="datetime-local" value={bookingStart} disabled={busy} onChange={event => setBookingStart(event.target.value)} />
     </label>}
     {terminating && <fieldset disabled={busy} className="flex flex-wrap gap-2">
-      <label className="grid">Ingangsdatum<input className={control} type="date" required value={effectiveDate} onChange={event => setEffectiveDate(event.target.value)} /></label>
-      <label className="grid">Creditbedrag inclusief btw (€)<input className={control} type="number" step="0.01" min="0" value={credit} onChange={event => setCredit(event.target.value)} /></label>
-      {Number(credit) > 0 && <label className="grid">Factuurregel<select className={control} required value={invoiceLine} onChange={event => setInvoiceLine(event.target.value)}>
-        <option value="">Kies een factuurregel</option>
+      <label className="grid"><TranslatedText textKey="siteCopy.f6a926f859b28584" fallbackText={"Ingangsdatum"} /><input className={control} type="date" required value={effectiveDate} onChange={event => setEffectiveDate(event.target.value)} /></label>
+      <label className="grid"><TranslatedText textKey="siteCopy.70af993b85c8dcf9" fallbackText={"Creditbedrag inclusief btw (€)"} /><input className={control} type="number" step="0.01" min="0" value={credit} onChange={event => setCredit(event.target.value)} /></label>
+      {Number(credit) > 0 && <label className="grid"><TranslatedText textKey="siteCopy.366fb2fd0b74d338" fallbackText={"Factuurregel"} /><select className={control} required value={invoiceLine} onChange={event => setInvoiceLine(event.target.value)}>
+        <option value=""><TranslatedText textKey="siteCopy.dc78740a924056e9" fallbackText={"Kies een factuurregel"} inline={false} /></option>
         {creditLines.map(line => <option key={line.id} value={line.id}>{line.invoice_number} · {line.description} · {euros(line.available_cents)}</option>)}
       </select></label>}
     </fieldset>}
     {linkedMove?.placement_version !== undefined && <fieldset disabled={busy} className="flex flex-wrap gap-2">
-      <label className="grid">Nieuwe starttijd verplaatsing (optioneel)<input className={control} type="datetime-local" value={moveStart} onChange={event => setMoveStart(event.target.value)} /></label>
-      {moveStart && <label className="grid">Nieuwe instructies<textarea className={control} maxLength={2000} value={instructions} onChange={event => setInstructions(event.target.value)} /></label>}
+      <label className="grid"><TranslatedText textKey="siteCopy.bc11b79ea27494a0" fallbackText={"Nieuwe starttijd verplaatsing (optioneel)"} /><input className={control} type="datetime-local" value={moveStart} onChange={event => setMoveStart(event.target.value)} /></label>
+      {moveStart && <label className="grid"><TranslatedText textKey="siteCopy.995412f0793abaae" fallbackText={"Nieuwe instructies"} /><textarea className={control} maxLength={2000} value={instructions} onChange={event => setInstructions(event.target.value)} /></label>}
     </fieldset>}
     {!terminating && steps.map((step, index) => {
       const team = resources?.teams.find(item => item.id === step.team_id);
@@ -186,12 +185,12 @@ export function YardServicePlan({ boatId, services, onClose, onSaved }: {
     </div>
     {preview && <div className="space-y-2">
       <ol className="list-decimal pl-5">{preview.steps.map((step, index) => <li key={`${step.product_id}:${index}`}>{step.title} · {new Date(step.start).toLocaleString(undefined, { timeZone: 'Europe/Amsterdam' })} · {new Intl.NumberFormat(undefined, { style: 'unit', unit: 'minute' }).format(step.duration_minutes)}</li>)}</ol>
-      {preview.relocation && <p>Verplaatsing · {new Date(preview.relocation.due_at).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam' })} · {preview.relocation.instructions}</p>}
+      {preview.relocation && <p><TranslatedText textKey="siteCopy.4318b970eae62f92" fallbackText={"Verplaatsing · "} />{new Date(preview.relocation.due_at).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam' })} · {preview.relocation.instructions}</p>}
       {preview.relocation?.warnings?.map(warning => <p key={warning} className="text-amber-200">{warning}</p>)}
       {preview.change ? <>
-        {preview.change.kind === 'terminate' && <p>Opzegtermijn {preview.change.notice_days} dagen · Minimumvergoeding {euros(preview.change.minimum_charge_cents ?? 0)} · {preview.change.cancel_task_ids?.length ?? 0} te annuleren taken</p>}
+        {preview.change.kind === 'terminate' && <p><TranslatedText textKey="siteCopy.50750278e8510afb" fallbackText={"Opzegtermijn "} />{preview.change.notice_days} <TranslatedText textKey="siteCopy.7cd506952e32156a" fallbackText={" dagen · Minimumvergoeding "} />{euros(preview.change.minimum_charge_cents ?? 0)} · {preview.change.cancel_task_ids?.length ?? 0} <TranslatedText textKey="siteCopy.f04b43cfda613cb9" fallbackText={" te annuleren taken"} /></p>}
         <blockquote className="border-l-2 border-slate-500 pl-3"><strong>{preview.change.notice.title}</strong><p>{preview.change.notice.message}</p></blockquote>
-        <label className="flex gap-2"><input type="checkbox" checked={approved} disabled={busy} onChange={event => { event.stopPropagation(); setApproved(event.target.checked); }} />Ik keur de financiële gevolgen en het bericht in het klantenportaal goed.</label>
+        <label className="flex gap-2"><input type="checkbox" checked={approved} disabled={busy} onChange={event => { event.stopPropagation(); setApproved(event.target.checked); }} /><TranslatedText textKey="siteCopy.cd63678be6aae557" fallbackText={"Ik keur de financiële gevolgen en het bericht in het klantenportaal goed."} /></label>
       </> : <p><TranslatedText textKey="yardSchedule.internalOnly" inline={false} /></p>}
       <button className={control} type="button" disabled={busy || !!preview.change && !approved} onClick={() => void confirm()}><TranslatedText textKey="yardSchedule.confirm" inline={false} /></button>
     </div>}

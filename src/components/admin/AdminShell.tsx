@@ -377,10 +377,10 @@ function GlobalTopbar({
                         }
                       }}
                     >
-                      <div className="text-sm font-semibold text-navy-900">{t('adminModules.nav.myQaFindings')}</div>
-                      <div className="text-xs text-navy-500">{t('adminModules.nav.qaUnread', { count: qaUnread })}</div>
+                      <div className="text-sm font-semibold text-navy-900">{<TranslatedText textKey={'adminModules.nav.myQaFindings'} />}</div>
+                      <div className="text-xs text-navy-500">{<TranslatedText textKey={'adminModules.nav.qaUnread'} vars={{ count: qaUnread }} />}</div>
                     </a>
-                    {qaOpenError ? <p role="alert" className="px-4 pb-3 text-xs text-rose-600">{t('adminModules.nav.qaUnavailable')}</p> : null}
+                    {qaOpenError ? <p role="alert" className="px-4 pb-3 text-xs text-rose-600">{<TranslatedText textKey={'adminModules.nav.qaUnavailable'} />}</p> : null}
                   </div>
                 ) : null}
                 {notifications.loading ? (

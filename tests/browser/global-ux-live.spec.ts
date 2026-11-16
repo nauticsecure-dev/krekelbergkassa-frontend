@@ -99,6 +99,107 @@ test('customer creation persists and the generated readable link opens the creat
   await info.attach('database-persistence', { body: JSON.stringify({ engine: 'isolated SQLite file', browserReload: true, apiReadback: true, databaseReadback: true, customerId: stored.id }), contentType: 'application/json' });
 });
 
+test('supplier create and edit enforce write permission and persist through browser reload', async ({ page, request }, info) => {
+  const list = '/en/admin/leveranciers';
+  const endpoint = '/api/v1/suppliers';
+  const seeded = records.leveranciers;
+  const name = 'North Sea Marine Electrical and Navigation Equipment Supplier';
+  const email = 'marine-navigation-and-electrical@global-ux.example.test';
+  const main = page.locator('main');
+  const dialog = page.getByRole('dialog');
+  const action = (key: string) => main.getByRole('button', { name: label('en', key), exact: true });
+  const row = (value: string) => main.getByRole('row').filter({ hasText: value });
+  const field = (key: string) => dialog.getByLabel(label('en', 'adminNew.suppliers.' + key), { exact: true });
+  const save = dialog.getByRole('button', { name: label('en', 'adminNew.common.save'), exact: true });
+  const mutate = async (method: string, url: string, status: number) => {
+    const pending = page.waitForResponse(response =>
+      new URL(response.url()).pathname === url && response.request().method() === method);
+    await save.click();
+    const response = await pending;
+    expect(response.status(), await response.text()).toBe(status);
+    return unwrap(await response.json());
+  };
+
+  const readerHeaders = await session(page, request, 'reader');
+  await page.goto(list + '?new=1');
+  await expect(row(seeded.name)).toBeVisible();
+  await expect(action('adminNew.suppliers.new')).toBeDisabled();
+  await expect(row(seeded.name).getByRole('button', { name: 'Edit', exact: true })).toBeDisabled();
+  await expect(dialog).toHaveCount(0);
+  expect((await request.post(endpoint, { headers: readerHeaders, data: { name } })).status()).toBe(403);
+  expect((await request.patch(endpoint + '/' + seeded.id, { headers: readerHeaders, data: { name } })).status()).toBe(403);
+  const unchanged = await request.get(endpoint + '/' + seeded.id, { headers: readerHeaders });
+  expect(unchanged.ok(), await unchanged.text()).toBe(true);
+  expect(unwrap(await unchanged.json()).name).toBe(seeded.name);
+
+  await page.unroute('**/*');
+  const headers = await session(page, request);
+  await page.goto(list);
+  const create = action('adminNew.suppliers.new');
+  await expect(create).toBeEnabled();
+  await create.click();
+  await expect(dialog.getByRole('heading', { name: 'New supplier', exact: true })).toBeVisible();
+  await field('columns.name').fill(name);
+  await field('fields.email').fill(email);
+  await field('fields.ledgerAccount').fill('4000');
+  await field('fields.paymentTerms').fill('366');
+  const invalid = await mutate('POST', endpoint, 422);
+  expect(invalid.errors.payment_terms_days).toBeDefined();
+  await expect(page.getByText(label('en', 'adminNew.common.operationFailed'), { exact: true })).toBeVisible();
+  await expect(field('columns.name')).toHaveValue(name);
+  await expect(field('fields.paymentTerms')).toHaveValue('366');
+  await field('fields.paymentTerms').fill('30');
+  const created = await mutate('POST', endpoint, 201);
+  expect(created).toMatchObject({ name, email });
+  await expect(dialog).toHaveCount(0);
+  await page.reload();
+  await expect(row(name)).toContainText(email);
+  const stored = () => php('echo json_encode(App\\Models\\Supplier::where("email", "marine-navigation-and-electrical@global-ux.example.test")->firstOrFail());');
+  expect(stored()).toMatchObject({ id: created.id, name, email, payment_terms_days: 30, default_purchase_ledger: '4000' });
+
+  const noOverflow = async () => {
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    await expect.poll(() => main.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+  };
+  const edit = row(name).getByRole('button', { name: 'Edit', exact: true });
+  for (const [width, collapsed] of [[390, false], [1280, false], [1280, true], [1536, true], [1536, false]] as const) {
+    await page.setViewportSize({ width, height: 900 });
+    if (width === 1280 && collapsed) await page.getByRole('button', { name: 'Collapse sidebar', exact: true }).click();
+    if (width === 1536 && !collapsed) await page.getByRole('button', { name: 'Expand sidebar', exact: true }).click();
+    await expect(row(name)).toBeVisible();
+    await noOverflow();
+    await edit.click();
+    await expect(dialog.getByRole('heading', { name: 'Edit supplier', exact: true })).toBeVisible();
+    await expect(field('fields.email')).toHaveValue(email);
+    await noOverflow();
+    if (width !== 1536 || collapsed) {
+      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+      await expect(dialog).toHaveCount(0);
+    }
+  }
+  const updatedName = name + ' West';
+  await field('columns.name').fill(updatedName);
+  await field('fields.ledgerAccount').fill('4100');
+  await mutate('PATCH', endpoint + '/' + created.id, 200);
+  await expect(dialog).toHaveCount(0);
+  await page.reload();
+  await expect(row(updatedName)).toContainText(email);
+  await row(updatedName).getByRole('link', { name: 'Open', exact: true }).click();
+  await expect(main.getByRole('heading', { level: 1, name: updatedName })).toBeVisible();
+  await expect(main.getByText('4100', { exact: true })).toBeVisible();
+  await noOverflow();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await noOverflow();
+  const fetched = await request.get(endpoint + '/' + created.id, { headers });
+  expect(fetched.ok(), await fetched.text()).toBe(true);
+  expect(unwrap(await fetched.json())).toMatchObject({ name: updatedName, default_purchase_ledger: '4100' });
+  expect(stored()).toMatchObject({ id: created.id, name: updatedName, default_purchase_ledger: '4100' });
+  await info.attach('database-persistence', {
+    body: JSON.stringify({ engine: 'isolated SQLite file', actions: ['create', 'update'], browserReload: true, apiReadback: true, databaseReadback: true }),
+    contentType: 'application/json',
+  });
+});
+
 test('supplier mapping enforces write permission and persists SKU and keyword after reload', async ({ page, browser, request }, info) => {
   const supplier = records.leveranciers;
   const product = records.producten;

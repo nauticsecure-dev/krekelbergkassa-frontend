@@ -1,6 +1,15 @@
 [
   {
     "match": {
+      "locale": "nl",
+      "key": "adminNew.suppliers.mapColumns.product",
+      "text": "Product"
+    },
+    "decision": "intentional",
+    "reason": "Product is the Dutch noun for the catalog item linked to a supplier mapping."
+  },
+  {
+    "match": {
       "locale": "de",
       "key": "adminNew.suppliers.columns.name",
       "text": "Name"

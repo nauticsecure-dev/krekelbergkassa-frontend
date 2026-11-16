@@ -495,7 +495,7 @@ export default function CalendarAdminPage({ embedded = false }: { embedded?: boo
                   {(nextYardTask ? [nextYardTask, ...yardRows.filter(job => job !== nextYardTask)] : yardRows).map((job) => <li key={`${job.type}:${job.id}`}>
                     <Link href={yardJobPath(locale, job)} prefetch={false} onClick={() => { getAuthToken(); }} className="flex flex-wrap justify-between gap-2 rounded-lg border border-navy-200 px-3 py-2 text-sm">
                       <span>{job === nextYardTask && <strong className="mr-2 text-marine-700"><TranslatedText textKey="yardDaily.nextTask" /></strong>}{job.boat} · {job.title}</span>
-                      <span>{job.due_at ? new Intl.DateTimeFormat(dateLocale, { timeZone: 'Europe/Amsterdam', timeStyle: 'short' }).format(new Date(job.due_at)) : t('yardDaily.allDay')}
+                      <span>{job.due_at ? new Intl.DateTimeFormat(dateLocale, { timeZone: 'Europe/Amsterdam', timeStyle: 'short' }).format(new Date(job.due_at)) : <TranslatedText textKey={'yardDaily.allDay'} />}
                         {job.assigned_to && ` · ${job.assigned_to}`}</span>
                     </Link>
                   </li>)}

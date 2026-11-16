@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T09:53:15.302Z",
+  "generatedAt": "2026-11-15T17:10:17.813Z",
   "count": 73,
   "method": "Conservative local component import/export closure, including modal components. Shared primitives and shell excluded from page signals; see sharedFiles. A module may contain unused exports. Source presence never proves runtime coverage or authorization.",
   "sharedFiles": [
@@ -324,7 +324,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -612,7 +612,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -933,7 +933,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -1206,7 +1206,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -1476,7 +1476,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -1713,7 +1713,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -1983,7 +1983,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -2325,7 +2325,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -2666,7 +2666,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -2951,7 +2951,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -3254,7 +3254,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -3630,7 +3630,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -3944,7 +3944,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -4240,7 +4240,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -4662,7 +4662,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -4998,7 +4998,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -5361,7 +5361,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -5679,7 +5679,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -5916,7 +5916,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -6181,7 +6181,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -6483,7 +6483,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -6725,7 +6725,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -7008,7 +7008,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -7449,7 +7449,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -7794,7 +7794,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -8107,7 +8107,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -8380,7 +8380,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -8814,7 +8814,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -9262,7 +9262,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -9541,7 +9541,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -9778,7 +9778,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -10525,7 +10525,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -10973,7 +10973,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -11420,7 +11420,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -11689,7 +11689,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -12004,7 +12004,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -12284,7 +12284,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -12563,7 +12563,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -12739,7 +12739,7 @@
           {
             "file": "src/app/[locale]/admin/leveranciers/page.tsx",
             "line": 139,
-            "text": "<ErrorState message={suppliers.error} onRetry={() => void suppliers.refetch()} />"
+            "text": "<ErrorState message={suppliers.error} onRetry={() => void suppliers.refetch().catch(() => undefined)} />"
           }
         ],
         "EmptyState": [
@@ -12848,7 +12848,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -13164,7 +13164,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -13877,7 +13877,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -14183,7 +14183,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -14427,7 +14427,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -14815,7 +14815,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -15202,7 +15202,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -15488,7 +15488,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -15757,7 +15757,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -16021,7 +16021,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -16339,7 +16339,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -16577,7 +16577,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -16980,7 +16980,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -17382,7 +17382,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -17814,7 +17814,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -17982,81 +17982,9 @@
       "hardcodedCopy": [
         {
           "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 33,
+          "line": 34,
           "text": "Aankomst registreren",
           "kind": "attribute"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 48,
-          "text": "Aankomst ·",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 49,
-          "text": "Afspraak",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 51,
-          "text": "Geen afspraak",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 55,
-          "text": "Dienst",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 57,
-          "text": "Geen specifieke dienst",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 61,
-          "text": "Conditierapport",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 62,
-          "text": "Aankomstfoto uploaden",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 83,
-          "text": "Aankomstfoto’s uit het bootdossier",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 90,
-          "text": "Bekijken",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 93,
-          "text": "Boot fysiek aangekomen",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 96,
-          "text": "Aankomst opslaan",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 97,
-          "text": "Sluiten",
-          "kind": "jsx"
         },
         {
           "file": "src/components/admin/yard/YardCanvas.tsx",
@@ -18069,18 +17997,6 @@
           "line": 33,
           "text": "Niet toegewezen",
           "kind": "expression"
-        },
-        {
-          "file": "src/components/admin/yard/YardCanvas.tsx",
-          "line": 34,
-          "text": "Materieel ·",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardCanvas.tsx",
-          "line": 35,
-          "text": "Prioriteit ·",
-          "kind": "jsx"
         },
         {
           "file": "src/components/admin/yard/YardCanvas.tsx",
@@ -18408,18 +18324,6 @@
         },
         {
           "file": "src/components/admin/yard/YardCanvas.tsx",
-          "line": 1289,
-          "text": "Aankomstafspraak",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardCanvas.tsx",
-          "line": 1291,
-          "text": "Aankomstfoto’s in het bootdossier (",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardCanvas.tsx",
           "line": 1313,
           "text": "Plaatsingsconcept",
           "kind": "expression"
@@ -18582,277 +18486,37 @@
         },
         {
           "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 132,
-          "text": "Van",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 133,
-          "text": "Tot en met",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 134,
-          "text": "Status",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 134,
-          "text": "Alle",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 136,
-          "text": "Prioriteit",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 136,
-          "text": "Alle",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 138,
-          "text": "Groep-ID",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 139,
-          "text": "Dienstcode",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 140,
-          "text": "Afspraakbetaling",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 140,
-          "text": "Alle",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 143,
-          "text": "Filteren",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 147,
-          "text": "Deze opdracht staat niet meer in je lijst. Controleer de huidige toewijzing.",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 164,
+          "line": 163,
           "text": "Nog toe te wijzen",
           "kind": "expression"
         },
         {
-          "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 180,
-          "text": "De werfopdracht is gewijzigd. Controleer de actuele instructies en open de actie opnieuw.",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 71,
-          "text": "Bootkoppeling en plaatsingsvoorstel",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 74,
-          "text": "Koppelstatus",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 76,
-          "text": "Onbekend",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 76,
-          "text": "Bevestigd",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 76,
-          "text": "Duplicaat",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 79,
-          "text": "Hoofddetectie",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 81,
-          "text": "Kies de bevestigde detectie",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 82,
-          "text": "Detectie #",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 86,
-          "text": "Kalibratie",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 88,
-          "text": "Koppel alleen de boot",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 92,
-          "text": "Bootnaam",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 93,
-          "text": "Zoek kandidaten",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 94,
-          "text": "Kandidaat",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 96,
-          "text": "Kies een boot",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 101,
-          "text": "Goedgekeurde PNG koppelen",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 104,
-          "text": "Koppeling opslaan",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 105,
-          "text": "Opgeslagen ·",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 107,
-          "text": "Voorstel ·",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 117,
-          "text": "Open als kaartconcept",
-          "kind": "jsx"
-        },
-        {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 28,
-          "text": "Fotokwaliteit",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 29,
-          "text": "Vergelijkingsfoto",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 31,
-          "text": "Alleen geselecteerde foto",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 44,
-          "text": "Fotokwaliteit meten",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 47,
-          "text": "Scherpte (variantie)",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 48,
-          "text": "Ontbrekende pixels",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 50,
-          "text": "Geschatte overlap",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 50,
+          "line": 49,
           "text": "· Laag",
           "kind": "expression"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 51,
-          "text": "Perspectief (randverhouding)",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 51,
+          "line": 50,
           "text": "Onvoldoende overeenkomsten",
           "kind": "expression"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 51,
+          "line": 50,
           "text": "· Afwijking",
           "kind": "expression"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 301,
+          "line": 300,
           "text": "queued",
           "kind": "expression"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 302,
+          "line": 301,
           "text": "Voortgang verwerking",
           "kind": "attribute"
         },
@@ -18923,48 +18587,6 @@
           "kind": "expression"
         },
         {
-          "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 225,
-          "text": "Boegrotatie (°)",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 281,
-          "text": "Bronfoto met vrije grond",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 283,
-          "text": "Gebruik beeldreconstructie",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 288,
-          "text": "De grond onder de maskers is vrij op deze bronfoto",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 295,
-          "text": "Verwerking annuleren",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 49,
-          "text": "ID factuurregel",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 51,
-          "text": "ID betaling",
-          "kind": "jsx"
-        },
-        {
           "file": "src/components/admin/yard/YardServiceBoard.tsx",
           "line": 53,
           "text": "Betaald (cent)",
@@ -18975,24 +18597,6 @@
           "line": 53,
           "text": "Terugbetaald (cent)",
           "kind": "expression"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 56,
-          "text": "Betaling verwijderen",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 58,
-          "text": "Betaling toewijzen",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 59,
-          "text": "Toewijzing opslaan",
-          "kind": "jsx"
         },
         {
           "file": "src/components/admin/yard/YardServiceBoard.tsx",
@@ -19056,12 +18660,6 @@
         },
         {
           "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 150,
-          "text": "Gekoppelde afspraak",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
           "line": 153,
           "text": "Niet geplaatst",
           "kind": "expression"
@@ -19083,156 +18681,6 @@
           "line": 158,
           "text": "Factuur",
           "kind": "expression"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 159,
-          "text": "Toegewezen betaald",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 159,
-          "text": "· Openstaand",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 160,
-          "text": "Creditnota",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 161,
-          "text": "Gecrediteerd",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 162,
-          "text": "Terugbetaald",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 163,
-          "text": "Terug te betalen",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 164,
-          "text": "Toewijzing wijzigen",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServiceBoard.tsx",
-          "line": 167,
-          "text": "Factuurregel koppelen",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 103,
-          "text": "Actie",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 106,
-          "text": "Werktaken plannen",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 107,
-          "text": "Diensten toevoegen aan afspraak",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 108,
-          "text": "Stallingscontract opzeggen",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 115,
-          "text": "Verplaatsing → kraan → wassen → stalling",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 132,
-          "text": "Nieuwe starttijd afspraak (optioneel)",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 136,
-          "text": "Ingangsdatum",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 137,
-          "text": "Creditbedrag inclusief btw (€)",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 138,
-          "text": "Factuurregel",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 139,
-          "text": "Kies een factuurregel",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 144,
-          "text": "Nieuwe starttijd verplaatsing (optioneel)",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 145,
-          "text": "Nieuwe instructies",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 189,
-          "text": "Verplaatsing ·",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 192,
-          "text": "Opzegtermijn",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 192,
-          "text": "dagen · Minimumvergoeding",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 192,
-          "text": "te annuleren taken",
-          "kind": "jsx"
-        },
-        {
-          "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 194,
-          "text": "Ik keur de financiële gevolgen en het bericht in het klantenportaal goed.",
-          "kind": "jsx"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -19260,7 +18708,7 @@
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 263,
+          "line": 262,
           "text": "<div className={detail?.analysis ? 'grid gap-4' : 'grid gap-4 lg:grid-cols-[13rem_minmax(0,1fr)]'}>"
         },
         {
@@ -19341,13 +18789,13 @@
       "actions": [
         {
           "file": "src/components/admin/yard/YardArrival.tsx",
-          "line": 34,
+          "line": 35,
           "text": "onSubmit={async event => {"
         },
         {
           "file": "src/components/admin/yard/YardArrival.tsx",
           "line": 97,
-          "text": "<button className={control} disabled={busy || uploading} type=\"button\" onClick={onClose}>Sluiten</button>"
+          "text": "<button className={control} disabled={busy || uploading} type=\"button\" onClick={onClose}><TranslatedText textKey=\"siteCopy.d4edef5df714c528\" fallbackText={\"Sluiten\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardCanvas.tsx",
@@ -19821,122 +19269,122 @@
         },
         {
           "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 176,
+          "line": 175,
           "text": "{state !== 'cancelled' && <button className={`${control} min-h-11`} onClick={() => setPhoto(move)}><TranslatedText textKey=\"siteCopy.9acd0798360586d8\" fallbackText={\"Foto toevoegen\"} /></button>}"
         },
         {
           "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 178,
+          "line": 177,
           "text": "onClick={() => setAction({ move, operation })}>{label}</button>)}"
         },
         {
           "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 181,
+          "line": 180,
           "text": "{move.is_assignee && !staleAction && action?.move.id === move.id && <form key={action.operation} className=\"grid gap-2 border-t border-slate-700 pt-3\" onSubmit={submit}>"
         },
         {
           "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 195,
+          "line": 194,
           "text": "<button type=\"button\" className={control} disabled={busy} onClick={() => setAction(undefined)}><TranslatedText textKey=\"siteCopy.0377b4a45c52deea\" fallbackText={\"Annuleren\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 203,
+          "line": 202,
           "text": "<button className={control} disabled={page <= 1 || busy} onClick={() => { setAction(undefined); setPage(page - 1); }}><TranslatedText textKey=\"siteCopy.7c45ecfadb9bd8f2\" fallbackText={\"Vorige\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardMoves.tsx",
-          "line": 205,
+          "line": 204,
           "text": "<button className={control} disabled={page >= moves.last_page || busy} onClick={() => { setAction(undefined); setPage(page + 1); }}><TranslatedText textKey=\"siteCopy.084be3022b972ee9\" fallbackText={\"Volgende\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 93,
-          "text": "<button type=\"button\" className={control} disabled={busy || (!query.trim() && !calibration)} onClick={() => void request(false)}>Zoek kandidaten</button>"
+          "line": 91,
+          "text": "<button type=\"button\" className={control} disabled={busy || (!query.trim() && !calibration)} onClick={() => void request(false)}><TranslatedText textKey=\"siteCopy.edf14d1731e24574\" fallbackText={\"Zoek kandidaten\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 104,
-          "text": "onClick={() => void request(true)}>Koppeling opslaan</button>"
+          "line": 101,
+          "text": "onClick={() => void request(true)}><TranslatedText textKey=\"siteCopy.65f0e03e81d992e8\" fallbackText={\"Koppeling opslaan\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-          "line": 109,
+          "line": 106,
           "text": "{onPlacement && saved.proposal.current && <button type=\"button\" className={control} disabled={busy} onClick={async () => {"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 35,
+          "line": 34,
           "text": "<button type=\"button\" className={control} disabled={busy} onClick={async () => {"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 91,
+          "line": 90,
           "text": "<button type=\"button\" className={`${control} !text-red-300`} disabled={busy} onClick={onRemove}><TranslatedText textKey=\"siteCopy.b564cfe97691045d\" fallbackText={\"Foto verwijderen\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 252,
+          "line": 251,
           "text": "<button className=\"rounded-lg bg-[#efd092] px-3 py-2 font-semibold text-slate-950\" disabled={busy} onClick={() => setCreating(!creating)}><TranslatedText textKey=\"yardPhotos.new\" /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 256,
+          "line": 255,
           "text": "{creating && <form onSubmit={create} className=\"grid gap-3 rounded-lg border border-slate-700 p-4 sm:grid-cols-2\">"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 266,
+          "line": 265,
           "text": "{sessions?.data.map((session) => <button key={session.id} disabled={busy} onClick={() => void open(session.id)} aria-pressed={detail?.session.id === session.id} className={control + ' block w-full text-left'}>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 272,
+          "line": 271,
           "text": "<button className={control} disabled={busy || sessions.current_page <= 1} onClick={() => void list(sessions.current_page - 1).catch(report)}><TranslatedText textKey=\"yardPhotos.previous\" /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 273,
+          "line": 272,
           "text": "<button className={control} disabled={busy || sessions.current_page >= sessions.last_page} onClick={() => void list(sessions.current_page + 1).catch(report)}><TranslatedText textKey=\"yardPhotos.next\" /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 280,
+          "line": 279,
           "text": "{!!detail.outputs?.length && <div className=\"flex flex-wrap gap-2\">{detail.outputs.map((output) => <button className={control} key={output.id} disabled={busy} onClick={async () => {"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 292,
+          "line": 291,
           "text": "onClick={() => setImage(original)}>{original.filename} · {original.metadata.width} × {original.metadata.height}</button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 294,
+          "line": 293,
           "text": "aria-label={`Foto ${original.filename} verwijderen`} onClick={() => void removeImage(original)}><TranslatedText textKey=\"siteCopy.46a92181eff2e5ac\" fallbackText={\"Verwijderen\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 303,
+          "line": 302,
           "text": "<button className={control} disabled={busy} onClick={async () => {"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 314,
+          "line": 313,
           "text": "{detail.images.filter((image) => image.category === 'original' || !image.category).length >= 2 && <button className={control} disabled={busy} onClick={async () => {"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 336,
+          "line": 335,
           "text": "{!!pending.length && <button className={control} disabled={busy} onClick={() => void upload(pending)}><TranslatedText textKey=\"yardPhotos.retry\" /></button>}"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 339,
+          "line": 338,
           "text": "disabled={busy} onClick={() => void detect()}><TranslatedText textKey=\"siteCopy.f34f85e12c1e8d73\" fallbackText={\"AI verwerken\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-          "line": 340,
+          "line": 339,
           "text": "<button className={control} disabled={busy} onClick={() => void detect(true)}><TranslatedText textKey=\"siteCopy.0485790864773616\" fallbackText={\"Handmatig maskeren\"} /></button>"
         },
         {
@@ -19981,52 +19429,52 @@
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 233,
+          "line": 232,
           "text": "onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey=\"siteCopy.5ce3c1a4a26afdba\" fallbackText={\"Afwijzen\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 234,
+          "line": 233,
           "text": "<button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {"
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 261,
+          "line": 260,
           "text": "<button className={control} disabled={drawing.points.length < 3} onClick={() => {"
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 266,
+          "line": 265,
           "text": "<button className={control} disabled={!drawing.points.length} onClick={() =>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 268,
+          "line": 267,
           "text": "<button className={control} onClick={() => setDrawing(undefined)}><TranslatedText textKey=\"siteCopy.fd3604f2ec8ebb1a\" fallbackText={\"Annuleren\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 270,
+          "line": 269,
           "text": "</> : <button className={control} disabled={busy || !loaded || review.detections.length >= 300} onClick={() => {"
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 280,
+          "line": 279,
           "text": "<button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey=\"siteCopy.13e5170f2b105372\" fallbackText={\"Review opslaan\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 290,
+          "line": 288,
           "text": "disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey=\"siteCopy.3b185da8cd0488a3\" fallbackText={\"Lege werf genereren\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 292,
+          "line": 290,
           "text": "{renderJob && <button type=\"button\" className={control} onClick={async () => {"
         },
         {
           "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-          "line": 297,
+          "line": 295,
           "text": "{[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {"
         },
         {
@@ -20087,12 +19535,12 @@
         {
           "file": "src/components/admin/yard/YardServiceBoard.tsx",
           "line": 56,
-          "text": "<button className={control} type=\"button\" onClick={() => setRows(rows.filter((_, i) => i !== index))}>Betaling verwijderen</button>"
+          "text": "<button className={control} type=\"button\" onClick={() => setRows(rows.filter((_, i) => i !== index))}><TranslatedText textKey=\"siteCopy.1d61fba23d34dad0\" fallbackText={\"Betaling verwijderen\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardServiceBoard.tsx",
           "line": 58,
-          "text": "<button className={control} type=\"button\" disabled={busy} onClick={() => setRows([...rows, { payment_id: '', paid_cents: 0, refunded_cents: 0 }])}>Betaling toewijzen</button>"
+          "text": "<button className={control} type=\"button\" disabled={busy} onClick={() => setRows([...rows, { payment_id: '', paid_cents: 0, refunded_cents: 0 }])}><TranslatedText textKey=\"siteCopy.ee4d2bcdf955a840\" fallbackText={\"Betaling toewijzen\"} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardServiceBoard.tsx",
@@ -20142,12 +19590,12 @@
         {
           "file": "src/components/admin/yard/YardServiceBoard.tsx",
           "line": 164,
-          "text": "{board.can_allocate && line.invoice_status !== 'draft' && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id, line })}>Toewijzing wijzigen</button>}"
+          "text": "{board.can_allocate && line.invoice_status !== 'draft' && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id, line })}><TranslatedText textKey=\"siteCopy.1325baf008940212\" fallbackText={\"Toewijzing wijzigen\"} /></button>}"
         },
         {
           "file": "src/components/admin/yard/YardServiceBoard.tsx",
           "line": 167,
-          "text": "{board.can_allocate && card.entity_type === 'boat' && card.service_code && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id })}>Factuurregel koppelen</button>}"
+          "text": "{board.can_allocate && card.entity_type === 'boat' && card.service_code && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id })}><TranslatedText textKey=\"siteCopy.36111a33e6eb1161\" fallbackText={\"Factuurregel koppelen\"} /></button>}"
         },
         {
           "file": "src/components/admin/yard/YardServiceBoard.tsx",
@@ -20166,22 +19614,22 @@
         },
         {
           "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 179,
+          "line": 178,
           "text": "{!workflow && steps.length > 1 && <button className={control} type=\"button\" onClick={() => { setSteps(current => current.filter(item => item.id !== step.id)); setPreview(undefined); }}><TranslatedText textKey=\"yardSchedule.remove\" inline={false} /></button>}"
         },
         {
           "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 183,
+          "line": 182,
           "text": "{!workflow && !terminating && <button className={control} type=\"button\" disabled={busy || steps.length >= 10} onClick={() => { setSteps(current => [...current, emptyStep(current.at(-1)!.id + 1)]); setPreview(undefined); }}><TranslatedText textKey=\"yardSchedule.addStep\" inline={false} /></button>}"
         },
         {
           "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 185,
+          "line": 184,
           "text": "<button className={control} type=\"button\" disabled={busy} onClick={onClose}><TranslatedText textKey=\"adminNew.common.cancel\" inline={false} /></button>"
         },
         {
           "file": "src/components/admin/yard/YardServicePlan.tsx",
-          "line": 196,
+          "line": 195,
           "text": "<button className={control} type=\"button\" disabled={busy || !!preview.change && !approved} onClick={() => void confirm()}><TranslatedText textKey=\"yardSchedule.confirm\" inline={false} /></button>"
         },
         {
@@ -20207,7 +19655,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -20462,7 +19910,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -20785,7 +20233,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -21109,7 +20557,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -21406,7 +20854,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -21679,7 +21127,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -21998,7 +21446,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -22231,7 +21679,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -22470,7 +21918,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -22926,7 +22374,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",
@@ -23211,7 +22659,7 @@
         {
           "file": "src/components/cms/CmsModals.tsx",
           "line": 285,
-          "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+          "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
         },
         {
           "file": "src/components/cms/CmsModals.tsx",

@@ -17,8 +17,17 @@ async function fixture(page: Page, authenticated = true) {
     if (url.pathname.endsWith('/contact-settings')) {
       expect(route.request().method()).toBe('PATCH');
       const payload = route.request().postDataJSON();
-      writes.push(payload); Object.assign(company, payload);
+      writes.push(payload);
+      if (payload.email) company.email = payload.email;
+      if (payload.phone) company.phone = payload.phone;
+      Object.assign(company.address, payload.address);
       return route.fulfill({ json: { company } });
+    }
+    if (url.pathname.endsWith('/admin/cms/global-settings')) {
+      const settings = { 'company.email': company.email, 'company.phone': company.phone,
+        'company.address.street': company.address.street, 'company.address.postal_code': company.address.postal_code,
+        'company.address.city': company.address.city };
+      return route.fulfill({ json: { settings, revisions: Object.fromEntries(Object.keys(settings).map(key => [key, null])) } });
     }
     if (url.pathname.endsWith('/content/contact')) return route.fulfill({ json: { company, show_chat: false } });
     if (url.pathname.endsWith('/content/faq')) return route.fulfill({ json: { faq: { questions: [] }, contact: { company, show_chat: false } } });

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import net from 'node:net';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -9,6 +9,8 @@ const frontend = fileURLToPath(new URL('../', import.meta.url));
 const backend = path.resolve(frontend, '../krekelbergkassa-backend');
 const runtime = fs.mkdtempSync(path.resolve(frontend, '../_audit/global-ux-live-'));
 const php = process.env.E2E_PHP_BIN || (process.platform === 'win32' ? 'C:/wamp64/bin/php/php8.4.15/php.exe' : 'php');
+const grep = process.env.GLOBAL_UX_LIVE_GREP;
+const manifestName = grep ? 'live-filtered-' + createHash('sha256').update(grep).digest('hex').slice(0, 12) + '.json' : 'live-latest.json';
 const database = path.join(runtime, 'fixtures.sqlite');
 fs.writeFileSync(database, '');
 const env = { ...process.env, APP_ENV: 'testing', APP_DEBUG: 'false', GLOBAL_UX_LIVE: '1',
@@ -22,12 +24,12 @@ const env = { ...process.env, APP_ENV: 'testing', APP_DEBUG: 'false', GLOBAL_UX_
   NEXT_PUBLIC_API_URL: '/api', NEXT_DIST_DIR: '.next-global-ux-live', NEXT_FONT_GOOGLE_MOCKED_RESPONSES: path.join(frontend, 'tests/fixtures/journey-fonts.cjs') };
 const children = [];
 function recordResult(result) {
-  const evidence = { ...result, runtime, database, mockedApplicationHttp: false, liveDatabaseWrites: false,
+  const evidence = { ...result, grep, runtime, database, mockedApplicationHttp: false, liveDatabaseWrites: false,
     boundary: 'Isolated local Laravel/Next deployment with a file-backed SQLite database; production environment is not verified.',
     report: path.join(runtime, 'browser-results.json'), generatedAt: new Date().toISOString() };
   fs.writeFileSync(path.join(runtime, 'result.json'), JSON.stringify(evidence, null, 2));
   fs.mkdirSync(path.join(frontend, 'artifacts/admin-audit'), { recursive: true });
-  fs.writeFileSync(path.join(frontend, 'artifacts/admin-audit/live-latest.json'), JSON.stringify(evidence, null, 2));
+  fs.writeFileSync(path.join(frontend, 'artifacts/admin-audit', manifestName), JSON.stringify(evidence, null, 2));
 }
 function run(exe, args, cwd, filename) {
   const result = spawnSync(exe, args, { cwd, env, windowsHide: true, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
@@ -73,7 +75,7 @@ try {
   }
   console.log('Running real HTTP/browser UX flows; application API responses are not mocked.');
   const args = ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.global-ux-live.config.ts'];
-  if (process.env.GLOBAL_UX_LIVE_GREP) args.push('--grep', process.env.GLOBAL_UX_LIVE_GREP);
+  if (grep) args.push('--grep', grep);
   run(process.execPath, args, frontend, 'browser.log');
   recordResult({ status: 'passed' });
   console.log('Passed. Evidence: ' + runtime);

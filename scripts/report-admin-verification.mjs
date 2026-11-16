@@ -104,6 +104,16 @@ for(const write of [false,true]) mark('/admin/leveranciers',`supplier list write
 mark('/admin/leveranciers','supplier loading empty validation create and update retain data then mutate',row=>{
  row.loading='pass: held request shows skeleton';row.empty='pass: empty supplier list';row.validation='partial: required name blocks POST, 422 surfaced, form retained';row.error='pass: 422 and retry';row.crud.create='pass: stateful HTTP fixture create/list readback; maps default_purchase_ledger';row.crud.read='pass: created fixture visible after refetch';row.crud.update='pass: fixture edit modal PATCH/list readback';row.crud.delete='pending: API delete exists; no list delete control';row.modals='partial: create, validation failure, edit';row.responsive='partial: populated validation modal 390/1280';row.locales.nl='partial: supplier create/validation';
 });
+for (const locale of ['nl', 'en', 'de', 'fr']) {
+ mark('/admin/leveranciers', `${locale}: supplier list loading, repeated failure, empty state and required field`, row => {
+  row.locales[locale] = 'partial: heading, loading, error, retry, empty state and create dialog';
+  row.loading = 'pass: held list request shows loading label';
+  row.error = 'pass: repeated list 503 surfaces error and retry recovers';
+  row.empty = 'pass: retry renders the empty list';
+  row.validation = 'partial: create dialog blocks missing name';
+  row.modals = 'partial: localized create dialog and required name';
+ });
+}
 for(const write of [false,true]) mark('/admin/producten',`product list write controls and create deep link (${write})`,row=>row.permissions.ui='partial: products.write disables create/delete; deep-link create gated');
 mark('/admin/producten/nieuw',`product list write controls and create deep link (false)`,row=>row.permissions.ui='partial: RequireAuth redirects create deep-link without products.write');
 mark('/admin/producten/nieuw','product empty validation create and delete retain data then mutate',row=>{
@@ -200,36 +210,59 @@ const verificationGates={
 };
 const coverageGates=fs.existsSync(directory+'/coverage-gates.json')?JSON.parse(fs.readFileSync(directory+'/coverage-gates.json','utf8')):{};
 Object.assign(verificationGates,coverageGates);
-const liveManifest = fs.existsSync(directory+'/live-latest.json') ? JSON.parse(fs.readFileSync(directory+'/live-latest.json','utf8')) : null;
 const persistence = { status:'pending', scope:'Production/deployed environment remains unverified; intercepted HTTP tests cannot establish persistence.' };
 const liveRoutes = new Map([
  ['customer creation persists and the generated readable link opens the created record', '/admin/klanten'],
+ ['supplier create and edit enforce write permission and persist through browser reload', '/admin/leveranciers'],
  ['supplier mapping enforces write permission and persists SKU and keyword after reload', '/admin/leveranciers/[id]/[slug]'],
 ]);
-let mappingEvidence;
-if (liveManifest?.status === 'passed' && liveManifest.mockedApplicationHttp === false && fs.existsSync(liveManifest.report)) {
- const report=JSON.parse(fs.readFileSync(liveManifest.report,'utf8'));
- const observations=[];
+const liveManifests = fs.readdirSync(directory)
+ .filter(name => /^live-(latest|filtered-[0-9a-f]{12})\.json$/.test(name))
+ .map(name => JSON.parse(fs.readFileSync(path.join(directory, name), 'utf8')))
+ .sort((a, b) => Date.parse(b.generatedAt) - Date.parse(a.generatedAt));
+const latestScenarios = new Map();
+for (const manifest of liveManifests) {
+ if (manifest.mockedApplicationHttp !== false || !fs.existsSync(manifest.report)) continue;
+ const report = JSON.parse(fs.readFileSync(manifest.report, 'utf8'));
  function findLive(suite) {
   for(const spec of suite.specs??[]) for(const test of spec.tests??[]) {
    const result=test.results.at(-1);
    const route = liveRoutes.get(spec.title);
-   if (route && result?.status === 'passed' && result.attachments?.some(item => item.name === 'database-persistence')) {
-    observations.push({ route, title: spec.title, attachments: result.attachments });
+   if (route && result && result.status !== 'skipped' && !latestScenarios.has(spec.title)) {
+    latestScenarios.set(spec.title, {
+     route, title: spec.title, status: result.status, attachments: result.attachments ?? [],
+     report: manifest.report, database: manifest.database,
+    });
    }
   }
   for(const child of suite.suites??[]) findLive(child);
  }
  for(const suite of report.suites??[]) findLive(suite);
- if(observations.length) {
-  Object.assign(persistence,{status:'passed: isolated local deployment only',report:liveManifest.report,database:liveManifest.database,observations});
+}
+const observations = [...latestScenarios.values()].filter(observation =>
+ observation.status === 'passed' && observation.attachments.some(item => item.name === 'database-persistence'));
+let mappingEvidence;
+let supplierEvidence;
+if (observations.length) {
+  Object.assign(persistence, { status: 'passed: isolated local deployment only', observations });
   for (const observation of observations) {
    const row = page(observation.route);
-   const evidence = { ...observation, status:'passed', report:liveManifest.report };
-   row.persistence = { status:persistence.status, report:liveManifest.report, database:liveManifest.database, observations:[observation] };
-   row.evidence.push(evidence);
+   row.persistence = { status:persistence.status, report:observation.report, database:observation.database, observations:[observation] };
+   row.evidence.push(observation);
+   if (observation.route === '/admin/leveranciers') {
+    supplierEvidence = observation;
+    row.crud.create = 'pass: browser POST, reload and direct database readback';
+    row.crud.read = 'pass: populated list and readable detail link';
+    row.crud.update = 'pass: browser PATCH, reload, API and direct database readback';
+    row.validation = 'partial: HTTP 422 for payment terms over 365, error shown and form retained';
+    row.modals = 'partial: create and edit, invalid submit, cancel, save and close';
+    row.detail = 'partial: readable detail link displays updated name and ledger account';
+    row.permissions.ui = 'partial: reader create/edit disabled and create intent blocked; writer creates and edits';
+    row.permissions.backend = 'partial: reader POST/PATCH return 403; writer POST/PATCH succeed';
+    row.responsive = 'partial: populated supplier list and edit dialog at 390/1280/1536, both desktop sidebar states';
+   }
    if (observation.route === '/admin/leveranciers/[id]/[slug]') {
-    mappingEvidence = evidence;
+    mappingEvidence = observation;
     row.crud.create = 'partial: product mapping persisted after browser reload and direct database readback';
     row.crud.read = 'partial: supplier detail and saved product mapping verified';
     row.detail = 'partial: populated supplier detail and product mapping';
@@ -242,12 +275,29 @@ if (liveManifest?.status === 'passed' && liveManifest.mockedApplicationHttp === 
     for (const locale of Object.keys(row.locales)) row.locales[locale] = 'partial: mapping empty state, dialog title and required product validation';
    }
   }
- }
 }
 const actions=actionInventory(matrix.pages);
+const supplierListSource = 'src/app/[locale]/admin/leveranciers/page.tsx';
 const supplierMappingSource = 'src/app/[locale]/admin/leveranciers/[id]/page.tsx';
 for (const action of actions) {
- if (action.source.file.replaceAll('\\', '/') !== supplierMappingSource) continue;
+ const source = action.source.file.replaceAll('\\', '/');
+ if (source === supplierListSource) {
+  const signal = action.source.text;
+  if (signal.includes('onClick={openCreate}')) action.classification = 'open create supplier dialog';
+  else if (signal.includes('onClick={() => openEdit(row)}')) action.classification = 'open edit supplier dialog';
+  else if (signal.includes('onSubmit={onSubmit}')) action.classification = 'create or edit supplier';
+  else continue;
+  action.permission = 'products.write';
+  if (supplierEvidence) {
+   const submits = action.classification === 'create or edit supplier';
+   action.uiVisibility = 'pass: reader controls are disabled; writer can use both dialogs';
+   action.directApiDenial = submits ? 'pass: reader POST and PATCH returned 403' : 'n/a: opening the dialog sends no mutation request';
+   action.authorizedExecution = submits ? 'pass: writer created and edited; both changes survived reload' : 'pass: writer opened the dialog';
+   action.evidence = supplierEvidence;
+  }
+  continue;
+ }
+ if (source !== supplierMappingSource) continue;
  if (action.source.text.includes('onClick={() => setShowMap(true)}')) action.classification = 'open product mapping dialog';
  else if (action.source.text.includes('onSubmit={onCreateMapping}')) action.classification = 'create product mapping';
  else continue;
@@ -287,12 +337,10 @@ const logOnly=executed.filter(test=>test.status==='passed'&&test.logOnly).length
 const failures=executed.filter(test=>test.status!=='passed').length;
 let markdown=fs.readFileSync('ADMIN_VERIFICATION.md','utf8').replace(/Browser results:[^\n]+/,`Browser results: **${verified} completed browser scenarios passed**, ${logOnly} earlier log-only smoke passes, ${failures} latest failures/interrupted observations. Log-only passes remain partial evidence. This is scenario coverage, not complete page sign-off.`);
 markdown=markdown.replace('## Backend permission evidence',`## Verification gates\n\n${Object.entries(verificationGates).map(([name,gate])=>`- ${name}: **${gate.status}** ([log](${gate.evidence})).`).join('\n')}\n\n## Backend permission evidence`);
-markdown=markdown.replace('## Verification gates',`## Persistence evidence\n\n- **${persistence.status}**. ${persistence.scope} ${persistence.report ? 'Report: ['+path.basename(persistence.report)+'](<'+path.relative(process.cwd(),persistence.report).replaceAll('\\','/')+'>)' : 'Run: node scripts/test-global-ux-live.mjs'}\n\n## Verification gates`);
+const persistenceReports = observations.map(({ route, title, report }) =>
+ `- \`${route}\` — ${title}. [Browser report](<${path.relative(process.cwd(), report).replaceAll('\\', '/')}>).`);
+markdown=markdown.replace('## Verification gates',`## Persistence evidence\n\n**${persistence.status}**. ${persistence.scope}\n\n${persistenceReports.join('\n') || 'Run \`node scripts/test-global-ux-live.mjs\`.'}\n\n## Verification gates`);
 markdown=markdown.replace('## Verification gates','## Changes made\n\n- Follow extracted component imports and preserve file/line source evidence for every route.\n- Gate customer list mutations, handlers and create deep links with `customers.write`, alongside direct API denial tests.\n- Use native `[id]/[slug]` pages instead of the redundant middleware self-proxy; all five aliases are rechecked. Authentication and no-cache handling remain in place.\n- Hide the closed mobile drawer from keyboard navigation, contain focus, support Escape and restore focus; translate sidebar controls.\n- Translate 88 French shell/dashboard strings and assert real French copy in the browser. Check bounded dynamic settings keys and collect hardcoded/English-identical copy for review.\n- Standardize the document split layout and shrinkable chart tracks. Keep five header KPIs at `2xl`, documented in [layout patterns](ADMIN_LAYOUT_PATTERNS.md).\n\n## Verification gates');
-if (persistence.observations?.length) {
- const routes = persistence.observations.map(({route}) => `\`${route}\``).join(', ');
- markdown = markdown.replace('## Changes made', `Verified persistence on ${routes}.\n\n## Changes made`);
-}
 markdown+='\n## Browser screenshots\n\nOnly screenshots from passing scenarios are listed; failed-run traces remain in the JSON ledger.\n\n';
 for(const row of pages.filter(row=>row.screenshots.length)) markdown+=`- \`${row.route}\`: ${row.screenshots.map((file,index)=>`[${path.basename(file)}](${file.includes(' ') ? '<'+file+'>' : file})`).join(', ')}\n`;
 markdown+='\n## Copy review decisions\n\nExact candidate decisions and reasons: `scripts/admin-copy-decisions.json`. Current classifications: '+JSON.stringify(copyAudit?.reviewSummary??{})+'. Fixed candidates no longer appear in the current queue; historical translate decisions remain recorded. Run `node scripts/check-admin-i18n.mjs --strict-copy` to fail on untranslated or unreviewed candidates.\n';

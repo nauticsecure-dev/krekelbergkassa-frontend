@@ -18,8 +18,8 @@ async function fixture(page: Page, authorized = true, role = authorized ? 'super
     if (url.pathname.endsWith('/content/contact')) return route.fulfill({ json: { company: company(), show_chat: false } });
     if (url.pathname.endsWith('/cms/contact-settings')) {
       const values = request.postDataJSON();
-      for (const [key, value] of Object.entries(values)) {
-        writes.push(`company.${key}`); globals[`company.${key}`] = value as string;
+      for (const key of ['email', 'phone']) if (key in values) {
+        writes.push(`company.${key}`); globals[`company.${key}`] = values[key];
       }
       return route.fulfill({ json: { company: company() } });
     }

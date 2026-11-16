@@ -379,6 +379,55 @@ for (const write of [false, true]) {
   });
 }
 
+for (const [locale, title, loading, error, retryText, empty, create, save] of [
+  ['nl', 'Leveranciers', 'Laden…', 'Er ging iets mis', 'Opnieuw proberen', 'Nog geen leveranciers', 'Nieuwe leverancier', 'Opslaan'],
+  ['en', 'Suppliers', 'Loading…', 'Something went wrong', 'Try again', 'No suppliers yet', 'New supplier', 'Save'],
+  ['de', 'Lieferanten', 'Laden…', 'Etwas ist schiefgelaufen', 'Erneut versuchen', 'Noch keine Lieferanten', 'Neuer Lieferant', 'Speichern'],
+  ['fr', 'Fournisseurs', 'Chargement…', 'Une erreur est survenue', 'Réessayer', 'Aucun fournisseur', 'Nouveau fournisseur', 'Enregistrer'],
+]) {
+  test(`${locale}: supplier list loading, repeated failure, empty state and required field`, async ({ page }) => {
+    await session(page, 'super_admin', false);
+    const errors: string[] = [];
+    page.on('pageerror', exception => errors.push(exception.message));
+    let fail = true;
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    await page.route(/\/api\/v1\/suppliers(?:\?|$)/, async route => {
+      await held;
+      return fail
+        ? route.fulfill({ status: 503, json: { message: failure } })
+        : route.fulfill({ json: { data: [], current_page: 1, last_page: 1, total: 0 } });
+    });
+    await page.goto(`/${locale}/admin/leveranciers`, { waitUntil: 'domcontentloaded' });
+    const main = page.locator('main');
+    try {
+      await expect(main.getByRole('heading', { level: 1, name: title })).toBeVisible();
+      await expect(main.getByText(loading, { exact: true })).toBeVisible();
+    } finally {
+      release();
+    }
+    const retry = main.getByRole('button', { name: retryText, exact: true });
+    await expect(main.getByText(error, { exact: true })).toBeVisible();
+    const rejectedRetry = page.waitForResponse(response =>
+      new URL(response.url()).pathname === '/api/v1/suppliers' && response.status() === 503);
+    await retry.click();
+    await rejectedRetry;
+    await expect(main.getByText(error, { exact: true })).toBeVisible();
+    await expect(main.getByText(failure)).toBeVisible();
+    fail = false;
+    await retry.click();
+    await expect(main.getByText(empty, { exact: true })).toBeVisible();
+    await main.getByRole('button', { name: create, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('heading', { name: create, exact: true })).toBeVisible();
+    await dialog.getByRole('button', { name: save, exact: true }).click();
+    const name = dialog.getByRole('textbox', { name: label(locale, 'adminNew.suppliers.columns.name'), exact: true });
+    expect(await name.evaluate((input: HTMLInputElement) => input.validity.valueMissing)).toBe(true);
+    await expect(dialog).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+}
+
 test('supplier mapping loading and retry recover from a failed request', async ({ page }) => {
   await session(page, 'super_admin', false);
   const errors: string[] = [];

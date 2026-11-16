@@ -5,7 +5,7 @@
     "de",
     "fr"
   ],
-  "callCount": 2302,
+  "callCount": 2291,
   "missing": [],
   "unresolved": [],
   "copyCandidates": [
@@ -659,81 +659,9 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 33,
+      "line": 34,
       "text": "Aankomst registreren",
       "kind": "attribute"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 48,
-      "text": "Aankomst ·",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 49,
-      "text": "Afspraak",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 51,
-      "text": "Geen afspraak",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 55,
-      "text": "Dienst",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 57,
-      "text": "Geen specifieke dienst",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 61,
-      "text": "Conditierapport",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 62,
-      "text": "Aankomstfoto uploaden",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 83,
-      "text": "Aankomstfoto’s uit het bootdossier",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 90,
-      "text": "Bekijken",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 93,
-      "text": "Boot fysiek aangekomen",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 96,
-      "text": "Aankomst opslaan",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 97,
-      "text": "Sluiten",
-      "kind": "jsx"
     },
     {
       "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
@@ -746,18 +674,6 @@
       "line": 33,
       "text": "Niet toegewezen",
       "kind": "expression"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
-      "line": 34,
-      "text": "Materieel ·",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
-      "line": 35,
-      "text": "Prioriteit ·",
-      "kind": "jsx"
     },
     {
       "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
@@ -1085,18 +1001,6 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
-      "line": 1289,
-      "text": "Aankomstafspraak",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
-      "line": 1291,
-      "text": "Aankomstfoto’s in het bootdossier (",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
       "line": 1313,
       "text": "Plaatsingsconcept",
       "kind": "expression"
@@ -1259,277 +1163,37 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 132,
-      "text": "Van",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 133,
-      "text": "Tot en met",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 134,
-      "text": "Status",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 134,
-      "text": "Alle",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 136,
-      "text": "Prioriteit",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 136,
-      "text": "Alle",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 138,
-      "text": "Groep-ID",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 139,
-      "text": "Dienstcode",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 140,
-      "text": "Afspraakbetaling",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 140,
-      "text": "Alle",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 143,
-      "text": "Filteren",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 147,
-      "text": "Deze opdracht staat niet meer in je lijst. Controleer de huidige toewijzing.",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 164,
+      "line": 163,
       "text": "Nog toe te wijzen",
       "kind": "expression"
     },
     {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 180,
-      "text": "De werfopdracht is gewijzigd. Controleer de actuele instructies en open de actie opnieuw.",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 71,
-      "text": "Bootkoppeling en plaatsingsvoorstel",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 74,
-      "text": "Koppelstatus",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 76,
-      "text": "Onbekend",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 76,
-      "text": "Bevestigd",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 76,
-      "text": "Duplicaat",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 79,
-      "text": "Hoofddetectie",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 81,
-      "text": "Kies de bevestigde detectie",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 82,
-      "text": "Detectie #",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 86,
-      "text": "Kalibratie",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 88,
-      "text": "Koppel alleen de boot",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 92,
-      "text": "Bootnaam",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 93,
-      "text": "Zoek kandidaten",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 94,
-      "text": "Kandidaat",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 96,
-      "text": "Kies een boot",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 101,
-      "text": "Goedgekeurde PNG koppelen",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 104,
-      "text": "Koppeling opslaan",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 105,
-      "text": "Opgeslagen ·",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 107,
-      "text": "Voorstel ·",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 117,
-      "text": "Open als kaartconcept",
-      "kind": "jsx"
-    },
-    {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 28,
-      "text": "Fotokwaliteit",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 29,
-      "text": "Vergelijkingsfoto",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 31,
-      "text": "Alleen geselecteerde foto",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 44,
-      "text": "Fotokwaliteit meten",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 47,
-      "text": "Scherpte (variantie)",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 48,
-      "text": "Ontbrekende pixels",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 50,
-      "text": "Geschatte overlap",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 50,
+      "line": 49,
       "text": "· Laag",
       "kind": "expression"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 51,
-      "text": "Perspectief (randverhouding)",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 51,
+      "line": 50,
       "text": "Onvoldoende overeenkomsten",
       "kind": "expression"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 51,
+      "line": 50,
       "text": "· Afwijking",
       "kind": "expression"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 301,
+      "line": 300,
       "text": "queued",
       "kind": "expression"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 302,
+      "line": 301,
       "text": "Voortgang verwerking",
       "kind": "attribute"
     },
@@ -1600,48 +1264,6 @@
       "kind": "expression"
     },
     {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 225,
-      "text": "Boegrotatie (°)",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 281,
-      "text": "Bronfoto met vrije grond",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 283,
-      "text": "Gebruik beeldreconstructie",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 288,
-      "text": "De grond onder de maskers is vrij op deze bronfoto",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 295,
-      "text": "Verwerking annuleren",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 49,
-      "text": "ID factuurregel",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 51,
-      "text": "ID betaling",
-      "kind": "jsx"
-    },
-    {
       "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
       "line": 53,
       "text": "Betaald (cent)",
@@ -1652,24 +1274,6 @@
       "line": 53,
       "text": "Terugbetaald (cent)",
       "kind": "expression"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 56,
-      "text": "Betaling verwijderen",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 58,
-      "text": "Betaling toewijzen",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 59,
-      "text": "Toewijzing opslaan",
-      "kind": "jsx"
     },
     {
       "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
@@ -1733,12 +1337,6 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 150,
-      "text": "Gekoppelde afspraak",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
       "line": 153,
       "text": "Niet geplaatst",
       "kind": "expression"
@@ -1760,156 +1358,6 @@
       "line": 158,
       "text": "Factuur",
       "kind": "expression"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 159,
-      "text": "Toegewezen betaald",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 159,
-      "text": "· Openstaand",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 160,
-      "text": "Creditnota",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 161,
-      "text": "Gecrediteerd",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 162,
-      "text": "Terugbetaald",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 163,
-      "text": "Terug te betalen",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 164,
-      "text": "Toewijzing wijzigen",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 167,
-      "text": "Factuurregel koppelen",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 103,
-      "text": "Actie",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 106,
-      "text": "Werktaken plannen",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 107,
-      "text": "Diensten toevoegen aan afspraak",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 108,
-      "text": "Stallingscontract opzeggen",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 115,
-      "text": "Verplaatsing → kraan → wassen → stalling",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 132,
-      "text": "Nieuwe starttijd afspraak (optioneel)",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 136,
-      "text": "Ingangsdatum",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 137,
-      "text": "Creditbedrag inclusief btw (€)",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 138,
-      "text": "Factuurregel",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 139,
-      "text": "Kies een factuurregel",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 144,
-      "text": "Nieuwe starttijd verplaatsing (optioneel)",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 145,
-      "text": "Nieuwe instructies",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 189,
-      "text": "Verplaatsing ·",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 192,
-      "text": "Opzegtermijn",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 192,
-      "text": "dagen · Minimumvergoeding",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 192,
-      "text": "te annuleren taken",
-      "kind": "jsx"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 194,
-      "text": "Ik keur de financiële gevolgen en het bericht in het klantenportaal goed.",
-      "kind": "jsx"
     }
   ],
   "identicalEnglishCopy": [
@@ -3020,11 +2468,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.common.delete",
-      "text": "Delete"
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.audit.entity.invoice",
       "text": "Invoice"
     },
@@ -3687,11 +3130,6 @@
       "locale": "fr",
       "key": "adminNew.boats.columns.owner",
       "text": "Owner"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.name",
-      "text": "Name"
     },
     {
       "locale": "fr",
@@ -4410,11 +3848,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.common.confirm",
-      "text": "Confirm"
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.calculator.records.archived",
       "text": "Calculation archived"
     },
@@ -4457,11 +3890,6 @@
       "locale": "fr",
       "key": "adminNew.calculator.pricing.empty",
       "text": "No pricing rules yet."
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.edit",
-      "text": "Edit"
     },
     {
       "locale": "fr",
@@ -4707,16 +4135,6 @@
       "locale": "fr",
       "key": "adminNew.invoiceDetail.noReminders",
       "text": "No reminders sent yet."
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.email",
-      "text": "Email"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.phone",
-      "text": "Phone"
     },
     {
       "locale": "fr",
@@ -6412,11 +5830,6 @@
       "locale": "fr",
       "key": "adminNew.kassa.customerSearch",
       "text": "Search customer…"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.noEmail",
-      "text": "no email"
     },
     {
       "locale": "fr",
@@ -8665,11 +8078,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.common.reasonTooShort",
-      "text": "Enter at least {min} characters"
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.system.repair.mergeCustomers",
       "text": "Merge customers"
     },
@@ -8995,11 +8403,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.common.saved",
-      "text": "Saved"
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.workOrders.subtitle",
       "text": "Plan and track work per boat"
     },
@@ -9072,11 +8475,6 @@
       "locale": "fr",
       "key": "adminNew.workOrders.detail.hours",
       "text": "Hours worked"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.deleted",
-      "text": "Removed"
     },
     {
       "locale": "fr",
@@ -9282,11 +8680,6 @@
       "locale": "fr",
       "key": "planning.selectPlaceholder",
       "text": "Select…"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.search",
-      "text": "Search"
     },
     {
       "locale": "fr",
@@ -9882,11 +9275,6 @@
       "locale": "fr",
       "key": "settingsHub.integrations.signhost",
       "text": "Signhost"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.all",
-      "text": "All"
     },
     {
       "locale": "fr",
@@ -11035,117 +10423,9 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 33,
+      "line": 34,
       "text": "Aankomst registreren",
       "kind": "attribute",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 48,
-      "text": "Aankomst ·",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 49,
-      "text": "Afspraak",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 51,
-      "text": "Geen afspraak",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 55,
-      "text": "Dienst",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 57,
-      "text": "Geen specifieke dienst",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 61,
-      "text": "Conditierapport",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 62,
-      "text": "Aankomstfoto uploaden",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 83,
-      "text": "Aankomstfoto’s uit het bootdossier",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 90,
-      "text": "Bekijken",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 93,
-      "text": "Boot fysiek aangekomen",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 96,
-      "text": "Aankomst opslaan",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardArrival.tsx",
-      "line": 97,
-      "text": "Sluiten",
-      "kind": "jsx",
       "review": {
         "decision": "unreviewed"
       }
@@ -11164,24 +10444,6 @@
       "line": 33,
       "text": "Niet toegewezen",
       "kind": "expression",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
-      "line": 34,
-      "text": "Materieel ·",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
-      "line": 35,
-      "text": "Prioriteit ·",
-      "kind": "jsx",
       "review": {
         "decision": "unreviewed"
       }
@@ -11674,24 +10936,6 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
-      "line": 1289,
-      "text": "Aankomstafspraak",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
-      "line": 1291,
-      "text": "Aankomstfoto’s in het bootdossier (",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardCanvas.tsx",
       "line": 1313,
       "text": "Plaatsingsconcept",
       "kind": "expression",
@@ -11935,115 +11179,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 132,
-      "text": "Van",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 133,
-      "text": "Tot en met",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 134,
-      "text": "Status",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 134,
-      "text": "Alle",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 136,
-      "text": "Prioriteit",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 136,
-      "text": "Alle",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 138,
-      "text": "Groep-ID",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 139,
-      "text": "Dienstcode",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 140,
-      "text": "Afspraakbetaling",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 140,
-      "text": "Alle",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 143,
-      "text": "Filteren",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 147,
-      "text": "Deze opdracht staat niet meer in je lijst. Controleer de huidige toewijzing.",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 164,
+      "line": 163,
       "text": "Nog toe te wijzen",
       "kind": "expression",
       "review": {
@@ -12051,251 +11187,8 @@
       }
     },
     {
-      "file": "src\\components\\admin\\yard\\YardMoves.tsx",
-      "line": 180,
-      "text": "De werfopdracht is gewijzigd. Controleer de actuele instructies en open de actie opnieuw.",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 71,
-      "text": "Bootkoppeling en plaatsingsvoorstel",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 74,
-      "text": "Koppelstatus",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 76,
-      "text": "Onbekend",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 76,
-      "text": "Bevestigd",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 76,
-      "text": "Duplicaat",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 79,
-      "text": "Hoofddetectie",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 81,
-      "text": "Kies de bevestigde detectie",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 82,
-      "text": "Detectie #",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 86,
-      "text": "Kalibratie",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 88,
-      "text": "Koppel alleen de boot",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 92,
-      "text": "Bootnaam",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 93,
-      "text": "Zoek kandidaten",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 94,
-      "text": "Kandidaat",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 96,
-      "text": "Kies een boot",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 101,
-      "text": "Goedgekeurde PNG koppelen",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 104,
-      "text": "Koppeling opslaan",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 105,
-      "text": "Opgeslagen ·",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 107,
-      "text": "Voorstel ·",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoMatch.tsx",
-      "line": 117,
-      "text": "Open als kaartconcept",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 28,
-      "text": "Fotokwaliteit",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 29,
-      "text": "Vergelijkingsfoto",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 31,
-      "text": "Alleen geselecteerde foto",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 44,
-      "text": "Fotokwaliteit meten",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 47,
-      "text": "Scherpte (variantie)",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 48,
-      "text": "Ontbrekende pixels",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 50,
-      "text": "Geschatte overlap",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 50,
+      "line": 49,
       "text": "· Laag",
       "kind": "expression",
       "review": {
@@ -12304,16 +11197,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 51,
-      "text": "Perspectief (randverhouding)",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 51,
+      "line": 50,
       "text": "Onvoldoende overeenkomsten",
       "kind": "expression",
       "review": {
@@ -12322,7 +11206,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 51,
+      "line": 50,
       "text": "· Afwijking",
       "kind": "expression",
       "review": {
@@ -12331,7 +11215,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 301,
+      "line": 300,
       "text": "queued",
       "kind": "expression",
       "review": {
@@ -12340,7 +11224,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoSessions.tsx",
-      "line": 302,
+      "line": 301,
       "text": "Voortgang verwerking",
       "kind": "attribute",
       "review": {
@@ -12447,69 +11331,6 @@
       }
     },
     {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 225,
-      "text": "Boegrotatie (°)",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 281,
-      "text": "Bronfoto met vrije grond",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 283,
-      "text": "Gebruik beeldreconstructie",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 288,
-      "text": "De grond onder de maskers is vrij op deze bronfoto",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 295,
-      "text": "Verwerking annuleren",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 49,
-      "text": "ID factuurregel",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 51,
-      "text": "ID betaling",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
       "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
       "line": 53,
       "text": "Betaald (cent)",
@@ -12523,33 +11344,6 @@
       "line": 53,
       "text": "Terugbetaald (cent)",
       "kind": "expression",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 56,
-      "text": "Betaling verwijderen",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 58,
-      "text": "Betaling toewijzen",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 59,
-      "text": "Toewijzing opslaan",
-      "kind": "jsx",
       "review": {
         "decision": "unreviewed"
       }
@@ -12646,15 +11440,6 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 150,
-      "text": "Gekoppelde afspraak",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
       "line": 153,
       "text": "Niet geplaatst",
       "kind": "expression",
@@ -12685,231 +11470,6 @@
       "line": 158,
       "text": "Factuur",
       "kind": "expression",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 159,
-      "text": "Toegewezen betaald",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 159,
-      "text": "· Openstaand",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 160,
-      "text": "Creditnota",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 161,
-      "text": "Gecrediteerd",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 162,
-      "text": "Terugbetaald",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 163,
-      "text": "Terug te betalen",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 164,
-      "text": "Toewijzing wijzigen",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServiceBoard.tsx",
-      "line": 167,
-      "text": "Factuurregel koppelen",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 103,
-      "text": "Actie",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 106,
-      "text": "Werktaken plannen",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 107,
-      "text": "Diensten toevoegen aan afspraak",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 108,
-      "text": "Stallingscontract opzeggen",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 115,
-      "text": "Verplaatsing → kraan → wassen → stalling",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 132,
-      "text": "Nieuwe starttijd afspraak (optioneel)",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 136,
-      "text": "Ingangsdatum",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 137,
-      "text": "Creditbedrag inclusief btw (€)",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 138,
-      "text": "Factuurregel",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 139,
-      "text": "Kies een factuurregel",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 144,
-      "text": "Nieuwe starttijd verplaatsing (optioneel)",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 145,
-      "text": "Nieuwe instructies",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 189,
-      "text": "Verplaatsing ·",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 192,
-      "text": "Opzegtermijn",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 192,
-      "text": "dagen · Minimumvergoeding",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 192,
-      "text": "te annuleren taken",
-      "kind": "jsx",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardServicePlan.tsx",
-      "line": 194,
-      "text": "Ik keur de financiële gevolgen en het bericht in het klantenportaal goed.",
-      "kind": "jsx",
       "review": {
         "decision": "unreviewed"
       }
@@ -13357,7 +11917,8 @@
       "key": "adminNew.suppliers.mapColumns.product",
       "text": "Product",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "Product is the Dutch noun for the catalog item linked to a supplier mapping."
       }
     },
     {
@@ -14694,14 +13255,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.common.delete",
-      "text": "Delete",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.audit.entity.invoice",
       "text": "Invoice",
       "review": {
@@ -15762,14 +14315,6 @@
       "locale": "fr",
       "key": "adminNew.boats.columns.owner",
       "text": "Owner",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.name",
-      "text": "Name",
       "review": {
         "decision": "unreviewed"
       }
@@ -16920,14 +15465,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.common.confirm",
-      "text": "Confirm",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.calculator.records.archived",
       "text": "Calculation archived",
       "review": {
@@ -16994,14 +15531,6 @@
       "locale": "fr",
       "key": "adminNew.calculator.pricing.empty",
       "text": "No pricing rules yet.",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.edit",
-      "text": "Edit",
       "review": {
         "decision": "unreviewed"
       }
@@ -17394,22 +15923,6 @@
       "locale": "fr",
       "key": "adminNew.invoiceDetail.noReminders",
       "text": "No reminders sent yet.",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.email",
-      "text": "Email",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.phone",
-      "text": "Phone",
       "review": {
         "decision": "unreviewed"
       }
@@ -20122,14 +18635,6 @@
       "locale": "fr",
       "key": "adminNew.kassa.customerSearch",
       "text": "Search customer…",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.noEmail",
-      "text": "no email",
       "review": {
         "decision": "unreviewed"
       }
@@ -23728,14 +22233,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.common.reasonTooShort",
-      "text": "Enter at least {min} characters",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.system.repair.mergeCustomers",
       "text": "Merge customers",
       "review": {
@@ -24256,14 +22753,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.common.saved",
-      "text": "Saved",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.workOrders.subtitle",
       "text": "Plan and track work per boat",
       "review": {
@@ -24378,14 +22867,6 @@
       "locale": "fr",
       "key": "adminNew.workOrders.detail.hours",
       "text": "Hours worked",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.deleted",
-      "text": "Removed",
       "review": {
         "decision": "unreviewed"
       }
@@ -24714,14 +23195,6 @@
       "locale": "fr",
       "key": "planning.selectPlaceholder",
       "text": "Select…",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.common.search",
-      "text": "Search",
       "review": {
         "decision": "unreviewed"
       }
@@ -25680,14 +24153,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.common.all",
-      "text": "All",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.kassa.analytics.subtitle",
       "text": "Turnover, transactions and payment methods",
       "review": {
@@ -25960,9 +24425,9 @@
     }
   ],
   "reviewSummary": {
-    "intentional": 13,
+    "intentional": 14,
     "translate": 0,
-    "unreviewed": 1933
+    "unreviewed": 1828
   },
   "strict": false
 }
