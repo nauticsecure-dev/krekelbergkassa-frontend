@@ -28,6 +28,7 @@ import { useRegisterCmsPage } from "@/components/cms/CmsProvider";
 import { EditableText } from "@/components/cms/EditableText";
 import { EditableImage } from "@/components/cms/EditableImage";
 import { EditSafeLink } from "@/components/cms/EditSafeLink";
+import { OpeningHoursEditor } from "@/components/cms/OpeningHoursEditor";
 
 
 const CMS_PAGE = "contact";
@@ -94,7 +95,7 @@ export default function ContactPage() {
           icon={MapPin}
           label={<EditableText blockKey="contact.card.address.label" page={CMS_PAGE} section="cards">{t("contactPage.addressLabel")}</EditableText>}
           value={<CompanyText field="address" />}
-          actionLabel={t("contactPage.ctaRoute")}
+          actionLabel={<TranslatedText textKey="contactPage.ctaRoute" />}
           actionHref={mapsUrl}
           external
         />
@@ -102,20 +103,21 @@ export default function ContactPage() {
           icon={Phone}
           label={<EditableText blockKey="contact.card.phone.label" page={CMS_PAGE} section="cards">{t("contactPage.phoneLabel")}</EditableText>}
           value={<CompanyText field="phone" />}
-          actionLabel={t("contactPage.ctaCall")}
+          actionLabel={<TranslatedText textKey="contactPage.ctaCall" />}
           actionHref={phoneHref}
         />
         <ContactCard
           icon={Mail}
           label={<EditableText blockKey="contact.card.email.label" page={CMS_PAGE} section="cards">{t("contactPage.emailLabel")}</EditableText>}
           value={<CompanyText field="email" />}
-          actionLabel={t("contactPage.ctaMail")}
+          actionLabel={<TranslatedText textKey="contactPage.ctaMail" />}
           actionHref={emailHref}
         />
       </section>
 
       <section className="container-wide grid gap-6 py-14 lg:grid-cols-[1fr_1.4fr]">
-        <Card className="p-6">
+        <Card className="p-6" data-cms-key="opening_hours.regular" data-cms-field-id="opening_hours.regular" data-cms-source="opening_hours"
+          data-cms-opening-hours-ready={apiHours.length > 0}>
           <div className="mb-4 flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-sand-100 text-navy-700">
               <Clock className="h-5 w-5" />
@@ -147,6 +149,7 @@ export default function ContactPage() {
                 {liveStatus.label}
               </span>
             )}
+            <OpeningHoursEditor onSaved={() => { void hoursQuery.refetch(); }} />
           </div>
           {liveStatus?.detail && (
             <p className="-mt-1 mb-3 text-xs text-navy-500">{liveStatus.detail}</p>
@@ -445,7 +448,7 @@ function ContactCard({
   icon: React.ComponentType<{ className?: string }>;
   label: React.ReactNode;
   value: React.ReactNode;
-  actionLabel: string;
+  actionLabel: React.ReactNode;
   actionHref: string;
   external?: boolean;
 }) {
@@ -462,14 +465,14 @@ function ContactCard({
           <div className="text-sm font-semibold text-navy-900">{value}</div>
         </div>
       </div>
-      <a
+      <EditSafeLink
         href={actionHref}
         target={external ? "_blank" : undefined}
         rel={external ? "noopener noreferrer" : undefined}
         className="inline-flex items-center gap-1 text-xs font-semibold text-marine-700 hover:text-marine-800"
       >
         {actionLabel} <ArrowRight className="h-3 w-3" />
-      </a>
+      </EditSafeLink>
     </Card>
   );
 }

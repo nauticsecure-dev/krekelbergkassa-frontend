@@ -69,8 +69,13 @@ try {
   const api = start(php, ['-d', 'xdebug.mode=off', '-d', 'zend_extension=opcache', '-d', 'opcache.enable_cli=1', '-S', '127.0.0.1:' + apiPort, path.join(backend, 'vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')], path.join(backend, 'public'), 'backend.log');
   await ready(env.APP_URL + '/api/health', api);
   const webPort = await port(); env.ISOLATED_BASE_URL = 'http://127.0.0.1:' + webPort; env.API_PROXY_TARGET = env.APP_URL;
-  const web = start(process.execPath, ['scripts/isolated-next-server.cjs', String(webPort)], frontend, 'frontend.log');
-  for (const route of ['/en/login?role=manager', '/en/admin', '/en/admin/klanten']) {
+  env.ADMIN_AUDIT_PORT = String(webPort);
+  const serverArgs = env.E2E_LOW_MEMORY === '1' && fs.existsSync(path.join(frontend, '.next/BUILD_ID'))
+    ? ['scripts/isolated-next-server.cjs', String(webPort)]
+    : ['scripts/admin-audit-server.cjs'];
+  const web = start(process.execPath, serverArgs, frontend, 'frontend.log');
+  const warmRoutes = grep ? ['/sw.js'] : ['/en/login?role=manager', '/en/admin', '/en/admin/klanten'];
+  for (const route of warmRoutes) {
     console.log('Warming ' + route); await ready(env.ISOLATED_BASE_URL + route, web, route.includes('/admin') ? { Cookie: 'krek_session=compile-only' } : undefined);
   }
   console.log('Running real HTTP/browser UX flows; application API responses are not mocked.');

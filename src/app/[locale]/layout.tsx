@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { IntlProvider } from '@/i18n/IntlProvider';
-import { getMessages, isLocale } from '@/i18n/getMessages';
+import { getCatalogFallbacks, getMessages, isLocale } from '@/i18n/getMessages';
 import { locales } from '@/i18n/config';
 import { AuthProvider } from '@/lib/auth-context';
 import { ToastProvider } from '@/components/ui/ToastProvider';
@@ -24,7 +24,7 @@ export default async function LocaleLayout({
   const messages = getMessages(locale);
 
   return (
-    <IntlProvider locale={locale} messages={messages}>
+    <IntlProvider locale={locale} messages={messages} catalogFallbacks={getCatalogFallbacks(messages)}>
       <ToastProvider>
         <AuthProvider>
           <CmsProvider>

@@ -11,6 +11,8 @@ export const control = 'rounded-lg border border-slate-600 bg-slate-900 px-3 py-
 
 export type Page<T> = { data: T[]; current_page: number; last_page: number; total: number };
 
+type HistoryResult = { events: Page<HistoryEvent>; legacy_coverage: string };
+
 type HistoryEvent = {
   id: string;
   event: string;
@@ -26,21 +28,22 @@ type HistoryEvent = {
 export function YardHistory({ locale, boatId, revision, initialSource = '' }: { locale: string; boatId?: string; revision: number; initialSource?: string }) {
   const [filters, setFilters] = useState<Record<string, string>>({ source: initialSource });
   const [page, setPage] = useState(1);
-  const [result, setResult] = useState<Page<HistoryEvent>>();
+  const [history, setHistory] = useState<HistoryResult>();
   const [error, setError] = useState('');
   useEffect(() => {
     let active = true;
-    setResult(undefined);
+    setHistory(undefined);
     setError('');
-    api<{ events: Page<HistoryEvent> }>(`${yardEndpoint}/history`, { query: { ...filters, boat_id: boatId ?? filters.boat_id, page } })
-      .then(({ events }) => { if (active) setResult(events); })
+    api<HistoryResult>(`${yardEndpoint}/history`, { query: { ...filters, boat_id: boatId ?? filters.boat_id, page } })
+      .then((result) => { if (active) setHistory(result); })
       .catch((err) => { if (active) setError(err.message); });
     return () => { active = false; };
   }, [boatId, filters, page, revision]);
 
+  const result = history?.events;
   return <section className="space-y-4">
     <h2 className="text-lg font-semibold"><TranslatedText textKey="siteCopy.13b42dd0ee393181" fallbackText={"Historie"} />{' '}{result && `(${result.total})`}</h2>
-    <p className="text-sm text-slate-300"><TranslatedText textKey="siteCopy.53e12b527b169d89" fallbackText={"Oudere registraties kunnen onvolledig zijn. Alleen vastgelegde gebeurtenissen worden getoond."} /></p>
+    {history?.legacy_coverage === 'incomplete' && <p className="text-sm text-slate-300"><TranslatedText textKey="siteCopy.53e12b527b169d89" fallbackText={"Oudere registraties kunnen onvolledig zijn. Alleen vastgelegde gebeurtenissen worden getoond."} /></p>}
     <form className="flex flex-wrap gap-2" onSubmit={(event) => {
       event.preventDefault();
       setPage(1);

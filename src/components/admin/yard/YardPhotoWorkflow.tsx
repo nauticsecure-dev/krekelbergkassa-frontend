@@ -1,7 +1,7 @@
 'use client';
 import { TranslatedText } from '@/components/cms/TranslatedText';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { api, type ApiError } from '@/lib/api';
 import { control } from './YardHistory';
 import { YardPhotoMatch, type PhotoPlacement } from './YardPhotoMatch';
@@ -15,6 +15,14 @@ export type YardAnalysis = { image_id: string; mode: 'ai' | 'manual'; revision: 
 const colors: Record<Status, string> = { pending: '#fbbf24', approved: '#4ade80', rejected: '#f87171' };
 const labels: Record<Status, string> = { pending: 'Ter review', approved: 'Goedgekeurd', rejected: 'Afgewezen' };
 const stages = ['Uploaden', 'Orthofoto kiezen', 'Detecteren', 'Controleren', 'Lege werf', 'Publiceren'];
+const panel = 'space-y-3 rounded-xl border border-navy-700 bg-navy-900 p-3 text-white';
+const polygonPoints = (points: Point[]) => points.map(([x, y]) => [x * 1000, y * 1000].join(',')).join(' ');
+const views = [
+  ['source', <TranslatedText key="source" textKey="yardPhotos.viewOriginal" />],
+  ['review', <TranslatedText key="review" textKey="yardPhotos.viewDetection" />],
+  ['empty', <TranslatedText key="empty" textKey="yardPhotos.viewEmpty" />],
+  ['interactive', <TranslatedText key="interactive" textKey="yardPhotos.viewInteractive" />],
+] as const;
 
 type RenderJob = { id?: string | null; metadata?: YardTileMetadata; processing?: { id: string; state: string; error?: string } };
 
@@ -70,7 +78,7 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
   path: string;
   analysis: YardAnalysis;
   images?: { id: string; filename: string }[];
-  outputs?: { id: string; category?: string; metadata?: { revision?: number; source_image_id?: string; detection_id?: string } }[];
+  outputs?: { id: string; category?: string; metadata?: YardTileMetadata & { revision?: number; source_image_id?: string; detection_id?: string } }[];
   onPublish?: (file: File, outputId: string) => void;
   onPlacement?: (boat: string, proposal: PhotoPlacement) => Promise<void>;
   onRemove?: () => void;
@@ -80,8 +88,9 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
   const [selected, setSelected] = useState(0);
   const [drawing, setDrawing] = useState<{ index: number; points: Point[] }>();
   const [source, setSource] = useState<Blob>();
-  const [output, setOutput] = useState<{ blob?: Blob; id: string; metadata?: YardTileMetadata }>();
-  const [view, setView] = useState<'source' | 'review' | 'empty'>('review');
+  const [generated, setOutput] = useState<{ blob?: Blob; id: string; metadata?: YardTileMetadata }>();
+  const [preview, setPreview] = useState<{ id: string; blob: Blob }>();
+  const [view, setView] = useState<(typeof views)[number][0]>('review');
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [renderJob, setRenderJob] = useState('');
@@ -94,11 +103,31 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
   const photo = useRef<HTMLImageElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
   const cutout = useRef<HTMLCanvasElement>(null);
+  const interactiveClip = useId();
   const renderRequest = useRef<AbortController>();
   useEffect(() => () => renderRequest.current?.abort(), []);
   const photoUrl = useObjectUrl(source);
-  const emptyUrl = useObjectUrl(output?.blob);
+  const output = dirty ? undefined : generated ?? outputs.find(file => file.category === 'empty_yard'
+    && file.metadata?.revision === review.revision && file.metadata.source_image_id === review.image_id);
+  const outputId = output?.id;
+  const outputMetadata = output?.metadata;
+  const outputBlob = generated?.blob;
+  const emptyUrl = useObjectUrl(outputBlob ?? (preview?.id === outputId ? preview?.blob : undefined));
+  const showEmpty = view === 'empty' || view === 'interactive';
   const detection = review.detections[selected];
+
+  useEffect(() => {
+    if (!outputId || outputBlob) return;
+    let active = true;
+    const tileSize = outputMetadata?.tile_size;
+    const url = path + '/outputs/' + outputId + (tileSize
+      ? '/tiles/' + Math.max(0, Math.ceil(Math.log2(Math.max(outputMetadata.width, outputMetadata.height) / tileSize))) + '/0/0'
+      : '');
+    api<Blob>(url).then(blob => {
+      if (active) setPreview({ id: outputId, blob });
+    }).catch(() => { if (active && !tileSize) setError('De lege werf kon niet worden geladen.'); });
+    return () => { active = false; };
+  }, [path, outputId, outputMetadata, outputBlob]);
 
   useEffect(() => {
     let active = true;
@@ -156,28 +185,29 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
 
   const counts = { pending: 0, approved: 0, rejected: 0 };
   review.detections.forEach(({ status }) => { counts[status]++; });
+  const currentStage = output ? 4 : 3;
 
   return <section className="space-y-3">
-    <ol aria-label="Verwerkingsstappen" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-      {stages.map((stage, index) => <li key={stage} aria-current={index === (output ? 4 : 3) ? 'step' : undefined}
-        className={'rounded-full border border-slate-700 px-3 py-2 text-sm ' + (index === (output ? 4 : 3) ? 'bg-blue-700' : 'bg-slate-900')}>
-        <span className={index < 3 ? 'text-green-300' : 'text-slate-200'}>{index + 1}</span> {index === 2 && analysis.mode === 'manual' ? 'Handmatig' : stage}
+    <ol aria-label="Verwerkingsstappen" className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+      {stages.map((stage, index) => <li key={stage} aria-current={index === currentStage ? 'step' : undefined}
+        className={'flex items-center gap-2 rounded-full border px-2 py-1.5 text-xs font-medium sm:text-sm ' + (index === currentStage ? 'border-blue-600 bg-navy-900 text-white' : 'border-navy-200 bg-white text-navy-900')}>
+        <span className={'grid size-7 shrink-0 place-items-center rounded-full text-white ' + (index < currentStage ? 'bg-green-700' : index === currentStage ? 'bg-blue-700' : 'bg-slate-600')}>{index + 1}</span>
+        {index === 2 && analysis.mode === 'manual' ? 'Handmatig' : stage}
+        {index < currentStage && <span className="text-green-700" aria-hidden="true">✓</span>}
       </li>)}
     </ol>
-    {error && <p role="alert" className="rounded bg-red-950 p-2">{error}</p>}
-    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_19rem]">
-      <div className="min-w-0 space-y-2">
-        {onRemove && <div className="flex justify-end">
-          <button type="button" className={`${control} !text-red-300`} disabled={busy || deleting} onClick={onRemove}><TranslatedText textKey="siteCopy.cf2ac9766c096588" fallbackText={"Foto verwijderen"} /></button>
-        </div>}
-        <div ref={viewport} className="max-h-[65vh] overflow-auto rounded-lg border border-slate-700 bg-slate-950">
+    {error && <p role="alert" className="rounded bg-red-950 p-2 text-white">{error}</p>}
+    <div className="grid gap-3 lg:grid-cols-[minmax(0,2.15fr)_minmax(17rem,1fr)]">
+      <div className="min-w-0">
+        <div className="relative overflow-hidden rounded-xl border border-navy-200">
+        <div ref={viewport} className="max-h-[68vh] min-h-32 overflow-auto bg-navy-100">
           <div className="relative" style={{ width: zoom * 100 + '%' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {photoUrl && <img ref={photo} onLoad={() => setLoaded(true)} alt="Orthofoto van de werf" src={photoUrl} className="block w-full" />}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {view === 'empty' && emptyUrl && <img alt="Gegenereerde lege werf" src={emptyUrl} className="absolute inset-0 size-full" />}
-            {view === 'empty' && output?.metadata?.tile_size && <YardPhotoTiles key={output.id} path={path + '/outputs/' + output.id} metadata={output.metadata} viewport={viewport} />}
-            {view === 'review' && loaded && <svg className={'absolute inset-0 size-full ' + (drawing ? 'cursor-crosshair' : '')}
+            {showEmpty && emptyUrl && !outputMetadata?.tile_size && <img alt="Gegenereerde lege werf" src={emptyUrl} className="absolute inset-0 size-full" />}
+            {showEmpty && outputMetadata?.tile_size && <YardPhotoTiles key={outputId} path={path + '/outputs/' + outputId} metadata={outputMetadata} viewport={viewport} />}
+            {(view === 'review' || view === 'interactive') && loaded && <svg className={'absolute inset-0 size-full ' + (drawing ? 'cursor-crosshair' : '')}
               viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-label="Bootmaskers op de orthofoto"
               onClick={(event) => {
                 if (!drawing || drawing.points.length >= 200) return;
@@ -187,49 +217,67 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
                   Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height)),
                 ]] });
               }}>
-              {review.detections.map(({ points, status }, index) => index !== drawing?.index && <polygon
-                key={index} points={points.map(([x, y]) => [x * 1000, y * 1000].join(',')).join(' ')}
-                fill={colors[status]} fillOpacity={selected === index ? 0.3 : 0.12}
-                stroke={colors[status]} strokeWidth={selected === index ? 3 : 1.5} vectorEffect="non-scaling-stroke"
-                className={drawing ? 'pointer-events-none' : 'cursor-pointer'} onClick={() => setSelected(index)} />)}
+              {view === 'interactive' && <>
+                <defs><clipPath id={interactiveClip}>{review.detections.filter(item => item.status === 'approved').map(item =>
+                  <polygon key={item.id} points={polygonPoints(item.points)} />)}</clipPath></defs>
+                <image href={photoUrl} width={1000} height={1000} preserveAspectRatio="none" clipPath={`url(#${interactiveClip})`} />
+              </>}
+              {review.detections.map(({ id, points, status }, index) => {
+                if (index === drawing?.index || (view === 'interactive' && status !== 'approved')) return null;
+                const [x, y] = points.reduce(([left, top], point) => [Math.min(left, point[0]), Math.min(top, point[1])], [1, 1]);
+                return <g key={id} className={drawing ? 'pointer-events-none' : 'cursor-pointer'} onClick={() => setSelected(index)}>
+                  <polygon points={polygonPoints(points)} fill={colors[status]} fillOpacity={selected === index ? 0.3 : 0.12}
+                    stroke={colors[status]} strokeWidth={selected === index ? 3 : 1.5} vectorEffect="non-scaling-stroke" />
+                  <text x={x * 1000 + 4} y={y * 1000 + 21} fill="white" stroke="#07192b" strokeWidth="7" strokeLinejoin="round"
+                    paintOrder="stroke" fontSize="20" fontWeight="600">{index + 1}</text>
+                </g>;
+              })}
               {drawing && <polyline points={drawing.points.map(([x, y]) => [x * 1000, y * 1000].join(',')).join(' ')}
                 fill="none" stroke="white" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
             </svg>}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {([['source', 'Origineel (orthofoto)'], ['review', 'Bootmaskers'], ['empty', 'Lege werf']] as const).map(([mode, label]) =>
-            <button key={mode} className={control} disabled={(mode === 'empty' && !output) || !!drawing}
-              aria-pressed={view === mode} onClick={() => setView(mode)}>{label}</button>)}
-          <button className={control} aria-label="Uitzoomen" disabled={zoom <= 1} onClick={() => setZoom(zoom - 0.5)}>−</button>
+        <div className="absolute left-2 top-2 grid gap-1">
           <button className={control} aria-label="Inzoomen" disabled={zoom >= 3} onClick={() => setZoom(zoom + 0.5)}>+</button>
+          <button className={control} aria-label="Uitzoomen" disabled={zoom <= 1} onClick={() => setZoom(zoom - 0.5)}>−</button>
         </div>
+        {view === 'review' && <ul className="pointer-events-none absolute bottom-0 right-0 flex flex-wrap gap-x-3 gap-y-1 rounded-tl-lg bg-navy-950/90 px-3 py-2 text-xs text-white">
+          {(['approved', 'pending', 'rejected'] as const).map(status => <li key={status} className="flex items-center gap-1.5">
+            <span className="size-3 rounded-sm border-2" style={{ borderColor: colors[status] }} />{labels[status]} ({counts[status]})
+          </li>)}
+        </ul>}
+        </div>
+        {onRemove && <button type="button" className={`${control} mt-2 !text-red-300`} disabled={busy || deleting} onClick={onRemove}><TranslatedText textKey="siteCopy.cf2ac9766c096588" fallbackText={"Foto verwijderen"} /></button>}
       </div>
       <aside className="space-y-3">
-        <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-900 p-3">
-          <h4 className="font-semibold"><TranslatedText textKey="siteCopy.8437afe2a6822c8f" fallbackText={"Bootdetecties"} /></h4>
+        <div className={panel}>
+          <h4 className="text-lg font-semibold">{detection ? <><TranslatedText textKey="siteCopy.00a3512d6254f6ad" fallbackText="Detectie #" />{selected + 1}</> : <TranslatedText textKey="siteCopy.8437afe2a6822c8f" fallbackText={"Bootdetecties"} />}</h4>
           {detection && <>
             <select aria-label="Detectie" className={control + ' w-full'} value={selected} disabled={!!drawing}
               onChange={(event) => { setSelected(Number(event.target.value)); setView('review'); }}>
               {review.detections.map(({ status }, index) => <option key={index} value={index}><TranslatedText textKey="siteCopy.00a3512d6254f6ad" fallbackText={"Detectie #"} inline={false} />{index + 1} · {labels[status]}</option>)}
             </select>
-            <canvas ref={cutout} aria-label="Transparante bootuitsnede" className="mx-auto max-h-40 max-w-full rounded bg-slate-700" />
-            <p className="text-sm text-slate-300">{detection.confidence === null ? 'Handmatig masker' : 'AI-confidence ' + Math.round(detection.confidence * 100) + '%'}</p>
+            <div className="grid grid-cols-2 items-center gap-3">
+              <div className="grid min-h-24 place-items-center overflow-hidden rounded bg-slate-100 [background-image:conic-gradient(#cbd5e1_25%,transparent_0_50%,#cbd5e1_0_75%,transparent_0)] [background-size:16px_16px]">
+                <canvas ref={cutout} aria-label="Transparante bootuitsnede" className="max-h-40 max-w-full" />
+              </div>
+              <p className="text-sm text-slate-200">{detection.confidence === null ? 'Handmatig masker' : 'AI-confidence ' + Math.round(detection.confidence * 100) + '%'}</p>
+            </div>
             <div className="flex flex-wrap gap-2">
-              <button className={control + ' text-green-300'} disabled={busy || !!drawing}
+              <button className={control + ' !bg-green-700'} disabled={busy || !!drawing}
                 onClick={() => change(selected, { ...detection, status: 'approved' })}><TranslatedText textKey="siteCopy.32a3611bb358e472" fallbackText={"Goedkeuren"} /></button>
               <button className={control} disabled={busy || !!drawing || !loaded} onClick={() => {
                 setView('review');
                 setDrawing({ index: selected, points: [] });
               }}><TranslatedText textKey="siteCopy.8cc4f65db9269747" fallbackText={"Bewerken"} /></button>
+              <button className={control + ' !bg-red-700'} disabled={busy || !!drawing}
+                onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey="siteCopy.5ce3c1a4a26afdba" fallbackText={"Afwijzen"} /></button>
               <label className="flex w-full items-center gap-2 text-sm"><TranslatedText textKey="siteCopy.a67ba06f9c5a5f0f" fallbackText={"Boegrotatie (°)"} /><input className={control + ' w-24'} type="number" min={0} max={360} disabled={busy || !!drawing}
                   value={detection.orientation ?? 0} onChange={event => {
                     const value = Number(event.target.value);
                     if (Number.isFinite(value) && value >= 0 && value <= 360) change(selected, { ...detection, orientation: value });
                   }} />
               </label>
-              <button className={control + ' text-red-300'} disabled={busy || !!drawing}
-                onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey="siteCopy.5ce3c1a4a26afdba" fallbackText={"Afwijzen"} /></button>
               <button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {
                 setBusy(true); setError('');
                 try {
@@ -271,10 +319,11 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
             setDrawing({ index: review.detections.length, points: [] });
           }}><TranslatedText textKey="siteCopy.9db28007cfb58d83" fallbackText={"+ Bootmasker tekenen"} /></button>}
         </div>
-        <div className="space-y-2 rounded-lg border border-slate-700 bg-slate-900 p-3">
+        <div className={panel}>
           <h4 className="font-semibold"><TranslatedText textKey="siteCopy.a03d424cbd92f4cc" fallbackText={"Sessieresultaat ·"} />{' '}{review.detections.length}</h4>
-          {(Object.keys(counts) as Status[]).map((status) => <div key={status} className="flex justify-between border-b border-slate-800 text-sm">
-            <span style={{ color: colors[status] }}>{labels[status]}</span><span>{counts[status]}</span>
+          {(['approved', 'pending', 'rejected'] as const).map((status) => <div key={status} className="flex justify-between border-b border-white/10 pb-1.5 text-sm">
+            <span className="flex items-center gap-2"><span className="size-2.5 rounded-full" style={{ backgroundColor: colors[status] }} />{labels[status]}</span>
+            <span>{counts[status]}</span>
           </div>)}
           <button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey="siteCopy.13e5170f2b105372" fallbackText={"Review opslaan"} /></button>
           {images.some(image => image.id !== analysis.image_id) && <label className="block text-sm"><TranslatedText textKey="siteCopy.4fb4202e6bc8f6c2" fallbackText={"Bronfoto met vrije grond"} /><select className={control + ' block w-full'} value={ground} disabled={busy} onChange={event => { setGround(event.target.value); setGroundConfirmed(false); }}>
@@ -285,7 +334,7 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
           {ground && <label className="block text-sm"><input type="checkbox" checked={groundConfirmed}
             onChange={event => setGroundConfirmed(event.target.checked)} /> <TranslatedText textKey="siteCopy.66ad58dc027a307c" fallbackText={" De grond onder de maskers is vrij op deze bronfoto"} /></label>}
           <button className="w-full rounded-lg bg-blue-700 px-3 py-2 font-semibold disabled:opacity-50"
-            disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey="siteCopy.3b185da8cd0488a3" fallbackText={"Lege werf genereren"} /></button>
+              disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey="siteCopy.3b185da8cd0488a3" fallbackText={"Lege werf genereren"} /><span aria-hidden="true" className="ml-2">→</span></button>
           {busy && <p role="status" className="text-sm"><TranslatedText textKey="siteCopy.550306513d82dae7" fallbackText={"Bezig met verwerken…"} /></p>}
           {renderJob && <button type="button" className={control} onClick={async () => {
             try { await api(path + '/cancel-processing', { method: 'POST', body: { job_id: renderJob } }); }
@@ -295,7 +344,7 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
             {[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {
               setBusy(true); setError('');
               try {
-                const blob = output.blob ?? await api<Blob>(path + '/outputs/' + output.id);
+                const blob = outputBlob ?? await api<Blob>(path + '/outputs/' + output.id);
                 if (publish && onPublish) onPublish(new File([blob], 'lege-werf.webp', { type: blob.type }), output.id);
                 else {
                   const url = URL.createObjectURL(blob);
@@ -309,6 +358,26 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
           </div>}
         </div>
       </aside>
+    </div>
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {views.map(([mode, label]) => {
+        const processed = mode === 'empty' || mode === 'interactive';
+        const thumbnail = processed ? emptyUrl : photoUrl;
+        return <button key={mode} type="button"
+          className={`overflow-hidden rounded-xl border bg-navy-900 text-left text-sm text-white disabled:opacity-55 ${view === mode ? 'border-blue-400 ring-2 ring-blue-600' : 'border-navy-700'}`}
+          disabled={!!drawing || (processed ? !output : !photoUrl)} aria-pressed={view === mode} onClick={() => setView(mode)}>
+          <span className="relative block aspect-[2.5] overflow-hidden bg-navy-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {thumbnail && <img alt="" src={thumbnail} className="size-full object-fill" />}
+            {thumbnail && (mode === 'review' || mode === 'interactive') &&
+              <svg aria-hidden="true" viewBox="0 0 1000 1000" preserveAspectRatio="none" className="absolute inset-0 size-full">
+                {review.detections.filter(item => mode === 'review' || item.status === 'approved').map(item =>
+                  <polygon key={item.id} points={polygonPoints(item.points)} fill={colors[item.status]} fillOpacity=".15" stroke={colors[item.status]} vectorEffect="non-scaling-stroke" />)}
+              </svg>}
+          </span>
+          <span className="block px-3 py-1.5">{label}</span>
+        </button>;
+      })}
     </div>
   </section>;
 }

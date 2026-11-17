@@ -47,7 +47,7 @@ async function ready(url, child) {
 try {
   console.log('Isolated local CMS runtime: ' + runtime);
   run('php', ['artisan', 'migrate', '--force', '--no-interaction'], backend, 'migrations.log');
-  for (const seeder of ['UserSeeder', 'ServiceProductSeeder', 'SettingsSeeder']) run('php', ['artisan', 'db:seed', '--class=' + seeder, '--force', '--no-interaction'], backend, seeder + '.log');
+  for (const seeder of ['UserSeeder', 'ServiceProductSeeder', 'SettingsSeeder', 'OpeningHourSeeder']) run('php', ['artisan', 'db:seed', '--class=' + seeder, '--force', '--no-interaction'], backend, seeder + '.log');
   run('php', ['scripts/seed-cms-text-live.php'], backend, 'fixtures.log');
   const credentials = JSON.parse(fs.readFileSync(env.CMS_TEXT_TOKEN_FILE, 'utf8'));
   fs.unlinkSync(env.CMS_TEXT_TOKEN_FILE);
@@ -64,12 +64,13 @@ try {
   const web = start(process.execPath, ['scripts/isolated-next-server.cjs', String(webPort)], frontend, 'frontend.log');
   for (const locale of ['nl', 'en', 'de', 'fr']) { console.log('Warming local /' + locale); await ready(env.QA_STAGING_URL + '/' + locale, web); }
   run('php', ['artisan', 'quality:cms-inventory'], backend, 'inventory.log');
-  const selectedKeys = process.env.CMS_LOCAL_TEXT_KEYS?.split(',').map(key => key.replace('[product]', credentials.product_id)) ?? [
+  const selectedKeys = process.env.CMS_LOCAL_TEXT_KEYS?.split(',').map(key => key.trim().replace('[product]', credentials.product_id)).filter(Boolean) ?? [
     'home.hero.title', 'i18n.footer.services', 'footer.tagline', 'header.cta.label',
     'home.hero.cta_primary.label', 'home.hero.cta_primary.link', 'header.cta.path',
     'home.werf.cert', 'over-ons.hiswa.desc', 'over-ons.stat.years.value', 'company.email',
     ...['title', 'tagline', 'desc'].map(field => `catalog.product.${credentials.product_id}.${field}`),
     'verkoop.stat.1.label', 'diensten.faq.faq1.a',
+    'opening_hours.regular', 'contact.hero.image:alt_by_locale', 'contact.hero.image:seo_title_by_locale',
     ...['crane', 'wash', 'storage', 'diy', 'sale', 'week'].flatMap(service => ['title', 'tagline', 'desc'].map(field => `home.svc.${service}.${field}`)),
   ];
   const home = 'src/app/[locale]/(site)';
@@ -94,7 +95,10 @@ try {
   };
   const fixtures = { environment: 'local', frozenLocalSource: process.env.CMS_FROZEN_LOCAL_SOURCE === '1', baseURL: env.QA_STAGING_URL, evidenceDirectory: path.join(storage, 'quality-private'),
     roles, scenarios,
-    routeFixtures: { '/[locale]/diensten/[slug]': '/[locale]/diensten/' + encodeURIComponent(credentials.product_slug) },
+    routeFixtures: {
+      '/[locale]/diensten/[slug]': '/[locale]/diensten/' + encodeURIComponent(credentials.product_slug),
+      '/[locale]/admin/klanten/[id]': '/[locale]/admin/klanten/' + credentials.customer_id,
+    },
     onlyRoutes: process.env.CMS_LOCAL_TEXT_ROUTES?.split(',') ??
       ['/[locale]', '/[locale]/over-ons', '/[locale]/verkoop', '/[locale]/diensten', '/[locale]/contact', '/[locale]/faq', '/[locale]/diensten/[slug]', '/[locale]/admin/klanten/[id]'],
     onlyRouteRoles: process.env.CMS_LOCAL_TEXT_ROLES?.split(','),

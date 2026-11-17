@@ -57,7 +57,7 @@ const pages = walk(root).filter((file) => file.endsWith('/page.tsx')).sort().map
     states: Object.fromEntries(['LoadingState', 'ErrorState', 'EmptyState'].map((state) => [state, evidence(files, new RegExp(`<${state}\\b`))])),
     permissions: evidence(files, /\b(?:can|userCan|usePermission|canPerformCreate)\(/),
     modals: evidence(files, /<(?:Modal|AdminConfirmModal|\w+Modal)\b/),
-    actions: evidence(files, /\b(?:onClick|onSubmit)=/),
+    actions: evidence(files, /\b(?:onClick|onSubmit|onConfirm)=/),
   };
 });
 const result = {

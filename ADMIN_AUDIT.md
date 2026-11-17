@@ -1,6 +1,6 @@
 # Admin UI/UX source audit
 
-Generated 2026-11-15 by `node scripts/audit-admin-pages.mjs`. 73 routes.
+Generated 2026-11-17 by `node scripts/audit-admin-pages.mjs`. 73 routes.
 
 Conservative local component import/export closure, including modal components. Shared primitives and shell excluded from page signals; see sharedFiles. A module may contain unused exports. Source presence never proves runtime coverage or authorization.
 
@@ -24,7 +24,7 @@ See [layout policy](ADMIN_LAYOUT_PATTERNS.md) and [verification ledger](ADMIN_VE
 | `/admin/bundels` | 13 | 9 | 2 | 0 | Loading, Error, Empty | 0 | 7 |
 | `/admin/calculator/history` | redirect | 0 | 0 | 0 | — | 0 | 0 |
 | `/admin/calculator` | 13 | 9 | 3 | 0 | — | 0 | 8 |
-| `/admin/calculator/pricing` | 13 | 9 | 7 | 0 | Loading, Error, Empty | 2 | 7 |
+| `/admin/calculator/pricing` | 13 | 9 | 3 | 0 | Loading, Error, Empty | 2 | 7 |
 | `/admin/contracten` | redirect | 0 | 0 | 0 | — | 0 | 0 |
 | `/admin/diensten-prijzen` | 3 | 0 | 0 | 0 | — | 0 | 0 |
 | `/admin/diensten` | 13 | 9 | 6 | 0 | Loading, Error | 0 | 5 |
@@ -72,7 +72,7 @@ See [layout policy](ADMIN_LAYOUT_PATTERNS.md) and [verification ledger](ADMIN_VE
 | `/admin/stalling/[id]/[slug]` | 15 | 9 | 14 | 0 | Loading, Error, Empty | 2 | 7 |
 | `/admin/stalling/[id]` | 14 | 9 | 14 | 0 | Loading, Error, Empty | 2 | 7 |
 | `/admin/stalling` | 16 | 9 | 2 | 0 | Loading, Error, Empty | 4 | 12 |
-| `/admin/stalling/werfcanvas` | 30 | 9 | 119 | 4 | — | 7 | 5 |
+| `/admin/stalling/werfcanvas` | 30 | 9 | 120 | 4 | — | 7 | 5 |
 | `/admin/sync` | 13 | 9 | 2 | 0 | — | 0 | 7 |
 | `/admin/systeem` | 14 | 9 | 2 | 0 | Loading, Error | 0 | 9 |
 | `/admin/systeembeheer` | 15 | 9 | 2 | 0 | Loading, Error | 0 | 9 |

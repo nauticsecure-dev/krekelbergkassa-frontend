@@ -4,6 +4,14 @@ const matrix = JSON.parse(fs.readFileSync('artifacts/admin-audit/source-matrix.j
 const dictionaries = Object.fromEntries(['nl','en','de','fr'].map(locale => [locale, JSON.parse(fs.readFileSync(`src/i18n/messages/${locale}.json`, 'utf8'))]));
 const label = (locale: string, key: string): string => key.split('.').reduce((v, k) => v[k], dictionaries[locale]);
 const failure = 'Audit injected service failure';
+const locales = ['nl', 'en', 'de', 'fr'];
+const redirects: Record<string, string> = {
+  '/admin/calculator/history': '/admin/calculator',
+  '/admin/contracten': '/admin/stalling',
+  '/admin/documenten': '/admin/facturen/import',
+  '/admin/ocr-review': '/admin/facturen/import?status=review_required',
+  '/admin/ocr/templates': '/admin/facturen/templates',
+};
 async function session(page: Page, role = 'super_admin', broken = true) {
   const baseURL = test.info().project.use.baseURL!;
   await page.context().addCookies([{ name: 'krek_session', value: 'audit-fixture', url: baseURL }]);
@@ -17,12 +25,20 @@ async function session(page: Page, role = 'super_admin', broken = true) {
     return route.fulfill({ json:{data:[],items:[],cards:[],meta:{total:0,current_page:1,last_page:1}} });
   });
 }
-for (const entry of matrix.pages) {
-  test(`route failure boundary: ${entry.route}`, async ({ page }, info) => {
+for (const entry of matrix.pages) for (const locale of locales) {
+  const title = locale === 'nl' ? `route failure boundary: ${entry.route}` : `${locale}: route failure boundary: ${entry.route}`;
+  test(title, async ({ page }, info) => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     await session(page, entry.route.startsWith('/admin/werkorders') ? 'staff' : 'super_admin');
-    await page.goto(`/nl${entry.route.replaceAll('[id]', 'audit-missing-record').replaceAll('[slug]', 'audit-record')}`);
+    const pathname = `/${locale}${entry.route.replaceAll('[id]', 'audit-missing-record').replaceAll('[slug]', 'audit-record')}`;
+    await page.setViewportSize({ width: 390, height: 900 });
+    const response = await page.goto(pathname);
+    expect(response?.ok(), `Navigation to ${pathname} returned ${response?.status()}`).toBe(true);
+    const destination = redirects[entry.route];
+    if (entry.redirect) expect(destination, `Missing expected destination for ${entry.route}`).toBeDefined();
+    await expect(page).toHaveURL(new URL(destination ? `/${locale}${destination}` : pathname, info.project.use.baseURL).href);
+    await expect(page.locator('html')).toHaveAttribute('lang', locale);
     const main = page.locator('main');
     await expect(main).toBeVisible();
     await expect.poll(() => main.innerText()).not.toBe('');
@@ -31,14 +47,24 @@ for (const entry of matrix.pages) {
     // is only a smoke pass, never a verified error-state pass.
     await expect(page.locator('body')).not.toContainText('Application error:');
     const text = await main.innerText();
-    await info.attach('route-observation', { body: JSON.stringify({ route:entry.route, locale:'nl', finalURL:page.url(), injectedErrorVisible:text.includes(failure), text:text.slice(0,2000), errors }), contentType:'application/json' });
+    expect(text.match(/\b(?:adminNew|adminModules|settingsHub|globalUx|siteCopy)\.[A-Za-z0-9][\w.]+/g) ?? []).toEqual([]);
+    const viewports = [];
+    for (const width of [390, 1280, 1536]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth), { message: `Document overflow at ${width}px`, timeout: 5000 }).toBeLessThanOrEqual(1);
+      await expect.poll(() => main.evaluate(element => element.scrollWidth - element.clientWidth), { message: `Main content overflow at ${width}px`, timeout: 5000 }).toBeLessThanOrEqual(1);
+      viewports.push(width);
+    }
+    await info.attach('route-observation', { body: JSON.stringify({ route:entry.route, locale, finalURL:page.url(), injectedErrorVisible:text.includes(failure), text:text.slice(0,2000), errors, viewports }), contentType:'application/json' });
     expect(errors).toEqual([]);
-    const screenshot = info.outputPath('route-error-state.png');
-    await page.screenshot({path:screenshot,fullPage:true});
-    await info.attach('page-evidence',{path:screenshot,contentType:'image/png'});
+    if (locale === 'nl') {
+      const screenshot = info.outputPath('route-error-state.png');
+      await page.screenshot({path:screenshot,fullPage:true});
+      await info.attach('page-evidence',{path:screenshot,contentType:'image/png'});
+    }
   });
 }
-for (const locale of ['nl','en','de','fr']) {
+for (const locale of locales) {
   test(`${locale}: dashboard sidebar and KPI responsive evidence`, async ({ page }, info) => {
     await session(page);
     await page.goto(`/${locale}/admin`);
@@ -95,53 +121,61 @@ for (const write of [false, true]) {
   });
 }
 
-test('customer loading empty validation and create modal retain data then save', async ({ page }, info) => {
-  await session(page, 'staff', false);
-  let release!: () => void;
-  const held = new Promise<void>(resolve => { release = resolve; });
-  let first = true;
-  let rejected = true;
-  let posts = 0;
-  let record: Record<string, unknown> | null = null;
-  await page.route('**/api/v1/customers*', async route => {
-    if (route.request().method() === 'POST') {
-      posts++;
-      const payload = route.request().postDataJSON();
-      expect(payload.name).toBe('Audit Created Customer');
-      if (rejected) return route.fulfill({status:422,json:{message:'Audit validation failure',errors:{email:['Audit email already exists']}}});
-      record={...payload,id:'created-customer',status:'active'};
-      return route.fulfill({status:201,json:record});
+for (const locale of locales) {
+  test(locale === 'nl' ? 'customer loading empty validation and create modal retain data then save' : locale + ': customer loading empty validation and create modal retain data then save', async ({ page }, info) => {
+    await session(page, 'staff', false);
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    let rejected = true;
+    let posts = 0;
+    let record: Record<string, unknown> | null = null;
+    await page.route('**/api/v1/customers*', async route => {
+      if (route.request().method() === 'POST') {
+        posts++;
+        const payload = route.request().postDataJSON();
+        expect(payload.name).toBe('Audit Created Customer');
+        if (rejected) return route.fulfill({status:422,json:{message:'Audit validation failure',errors:{email:['Audit email already exists']}}});
+        record={...payload,id:'created-customer',status:'active'};
+        return route.fulfill({status:201,json:record});
+      }
+      await held;
+      return route.fulfill({json:{data:record?[record]:[],meta:{total:record?1:0,current_page:1,last_page:1,per_page:20}}});
+    });
+    await page.goto('/' + locale + '/admin/klanten');
+    try {
+      await expect(page.locator('main').getByText(label(locale, 'adminNew.customers.loading'), { exact: true })).toBeVisible();
+    } finally {
+      release();
     }
-    if(first) {first=false;await held;}
-    return route.fulfill({json:{data:record?[record]:[],meta:{total:record?1:0,current_page:1,last_page:1,per_page:20}}});
+    await expect(page.getByText(label(locale,'adminNew.customers.emptyTitle'),{exact:true})).toBeVisible();
+    await page.locator('main').getByRole('button',{name:label(locale,'adminNew.customers.new'),exact:true}).first().click();
+    const dialog=page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: label(locale, 'adminNew.customers.modal.title'), exact: true })).toBeVisible();
+    const name=dialog.getByLabel(label(locale,'adminNew.common.name'),{exact:false}).first();
+    await dialog.getByRole('button',{name:label(locale,'adminNew.common.save'),exact:true}).click();
+    expect(posts).toBe(0);
+    expect(await name.evaluate((input:HTMLInputElement)=>input.validity.valueMissing)).toBe(true);
+    await name.fill('Audit Created Customer');
+    await dialog.getByLabel(label(locale,'adminNew.common.email'),{exact:false}).first().fill('audit-created@example.test');
+    await dialog.getByRole('button',{name:label(locale,'adminNew.common.save'),exact:true}).click();
+    await expect(page.getByText(/Audit email already exists/).first()).toBeVisible();
+    await expect(name).toHaveValue('Audit Created Customer');
+    for(const width of [390, 1280, 1536]) {
+      await page.setViewportSize({width,height:1000});
+      await expect.poll(()=>dialog.evaluate(element=>element.getBoundingClientRect().width)).toBeLessThanOrEqual(width);
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      const screenshot = info.outputPath(`customer-validation-${width}.png`);
+      await page.screenshot({ path: screenshot, fullPage: true });
+      await info.attach('validation-dialog', { path: screenshot, contentType: 'image/png' });
+    }
+    rejected=false;
+    await dialog.getByRole('button',{name:label(locale,'adminNew.common.save'),exact:true}).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.locator('tbody')).toContainText('Audit Created Customer');
+    expect(posts).toBe(2);
   });
-  await page.goto('/nl/admin/klanten');
-  await expect(page.locator('main .animate-pulse').first()).toBeVisible();
-  release();
-  await expect(page.getByText(label('nl','adminNew.customers.emptyTitle'),{exact:true})).toBeVisible();
-  await page.locator('main').getByRole('button',{name:label('nl','adminNew.customers.new'),exact:true}).first().click();
-  const dialog=page.getByRole('dialog');
-  await expect(dialog).toBeVisible();
-  const name=dialog.getByLabel(label('nl','adminNew.common.name'),{exact:false}).first();
-  await dialog.getByRole('button',{name:label('nl','adminNew.common.save'),exact:true}).click();
-  expect(posts).toBe(0);
-  expect(await name.evaluate((input:HTMLInputElement)=>input.validity.valueMissing)).toBe(true);
-  await name.fill('Audit Created Customer');
-  await dialog.getByLabel(label('nl','adminNew.common.email'),{exact:false}).first().fill('audit-created@example.test');
-  await dialog.getByRole('button',{name:label('nl','adminNew.common.save'),exact:true}).click();
-  await expect(page.getByText(/Audit email already exists/).first()).toBeVisible();
-  await expect(name).toHaveValue('Audit Created Customer');
-  for(const width of [390,1280]) {
-    await page.setViewportSize({width,height:1000});
-    await expect.poll(()=>dialog.evaluate(element=>element.getBoundingClientRect().width)).toBeLessThanOrEqual(width);
-    await page.screenshot({path:info.outputPath(`customer-validation-${width}.png`),fullPage:true});
-  }
-  rejected=false;
-  await dialog.getByRole('button',{name:label('nl','adminNew.common.save'),exact:true}).click();
-  await expect(dialog).toHaveCount(0);
-  await expect(page.locator('tbody')).toContainText('Audit Created Customer');
-  expect(posts).toBe(2);
-});
+}
 
 for (const write of [false, true]) {
   test(`boat list write controls and create deep link (${write})`, async ({ page }) => {
@@ -191,96 +225,104 @@ for (const write of [false, true]) {
   });
 }
 
-test('boat loading empty validation create and delete retain data then mutate', async ({ page }, info) => {
-  await session(page, 'staff', false);
-  let release!: () => void;
-  const held = new Promise<void>(resolve => { release = resolve; });
-  let first = true;
-  let rejected = true;
-  let posts = 0;
-  let deletes = 0;
-  let record: Record<string, unknown> | null = null;
-  await page.route('**/api/v1/auth/me', route => route.fulfill({
-    json: {
-      id: 'boat-writer', name: 'Boat Writer', email: 'boat-writer@example.test', role: 'staff',
-      permissions: ['boats.view', 'boats.write', 'boats.delete', 'customers.view'],
-    },
-  }));
-  await page.route('**/api/v1/customers*', route => route.fulfill({
-    json: {
-      data: [{ id: 'customer-1', name: 'Audit Owner', email: 'owner@example.test' }],
-      meta: { total: 1, current_page: 1, last_page: 1, per_page: 100 },
-    },
-  }));
-  await page.route('**/api/v1/boats**', async route => {
-    const method = route.request().method();
-    const path = new URL(route.request().url()).pathname;
-    if (path.endsWith('/boats/stats')) {
-      return route.fulfill({
-        json: { total_boats: record ? 1 : 0, boats_in_storage: 0, active_work_orders: 0, open_balance_cents: 0 },
-      });
+for (const locale of locales) {
+  test(locale === 'nl' ? 'boat loading empty validation create and delete retain data then mutate' : locale + ': boat loading empty validation create and delete retain data then mutate', async ({ page }, info) => {
+    await session(page, 'staff', false);
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    let rejected = true;
+    let posts = 0;
+    let deletes = 0;
+    let record: Record<string, unknown> | null = null;
+    await page.route('**/api/v1/auth/me', route => route.fulfill({
+      json: {
+        id: 'boat-writer', name: 'Boat Writer', email: 'boat-writer@example.test', role: 'staff',
+        permissions: ['boats.view', 'boats.write', 'boats.delete', 'customers.view'],
+      },
+    }));
+    await page.route('**/api/v1/customers*', route => route.fulfill({
+      json: {
+        data: [{ id: 'customer-1', name: 'Audit Owner', email: 'owner@example.test' }],
+        meta: { total: 1, current_page: 1, last_page: 1, per_page: 100 },
+      },
+    }));
+    await page.route('**/api/v1/boats**', async route => {
+      const method = route.request().method();
+      const path = new URL(route.request().url()).pathname;
+      if (path.endsWith('/boats/stats')) {
+        return route.fulfill({
+          json: { total_boats: record ? 1 : 0, boats_in_storage: 0, active_work_orders: 0, open_balance_cents: 0 },
+        });
+      }
+      if (method === 'POST') {
+        posts++;
+        const payload = route.request().postDataJSON();
+        expect(payload).toMatchObject({ customer_id: 'customer-1', name: 'Audit Created Boat', type: 'motor' });
+        if (rejected) return route.fulfill({ status: 422, json: { message: 'Audit validation failure', errors: { name: ['Audit boat name taken'] } } });
+        record = {
+          ...payload, id: 'created-boat', customer: { id: 'customer-1', name: 'Audit Owner' },
+          current_status: 'registered', length_cm: payload.length_cm ?? null, location_code: payload.location_code ?? null,
+        };
+        return route.fulfill({ status: 201, json: record });
+      }
+      if (method === 'DELETE') {
+        deletes++;
+        record = null;
+        return route.fulfill({ status: 200, json: { message: 'deleted' } });
+      }
+      if (method === 'GET' && /\/boats\/?$/.test(path)) {
+        await held;
+        return route.fulfill({
+          json: {
+            data: record ? [record] : [],
+            meta: { total: record ? 1 : 0, current_page: 1, last_page: 1, per_page: 20 },
+          },
+        });
+      }
+      return route.fulfill({ json: { data: [], meta: { total: 0, current_page: 1, last_page: 1, per_page: 20 } } });
+    });
+    await page.goto('/' + locale + '/admin/boten');
+    try {
+      await expect(page.locator('main').getByText(label(locale, 'adminNew.boats.loading'), { exact: true })).toBeVisible();
+    } finally {
+      release();
     }
-    if (method === 'POST') {
-      posts++;
-      const payload = route.request().postDataJSON();
-      expect(payload).toMatchObject({ customer_id: 'customer-1', name: 'Audit Created Boat', type: 'motor' });
-      if (rejected) return route.fulfill({ status: 422, json: { message: 'Audit validation failure', errors: { name: ['Audit boat name taken'] } } });
-      record = {
-        ...payload, id: 'created-boat', customer: { id: 'customer-1', name: 'Audit Owner' },
-        current_status: 'registered', length_cm: payload.length_cm ?? null, location_code: payload.location_code ?? null,
-      };
-      return route.fulfill({ status: 201, json: record });
+    await expect(page.getByText(label(locale, 'adminNew.boats.emptyTitle'), { exact: true })).toBeVisible();
+    await page.locator('main').getByRole('button', { name: label(locale, 'adminNew.boats.new'), exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: label(locale, 'adminNew.boats.new'), exact: true })).toBeVisible();
+    await dialog.getByRole('button', { name: label(locale, 'adminNew.boats.selectCustomer'), exact: true }).click();
+    await page.getByRole('option', { name: 'Audit Owner', exact: true }).click();
+    const name = dialog.getByLabel(label(locale, 'adminNew.common.name'), { exact: false }).first();
+    await dialog.getByRole('button', { name: label(locale, 'adminNew.common.save'), exact: true }).click();
+    expect(posts).toBe(0);
+    expect(await name.evaluate((input: HTMLInputElement) => input.validity.valueMissing)).toBe(true);
+    await name.fill('Audit Created Boat');
+    await dialog.getByRole('button', { name: label(locale, 'adminNew.common.save'), exact: true }).click();
+    await expect(page.getByText(/Audit boat name taken/).first()).toBeVisible();
+    await expect(name).toHaveValue('Audit Created Boat');
+    for (const width of [390, 1280, 1536]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await expect.poll(() => dialog.evaluate(element => element.getBoundingClientRect().width)).toBeLessThanOrEqual(width);
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      const screenshot = info.outputPath(`boat-validation-${width}.png`);
+      await page.screenshot({ path: screenshot, fullPage: true });
+      await info.attach('validation-dialog', { path: screenshot, contentType: 'image/png' });
     }
-    if (method === 'DELETE') {
-      deletes++;
-      record = null;
-      return route.fulfill({ status: 200, json: { message: 'deleted' } });
-    }
-    if (method === 'GET' && /\/boats\/?$/.test(path)) {
-      if (first) { first = false; await held; }
-      return route.fulfill({
-        json: {
-          data: record ? [record] : [],
-          meta: { total: record ? 1 : 0, current_page: 1, last_page: 1, per_page: 20 },
-        },
-      });
-    }
-    return route.fulfill({ json: { data: [], meta: { total: 0, current_page: 1, last_page: 1, per_page: 20 } } });
+    rejected = false;
+    await dialog.getByRole('button', { name: label(locale, 'adminNew.common.save'), exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.locator('tbody')).toContainText('Audit Created Boat');
+    expect(posts).toBe(2);
+    await page.locator('main').getByRole('button', { name: label(locale, 'adminNew.common.delete'), exact: true }).click();
+    const confirm = page.getByRole('dialog');
+    await expect(confirm).toContainText(label(locale, 'adminNew.boats.confirmDelete'));
+    await confirm.getByRole('button', { name: label(locale, 'adminNew.common.delete'), exact: true }).click();
+    await expect(page.getByText(label(locale, 'adminNew.boats.emptyTitle'), { exact: true })).toBeVisible();
+    expect(deletes).toBe(1);
   });
-  await page.goto('/nl/admin/boten');
-  await expect(page.locator('main .animate-pulse').first()).toBeVisible();
-  release();
-  await expect(page.getByText(label('nl', 'adminNew.boats.emptyTitle'), { exact: true })).toBeVisible();
-  await page.locator('main').getByRole('button', { name: label('nl', 'adminNew.boats.new'), exact: true }).click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole('button', { name: label('nl', 'adminNew.boats.selectCustomer'), exact: true }).click();
-  await page.getByRole('option', { name: 'Audit Owner', exact: true }).click();
-  const name = dialog.getByLabel(label('nl', 'adminNew.common.name'), { exact: false }).first();
-  await dialog.getByRole('button', { name: label('nl', 'adminNew.common.save'), exact: true }).click();
-  expect(posts).toBe(0);
-  expect(await name.evaluate((input: HTMLInputElement) => input.validity.valueMissing)).toBe(true);
-  await name.fill('Audit Created Boat');
-  await dialog.getByRole('button', { name: label('nl', 'adminNew.common.save'), exact: true }).click();
-  await expect(page.getByText(/Audit boat name taken/).first()).toBeVisible();
-  await expect(name).toHaveValue('Audit Created Boat');
-  for (const width of [390, 1280]) {
-    await page.setViewportSize({ width, height: 1000 });
-    await expect.poll(() => dialog.evaluate(element => element.getBoundingClientRect().width)).toBeLessThanOrEqual(width);
-    await page.screenshot({ path: info.outputPath(`boat-validation-${width}.png`), fullPage: true });
-  }
-  rejected = false;
-  await dialog.getByRole('button', { name: label('nl', 'adminNew.common.save'), exact: true }).click();
-  await expect(dialog).toHaveCount(0);
-  await expect(page.locator('tbody')).toContainText('Audit Created Boat');
-  expect(posts).toBe(2);
-  await page.locator('main').getByRole('button', { name: label('nl', 'adminNew.common.delete'), exact: true }).click();
-  const confirm = page.getByRole('dialog');
-  await expect(confirm).toContainText(label('nl', 'adminNew.boats.confirmDelete'));
-  await confirm.getByRole('button', { name: label('nl', 'adminNew.common.delete'), exact: true }).click();
-  await expect(page.getByText(label('nl', 'adminNew.boats.emptyTitle'), { exact: true })).toBeVisible();
-  expect(deletes).toBe(1);
-});
+}
 
 test('boat detail update modal saves and read-only hides mutations', async ({ page }) => {
   await session(page, 'staff', false);

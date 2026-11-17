@@ -115,6 +115,23 @@ function onSiteURL(route, locale) {
   assert.equal(resolved.origin, baseURL, 'Fixture must stay on the deployment origin.');
   return resolved.href;
 }
+async function goTo(page, url, intercept) {
+  await page.unrouteAll({ behavior: 'ignoreErrors' });
+  if (intercept) {
+    assert.ok(intercept.path.startsWith('/api/v1/'), 'State fixture must target an API path.');
+    await page.route(candidate => candidate.origin === baseURL && candidate.pathname === intercept.path, async route => {
+      if (route.request().method() !== 'GET') return route.continue();
+      if (!intercept.hold) await route.fulfill({ status: intercept.status, json: intercept.body });
+    });
+  }
+  const options = { waitUntil: 'domcontentloaded' };
+  try {
+    return await page.goto(url, options);
+  } catch (error) {
+    if (!/net::ERR_(NETWORK_CHANGED|CONNECTION_RESET)\b/.test(error.message)) throw error;
+    return page.goto(url, options);
+  }
+}
 function waitForApi(page, endpoint, method) {
   const pending = page.waitForResponse(response => {
     const url = new URL(response.url());
@@ -148,12 +165,12 @@ try {
         result.status = 'BLOCKED'; result.reason = 'Authorized dynamic-route fixture is missing.'; continue;
       }
       const url = onSiteURL(route, row.locale);
-      const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
+      const response = await goTo(page, url, scenario.intercept);
       assert.equal(response?.status(), scenario.httpStatus ?? 200);
       await actions(page, scenario.actions);
       assert.ok(scenario.assertions?.length, 'A navigation alone is not state/authorization proof.');
       await actions(page, scenario.assertions);
-      if (scenario.expectedURL) assert.equal(page.url(), onSiteURL(scenario.expectedURL, row.locale));
+      if (scenario.expectedURL) await page.waitForURL(onSiteURL(scenario.expectedURL, row.locale));
       assert.equal(new URL(page.url()).origin, baseURL);
       result.steps = { browser: true, assertions: true }; result.status = 'PASS'; result.reason = '';
       const surfaces = await page.locator('[data-cms-field-id]:visible').evaluateAll(nodes => nodes.map(node => ({
@@ -164,11 +181,12 @@ try {
         const key = `${surface.key}:${row.locale}`;
         const variants = observed.get(key) ?? [];
         if (!variants.some(item => item.url === url && item.state === row.state)) variants.push({ ...surface, url, state: row.state,
-          file: row.file, dependencies: inventory.routes.find(route => route.file === row.file)?.dependencies ?? [], actions: scenario.actions ?? [] });
+          file: row.file, dependencies: inventory.routes.find(route => route.file === row.file)?.dependencies ?? [],
+          actions: scenario.actions ?? [], intercept: scenario.intercept });
         observed.set(key, variants);
       }
       result.artifacts = [artifact(row.id, { url, final_url: page.url(), role: row.role, actor_id: sessions.get(row.role)?.actor,
-        state: row.state, surfaces, assertions: scenario.assertions })];
+        state: row.state, surfaces, assertions: scenario.assertions, intercept: scenario.intercept })];
     } catch (error) { result.status = 'FAIL'; result.reason = error.message; }
     finally { await page.close(); checkpoint(); }
   }
@@ -182,42 +200,51 @@ try {
     if (config.onlyKeys && !config.onlyKeys.includes(field.key)) continue;
     const fixture = config.fields?.[field.key];
     const contact = field.editor === 'CompanyText';
-    const presentationKey = contact && field.key?.startsWith('company.address.') ? 'company.address' : field.key;
-    const variants = (observed.get(`${presentationKey}:${field.locale}`) ?? []).filter(surface => surface.file === field.file || surface.dependencies.includes(field.file));
+    const media = field.source === 'media_block';
+    const hours = field.source === 'opening_hours';
+    const [mediaKey, mediaField] = media && field.key ? field.key.split(':') : [];
+    const presentationKey = media ? mediaKey : contact && field.key?.startsWith('company.address.') ? 'company.address' : field.key;
+    const variants = (observed.get(`${presentationKey}:${field.locale}`) ?? []).filter(surface =>
+      (surface.file === field.file || surface.dependencies.includes(field.file))
+      && (!hours || surface.intercept?.path !== '/api/v1/opening-hours'));
     const surface = variants[0];
     const settings = contact || ['EditableGlobalText', 'EditableHeaderCta'].includes(field.editor);
     const headerPath = field.key === 'header.cta.path';
     const heroLink = field.editor === 'EditableHeroCta' && field.key?.endsWith('.link');
-    const shared = contact || headerPath;
+    const shared = contact || headerPath || hours;
     const cards = { EditableCertificationBadge: '[data-cms-badge]', EditableHiswaCard: '[data-cms-card]' };
     const batch = !!cards[field.editor] || field.editor === 'EditableHeroCta';
     if (!editor || !token || !field.key || (!surface && !fixture && field.surface !== 'catalog')) {
       row.status = 'BLOCKED'; row.reason = 'Missing canonical field, reachable editor surface or authorized editor session.'; continue;
     }
-    if (!settings && !['content_block', 'i18n', 'product'].includes(field.source)) {
+    if (!settings && !media && !hours && !['content_block', 'i18n', 'product'].includes(field.source)) {
       row.status = 'BLOCKED'; row.reason = 'Canonical settings/record adapter requires its own versioned mutation and restore scenario.'; continue;
     }
-    if (field.editor && !settings && !batch) {
+    if (field.editor && !settings && !batch && !media && !hours) {
       row.status = 'BLOCKED'; row.reason = 'Specialized editor requires its own field-specific mutation scenario: ' + field.editor; continue;
     }
     const key = field.key;
     const encoded = encodeURIComponent(key);
-    const endpoint = (settings ? 'global-settings/' : 'content-blocks/') + encoded;
+    let endpoint = media ? 'media-blocks/' + encodeURIComponent(mediaKey)
+      : hours ? 'opening-hours' : (settings ? 'global-settings/' : 'content-blocks/') + encoded;
     const tag = tags[field.locale];
     const valuesByLocale = values => settings && typeof values === 'string'
       ? Object.fromEntries(Object.values(tags).map(locale => [locale, values])) : values;
-    const fieldSelector = fixture?.selector ?? `[data-cms-key=${JSON.stringify(presentationKey)}]`;
+    const triggerSelector = fixture?.selector ?? `[data-cms-key=${JSON.stringify(presentationKey)}]`;
+    const fieldSelector = media ? triggerSelector + ' img'
+      : hours ? triggerSelector + '[data-cms-opening-hours-ready="true"]' : triggerSelector;
     const rendered = page => page.locator(fieldSelector + ':visible').first();
     let marker = 'CMS_QA_' + runId.slice(0, 8) + '_' + field.locale;
     if (key === 'company.email') marker = marker.toLowerCase() + '@example.test';
     if (key === 'company.phone') marker = '+31 000 ' + String(parseInt(runId.slice(0, 6), 16)).padStart(8, '0');
     if (key === 'company.address.postal_code') marker = '9999 ZZ';
     let before, after, page, savedRevision, savedValue, restoreRequired = false;
-    const storedValue = record => shared ? record.values : record.values?.[tag];
-    const renderedAttribute = (headerPath || heroLink) ? 'href' : null;
+    const normalized = value => hours && typeof value === 'string' ? value.slice(0, 5) : value;
+    const storedValue = record => shared ? normalized(record.values) : record.values?.[tag];
+    const renderedAttribute = media ? (mediaField === 'alt_by_locale' ? 'alt' : 'title') : (headerPath || heroLink) ? 'href' : null;
     const waitForPresentation = async (page, locale = field.locale) => {
       const selector = renderedAttribute
-        ? fieldSelector + `[href=${JSON.stringify(headerPath ? '/' + locale + '/' + marker : marker)}]:visible`
+        ? fieldSelector + `[${renderedAttribute}=${JSON.stringify(headerPath ? '/' + locale + '/' + marker : marker)}]:visible`
         : fieldSelector + ':visible';
       const matches = page.locator(selector);
       await (renderedAttribute ? matches : matches.filter({ hasText: marker })).first().waitFor();
@@ -225,6 +252,14 @@ try {
     const proof = {};
     try {
       before = probe(key);
+      if (hours) {
+        if (!before.record_id) {
+          const error = new Error('The regular schedule needs a Monday record fixture.');
+          error.blocked = true; throw error;
+        }
+        endpoint += '/' + encodeURIComponent(before.record_id);
+        marker = storedValue(before) === '08:59' ? '08:58' : '08:59';
+      }
       if (headerPath) marker = before.values === 'contact' ? 'faq' : 'contact';
       if (heroLink) marker = 'https://example.test/' + marker;
       if (key === 'company.address.postal_code' && before.values === marker) marker = '9999 ZA';
@@ -235,7 +270,8 @@ try {
         const error = new Error('The canonical service record needs a fixture.'); error.blocked = true; throw error;
       }
       page = await editor.newPage();
-      await page.goto(onSiteURL(fixture?.url ?? surface?.url ?? '/[locale]', field.locale));
+      const fieldIntercept = fixture?.intercept ?? surface?.intercept;
+      await goTo(page, onSiteURL(fixture?.url ?? surface?.url ?? '/[locale]', field.locale), fieldIntercept);
       const pageActions = fixture?.actions ?? surface?.actions;
       await actions(page, pageActions);
       proof.url = page.url();
@@ -243,7 +279,7 @@ try {
         ? await rendered(page).getAttribute(renderedAttribute) : await rendered(page).textContent();
       await page.locator('[data-cms-toggle]').click();
       const hiswa = field.editor === 'EditableHiswaCard';
-      const loaded = waitForApi(page, settings ? 'global-settings' : hiswa ? 'content-blocks' : endpoint, 'GET');
+      const loaded = waitForApi(page, hours ? 'opening-hours' : settings ? 'global-settings' : hiswa ? 'content-blocks' : endpoint, 'GET');
       if (field.surface === 'catalog') {
         await page.locator('[data-cms-catalog-open]').click();
         await page.locator('[data-cms-catalog-search]').fill(key.slice(5));
@@ -251,15 +287,22 @@ try {
       } else if (cards[field.editor]) {
         await page.locator(cards[field.editor]).filter({ has: page.locator(fieldSelector) }).locator('[data-cms-edit]').click();
       } else if (field.editor === 'EditableGlobalText' || contact) await rendered(page).locator('[data-cms-edit]').click();
+      else if (media) await page.locator(triggerSelector + ':visible').first().locator('[data-cms-edit]').click();
+      else if (hours) await rendered(page).locator('[data-cms-edit-opening-hours]').click();
       else await rendered(page).click();
-      const loadedRecord = await (await loaded).json();
-      const loadedRevision = settings ? loadedRecord.revisions?.[key] : hiswa
+      const loadedResponse = await loaded;
+      const loadedRecord = media && loadedResponse.status() === 404 ? { revision: 0 } : await loadedResponse.json();
+      const loadedRevision = media ? loadedRecord.revision : hours ? loadedRecord.regular.find(hour => hour.id === before.record_id)?.cms_revision
+        : settings ? loadedRecord.revisions?.[key] : hiswa
         ? loadedRecord.data.find(record => record.key === key)?.cms_revision ?? null : loadedRecord.cms_revision;
       assert.equal(loadedRevision, before.revision, 'Field changed while editor opened');
       const dialog = page.getByRole('dialog');
       const input = settings ? dialog.locator(`[data-cms-setting-input=${JSON.stringify(key)}]`)
+        : media ? dialog.locator(`[data-cms-media-text=${JSON.stringify(mediaField)}]`)
+        : hours ? dialog.locator('[data-cms-opening-from]')
         : batch ? dialog.locator(`[data-cms-text-input=${JSON.stringify(key)}]`) : dialog.locator('textarea');
-      if (field.editor === 'EditableHiswaCard') await dialog.locator(`[data-cms-editor-locale="${tag}"]`).click();
+      if (hours) await dialog.locator('[data-cms-opening-day]').selectOption(before.record_id);
+      else if (field.editor === 'EditableHiswaCard') await dialog.locator(`[data-cms-editor-locale="${tag}"]`).click();
       else if (!shared && !heroLink) {
         const tab = dialog.getByRole('tab', { name: field.locale.toUpperCase(), exact: true });
         if (settings) await dialog.locator(`[data-cms-setting-editor=${JSON.stringify(key)}]`).getByRole('tab', { name: field.locale.toUpperCase(), exact: true }).click();
@@ -273,18 +316,21 @@ try {
       row.steps.edit = true;
       row.artifacts = [artifact(field.id, proof)]; checkpoint();
       restoreRequired = true;
-      const saved = waitForApi(page, contact ? 'contact-settings' : batch ? 'content-blocks' : endpoint, 'PATCH');
-      await dialog.locator(settings ? '[data-cms-save]' : '[data-cms-publish]').click();
+      const saved = waitForApi(page, media ? endpoint + '/text' : contact ? 'contact-settings' : batch ? 'content-blocks' : endpoint, 'PATCH');
+      await dialog.locator(media ? '[data-cms-publish-image-text]' : settings || hours ? '[data-cms-save]' : '[data-cms-publish]').click();
       const savedResponse = await saved;
       assert.equal(savedResponse.status(), 200);
       const savedRecord = await savedResponse.json();
       const savedBlock = batch ? savedRecord.data.find(record => record.key === key) : savedRecord;
-      savedRevision = contact ? savedRecord.saved_revisions?.[key] : savedBlock?.cms_revision;
+      savedRevision = media ? savedRecord.revision : hours ? savedRecord.opening_hour?.cms_revision
+        : contact ? savedRecord.saved_revisions?.[key] : savedBlock?.cms_revision;
       if (heroLink) savedValue = savedBlock?.value_by_locale?.[tag];
       assert.ok(savedRevision, 'Mutation did not return a revision.');
       proof.saved_revision = savedRevision;
       row.artifacts = [artifact(field.id, proof)]; checkpoint();
-      await dialog.waitFor({ state: 'hidden' }); row.steps.save = true;
+      if (media) await dialog.locator('[data-cms-publish-image-text]:disabled').waitFor();
+      else await dialog.waitFor({ state: 'hidden' });
+      row.steps.save = true;
       after = probe(key); proof.before = before; proof.after = after;
       assert.equal(after.revision, savedRevision, 'Record changed after this run saved');
       if (heroLink) {
@@ -293,7 +339,7 @@ try {
         assert.equal(destination.url, marker);
       }
       assert.equal(storedValue(after), savedValue);
-      assert.equal(shared ? after.published_values : after.published_values[tag], savedValue);
+      assert.equal(shared ? normalized(after.published_values) : after.published_values[tag], savedValue);
       row.steps.database = true;
       assert.equal(after.unrelated_hash, before.unrelated_hash);
       if (before.record_id) assert.equal(after.other_fields_hash, before.other_fields_hash);
@@ -307,12 +353,18 @@ try {
       assert.equal(after.audit.user_id, actor);
       const auditField = after.field;
       const auditedValues = after.audit.after_data?.[auditField];
-      assert.equal(shared ? auditedValues : auditedValues?.[tag], savedValue);
+      assert.equal(shared ? normalized(auditedValues) : auditedValues?.[tag], savedValue);
       assert.deepEqual(after.audit.before_data?.[auditField] ?? [], before.values);
       row.steps.audit = true;
       await page.evaluate(() => sessionStorage.clear()); await page.reload();
       await actions(page, pageActions);
-      if (field.surface !== 'catalog') await waitForPresentation(page);
+      if (media && mediaField === 'alt_by_locale' && before.decorative) {
+        await rendered(page).and(page.locator('[alt=""]')).waitFor();
+        const publicRead = await page.request.get(baseURL + '/api/v1/admin/cms/' + endpoint, {
+          headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
+        });
+        assert.equal((await publicRead.json()).alt_by_locale?.[tag], marker);
+      } else if (field.surface !== 'catalog') await waitForPresentation(page);
       else {
         const publicRead = await page.request.get(baseURL + '/api/v1/cms/page-content?page=global&locale=' + tags[field.locale]);
         assert.equal((await publicRead.json()).content_blocks.find(block => block.key === key)?.value, marker);
@@ -321,15 +373,16 @@ try {
       // The same canonical field can appear on multiple routes. Verify every
       // discovered presentation for this source, not just the editor trigger.
       for (const presentation of variants.filter(item => item.url !== surface?.url || item.state !== surface?.state)) {
-        await page.goto(presentation.url); await actions(page, presentation.actions);
-        await waitForPresentation(page);
+        await goTo(page, presentation.url, presentation.intercept); await actions(page, presentation.actions);
+        if (media && mediaField === 'alt_by_locale' && before.decorative) await rendered(page).and(page.locator('[alt=""]')).waitFor();
+        else await waitForPresentation(page);
       }
       if (shared) {
         const presentation = new URL(proof.url);
         for (const locale of Object.keys(tags).filter(locale => locale !== field.locale)) {
           const localized = new URL(presentation);
           localized.pathname = localized.pathname.replace(new RegExp('^/' + field.locale + '(?=/|$)'), '/' + locale);
-          await page.goto(localized.href); await actions(page, pageActions);
+          await goTo(page, localized.href, fieldIntercept); await actions(page, pageActions);
           await waitForPresentation(page, locale);
         }
       }
@@ -350,14 +403,17 @@ try {
             assert.ok(after.audit?.id && after.audit.id !== before?.audit?.id, 'No audited mutation to restore');
             assert.equal(storedValue(after), savedValue, 'Newer editor data detected');
             const response = await editor.request.post(baseURL + '/api/v1/admin/cms/' + endpoint + '/restore', {
-              headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' }, data: { expected_revision: savedRevision, audit_id: after.audit.id },
+              headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
+              data: media ? { expected_revision: savedRevision, revision: before.revision } : { expected_revision: savedRevision, audit_id: after.audit.id },
             });
             assert.equal(response.status(), 200, 'Version-checked restoration was refused');
             const restored = probe(key, true); assert.deepEqual(restored.values, before.values); assert.deepEqual(restored.published_values, before.published_values);
             row.steps.restore = true; proof.restored = restored;
             if (restored.build_hash !== report.build_hash) { row.status = 'STALE'; row.reason = 'Source changed during verification. This proof cannot approve a release.'; }
             if (row.status !== 'STALE' && proof.rendered_before !== undefined) {
-              await page.evaluate(() => sessionStorage.clear()); await page.goto(proof.url); await actions(page, fixture?.actions ?? surface?.actions);
+              await page.evaluate(() => sessionStorage.clear());
+              await goTo(page, proof.url, fixture?.intercept ?? surface?.intercept);
+              await actions(page, fixture?.actions ?? surface?.actions);
               await page.waitForFunction(({ selector, value, attribute }) => [...document.querySelectorAll(selector)]
                 .some(node => node.getClientRects().length && (attribute ? node.getAttribute(attribute) : node.textContent) === value),
               { selector: fieldSelector, value: proof.rendered_before, attribute: renderedAttribute });

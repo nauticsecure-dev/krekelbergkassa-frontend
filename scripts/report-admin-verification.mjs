@@ -49,16 +49,30 @@ function mark(route,title,apply) {
  const row = page(route); row.evidence.push({title,status:test.status,report:test.file,attachments:test.attachments});
  if (test.status === 'passed') apply(row); else row.gaps.push(`${title}: ${test.status}`);
 }
-for (const row of pages) {
- const title = `route failure boundary: ${row.route}`;
- mark(row.route,title,row=>{row.smoke=tests.get(title).logOnly?'partial: initial NL smoke passed in interrupted run; settled-state rerun pending':'pass: NL, injected 503, no JS errors, loading settled';row.locales.nl='smoke only';
+const locales = ['nl', 'en', 'de', 'fr'];
+let smokeWithViewports = 0;
+for (const row of pages) for (const locale of locales) {
+ const title = `${locale === 'nl' ? '' : `${locale}: `}route failure boundary: ${row.route}`;
+ mark(row.route,title,row=>{
+  if (locale === 'nl') row.smoke=tests.get(title).logOnly?'partial: initial NL smoke passed in interrupted run; settled-state rerun pending':'pass: NL, injected 503, no JS errors, loading settled';
+  row.locales[locale]='smoke only';
   const attachment = tests.get(title).attachments.find(item=>item.name==='route-observation');
   let observation;
   if (attachment?.path && fs.existsSync(attachment.path)) observation=JSON.parse(fs.readFileSync(attachment.path,'utf8'));
   else if (attachment?.body) observation=JSON.parse(Buffer.from(attachment.body,'base64').toString());
-  if (observation) {row.observation=observation;if(observation.injectedErrorVisible) row.error=row.redirect?'partial: redirect destination displayed injected 503':'pass: injected 503 visible';else row.gaps.push('Injected service error was not visible verbatim; generic/fallback handling needs review.');}
+  if (!observation) return;
+  if (locale === 'nl') {
+   row.observation=observation;
+   if (observation.injectedErrorVisible) row.error=row.redirect?'partial: redirect destination displayed injected 503':'pass: injected 503 visible';
+   else row.gaps.push('Injected service error was not visible verbatim; generic/fallback handling needs review.');
+  }
+  if (observation.viewports?.length) {
+   smokeWithViewports++;
+   row.locales[locale] = 'partial: locale preserved and no raw translation keys in main content under 503 fixture';
+   row.responsive = `partial: 503 fixture at ${observation.viewports.join('/')}px`;
+  }
  });
- if (row.smoke===pending && tests.has(title)) row.smoke=`failed: ${tests.get(title).status}`;
+ if (locale === 'nl' && row.smoke===pending && tests.has(title)) row.smoke=`failed: ${tests.get(title).status}`;
 }
 for (const locale of ['nl','en','de','fr']) {
  mark('/admin',`${locale}: dashboard sidebar and KPI responsive evidence`, row=>{row.locales[locale]='pass: shell/dashboard fixture';row.responsive='partial: dashboard 390,1280,1536; sidebar expanded/collapsed and mobile drawer';});
@@ -89,6 +103,10 @@ mark('/admin/kalender','calendar empty state and provider error with retry rende
 mark('/admin/calculator/pricing','employee reaches filtered rules, saves cents, and reloads the updated tariff',row=>{row.crud.read='pass: fixture filtered tariff';row.crud.update='pass: fixture cents save/reload';row.modals='partial: deep-link edit modal/save/close';});
 mark('/admin/calculator/pricing','read-only employee sees tariffs without mutation controls or a deep-link modal',row=>row.permissions.ui='partial: pricing.view hides mutations and deep-link modal');
 for(const allowed of [true,false])mark('/admin/calculator/pricing',`public Winterstalling pricing link respects pricing.update (${allowed})`,row=>row.permissions.ui+=`; public tariff edit link checked with pricing.update=${allowed}`);
+for (const locale of locales) mark('/admin/calculator/pricing', `${locale}: pricing edit fields translate and fit at mobile and desktop widths`, row => {
+ row.locales[locale] = 'partial: four translated edit fields verified in the browser';
+ row.responsive = 'partial: populated pricing edit modal at 390/1280/1536';
+});
 for(const write of [false,true]) mark('/admin/klanten',`customer list write controls and create deep link (${write})`,row=>row.permissions.ui='partial: customer read-only/write controls and create intent');
 mark('/admin/klanten','customer loading empty validation and create modal retain data then save',row=>{
  row.loading='pass: held request shows skeleton';row.empty='pass: empty customer list';row.validation='partial: required name blocks POST, 422 surfaced, form retained';row.error='pass: 422 and retry';row.crud.create='pass: stateful HTTP fixture create/list readback; database persistence pending';row.crud.read='pass: created fixture visible after refetch';row.modals='partial: create, validation failure, save and close';row.responsive='partial: populated validation modal 390/1280';row.locales.nl='partial: customer create/validation';
@@ -97,6 +115,16 @@ for(const write of [false,true]) mark('/admin/boten',`boat list write controls a
 mark('/admin/boten','boat loading empty validation create and delete retain data then mutate',row=>{
  row.loading='pass: held request shows skeleton';row.empty='pass: empty boat list';row.validation='partial: required name blocks POST, 422 surfaced, form retained';row.error='pass: 422 and retry';row.crud.create='pass: stateful HTTP fixture create/list readback; database persistence pending';row.crud.read='pass: created fixture visible after refetch';row.crud.delete='pass: confirm modal delete/list empty readback; database persistence pending';row.modals='partial: create, validation failure, delete confirm';row.responsive='partial: populated validation modal 390/1280';row.locales.nl='partial: boat create/validation';
 });
+for (const locale of locales.slice(1)) {
+ mark('/admin/klanten', `${locale}: customer loading empty validation and create modal retain data then save`, row => {
+  row.locales[locale] = 'partial: customer empty state, create dialog and display of fixture validation';
+  row.responsive = 'partial: customer validation modal at 390/1280/1536';
+ });
+ mark('/admin/boten', `${locale}: boat loading empty validation create and delete retain data then mutate`, row => {
+  row.locales[locale] = 'partial: boat empty state, create and delete dialogs and display of fixture validation';
+  row.responsive = 'partial: boat validation modal at 390/1280/1536';
+ });
+}
 mark('/admin/boten/[id]','boat detail update modal saves and read-only hides mutations',row=>{
  row.crud.update='pass: fixture PATCH name save/reload';row.crud.read='pass: dossier fixture detail';row.permissions.ui='partial: boats.write hides edit/transfer';row.modals='partial: edit modal save/close';row.detail='partial: dossier heading reflects update';
 });
@@ -213,6 +241,7 @@ Object.assign(verificationGates,coverageGates);
 const persistence = { status:'pending', scope:'Production/deployed environment remains unverified; intercepted HTTP tests cannot establish persistence.' };
 const liveRoutes = new Map([
  ['customer creation persists and the generated readable link opens the created record', '/admin/klanten'],
+ ['boat create, edit and delete enforce permissions and persist through reload', '/admin/boten'],
  ['supplier create and edit enforce write permission and persist through browser reload', '/admin/leveranciers'],
  ['supplier mapping enforces write permission and persists SKU and keyword after reload', '/admin/leveranciers/[id]/[slug]'],
 ]);
@@ -241,14 +270,33 @@ for (const manifest of liveManifests) {
 }
 const observations = [...latestScenarios.values()].filter(observation =>
  observation.status === 'passed' && observation.attachments.some(item => item.name === 'database-persistence'));
+persistence.attempts = [...latestScenarios.values()].map(({ route, title, status, report }) => ({ route, title, status, report }));
 let mappingEvidence;
 let supplierEvidence;
+let boatEvidence;
 if (observations.length) {
   Object.assign(persistence, { status: 'passed: isolated local deployment only', observations });
   for (const observation of observations) {
    const row = page(observation.route);
    row.persistence = { status:persistence.status, report:observation.report, database:observation.database, observations:[observation] };
    row.evidence.push(observation);
+   if (observation.route === '/admin/boten') {
+    boatEvidence = observation;
+    row.crud.create = 'pass: browser POST, list reload and direct database readback';
+    row.crud.read = 'pass: populated list and readable dossier link';
+    row.crud.delete = 'pass: browser DELETE, list reload, API 404 and direct soft-delete readback';
+    row.permissions.ui = 'partial: reader create and delete disabled; writer creates and deletes';
+    row.permissions.backend = 'partial: reader POST/DELETE return 403; writer POST/DELETE succeed';
+    const detail = page('/admin/boten/[id]/[slug]');
+    detail.evidence.push(observation);
+    detail.persistence = row.persistence;
+    detail.crud.read = 'pass: readable dossier shows the created boat';
+    detail.crud.update = 'pass: browser PATCH, dossier reload, API and database readback';
+    detail.detail = 'partial: readable dossier and persisted name update';
+    detail.modals = 'partial: opens, saves and closes the edit dialog';
+    detail.permissions.ui = 'partial: edit hidden for reader; writer opens and submits';
+    detail.permissions.backend = 'partial: reader PATCH returns 403; writer PATCH succeeds';
+   }
    if (observation.route === '/admin/leveranciers') {
     supplierEvidence = observation;
     row.crud.create = 'pass: browser POST, reload and direct database readback';
@@ -279,8 +327,32 @@ if (observations.length) {
 const actions=actionInventory(matrix.pages);
 const supplierListSource = 'src/app/[locale]/admin/leveranciers/page.tsx';
 const supplierMappingSource = 'src/app/[locale]/admin/leveranciers/[id]/page.tsx';
+const boatActions = {
+ 'src/app/[locale]/admin/boten/page.tsx': [
+  ['onClick={() => setShowCreate(true)}', 'open create boat dialog', 'boats.write', null, 'disabled', 'opened the create dialog'],
+  ['<form onSubmit={onCreate}>', 'create boat', 'boats.write', 'POST', 'disabled', 'created a boat and verified persistence'],
+  ['onClick={() => setDeleteTarget(boat.id)}', 'open boat delete confirmation', 'boats.delete', null, 'disabled', 'opened the confirmation and completed the delete workflow'],
+  ['onConfirm={async () => {', 'delete boat', 'boats.delete', 'DELETE', 'disabled', 'deleted a boat and verified soft-delete persistence'],
+ ],
+ 'src/app/[locale]/admin/boten/[id]/page.tsx': [
+  ['onClick={() => setShowEdit(true)}', 'open edit boat dialog', 'boats.write', null, 'hidden', 'opened the edit dialog'],
+  ['<form onSubmit={onSave}>', 'update boat', 'boats.write', 'PATCH', 'hidden', 'updated a boat and verified persistence'],
+ ],
+};
 for (const action of actions) {
  const source = action.source.file.replaceAll('\\', '/');
+ const boatAction = boatActions[source]?.find(([signal]) => action.source.text.includes(signal));
+ if (boatAction) {
+  const [, classification, permission, method, visibility, execution] = boatAction;
+  Object.assign(action, { classification, permission });
+  if (boatEvidence) {
+   action.uiVisibility = `pass: reader control ${visibility}; writer control usable`;
+   action.directApiDenial = method ? `pass: reader ${method} returned 403` : 'n/a: opening the dialog sends no mutation request';
+   action.authorizedExecution = `pass: writer ${execution}`;
+   action.evidence = boatEvidence;
+  }
+  continue;
+ }
  if (source === supplierListSource) {
   const signal = action.source.text;
   if (signal.includes('onClick={openCreate}')) action.classification = 'open create supplier dialog';
@@ -336,15 +408,20 @@ const verified=executed.filter(test=>test.status==='passed'&&!test.logOnly).leng
 const logOnly=executed.filter(test=>test.status==='passed'&&test.logOnly).length;
 const failures=executed.filter(test=>test.status!=='passed').length;
 let markdown=fs.readFileSync('ADMIN_VERIFICATION.md','utf8').replace(/Browser results:[^\n]+/,`Browser results: **${verified} completed browser scenarios passed**, ${logOnly} earlier log-only smoke passes, ${failures} latest failures/interrupted observations. Log-only passes remain partial evidence. This is scenario coverage, not complete page sign-off.`);
+markdown=markdown.replace('Remove only the specific report for a changed scenario before rerunning it; existing passing evidence is reused.', 'Passing batches are reused when the source fingerprint matches. Set `ADMIN_AUDIT_GREP` to run a focused set by test title and retain its report alongside the batch results.');
+markdown=markdown.replace('## Route matrix',`## Route matrix\n\nThe four-locale 503 suite has passed ${smokeWithViewports} of ${pages.length * locales.length} route and locale combinations with viewport checks at 390, 1280 and 1536px. The permissions matrix contains ${actions.length} source candidates, of which ${actions.filter(action => action.classification === 'needs review').length} still require classification.`);
 markdown=markdown.replace('## Backend permission evidence',`## Verification gates\n\n${Object.entries(verificationGates).map(([name,gate])=>`- ${name}: **${gate.status}** ([log](${gate.evidence})).`).join('\n')}\n\n## Backend permission evidence`);
 const persistenceReports = observations.map(({ route, title, report }) =>
  `- \`${route}\` — ${title}. [Browser report](<${path.relative(process.cwd(), report).replaceAll('\\', '/')}>).`);
+for (const { route, title, status, report } of persistence.attempts.filter(item => item.status !== 'passed')) {
+ persistenceReports.push(`- \`${route}\` — ${title} (${status}). [Browser report](<${path.relative(process.cwd(), report).replaceAll('\\', '/')}>).`);
+}
 markdown=markdown.replace('## Verification gates',`## Persistence evidence\n\n**${persistence.status}**. ${persistence.scope}\n\n${persistenceReports.join('\n') || 'Run \`node scripts/test-global-ux-live.mjs\`.'}\n\n## Verification gates`);
 markdown=markdown.replace('## Verification gates','## Changes made\n\n- Follow extracted component imports and preserve file/line source evidence for every route.\n- Gate customer list mutations, handlers and create deep links with `customers.write`, alongside direct API denial tests.\n- Use native `[id]/[slug]` pages instead of the redundant middleware self-proxy; all five aliases are rechecked. Authentication and no-cache handling remain in place.\n- Hide the closed mobile drawer from keyboard navigation, contain focus, support Escape and restore focus; translate sidebar controls.\n- Translate 88 French shell/dashboard strings and assert real French copy in the browser. Check bounded dynamic settings keys and collect hardcoded/English-identical copy for review.\n- Standardize the document split layout and shrinkable chart tracks. Keep five header KPIs at `2xl`, documented in [layout patterns](ADMIN_LAYOUT_PATTERNS.md).\n\n## Verification gates');
 markdown+='\n## Browser screenshots\n\nOnly screenshots from passing scenarios are listed; failed-run traces remain in the JSON ledger.\n\n';
 for(const row of pages.filter(row=>row.screenshots.length)) markdown+=`- \`${row.route}\`: ${row.screenshots.map((file,index)=>`[${path.basename(file)}](${file.includes(' ') ? '<'+file+'>' : file})`).join(', ')}\n`;
 markdown+='\n## Copy review decisions\n\nExact candidate decisions and reasons: `scripts/admin-copy-decisions.json`. Current classifications: '+JSON.stringify(copyAudit?.reviewSummary??{})+'. Fixed candidates no longer appear in the current queue; historical translate decisions remain recorded. Run `node scripts/check-admin-i18n.mjs --strict-copy` to fail on untranslated or unreviewed candidates.\n';
-markdown+='\n## Localization limits\n\nThe French shell/dashboard copy was reviewed and corrected after screenshots exposed English text behind valid French keys. Other pages still require wording review. `artifacts/admin-audit/i18n.json` includes hardcoded JSX and locale entries identical to English as review queues; names and technical terms can legitimately match. Locale rendering and key completeness do not establish translation quality.\n';
+markdown+='\n## Localization limits\n\nFrench shell, dashboard, customer, boat and pricing copy includes reviewed translations. The browser suite generates NL/EN/DE/FR 503 smoke scenarios for every route in the inventory. A passing smoke scenario verifies the URL, document language, absence of raw keys in main content and layout at 390/1280/1536px. Workflow evidence for populated data, dialogs and validation is recorded separately. `artifacts/admin-audit/i18n.json` retains the remaining copy candidates.\n';
 const recovered=executed.filter(test=>test.status==='passed'&&test.history?.some(attempt=>attempt.status!=='passed'));
 if(recovered.length)markdown+='\n## Rechecked failures\n\nEarlier failures are retained in the JSON attempt history and original reports. Latest results are shown in the route matrix.\n\n'+recovered.map(test=>`- ${test.title}: passed on recheck; earlier report(s): ${test.history.filter(item=>item.status!=='passed').map(item=>`[${path.basename(item.report)}](${item.report})`).join(', ')}.`).join('\n')+'\n';
 fs.writeFileSync('ADMIN_VERIFICATION.md',markdown);

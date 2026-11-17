@@ -45,7 +45,7 @@ export function YardPhotoTiles({ path, metadata, viewport }: {
   }, [metadata, viewport]);
 
   const tile = metadata.tile_size!;
-  return <div ref={layer} className="absolute inset-0 overflow-hidden bg-slate-950" role="img" aria-label="Gegenereerde lege werf">
+  return <div ref={layer} className="absolute inset-0 overflow-hidden bg-navy-100" role="img" aria-label="Gegenereerde lege werf">
     {visible.map(item => <Tile key={item.key} path={path + '/tiles/' + item.key} style={{
       left: item.x * tile / item.width * 100 + '%', top: item.y * tile / item.height * 100 + '%',
       width: Math.min(tile, item.width - item.x * tile) / item.width * 100 + '%',

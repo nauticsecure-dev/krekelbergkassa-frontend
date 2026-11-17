@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import ts from 'typescript';
 import { fileURLToPath } from 'node:url';
 import { buildRegistry } from './build-cms-registry.mjs';
+import { serviceFaqStates } from './lib/cms-scenarios.mjs';
 
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 const slash = value => value.replaceAll('\\', '/');
@@ -56,14 +57,17 @@ export function scanSource(file, source) {
   function visit(node) {
     if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
       const name = node.tagName.getText(tree);
-      if (['EditableHeroCta', 'EditableCertificationBadge', 'EditableHiswaCard', 'EditableHeaderCta', 'EditableImage', 'EditableGlobalText', 'CompanyHoursSummary'].includes(name)) {
+      if (['EditableHeroCta', 'EditableCertificationBadge', 'EditableHiswaCard', 'EditableHeaderCta', 'EditableImage', 'EditableGlobalText', 'OpeningHoursEditor'].includes(name)) {
         const attributes = Object.fromEntries(node.attributes.properties.filter(ts.isJsxAttribute).map(attr => {
           const value = attr.initializer;
           return [attr.name.getText(tree), value && ts.isStringLiteral(value) ? value.text
             : value && ts.isJsxExpression(value) && value.expression && ts.isStringLiteral(value.expression) ? value.expression.text : null];
         }));
+        const blockKey = node.attributes.properties.find(attr => ts.isJsxAttribute(attr) && attr.name.getText(tree) === 'blockKey')?.initializer;
+        const template = blockKey && ts.isJsxExpression(blockKey) && blockKey.expression && ts.isTemplateExpression(blockKey.expression)
+          ? blockKey.expression.getText(tree) : null;
         const keys = name === 'EditableGlobalText' ? [attributes.settingKey]
-          : name === 'CompanyHoursSummary' ? ['opening_hours.regular']
+          : name === 'OpeningHoursEditor' ? ['opening_hours.regular']
           : name === 'EditableCertificationBadge' ? ['home.werf.cert', 'home.werf.cert_sub']
           : name === 'EditableHiswaCard' ? ['over-ons.hiswa.title', 'over-ons.hiswa.desc']
           : name === 'EditableHeaderCta' ? ['header.cta.label', 'header.cta.path']
@@ -71,7 +75,7 @@ export function scanSource(file, source) {
           : [attributes.blockKey ? `${attributes.blockKey}:alt_by_locale` : null, attributes.blockKey ? `${attributes.blockKey}:seo_title_by_locale` : null];
         keys.forEach((key, index) => fields.push(entry(node, 'binding', { key,
           fingerprint: hash(`${slash(file)}\0${node.getText(tree)}\0${key ?? index}`),
-          editor: name, source: ['EditableHeaderCta', 'EditableGlobalText'].includes(name) ? 'company_settings' : name === 'CompanyHoursSummary' ? 'opening_hours' : name === 'EditableImage' ? 'media_block' : 'content_block',
+          editor: name, template, variant: index, source: ['EditableHeaderCta', 'EditableGlobalText'].includes(name) ? 'company_settings' : name === 'OpeningHoursEditor' ? 'opening_hours' : name === 'EditableImage' ? 'media_block' : 'content_block',
           status: 'UNTESTED', reason: 'Requires the specialized editor, canonical database and versioned restore adapter.',
         })));
       }
@@ -185,13 +189,51 @@ export function audit(root = process.cwd(), catalogProducts = []) {
     route.dependencies = [...reachable].sort();
     route.modal_candidates = [...new Set(stateCandidates.filter(candidate => reachable.has(candidate.file)).map(candidate => candidate.id))];
   }
-  const routeMatrix = routes.flatMap(route => locales.flatMap(locale => roles.flatMap(role => [...states, ...route.modal_candidates.map(id => `modal:${id}`)].map(state => ({
-    id: hash(`${route.file}\0${locale}\0${role}\0${state}`), route: route.route, file: route.file, locale, role, state,
-    status: /\[(?!locale\])/.test(route.route) ? 'BLOCKED' : 'UNTESTED',
-    reason: /\[(?!locale\])/.test(route.route) ? 'Needs an authorized record fixture.' : 'Needs a browser scenario or a reviewed not-applicable exclusion.',
-  })))));
   const registered = buildRegistry(root).content_keys;
+  const dynamicServices = catalogProducts.filter(product => product.slug &&
+    !routes.some(route => route.route === '/[locale]/diensten/' + product.slug));
+  const routeMatrix = routes.flatMap(route => {
+    const routeStates = [...states, ...route.modal_candidates.map(id => `modal:${id}`)];
+    if (route.route === '/[locale]/diensten') routeStates.push(...serviceFaqStates(registered));
+    const fixtures = route.route === '/[locale]/diensten/[slug]' && dynamicServices.length
+      ? dynamicServices.map(product => ({
+        fixture_url: '/[locale]/diensten/' + encodeURIComponent(product.slug), fixture_record_id: product.id,
+      })) : [{}];
+    return locales.flatMap(locale => roles.flatMap(role => routeStates.flatMap(state => fixtures.map(fixture => {
+      const unresolved = !fixture.fixture_url && /\[(?!locale\])/.test(route.route);
+      return {
+        id: hash(`${route.file}\0${locale}\0${role}\0${state}` + (fixture.fixture_url ? '\0' + fixture.fixture_url : '')),
+        route: route.route, file: route.file, locale, role, state, ...fixture,
+        status: unresolved ? 'BLOCKED' : 'UNTESTED',
+        reason: unresolved ? 'Needs an authorized record fixture.' : 'Needs a browser scenario or a reviewed not-applicable exclusion.',
+      };
+    }))));
+  });
+  const resolveKeys = (field, keys) => keys.length
+    ? keys.map(key => ({ ...field, key, fingerprint: hash(`${field.fingerprint}\0${key}`) })) : [field];
   const resolvedFields = fields.flatMap(field => {
+    if (!field.key && field.template && field.file === 'src/components/site/ServicePage.tsx' && field.template.startsWith('`${p}.')) {
+      const suffix = field.template.slice('`${p}.'.length, -1);
+      const candidates = field.editor === 'EditableImage'
+        ? registered.filter(key => /^diensten\/[^.]+\.hero\.title$/.test(key)).map(key => key.split('.')[0] + '.' + suffix
+          + (field.variant === 0 ? ':alt_by_locale' : ':seo_title_by_locale'))
+        : registered.filter(key => key.startsWith('diensten/') && key.endsWith('.' + suffix + (field.variant === 0 ? '.label' : '.link')));
+      return resolveKeys(field, candidates);
+    }
+    if (field.source === 'media_block' && field.template) {
+      const repeaterKeys = {
+        '`diensten.service.${section.key}.image`': { pattern: /^werf\.s\.([^.]+)\.title$/, prefix: 'diensten.service.' },
+        '`home.svc.${s.key}.image`': { pattern: /^home\.svc\.([^.]+)\.title$/, prefix: 'home.svc.' },
+        '`over-ons.team.${i}.image`': { pattern: /^over-ons\.team\.(\d+)\.name$/, prefix: 'over-ons.team.' },
+      }[field.template];
+      if (repeaterKeys) {
+        const { pattern, prefix } = repeaterKeys;
+        const candidates = [...Object.keys(dictionaries.nl ?? {}), ...registered]
+          .map(key => key.match(pattern)?.[1]).filter(Boolean);
+        const column = field.variant === 0 ? 'alt_by_locale' : 'seo_title_by_locale';
+        return resolveKeys(field, [...new Set(candidates)].map(key => `${prefix}${key}.image:${column}`));
+      }
+    }
     if (field.expression?.includes('blockKey={`catalog.product.')) {
       if (!catalogProducts.length) return [{ ...field, source: 'product' }];
       const detailPage = field.file === 'src/components/site/ServicePage.tsx';

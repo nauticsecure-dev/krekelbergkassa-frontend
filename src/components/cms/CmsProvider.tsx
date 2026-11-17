@@ -194,7 +194,7 @@ interface CmsContextValue {
   saveText: (key: string, args: SaveContentArgs) => Promise<void>;
   saveTextBatch: (blocks: Array<SaveContentArgs & { key: string; expected_revision: string | null }>) => Promise<void>;
   uploadImage: (key: string, file: File, page?: string) => Promise<string>;
-  saveMediaMeta: (key: string, args: SaveMediaMetaArgs) => Promise<void>;
+  saveMediaMeta: (key: string, args: SaveMediaMetaArgs, textOnly?: boolean) => Promise<number>;
   saveSeo: (slug: string, args: SaveSeoArgs) => Promise<void>;
   saveGlobal: (key: string, value: GlobalValue, revision: string | null, mergeLocales: boolean) => Promise<string>;
   saveContact: (data: Parameters<typeof cmsService.updateContact>[0]) => Promise<void>;
@@ -255,7 +255,7 @@ function resolveGlobal(value: GlobalValue | undefined, tag: LocaleTag): string |
 
 export function CmsProvider({ children }: { children: React.ReactNode }) {
   const { user, sessionVerified, invalidateSession } = useAuth();
-  const { locale: rawLocale, messages } = useIntl();
+  const { locale: rawLocale, messages, catalogFallbacks } = useIntl();
   const locale = rawLocale as AppLocale;
   const localeTag = appLocaleToTag(locale);
 
@@ -596,13 +596,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const saveMediaMeta = React.useCallback(
-    (key: string, args: SaveMediaMetaArgs) =>
+    (key: string, args: SaveMediaMetaArgs, textOnly = false) =>
       guardCms(async () => {
         assertWritablePage(args.page);
         const {image, mobile_image, onProgress, ...metadata} = args;
-        const saved = await cmsService.publishMediaBlock(key, {
-          ...metadata, page:args.page || currentPage || undefined,
-        }, image, mobile_image, onProgress);
+        const payload = { ...metadata, page: args.page || currentPage || undefined };
+        const saved = textOnly ? await cmsService.saveMediaText(key, payload)
+          : await cmsService.publishMediaBlock(key, payload, image, mobile_image, onProgress);
         const canonicalAlts = saved.alt_by_locale as SaveMediaMetaArgs['alt_by_locale'];
         const canonicalTitles = saved.seo_title_by_locale as SaveMediaMetaArgs['seo_title_by_locale'];
         setMedia((prev) => {
@@ -622,6 +622,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           if (pageSlug) patchPageCacheMedia(pageSlug, localeTag, next);
           return { ...prev, [key]: next };
         });
+        return Number(saved.revision);
       }),
     [guardCms, localeTag, currentPage, assertWritablePage],
   );
@@ -738,7 +739,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       ? [[block.key.slice(5), block.value]] : []),
   ), [content]);
   return <CmsContext.Provider value={value}>
-    <IntlProvider locale={locale} messages={messages} overrides={translationOverrides}>
+    <IntlProvider locale={locale} messages={messages} overrides={translationOverrides} catalogFallbacks={catalogFallbacks}>
       {children}
       {retainCmsDrafts && <CmsSessionRecovery onDiscard={() => { setExpiredEditor(null); setEditModeState(false); }} />}
     </IntlProvider>

@@ -8,10 +8,12 @@ type Dict = Record<string, unknown>;
 interface IntlContextValue {
   locale: Locale;
   messages: Dict;
+  catalogFallbacks: Record<string, string>;
   t: (path: string, vars?: Record<string, string | number | undefined>) => string;
 }
 
 const IntlContext = createContext<IntlContextValue | null>(null);
+const emptyCatalog: Record<string, string> = {};
 
 function getByPath(dict: Dict, path: string): unknown {
   return path.split('.').reduce<unknown>((acc, key) => {
@@ -42,16 +44,19 @@ export function IntlProvider({
   messages,
   children,
   overrides = {},
+  catalogFallbacks = emptyCatalog,
 }: {
   locale: Locale;
   messages: Dict;
   children: React.ReactNode;
   overrides?: Record<string, string>;
+  catalogFallbacks?: Record<string, string>;
 }) {
   const value = useMemo<IntlContextValue>(
     () => ({
       locale,
       messages,
+      catalogFallbacks,
       t: (path, vars) => {
         const v = overrides[path] ?? getByPath(messages, path);
         if (typeof v === 'string') return interpolate(v, vars);
@@ -62,7 +67,7 @@ export function IntlProvider({
         );
       },
     }),
-    [locale, messages, overrides]
+    [locale, messages, overrides, catalogFallbacks]
   );
   return <IntlContext.Provider value={value}>{children}</IntlContext.Provider>;
 }

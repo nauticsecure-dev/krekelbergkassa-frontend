@@ -66,6 +66,10 @@ export function EditableImage({
     <>
       <span
         data-cms-block={blockKey}
+        data-cms-key={blockKey}
+        data-cms-field-id={`media_block.${blockKey}`}
+        data-cms-source="media_block"
+        data-cms-version={block?.revision ?? (pageReady ? 0 : 'unloaded')}
         data-cms-image
         className={cn(
           'group/cms relative block overflow-hidden',

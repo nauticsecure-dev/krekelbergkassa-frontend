@@ -99,6 +99,90 @@ test('customer creation persists and the generated readable link opens the creat
   await info.attach('database-persistence', { body: JSON.stringify({ engine: 'isolated SQLite file', browserReload: true, apiReadback: true, databaseReadback: true, customerId: stored.id }), contentType: 'application/json' });
 });
 
+test('boat create, edit and delete enforce permissions and persist through reload', async ({ page, browser, request }, info) => {
+  const list = '/en/admin/boten';
+  const endpoint = '/api/v1/boats';
+  const original = 'Live Browser Regression Boat';
+  const updated = 'Live Browser Updated Boat';
+  const action = (target: Page, key: string) => target.getByRole('button', { name: label('en', key), exact: true });
+  const seeded = records.boten;
+  const headers = await session(page, request);
+  const reader = await browser.newPage({ baseURL: String(test.info().project.use.baseURL) });
+  try {
+    const readerHeaders = await session(reader, request, 'reader');
+    await reader.goto(list + '?new=1');
+    await expect(action(reader, 'adminNew.boats.new')).toBeDisabled();
+    await expect(reader.getByRole('dialog')).toHaveCount(0);
+    const seededRow = reader.locator('tbody tr').filter({ hasText: seeded.name });
+    await expect(seededRow.getByRole('button', { name: label('en', 'adminNew.common.delete'), exact: true })).toBeDisabled();
+    await reader.goto(`${list}/${seeded.public_id}/${seeded.slug}`);
+    await expect(reader.locator('main h1')).toContainText(seeded.name);
+    await expect(action(reader, 'adminNew.common.edit')).toHaveCount(0);
+    const denied = { headers: readerHeaders, data: { name: original, type: 'motor', customer_id: records.klanten.id } };
+    expect((await request.post(endpoint, denied)).status()).toBe(403);
+    expect((await request.patch(`${endpoint}/${seeded.id}`, denied)).status()).toBe(403);
+    expect((await request.delete(`${endpoint}/${seeded.id}`, { headers: readerHeaders })).status()).toBe(403);
+    expect(unwrap(await (await request.get(`${endpoint}/${seeded.id}`, { headers: readerHeaders })).json()).name).toBe(seeded.name);
+  } finally {
+    await reader.close();
+  }
+
+  await page.goto(list + '?new=1');
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: label('en', 'adminNew.boats.selectCustomer'), exact: true }).click();
+  await page.getByRole('option', { name: records.klanten.name, exact: true }).click();
+  const name = dialog.getByRole('textbox', { name: label('en', 'adminNew.common.name'), exact: true });
+  const save = dialog.getByRole('button', { name: label('en', 'adminNew.common.save'), exact: true });
+  await name.fill(original);
+  const mutation = (method: string, url: string) => page.waitForResponse(response =>
+    response.request().method() === method && new URL(response.url()).pathname === url);
+  const creation = mutation('POST', endpoint);
+  await save.click();
+  const created = await creation;
+  expect(created.status(), await created.text()).toBe(201);
+  const boat: { id: string; public_id: string; slug: string } = unwrap(await created.json());
+  const api = `${endpoint}/${boat.id}`;
+  const databaseBoat = () => php(`echo json_encode(App\\Models\\Boat::withTrashed()->findOrFail(${JSON.stringify(boat.id)})->only(["name", "deleted_at"]));`);
+  expect(databaseBoat()).toEqual({ name: original, deleted_at: null });
+  await expect(dialog).toHaveCount(0);
+  await page.goto(list);
+  await page.reload();
+  const readable = `${list}/${boat.public_id}/${boat.slug}`;
+  await page.locator('tbody tr').filter({ hasText: original }).locator(`a[href="${readable}"]`).click();
+  await expect(page).toHaveURL(readable);
+  await action(page, 'adminNew.common.edit').click();
+  await name.fill(updated);
+  const update = mutation('PATCH', `${endpoint}/${boat.public_id}`);
+  await save.click();
+  const patched = await update;
+  expect(patched.ok(), await patched.text()).toBe(true);
+  await expect(dialog).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('main h1')).toContainText(updated);
+  expect(unwrap(await (await request.get(api, { headers })).json()).name).toBe(updated);
+  expect(databaseBoat()).toEqual({ name: updated, deleted_at: null });
+
+  await page.goto(list);
+  const row = page.locator('tbody tr').filter({ hasText: updated });
+  await row.getByRole('button', { name: label('en', 'adminNew.common.delete'), exact: true }).click();
+  await expect(dialog).toContainText(label('en', 'adminNew.boats.confirmDelete'));
+  const deletion = mutation('DELETE', api);
+  await dialog.getByRole('button', { name: label('en', 'adminNew.common.delete'), exact: true }).click();
+  const deleted = await deletion;
+  expect(deleted.ok(), await deleted.text()).toBe(true);
+  await expect(dialog).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('tbody')).toContainText(seeded.name);
+  await expect(row).toHaveCount(0);
+  expect((await request.get(api, { headers })).status()).toBe(404);
+  expect(databaseBoat()).toEqual({ name: updated, deleted_at: expect.any(String) });
+  await info.attach('database-persistence', {
+    body: JSON.stringify({ engine: 'isolated SQLite file', actions: ['create', 'update', 'delete'], browserReload: true, apiReadback: true, databaseReadback: true }),
+    contentType: 'application/json',
+  });
+});
+
 test('supplier create and edit enforce write permission and persist through browser reload', async ({ page, request }, info) => {
   const list = '/en/admin/leveranciers';
   const endpoint = '/api/v1/suppliers';
