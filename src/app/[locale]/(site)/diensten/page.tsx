@@ -27,7 +27,7 @@ import {
   serviceCatalogService,
   type ServiceCatalogService,
 } from '@/lib/services';
-import { useRegisterCmsPage } from '@/components/cms/CmsProvider';
+import { useCms, useRegisterCmsPage } from '@/components/cms/CmsProvider';
 import { EditableText } from '@/components/cms/EditableText';
 import { EditableImage } from '@/components/cms/EditableImage';
 import { ServicePricing, YARD_SERVICES, type YardService } from '@/components/site/ServicePricing';
@@ -425,6 +425,7 @@ function LiveServiceGroup({
   group: LiveGroup;
   locale: string;
 }) {
+  const { isCmsEditing } = useCms();
   return (
     <article id={'service-' + group.key} className="scroll-mt-24">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -438,14 +439,16 @@ function LiveServiceGroup({
       </div>
       <div className="grid gap-5 md:grid-cols-2">
         {group.services.map((svc) => {
+          const name = svc.name ?? svc.code;
+          const title = svc.id ? <EditableText blockKey={`catalog.product.${svc.id}.title`} page={CMS_PAGE} section="catalog">{name}</EditableText> : name;
           return (
             <Card key={svc.code} className="flex flex-col p-6">
               <h4 className="text-base font-semibold text-navy-900">
-                {svc.slug ? <Link href={`/${locale}/diensten/${encodeURIComponent(svc.slug)}`} className="hover:text-marine-700">{svc.name ?? svc.code}</Link> : svc.name ?? svc.code}
+                {svc.slug ? <EditSafeLink href={`/${locale}/diensten/${encodeURIComponent(svc.slug)}`} className="hover:text-marine-700">{title}</EditSafeLink> : title}
               </h4>
-              {svc.description ? (
+              {svc.description || (isCmsEditing && svc.id) ? (
                 <p className="mt-1.5 text-sm leading-relaxed text-navy-500">
-                  {svc.description}
+                  {svc.id ? <EditableText blockKey={`catalog.product.${svc.id}.tagline`} page={CMS_PAGE} section="catalog">{svc.description}</EditableText> : svc.description}
                 </p>
               ) : null}
 

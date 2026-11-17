@@ -103,7 +103,7 @@ export default function SuppliersPage() {
       else await createM.mutate(payload);
       push({ tone: 'success', title: t(editId ? 'adminNew.suppliers.toasts.updated' : 'adminNew.suppliers.toasts.created') });
       setShowForm(false);
-      await suppliers.refetch();
+      await suppliers.refetch().catch(() => undefined);
     } catch (err) {
       push({ tone: 'error', title: t('adminNew.common.operationFailed'), message: getApiErrorMessage(err) });
     }
@@ -136,7 +136,7 @@ export default function SuppliersPage() {
             {suppliers.loading ? (
               <LoadingState label={t('adminNew.common.loading')} variant="table" />
             ) : suppliers.error ? (
-              <ErrorState message={suppliers.error} onRetry={() => void suppliers.refetch()} />
+              <ErrorState message={suppliers.error} onRetry={() => void suppliers.refetch().catch(() => undefined)} />
             ) : rows.length === 0 ? (
               <EmptyState title={t('adminNew.suppliers.emptyTitle')} message={t('adminNew.suppliers.emptyMessage')} />
             ) : (

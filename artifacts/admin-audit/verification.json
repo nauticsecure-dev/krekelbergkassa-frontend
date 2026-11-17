@@ -30,9 +30,9 @@
     }
   ],
   "copyReview": {
-    "intentional": 13,
+    "intentional": 14,
     "translate": 0,
-    "unreviewed": 1933
+    "unreviewed": 1828
   },
   "actions": [
     {
@@ -476,11 +476,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/cms/CmsModals.tsx:285:{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}",
+      "id": "src/components/cms/CmsModals.tsx:285:{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}",
       "source": {
         "file": "src/components/cms/CmsModals.tsx",
         "line": 285,
-        "text": "{!/^(?:i18n\\.)?home\\.svc\\./.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
+        "text": "{!/^(?:(?:i18n\\.)?home\\.svc\\.|catalog\\.product\\.)/.test(blockKey) && <Button data-cms-save-draft variant=\"outline\" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}"
       },
       "routes": [
         "/admin/afspraken",
@@ -6772,6 +6772,7 @@
       "evidence": {
         "route": "/admin/leveranciers/[id]/[slug]",
         "title": "supplier mapping enforces write permission and persists SKU and keyword after reload",
+        "status": "passed",
         "attachments": [
           {
             "name": "database-persistence",
@@ -6779,8 +6780,8 @@
             "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlLCJtYXBwaW5nSWQiOiIwMWExZDQ1MC01NTM0LTczNDMtYTNiMC00MzRjMmVmNzk3YTQifQ=="
           }
         ],
-        "status": "passed",
-        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json"
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\fixtures.sqlite"
       }
     },
     {
@@ -6802,6 +6803,7 @@
       "evidence": {
         "route": "/admin/leveranciers/[id]/[slug]",
         "title": "supplier mapping enforces write permission and persists SKU and keyword after reload",
+        "status": "passed",
         "attachments": [
           {
             "name": "database-persistence",
@@ -6809,8 +6811,8 @@
             "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlLCJtYXBwaW5nSWQiOiIwMWExZDQ1MC01NTM0LTczNDMtYTNiMC00MzRjMmVmNzk3YTQifQ=="
           }
         ],
-        "status": "passed",
-        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json"
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\fixtures.sqlite"
       }
     },
     {
@@ -6839,10 +6841,25 @@
       "routes": [
         "/admin/leveranciers"
       ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
+      "classification": "open create supplier dialog",
+      "uiVisibility": "pass: reader controls are disabled; writer can use both dialogs",
+      "directApiDenial": "n/a: opening the dialog sends no mutation request",
+      "authorizedExecution": "pass: writer opened the dialog",
+      "permission": "products.write",
+      "evidence": {
+        "route": "/admin/leveranciers",
+        "title": "supplier create and edit enforce write permission and persist through browser reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\fixtures.sqlite"
+      }
     },
     {
       "id": "src/app/[locale]/admin/leveranciers/page.tsx:169:<Button disabled={!canWrite} variant=\"ghost\" size=\"sm\" onClick={() => openEdit(row)}>",
@@ -6854,10 +6871,25 @@
       "routes": [
         "/admin/leveranciers"
       ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
+      "classification": "open edit supplier dialog",
+      "uiVisibility": "pass: reader controls are disabled; writer can use both dialogs",
+      "directApiDenial": "n/a: opening the dialog sends no mutation request",
+      "authorizedExecution": "pass: writer opened the dialog",
+      "permission": "products.write",
+      "evidence": {
+        "route": "/admin/leveranciers",
+        "title": "supplier create and edit enforce write permission and persist through browser reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\fixtures.sqlite"
+      }
     },
     {
       "id": "src/app/[locale]/admin/leveranciers/page.tsx:188:<Button size=\"sm\" variant=\"ghost\" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>←</Button>",
@@ -6899,10 +6931,25 @@
       "routes": [
         "/admin/leveranciers"
       ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
+      "classification": "create or edit supplier",
+      "uiVisibility": "pass: reader controls are disabled; writer can use both dialogs",
+      "directApiDenial": "pass: reader POST and PATCH returned 403",
+      "authorizedExecution": "pass: writer created and edited; both changes survived reload",
+      "permission": "products.write",
+      "evidence": {
+        "route": "/admin/leveranciers",
+        "title": "supplier create and edit enforce write permission and persist through browser reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\fixtures.sqlite"
+      }
     },
     {
       "id": "src/app/[locale]/admin/leveranciers/page.tsx:215:<Button type=\"button\" variant=\"ghost\" onClick={() => setShowForm(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>",
@@ -8291,10 +8338,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardArrival.tsx:34:onSubmit={async event => {",
+      "id": "src/components/admin/yard/YardArrival.tsx:35:onSubmit={async event => {",
       "source": {
         "file": "src/components/admin/yard/YardArrival.tsx",
-        "line": 34,
+        "line": 35,
         "text": "onSubmit={async event => {"
       },
       "routes": [
@@ -8306,11 +8353,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardArrival.tsx:97:<button className={control} disabled={busy || uploading} type=\"button\" onClick={onClose}>Sluiten</button>",
+      "id": "src/components/admin/yard/YardArrival.tsx:97:<button className={control} disabled={busy || uploading} type=\"button\" onClick={onClose}><TranslatedText textKey=\"siteCopy.d4edef5df714c528\" fallbackText={\"Sluiten\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardArrival.tsx",
         "line": 97,
-        "text": "<button className={control} disabled={busy || uploading} type=\"button\" onClick={onClose}>Sluiten</button>"
+        "text": "<button className={control} disabled={busy || uploading} type=\"button\" onClick={onClose}><TranslatedText textKey=\"siteCopy.d4edef5df714c528\" fallbackText={\"Sluiten\"} /></button>"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -9686,10 +9733,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardMoves.tsx:176:{state !== 'cancelled' && <button className={`${control} min-h-11`} onClick={() => setPhoto(move)}><TranslatedText textKey=\"siteCopy.9acd0798360586d8\" fallbackText={\"Foto toevoegen\"} /></button>}",
+      "id": "src/components/admin/yard/YardMoves.tsx:175:{state !== 'cancelled' && <button className={`${control} min-h-11`} onClick={() => setPhoto(move)}><TranslatedText textKey=\"siteCopy.9acd0798360586d8\" fallbackText={\"Foto toevoegen\"} /></button>}",
       "source": {
         "file": "src/components/admin/yard/YardMoves.tsx",
-        "line": 176,
+        "line": 175,
         "text": "{state !== 'cancelled' && <button className={`${control} min-h-11`} onClick={() => setPhoto(move)}><TranslatedText textKey=\"siteCopy.9acd0798360586d8\" fallbackText={\"Foto toevoegen\"} /></button>}"
       },
       "routes": [
@@ -9701,10 +9748,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardMoves.tsx:178:onClick={() => setAction({ move, operation })}>{label}</button>)}",
+      "id": "src/components/admin/yard/YardMoves.tsx:177:onClick={() => setAction({ move, operation })}>{label}</button>)}",
       "source": {
         "file": "src/components/admin/yard/YardMoves.tsx",
-        "line": 178,
+        "line": 177,
         "text": "onClick={() => setAction({ move, operation })}>{label}</button>)}"
       },
       "routes": [
@@ -9716,10 +9763,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardMoves.tsx:181:{move.is_assignee && !staleAction && action?.move.id === move.id && <form key={action.operation} className=\"grid gap-2 border-t border-slate-700 pt-3\" onSubmit={submit}>",
+      "id": "src/components/admin/yard/YardMoves.tsx:180:{move.is_assignee && !staleAction && action?.move.id === move.id && <form key={action.operation} className=\"grid gap-2 border-t border-slate-700 pt-3\" onSubmit={submit}>",
       "source": {
         "file": "src/components/admin/yard/YardMoves.tsx",
-        "line": 181,
+        "line": 180,
         "text": "{move.is_assignee && !staleAction && action?.move.id === move.id && <form key={action.operation} className=\"grid gap-2 border-t border-slate-700 pt-3\" onSubmit={submit}>"
       },
       "routes": [
@@ -9731,10 +9778,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardMoves.tsx:195:<button type=\"button\" className={control} disabled={busy} onClick={() => setAction(undefined)}><TranslatedText textKey=\"siteCopy.0377b4a45c52deea\" fallbackText={\"Annuleren\"} /></button>",
+      "id": "src/components/admin/yard/YardMoves.tsx:194:<button type=\"button\" className={control} disabled={busy} onClick={() => setAction(undefined)}><TranslatedText textKey=\"siteCopy.0377b4a45c52deea\" fallbackText={\"Annuleren\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardMoves.tsx",
-        "line": 195,
+        "line": 194,
         "text": "<button type=\"button\" className={control} disabled={busy} onClick={() => setAction(undefined)}><TranslatedText textKey=\"siteCopy.0377b4a45c52deea\" fallbackText={\"Annuleren\"} /></button>"
       },
       "routes": [
@@ -9746,10 +9793,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardMoves.tsx:203:<button className={control} disabled={page <= 1 || busy} onClick={() => { setAction(undefined); setPage(page - 1); }}><TranslatedText textKey=\"siteCopy.7c45ecfadb9bd8f2\" fallbackText={\"Vorige\"} /></button>",
+      "id": "src/components/admin/yard/YardMoves.tsx:202:<button className={control} disabled={page <= 1 || busy} onClick={() => { setAction(undefined); setPage(page - 1); }}><TranslatedText textKey=\"siteCopy.7c45ecfadb9bd8f2\" fallbackText={\"Vorige\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardMoves.tsx",
-        "line": 203,
+        "line": 202,
         "text": "<button className={control} disabled={page <= 1 || busy} onClick={() => { setAction(undefined); setPage(page - 1); }}><TranslatedText textKey=\"siteCopy.7c45ecfadb9bd8f2\" fallbackText={\"Vorige\"} /></button>"
       },
       "routes": [
@@ -9761,10 +9808,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardMoves.tsx:205:<button className={control} disabled={page >= moves.last_page || busy} onClick={() => { setAction(undefined); setPage(page + 1); }}><TranslatedText textKey=\"siteCopy.084be3022b972ee9\" fallbackText={\"Volgende\"} /></button>",
+      "id": "src/components/admin/yard/YardMoves.tsx:204:<button className={control} disabled={page >= moves.last_page || busy} onClick={() => { setAction(undefined); setPage(page + 1); }}><TranslatedText textKey=\"siteCopy.084be3022b972ee9\" fallbackText={\"Volgende\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardMoves.tsx",
-        "line": 205,
+        "line": 204,
         "text": "<button className={control} disabled={page >= moves.last_page || busy} onClick={() => { setAction(undefined); setPage(page + 1); }}><TranslatedText textKey=\"siteCopy.084be3022b972ee9\" fallbackText={\"Volgende\"} /></button>"
       },
       "routes": [
@@ -9776,11 +9823,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoMatch.tsx:93:<button type=\"button\" className={control} disabled={busy || (!query.trim() && !calibration)} onClick={() => void request(false)}>Zoek kandidaten</button>",
+      "id": "src/components/admin/yard/YardPhotoMatch.tsx:91:<button type=\"button\" className={control} disabled={busy || (!query.trim() && !calibration)} onClick={() => void request(false)}><TranslatedText textKey=\"siteCopy.edf14d1731e24574\" fallbackText={\"Zoek kandidaten\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-        "line": 93,
-        "text": "<button type=\"button\" className={control} disabled={busy || (!query.trim() && !calibration)} onClick={() => void request(false)}>Zoek kandidaten</button>"
+        "line": 91,
+        "text": "<button type=\"button\" className={control} disabled={busy || (!query.trim() && !calibration)} onClick={() => void request(false)}><TranslatedText textKey=\"siteCopy.edf14d1731e24574\" fallbackText={\"Zoek kandidaten\"} /></button>"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -9791,11 +9838,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoMatch.tsx:104:onClick={() => void request(true)}>Koppeling opslaan</button>",
+      "id": "src/components/admin/yard/YardPhotoMatch.tsx:101:onClick={() => void request(true)}><TranslatedText textKey=\"siteCopy.65f0e03e81d992e8\" fallbackText={\"Koppeling opslaan\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-        "line": 104,
-        "text": "onClick={() => void request(true)}>Koppeling opslaan</button>"
+        "line": 101,
+        "text": "onClick={() => void request(true)}><TranslatedText textKey=\"siteCopy.65f0e03e81d992e8\" fallbackText={\"Koppeling opslaan\"} /></button>"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -9806,10 +9853,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoMatch.tsx:109:{onPlacement && saved.proposal.current && <button type=\"button\" className={control} disabled={busy} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoMatch.tsx:106:{onPlacement && saved.proposal.current && <button type=\"button\" className={control} disabled={busy} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoMatch.tsx",
-        "line": 109,
+        "line": 106,
         "text": "{onPlacement && saved.proposal.current && <button type=\"button\" className={control} disabled={busy} onClick={async () => {"
       },
       "routes": [
@@ -9821,10 +9868,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:35:<button type=\"button\" className={control} disabled={busy} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:34:<button type=\"button\" className={control} disabled={busy} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 35,
+        "line": 34,
         "text": "<button type=\"button\" className={control} disabled={busy} onClick={async () => {"
       },
       "routes": [
@@ -9836,10 +9883,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:91:<button type=\"button\" className={`${control} !text-red-300`} disabled={busy} onClick={onRemove}><TranslatedText textKey=\"siteCopy.b564cfe97691045d\" fallbackText={\"Foto verwijderen\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:90:<button type=\"button\" className={`${control} !text-red-300`} disabled={busy} onClick={onRemove}><TranslatedText textKey=\"siteCopy.b564cfe97691045d\" fallbackText={\"Foto verwijderen\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 91,
+        "line": 90,
         "text": "<button type=\"button\" className={`${control} !text-red-300`} disabled={busy} onClick={onRemove}><TranslatedText textKey=\"siteCopy.b564cfe97691045d\" fallbackText={\"Foto verwijderen\"} /></button>"
       },
       "routes": [
@@ -9851,10 +9898,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:252:<button className=\"rounded-lg bg-[#efd092] px-3 py-2 font-semibold text-slate-950\" disabled={busy} onClick={() => setCreating(!creating)}><TranslatedText textKey=\"yardPhotos.new\" /></button>",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:251:<button className=\"rounded-lg bg-[#efd092] px-3 py-2 font-semibold text-slate-950\" disabled={busy} onClick={() => setCreating(!creating)}><TranslatedText textKey=\"yardPhotos.new\" /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 252,
+        "line": 251,
         "text": "<button className=\"rounded-lg bg-[#efd092] px-3 py-2 font-semibold text-slate-950\" disabled={busy} onClick={() => setCreating(!creating)}><TranslatedText textKey=\"yardPhotos.new\" /></button>"
       },
       "routes": [
@@ -9866,10 +9913,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:256:{creating && <form onSubmit={create} className=\"grid gap-3 rounded-lg border border-slate-700 p-4 sm:grid-cols-2\">",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:255:{creating && <form onSubmit={create} className=\"grid gap-3 rounded-lg border border-slate-700 p-4 sm:grid-cols-2\">",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 256,
+        "line": 255,
         "text": "{creating && <form onSubmit={create} className=\"grid gap-3 rounded-lg border border-slate-700 p-4 sm:grid-cols-2\">"
       },
       "routes": [
@@ -9881,10 +9928,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:266:{sessions?.data.map((session) => <button key={session.id} disabled={busy} onClick={() => void open(session.id)} aria-pressed={detail?.session.id === session.id} className={control + ' block w-full text-left'}>",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:265:{sessions?.data.map((session) => <button key={session.id} disabled={busy} onClick={() => void open(session.id)} aria-pressed={detail?.session.id === session.id} className={control + ' block w-full text-left'}>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 266,
+        "line": 265,
         "text": "{sessions?.data.map((session) => <button key={session.id} disabled={busy} onClick={() => void open(session.id)} aria-pressed={detail?.session.id === session.id} className={control + ' block w-full text-left'}>"
       },
       "routes": [
@@ -9896,10 +9943,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:272:<button className={control} disabled={busy || sessions.current_page <= 1} onClick={() => void list(sessions.current_page - 1).catch(report)}><TranslatedText textKey=\"yardPhotos.previous\" /></button>",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:271:<button className={control} disabled={busy || sessions.current_page <= 1} onClick={() => void list(sessions.current_page - 1).catch(report)}><TranslatedText textKey=\"yardPhotos.previous\" /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 272,
+        "line": 271,
         "text": "<button className={control} disabled={busy || sessions.current_page <= 1} onClick={() => void list(sessions.current_page - 1).catch(report)}><TranslatedText textKey=\"yardPhotos.previous\" /></button>"
       },
       "routes": [
@@ -9911,10 +9958,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:273:<button className={control} disabled={busy || sessions.current_page >= sessions.last_page} onClick={() => void list(sessions.current_page + 1).catch(report)}><TranslatedText textKey=\"yardPhotos.next\" /></button>",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:272:<button className={control} disabled={busy || sessions.current_page >= sessions.last_page} onClick={() => void list(sessions.current_page + 1).catch(report)}><TranslatedText textKey=\"yardPhotos.next\" /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 273,
+        "line": 272,
         "text": "<button className={control} disabled={busy || sessions.current_page >= sessions.last_page} onClick={() => void list(sessions.current_page + 1).catch(report)}><TranslatedText textKey=\"yardPhotos.next\" /></button>"
       },
       "routes": [
@@ -9926,10 +9973,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:280:{!!detail.outputs?.length && <div className=\"flex flex-wrap gap-2\">{detail.outputs.map((output) => <button className={control} key={output.id} disabled={busy} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:279:{!!detail.outputs?.length && <div className=\"flex flex-wrap gap-2\">{detail.outputs.map((output) => <button className={control} key={output.id} disabled={busy} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 280,
+        "line": 279,
         "text": "{!!detail.outputs?.length && <div className=\"flex flex-wrap gap-2\">{detail.outputs.map((output) => <button className={control} key={output.id} disabled={busy} onClick={async () => {"
       },
       "routes": [
@@ -9941,10 +9988,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:292:onClick={() => setImage(original)}>{original.filename} · {original.metadata.width} × {original.metadata.height}</button>",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:291:onClick={() => setImage(original)}>{original.filename} · {original.metadata.width} × {original.metadata.height}</button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 292,
+        "line": 291,
         "text": "onClick={() => setImage(original)}>{original.filename} · {original.metadata.width} × {original.metadata.height}</button>"
       },
       "routes": [
@@ -9956,10 +10003,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:294:aria-label={`Foto ${original.filename} verwijderen`} onClick={() => void removeImage(original)}><TranslatedText textKey=\"siteCopy.46a92181eff2e5ac\" fallbackText={\"Verwijderen\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:293:aria-label={`Foto ${original.filename} verwijderen`} onClick={() => void removeImage(original)}><TranslatedText textKey=\"siteCopy.46a92181eff2e5ac\" fallbackText={\"Verwijderen\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 294,
+        "line": 293,
         "text": "aria-label={`Foto ${original.filename} verwijderen`} onClick={() => void removeImage(original)}><TranslatedText textKey=\"siteCopy.46a92181eff2e5ac\" fallbackText={\"Verwijderen\"} /></button>"
       },
       "routes": [
@@ -9971,10 +10018,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:303:<button className={control} disabled={busy} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:302:<button className={control} disabled={busy} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 303,
+        "line": 302,
         "text": "<button className={control} disabled={busy} onClick={async () => {"
       },
       "routes": [
@@ -9986,10 +10033,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:314:{detail.images.filter((image) => image.category === 'original' || !image.category).length >= 2 && <button className={control} disabled={busy} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:313:{detail.images.filter((image) => image.category === 'original' || !image.category).length >= 2 && <button className={control} disabled={busy} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 314,
+        "line": 313,
         "text": "{detail.images.filter((image) => image.category === 'original' || !image.category).length >= 2 && <button className={control} disabled={busy} onClick={async () => {"
       },
       "routes": [
@@ -10001,10 +10048,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:336:{!!pending.length && <button className={control} disabled={busy} onClick={() => void upload(pending)}><TranslatedText textKey=\"yardPhotos.retry\" /></button>}",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:335:{!!pending.length && <button className={control} disabled={busy} onClick={() => void upload(pending)}><TranslatedText textKey=\"yardPhotos.retry\" /></button>}",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 336,
+        "line": 335,
         "text": "{!!pending.length && <button className={control} disabled={busy} onClick={() => void upload(pending)}><TranslatedText textKey=\"yardPhotos.retry\" /></button>}"
       },
       "routes": [
@@ -10016,10 +10063,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:339:disabled={busy} onClick={() => void detect()}><TranslatedText textKey=\"siteCopy.f34f85e12c1e8d73\" fallbackText={\"AI verwerken\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:338:disabled={busy} onClick={() => void detect()}><TranslatedText textKey=\"siteCopy.f34f85e12c1e8d73\" fallbackText={\"AI verwerken\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 339,
+        "line": 338,
         "text": "disabled={busy} onClick={() => void detect()}><TranslatedText textKey=\"siteCopy.f34f85e12c1e8d73\" fallbackText={\"AI verwerken\"} /></button>"
       },
       "routes": [
@@ -10031,10 +10078,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:340:<button className={control} disabled={busy} onClick={() => void detect(true)}><TranslatedText textKey=\"siteCopy.0485790864773616\" fallbackText={\"Handmatig maskeren\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:339:<button className={control} disabled={busy} onClick={() => void detect(true)}><TranslatedText textKey=\"siteCopy.0485790864773616\" fallbackText={\"Handmatig maskeren\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
-        "line": 340,
+        "line": 339,
         "text": "<button className={control} disabled={busy} onClick={() => void detect(true)}><TranslatedText textKey=\"siteCopy.0485790864773616\" fallbackText={\"Handmatig maskeren\"} /></button>"
       },
       "routes": [
@@ -10166,10 +10213,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:233:onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey=\"siteCopy.5ce3c1a4a26afdba\" fallbackText={\"Afwijzen\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:232:onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey=\"siteCopy.5ce3c1a4a26afdba\" fallbackText={\"Afwijzen\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 233,
+        "line": 232,
         "text": "onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey=\"siteCopy.5ce3c1a4a26afdba\" fallbackText={\"Afwijzen\"} /></button>"
       },
       "routes": [
@@ -10181,10 +10228,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:234:<button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:233:<button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 234,
+        "line": 233,
         "text": "<button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {"
       },
       "routes": [
@@ -10196,10 +10243,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:261:<button className={control} disabled={drawing.points.length < 3} onClick={() => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:260:<button className={control} disabled={drawing.points.length < 3} onClick={() => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 261,
+        "line": 260,
         "text": "<button className={control} disabled={drawing.points.length < 3} onClick={() => {"
       },
       "routes": [
@@ -10211,10 +10258,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:266:<button className={control} disabled={!drawing.points.length} onClick={() =>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:265:<button className={control} disabled={!drawing.points.length} onClick={() =>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 266,
+        "line": 265,
         "text": "<button className={control} disabled={!drawing.points.length} onClick={() =>"
       },
       "routes": [
@@ -10226,10 +10273,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:268:<button className={control} onClick={() => setDrawing(undefined)}><TranslatedText textKey=\"siteCopy.fd3604f2ec8ebb1a\" fallbackText={\"Annuleren\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:267:<button className={control} onClick={() => setDrawing(undefined)}><TranslatedText textKey=\"siteCopy.fd3604f2ec8ebb1a\" fallbackText={\"Annuleren\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 268,
+        "line": 267,
         "text": "<button className={control} onClick={() => setDrawing(undefined)}><TranslatedText textKey=\"siteCopy.fd3604f2ec8ebb1a\" fallbackText={\"Annuleren\"} /></button>"
       },
       "routes": [
@@ -10241,10 +10288,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:270:</> : <button className={control} disabled={busy || !loaded || review.detections.length >= 300} onClick={() => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:269:</> : <button className={control} disabled={busy || !loaded || review.detections.length >= 300} onClick={() => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 270,
+        "line": 269,
         "text": "</> : <button className={control} disabled={busy || !loaded || review.detections.length >= 300} onClick={() => {"
       },
       "routes": [
@@ -10256,10 +10303,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:280:<button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey=\"siteCopy.13e5170f2b105372\" fallbackText={\"Review opslaan\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:279:<button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey=\"siteCopy.13e5170f2b105372\" fallbackText={\"Review opslaan\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 280,
+        "line": 279,
         "text": "<button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey=\"siteCopy.13e5170f2b105372\" fallbackText={\"Review opslaan\"} /></button>"
       },
       "routes": [
@@ -10271,10 +10318,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:290:disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey=\"siteCopy.3b185da8cd0488a3\" fallbackText={\"Lege werf genereren\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:288:disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey=\"siteCopy.3b185da8cd0488a3\" fallbackText={\"Lege werf genereren\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 290,
+        "line": 288,
         "text": "disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey=\"siteCopy.3b185da8cd0488a3\" fallbackText={\"Lege werf genereren\"} /></button>"
       },
       "routes": [
@@ -10286,10 +10333,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:292:{renderJob && <button type=\"button\" className={control} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:290:{renderJob && <button type=\"button\" className={control} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 292,
+        "line": 290,
         "text": "{renderJob && <button type=\"button\" className={control} onClick={async () => {"
       },
       "routes": [
@@ -10301,10 +10348,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:297:{[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:295:{[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 297,
+        "line": 295,
         "text": "{[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {"
       },
       "routes": [
@@ -10483,11 +10530,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardServiceBoard.tsx:56:<button className={control} type=\"button\" onClick={() => setRows(rows.filter((_, i) => i !== index))}>Betaling verwijderen</button>",
+      "id": "src/components/admin/yard/YardServiceBoard.tsx:56:<button className={control} type=\"button\" onClick={() => setRows(rows.filter((_, i) => i !== index))}><TranslatedText textKey=\"siteCopy.1d61fba23d34dad0\" fallbackText={\"Betaling verwijderen\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardServiceBoard.tsx",
         "line": 56,
-        "text": "<button className={control} type=\"button\" onClick={() => setRows(rows.filter((_, i) => i !== index))}>Betaling verwijderen</button>"
+        "text": "<button className={control} type=\"button\" onClick={() => setRows(rows.filter((_, i) => i !== index))}><TranslatedText textKey=\"siteCopy.1d61fba23d34dad0\" fallbackText={\"Betaling verwijderen\"} /></button>"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -10498,11 +10545,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardServiceBoard.tsx:58:<button className={control} type=\"button\" disabled={busy} onClick={() => setRows([...rows, { payment_id: '', paid_cents: 0, refunded_cents: 0 }])}>Betaling toewijzen</button>",
+      "id": "src/components/admin/yard/YardServiceBoard.tsx:58:<button className={control} type=\"button\" disabled={busy} onClick={() => setRows([...rows, { payment_id: '', paid_cents: 0, refunded_cents: 0 }])}><TranslatedText textKey=\"siteCopy.ee4d2bcdf955a840\" fallbackText={\"Betaling toewijzen\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardServiceBoard.tsx",
         "line": 58,
-        "text": "<button className={control} type=\"button\" disabled={busy} onClick={() => setRows([...rows, { payment_id: '', paid_cents: 0, refunded_cents: 0 }])}>Betaling toewijzen</button>"
+        "text": "<button className={control} type=\"button\" disabled={busy} onClick={() => setRows([...rows, { payment_id: '', paid_cents: 0, refunded_cents: 0 }])}><TranslatedText textKey=\"siteCopy.ee4d2bcdf955a840\" fallbackText={\"Betaling toewijzen\"} /></button>"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -10648,11 +10695,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardServiceBoard.tsx:164:{board.can_allocate && line.invoice_status !== 'draft' && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id, line })}>Toewijzing wijzigen</button>}",
+      "id": "src/components/admin/yard/YardServiceBoard.tsx:164:{board.can_allocate && line.invoice_status !== 'draft' && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id, line })}><TranslatedText textKey=\"siteCopy.1325baf008940212\" fallbackText={\"Toewijzing wijzigen\"} /></button>}",
       "source": {
         "file": "src/components/admin/yard/YardServiceBoard.tsx",
         "line": 164,
-        "text": "{board.can_allocate && line.invoice_status !== 'draft' && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id, line })}>Toewijzing wijzigen</button>}"
+        "text": "{board.can_allocate && line.invoice_status !== 'draft' && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id, line })}><TranslatedText textKey=\"siteCopy.1325baf008940212\" fallbackText={\"Toewijzing wijzigen\"} /></button>}"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -10663,11 +10710,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardServiceBoard.tsx:167:{board.can_allocate && card.entity_type === 'boat' && card.service_code && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id })}>Factuurregel koppelen</button>}",
+      "id": "src/components/admin/yard/YardServiceBoard.tsx:167:{board.can_allocate && card.entity_type === 'boat' && card.service_code && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id })}><TranslatedText textKey=\"siteCopy.36111a33e6eb1161\" fallbackText={\"Factuurregel koppelen\"} /></button>}",
       "source": {
         "file": "src/components/admin/yard/YardServiceBoard.tsx",
         "line": 167,
-        "text": "{board.can_allocate && card.entity_type === 'boat' && card.service_code && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id })}>Factuurregel koppelen</button>}"
+        "text": "{board.can_allocate && card.entity_type === 'boat' && card.service_code && <button type=\"button\" className={control} onClick={() => setEditingFinance({ taskId: card.id })}><TranslatedText textKey=\"siteCopy.36111a33e6eb1161\" fallbackText={\"Factuurregel koppelen\"} /></button>}"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -10723,10 +10770,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardServicePlan.tsx:179:{!workflow && steps.length > 1 && <button className={control} type=\"button\" onClick={() => { setSteps(current => current.filter(item => item.id !== step.id)); setPreview(undefined); }}><TranslatedText textKey=\"yardSchedule.remove\" inline={false} /></button>}",
+      "id": "src/components/admin/yard/YardServicePlan.tsx:178:{!workflow && steps.length > 1 && <button className={control} type=\"button\" onClick={() => { setSteps(current => current.filter(item => item.id !== step.id)); setPreview(undefined); }}><TranslatedText textKey=\"yardSchedule.remove\" inline={false} /></button>}",
       "source": {
         "file": "src/components/admin/yard/YardServicePlan.tsx",
-        "line": 179,
+        "line": 178,
         "text": "{!workflow && steps.length > 1 && <button className={control} type=\"button\" onClick={() => { setSteps(current => current.filter(item => item.id !== step.id)); setPreview(undefined); }}><TranslatedText textKey=\"yardSchedule.remove\" inline={false} /></button>}"
       },
       "routes": [
@@ -10738,10 +10785,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardServicePlan.tsx:183:{!workflow && !terminating && <button className={control} type=\"button\" disabled={busy || steps.length >= 10} onClick={() => { setSteps(current => [...current, emptyStep(current.at(-1)!.id + 1)]); setPreview(undefined); }}><TranslatedText textKey=\"yardSchedule.addStep\" inline={false} /></button>}",
+      "id": "src/components/admin/yard/YardServicePlan.tsx:182:{!workflow && !terminating && <button className={control} type=\"button\" disabled={busy || steps.length >= 10} onClick={() => { setSteps(current => [...current, emptyStep(current.at(-1)!.id + 1)]); setPreview(undefined); }}><TranslatedText textKey=\"yardSchedule.addStep\" inline={false} /></button>}",
       "source": {
         "file": "src/components/admin/yard/YardServicePlan.tsx",
-        "line": 183,
+        "line": 182,
         "text": "{!workflow && !terminating && <button className={control} type=\"button\" disabled={busy || steps.length >= 10} onClick={() => { setSteps(current => [...current, emptyStep(current.at(-1)!.id + 1)]); setPreview(undefined); }}><TranslatedText textKey=\"yardSchedule.addStep\" inline={false} /></button>}"
       },
       "routes": [
@@ -10753,10 +10800,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardServicePlan.tsx:185:<button className={control} type=\"button\" disabled={busy} onClick={onClose}><TranslatedText textKey=\"adminNew.common.cancel\" inline={false} /></button>",
+      "id": "src/components/admin/yard/YardServicePlan.tsx:184:<button className={control} type=\"button\" disabled={busy} onClick={onClose}><TranslatedText textKey=\"adminNew.common.cancel\" inline={false} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardServicePlan.tsx",
-        "line": 185,
+        "line": 184,
         "text": "<button className={control} type=\"button\" disabled={busy} onClick={onClose}><TranslatedText textKey=\"adminNew.common.cancel\" inline={false} /></button>"
       },
       "routes": [
@@ -10768,10 +10815,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardServicePlan.tsx:196:<button className={control} type=\"button\" disabled={busy || !!preview.change && !approved} onClick={() => void confirm()}><TranslatedText textKey=\"yardSchedule.confirm\" inline={false} /></button>",
+      "id": "src/components/admin/yard/YardServicePlan.tsx:195:<button className={control} type=\"button\" disabled={busy || !!preview.change && !approved} onClick={() => void confirm()}><TranslatedText textKey=\"yardSchedule.confirm\" inline={false} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardServicePlan.tsx",
-        "line": 196,
+        "line": 195,
         "text": "<button className={control} type=\"button\" disabled={busy || !!preview.change && !approved} onClick={() => void confirm()}><TranslatedText textKey=\"yardSchedule.confirm\" inline={false} /></button>"
       },
       "routes": [
@@ -11715,34 +11762,52 @@
   "persistence": {
     "status": "passed: isolated local deployment only",
     "scope": "Production/deployed environment remains unverified; intercepted HTTP tests cannot establish persistence.",
-    "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json",
-    "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\fixtures.sqlite",
     "observations": [
+      {
+        "route": "/admin/leveranciers",
+        "title": "supplier create and edit enforce write permission and persist through browser reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\fixtures.sqlite"
+      },
       {
         "route": "/admin/klanten",
         "title": "customer creation persists and the generated readable link opens the created record",
+        "status": "passed",
         "attachments": [
           {
             "name": "database-persistence",
             "contentType": "application/json",
             "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlLCJjdXN0b21lcklkIjoiMDFhMWQ0NGUtZmVhNi03MWM1LTlmMTMtODEwNDk1NTIyOGEwIn0="
           }
-        ]
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\fixtures.sqlite"
       },
       {
         "route": "/admin/leveranciers/[id]/[slug]",
         "title": "supplier mapping enforces write permission and persists SKU and keyword after reload",
+        "status": "passed",
         "attachments": [
           {
             "name": "database-persistence",
             "contentType": "application/json",
             "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlLCJtYXBwaW5nSWQiOiIwMWExZDQ1MC01NTM0LTczNDMtYTNiMC00MzRjMmVmNzk3YTQifQ=="
           }
-        ]
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\fixtures.sqlite"
       }
     ]
   },
-  "generatedAt": "2026-11-13T09:57:21.242Z",
+  "generatedAt": "2026-11-15T17:11:07.734Z",
   "boundary": "The admin audit browser suite intercepts HTTP; backend permission tests use SQLite in memory. Separate real-browser persistence evidence, when present below, uses an isolated local Laravel/Next deployment and file-backed SQLite. Browser smoke proves neither CRUD persistence nor complete localization. Pending is unverified. Source signal counts are not test passes.",
   "environmentProblems": [
     "Initial broad browser run exhausted host memory. Later frozen-source runs supplied completed reports; earlier partial logs remain in attempt history.",
@@ -13507,24 +13572,42 @@
       "status": "passed",
       "errors": [],
       "attachments": [],
-      "file": "artifacts/admin-audit/supplier-crud-batch-results.json",
-      "history": []
+      "file": "artifacts/admin-audit/supplier-states-final-results.json",
+      "history": [
+        {
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-crud-batch-results.json",
+          "logOnly": false
+        }
+      ]
     },
     {
       "title": "supplier list write controls and create deep link (true)",
       "status": "passed",
       "errors": [],
       "attachments": [],
-      "file": "artifacts/admin-audit/supplier-crud-batch-results.json",
-      "history": []
+      "file": "artifacts/admin-audit/supplier-states-final-results.json",
+      "history": [
+        {
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-crud-batch-results.json",
+          "logOnly": false
+        }
+      ]
     },
     {
       "title": "supplier loading empty validation create and update retain data then mutate",
       "status": "passed",
       "errors": [],
       "attachments": [],
-      "file": "artifacts/admin-audit/supplier-crud-batch-results.json",
-      "history": []
+      "file": "artifacts/admin-audit/supplier-states-final-results.json",
+      "history": [
+        {
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-crud-batch-results.json",
+          "logOnly": false
+        }
+      ]
     },
     {
       "title": "product list write controls and create deep link (false)",
@@ -14018,11 +14101,72 @@
       "status": "passed",
       "errors": [],
       "attachments": [],
-      "file": "artifacts/admin-audit/supplier-mapping-retry-results.json",
+      "file": "artifacts/admin-audit/supplier-states-final-results.json",
       "history": [
         {
           "status": "failed",
           "report": "artifacts/admin-audit/supplier-mapping-results.json",
+          "logOnly": false
+        },
+        {
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-mapping-retry-results.json",
+          "logOnly": false
+        }
+      ]
+    },
+    {
+      "title": "nl: supplier list loading, repeated failure, empty state and required field",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/supplier-states-final-results.json",
+      "history": [
+        {
+          "status": "failed",
+          "report": "artifacts/admin-audit/supplier-list-states-results.json",
+          "logOnly": false
+        }
+      ]
+    },
+    {
+      "title": "en: supplier list loading, repeated failure, empty state and required field",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/supplier-states-final-results.json",
+      "history": [
+        {
+          "status": "failed",
+          "report": "artifacts/admin-audit/supplier-list-states-results.json",
+          "logOnly": false
+        }
+      ]
+    },
+    {
+      "title": "de: supplier list loading, repeated failure, empty state and required field",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/supplier-states-final-results.json",
+      "history": [
+        {
+          "status": "failed",
+          "report": "artifacts/admin-audit/supplier-list-states-results.json",
+          "logOnly": false
+        }
+      ]
+    },
+    {
+      "title": "fr: supplier list loading, repeated failure, empty state and required field",
+      "status": "passed",
+      "errors": [],
+      "attachments": [],
+      "file": "artifacts/admin-audit/supplier-states-final-results.json",
+      "history": [
+        {
+          "status": "failed",
+          "report": "artifacts/admin-audit/supplier-list-states-results.json",
           "logOnly": false
         }
       ]
@@ -18206,6 +18350,7 @@
         {
           "route": "/admin/klanten",
           "title": "customer creation persists and the generated readable link opens the created record",
+          "status": "passed",
           "attachments": [
             {
               "name": "database-persistence",
@@ -18213,8 +18358,8 @@
               "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlLCJjdXN0b21lcklkIjoiMDFhMWQ0NGUtZmVhNi03MWM1LTlmMTMtODEwNDk1NTIyOGEwIn0="
             }
           ],
-          "status": "passed",
-          "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json"
+          "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json",
+          "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\fixtures.sqlite"
         }
       ],
       "gaps": [
@@ -18245,13 +18390,16 @@
           {
             "route": "/admin/klanten",
             "title": "customer creation persists and the generated readable link opens the created record",
+            "status": "passed",
             "attachments": [
               {
                 "name": "database-persistence",
                 "contentType": "application/json",
                 "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlLCJjdXN0b21lcklkIjoiMDFhMWQ0NGUtZmVhNi03MWM1LTlmMTMtODEwNDk1NTIyOGEwIn0="
               }
-            ]
+            ],
+            "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json",
+            "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\fixtures.sqlite"
           }
         ]
       }
@@ -18320,6 +18468,7 @@
         {
           "route": "/admin/leveranciers/[id]/[slug]",
           "title": "supplier mapping enforces write permission and persists SKU and keyword after reload",
+          "status": "passed",
           "attachments": [
             {
               "name": "database-persistence",
@@ -18327,8 +18476,8 @@
               "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlLCJtYXBwaW5nSWQiOiIwMWExZDQ1MC01NTM0LTczNDMtYTNiMC00MzRjMmVmNzk3YTQifQ=="
             }
           ],
-          "status": "passed",
-          "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json"
+          "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json",
+          "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\fixtures.sqlite"
         }
       ],
       "gaps": [
@@ -18361,13 +18510,16 @@
           {
             "route": "/admin/leveranciers/[id]/[slug]",
             "title": "supplier mapping enforces write permission and persists SKU and keyword after reload",
+            "status": "passed",
             "attachments": [
               {
                 "name": "database-persistence",
                 "contentType": "application/json",
                 "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlLCJtYXBwaW5nSWQiOiIwMWExZDQ1MC01NTM0LTczNDMtYTNiMC00MzRjMmVmNzk3YTQifQ=="
               }
-            ]
+            ],
+            "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\browser-results.json",
+            "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-yApjcl\\fixtures.sqlite"
           }
         ]
       }
@@ -18435,7 +18587,7 @@
         {
           "title": "supplier mapping loading and retry recover from a failed request",
           "status": "passed",
-          "report": "artifacts/admin-audit/supplier-mapping-retry-results.json",
+          "report": "artifacts/admin-audit/supplier-states-final-results.json",
           "attachments": []
         }
       ],
@@ -18481,28 +18633,28 @@
         "src/lib/auth-context.tsx"
       ],
       "crud": {
-        "create": "pass: stateful HTTP fixture create/list readback; maps default_purchase_ledger",
-        "read": "pass: created fixture visible after refetch",
-        "update": "pass: fixture edit modal PATCH/list readback",
+        "create": "pass: browser POST, reload and direct database readback",
+        "read": "pass: populated list and readable detail link",
+        "update": "pass: browser PATCH, reload, API and direct database readback",
         "delete": "pending: API delete exists; no list delete control"
       },
-      "validation": "partial: required name blocks POST, 422 surfaced, form retained",
-      "loading": "pass: held request shows skeleton",
-      "error": "pass: 422 and retry",
-      "empty": "pass: empty supplier list",
+      "validation": "partial: HTTP 422 for payment terms over 365, error shown and form retained",
+      "loading": "pass: held list request shows loading label",
+      "error": "pass: repeated list 503 surfaces error and retry recovers",
+      "empty": "pass: retry renders the empty list",
       "permissions": {
-        "ui": "partial: products.write disables create/edit; write opens create intent",
-        "backend": "partial: supplier reader list/detail allowed; create/update/delete denied; writer durable create/update/delete"
+        "ui": "partial: reader create/edit disabled and create intent blocked; writer creates and edits",
+        "backend": "partial: reader POST/PATCH return 403; writer POST/PATCH succeed"
       },
-      "modals": "partial: create, validation failure, edit",
-      "detail": "pending",
+      "modals": "partial: create and edit, invalid submit, cancel, save and close",
+      "detail": "partial: readable detail link displays updated name and ledger account",
       "locales": {
-        "nl": "partial: supplier create/validation",
-        "en": "pending",
-        "de": "pending",
-        "fr": "pending"
+        "nl": "partial: heading, loading, error, retry, empty state and create dialog",
+        "en": "partial: heading, loading, error, retry, empty state and create dialog",
+        "de": "partial: heading, loading, error, retry, empty state and create dialog",
+        "fr": "partial: heading, loading, error, retry, empty state and create dialog"
       },
-      "responsive": "partial: populated validation modal 390/1280",
+      "responsive": "partial: populated supplier list and edit dialog at 390/1280/1536, both desktop sidebar states",
       "smoke": "pass: NL, injected 503, no JS errors, loading settled",
       "evidence": [
         {
@@ -18525,20 +18677,58 @@
         {
           "title": "supplier list write controls and create deep link (false)",
           "status": "passed",
-          "report": "artifacts/admin-audit/supplier-crud-batch-results.json",
+          "report": "artifacts/admin-audit/supplier-states-final-results.json",
           "attachments": []
         },
         {
           "title": "supplier list write controls and create deep link (true)",
           "status": "passed",
-          "report": "artifacts/admin-audit/supplier-crud-batch-results.json",
+          "report": "artifacts/admin-audit/supplier-states-final-results.json",
           "attachments": []
         },
         {
           "title": "supplier loading empty validation create and update retain data then mutate",
           "status": "passed",
-          "report": "artifacts/admin-audit/supplier-crud-batch-results.json",
+          "report": "artifacts/admin-audit/supplier-states-final-results.json",
           "attachments": []
+        },
+        {
+          "title": "nl: supplier list loading, repeated failure, empty state and required field",
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-states-final-results.json",
+          "attachments": []
+        },
+        {
+          "title": "en: supplier list loading, repeated failure, empty state and required field",
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-states-final-results.json",
+          "attachments": []
+        },
+        {
+          "title": "de: supplier list loading, repeated failure, empty state and required field",
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-states-final-results.json",
+          "attachments": []
+        },
+        {
+          "title": "fr: supplier list loading, repeated failure, empty state and required field",
+          "status": "passed",
+          "report": "artifacts/admin-audit/supplier-states-final-results.json",
+          "attachments": []
+        },
+        {
+          "route": "/admin/leveranciers",
+          "title": "supplier create and edit enforce write permission and persist through browser reload",
+          "status": "passed",
+          "attachments": [
+            {
+              "name": "database-persistence",
+              "contentType": "application/json",
+              "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+            }
+          ],
+          "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\browser-results.json",
+          "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\fixtures.sqlite"
         }
       ],
       "gaps": [],
@@ -18556,7 +18746,28 @@
       },
       "screenshots": [
         "C:/wamp64/www/krekelbergkassa/krekelbergkassa-frontend/artifacts/admin-audit/all-routes/admin-audit-route-failure-boundary-admin-leveranciers-admin-audit/attachments/page-evidence-807e10a33cf443a4b7bc6dc4e226a9740648ea26.png"
-      ]
+      ],
+      "persistence": {
+        "status": "passed: isolated local deployment only",
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\fixtures.sqlite",
+        "observations": [
+          {
+            "route": "/admin/leveranciers",
+            "title": "supplier create and edit enforce write permission and persist through browser reload",
+            "status": "passed",
+            "attachments": [
+              {
+                "name": "database-persistence",
+                "contentType": "application/json",
+                "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+              }
+            ],
+            "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\browser-results.json",
+            "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-BY1VOx\\fixtures.sqlite"
+          }
+        ]
+      }
     },
     {
       "route": "/admin/makelaardij",

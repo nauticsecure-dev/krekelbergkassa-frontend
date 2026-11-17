@@ -282,7 +282,7 @@ export function TextEditModal({
         <Button variant="ghost" onClick={onClose} disabled={submitting}>
           {t('cms.cancel')}
         </Button>
-        {!/^(?:i18n\.)?home\.svc\./.test(blockKey) && <Button data-cms-save-draft variant="outline" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}
+        {!/^(?:(?:i18n\.)?home\.svc\.|catalog\.product\.)/.test(blockKey) && <Button data-cms-save-draft variant="outline" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}
         <Button
           variant="primary"
           data-cms-publish

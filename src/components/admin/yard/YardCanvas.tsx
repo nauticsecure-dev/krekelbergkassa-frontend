@@ -31,8 +31,8 @@ function ConflictDetails({ placement }: { placement: Conflict }) {
     <p><TranslatedText textKey="siteCopy.0a2ff586ab739698" fallbackText={"Gepland: "} />{describePosition(placement.planned)}</p>
     {placement.assignment && <p><TranslatedText textKey="siteCopy.27c1d56b137c3f82" fallbackText={"Opdracht: "} />{placement.assignment.state} · {placement.assignment.due_at
       ? new Date(placement.assignment.due_at).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam' }) : 'Geen tijd'} <TranslatedText textKey="siteCopy.06e40c58ac4673b6" fallbackText={" · Medewerker: "} />{placement.assignment.assignee_id ?? 'Niet toegewezen'}</p>}
-    {placement.assignment?.equipment && <p>Materieel · {placement.assignment.equipment}</p>}
-    {placement.assignment?.priority && <p>Prioriteit · {placement.assignment.priority}</p>}
+    {placement.assignment?.equipment && <p><TranslatedText textKey="siteCopy.4013efec84bab539" fallbackText={"Materieel · "} />{placement.assignment.equipment}</p>}
+    {placement.assignment?.priority && <p><TranslatedText textKey="siteCopy.05a9da16dc0d9c6b" fallbackText={"Prioriteit · "} />{placement.assignment.priority}</p>}
     {placement.assignment?.instructions && <p className="whitespace-pre-wrap">{placement.assignment.instructions}</p>}
     <p><TranslatedText textKey="siteCopy.a269ce62c9cb05d5" fallbackText={"Je concept blijft zichtbaar. Annuleer het concept en laad de huidige plaatsing voordat je opnieuw plant."} /></p>
   </div>;
@@ -1286,9 +1286,9 @@ export default function YardCanvas({ locale }: { locale: string }) {
               </p>}
               {selected.placement.arrival && <div className="grid gap-1 text-sm">
                 {selected.placement.arrived_at && <time dateTime={selected.placement.arrived_at}>{new Date(selected.placement.arrived_at).toLocaleString(locale, { timeZone: 'Europe/Amsterdam' })}</time>}
-                {selected.placement.arrival.appointment_id && <Link href={`${admin}/afspraken?appointment_id=${selected.placement.arrival.appointment_id}`}>Aankomstafspraak {selected.placement.arrival.service_code}</Link>}
+                {selected.placement.arrival.appointment_id && <Link href={`${admin}/afspraken?appointment_id=${selected.placement.arrival.appointment_id}`}><TranslatedText textKey="siteCopy.45d70fa2115e595d" fallbackText={"Aankomstafspraak "} />{selected.placement.arrival.service_code}</Link>}
                 {selected.placement.arrival.condition && <p className="whitespace-pre-wrap">{selected.placement.arrival.condition}</p>}
-                {!!selected.placement.arrival.photo_ids?.length && <Link href={`${admin}/boten/${selected.id}`}>Aankomstfoto’s in het bootdossier ({selected.placement.arrival.photo_ids.length})</Link>}
+                {!!selected.placement.arrival.photo_ids?.length && <Link href={`${admin}/boten/${selected.id}`}><TranslatedText textKey="siteCopy.d7c6c37d60b5745f" fallbackText={"Aankomstfoto’s in het bootdossier ("} />{selected.placement.arrival.photo_ids.length})</Link>}
               </div>}
               {yard.can_edit && !draft && arrival?.id === selected.id && <YardArrival key={selected.id}
                 boatId={selected.id} name={selected.name} version={arrival.version}

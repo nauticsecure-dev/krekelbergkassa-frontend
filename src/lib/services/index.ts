@@ -2810,7 +2810,7 @@ export const cmsService = {
     }>(
       `/v1/admin/cms/content-blocks/${encodeURIComponent(key)}`);
   },
-  updateContact(body: Partial<AppSettings['company']>) {
+  updateContact(body: { email?: string; phone?: string; address?: Partial<AppSettings['company']['address']>; expected_revisions: Record<string, string | null> }) {
     return api<{ company: AppSettings['company']; revision?: string; field_sources?: FaqContent['contact']['field_sources'] }>('/v1/admin/cms/contact-settings', { method: 'PATCH', body });
   },
   mediaLibrary() { return api<{data: Array<{id: string; filename: string; url: string; usage: Array<{key: string; page: string}>}>}>('/v1/admin/cms/media-library'); },

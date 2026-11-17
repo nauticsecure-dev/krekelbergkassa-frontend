@@ -83,6 +83,11 @@ export function ServicePage({
     : { label: t('nav.bookCrane'), href: `/${locale}/kraanafspraak` });
 
   const p = cmsPage ?? '';
+  const canonicalCopy = (field: 'title' | 'tagline' | 'desc', fallback: string) => service?.id ? (
+    <EditableText blockKey={`catalog.product.${service.id}.${field}`} page={`diensten/${catalogSlug}`} section="service">
+      {fallback}
+    </EditableText>
+  ) : fallback;
 
   return (
     <>
@@ -122,14 +127,14 @@ export function ServicePage({
               <EditableText blockKey={`${p}.hero.title`} page={p} section="hero" type="heading">
                 {title}
               </EditableText>
-            ) : title)}
+            ) : service?.slug === catalogSlug ? canonicalCopy('title', title) : title)}
           </h1>
           <p className="pointer-events-auto mt-5 max-w-xl text-sand-100/85">
             {editableDescription ?? (p ? (
               <EditableText blockKey={`${p}.hero.subtitle`} page={p} section="hero" type="paragraph">
                 {subtitle}
               </EditableText>
-            ) : subtitle)}
+            ) : canonicalCopy('tagline', subtitle))}
           </p>
           <div className="pointer-events-none mt-8 flex w-fit flex-wrap gap-3">
             {p ? (
@@ -144,7 +149,7 @@ export function ServicePage({
             ) : (
               <Link href={cta.href} className="pointer-events-auto">
                 <Button variant="gold" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  {cta.label}
+                  {primaryCta ? cta.label : <TranslatedText textKey={pricingService ? 'yardPricing.eyebrow' : 'nav.bookCrane'} />}
                 </Button>
               </Link>
             )}
@@ -184,7 +189,7 @@ export function ServicePage({
                 <EditableText blockKey={`${p}.body`} page={p} section="body" type="long_text">
                   {description}
                 </EditableText>
-              ) : description}
+              ) : canonicalCopy('desc', description)}
             </p>
           </div>
           {inlineImage || p ? (

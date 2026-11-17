@@ -25,10 +25,9 @@ function PhotoQuality({ path, images, source }: { path: string; images: Original
   const percent = (value?: number) => value === undefined ? 'Geen meetbare dekking' : Math.round(value * 100) + '%';
 
   return <details className="space-y-2 rounded border border-slate-700 p-2">
-    <summary className="cursor-pointer">Fotokwaliteit</summary>
-    <label className="block">Vergelijkingsfoto
-      <select className={control + ' block'} value={comparison} onChange={event => { setComparison(event.target.value); setQuality(undefined); }}>
-        <option value="">Alleen geselecteerde foto</option>
+    <summary className="cursor-pointer"><TranslatedText textKey="siteCopy.4c6b3270c2b14d25" fallbackText={"Fotokwaliteit"} /></summary>
+    <label className="block"><TranslatedText textKey="siteCopy.57a7dbd2d8a5e019" fallbackText={"Vergelijkingsfoto"} /><select className={control + ' block'} value={comparison} onChange={event => { setComparison(event.target.value); setQuality(undefined); }}>
+        <option value=""><TranslatedText textKey="siteCopy.7c81bf6c8c632f2e" fallbackText={"Alleen geselecteerde foto"} inline={false} /></option>
         {images.filter(image => image.id !== source).map(image => <option key={image.id} value={image.id}>{image.filename}</option>)}
       </select>
     </label>
@@ -41,14 +40,14 @@ function PhotoQuality({ path, images, source }: { path: string; images: Original
         setQuality(result.quality);
       } catch (reason) { setError((reason as Error).message); }
       finally { setBusy(false); }
-    }}>Fotokwaliteit meten</button>
+    }}><TranslatedText textKey="siteCopy.2338d97cf77e7066" fallbackText={"Fotokwaliteit meten"} /></button>
     {error && <p role="alert">{error}</p>}
     {quality && <dl className="grid grid-cols-2 gap-x-3 text-sm">
-      <dt>Scherpte (variantie)</dt><dd>{quality.blur_variance}</dd>
-      <dt>Ontbrekende pixels</dt><dd>{percent(quality.missing_regions.missing_fraction)}</dd>
+      <dt><TranslatedText textKey="siteCopy.b15ce6b68f9e3c0c" fallbackText={"Scherpte (variantie)"} /></dt><dd>{quality.blur_variance}</dd>
+      <dt><TranslatedText textKey="siteCopy.9a666038f458c03d" fallbackText={"Ontbrekende pixels"} /></dt><dd>{percent(quality.missing_regions.missing_fraction)}</dd>
       {comparison && <>
-        <dt>Geschatte overlap</dt><dd>{percent(quality.pair.overlap_fraction)}{quality.pair.overlap_warning ? ' · Laag' : ''}</dd>
-        <dt>Perspectief (randverhouding)</dt><dd>{quality.pair.opposite_edge_ratio ?? 'Onvoldoende overeenkomsten'}{quality.pair.perspective_warning ? ' · Afwijking' : ''}</dd>
+        <dt><TranslatedText textKey="siteCopy.0fbb38319b64f736" fallbackText={"Geschatte overlap"} /></dt><dd>{percent(quality.pair.overlap_fraction)}{quality.pair.overlap_warning ? ' · Laag' : ''}</dd>
+        <dt><TranslatedText textKey="siteCopy.5b5769ff4fc2b2e4" fallbackText={"Perspectief (randverhouding)"} /></dt><dd>{quality.pair.opposite_edge_ratio ?? 'Onvoldoende overeenkomsten'}{quality.pair.perspective_warning ? ' · Afwijking' : ''}</dd>
       </>}
     </dl>}
   </details>;

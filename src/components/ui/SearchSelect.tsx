@@ -380,6 +380,7 @@ export function SearchSelect({
                     type="button"
                     id={`${listId}-opt-${index}`}
                     role="option"
+                    data-option-value={option.value}
                     data-index={index}
                     aria-selected={isSelected}
                     disabled={option.disabled}

@@ -359,6 +359,7 @@ function CtaEditModal({
         <label className="block space-y-1 text-sm font-medium text-navy-700">
           {t('cms.ctaLinkType')}
           <SearchSelect
+            id="cms-cta-link-type"
             className={inputClass}
             value={config.link_type}
             onChange={(e) => set('link_type', e.target.value as CtaLinkType)}
@@ -374,6 +375,7 @@ function CtaEditModal({
           <label className="block space-y-1 text-sm font-medium text-navy-700">
             {t('cms.ctaRoute')}
             <SearchSelect
+              id="cms-cta-route"
               className={inputClass}
               value={config.route}
               onChange={(e) => set('route', e.target.value)}
@@ -386,6 +388,7 @@ function CtaEditModal({
           <label className="block space-y-1 text-sm font-medium text-navy-700">
             {config.link_type === 'external' ? t('cms.ctaUrl') : config.link_type === 'phone' ? t('cms.ctaPhone') : config.link_type === 'email' ? t('cms.ctaEmail') : t('cms.ctaAnchor')}
             <input
+              data-cms-cta-url
               className={inputClass}
               value={config.url}
               onChange={(e) => set('url', e.target.value)}

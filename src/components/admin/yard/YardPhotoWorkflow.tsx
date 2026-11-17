@@ -222,8 +222,7 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
                 setView('review');
                 setDrawing({ index: selected, points: [] });
               }}><TranslatedText textKey="siteCopy.8cc4f65db9269747" fallbackText={"Bewerken"} /></button>
-              <label className="flex w-full items-center gap-2 text-sm">Boegrotatie (°)
-                <input className={control + ' w-24'} type="number" min={0} max={360} disabled={busy || !!drawing}
+              <label className="flex w-full items-center gap-2 text-sm"><TranslatedText textKey="siteCopy.a67ba06f9c5a5f0f" fallbackText={"Boegrotatie (°)"} /><input className={control + ' w-24'} type="number" min={0} max={360} disabled={busy || !!drawing}
                   value={detection.orientation ?? 0} onChange={event => {
                     const value = Number(event.target.value);
                     if (Number.isFinite(value) && value >= 0 && value <= 360) change(selected, { ...detection, orientation: value });
@@ -278,21 +277,20 @@ export function YardPhotoWorkflow({ path, analysis, images = [], outputs = [], o
             <span style={{ color: colors[status] }}>{labels[status]}</span><span>{counts[status]}</span>
           </div>)}
           <button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey="siteCopy.13e5170f2b105372" fallbackText={"Review opslaan"} /></button>
-          {images.some(image => image.id !== analysis.image_id) && <label className="block text-sm">Bronfoto met vrije grond
-            <select className={control + ' block w-full'} value={ground} disabled={busy} onChange={event => { setGround(event.target.value); setGroundConfirmed(false); }}>
-              <option value="">Gebruik beeldreconstructie</option>
+          {images.some(image => image.id !== analysis.image_id) && <label className="block text-sm"><TranslatedText textKey="siteCopy.4fb4202e6bc8f6c2" fallbackText={"Bronfoto met vrije grond"} /><select className={control + ' block w-full'} value={ground} disabled={busy} onChange={event => { setGround(event.target.value); setGroundConfirmed(false); }}>
+              <option value=""><TranslatedText textKey="siteCopy.b89b9309d5db06a1" fallbackText={"Gebruik beeldreconstructie"} inline={false} /></option>
               {images.filter(image => image.id !== analysis.image_id).map(image => <option key={image.id} value={image.id}>{image.filename}</option>)}
             </select>
           </label>}
           {ground && <label className="block text-sm"><input type="checkbox" checked={groundConfirmed}
-            onChange={event => setGroundConfirmed(event.target.checked)} /> De grond onder de maskers is vrij op deze bronfoto</label>}
+            onChange={event => setGroundConfirmed(event.target.checked)} /> <TranslatedText textKey="siteCopy.66ad58dc027a307c" fallbackText={" De grond onder de maskers is vrij op deze bronfoto"} /></label>}
           <button className="w-full rounded-lg bg-blue-700 px-3 py-2 font-semibold disabled:opacity-50"
             disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey="siteCopy.3b185da8cd0488a3" fallbackText={"Lege werf genereren"} /></button>
           {busy && <p role="status" className="text-sm"><TranslatedText textKey="siteCopy.550306513d82dae7" fallbackText={"Bezig met verwerken…"} /></p>}
           {renderJob && <button type="button" className={control} onClick={async () => {
             try { await api(path + '/cancel-processing', { method: 'POST', body: { job_id: renderJob } }); }
             catch (reason) { setError((reason as Error).message); }
-          }}>Verwerking annuleren</button>}
+          }}><TranslatedText textKey="siteCopy.2704bf7a281dd15c" fallbackText={"Verwerking annuleren"} /></button>}
           {output && <div className="flex flex-wrap gap-2">
             {[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {
               setBusy(true); setError('');

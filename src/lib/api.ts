@@ -119,6 +119,10 @@ export async function apiResult<T = unknown>(
     headers.set('Content-Type', 'application/json');
   }
   headers.set('Accept', 'application/json');
+  headers.set('X-Quality-Client', 'krekelberg-frontend');
+  if (process.env.QUALITY_BUILD_REVISION) {
+    headers.set('X-Quality-Client-Revision', process.env.QUALITY_BUILD_REVISION);
+  }
 
   // Trello #104: send a correlation id (reuse one if the caller set it).
   const requestId = opts.requestId ?? headers.get('X-Request-Id') ?? generateRequestId();
