@@ -17,7 +17,7 @@ export default defineConfig({
   reporter: [['list'], ['json', { outputFile: `${outputDir}-results.json` }]],
   use: { baseURL, trace: 'retain-on-failure', serviceWorkers: 'block' },
   projects: [{ name: 'admin-audit', use: { ...devices['Desktop Chrome'] } }],
-  webServer: {
+  webServer: process.env.ADMIN_AUDIT_EXTERNAL_SERVER === '1' ? undefined : {
     command: 'node --v8-pool-size=1 scripts/admin-audit-server.cjs',
     env: { NEXT_DIST_DIR: '.next-admin-audit', NEXT_PUBLIC_API_URL: '/api', API_PROXY_TARGET: 'http://127.0.0.1:9', RAYON_NUM_THREADS: '1', NEXT_FONT_GOOGLE_MOCKED_RESPONSES: path.resolve('tests/fixtures/journey-fonts.cjs') },
     url: `${baseURL}/sw.js`,

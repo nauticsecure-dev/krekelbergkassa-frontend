@@ -12,7 +12,7 @@ import type { PhotoPlacement } from './YardPhotoMatch';
 const endpoint = yardEndpoint + '/photo-sessions';
 type Processing = { id: string; state: string; progress: number; error?: string };
 type Session = { id: string; name: string; captured_at: string; status: string; notes: string | null; processing?: Processing };
-type Original = { id: string; filename: string; category?: string; metadata: { width: number; height: number; revision?: number;
+type Original = { id: string; filename: string; category?: string; metadata: { width: number; height: number; tile_size?: number; revision?: number;
   source_image_id?: string; detection_id?: string } };
 type Detail = { session: Session; images: Original[]; outputs?: Original[]; analysis: YardAnalysis | null };
 
@@ -247,12 +247,12 @@ export function YardPhotoSessions({ onPublish, onPlacement }: { onPublish?: (fil
   const field = 'rounded border border-slate-600 bg-[#10283d] p-2 text-white';
   return <section className="space-y-4">
     <header className="flex flex-wrap items-center justify-between gap-2">
-      <h2 className="text-xl font-semibold"><TranslatedText textKey="yardPhotos.title" /></h2>
+      <h1 className="text-2xl font-semibold sm:text-3xl"><TranslatedText textKey="yardPhotos.workflowTitle" fallbackText="Luchtfotoverwerking — AI-detectie & bootextractie" /></h1>
       <button className="rounded-lg bg-[#efd092] px-3 py-2 font-semibold text-slate-950" disabled={busy} onClick={() => setCreating(!creating)}><TranslatedText textKey="yardPhotos.new" /></button>
     </header>
-    <p className="text-sm text-slate-300"><TranslatedText textKey="siteCopy.be8f78e9c176d51e" fallbackText={"Upload dronebeelden en selecteer een voorbereide orthofoto voor bootdetectie."} /></p>
-    {error && <p role="alert" className="whitespace-pre-line rounded bg-red-950 p-3">{error}</p>}
-    {creating && <form onSubmit={create} className="grid gap-3 rounded-lg border border-slate-700 p-4 sm:grid-cols-2">
+    <p className="text-sm text-navy-600"><TranslatedText textKey="siteCopy.be8f78e9c176d51e" fallbackText={"Upload dronebeelden en selecteer een voorbereide orthofoto voor bootdetectie."} /></p>
+    {error && <p role="alert" className="whitespace-pre-line rounded bg-red-950 p-3 text-white">{error}</p>}
+    {creating && <form onSubmit={create} className="grid gap-3 rounded-lg border border-navy-200 bg-white p-4 sm:grid-cols-2">
       <label className="grid gap-1"><TranslatedText textKey="yardPhotos.name" /><input name="name" required maxLength={120} className={field} /></label>
       <label className="grid gap-1"><TranslatedText textKey="yardPhotos.yard" /><select name="yard_id" className={field}><option value="werf"><TranslatedText textKey="siteCopy.978e6dcd67bf36db" fallbackText={"Krekelberg"} inline={false} /></option></select></label>
       <label className="grid gap-1"><TranslatedText textKey="yardPhotos.captured" /><input name="captured_at" type="datetime-local" required className={field} /></label>
@@ -260,7 +260,7 @@ export function YardPhotoSessions({ onPublish, onPlacement }: { onPublish?: (fil
       <button className={control} disabled={busy}><TranslatedText textKey="yardPhotos.save" /></button>
     </form>}
     <div className={detail?.analysis ? 'grid gap-4' : 'grid gap-4 lg:grid-cols-[13rem_minmax(0,1fr)]'}>
-      <details open={!detail?.analysis} className="space-y-2 rounded-lg border border-slate-700 p-3">
+      <details open={!detail?.analysis} className="space-y-2 rounded-lg border border-navy-200 bg-white p-3">
         <summary className="cursor-pointer text-sm font-semibold"><TranslatedText textKey="yardPhotos.title" /></summary>
         {sessions?.data.map((session) => <button key={session.id} disabled={busy} onClick={() => void open(session.id)} aria-pressed={detail?.session.id === session.id} className={control + ' block w-full text-left'}>
           <span className="block break-words">{session.name}</span>
@@ -272,10 +272,10 @@ export function YardPhotoSessions({ onPublish, onPlacement }: { onPublish?: (fil
           <button className={control} disabled={busy || sessions.current_page >= sessions.last_page} onClick={() => void list(sessions.current_page + 1).catch(report)}><TranslatedText textKey="yardPhotos.next" /></button>
         </div>}
       </details>
-      {detail && <div className="min-w-0 space-y-3 rounded-lg border border-slate-700 p-4">
+      {detail && <div className={`min-w-0 space-y-3 ${detail.analysis ? '' : 'rounded-lg border border-navy-200 bg-white p-4'}`}>
         <h3 className="break-words text-lg font-semibold">{detail.session.name}</h3>
-        <p className="text-sm text-slate-300">{tEnum(intl.t, 'yardPhotos.status', detail.analysis ? 'review' : detail.session.status)}</p>
-        {detail.session.processing?.error && <p role="alert" className="text-amber-300">{detail.session.processing.error}</p>}
+        <p className="text-sm text-navy-600">{tEnum(intl.t, 'yardPhotos.status', detail.analysis ? 'review' : detail.session.status)}</p>
+        {detail.session.processing?.error && <p role="alert" className="text-amber-800">{detail.session.processing.error}</p>}
         {!!detail.outputs?.length && <div className="flex flex-wrap gap-2">{detail.outputs.map((output) => <button className={control} key={output.id} disabled={busy} onClick={async () => {
           setBusy(true);
           try {

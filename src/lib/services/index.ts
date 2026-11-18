@@ -2783,6 +2783,15 @@ export interface OpeningHoursDay {
   is_today?: boolean;
 }
 
+export interface CmsOpeningHour {
+  id: string;
+  day_of_week: number;
+  open_from: string | null;
+  open_until: string | null;
+  is_closed: boolean;
+  cms_revision: string;
+}
+
 export interface OpeningHoursResponse {
   status: {
     is_open: boolean;
@@ -2871,7 +2880,10 @@ export const cmsService = {
     if (typeof result.revision !== 'number' || typeof result.key !== 'string') throw {status:502,message:'Invalid processing status response.'};
     return result;
   },
-  mediaBlock(key: string) { return api<{key:string;alt_by_locale?:Record<string,string>;seo_title_by_locale?:Record<string,string>}>('/v1/admin/cms/media-blocks/' + encodeURIComponent(key)); },
+  mediaBlock(key: string) { return api<{key:string;revision:number;alt_by_locale?:Record<string,string>;seo_title_by_locale?:Record<string,string>}>('/v1/admin/cms/media-blocks/' + encodeURIComponent(key), { cache: 'no-store' }); },
+  saveMediaText(key: string, payload: Record<string, unknown>) {
+    return api<Record<string, unknown>>('/v1/admin/cms/media-blocks/' + encodeURIComponent(key) + '/text', { method: 'PATCH', body: payload });
+  },
   mediaVersions(key: string) { return api<{data:Array<{revision:number;created_at:string}>}>('/v1/admin/cms/media-blocks/' + encodeURIComponent(key) + '/versions'); },
   restoreMedia(key: string, revision: number, expected_revision: number) { return api<Record<string, unknown>>('/v1/admin/cms/media-blocks/' + encodeURIComponent(key) + '/restore', {method:'POST', body:{revision,expected_revision}}); },
   uploadMediaBlock(key: string, formData: FormData) {
@@ -2894,6 +2906,14 @@ export const cmsService = {
   },
   globalSettings() {
     return api<{ settings: Record<string, string | Record<string, string>>; revisions: Record<string, string | null> }>('/v1/admin/cms/global-settings', { cache: 'no-store' });
+  },
+  openingHours() {
+    return api<{ regular: CmsOpeningHour[] }>('/v1/admin/cms/opening-hours', { cache: 'no-store' });
+  },
+  saveOpeningHour(id: string, payload: Partial<Pick<CmsOpeningHour, 'open_from' | 'open_until' | 'is_closed'>>, revision: string) {
+    return api<{ opening_hour: CmsOpeningHour }>(`/v1/admin/cms/opening-hours/${encodeURIComponent(id)}`, {
+      method: 'PATCH', body: { ...payload, expected_revision: revision },
+    });
   },
   saveGlobalSetting(key: string, payload: { value: unknown; expected_revision: string | null; merge_locales: boolean }) {
     return api<{ value: string | Record<string, string>; cms_revision: string }>(`/v1/admin/cms/global-settings/${encodeURIComponent(key)}`, {

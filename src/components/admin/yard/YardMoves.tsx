@@ -11,7 +11,7 @@ import { control, yardEndpoint, type Page } from './YardHistory';
 type Position = { x: number; y: number; rotation: number; scale: number; location_code?: string | null };
 type Move = {
   id: string; entity_id: string; title: string; description: string | null; due_at: string;
-  assigned_to: string | null; is_assignee: boolean; photo_url: string | null; boat_name: string;
+  assigned_to: string | null; is_assignee: boolean; can_execute?: boolean; photo_url: string | null; boat_name: string;
   length_cm: number | null; width_cm: number | null; placement_version: number;
   metadata: { state: string; equipment?: string; reason?: string; blocked_reason?: string; from: Position; to: Position; final?: Position };
 };
@@ -171,13 +171,13 @@ export function YardMoves({ mine, taskId, refreshRevision, onChange }: { mine: b
           {move.metadata.reason && <p className="text-sm">{move.metadata.reason}</p>}
           {move.description && <p className="whitespace-pre-line text-sm">{move.description}</p>}
           {state === 'blocked' && <p className="text-sm text-amber-200">{move.metadata.blocked_reason}</p>}
-          {move.is_assignee && <div className="flex flex-wrap gap-2">
+          {(move.can_execute ?? move.is_assignee) && <div className="flex flex-wrap gap-2">
             {state !== 'cancelled' && <button className={`${control} min-h-11`} onClick={() => setPhoto(move)}><TranslatedText textKey="siteCopy.9acd0798360586d8" fallbackText={"Foto toevoegen"} /></button>}
             {actions.map(([operation, label]) => <button key={operation} type="button" className={`${control} min-h-11`} disabled={busy}
               onClick={() => setAction({ move, operation })}>{label}</button>)}
           </div>}
           {staleAction && <p role="status" className="text-amber-200"><TranslatedText textKey="siteCopy.bd729893f65a8a3b" fallbackText={"De werfopdracht is gewijzigd. Controleer de actuele instructies en open de actie opnieuw."} /></p>}
-          {move.is_assignee && !staleAction && action?.move.id === move.id && <form key={action.operation} className="grid gap-2 border-t border-slate-700 pt-3" onSubmit={submit}>
+          {(move.can_execute ?? move.is_assignee) && !staleAction && action?.move.id === move.id && <form key={action.operation} className="grid gap-2 border-t border-slate-700 pt-3" onSubmit={submit}>
             {action.operation === 'block' && <label className="grid gap-1"><TranslatedText textKey="siteCopy.705a1b36a73dd736" fallbackText={"Reden"} /><textarea className={control} name="reason" maxLength={500} required /></label>}
             {action.operation === 'complete' && <>
               <div className="grid grid-cols-2 gap-2">

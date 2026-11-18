@@ -856,8 +856,8 @@ export default function YardCanvas({ locale }: { locale: string }) {
         <label><input type="checkbox" checked={showZones} onChange={(event) => setShowZones(event.target.checked)} />{' '}<TranslatedText textKey="siteCopy.8eca586be5d8f621" fallbackText={"Werfgrenzen en zones"} /></label>
       </div>
     </details>
-    <details className="relative"><summary className={control} title="Kaartacties">⋯</summary>
-      <div className={`${panel} absolute right-0 z-30 grid w-52 gap-1`}>
+    <details className="sm:relative"><summary className={control} title="Kaartacties">⋯</summary>
+      <div className={`${panel} absolute inset-x-0 top-full z-30 grid gap-1 sm:left-auto sm:top-auto sm:w-52`}>
         <div className="flex gap-1 sm:hidden">
           <button className={control} aria-label="Uitzoomen" onClick={() => zoom(.8)}>−</button>
           <output className="self-center text-xs">{Math.round(view.scale * 100)}%</output>
@@ -884,7 +884,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
   </label> : null;
 
   return <section ref={root} aria-label="Werfcanvas"
-    className={`bg-[#07192b] p-2 text-white ${expanded ? 'fixed inset-0 z-[100] flex h-[100dvh] w-screen flex-col gap-2 overflow-hidden' : 'relative min-h-[70vh] space-y-3 rounded-2xl sm:p-4'}`}
+    className={`p-2 ${tab === 'photos' && !expanded ? 'bg-transparent text-navy-950' : 'bg-[#07192b] text-white'} ${expanded ? 'fixed inset-0 z-[100] flex h-[100dvh] w-screen flex-col gap-2 overflow-hidden' : 'relative min-h-[70vh] space-y-3 rounded-2xl sm:p-4'}`}
     onKeyUp={(event) => { if (event.code === 'Space') space.current = false; }}
     onKeyDown={(event) => {
       const target = event.target as Element;
@@ -927,7 +927,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
         event.preventDefault();
       }
     }}> 
-    {!expanded && <><header className="flex flex-wrap items-start justify-between gap-3">
+    {!expanded && <>{tab !== 'photos' && <header className="flex flex-wrap items-start justify-between gap-3">
       <div><h1 className="text-2xl font-semibold sm:text-3xl"><TranslatedText textKey="siteCopy.65460d34ae86a3ce" fallbackText={"Werfcanvas — Operationele werfplanning"} /></h1>
         <p className="text-sm text-slate-300"><TranslatedText textKey="siteCopy.67f7278e0a021624" fallbackText={"Beheer boten, verplaatsingen en historie op één werfplattegrond."} /></p></div>
       <div className="flex flex-wrap gap-2">
@@ -941,20 +941,20 @@ export default function YardCanvas({ locale }: { locale: string }) {
           setTab('Werfcanvas');
         }}><TranslatedText textKey="siteCopy.8de0ec50325870d6" fallbackText={"Kaart bewerken"} /></button>
       </div>
-    </header>
+    </header>}
     <datalist id="yard-equipment-options">{scheduleResources?.equipment?.map(item => <option key={item.id} value={item.label} />)}</datalist>
     <nav aria-label="Werfweergaven" className="flex flex-wrap gap-2">
-      {yard?.can_manage_photos && <button className={control} aria-pressed={tab === 'photos'} onClick={() => { if (canNavigate()) setTab('photos'); }}>{photoCopy('title')}</button>}
+      {yard?.can_manage_photos && <button className={`${control} ${tab === 'photos' ? '!bg-blue-700' : ''}`} aria-pressed={tab === 'photos'} onClick={() => { if (canNavigate()) setTab('photos'); }}>{photoCopy('title')}</button>}
       {['Werfcanvas', 'Botenlijst', ...(yard?.can_plan || yard?.can_execute ? ['Verplaatsingen'] : []), ...(yard?.can_execute ? ['Mijn werk vandaag'] : []), ...(yard?.can_plan || yard?.can_execute ? ['Dienstenbord'] : []), 'Historie'].map((name) => <button key={name} className={`${control} ${tab === name ? '!bg-blue-800' : ''}`} aria-pressed={tab === name} onClick={() => { if (name === tab || canNavigate()) { setLinkedMoveId(undefined); setTab(name); setResultPage(1); } }}>{name}</button>)}
       {[['Taken', 'taken'], ['Planning', 'planning']].map(([name, route]) => <Link key={route} className={control} href={`${admin}/${route}`}>{name}</Link>)}
     </nav></>}
-    {error && <div role="alert" className="flex flex-wrap items-center gap-2 rounded bg-red-950 p-3 text-sm">
+    {error && <div role="alert" className="flex flex-wrap items-center gap-2 rounded bg-red-950 p-3 text-sm text-white">
       <span>{error}</span><button className={control} onClick={() => {
         if (draft && !window.confirm('Concept wissen en kaart vernieuwen?')) return;
         resetDraft(); setError(''); setRevision((value) => value + 1);
       }}><TranslatedText textKey="siteCopy.08bc775747052d17" fallbackText={"Vernieuwen"} /></button>
     </div>}
-    {notice && <p role="status" className="text-sm text-green-300">{notice}</p>}
+    {notice && <p role="status" className={`text-sm ${tab === 'photos' ? 'text-green-800' : 'text-green-300'}`}>{notice}</p>}
     {yard?.can_manage_photos && tab === 'photos' && <YardPhotoSessions onPlacement={yard.can_edit ? openPhotoPlacement : undefined} onPublish={yard.can_publish ? (file, outputId) => {
       setPreparedBackground({ file, outputId });
       setPreview(URL.createObjectURL(file));
@@ -989,13 +989,13 @@ export default function YardCanvas({ locale }: { locale: string }) {
     {yard?.background && !yard.background.calibration_current && <p role="status" className="text-sm text-amber-200"><TranslatedText textKey="siteCopy.a76b7ecc54d95878" fallbackText={"De achtergrond heeft geen actuele goedgekeurde kalibratie en is verborgen. Laat de meetpunten opnieuw controleren."} /></p>}
     {editingMap && tab === 'Werfcanvas' && yard?.geometry && <YardMapManagement initial={yard.geometry} version={imageVersion ?? 0} prepared={preparedBackground} onGeometryChanged={() => setRevision(value => value + 1)} onPublished={() => { setEditingMap(false); setPreview(''); setPreparedBackground(undefined); setRevision(value => value + 1); }} />}
     {tab === 'Historie' ? <YardHistory locale={locale} revision={revision} /> : (tab === 'Werfcanvas' || tab === 'Botenlijst') && <>
-      <div className="relative z-20 flex min-w-0 shrink-0 items-center gap-1.5" role="group" aria-label="Werfcanvas werkbalk">
-        <input className={`${control} min-w-0 flex-1 2xl:min-w-36`} maxLength={120} aria-label="Zoek boot, klant, registratie of referentie" placeholder="Zoek boot, eigenaar, registratie…" value={search} onChange={(event) => {
+      <div className="relative z-20 flex min-w-0 shrink-0 flex-wrap items-center gap-1.5" role="group" aria-label="Werfcanvas werkbalk">
+        <input className={`${control} min-w-0 flex-[1_1_8rem]`} maxLength={120} aria-label="Zoek boot, klant, registratie of referentie" placeholder="Zoek boot, eigenaar, registratie…" value={search} onChange={(event) => {
           setSearch(event.target.value); setResultPage(1);
           if (!event.target.value && !draft) { setSelected(undefined); setSelectedIds([]); }
         }} />
         {tab === 'Werfcanvas' && <>
-          <div className="hidden items-center gap-1 2xl:flex">{filterControls}</div>
+          <div className="hidden min-w-0 flex-wrap items-center gap-1 2xl:flex">{filterControls}</div>
           <details className="relative shrink-0 2xl:hidden"><summary className={control} title="Meer filters en kaartbediening"><TranslatedText textKey="siteCopy.ee9a49b95bf97698" fallbackText={"Meer"} /><span className="hidden sm:inline">{' '}<TranslatedText textKey="siteCopy.f2519a295fc4192a" fallbackText={"filters"} /></span></summary>
             <div className={`${panel} absolute right-0 top-full z-30 grid w-56 gap-2 shadow-xl`}>
               {filterControls}

@@ -372,14 +372,14 @@ export default function CalculatorPricingPage() {
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input label="Geldig vanaf" type="date" value={form.valid_from} onChange={(e) => setForm({ ...form, valid_from: e.target.value })} />
-                <Input label="Geldig tot en met" type="date" min={form.valid_from || undefined} value={form.valid_to} onChange={(e) => setForm({ ...form, valid_to: e.target.value })} />
+                <Input label={t('adminNew.calculator.pricing.validFrom')} type="date" value={form.valid_from} onChange={(e) => setForm({ ...form, valid_from: e.target.value })} />
+                <Input label={t('adminNew.calculator.pricing.validThrough')} type="date" min={form.valid_from || undefined} value={form.valid_to} onChange={(e) => setForm({ ...form, valid_to: e.target.value })} />
               </div>
-              <Input label="Duur compleet pakket / dienst (minuten)" type="number" min={0} value={form.duration_minutes} onChange={(e) => setForm({ ...form, duration_minutes: e.target.value })} />
+              <Input label={t('adminNew.calculator.pricing.durationMinutes')} type="number" min={0} value={form.duration_minutes} onChange={(e) => setForm({ ...form, duration_minutes: e.target.value })} />
               <Input label={t('smartServices.reason')} value={changeReason} required minLength={3} onChange={(e) => setChangeReason(e.target.value)} />
               <Input label={t('smartServices.includedQuantities')} value={includedQuantities} onChange={(e) => setIncludedQuantities(e.target.value)} />
               {impact && <details><summary><TranslatedText textKey="smartServices.impact" /></summary><pre className="overflow-auto text-xs">{JSON.stringify(impact, null, 2)}</pre></details>}
-              <Input label="Inbegrepen dienstcodes (komma gescheiden)" value={form.included_service_codes} onChange={(e) => setForm({ ...form, included_service_codes: e.target.value })} placeholder="kranen, afspuiten" />
+              <Input label={t('adminNew.calculator.pricing.includedServiceCodes')} value={form.included_service_codes} onChange={(e) => setForm({ ...form, included_service_codes: e.target.value })} placeholder="kranen, afspuiten" />
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
                 {<TranslatedText textKey={'globalUx.pricing.active'} />}

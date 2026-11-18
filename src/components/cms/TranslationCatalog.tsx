@@ -2,19 +2,12 @@
 import * as React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useIntl } from '@/i18n/IntlProvider';
+import { messageEntries } from '@/i18n/messageEntries';
 import { TextEditModal } from './CmsModals';
 import copyFallbacks from '@/i18n/cms-copy.json';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/ToastProvider';
 import { cmsService } from '@/lib/services';
-
-function flatten(value: Record<string, unknown>, prefix = ''): Array<[string, string]> {
-  return Object.entries(value).flatMap(([key, child]) => {
-    const path = prefix ? `${prefix}.${key}` : key;
-    return typeof child === 'string' ? [[path, child] as [string, string]]
-      : child && typeof child === 'object' ? flatten(child as Record<string, unknown>, path) : [];
-  });
-}
 
 const craneTypes = ['receipt', 'internal', 'approved', 'rejected', 'payment_optional', 'payment_required', 'paid', 'reminder_15', 'reminder_30', 'reminder_60'];
 
@@ -87,12 +80,15 @@ function CraneEmailPreview() {
 
 /** Includes labels used in attributes and menus that cannot contain inline controls. */
 export function TranslationCatalog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { t, messages } = useIntl();
+  const { t, messages, catalogFallbacks } = useIntl();
   const [query, setQuery] = React.useState('');
   const [selected, setSelected] = React.useState<[string, string] | null>(null);
-  const entries = React.useMemo(() => Array.from(new Map([...Object.entries(copyFallbacks), ...flatten(messages)])), [messages]);
+  const entries = React.useMemo(() => Array.from(new Map([
+    ...Object.entries(copyFallbacks), ...Object.entries(catalogFallbacks), ...messageEntries(messages),
+  ])), [messages, catalogFallbacks]);
+  if (!open) return null;
   return <>
-    <Modal open={open && !selected} onClose={onClose} size="lg">
+    {!selected && <Modal open onClose={onClose} size="lg">
       <div className="p-6"><h2 className="mb-4 text-lg font-semibold">{t('cms.allTranslations')}</h2>
         {open && <CraneEmailPreview />}
         <input data-cms-catalog-search className="w-full rounded border p-2" aria-label={t('cms.searchTranslations')}
@@ -102,7 +98,7 @@ export function TranslationCatalog({ open, onClose }: { open: boolean; onClose: 
           <button type="button" key={key} data-cms-catalog-key={key} className="block w-full border-b p-3 text-left hover:bg-sand-50"
             onClick={() => setSelected([key, value])}><span className="block text-xs text-navy-500">{key}</span>{t(key, { defaultValue: value })}</button>)}
       </div>
-    </Modal>
+    </Modal>}
     {selected ? <TextEditModal open onClose={() => setSelected(null)} page="global"
       blockKey={`i18n.${selected[0]}`} fallbackText={selected[1]} /> : null}
   </>;

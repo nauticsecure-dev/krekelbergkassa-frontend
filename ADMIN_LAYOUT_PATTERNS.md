@@ -28,3 +28,5 @@ All five patterns above have populated responsive checks, including applicable d
 Equal-column grids are allowed only when their children fit; source approval is not a responsive pass. The generated source matrix lists route-to-component ownership, including delegated modals. Any new arbitrary grid requires an entry here and browser evidence at 390, 1280, 1536px with desktop sidebar expanded/collapsed. Form, table and modal evidence must use realistic long data, not just an empty page.
 
 Browser scenarios: `tests/browser/admin-review.spec.ts` (populated kassa / cash-close / document zones / audit modal). Reports and attached screenshots: `artifacts/admin-audit/sidebar-final-results.json` and `artifacts/admin-audit/pos-completed-results.json`. Earlier failed attempts remain in the verification ledger history.
+
+The Werfcanvas toolbar wraps controls within its available content width. The four-locale 503 smoke scenario checks the document and main-content widths at 390, 1280 and 1536px. The populated yard workflows have separate browser scenarios.

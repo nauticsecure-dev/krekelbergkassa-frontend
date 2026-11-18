@@ -5,7 +5,7 @@
     "de",
     "fr"
   ],
-  "callCount": 2291,
+  "callCount": 2295,
   "missing": [],
   "unresolved": [],
   "copyCandidates": [
@@ -49,30 +49,6 @@
       "file": "src\\app\\[locale]\\admin\\calculator\\page.tsx",
       "line": 542,
       "text": "Prijsdatum",
-      "kind": "attribute"
-    },
-    {
-      "file": "src\\app\\[locale]\\admin\\calculator\\pricing\\page.tsx",
-      "line": 375,
-      "text": "Geldig vanaf",
-      "kind": "attribute"
-    },
-    {
-      "file": "src\\app\\[locale]\\admin\\calculator\\pricing\\page.tsx",
-      "line": 376,
-      "text": "Geldig tot en met",
-      "kind": "attribute"
-    },
-    {
-      "file": "src\\app\\[locale]\\admin\\calculator\\pricing\\page.tsx",
-      "line": 378,
-      "text": "Duur compleet pakket / dienst (minuten)",
-      "kind": "attribute"
-    },
-    {
-      "file": "src\\app\\[locale]\\admin\\calculator\\pricing\\page.tsx",
-      "line": 382,
-      "text": "Inbegrepen dienstcodes (komma gescheiden)",
       "kind": "attribute"
     },
     {
@@ -1205,61 +1181,67 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 161,
+      "line": 191,
       "text": "Verwerkingsstappen",
       "kind": "attribute"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 164,
+      "line": 195,
       "text": "Handmatig",
       "kind": "expression"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 176,
+      "line": 206,
       "text": "Orthofoto van de werf",
       "kind": "attribute"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 178,
+      "line": 208,
       "text": "Gegenereerde lege werf",
       "kind": "attribute"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 181,
+      "line": 211,
       "text": "Bootmaskers op de orthofoto",
       "kind": "attribute"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 204,
-      "text": "Uitzoomen",
-      "kind": "attribute"
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 205,
+      "line": 241,
       "text": "Inzoomen",
       "kind": "attribute"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 212,
+      "line": 242,
+      "text": "Uitzoomen",
+      "kind": "attribute"
+    },
+    {
+      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
+      "line": 254,
+      "text": "Detectie #",
+      "kind": "jsx"
+    },
+    {
+      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
+      "line": 256,
       "text": "Detectie",
       "kind": "attribute"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 216,
+      "line": 262,
       "text": "Transparante bootuitsnede",
       "kind": "attribute"
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 217,
+      "line": 264,
       "text": "Handmatig masker",
       "kind": "expression"
     },
@@ -3033,31 +3015,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.boats.tabs.overview",
-      "text": "Overview"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.ownership",
-      "text": "Ownership"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.storage",
-      "text": "Storage"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.financial",
-      "text": "Invoices"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.workOrders",
-      "text": "Work orders"
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.boats.tabs.photos",
       "text": "Photos"
     },
@@ -3065,56 +3022,6 @@
       "locale": "fr",
       "key": "adminNew.boats.tabs.documents",
       "text": "Documents"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.timeline",
-      "text": "Timeline"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.history",
-      "text": "History"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.updated",
-      "text": "Boat updated"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.updateFailed",
-      "text": "Update failed"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.transferred",
-      "text": "Ownership transferred"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.fileUploaded",
-      "text": "File uploaded"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.title",
-      "text": "Boats"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.dossierSubtitle",
-      "text": "Full boat dossier with storage, invoices and audit log"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.daysInStorage",
-      "text": "Days in storage"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.revenue",
-      "text": "Revenue"
     },
     {
       "locale": "fr",
@@ -3128,133 +3035,13 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.boats.columns.owner",
-      "text": "Owner"
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.boats.columns.type",
       "text": "Type"
     },
     {
       "locale": "fr",
-      "key": "adminNew.boats.fields.brand",
-      "text": "Brand"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.model",
-      "text": "Model"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.buildYear",
-      "text": "Build year"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.columns.length",
-      "text": "Length"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.widthCm",
-      "text": "Width (cm)"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.draftCm",
-      "text": "Draft (cm)"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.weightKg",
-      "text": "Weight (kg)"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.hullMaterial",
-      "text": "Hull material"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.fuelType",
-      "text": "Fuel type"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.engineBrand",
-      "text": "Engine brand"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.engineType",
-      "text": "Engine type"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.enginePower",
-      "text": "Engine power"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.serialNumbers",
-      "text": "Serial numbers"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.callSign",
-      "text": "Call sign"
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.boats.fields.mmsi",
       "text": "MMSI"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.insuranceNumber",
-      "text": "Insurance no."
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.insuranceCompany",
-      "text": "Insurance company"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.insuranceExpiry",
-      "text": "Insurance expiry date"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.columns.location",
-      "text": "Location"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.qrTitle",
-      "text": "QR code"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.columns.email",
-      "text": "Email"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.columns.phone",
-      "text": "Phone"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.currentOwner",
-      "text": "current"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.photoFolders.arrival",
-      "text": "Arrival"
     },
     {
       "locale": "fr",
@@ -3268,46 +3055,6 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.boats.photoFolders.damage",
-      "text": "Damage"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.photoFolders.departure",
-      "text": "Departure"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.insurance",
-      "text": "Insurance"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.registration",
-      "text": "Registration"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.ce_certificate",
-      "text": "CE certificate"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.purchase_agreement",
-      "text": "Purchase agreement"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.survey",
-      "text": "Survey"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.other",
-      "text": "Other"
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.stalling.fields.hall",
       "text": "Hall"
     },
@@ -3318,163 +3065,8 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.boats.editTitle",
-      "text": "Edit boat"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.editSubtitle",
-      "text": "Update length, location and other details"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.transfer",
-      "text": "Transfer owner"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.transferSubtitle",
-      "text": "Move this boat to a new owner"
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.kassa.selectCustomer",
       "text": "Select customer"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.transferReason",
-      "text": "Reason"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.created",
-      "text": "Boat created"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.createFailed",
-      "text": "Creation failed"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.deleted",
-      "text": "Boat deleted"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.deleteFailed",
-      "text": "Delete failed"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.subtitle",
-      "text": "Manage boats, lengths and locations for storage and invoicing"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.totalBoats",
-      "text": "Total boats"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.boatsInStorage",
-      "text": "In storage"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.activeWorkOrders",
-      "text": "Active work orders"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.openBalance",
-      "text": "Open balance"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.searchPlaceholder",
-      "text": "Search by boat name, owner or location"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.statusAll",
-      "text": "All statuses"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.statusInStorage",
-      "text": "In storage"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.statusWorkInProgress",
-      "text": "Work in progress"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.statusRegistered",
-      "text": "Registered"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.total",
-      "text": "{count} boats"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.loading",
-      "text": "Loading boats"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.emptyTitle",
-      "text": "No boats"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.emptyMessage",
-      "text": "No boats found yet."
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.new",
-      "text": "New boat"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.selectCustomer",
-      "text": "Select customer"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.type.motor",
-      "text": "Motor"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.type.sail",
-      "text": "Sail"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.type.other",
-      "text": "Other"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.lengthCm",
-      "text": "Length (cm)"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.locationCode",
-      "text": "Location code"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.confirmDelete",
-      "text": "Delete boat?"
     },
     {
       "locale": "fr",
@@ -3868,48 +3460,8 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.calculator.pricing.saved",
-      "text": "Pricing rule saved"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.deleted",
-      "text": "Pricing rule deleted"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.title",
-      "text": "Manage pricing"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.subtitle",
-      "text": "Pricing rules by boat length and service"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.empty",
-      "text": "No pricing rules yet."
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.newRule",
-      "text": "New pricing rule"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.selectProduct",
-      "text": "Select product"
-    },
-    {
-      "locale": "fr",
       "key": "globalUx.pricing.type",
       "text": "Type"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.confirmDelete",
-      "text": "Delete this pricing rule?"
     },
     {
       "locale": "fr",
@@ -4580,11 +4132,6 @@
       "locale": "fr",
       "key": "adminNew.invoices.customerSearchHint",
       "text": "Search by name, email, phone or company (at least 2 characters)"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.loading",
-      "text": "Loading customers"
     },
     {
       "locale": "fr",
@@ -6228,198 +5775,8 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.customers.toasts.unblocked",
-      "text": "Customer unblocked"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.magicLinkSent",
-      "text": "Login link sent"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.magicLinkFailed",
-      "text": "Failed to send login link"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.created",
-      "text": "Customer created"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.createFailed",
-      "text": "Create failed"
-    },
-    {
-      "locale": "fr",
       "key": "admin.sidebar.customers",
       "text": "Customers"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.title",
-      "text": "Customers"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.subtitle",
-      "text": "Central customer overview for POS, storage and invoicing"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.total",
-      "text": "{count} customers total"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.results",
-      "text": "{count} results"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.searchPlaceholder",
-      "text": "Search by name, email, phone, boat"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.allLanguages",
-      "text": "All languages"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.allStatuses",
-      "text": "All statuses"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.statusActive",
-      "text": "Active"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.statusBlocked",
-      "text": "Blocked"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.neverLoggedIn",
-      "text": "Never logged in"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.cityPlaceholder",
-      "text": "City"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.countryPlaceholder",
-      "text": "Country"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.lastLoginAny",
-      "text": "Any login"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.lastLoginRecent",
-      "text": "Logged in recently"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.lastLoginNever",
-      "text": "Never logged in"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.emptyTitle",
-      "text": "No customers found"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.emptyMessage",
-      "text": "Adjust filters or create a new customer."
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.modal.title",
-      "text": "New customer"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.modal.subtitle",
-      "text": "Name and email are enough for quick registration."
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.gender.unspecified",
-      "text": "Unspecified"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.gender.male",
-      "text": "Male"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.gender.female",
-      "text": "Female"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.gender.other",
-      "text": "Other"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.localeDefault",
-      "text": "Default"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.search",
-      "text": "Search address"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.searchPlaceholder",
-      "text": "Start typing to search an address"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.street",
-      "text": "Street"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.houseNumber",
-      "text": "House number"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.postalCode",
-      "text": "Postal code"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.city",
-      "text": "City"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.blocked",
-      "text": "Customer blocked"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.blockReasonPlaceholder",
-      "text": "Why is this customer being blocked?"
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.impersonate",
-      "text": "Log in as"
     },
     {
       "locale": "fr",
@@ -9514,47 +8871,12 @@
     },
     {
       "file": "src\\app\\[locale]\\admin\\calculator\\pricing\\page.tsx",
-      "line": 375,
-      "text": "Geldig vanaf",
-      "kind": "attribute",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\app\\[locale]\\admin\\calculator\\pricing\\page.tsx",
-      "line": 376,
-      "text": "Geldig tot en met",
-      "kind": "attribute",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\app\\[locale]\\admin\\calculator\\pricing\\page.tsx",
-      "line": 378,
-      "text": "Duur compleet pakket / dienst (minuten)",
-      "kind": "attribute",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\app\\[locale]\\admin\\calculator\\pricing\\page.tsx",
-      "line": 382,
-      "text": "Inbegrepen dienstcodes (komma gescheiden)",
-      "kind": "attribute",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\app\\[locale]\\admin\\calculator\\pricing\\page.tsx",
       "line": 382,
       "text": "kranen, afspuiten",
       "kind": "attribute",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "Examples are canonical service codes accepted by Laravel. Translating the codes would make them invalid."
       }
     },
     {
@@ -11242,7 +10564,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 161,
+      "line": 191,
       "text": "Verwerkingsstappen",
       "kind": "attribute",
       "review": {
@@ -11251,7 +10573,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 164,
+      "line": 195,
       "text": "Handmatig",
       "kind": "expression",
       "review": {
@@ -11260,7 +10582,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 176,
+      "line": 206,
       "text": "Orthofoto van de werf",
       "kind": "attribute",
       "review": {
@@ -11269,7 +10591,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 178,
+      "line": 208,
       "text": "Gegenereerde lege werf",
       "kind": "attribute",
       "review": {
@@ -11278,7 +10600,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 181,
+      "line": 211,
       "text": "Bootmaskers op de orthofoto",
       "kind": "attribute",
       "review": {
@@ -11287,16 +10609,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 204,
-      "text": "Uitzoomen",
-      "kind": "attribute",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 205,
+      "line": 241,
       "text": "Inzoomen",
       "kind": "attribute",
       "review": {
@@ -11305,7 +10618,25 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 212,
+      "line": 242,
+      "text": "Uitzoomen",
+      "kind": "attribute",
+      "review": {
+        "decision": "unreviewed"
+      }
+    },
+    {
+      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
+      "line": 254,
+      "text": "Detectie #",
+      "kind": "jsx",
+      "review": {
+        "decision": "unreviewed"
+      }
+    },
+    {
+      "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
+      "line": 256,
       "text": "Detectie",
       "kind": "attribute",
       "review": {
@@ -11314,7 +10645,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 216,
+      "line": 262,
       "text": "Transparante bootuitsnede",
       "kind": "attribute",
       "review": {
@@ -11323,7 +10654,7 @@
     },
     {
       "file": "src\\components\\admin\\yard\\YardPhotoWorkflow.tsx",
-      "line": 217,
+      "line": 264,
       "text": "Handmatig masker",
       "kind": "expression",
       "review": {
@@ -11572,7 +10903,8 @@
       "key": "adminNew.boats.columns.type",
       "text": "Type",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "Dutch label for the kind of boat."
       }
     },
     {
@@ -11580,7 +10912,8 @@
       "key": "adminNew.boats.fields.model",
       "text": "Model",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "Dutch label for the vessel model."
       }
     },
     {
@@ -11597,7 +10930,8 @@
       "key": "adminNew.boats.status",
       "text": "Status",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "Standard Dutch label for the current state."
       }
     },
     {
@@ -11605,7 +10939,8 @@
       "key": "adminNew.boats.type.motor",
       "text": "Motor",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "Dutch name for the motor-powered boat category."
       }
     },
     {
@@ -12529,7 +11864,8 @@
       "key": "adminNew.boats.fields.mmsi",
       "text": "MMSI",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "International maritime identifier abbreviation."
       }
     },
     {
@@ -12537,7 +11873,8 @@
       "key": "adminNew.boats.status",
       "text": "Status",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "Standard German label for the current state."
       }
     },
     {
@@ -12545,7 +11882,8 @@
       "key": "adminNew.boats.type.motor",
       "text": "Motor",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "German label for the motor-powered boat category."
       }
     },
     {
@@ -12641,7 +11979,8 @@
       "key": "adminNew.customers.fields.name",
       "text": "Name",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "German noun for the customer name."
       }
     },
     {
@@ -14161,50 +13500,11 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.boats.tabs.overview",
-      "text": "Overview",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.ownership",
-      "text": "Ownership",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.storage",
-      "text": "Storage",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.financial",
-      "text": "Invoices",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.workOrders",
-      "text": "Work orders",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.boats.tabs.photos",
       "text": "Photos",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "Common French plural for photographs."
       }
     },
     {
@@ -14212,87 +13512,8 @@
       "key": "adminNew.boats.tabs.documents",
       "text": "Documents",
       "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.timeline",
-      "text": "Timeline",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.tabs.history",
-      "text": "History",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.updated",
-      "text": "Boat updated",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.updateFailed",
-      "text": "Update failed",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.transferred",
-      "text": "Ownership transferred",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.fileUploaded",
-      "text": "File uploaded",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.title",
-      "text": "Boats",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.dossierSubtitle",
-      "text": "Full boat dossier with storage, invoices and audit log",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.daysInStorage",
-      "text": "Days in storage",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.revenue",
-      "text": "Revenue",
-      "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "Common French plural for documents."
       }
     },
     {
@@ -14313,130 +13534,11 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.boats.columns.owner",
-      "text": "Owner",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.boats.columns.type",
       "text": "Type",
       "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.brand",
-      "text": "Brand",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.model",
-      "text": "Model",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.buildYear",
-      "text": "Build year",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.columns.length",
-      "text": "Length",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.widthCm",
-      "text": "Width (cm)",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.draftCm",
-      "text": "Draft (cm)",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.weightKg",
-      "text": "Weight (kg)",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.hullMaterial",
-      "text": "Hull material",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.fuelType",
-      "text": "Fuel type",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.engineBrand",
-      "text": "Engine brand",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.engineType",
-      "text": "Engine type",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.enginePower",
-      "text": "Engine power",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.serialNumbers",
-      "text": "Serial numbers",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.callSign",
-      "text": "Call sign",
-      "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "French label for the kind of boat."
       }
     },
     {
@@ -14444,79 +13546,8 @@
       "key": "adminNew.boats.fields.mmsi",
       "text": "MMSI",
       "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.insuranceNumber",
-      "text": "Insurance no.",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.insuranceCompany",
-      "text": "Insurance company",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.insuranceExpiry",
-      "text": "Insurance expiry date",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.columns.location",
-      "text": "Location",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.qrTitle",
-      "text": "QR code",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.columns.email",
-      "text": "Email",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.columns.phone",
-      "text": "Phone",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.currentOwner",
-      "text": "current",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.photoFolders.arrival",
-      "text": "Arrival",
-      "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "International maritime identifier abbreviation."
       }
     },
     {
@@ -14524,7 +13555,8 @@
       "key": "adminNew.boats.photoFolders.inspection",
       "text": "Inspection",
       "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "French noun for this inspection photo category."
       }
     },
     {
@@ -14532,71 +13564,8 @@
       "key": "adminNew.boats.photoFolders.maintenance",
       "text": "Maintenance",
       "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.photoFolders.damage",
-      "text": "Damage",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.photoFolders.departure",
-      "text": "Departure",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.insurance",
-      "text": "Insurance",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.registration",
-      "text": "Registration",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.ce_certificate",
-      "text": "CE certificate",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.purchase_agreement",
-      "text": "Purchase agreement",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.survey",
-      "text": "Survey",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.docCategories.other",
-      "text": "Other",
-      "review": {
-        "decision": "unreviewed"
+        "decision": "intentional",
+        "reason": "French noun for work that keeps a boat operational."
       }
     },
     {
@@ -14617,256 +13586,8 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.boats.editTitle",
-      "text": "Edit boat",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.editSubtitle",
-      "text": "Update length, location and other details",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.transfer",
-      "text": "Transfer owner",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.transferSubtitle",
-      "text": "Move this boat to a new owner",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "adminNew.kassa.selectCustomer",
       "text": "Select customer",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.transferReason",
-      "text": "Reason",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.created",
-      "text": "Boat created",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.createFailed",
-      "text": "Creation failed",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.deleted",
-      "text": "Boat deleted",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.toasts.deleteFailed",
-      "text": "Delete failed",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.subtitle",
-      "text": "Manage boats, lengths and locations for storage and invoicing",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.totalBoats",
-      "text": "Total boats",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.boatsInStorage",
-      "text": "In storage",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.activeWorkOrders",
-      "text": "Active work orders",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.stats.openBalance",
-      "text": "Open balance",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.searchPlaceholder",
-      "text": "Search by boat name, owner or location",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.statusAll",
-      "text": "All statuses",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.statusInStorage",
-      "text": "In storage",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.statusWorkInProgress",
-      "text": "Work in progress",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.statusRegistered",
-      "text": "Registered",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.total",
-      "text": "{count} boats",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.loading",
-      "text": "Loading boats",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.emptyTitle",
-      "text": "No boats",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.emptyMessage",
-      "text": "No boats found yet.",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.new",
-      "text": "New boat",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.selectCustomer",
-      "text": "Select customer",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.type.motor",
-      "text": "Motor",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.type.sail",
-      "text": "Sail",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.type.other",
-      "text": "Other",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.lengthCm",
-      "text": "Length (cm)",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.fields.locationCode",
-      "text": "Location code",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.boats.confirmDelete",
-      "text": "Delete boat?",
       "review": {
         "decision": "unreviewed"
       }
@@ -15497,72 +14218,8 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.calculator.pricing.saved",
-      "text": "Pricing rule saved",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.deleted",
-      "text": "Pricing rule deleted",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.title",
-      "text": "Manage pricing",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.subtitle",
-      "text": "Pricing rules by boat length and service",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.empty",
-      "text": "No pricing rules yet.",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.newRule",
-      "text": "New pricing rule",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.selectProduct",
-      "text": "Select product",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "globalUx.pricing.type",
       "text": "Type",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.calculator.pricing.confirmDelete",
-      "text": "Delete this pricing rule?",
       "review": {
         "decision": "unreviewed"
       }
@@ -16635,14 +15292,6 @@
       "locale": "fr",
       "key": "adminNew.invoices.customerSearchHint",
       "text": "Search by name, email, phone or company (at least 2 characters)",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.loading",
-      "text": "Loading customers",
       "review": {
         "decision": "unreviewed"
       }
@@ -19273,312 +17922,8 @@
     },
     {
       "locale": "fr",
-      "key": "adminNew.customers.toasts.unblocked",
-      "text": "Customer unblocked",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.magicLinkSent",
-      "text": "Login link sent",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.magicLinkFailed",
-      "text": "Failed to send login link",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.created",
-      "text": "Customer created",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.createFailed",
-      "text": "Create failed",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
       "key": "admin.sidebar.customers",
       "text": "Customers",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.title",
-      "text": "Customers",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.subtitle",
-      "text": "Central customer overview for POS, storage and invoicing",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.total",
-      "text": "{count} customers total",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.results",
-      "text": "{count} results",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.searchPlaceholder",
-      "text": "Search by name, email, phone, boat",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.allLanguages",
-      "text": "All languages",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.allStatuses",
-      "text": "All statuses",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.statusActive",
-      "text": "Active",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.statusBlocked",
-      "text": "Blocked",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.neverLoggedIn",
-      "text": "Never logged in",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.cityPlaceholder",
-      "text": "City",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.countryPlaceholder",
-      "text": "Country",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.lastLoginAny",
-      "text": "Any login",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.lastLoginRecent",
-      "text": "Logged in recently",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.lastLoginNever",
-      "text": "Never logged in",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.emptyTitle",
-      "text": "No customers found",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.emptyMessage",
-      "text": "Adjust filters or create a new customer.",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.modal.title",
-      "text": "New customer",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.modal.subtitle",
-      "text": "Name and email are enough for quick registration.",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.gender.unspecified",
-      "text": "Unspecified",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.gender.male",
-      "text": "Male",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.gender.female",
-      "text": "Female",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.gender.other",
-      "text": "Other",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.localeDefault",
-      "text": "Default",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.search",
-      "text": "Search address",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.searchPlaceholder",
-      "text": "Start typing to search an address",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.street",
-      "text": "Street",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.houseNumber",
-      "text": "House number",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.postalCode",
-      "text": "Postal code",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.address.city",
-      "text": "City",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.toasts.blocked",
-      "text": "Customer blocked",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.blockReasonPlaceholder",
-      "text": "Why is this customer being blocked?",
-      "review": {
-        "decision": "unreviewed"
-      }
-    },
-    {
-      "locale": "fr",
-      "key": "adminNew.customers.impersonate",
-      "text": "Log in as",
       "review": {
         "decision": "unreviewed"
       }
@@ -24425,9 +22770,9 @@
     }
   ],
   "reviewSummary": {
-    "intentional": 14,
+    "intentional": 29,
     "translate": 0,
-    "unreviewed": 1828
+    "unreviewed": 1685
   },
   "strict": false
 }

@@ -50,6 +50,27 @@ test('employee reaches filtered rules, saves cents, and reloads the updated tari
   await expect(page.locator('tbody')).toContainText('777,50');
 });
 
+const pricingFields = {
+  nl: ['Geldig vanaf', 'Geldig tot en met', 'Duur compleet pakket / dienst (minuten)', 'Inbegrepen dienstcodes (komma gescheiden)'],
+  en: ['Valid from', 'Valid through', 'Full package or service duration (minutes)', 'Included service codes (comma-separated)'],
+  de: ['Gültig ab', 'Gültig bis einschließlich', 'Dauer des gesamten Pakets oder Dienstes (Minuten)', 'Enthaltene Dienstleistungscodes (durch Kommas getrennt)'],
+  fr: ['Valable à partir du', 'Valable jusqu’au (inclus)', 'Durée du forfait complet ou de la prestation (minutes)', 'Codes des prestations incluses (séparés par des virgules)'],
+};
+for (const [locale, fields] of Object.entries(pricingFields)) {
+  test(`${locale}: pricing edit fields translate and fit at mobile and desktop widths`, async ({ page }) => {
+    await pricingSession(page, ['pricing.view', 'pricing.update', 'products.view']);
+    await page.goto(`/${locale}/admin/calculator/pricing?service_code=STALL-WINTER&rule_id=winter-rule`);
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    for (const field of fields) await expect(dialog.getByLabel(field, { exact: true })).toBeVisible();
+    for (const width of [390, 1280, 1536]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect.poll(() => dialog.evaluate(element => element.getBoundingClientRect().width)).toBeLessThanOrEqual(width);
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    }
+  });
+}
+
 for (const allowed of [true, false]) {
   test(`public Winterstalling pricing link respects pricing.update (${allowed})`, async ({ page }) => {
     await pricingSession(page, allowed ? ['pricing.view', 'pricing.update'] : ['pricing.view']);

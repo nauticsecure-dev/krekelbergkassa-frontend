@@ -349,6 +349,7 @@ export function ImageEditModal({
   const [versions, setVersions] = React.useState<Array<{revision:number;created_at:string}>>([]);
   const [restoreRevision, setRestoreRevision] = React.useState('');
   const expectedRevision = React.useRef(0);
+  const [textRevision, setTextRevision] = React.useState<number | null>(null);
   const publication = React.useRef<{signature:string;id:string} | null>(null);
   const [mobileCrop, setMobileCrop] = React.useState<MediaBlock['crop_data']>(null);
   const [mobilePan, setMobilePan] = React.useState({x:0,y:0});
@@ -380,6 +381,7 @@ export function ImageEditModal({
     setAltBase(seededAlt);
     setSeoTitleValues(seededSeoTitle);
     setSeoTitleBase(seededSeoTitle);
+    setTextRevision(null);
     setPreviewSrc(block?.original_url || block?.image_url || fallbackSrc);
     try { setPendingProcessing(localStorage.getItem('cms-media-pending:'+blockKey)); } catch { setPendingProcessing(null); }
     expectedRevision.current = block?.revision ?? 0; publication.current = null;
@@ -451,6 +453,7 @@ export function ImageEditModal({
       setAltBase(alts);
       setSeoTitleValues(titles);
       setSeoTitleBase(titles);
+      setTextRevision(record?.revision ?? 0);
     }).catch((error) => {
       if (!cancelled) pushError(error, t('cms.loadError'));
     }).finally(() => {
@@ -554,6 +557,33 @@ export function ImageEditModal({
     } finally {
       setSaving(false);
       setUploading(false);
+    }
+  };
+
+  const altByLocale = changedByLocale(altValues, altBase);
+  const seoTitleByLocale = changedByLocale(seoTitleValues, seoTitleBase);
+  const hasTextEdits = Object.keys(altByLocale).length + Object.keys(seoTitleByLocale).length > 0;
+
+  const publishImageText = async () => {
+    if (saving || loadingMeta || textRevision === null || !hasTextEdits) return;
+    setSaving(true);
+    try {
+      const revision = await saveMediaMeta(blockKey, {
+        page: resolvedPage,
+        expected_revision: textRevision,
+        request_id: crypto.randomUUID(),
+        alt_by_locale: Object.keys(altByLocale).length ? altByLocale : undefined,
+        seo_title_by_locale: Object.keys(seoTitleByLocale).length ? seoTitleByLocale : undefined,
+      }, true);
+      if (expectedRevision.current === textRevision) expectedRevision.current = revision;
+      setTextRevision(revision);
+      setAltBase(altValues);
+      setSeoTitleBase(seoTitleValues);
+      push({ tone: 'success', title: t('cms.saved') });
+    } catch (error) {
+      pushError(error, t('cms.saveError'));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -819,6 +849,7 @@ export function ImageEditModal({
           </div>
           <input
             key={active}
+            data-cms-media-text="alt_by_locale"
             type="text"
             value={altValues[active] ?? ''}
             disabled={loadingMeta || saving}
@@ -832,6 +863,7 @@ export function ImageEditModal({
           </label>
           <input
             key={`seo-${active}`}
+            data-cms-media-text="seo_title_by_locale"
             type="text"
             value={seoTitleValues[active] ?? ''}
             disabled={loadingMeta || saving}
@@ -840,6 +872,10 @@ export function ImageEditModal({
             placeholder={t('cms.imageSeoTitle')}
             aria-label={`${t('cms.imageSeoTitle')} ${TAG_LABEL[active]}`}
           />
+          <Button type="button" variant="outline" className="mt-3" data-cms-publish-image-text
+            onClick={publishImageText} disabled={saving || loadingMeta || textRevision === null || !hasTextEdits}>
+            {t('cms.publishImageText')}
+          </Button>
         </div>
       </div>
       <ModalFooter onCancel={onClose} onSave={onSave} saving={saving || uploading || loadingMeta} />

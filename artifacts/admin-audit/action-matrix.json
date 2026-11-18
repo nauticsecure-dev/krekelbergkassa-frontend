@@ -50,6 +50,38 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/components/admin/AppointmentsPage.tsx:527:onConfirm={onConfirm}",
+      "source": {
+        "file": "src/components/admin/AppointmentsPage.tsx",
+        "line": 527,
+        "text": "onConfirm={onConfirm}"
+      },
+      "routes": [
+        "/admin/afspraken",
+        "/admin/planning"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/components/admin/AppointmentsPage.tsx:535:onConfirm={async () => {",
+      "source": {
+        "file": "src/components/admin/AppointmentsPage.tsx",
+        "line": 535,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/afspraken",
+        "/admin/planning"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/components/admin/AppointmentsPage.tsx:678:<Button size=\"sm\" variant=\"ghost\" onClick={() => {",
       "source": {
         "file": "src/components/admin/AppointmentsPage.tsx",
@@ -598,10 +630,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/cms/CmsModals.tsx:571:{pendingProcessing && <Button variant=\"outline\" disabled={saving} onClick={async () => {",
+      "id": "src/components/cms/CmsModals.tsx:601:{pendingProcessing && <Button variant=\"outline\" disabled={saving} onClick={async () => {",
       "source": {
         "file": "src/components/cms/CmsModals.tsx",
-        "line": 571,
+        "line": 601,
         "text": "{pendingProcessing && <Button variant=\"outline\" disabled={saving} onClick={async () => {"
       },
       "routes": [
@@ -676,10 +708,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/cms/CmsModals.tsx:585:<Button variant=\"outline\" onClick={() => {setRotation(v => (v + 270) % 360); setInitialCrop(undefined); setInitialPixels(undefined); setCrop({x:0,y:0}); setZoom(1);}}>{t('cms.rotateLeft')}</Button>",
+      "id": "src/components/cms/CmsModals.tsx:615:<Button variant=\"outline\" onClick={() => {setRotation(v => (v + 270) % 360); setInitialCrop(undefined); setInitialPixels(undefined); setCrop({x:0,y:0}); setZoom(1);}}>{t('cms.rotateLeft')}</Button>",
       "source": {
         "file": "src/components/cms/CmsModals.tsx",
-        "line": 585,
+        "line": 615,
         "text": "<Button variant=\"outline\" onClick={() => {setRotation(v => (v + 270) % 360); setInitialCrop(undefined); setInitialPixels(undefined); setCrop({x:0,y:0}); setZoom(1);}}>{t('cms.rotateLeft')}</Button>"
       },
       "routes": [
@@ -754,10 +786,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/cms/CmsModals.tsx:586:<Button variant=\"outline\" onClick={() => {setRotation(v => (v + 90) % 360); setInitialCrop(undefined); setInitialPixels(undefined); setCrop({x:0,y:0}); setZoom(1);}}>{t('cms.rotateRight')}</Button>",
+      "id": "src/components/cms/CmsModals.tsx:616:<Button variant=\"outline\" onClick={() => {setRotation(v => (v + 90) % 360); setInitialCrop(undefined); setInitialPixels(undefined); setCrop({x:0,y:0}); setZoom(1);}}>{t('cms.rotateRight')}</Button>",
       "source": {
         "file": "src/components/cms/CmsModals.tsx",
-        "line": 586,
+        "line": 616,
         "text": "<Button variant=\"outline\" onClick={() => {setRotation(v => (v + 90) % 360); setInitialCrop(undefined); setInitialPixels(undefined); setCrop({x:0,y:0}); setZoom(1);}}>{t('cms.rotateRight')}</Button>"
       },
       "routes": [
@@ -832,10 +864,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/cms/CmsModals.tsx:679:{selectedFileId && library.find(f => f.id === selectedFileId)?.usage.length === 0 && <Button variant=\"ghost\" onClick={async () => {",
+      "id": "src/components/cms/CmsModals.tsx:709:{selectedFileId && library.find(f => f.id === selectedFileId)?.usage.length === 0 && <Button variant=\"ghost\" onClick={async () => {",
       "source": {
         "file": "src/components/cms/CmsModals.tsx",
-        "line": 679,
+        "line": 709,
         "text": "{selectedFileId && library.find(f => f.id === selectedFileId)?.usage.length === 0 && <Button variant=\"ghost\" onClick={async () => {"
       },
       "routes": [
@@ -910,10 +942,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/cms/CmsModals.tsx:734:<Button variant=\"outline\" onClick={() => {setMobileRotation(v => (v + 90) % 360); resetMobileCrop();}}>{t('cms.rotateRight')} ({mobileRotation}°)</Button>",
+      "id": "src/components/cms/CmsModals.tsx:764:<Button variant=\"outline\" onClick={() => {setMobileRotation(v => (v + 90) % 360); resetMobileCrop();}}>{t('cms.rotateRight')} ({mobileRotation}°)</Button>",
       "source": {
         "file": "src/components/cms/CmsModals.tsx",
-        "line": 734,
+        "line": 764,
         "text": "<Button variant=\"outline\" onClick={() => {setMobileRotation(v => (v + 90) % 360); resetMobileCrop();}}>{t('cms.rotateRight')} ({mobileRotation}°)</Button>"
       },
       "routes": [
@@ -988,10 +1020,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/cms/CmsModals.tsx:756:onClick={event => {",
+      "id": "src/components/cms/CmsModals.tsx:786:onClick={event => {",
       "source": {
         "file": "src/components/cms/CmsModals.tsx",
-        "line": 756,
+        "line": 786,
         "text": "onClick={event => {"
       },
       "routes": [
@@ -1066,10 +1098,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/cms/CmsModals.tsx:776:<Button variant=\"ghost\" disabled={saving} onClick={() => {",
+      "id": "src/components/cms/CmsModals.tsx:806:<Button variant=\"ghost\" disabled={saving} onClick={() => {",
       "source": {
         "file": "src/components/cms/CmsModals.tsx",
-        "line": 776,
+        "line": 806,
         "text": "<Button variant=\"ghost\" disabled={saving} onClick={() => {"
       },
       "routes": [
@@ -1144,11 +1176,89 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/cms/CmsModals.tsx:806:<Button variant=\"outline\" disabled={!restoreRevision} onClick={async () => {",
+      "id": "src/components/cms/CmsModals.tsx:836:<Button variant=\"outline\" disabled={!restoreRevision} onClick={async () => {",
       "source": {
         "file": "src/components/cms/CmsModals.tsx",
-        "line": 806,
+        "line": 836,
         "text": "<Button variant=\"outline\" disabled={!restoreRevision} onClick={async () => {"
+      },
+      "routes": [
+        "/admin/afspraken",
+        "/admin/api-credentials",
+        "/admin/audit",
+        "/admin/beheer/dashboard-shortcuts",
+        "/admin/betalingen",
+        "/admin/beveiliging",
+        "/admin/boekhouding",
+        "/admin/boten/[id]/[slug]",
+        "/admin/boten/[id]",
+        "/admin/boten",
+        "/admin/bundels",
+        "/admin/calculator",
+        "/admin/calculator/pricing",
+        "/admin/diensten",
+        "/admin/facturen/[id]",
+        "/admin/facturen/import/[id]",
+        "/admin/facturen/import",
+        "/admin/facturen/nieuw/handmatig",
+        "/admin/facturen/nieuw",
+        "/admin/facturen",
+        "/admin/facturen/templates/editor",
+        "/admin/facturen/templates/layout",
+        "/admin/facturen/templates",
+        "/admin/forms/[id]",
+        "/admin/forms",
+        "/admin/gebruikers",
+        "/admin/incidenten",
+        "/admin/instellingen",
+        "/admin/kalender",
+        "/admin/kassa/analytics",
+        "/admin/kassa/dagafsluiting",
+        "/admin/kassa",
+        "/admin/klanten/[id]/[slug]",
+        "/admin/klanten/[id]",
+        "/admin/klanten/[id]/timeline",
+        "/admin/klanten",
+        "/admin/leveranciers/[id]/[slug]",
+        "/admin/leveranciers/[id]",
+        "/admin/leveranciers",
+        "/admin",
+        "/admin/planning",
+        "/admin/product-groepen",
+        "/admin/product-stats",
+        "/admin/producten/[id]/[slug]",
+        "/admin/producten/[id]",
+        "/admin/producten/nieuw",
+        "/admin/producten",
+        "/admin/rapportages",
+        "/admin/reminders",
+        "/admin/scan-logs",
+        "/admin/stalling/[id]/[slug]",
+        "/admin/stalling/[id]",
+        "/admin/stalling",
+        "/admin/stalling/werfcanvas",
+        "/admin/sync",
+        "/admin/systeem",
+        "/admin/systeembeheer",
+        "/admin/taken",
+        "/admin/tarieven/makelaardij",
+        "/admin/timeline",
+        "/admin/verkopen/[id]",
+        "/admin/verkopen",
+        "/admin/werkorders/[id]",
+        "/admin/werkorders"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/components/cms/CmsModals.tsx:876:onClick={publishImageText} disabled={saving || loadingMeta || textRevision === null || !hasTextEdits}>",
+      "source": {
+        "file": "src/components/cms/CmsModals.tsx",
+        "line": 876,
+        "text": "onClick={publishImageText} disabled={saving || loadingMeta || textRevision === null || !hasTextEdits}>"
       },
       "routes": [
         "/admin/afspraken",
@@ -1561,6 +1671,21 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/api-credentials/page.tsx:403:onConfirm={onDelete}",
+      "source": {
+        "file": "src/app/[locale]/admin/api-credentials/page.tsx",
+        "line": 403,
+        "text": "onConfirm={onDelete}"
+      },
+      "routes": [
+        "/admin/api-credentials"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/audit/page.tsx:300:<Button variant=\"ghost\" size=\"sm\" onClick={() => updateFilters({ group_id: null, page: null })}>",
       "source": {
         "file": "src/app/[locale]/admin/audit/page.tsx",
@@ -1826,6 +1951,21 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/betalingen/page.tsx:156:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/betalingen/page.tsx",
+        "line": 156,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/betalingen"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/beveiliging/page.tsx:95:onClick={() => void security.refetch()}",
       "source": {
         "file": "src/app/[locale]/admin/beveiliging/page.tsx",
@@ -1897,10 +2037,25 @@
         "/admin/boten/[id]/[slug]",
         "/admin/boten/[id]"
       ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
+      "classification": "open edit boat dialog",
+      "uiVisibility": "pass: reader control hidden; writer control usable",
+      "directApiDenial": "n/a: opening the dialog sends no mutation request",
+      "authorizedExecution": "pass: writer opened the edit dialog",
+      "permission": "boats.write",
+      "evidence": {
+        "route": "/admin/boten",
+        "title": "boat create, edit and delete enforce permissions and persist through reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIiwiZGVsZXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\fixtures.sqlite"
+      }
     },
     {
       "id": "src/app/[locale]/admin/boten/[id]/page.tsx:350:onClick={() => setTab(tb.id)}",
@@ -2009,10 +2164,25 @@
         "/admin/boten/[id]/[slug]",
         "/admin/boten/[id]"
       ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
+      "classification": "update boat",
+      "uiVisibility": "pass: reader control hidden; writer control usable",
+      "directApiDenial": "pass: reader PATCH returned 403",
+      "authorizedExecution": "pass: writer updated a boat and verified persistence",
+      "permission": "boats.write",
+      "evidence": {
+        "route": "/admin/boten",
+        "title": "boat create, edit and delete enforce permissions and persist through reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIiwiZGVsZXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\fixtures.sqlite"
+      }
     },
     {
       "id": "src/app/[locale]/admin/boten/[id]/page.tsx:824:<Button type=\"button\" variant=\"ghost\" onClick={() => setShowEdit(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>",
@@ -2020,6 +2190,38 @@
         "file": "src/app/[locale]/admin/boten/[id]/page.tsx",
         "line": 824,
         "text": "<Button type=\"button\" variant=\"ghost\" onClick={() => setShowEdit(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>"
+      },
+      "routes": [
+        "/admin/boten/[id]/[slug]",
+        "/admin/boten/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/boten/[id]/page.tsx:833:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/boten/[id]/page.tsx",
+        "line": 833,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/boten/[id]/[slug]",
+        "/admin/boten/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/boten/[id]/page.tsx:856:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/boten/[id]/page.tsx",
+        "line": 856,
+        "text": "onConfirm={async () => {"
       },
       "routes": [
         "/admin/boten/[id]/[slug]",
@@ -2072,10 +2274,25 @@
       "routes": [
         "/admin/boten"
       ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
+      "classification": "open create boat dialog",
+      "uiVisibility": "pass: reader control disabled; writer control usable",
+      "directApiDenial": "n/a: opening the dialog sends no mutation request",
+      "authorizedExecution": "pass: writer opened the create dialog",
+      "permission": "boats.write",
+      "evidence": {
+        "route": "/admin/boten",
+        "title": "boat create, edit and delete enforce permissions and persist through reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIiwiZGVsZXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\fixtures.sqlite"
+      }
     },
     {
       "id": "src/app/[locale]/admin/boten/page.tsx:325:onClick={() => setDeleteTarget(boat.id)}",
@@ -2087,10 +2304,25 @@
       "routes": [
         "/admin/boten"
       ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
+      "classification": "open boat delete confirmation",
+      "uiVisibility": "pass: reader control disabled; writer control usable",
+      "directApiDenial": "n/a: opening the dialog sends no mutation request",
+      "authorizedExecution": "pass: writer opened the confirmation and completed the delete workflow",
+      "permission": "boats.delete",
+      "evidence": {
+        "route": "/admin/boten",
+        "title": "boat create, edit and delete enforce permissions and persist through reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIiwiZGVsZXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\fixtures.sqlite"
+      }
     },
     {
       "id": "src/app/[locale]/admin/boten/page.tsx:341:<form onSubmit={onCreate}>",
@@ -2102,10 +2334,25 @@
       "routes": [
         "/admin/boten"
       ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
+      "classification": "create boat",
+      "uiVisibility": "pass: reader control disabled; writer control usable",
+      "directApiDenial": "pass: reader POST returned 403",
+      "authorizedExecution": "pass: writer created a boat and verified persistence",
+      "permission": "boats.write",
+      "evidence": {
+        "route": "/admin/boten",
+        "title": "boat create, edit and delete enforce permissions and persist through reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIiwiZGVsZXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\fixtures.sqlite"
+      }
     },
     {
       "id": "src/app/[locale]/admin/boten/page.tsx:468:<Button disabled={!canWrite} type=\"button\" variant=\"ghost\" onClick={() => setShowCreate(false)}>",
@@ -2121,6 +2368,36 @@
       "uiVisibility": "pending",
       "directApiDenial": "pending",
       "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/boten/page.tsx:481:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/boten/page.tsx",
+        "line": 481,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/boten"
+      ],
+      "classification": "delete boat",
+      "uiVisibility": "pass: reader control disabled; writer control usable",
+      "directApiDenial": "pass: reader DELETE returned 403",
+      "authorizedExecution": "pass: writer deleted a boat and verified soft-delete persistence",
+      "permission": "boats.delete",
+      "evidence": {
+        "route": "/admin/boten",
+        "title": "boat create, edit and delete enforce permissions and persist through reload",
+        "status": "passed",
+        "attachments": [
+          {
+            "name": "database-persistence",
+            "contentType": "application/json",
+            "body": "eyJlbmdpbmUiOiJpc29sYXRlZCBTUUxpdGUgZmlsZSIsImFjdGlvbnMiOlsiY3JlYXRlIiwidXBkYXRlIiwiZGVsZXRlIl0sImJyb3dzZXJSZWxvYWQiOnRydWUsImFwaVJlYWRiYWNrIjp0cnVlLCJkYXRhYmFzZVJlYWRiYWNrIjp0cnVlfQ=="
+          }
+        ],
+        "report": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\browser-results.json",
+        "database": "C:\\wamp64\\www\\krekelbergkassa\\_audit\\global-ux-live-kRgInj\\fixtures.sqlite"
+      }
     },
     {
       "id": "src/app/[locale]/admin/bundels/page.tsx:164:<Button variant=\"gold\" size=\"sm\" leftIcon={<Plus className=\"h-4 w-4\" />} onClick={openNew}>",
@@ -2278,6 +2555,21 @@
         "file": "src/app/[locale]/admin/bundels/page.tsx",
         "line": 367,
         "text": "<Button type=\"button\" variant=\"ghost\" onClick={() => setShowForm(false)}>"
+      },
+      "routes": [
+        "/admin/bundels"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/bundels/page.tsx:380:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/bundels/page.tsx",
+        "line": 380,
+        "text": "onConfirm={async () => {"
       },
       "routes": [
         "/admin/bundels"
@@ -2633,6 +2925,51 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/calculator/page.tsx:1060:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/calculator/page.tsx",
+        "line": 1060,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/calculator"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/calculator/page.tsx:1085:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/calculator/page.tsx",
+        "line": 1085,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/calculator"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/calculator/page.tsx:1104:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/calculator/page.tsx",
+        "line": 1104,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/calculator"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/calculator/pricing/page.tsx:228:{canUpdatePricing ? <Button variant=\"gold\" size=\"sm\" leftIcon={<Plus className=\"h-4 w-4\" />} onClick={() => { setEditingRule(null); setShowCreate(true); }}>",
       "source": {
         "file": "src/app/[locale]/admin/calculator/pricing/page.tsx",
@@ -2698,6 +3035,21 @@
         "file": "src/app/[locale]/admin/calculator/pricing/page.tsx",
         "line": 390,
         "text": "<Button type=\"button\" variant=\"ghost\" onClick={() => setShowCreate(false)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>"
+      },
+      "routes": [
+        "/admin/calculator/pricing"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/calculator/pricing/page.tsx:399:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/calculator/pricing/page.tsx",
+        "line": 399,
+        "text": "onConfirm={async () => {"
       },
       "routes": [
         "/admin/calculator/pricing"
@@ -3023,6 +3375,21 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/facturen/[id]/page.tsx:974:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/[id]/page.tsx",
+        "line": 974,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/facturen/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/facturen/[id]/page.tsx:988:<form className=\"p-6\" onSubmit={onSubmitCredit}>",
       "source": {
         "file": "src/app/[locale]/admin/facturen/[id]/page.tsx",
@@ -3058,6 +3425,36 @@
         "file": "src/app/[locale]/admin/facturen/[id]/page.tsx",
         "line": 1055,
         "text": "<Button type=\"button\" variant=\"ghost\" onClick={() => setShowCredit(false)}>"
+      },
+      "routes": [
+        "/admin/facturen/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/facturen/[id]/page.tsx:1072:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/[id]/page.tsx",
+        "line": 1072,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/facturen/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/facturen/[id]/page.tsx:1088:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/[id]/page.tsx",
+        "line": 1088,
+        "text": "onConfirm={async () => {"
       },
       "routes": [
         "/admin/facturen/[id]"
@@ -3208,6 +3605,51 @@
         "file": "src/app/[locale]/admin/facturen/import/[id]/page.tsx",
         "line": 467,
         "text": "onClick={() => void act("
+      },
+      "routes": [
+        "/admin/facturen/import/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/facturen/import/[id]/page.tsx:632:onConfirm={() => act(t('adminNew.invoiceImports.toasts.approved'), () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/import/[id]/page.tsx",
+        "line": 632,
+        "text": "onConfirm={() => act(t('adminNew.invoiceImports.toasts.approved'), () => {"
+      },
+      "routes": [
+        "/admin/facturen/import/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/facturen/import/[id]/page.tsx:659:onConfirm={() => act(t('adminNew.invoiceImports.toasts.rejected'), () => rejectM.mutate(), () => setRejectOpen(false))}",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/import/[id]/page.tsx",
+        "line": 659,
+        "text": "onConfirm={() => act(t('adminNew.invoiceImports.toasts.rejected'), () => rejectM.mutate(), () => setRejectOpen(false))}"
+      },
+      "routes": [
+        "/admin/facturen/import/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/facturen/import/[id]/page.tsx:671:onConfirm={() => act('Werkbon gekoppeld', () => linkWorkbonM.mutate(linkWorkbonId), () => setLinkWorkbonOpen(false))}",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/import/[id]/page.tsx",
+        "line": 671,
+        "text": "onConfirm={() => act('Werkbon gekoppeld', () => linkWorkbonM.mutate(linkWorkbonId), () => setLinkWorkbonOpen(false))}"
       },
       "routes": [
         "/admin/facturen/import/[id]"
@@ -3508,6 +3950,51 @@
         "file": "src/app/[locale]/admin/facturen/import/page.tsx",
         "line": 606,
         "text": "<Button variant=\"outline\" size=\"sm\" disabled={page >= lastPage} onClick={() => setPage((p) => p + 1)}>"
+      },
+      "routes": [
+        "/admin/facturen/import"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/facturen/import/page.tsx:618:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/import/page.tsx",
+        "line": 618,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/facturen/import"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/facturen/import/page.tsx:635:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/import/page.tsx",
+        "line": 635,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/facturen/import"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/facturen/import/page.tsx:651:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/import/page.tsx",
+        "line": 651,
+        "text": "onConfirm={async () => {"
       },
       "routes": [
         "/admin/facturen/import"
@@ -3865,6 +4352,21 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/facturen/templates/page.tsx:216:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/facturen/templates/page.tsx",
+        "line": 216,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/facturen/templates"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/forms/[id]/page.tsx:232:<form onSubmit={onSubmit}>",
       "source": {
         "file": "src/app/[locale]/admin/forms/[id]/page.tsx",
@@ -4060,6 +4562,21 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/forms/[id]/page.tsx:483:onConfirm={onDeleteQuestion}",
+      "source": {
+        "file": "src/app/[locale]/admin/forms/[id]/page.tsx",
+        "line": 483,
+        "text": "onConfirm={onDeleteQuestion}"
+      },
+      "routes": [
+        "/admin/forms/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/forms/page.tsx:133:<Button variant=\"gold\" size=\"sm\" leftIcon={<Plus className=\"h-4 w-4\" />} onClick={() => setShowCreate(true)}>",
       "source": {
         "file": "src/app/[locale]/admin/forms/page.tsx",
@@ -4125,6 +4642,21 @@
         "file": "src/app/[locale]/admin/forms/page.tsx",
         "line": 270,
         "text": "<Button variant=\"outline\" size=\"sm\" type=\"button\" onClick={() => setShowCreate(false)}><TranslatedText textKey=\"siteCopy.35c0046e79ff1fcd\" fallbackText={\"Annuleren\"} /></Button>"
+      },
+      "routes": [
+        "/admin/forms"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/forms/page.tsx:283:onConfirm={onDelete}",
+      "source": {
+        "file": "src/app/[locale]/admin/forms/page.tsx",
+        "line": 283,
+        "text": "onConfirm={onDelete}"
       },
       "routes": [
         "/admin/forms"
@@ -4275,6 +4807,51 @@
         "file": "src/app/[locale]/admin/gebruikers/page.tsx",
         "line": 455,
         "text": "<Button type=\"button\" variant=\"ghost\" onClick={() => setEditTarget(null)}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>"
+      },
+      "routes": [
+        "/admin/gebruikers"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/gebruikers/page.tsx:466:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/gebruikers/page.tsx",
+        "line": 466,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/gebruikers"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/gebruikers/page.tsx:484:onConfirm={onBlock}",
+      "source": {
+        "file": "src/app/[locale]/admin/gebruikers/page.tsx",
+        "line": 484,
+        "text": "onConfirm={onBlock}"
+      },
+      "routes": [
+        "/admin/gebruikers"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/gebruikers/page.tsx:511:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/gebruikers/page.tsx",
+        "line": 511,
+        "text": "onConfirm={async () => {"
       },
       "routes": [
         "/admin/gebruikers"
@@ -4997,10 +5574,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardHistory.tsx:44:<form className=\"flex flex-wrap gap-2\" onSubmit={(event) => {",
+      "id": "src/components/admin/yard/YardHistory.tsx:47:<form className=\"flex flex-wrap gap-2\" onSubmit={(event) => {",
       "source": {
         "file": "src/components/admin/yard/YardHistory.tsx",
-        "line": 44,
+        "line": 47,
         "text": "<form className=\"flex flex-wrap gap-2\" onSubmit={(event) => {"
       },
       "routes": [
@@ -5016,10 +5593,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardHistory.tsx:93:<button className={control} disabled={page === 1} onClick={() => setPage(page - 1)}><TranslatedText textKey=\"siteCopy.6c6f27897b38c6d8\" fallbackText={\"Vorige\"} /></button>",
+      "id": "src/components/admin/yard/YardHistory.tsx:96:<button className={control} disabled={page === 1} onClick={() => setPage(page - 1)}><TranslatedText textKey=\"siteCopy.6c6f27897b38c6d8\" fallbackText={\"Vorige\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardHistory.tsx",
-        "line": 93,
+        "line": 96,
         "text": "<button className={control} disabled={page === 1} onClick={() => setPage(page - 1)}><TranslatedText textKey=\"siteCopy.6c6f27897b38c6d8\" fallbackText={\"Vorige\"} /></button>"
       },
       "routes": [
@@ -5035,10 +5612,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardHistory.tsx:95:<button className={control} disabled={page >= result.last_page} onClick={() => setPage(page + 1)}><TranslatedText textKey=\"siteCopy.3b1a8ef6826c1965\" fallbackText={\"Volgende\"} /></button>",
+      "id": "src/components/admin/yard/YardHistory.tsx:98:<button className={control} disabled={page >= result.last_page} onClick={() => setPage(page + 1)}><TranslatedText textKey=\"siteCopy.3b1a8ef6826c1965\" fallbackText={\"Volgende\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardHistory.tsx",
-        "line": 95,
+        "line": 98,
         "text": "<button className={control} disabled={page >= result.last_page} onClick={() => setPage(page + 1)}><TranslatedText textKey=\"siteCopy.3b1a8ef6826c1965\" fallbackText={\"Volgende\"} /></button>"
       },
       "routes": [
@@ -5534,6 +6111,21 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/kassa/page.tsx:1406:onConfirm={() => { if (!basketLocked) { setCart([]); setNote(\"\"); setPrefillLocked(false); setAdjustEnabled(false); setAdjustedTotal(\"\"); setAdjustmentReason(\"\"); } setShowClear(false); }} />",
+      "source": {
+        "file": "src/app/[locale]/admin/kassa/page.tsx",
+        "line": 1406,
+        "text": "onConfirm={() => { if (!basketLocked) { setCart([]); setNote(\"\"); setPrefillLocked(false); setAdjustEnabled(false); setAdjustedTotal(\"\"); setAdjustmentReason(\"\"); } setShowClear(false); }} />"
+      },
+      "routes": [
+        "/admin/kassa"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/kassa/page.tsx:1409:<form onSubmit={(event) => {",
       "source": {
         "file": "src/app/[locale]/admin/kassa/page.tsx",
@@ -6014,6 +6606,21 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/kassa/page.tsx:2171:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/kassa/page.tsx",
+        "line": 2171,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/kassa"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/kassa/page.tsx:2211:onClick={onClick}",
       "source": {
         "file": "src/app/[locale]/admin/kassa/page.tsx",
@@ -6463,6 +7070,54 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/klanten/[id]/page.tsx:1251:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/klanten/[id]/page.tsx",
+        "line": 1251,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/klanten/[id]/[slug]",
+        "/admin/klanten/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/klanten/[id]/page.tsx:1290:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/klanten/[id]/page.tsx",
+        "line": 1290,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/klanten/[id]/[slug]",
+        "/admin/klanten/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/klanten/[id]/page.tsx:1306:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/klanten/[id]/page.tsx",
+        "line": 1306,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/klanten/[id]/[slug]",
+        "/admin/klanten/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/klanten/[id]/page.tsx:1325:onSubmit={(e) => {",
       "source": {
         "file": "src/app/[locale]/admin/klanten/[id]/page.tsx",
@@ -6710,6 +7365,21 @@
         "file": "src/app/[locale]/admin/klanten/page.tsx",
         "line": 659,
         "text": "<Button type=\"button\" variant=\"ghost\" onClick={() => { setBlockTarget(null); setBlockReason(''); }}>"
+      },
+      "routes": [
+        "/admin/klanten"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/klanten/page.tsx:672:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/klanten/page.tsx",
+        "line": 672,
+        "text": "onConfirm={async () => {"
       },
       "routes": [
         "/admin/klanten"
@@ -7194,6 +7864,21 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/product-groepen/page.tsx:468:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/product-groepen/page.tsx",
+        "line": 468,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/product-groepen"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/producten/[id]/page.tsx:208:<Button variant=\"outline\" size=\"sm\" leftIcon={<Plus className=\"h-4 w-4\" />} onClick={openCreate}>",
       "source": {
         "file": "src/app/[locale]/admin/producten/[id]/page.tsx",
@@ -7263,6 +7948,22 @@
         "file": "src/app/[locale]/admin/producten/[id]/page.tsx",
         "line": 346,
         "text": "<Button type=\"button\" variant=\"ghost\" onClick={() => setOpen(false)} disabled={busy}>{<TranslatedText textKey={'adminNew.common.cancel'} />}</Button>"
+      },
+      "routes": [
+        "/admin/producten/[id]/[slug]",
+        "/admin/producten/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/producten/[id]/page.tsx:359:onConfirm={onDelete}",
+      "source": {
+        "file": "src/app/[locale]/admin/producten/[id]/page.tsx",
+        "line": 359,
+        "text": "onConfirm={onDelete}"
       },
       "routes": [
         "/admin/producten/[id]/[slug]",
@@ -7402,6 +8103,22 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/producten/[id]/page.tsx:934:onConfirm={onDelete}",
+      "source": {
+        "file": "src/app/[locale]/admin/producten/[id]/page.tsx",
+        "line": 934,
+        "text": "onConfirm={onDelete}"
+      },
+      "routes": [
+        "/admin/producten/[id]/[slug]",
+        "/admin/producten/[id]"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/components/admin/ProductForm.tsx:265:onClick={() => setShowScanner(true)}",
       "source": {
         "file": "src/components/admin/ProductForm.tsx",
@@ -7486,6 +8203,21 @@
         "file": "src/app/[locale]/admin/producten/page.tsx",
         "line": 289,
         "text": "onClick={() => setDeleteTarget(row.id)}"
+      },
+      "routes": [
+        "/admin/producten"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/producten/page.tsx:312:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/producten/page.tsx",
+        "line": 312,
+        "text": "onConfirm={async () => {"
       },
       "routes": [
         "/admin/producten"
@@ -8288,6 +9020,36 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/stalling/page.tsx:1277:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/stalling/page.tsx",
+        "line": 1277,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/stalling"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/stalling/page.tsx:1294:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/stalling/page.tsx",
+        "line": 1294,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/stalling"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/components/admin/WerfcanvasLink.tsx:18:onClick={() => {",
       "source": {
         "file": "src/components/admin/WerfcanvasLink.tsx",
@@ -8544,11 +9306,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardCanvas.tsx:947:{yard?.can_manage_photos && <button className={control} aria-pressed={tab === 'photos'} onClick={() => { if (canNavigate()) setTab('photos'); }}>{photoCopy('title')}</button>}",
+      "id": "src/components/admin/yard/YardCanvas.tsx:947:{yard?.can_manage_photos && <button className={`${control} ${tab === 'photos' ? '!bg-blue-700' : ''}`} aria-pressed={tab === 'photos'} onClick={() => { if (canNavigate()) setTab('photos'); }}>{photoCopy('title')}</button>}",
       "source": {
         "file": "src/components/admin/yard/YardCanvas.tsx",
         "line": 947,
-        "text": "{yard?.can_manage_photos && <button className={control} aria-pressed={tab === 'photos'} onClick={() => { if (canNavigate()) setTab('photos'); }}>{photoCopy('title')}</button>}"
+        "text": "{yard?.can_manage_photos && <button className={`${control} ${tab === 'photos' ? '!bg-blue-700' : ''}`} aria-pressed={tab === 'photos'} onClick={() => { if (canNavigate()) setTab('photos'); }}>{photoCopy('title')}</button>}"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -9879,11 +10641,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoSessions.tsx:255:{creating && <form onSubmit={create} className=\"grid gap-3 rounded-lg border border-slate-700 p-4 sm:grid-cols-2\">",
+      "id": "src/components/admin/yard/YardPhotoSessions.tsx:255:{creating && <form onSubmit={create} className=\"grid gap-3 rounded-lg border border-navy-200 bg-white p-4 sm:grid-cols-2\">",
       "source": {
         "file": "src/components/admin/yard/YardPhotoSessions.tsx",
         "line": 255,
-        "text": "{creating && <form onSubmit={create} className=\"grid gap-3 rounded-lg border border-slate-700 p-4 sm:grid-cols-2\">"
+        "text": "{creating && <form onSubmit={create} className=\"grid gap-3 rounded-lg border border-navy-200 bg-white p-4 sm:grid-cols-2\">"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -10059,25 +10821,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:171:<button type=\"button\" className={`${control} !text-red-300`} disabled={busy || deleting} onClick={onRemove}><TranslatedText textKey=\"siteCopy.cf2ac9766c096588\" fallbackText={\"Foto verwijderen\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:212:onClick={(event) => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 171,
-        "text": "<button type=\"button\" className={`${control} !text-red-300`} disabled={busy || deleting} onClick={onRemove}><TranslatedText textKey=\"siteCopy.cf2ac9766c096588\" fallbackText={\"Foto verwijderen\"} /></button>"
-      },
-      "routes": [
-        "/admin/stalling/werfcanvas"
-      ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
-    },
-    {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:182:onClick={(event) => {",
-      "source": {
-        "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 182,
+        "line": 212,
         "text": "onClick={(event) => {"
       },
       "routes": [
@@ -10089,11 +10836,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:194:className={drawing ? 'pointer-events-none' : 'cursor-pointer'} onClick={() => setSelected(index)} />)}",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:228:return <g key={id} className={drawing ? 'pointer-events-none' : 'cursor-pointer'} onClick={() => setSelected(index)}>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 194,
-        "text": "className={drawing ? 'pointer-events-none' : 'cursor-pointer'} onClick={() => setSelected(index)} />)}"
+        "line": 228,
+        "text": "return <g key={id} className={drawing ? 'pointer-events-none' : 'cursor-pointer'} onClick={() => setSelected(index)}>"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -10104,40 +10851,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:203:aria-pressed={view === mode} onClick={() => setView(mode)}>{label}</button>)}",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:241:<button className={control} aria-label=\"Inzoomen\" disabled={zoom >= 3} onClick={() => setZoom(zoom + 0.5)}>+</button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 203,
-        "text": "aria-pressed={view === mode} onClick={() => setView(mode)}>{label}</button>)}"
-      },
-      "routes": [
-        "/admin/stalling/werfcanvas"
-      ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
-    },
-    {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:204:<button className={control} aria-label=\"Uitzoomen\" disabled={zoom <= 1} onClick={() => setZoom(zoom - 0.5)}>−</button>",
-      "source": {
-        "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 204,
-        "text": "<button className={control} aria-label=\"Uitzoomen\" disabled={zoom <= 1} onClick={() => setZoom(zoom - 0.5)}>−</button>"
-      },
-      "routes": [
-        "/admin/stalling/werfcanvas"
-      ],
-      "classification": "needs review",
-      "uiVisibility": "pending",
-      "directApiDenial": "pending",
-      "authorizedExecution": "pending"
-    },
-    {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:205:<button className={control} aria-label=\"Inzoomen\" disabled={zoom >= 3} onClick={() => setZoom(zoom + 0.5)}>+</button>",
-      "source": {
-        "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 205,
+        "line": 241,
         "text": "<button className={control} aria-label=\"Inzoomen\" disabled={zoom >= 3} onClick={() => setZoom(zoom + 0.5)}>+</button>"
       },
       "routes": [
@@ -10149,10 +10866,40 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:220:onClick={() => change(selected, { ...detection, status: 'approved' })}><TranslatedText textKey=\"siteCopy.32a3611bb358e472\" fallbackText={\"Goedkeuren\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:242:<button className={control} aria-label=\"Uitzoomen\" disabled={zoom <= 1} onClick={() => setZoom(zoom - 0.5)}>−</button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 220,
+        "line": 242,
+        "text": "<button className={control} aria-label=\"Uitzoomen\" disabled={zoom <= 1} onClick={() => setZoom(zoom - 0.5)}>−</button>"
+      },
+      "routes": [
+        "/admin/stalling/werfcanvas"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:250:{onRemove && <button type=\"button\" className={`${control} mt-2 !text-red-300`} disabled={busy || deleting} onClick={onRemove}><TranslatedText textKey=\"siteCopy.cf2ac9766c096588\" fallbackText={\"Foto verwijderen\"} /></button>}",
+      "source": {
+        "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
+        "line": 250,
+        "text": "{onRemove && <button type=\"button\" className={`${control} mt-2 !text-red-300`} disabled={busy || deleting} onClick={onRemove}><TranslatedText textKey=\"siteCopy.cf2ac9766c096588\" fallbackText={\"Foto verwijderen\"} /></button>}"
+      },
+      "routes": [
+        "/admin/stalling/werfcanvas"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:268:onClick={() => change(selected, { ...detection, status: 'approved' })}><TranslatedText textKey=\"siteCopy.32a3611bb358e472\" fallbackText={\"Goedkeuren\"} /></button>",
+      "source": {
+        "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
+        "line": 268,
         "text": "onClick={() => change(selected, { ...detection, status: 'approved' })}><TranslatedText textKey=\"siteCopy.32a3611bb358e472\" fallbackText={\"Goedkeuren\"} /></button>"
       },
       "routes": [
@@ -10164,10 +10911,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:221:<button className={control} disabled={busy || !!drawing || !loaded} onClick={() => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:269:<button className={control} disabled={busy || !!drawing || !loaded} onClick={() => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 221,
+        "line": 269,
         "text": "<button className={control} disabled={busy || !!drawing || !loaded} onClick={() => {"
       },
       "routes": [
@@ -10179,10 +10926,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:232:onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey=\"siteCopy.5ce3c1a4a26afdba\" fallbackText={\"Afwijzen\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:274:onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey=\"siteCopy.5ce3c1a4a26afdba\" fallbackText={\"Afwijzen\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 232,
+        "line": 274,
         "text": "onClick={() => change(selected, { ...detection, status: 'rejected' })}><TranslatedText textKey=\"siteCopy.5ce3c1a4a26afdba\" fallbackText={\"Afwijzen\"} /></button>"
       },
       "routes": [
@@ -10194,10 +10941,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:233:<button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:281:<button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 233,
+        "line": 281,
         "text": "<button className={control} disabled={!loaded || dirty || busy || detection.status !== 'approved'} onClick={async () => {"
       },
       "routes": [
@@ -10209,10 +10956,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:260:<button className={control} disabled={drawing.points.length < 3} onClick={() => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:308:<button className={control} disabled={drawing.points.length < 3} onClick={() => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 260,
+        "line": 308,
         "text": "<button className={control} disabled={drawing.points.length < 3} onClick={() => {"
       },
       "routes": [
@@ -10224,10 +10971,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:265:<button className={control} disabled={!drawing.points.length} onClick={() =>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:313:<button className={control} disabled={!drawing.points.length} onClick={() =>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 265,
+        "line": 313,
         "text": "<button className={control} disabled={!drawing.points.length} onClick={() =>"
       },
       "routes": [
@@ -10239,10 +10986,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:267:<button className={control} onClick={() => setDrawing(undefined)}><TranslatedText textKey=\"siteCopy.fd3604f2ec8ebb1a\" fallbackText={\"Annuleren\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:315:<button className={control} onClick={() => setDrawing(undefined)}><TranslatedText textKey=\"siteCopy.fd3604f2ec8ebb1a\" fallbackText={\"Annuleren\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 267,
+        "line": 315,
         "text": "<button className={control} onClick={() => setDrawing(undefined)}><TranslatedText textKey=\"siteCopy.fd3604f2ec8ebb1a\" fallbackText={\"Annuleren\"} /></button>"
       },
       "routes": [
@@ -10254,10 +11001,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:269:</> : <button className={control} disabled={busy || !loaded || review.detections.length >= 300} onClick={() => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:317:</> : <button className={control} disabled={busy || !loaded || review.detections.length >= 300} onClick={() => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 269,
+        "line": 317,
         "text": "</> : <button className={control} disabled={busy || !loaded || review.detections.length >= 300} onClick={() => {"
       },
       "routes": [
@@ -10269,10 +11016,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:279:<button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey=\"siteCopy.13e5170f2b105372\" fallbackText={\"Review opslaan\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:328:<button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey=\"siteCopy.13e5170f2b105372\" fallbackText={\"Review opslaan\"} /></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 279,
+        "line": 328,
         "text": "<button className={control} disabled={busy || !dirty || !!drawing} onClick={() => void submit(false)}><TranslatedText textKey=\"siteCopy.13e5170f2b105372\" fallbackText={\"Review opslaan\"} /></button>"
       },
       "routes": [
@@ -10284,11 +11031,11 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:288:disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey=\"siteCopy.3b185da8cd0488a3\" fallbackText={\"Lege werf genereren\"} /></button>",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:337:disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey=\"siteCopy.3b185da8cd0488a3\" fallbackText={\"Lege werf genereren\"} /><span aria-hidden=\"true\" className=\"ml-2\">→</span></button>",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 288,
-        "text": "disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey=\"siteCopy.3b185da8cd0488a3\" fallbackText={\"Lege werf genereren\"} /></button>"
+        "line": 337,
+        "text": "disabled={busy || !!drawing || !!counts.pending || (!!ground && !groundConfirmed)} onClick={() => void submit(true)}><TranslatedText textKey=\"siteCopy.3b185da8cd0488a3\" fallbackText={\"Lege werf genereren\"} /><span aria-hidden=\"true\" className=\"ml-2\">→</span></button>"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -10299,10 +11046,10 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:290:{renderJob && <button type=\"button\" className={control} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:339:{renderJob && <button type=\"button\" className={control} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 290,
+        "line": 339,
         "text": "{renderJob && <button type=\"button\" className={control} onClick={async () => {"
       },
       "routes": [
@@ -10314,11 +11061,26 @@
       "authorizedExecution": "pending"
     },
     {
-      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:295:{[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {",
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:344:{[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {",
       "source": {
         "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
-        "line": 295,
+        "line": 344,
         "text": "{[false, ...(onPublish ? [true] : [])].map(publish => <button key={String(publish)} className={control} disabled={busy || !!drawing} onClick={async () => {"
+      },
+      "routes": [
+        "/admin/stalling/werfcanvas"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/components/admin/yard/YardPhotoWorkflow.tsx:368:disabled={!!drawing || (processed ? !output : !photoUrl)} aria-pressed={view === mode} onClick={() => setView(mode)}>",
+      "source": {
+        "file": "src/components/admin/yard/YardPhotoWorkflow.tsx",
+        "line": 368,
+        "text": "disabled={!!drawing || (processed ? !output : !photoUrl)} aria-pressed={view === mode} onClick={() => setView(mode)}>"
       },
       "routes": [
         "/admin/stalling/werfcanvas"
@@ -10871,6 +11633,36 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/sync/page.tsx:236:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/sync/page.tsx",
+        "line": 236,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/sync"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/sync/page.tsx:252:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/sync/page.tsx",
+        "line": 252,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/sync"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/systeem/page.tsx:204:onClick={() => {",
       "source": {
         "file": "src/app/[locale]/admin/systeem/page.tsx",
@@ -11063,6 +11855,54 @@
       "authorizedExecution": "pending"
     },
     {
+      "id": "src/app/[locale]/admin/systeem/page.tsx:544:onConfirm={async (reason) => {",
+      "source": {
+        "file": "src/app/[locale]/admin/systeem/page.tsx",
+        "line": 544,
+        "text": "onConfirm={async (reason) => {"
+      },
+      "routes": [
+        "/admin/systeem",
+        "/admin/systeembeheer"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/systeem/page.tsx:570:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/systeem/page.tsx",
+        "line": 570,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/systeem",
+        "/admin/systeembeheer"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/systeem/page.tsx:586:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/systeem/page.tsx",
+        "line": 586,
+        "text": "onConfirm={async () => {"
+      },
+      "routes": [
+        "/admin/systeem",
+        "/admin/systeembeheer"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
       "id": "src/app/[locale]/admin/systeem/page.tsx:600:<form onSubmit={onRunBackup} className=\"p-6\">",
       "source": {
         "file": "src/app/[locale]/admin/systeem/page.tsx",
@@ -11190,6 +12030,21 @@
         "file": "src/app/[locale]/admin/tarieven/makelaardij/page.tsx",
         "line": 227,
         "text": "<Button type=\"button\" variant=\"ghost\" onClick={() => setShowForm(false)}>"
+      },
+      "routes": [
+        "/admin/tarieven/makelaardij"
+      ],
+      "classification": "needs review",
+      "uiVisibility": "pending",
+      "directApiDenial": "pending",
+      "authorizedExecution": "pending"
+    },
+    {
+      "id": "src/app/[locale]/admin/tarieven/makelaardij/page.tsx:240:onConfirm={async () => {",
+      "source": {
+        "file": "src/app/[locale]/admin/tarieven/makelaardij/page.tsx",
+        "line": 240,
+        "text": "onConfirm={async () => {"
       },
       "routes": [
         "/admin/tarieven/makelaardij"

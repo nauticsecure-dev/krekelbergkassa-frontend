@@ -16,7 +16,24 @@ test('public route scenarios assert the current route and CMS authorization', ()
   assert.equal(scenarioFor({ ...row, state: 'modal' }, config).readOnly, true);
   assert.equal(scenarioFor({ ...row, state: 'error' }, config), null);
   const override = { assertions: [{ visible: 'article' }] };
-  assert.equal(scenarioFor(row, { ...config, scenarios: { [row.id]: override } }), override);
+  assert.deepEqual(scenarioFor(row, { ...config, scenarios: { [row.id]: override } }), {
+    url: '/[locale]/diensten/kranen', ...override,
+  });
+});
+
+test('built-ins use state-specific assertions, concrete public records and role-aware redirects', () => {
+  const service = { route: '/[locale]/diensten', file: 'src/app/[locale]/(site)/diensten/page.tsx', role: 'guest', locale: 'en' };
+  assert.equal(scenarioFor({ ...service, state: 'loading' }, {}).intercept.hold, true);
+  assert.deepEqual(scenarioFor({ ...service, state: 'empty' }, {}).intercept.body, { services: [] });
+  assert.equal(scenarioFor({ ...service, state: 'error' }, {}).intercept.status, 503);
+  const detail = scenarioFor({ ...service, state: 'default', route: '/[locale]/diensten/[slug]',
+    fixture_url: '/[locale]/diensten/kranen', fixture_record_id: 'fixture-id' }, {});
+  assert.equal(detail.url, '/[locale]/diensten/kranen');
+  assert.match(detail.assertions.at(-1).visible, /catalog\.product\.fixture-id\.title/);
+  const admin = scenarioFor({ role: 'customer', locale: 'en', state: 'default',
+    route: '/[locale]/admin/klanten/[id]', file: 'src/app/[locale]/admin/klanten/[id]/page.tsx' },
+  { routeFixtures: { '/[locale]/admin/klanten/[id]': '/[locale]/admin/klanten/example' } });
+  assert.equal(admin.expectedURL, '/en/login?returnTo=%2Fen%2Fadmin%2Fklanten%2Fexample&role=manager');
 });
 
 for (const [environment, baseURL] of [['staging', 'https://staging.example.test'], ['local', 'http://127.0.0.1:3030']]) {

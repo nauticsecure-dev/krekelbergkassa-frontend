@@ -359,6 +359,13 @@ async function mapPoint(map: Locator, x: number, y: number) {
   }, { x, y });
 }
 
+async function touchInput(page: Page) {
+  const touch = await page.context().newCDPSession(page);
+  await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 2 });
+  return (type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel', ...points: { x: number; y: number }[]) =>
+    touch.send('Input.dispatchTouchEvent', { type, touchPoints: points.map((point, id) => ({ ...point, id })) });
+}
+
 test('touch pans the map, selects a boat, and pinches without producing a placement', async ({ page }) => {
   await page.setViewportSize({ width: 820, height: 1000 });
   await workspace(page, () => yard());
@@ -371,10 +378,7 @@ test('touch pans the map, selects a boat, and pinches without producing a placem
   const boat = map.getByRole('button', { name: boatName, exact: true });
   const view = map.locator(':scope > g');
   const original = await view.getAttribute('transform');
-  const touch = await page.context().newCDPSession(page);
-  await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 2 });
-  const send = (type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel', ...touchPoints: {x: number; y: number}[]) =>
-    touch.send('Input.dispatchTouchEvent', { type, touchPoints: touchPoints.map((point, id) => ({ ...point, id })) });
+  const send = await touchInput(page);
   const empty = await mapPoint(map, 36, 33);
   await send('touchStart', empty);
   await send('touchMove', { x: empty.x + 50, y: empty.y + 25 });
@@ -419,6 +423,118 @@ test('touch pans the map, selects a boat, and pinches without producing a placem
   await move.getByRole('button', { name: 'Annuleren' }).click();
   await expect(page.getByLabel('Plaatsingsconcept')).toHaveCount(0);
   expect(writes).toEqual([]);
+});
+
+for (const status of [409, 503]) {
+  test(`touch placement survives HTTP ${status} and recovers after leaving the canvas`, async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 1000 });
+    const due = '2026-11-20T09:00:00+01:00';
+    const conflict = status === 409;
+    const error = conflict ? 'De plaatsing is gewijzigd.' : 'Werf tijdelijk onbereikbaar.';
+    const serverPosition = { ...position, x: 62 };
+    let current = { ...placement, planned: null as typeof position | null };
+    const writes: { operation: string; position: typeof position; version: number }[] = [];
+    const mapResponse = () => yard([{ ...sampleBoat, placement: current }]);
+    await workspace(page, mapResponse);
+    await page.route(url => url.pathname.endsWith('/yard-canvas') && url.searchParams.get('search') === sampleBoat.id,
+      route => route.fulfill({ json: mapResponse() }));
+    await page.route('**/placements/boat-1/move-options*', route =>
+      route.fulfill({ json: { choices: { next: due } } }));
+    await page.route('**/placements/boat-1', route => {
+      expect(route.request().method()).toBe('PATCH');
+      const payload = route.request().postDataJSON();
+      writes.push(payload);
+      if (writes.length === 1) {
+        if (conflict) current = { ...current, version: 2, actual: serverPosition };
+        return route.fulfill({ status, json: { message: error, ...(conflict && { placement: current }) } });
+      }
+      current = { ...current, planned: payload.position, version: 2 };
+      return route.fulfill({ json: current });
+    });
+
+    // Compile the destination before measuring navigation with an unsaved touch draft.
+    expect((await page.goto('/nl/admin/taken', { timeout: 60_000 }))?.ok()).toBe(true);
+    const map = await openCanvas(page);
+    const send = await touchInput(page);
+    const boat = map.getByRole('button', { name: boatName, exact: true });
+    const center = await mapPoint(map, position.x, position.y);
+    await send('touchStart', center);
+    await send('touchEnd');
+    await expect(boat).toHaveAttribute('aria-pressed', 'true');
+    await send('touchStart', center);
+    await send('touchMove', { x: center.x + 45, y: center.y + 30 });
+    await send('touchEnd');
+
+    const dialog = page.getByRole('dialog', { name: 'Verplaatsing plannen' });
+    const submit = dialog.getByRole('button', { name: 'Opslaan & toewijzen' });
+    const draft = page.getByLabel('Plaatsingsconcept');
+    const destination = map.locator('g[stroke-dasharray=".7 .45"] > path');
+    const proposal = dialog.getByText(/→/);
+    await expect(dialog).toBeVisible();
+    const originalProposal = await proposal.innerText();
+    const draftTransform = await destination.getAttribute('transform');
+    expect(draftTransform).toBeTruthy();
+    expect(writes).toHaveLength(0);
+    await submit.click();
+    await expect(dialog.getByRole('alert')).toContainText(error);
+    await expect(proposal).toHaveText(originalProposal);
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toMatchObject({ operation: 'plan', version: 1, due_at: due, idempotency_key: expect.any(String) });
+    expect(writes[0].position.x).toBeGreaterThan(position.x);
+    expect(writes[0].position.y).toBeGreaterThan(position.y);
+    if (conflict) {
+      await expect(dialog.getByText(/Serverversie\s*2/)).toBeVisible();
+      await expect(submit).toBeDisabled();
+    }
+
+    await dialog.getByRole('button', { name: 'Positie aanpassen' }).click();
+    const tasks = page.getByRole('navigation', { name: 'Werfweergaven' }).getByRole('link', { name: 'Taken' });
+    const warning = 'Niet-opgeslagen wijzigingen verlaten?';
+    await Promise.all([confirmNext(page, warning, false), tasks.click()]);
+    await expect(page).toHaveURL(new RegExp(canvasPath + '$'));
+    await expect(draft).toBeVisible();
+    await expect(destination).toHaveAttribute('transform', draftTransform!);
+    await expect.poll(() => page.evaluate(() => sessionStorage.getItem('werfcanvas.draft.worker')))
+      .toContain(String(writes[0].position.x));
+    await Promise.all([confirmNext(page, warning, true), tasks.click()]);
+    await expect(page).toHaveURL(/\/nl\/admin\/taken$/);
+    await page.goBack();
+    await expect(page).toHaveURL(new RegExp(canvasPath + '$'));
+    await expect(draft).toHaveCount(0);
+    await page.getByRole('button', { name: 'Concept vergelijken en herstellen' }).click();
+    await expect(draft).toBeVisible();
+    await expect(destination).toHaveAttribute('transform', draftTransform!);
+    expect(writes).toHaveLength(1);
+
+    const save = page.getByRole('group', { name: 'Werfcanvas werkbalk' }).getByRole('button', { name: /^Opslaan/ });
+    if (conflict) {
+      await expect(page.getByText(/Serverversie\s*2/)).toBeVisible();
+      await expect(save).toBeDisabled();
+    } else {
+      await save.click();
+      await expect(proposal).toHaveText(originalProposal);
+      await submit.click();
+      await expect(page.getByRole('status').filter({ hasText: 'Verplaatsing ingepland.' })).toBeVisible();
+      await expect(draft).toHaveCount(0);
+      expect(writes).toHaveLength(2);
+      expect(writes[1]).toMatchObject({ operation: 'plan', version: 1, position: writes[0].position });
+    }
+  });
+}
+
+test('both zoom controls are usable from Kaartacties on a phone-width viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await workspace(page, () => yard());
+  const map = await openCanvas(page);
+  const toolbar = page.getByRole('group', { name: 'Werfcanvas werkbalk' });
+  await toolbar.locator('summary[title="Meer filters en kaartbediening"]').click();
+  await toolbar.locator('summary[title="Kaartacties"]:visible').click();
+  const layer = map.locator(':scope > g');
+  const original = await layer.getAttribute('transform');
+  await toolbar.getByRole('button', { name: 'Inzoomen', exact: true }).click();
+  await expect(layer).not.toHaveAttribute('transform', original!);
+  await toolbar.getByRole('button', { name: 'Uitzoomen', exact: true }).click();
+  await expect(layer).toHaveAttribute('transform', original!);
 });
 
 test('read-only touch actions allow inspection without exposing placement edits', async ({ page }) => {

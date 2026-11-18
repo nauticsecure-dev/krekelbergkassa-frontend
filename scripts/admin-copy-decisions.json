@@ -151,5 +151,140 @@
     },
     "decision": "intentional",
     "reason": "Established browser terminology in Dutch/German technical metadata."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.boats.columns.type",
+      "text": "Type"
+    },
+    "decision": "intentional",
+    "reason": "Dutch label for the kind of boat."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.boats.fields.model",
+      "text": "Model"
+    },
+    "decision": "intentional",
+    "reason": "Dutch label for the vessel model."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.boats.status",
+      "text": "Status"
+    },
+    "decision": "intentional",
+    "reason": "Standard Dutch label for the current state."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.boats.type.motor",
+      "text": "Motor"
+    },
+    "decision": "intentional",
+    "reason": "Dutch name for the motor-powered boat category."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.boats.fields.mmsi",
+      "text": "MMSI"
+    },
+    "decision": "intentional",
+    "reason": "International maritime identifier abbreviation."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.boats.status",
+      "text": "Status"
+    },
+    "decision": "intentional",
+    "reason": "Standard German label for the current state."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.boats.type.motor",
+      "text": "Motor"
+    },
+    "decision": "intentional",
+    "reason": "German label for the motor-powered boat category."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.customers.fields.name",
+      "text": "Name"
+    },
+    "decision": "intentional",
+    "reason": "German noun for the customer name."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.boats.tabs.photos",
+      "text": "Photos"
+    },
+    "decision": "intentional",
+    "reason": "Common French plural for photographs."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.boats.tabs.documents",
+      "text": "Documents"
+    },
+    "decision": "intentional",
+    "reason": "Common French plural for documents."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.boats.columns.type",
+      "text": "Type"
+    },
+    "decision": "intentional",
+    "reason": "French label for the kind of boat."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.boats.fields.mmsi",
+      "text": "MMSI"
+    },
+    "decision": "intentional",
+    "reason": "International maritime identifier abbreviation."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.boats.photoFolders.inspection",
+      "text": "Inspection"
+    },
+    "decision": "intentional",
+    "reason": "French noun for this inspection photo category."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.boats.photoFolders.maintenance",
+      "text": "Maintenance"
+    },
+    "decision": "intentional",
+    "reason": "French noun for work that keeps a boat operational."
+  },
+  {
+    "match": {
+      "file": "src/app/[locale]/admin/calculator/pricing/page.tsx",
+      "kind": "attribute",
+      "text": "kranen, afspuiten"
+    },
+    "decision": "intentional",
+    "reason": "Examples are canonical service codes accepted by Laravel. Translating the codes would make them invalid."
   }
 ]
