@@ -286,5 +286,959 @@
     },
     "decision": "intentional",
     "reason": "Examples are canonical service codes accepted by Laravel. Translating the codes would make them invalid."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.audit.severity.info",
+      "text": "Info"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.status.open",
+      "text": "Open"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.stalling.type.week",
+      "text": "Week"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.calculator.records.totalMin",
+      "text": "Min"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.calculator.records.totalMax",
+      "text": "Max"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "globalUx.pricing.product",
+      "text": "Product"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "globalUx.pricing.type",
+      "text": "Type"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.invoiceDetail.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.invoiceImports.columns.status",
+      "text": "Status"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.invoiceImports.reviewScreen.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.incidents.statuses.open",
+      "text": "Open"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.settings.company.kvk",
+      "text": "KVK"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.settings.company.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "settingsHub.company.bic",
+      "text": "BIC"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.kassa.payment.ideal",
+      "text": "iDEAL"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.kassa.payment.bancontact",
+      "text": "Bancontact"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.kassa.qrPayment",
+      "text": "Mollie QR"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminModules.hubs.planning.tabWeek",
+      "text": "Week"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.productGroups.fields.code",
+      "text": "Code"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.products.detailTitle",
+      "text": "Product"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.products.fields.sku",
+      "text": "SKU"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.reports.workOrders.open",
+      "text": "Open"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.reminders.channels.whatsapp",
+      "text": "WhatsApp"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.stalling.columns.type",
+      "text": "Type"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.system.checks.mollie",
+      "text": "Mollie"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.tasks.stats.open",
+      "text": "Open"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.tasks.statusOpen",
+      "text": "Open"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.workOrders.columns.status",
+      "text": "Status"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.workOrders.columns.type",
+      "text": "Type"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "planning.viewWeek",
+      "text": "Week"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.appointments.columns.status",
+      "text": "Status"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "crane.payment.open",
+      "text": "Open"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.calendar.open",
+      "text": "Open"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.calendar.columns.code",
+      "text": "Code"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.templates.fields.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "settingsHub.integrations.mollie",
+      "text": "Mollie"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "settingsHub.integrations.whatsapp",
+      "text": "WhatsApp"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "nl",
+      "key": "adminNew.products.columns.code",
+      "text": "Code"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.credentials.fields.name",
+      "text": "Name"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.audit.severity.info",
+      "text": "Info"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.common.name",
+      "text": "Name"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.bundles.fields.name",
+      "text": "Name"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.calculator.records.totalMin",
+      "text": "Min"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.calculator.records.totalMax",
+      "text": "Max"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.invoiceDetail.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.invoiceImports.columns.status",
+      "text": "Status"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.invoiceImports.reviewScreen.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.settings.company.kvk",
+      "text": "KVK"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.settings.company.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "settingsHub.company.bic",
+      "text": "BIC"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.kassa.payment.ideal",
+      "text": "iDEAL"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.kassa.payment.bancontact",
+      "text": "Bancontact"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.kassa.qrPayment",
+      "text": "Mollie QR"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.productGroups.fields.code",
+      "text": "Code"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.productGroups.fields.name",
+      "text": "Name"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.products.fields.sku",
+      "text": "SKU"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.reminders.channels.whatsapp",
+      "text": "WhatsApp"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.stalling.fields.customerName",
+      "text": "Name"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.system.checks.mollie",
+      "text": "Mollie"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.workOrders.columns.status",
+      "text": "Status"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminModules.create.service",
+      "text": "Service"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.appointments.columns.status",
+      "text": "Status"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.calendar.columns.code",
+      "text": "Code"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.templates.fields.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "settingsHub.integrations.mollie",
+      "text": "Mollie"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "settingsHub.integrations.whatsapp",
+      "text": "WhatsApp"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.products.columns.code",
+      "text": "Code"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "de",
+      "key": "adminNew.products.columns.name",
+      "text": "Name"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.credentials.fields.service",
+      "text": "Service"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.audit.severity.info",
+      "text": "Info"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.calculator.result.services",
+      "text": "Services"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.calculator.services",
+      "text": "Services"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.calculator.records.totalMin",
+      "text": "Min"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.calculator.records.totalMax",
+      "text": "Max"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "globalUx.pricing.type",
+      "text": "Type"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminModules.hubs.servicesPricing.services",
+      "text": "Services"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.invoiceDetail.summary.total",
+      "text": "Total"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.invoiceDetail.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.invoiceImports.reviewScreen.total",
+      "text": "Total"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.invoiceImports.reviewScreen.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.invoices.lineDescription",
+      "text": "Description"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.settings.company.kvk",
+      "text": "KVK"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.settings.company.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "settingsHub.company.bic",
+      "text": "BIC"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.kassa.payment.ideal",
+      "text": "iDEAL"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.kassa.payment.bancontact",
+      "text": "Bancontact"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.kassa.qrPayment",
+      "text": "Mollie QR"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.wallet.creditModal.description",
+      "text": "Description"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.productGroups.fields.code",
+      "text": "Code"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.products.fields.sku",
+      "text": "SKU"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.reminders.channels.whatsapp",
+      "text": "WhatsApp"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.scanLogs.stats.total",
+      "text": "Total"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.stalling.columns.type",
+      "text": "Type"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.system.checks.mollie",
+      "text": "Mollie"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.sales.total",
+      "text": "Total"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.workOrders.columns.type",
+      "text": "Type"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.workOrders.detail.materialDesc",
+      "text": "Description"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.workOrders.description",
+      "text": "Description"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminModules.create.service",
+      "text": "Service"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "planning.fieldService",
+      "text": "Service"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.calendar.columns.code",
+      "text": "Code"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.templates.fields.total",
+      "text": "Total"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.templates.fields.iban",
+      "text": "IBAN"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "settingsHub.integrations.mollie",
+      "text": "Mollie"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "settingsHub.integrations.whatsapp",
+      "text": "WhatsApp"
+    },
+    "decision": "intentional",
+    "reason": "Recognized product name, identifier or technical abbreviation; preserve its standard spelling."
+  },
+  {
+    "match": {
+      "locale": "fr",
+      "key": "adminNew.products.columns.code",
+      "text": "Code"
+    },
+    "decision": "intentional",
+    "reason": "This spelling is also a valid localized term or conventional abbreviation in this locale."
   }
 ]

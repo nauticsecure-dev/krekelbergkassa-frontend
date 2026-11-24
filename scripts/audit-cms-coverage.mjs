@@ -234,6 +234,14 @@ export function audit(root = process.cwd(), catalogProducts = []) {
         return resolveKeys(field, [...new Set(candidates)].map(key => `${prefix}${key}.image:${column}`));
       }
     }
+    if (field.expression?.includes('blockKey={`catalog.product_group.')) {
+      const ids = [...new Set(catalogProducts.map(product => product.group_id).filter(Boolean))];
+      if (!ids.length) return [{ ...field, source: 'product_group' }];
+      return ids.map(id => {
+        const key = `catalog.product_group.${id}.title`;
+        return { ...field, key, source: 'product_group', fingerprint: hash(`${field.fingerprint}\0${key}`) };
+      });
+    }
     if (field.expression?.includes('blockKey={`catalog.product.')) {
       if (!catalogProducts.length) return [{ ...field, source: 'product' }];
       const detailPage = field.file === 'src/components/site/ServicePage.tsx';

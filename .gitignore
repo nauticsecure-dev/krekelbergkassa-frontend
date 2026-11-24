@@ -76,6 +76,9 @@ AuthKey_PY3UQD7C7P.p8
 .next
 .next-dev/
 .next-cms-verification/
+.next-werfcanvas/
+.next-yard-local/
+.next-cross-browser/
 
 # Nuxt.js build / generate output
 .nuxt
@@ -139,3 +142,5 @@ artifacts/admin-audit/snapshot/
 .next-cms-media*/
 
 /.next-cms-text-live/
+# Browser executables must survive test-result directory cleanup.
+/.playwright-browsers/

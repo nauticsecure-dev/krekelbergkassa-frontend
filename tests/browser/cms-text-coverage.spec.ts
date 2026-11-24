@@ -1,60 +1,78 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '../helpers/browser-test';
+import type { Page } from '@playwright/test';
 import nl from '../../src/i18n/messages/nl.json';
 import de from '../../src/i18n/messages/de.json';
 
-// Local browser fixture evidence only; never presented as staging/database PASS.
-async function fixture(page: Page, authorized = true, role = authorized ? 'super_admin' : 'customer') {
-  const origin = test.info().project.use.baseURL!;
-  const globals: Record<string, string> = { 'company.email': 'original@example.test', 'company.phone': '+31 475 315661' };
-  const blocks: Record<string, { page: string; values: Record<string, string> }> = {};
-  const writes: string[] = [];
-  const company = () => ({ email: globals['company.email'], phone: globals['company.phone'],
-    address: { street: 'Test street', postal_code: '1234AA', city: 'Herten', country: 'NL' } });
-  await page.context().addCookies([{ name: 'krek_session', value: 'fixture', url: origin }]);
-  await page.route('**/*', async route => {
-    const request = route.request(), url = new URL(request.url());
-    if (url.origin !== origin) return route.abort();
-    if (!url.pathname.startsWith('/api/')) return route.continue();
-    if (url.pathname.endsWith('/content/contact')) return route.fulfill({ json: { company: company(), show_chat: false } });
-    if (url.pathname.endsWith('/cms/contact-settings')) {
-      const values = request.postDataJSON();
-      for (const key of ['email', 'phone']) if (key in values) {
-        writes.push(`company.${key}`); globals[`company.${key}`] = values[key];
-      }
-      return route.fulfill({ json: { company: company() } });
-    }
-    if (url.pathname.endsWith('/auth/me')) return route.fulfill({ json: {
-      id: 'editor', name: 'Editor', email: 'editor@example.test', role,
-      permissions: authorized ? ['cms.manage', 'invoice.create', 'invoice.view'] : [],
-    } });
-    if (url.pathname.endsWith('/cms/page-content')) return route.fulfill({ json: {
-      global_settings: globals, media_blocks: [],
-      editor_locales: ['nl-NL', 'en-GB', 'de-DE', 'fr-FR'],
-      content_blocks: Object.entries(blocks).filter(([, b]) => b.page === url.searchParams.get('page'))
-        .map(([key, b]) => ({ key, type: 'short_text', value: b.values[url.searchParams.get('locale') ?? 'nl-NL'] })),
-    } });
-    if (url.pathname.includes('/global-settings')) {
-      if (request.method() === 'PATCH') {
-        const key = decodeURIComponent(url.pathname.split('/').at(-1)!);
-        writes.push(key); globals[key] = request.postDataJSON().value;
-        return route.fulfill({ json: { value: globals[key], cms_revision: 'fixture' } });
-      }
-      return route.fulfill({ json: { settings: globals, revisions: Object.fromEntries(Object.keys(globals).map(key => [key, null])) } });
-    }
-    if (url.pathname.includes('/content-blocks/') && request.method() === 'GET') {
-      const key = decodeURIComponent(url.pathname.split('/').at(-1)!);
-      return route.fulfill({ json: { key, cms_revision: null, value_by_locale: blocks[key]?.values ?? {}, publication_state: 'published' } });
-    }
-    if (url.pathname.includes('/content-blocks/') && request.method() === 'PATCH') {
-      const key = decodeURIComponent(url.pathname.split('/').at(-1)!);
-      const data = request.postDataJSON();
-      blocks[key] = { page: data.page, values: { ...blocks[key]?.values, ...data.value_by_locale } };
-      return route.fulfill({ json: {} });
-    }
-    return route.fulfill({ json: { data: [], settings: {}, items: [], subjects: [] } });
+import { fixture } from '../helpers/cms-text-fixture';
+
+test('service group headings save through their canonical group key and survive reload', async ({ page }) => {
+  const state = await fixture(page);
+  const groupId = 'a1111111-1111-4111-8111-111111111111';
+  const key = `catalog.product_group.${groupId}.title`;
+  await page.route(url => url.pathname.endsWith('/service-catalog/services'), route => route.fulfill({ json: { services: [{
+    id: 'b1111111-1111-4111-8111-111111111111', code: 'TEST', name: 'Test service',
+    group: { id: groupId, code: 'TEST-GROUP', name: state.blocks[key]?.values['nl-NL'] ?? 'Original group' },
+  }] } }));
+  await page.goto('/nl/diensten');
+  await page.locator('[data-cms-toggle]').click();
+  const field = page.locator(`[data-cms-key="${key}"]`);
+  await expect(field).toHaveAttribute('data-cms-source', 'product_group');
+  await field.click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.locator('[data-cms-save-draft]')).toHaveCount(0);
+  await dialog.locator('[data-cms-input]').fill('Updated group');
+  await dialog.locator('[data-cms-publish]').click();
+  await expect(field).toHaveText('Updated group');
+  await page.evaluate(() => sessionStorage.clear());
+  await page.reload();
+  await expect(field).toHaveText('Updated group');
+});
+
+test('FAQ settings save publicly, preserve hidden rows and keep stale edits open', async ({ page }) => {
+  await fixture(page);
+  let revision = 'a'.repeat(64);
+  let rows = [{ cat: 'kraan', q: 'Visible FAQ question', a: 'Original answer', active: true },
+    { cat: 'kraan', q: 'Hidden FAQ question', a: 'Hidden answer', active: false }];
+  await page.route(url => url.pathname.endsWith('/content/faq'), route => route.fulfill({ json: { faq: { questions: rows.filter(q => q.active) }, contact: {} } }));
+  await page.route(url => url.pathname.endsWith('/admin/settings/faq'), route => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { questions_raw: rows, cms_revision: revision } });
+    const body = route.request().postDataJSON();
+    if (body.expected_revision !== revision) return route.fulfill({ status: 409, json: { message: 'FAQ changed. Reopen before saving.' } });
+    rows = body.questions; revision = 'b'.repeat(64);
+    return route.fulfill({ json: { questions_raw: rows, cms_revision: revision } });
   });
-  return { globals, blocks, writes };
-}
+  await page.goto('/nl/faq');
+  await page.locator('[data-cms-toggle]').click();
+  await page.getByRole('button', { name: 'FAQ inhoud bewerken', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('textbox', { name: 'Vraag 1', exact: true }).fill('Updated FAQ question');
+  await dialog.getByRole('button', { name: nl.cms.save, exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(rows[1]).toMatchObject({ q: 'Hidden FAQ question', active: false });
+  await expect(page.getByText('Updated FAQ question', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Updated FAQ question', { exact: true })).toBeVisible();
+  await page.locator('[data-cms-toggle]').click();
+  await page.getByRole('button', { name: 'FAQ inhoud bewerken', exact: true }).click();
+  await expect(dialog.getByRole('textbox', { name: 'Vraag 1', exact: true })).toHaveValue('Updated FAQ question');
+  revision = 'c'.repeat(64);
+  await dialog.getByRole('textbox', { name: 'Vraag 1', exact: true }).fill('Stale proposal');
+  await dialog.getByRole('button', { name: nl.cms.save, exact: true }).click();
+  await expect(dialog.getByRole('alert')).toContainText('FAQ changed');
+  await expect(dialog.getByRole('textbox', { name: 'Vraag 1', exact: true })).toHaveValue('Stale proposal');
+  expect(rows[0].q).toBe('Updated FAQ question');
+});
+
+test('accordion text opens its own editor by keyboard without nested buttons', async ({ page }) => {
+  await fixture(page);
+  await page.goto('/nl/diensten/winterstalling');
+  await page.locator('[data-cms-toggle]').click();
+  const field = page.locator('[data-cms-key="diensten/winterstalling.faq.0.q"]');
+  const summary = field.locator('xpath=ancestor::summary[1]');
+  await expect(summary.locator('button')).toHaveCount(0);
+  await summary.press('Enter');
+  await expect(page.getByRole('dialog').locator('[data-cms-input]')).toBeVisible();
+});
 
 test('company email edit synchronizes contact, footer and destinations; untouched settings are preserved', async ({ page }) => {
   const state = await fixture(page);
@@ -115,6 +133,47 @@ test('two translations in one menu link open only the selected field', async ({ 
   expect(page.url()).toBe(`${test.info().project.use.baseURL}/nl`);
 });
 
+test('translated text stays editable inside a layer that passes pointer events through', async ({ page }) => {
+  const state = await fixture(page);
+  await page.goto('/nl');
+  await page.getByRole('button', { name: nl.cms.enterEdit, exact: true }).click();
+  const surface = page.locator('footer [data-cms-translation="footer.services"]');
+  // Hero/photography layouts use pointer-events:none on their overlay containers.
+  await surface.locator('..').evaluate(element => { element.style.pointerEvents = 'none'; });
+  await surface.click({ timeout: 5_000 });
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('textbox').fill('QA layered heading');
+  await dialog.getByRole('button', { name: nl.cms.publish, exact: true }).click();
+  await expect(surface).toHaveText('QA layered heading');
+  expect(Object.keys(state.blocks)).toEqual(['i18n.footer.services']);
+});
+
+test('global footer text opens by clicking the text and by keyboard, and persists after reload', async ({ page }) => {
+  await fixture(page);
+  await page.goto('/nl');
+  await page.getByRole('button', { name: nl.cms.enterEdit, exact: true }).click();
+  const surface = page.locator('footer [data-cms-key="footer.tagline"]');
+  await surface.click({ position: { x: 4, y: 4 } });
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('textbox').fill('QA editable footer');
+  await dialog.getByRole('button', { name: nl.cms.save, exact: true }).click();
+  await expect(surface).toContainText('QA editable footer');
+  await surface.focus();
+  await surface.press('Enter');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: nl.cms.cancel, exact: true }).click();
+  await surface.press('Space');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: nl.cms.cancel, exact: true }).click();
+  await surface.locator('[data-cms-edit]').click();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: nl.cms.cancel, exact: true }).click();
+  await page.evaluate(() => sessionStorage.clear());
+  await page.reload();
+  await expect(surface).toContainText('QA editable footer');
+});
+
 test('global settings save only explicitly changed fields', async ({ page }) => {
   const state = await fixture(page);
   await page.goto('/nl');
@@ -172,4 +231,10 @@ test('catalog-managed dropdown labels preserve their text and use saved override
   await expect(currency).toContainText('QA Euro label');
   await currency.click();
   await expect(page.getByRole('option', { name: 'QA Euro label', exact: true })).toBeVisible();
+});
+
+test('the French invoice page renders its localized title instead of inherited English copy', async ({ page }) => {
+  await fixture(page);
+  await page.goto('/fr/admin/facturen');
+  await expect(page.getByRole('heading', { name: 'Factures', level: 1, exact: true })).toBeVisible();
 });

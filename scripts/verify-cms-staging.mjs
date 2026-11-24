@@ -217,7 +217,7 @@ try {
     if (!editor || !token || !field.key || (!surface && !fixture && field.surface !== 'catalog')) {
       row.status = 'BLOCKED'; row.reason = 'Missing canonical field, reachable editor surface or authorized editor session.'; continue;
     }
-    if (!settings && !media && !hours && !['content_block', 'i18n', 'product'].includes(field.source)) {
+    if (!settings && !media && !hours && !['content_block', 'i18n', 'product', 'product_group'].includes(field.source)) {
       row.status = 'BLOCKED'; row.reason = 'Canonical settings/record adapter requires its own versioned mutation and restore scenario.'; continue;
     }
     if (field.editor && !settings && !batch && !media && !hours) {
@@ -266,7 +266,7 @@ try {
       savedValue = marker;
       Object.assign(proof, { key, locale: field.locale, marker, before });
       row.artifacts = [artifact(field.id, proof)]; checkpoint();
-      if (!before.record_id && /^(?:(?:i18n\.)?home\.svc\.|catalog\.product\.)/.test(key)) {
+      if (!before.record_id && /^(?:(?:i18n\.)?home\.svc\.|catalog\.(?:product|product_group)\.)/.test(key)) {
         const error = new Error('The canonical service record needs a fixture.'); error.blocked = true; throw error;
       }
       page = await editor.newPage();

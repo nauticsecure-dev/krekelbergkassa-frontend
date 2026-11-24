@@ -1,4 +1,42 @@
 {
+  "faqCategory": {
+    "all": "Alle Fragen",
+    "kraan": "Kranen & Reinigung",
+    "stalling": "Winterlager",
+    "planning": "Planung & Termine",
+    "betalen": "Preise & Zahlung",
+    "verkoop": "Verkauf / Vermittlung",
+    "verblijf": "Ferienwohnungen"
+  },
+  "faqEditor": {
+    "title": "FAQ-Inhalte bearbeiten",
+    "shared": "Diese FAQ-Inhalte werden zwischen den Sprachen geteilt. Auch ausgeblendete Fragen bleiben erhalten.",
+    "question": "Frage",
+    "answer": "Antwort"
+  },
+  "yardHistory": {
+    "unattributedSource": "Keinem Boot zugeordnet",
+    "coverage": "Abdeckung der Historie",
+    "unknown": "Fehlende Provideraufzeichnungen sind unbekannt; diese Zahlen belegen keine vollständige Historie.",
+    "unattributed": "Einträge ohne belegte Bootszuordnung bei denselben Filtern: {count}. Diese sind dem ausgewählten Boot nicht zugeordnet.",
+    "available": "Verfügbar",
+    "snapshots": "Nur aktueller Status",
+    "unlinked": "Ohne Bootszuordnung",
+    "showUnlinked": "Nur Einträge ohne Bootszuordnung anzeigen",
+    "sources": {
+      "boat": "Boote und Werft",
+      "stallingcontract": "Lagerung",
+      "appointment": "Termine",
+      "workorder": "Arbeitsaufträge",
+      "invoice": "Rechnungen",
+      "payment": "Zahlungen",
+      "calculatorrecord": "Kalkulationen",
+      "task": "Aufgaben",
+      "timeline": "Zeitachse",
+      "appointmentemail": "Terminnachrichten",
+      "deliveryevent": "Zustellungsnachweise"
+    }
+  },
   "yardDaily": {
     "nextTask": "Nächste Aufgabe",
     "title": "Tagesplanung Werft",

@@ -61,7 +61,7 @@ export default function config(phase) {
     // A production build must not replace chunks used by a running dev server.
     distDir: process.env.NEXT_DIST_DIR ?? (phase === PHASE_DEVELOPMENT_SERVER ? '.next-dev' : '.next'),
     ...(process.env.PORTAL_LIVE_TSCONFIG ? { typescript: { tsconfigPath: process.env.PORTAL_LIVE_TSCONFIG } } : {}),
-    ...(process.env.E2E_LOW_MEMORY === '1' || process.env.PORTAL_LIVE_TSCONFIG ? {
+    ...(process.env.E2E_LOW_MEMORY === '1' || process.env.E2E_DEV_LOW_MEMORY === '1' || process.env.PORTAL_LIVE_TSCONFIG ? {
       experimental: { cpus: 1 },
       // Isolated browser batches do not need compressed persistent dev caches.
       // Avoid buffering those packs while Chromium runs on constrained hosts.

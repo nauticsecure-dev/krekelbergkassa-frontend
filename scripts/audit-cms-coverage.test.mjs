@@ -4,6 +4,18 @@ import { audit, scanSource } from './audit-cms-coverage.mjs';
 import { buildRegistry } from './build-cms-registry.mjs';
 import { fileURLToPath } from 'node:url';
 
+test('public service groups expand once per canonical ID in every locale', () => {
+  const group = 'a1111111-1111-4111-8111-111111111111';
+  const report = audit(process.cwd(), [
+    { id: 'b1111111-1111-4111-8111-111111111111', slug: 'cms-one', group_id: group },
+    { id: 'c1111111-1111-4111-8111-111111111111', slug: 'cms-two', group_id: group },
+  ]);
+  const fields = report.required_fields.filter(field => field.key === `catalog.product_group.${group}.title`);
+  assert.equal(fields.length, 4);
+  assert.ok(fields.every(field => field.source === 'product_group' && field.status === 'UNTESTED'));
+  assert.deepEqual(fields.map(field => field.locale).sort(), ['de', 'en', 'fr', 'nl']);
+});
+
 test('visible hardcoded JSX and translated copy without a binding are detected', () => {
   const result = scanSource('src/example.tsx', `const View = () => <><h1>New uneditable heading</h1><p>{t('example.title')}</p></>`);
   assert.equal(result.findings.filter(item => item.kind === 'hardcoded_jsx').length, 1);

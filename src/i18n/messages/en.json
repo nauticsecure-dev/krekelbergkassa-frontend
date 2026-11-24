@@ -1,4 +1,42 @@
 {
+  "faqCategory": {
+    "all": "All questions",
+    "kraan": "Lifting & washing",
+    "stalling": "Winter storage",
+    "planning": "Planning & appointments",
+    "betalen": "Rates & payment",
+    "verkoop": "Sales / brokerage",
+    "verblijf": "Apartments"
+  },
+  "faqEditor": {
+    "title": "Edit FAQ content",
+    "shared": "This FAQ content is shared between languages. Hidden questions are also preserved.",
+    "question": "Question",
+    "answer": "Answer"
+  },
+  "yardHistory": {
+    "unattributedSource": "Not attributed to a boat",
+    "coverage": "History coverage",
+    "unknown": "Missing provider records are unknown; these counts do not establish a complete history.",
+    "unattributed": "Records without a verified boat link under the same filters: {count}. These are not assigned to the selected boat.",
+    "available": "Available",
+    "snapshots": "Current status only",
+    "unlinked": "Without boat link",
+    "showUnlinked": "Show only records without a boat link",
+    "sources": {
+      "boat": "Boats and yard",
+      "stallingcontract": "Storage",
+      "appointment": "Appointments",
+      "workorder": "Work orders",
+      "invoice": "Invoices",
+      "payment": "Payments",
+      "calculatorrecord": "Calculations",
+      "task": "Tasks",
+      "timeline": "Timeline",
+      "appointmentemail": "Appointment messages",
+      "deliveryevent": "Delivery records"
+    }
+  },
   "yardDaily": {
     "nextTask": "Next task",
     "title": "Yard daily plan",

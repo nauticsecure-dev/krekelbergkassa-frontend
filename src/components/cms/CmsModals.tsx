@@ -282,7 +282,7 @@ export function TextEditModal({
         <Button variant="ghost" onClick={onClose} disabled={submitting}>
           {t('cms.cancel')}
         </Button>
-        {!/^(?:(?:i18n\.)?home\.svc\.|catalog\.product\.)/.test(blockKey) && <Button data-cms-save-draft variant="outline" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}
+        {!/^(?:(?:i18n\.)?home\.svc\.|catalog\.(?:product|product_group)\.)/.test(blockKey) && <Button data-cms-save-draft variant="outline" onClick={() => onSave('draft')} disabled={busy}>{t('cms.saveDraft')}</Button>}
         <Button
           variant="primary"
           data-cms-publish
@@ -475,24 +475,32 @@ export function ImageEditModal({
     }
   }, [open]);
 
-  const validateImage = (file: File) => {
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+  const validateImage = (file: File): File | null => {
+    // Some browser/OS combinations provide no MIME type for a local WebP.
+    // Only infer recognized extensions when the reported type is unspecified;
+    // the publication endpoint still validates the actual image contents.
+    const extensionTypes: Record<string, string> = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp' };
+    const extension = file.name.match(/\.([^.]+)$/)?.[1].toLowerCase() ?? '';
+    const type = !file.type || file.type === 'application/octet-stream' ? extensionTypes[extension] : file.type;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(type)) {
       push({ tone: 'error', title: t('cms.uploadError'), message: t('cms.imageFormats') });
-      return false;
+      return null;
     }
     if (file.size > 10 * 1024 * 1024) {
       push({ tone: 'error', title: t('cms.uploadError'), message: t('cms.imageSizeLimit') });
-      return false;
+      return null;
     }
-    return true;
+    return type === file.type ? file : new File([file], file.name, { type, lastModified: file.lastModified });
   };
 
   const uploadFile = async (file?: File) => {
-    if (!file || !validateImage(file)) return;
+    if (!file) return;
+    const validated = validateImage(file);
+    if (!validated) return;
     if (saving) return;
     if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
-    previewUrl.current = URL.createObjectURL(file);
-    setPendingFile(file);
+    previewUrl.current = URL.createObjectURL(validated);
+    setPendingFile(validated);
     setSelectedFileId(undefined);
     setPreviewSrc(previewUrl.current);
     setInitialCrop(undefined);
@@ -718,7 +726,8 @@ export function ImageEditModal({
           </label>
           <label className="block text-sm">{t('cms.uploadMobileImage')}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={saving || uploading} onChange={e => {
             const file = e.target.files?.[0];
-            if (file && validateImage(file)) { setPendingMobileFile(file); resetMobileCrop(); }
+            const validated = file && validateImage(file);
+            if (validated) { setPendingMobileFile(validated); resetMobileCrop(); }
             e.target.value = '';
           }} /></label>
           {(['x','y'] as const).map(axis => {
