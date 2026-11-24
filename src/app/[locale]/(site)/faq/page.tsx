@@ -1,5 +1,6 @@
 "use client";
 import { TranslatedText } from '@/components/cms/TranslatedText';
+import { FaqContentEditor } from '@/components/cms/FaqContentEditor';
 
 import * as React from "react";
 import { EditSafeLink } from '@/components/cms/EditSafeLink';
@@ -149,6 +150,7 @@ export default function FaqPage() {
       </section>
 
       {/* Body */}
+      <FaqContentEditor defaults={QUESTIONS} onSaved={() => { void faqQuery.refetch(); }} />
       <section className="container-wide mt-10 grid gap-6 lg:grid-cols-[18rem_1fr]">
         {/* Sidebar */}
         <aside className="space-y-4">
@@ -177,7 +179,7 @@ export default function FaqPage() {
                     >
                       <span className="flex items-center gap-2.5">
                         <Icon className="h-4 w-4" />
-                        {c.label}
+                        <TranslatedText textKey={`faqCategory.${c.id}`} fallbackText={c.label} />
                       </span>
                       <span
                         className={cn(

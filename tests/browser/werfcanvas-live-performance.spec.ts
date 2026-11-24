@@ -1,10 +1,11 @@
 import { devices, expect, test, type Request } from '@playwright/test';
+import { assertYardPerformance, yardPerformanceBudgets } from '../helpers/werfcanvas-performance';
+import { trackSvgImageLoads } from '../helpers/svg-image-readiness';
 
 const target = process.env.WERFCANVAS_PERF_URL;
 const storageState = process.env.WERFCANVAS_PERF_STORAGE_STATE;
 const minBoats = 250;
 const minBoatImages = 50;
-const photoSelector = 'image[data-perf-loaded="true"]';
 
 test.skip(!target || !storageState, 'Set WERFCANVAS_PERF_URL and WERFCANVAS_PERF_STORAGE_STATE for a live run.');
 test.use({ storageState, trace: 'off' });
@@ -26,20 +27,19 @@ async function timings(request: Request) {
 for (const profile of ['desktop', 'mobile emulation']) {
   test.describe(profile, () => {
     const mobile = profile === 'mobile emulation';
-    const { viewport, deviceScaleFactor, userAgent, isMobile, hasTouch } = devices['Pixel 7'];
-    test.use(mobile ? { viewport, deviceScaleFactor, userAgent, isMobile, hasTouch } : { viewport: { width: 1680, height: 1000 } });
+    const { viewport, deviceScaleFactor, hasTouch } = devices['Pixel 7'];
+    // Keep each engine's real user agent. Firefox supports narrow viewports but
+    // not Playwright's isMobile emulation; this is viewport/touch coverage.
+    test.use(mobile ? { viewport, deviceScaleFactor, hasTouch } : { viewport: { width: 1680, height: 1000 } });
 
-    test('measures the live Werfcanvas API, photography and zoom controls', async ({ page }) => {
+    test('measures the live Werfcanvas API, photography and zoom controls', async ({ page, browserName }) => {
       test.setTimeout(240_000);
+      await page.bringToFront();
       const url = new URL('/nl/admin/stalling/werfcanvas', target);
-      const session = await page.context().newCDPSession(page);
-      await session.send('Network.enable');
-      await session.send('Network.setCacheDisabled', { cacheDisabled: true });
-      await page.addInitScript(() => {
-        document.addEventListener('load', event => {
-          if (event.target instanceof SVGImageElement) event.target.dataset.perfLoaded = 'true';
-        }, true);
-      });
+      // Playwright routing disables the HTTP cache on all engines. Requests still
+      // reach the real API/storage; responses are never mocked here.
+      await page.route('**/*', route => route.continue());
+      await page.addInitScript(trackSvgImageLoads, 'perfLoaded');
 
       const completed: Request[] = [];
       page.on('requestfinished', request => completed.push(request));
@@ -59,15 +59,19 @@ for (const profile of ['desktop', 'mobile emulation']) {
       await expect(map.getByRole('button')).toHaveCount(boats.total, { timeout: 60_000 });
       const aerial = map.locator(':scope > g > image');
       const boatImages = map.locator('g[role="button"] image');
-      await expect(aerial).toHaveAttribute('data-perf-loaded', 'true', { timeout: 60_000 });
       const boatImageCount = await boatImages.count();
       expect(boatImageCount, 'boats with photographs').toBeGreaterThanOrEqual(minBoatImages);
-      await expect(map.locator(photoSelector)).toHaveCount(boatImageCount + 1, { timeout: 150_000 });
+      // A preview can replace its source after the original image loaded. Wait
+      // for the currently displayed href, rather than a stale load marker.
+      await expect.poll(() => map.locator('image').evaluateAll(images => images.filter(image => {
+        const href = image.getAttribute('href');
+        return href && image.getAttribute('data-perf-loaded') === href;
+      }).length), { timeout: 150_000 }).toBe(boatImageCount + 1);
       const readyMs = await page.evaluate(() => new Promise<number>(resolve =>
         requestAnimationFrame(() => requestAnimationFrame(() => resolve(performance.now())))));
 
       const boatImageUrls = new Set(await boatImages.evaluateAll(images =>
-        images.map(image => new URL(image.getAttribute('href')!, document.baseURI).href)));
+        images.map(image => new URL(image.getAttribute('data-yard-photo-source') || image.getAttribute('href')!, document.baseURI).href)));
       const inventory = completed.filter(request => {
         const url = new URL(request.url());
         return url.pathname.endsWith('/yard-canvas') && url.searchParams.get('placed') === '1';
@@ -96,14 +100,14 @@ for (const profile of ['desktop', 'mobile emulation']) {
         const button = toolbar.getByRole('button', { name, exact: true });
         await expect(button).toBeVisible({ timeout: 10_000 });
         const measurement = await button.evaluateHandle(element => {
-          const layer = document.querySelector('svg[aria-label="Interactieve werfkaart"] > g')!;
+          const layer = document.querySelector('svg[aria-label="Interactieve werfkaart"]')!.parentElement!;
           const sample = new Promise<number>((resolve, reject) => {
             element.addEventListener('click', () => {
-              const previous = layer.getAttribute('transform');
+              const previous = layer.getAttribute('style');
               const start = performance.now();
               const observe = () => {
                 const elapsed = performance.now() - start;
-                if (layer.getAttribute('transform') !== previous) resolve(elapsed);
+                if (layer.getAttribute('style') !== previous) resolve(elapsed);
                 else if (elapsed >= 2_000) reject(new Error('Zoom control did not update the map.'));
                 else requestAnimationFrame(observe);
               };
@@ -122,17 +126,48 @@ for (const profile of ['desktop', 'mobile emulation']) {
         await measurement.dispose();
       }
 
+      expect(await page.evaluate(() => document.visibilityState), 'performance measurements require a foreground page').toBe('visible');
+      const sustainedZoom = await page.evaluate(() => new Promise<{ fps: number; p95FrameMs: number; updates: number }>(resolve => {
+        const toolbar = document.querySelector('[aria-label="Werfcanvas werkbalk"]')!;
+        const buttons = ['Inzoomen', 'Uitzoomen'].map(label => toolbar.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!);
+        const layer = document.querySelector('svg[aria-label="Interactieve werfkaart"]')!.parentElement!;
+        const frames: number[] = [];
+        const started = performance.now();
+        let lastUpdate = started, direction = 0, updates = 0, transform = layer.getAttribute('style');
+        const frame = (now: number) => {
+          const current = layer.getAttribute('style');
+          if (current !== transform) {
+            frames.push(now - lastUpdate); lastUpdate = now;
+            updates++; transform = current;
+          }
+          if (now - started >= 3000) {
+            frames.sort((a, b) => a - b);
+            resolve({ fps: updates * 1000 / (now - started), p95FrameMs: frames[Math.ceil(frames.length * .95) - 1] ?? Infinity, updates });
+            return;
+          }
+          // Keep a zoom update pending every frame. Idle rAF callbacks are not
+          // evidence that the viewport rendered an update.
+          buttons[direction++ % 2].click();
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }));
+      const budgets = yardPerformanceBudgets(mobile);
+      const result = {
+        target: url.origin, profile, engine: browserName, hostPlatform: process.platform,
+        deviceEvidence: 'automated browser on reported host; physical target-device performance unverified',
+        zoomMetric: 'observed viewport updates per second; p95 intervals between updates',
+        browser: await page.evaluate(() => navigator.userAgent),
+        viewport: page.viewportSize(), boats: boats.total, boatImageCount, readyMs,
+        inventory: await Promise.all(inventory.map(async request => ({ page: pageNumber(request), ...(await timings(request)) }))),
+        background: await timings(backgroundRequest!), boatImages: storage,
+        zoomClickToObservedFrameMs: zoomSamples, sustainedZoom, budgets,
+      };
       await test.info().attach('werfcanvas-live-performance.json', {
         contentType: 'application/json',
-        body: JSON.stringify({
-          target: url.origin, profile, browser: await page.evaluate(() => navigator.userAgent),
-          viewport: page.viewportSize(), boats: boats.total, boatImageCount, readyMs,
-          inventory: await Promise.all(inventory.map(async request => ({ page: pageNumber(request), ...(await timings(request)) }))),
-          background: await timings(backgroundRequest!),
-          boatImages: storage,
-          zoomClickToObservedFrameMs: zoomSamples,
-        }, null, 2),
+        body: JSON.stringify(result, null, 2),
       });
+      assertYardPerformance(result, budgets);
     });
   });
 }

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 
 const api = process.env.WERFCANVAS_RACE_API_URL;
-const secondApi = process.env.WERFCANVAS_RACE_SECOND_API_URL ?? api;
+const secondApi = process.env.WERFCANVAS_RACE_SECOND_API_URL;
 const tokens = [process.env.WERFCANVAS_RACE_FIRST_TOKEN, process.env.WERFCANVAS_RACE_SECOND_TOKEN];
 const boatId = process.env.WERFCANVAS_RACE_BOAT_ID;
 const due = process.env.WERFCANVAS_RACE_DUE_AT;
@@ -15,6 +15,8 @@ test.use({ trace: 'off' });
 
 test('two live clients race to plan the same placement in a 250-boat yard', async ({ playwright }) => {
   test.skip(!api, 'Set WERFCANVAS_RACE_API_URL to run against an isolated test yard.');
+  expect(secondApi, 'configure the second isolated backend; one instance cannot prove cross-instance contention').toBeTruthy();
+  expect(new URL(secondApi!).origin, 'cross-instance proof requires two backend origins').not.toBe(new URL(api!).origin);
   expect([boatId, due, ...tokens].every(Boolean), 'configure the fixture boat, yard-local slot and both tokens').toBe(true);
   expect(tokens[0], 'use separate credentials for both clients').not.toBe(tokens[1]);
   expect(due).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
@@ -25,8 +27,8 @@ test('two live clients race to plan the same placement in a 250-boat yard', asyn
     })));
   const endpoint = `${canvas}/placements/${boatId}`;
   let winner: { index: number; version: number; taskId: string } | undefined;
-  const findBoat = async () => {
-    const response = await clients[0].get(canvas, { params: { placed: 1, search: boatId! }, timeout: searchBudget });
+  const findBoat = async (index = 0) => {
+    const response = await clients[index].get(canvas, { params: { placed: 1, search: boatId! }, timeout: searchBudget });
     expect(response.status(), 'search response').toBe(200);
     const { boats } = await response.json();
     return boats.data.find((boat: { id: string }) => boat.id === boatId);
@@ -67,7 +69,9 @@ test('two live clients race to plan the same placement in a 250-boat yard', asyn
       return save.value;
     });
     await test.info().attach('werfcanvas-live-concurrent-timings.json', {
-      body: JSON.stringify({ searchMs, planningMs, saves: results.map(({ status, elapsedMs }) => ({ status, elapsedMs })) }, null, 2),
+      body: JSON.stringify({ backendOrigins: [new URL(api!).origin, new URL(secondApi!).origin],
+        crossInstance: new URL(api!).origin !== new URL(secondApi!).origin,
+        searchMs, planningMs, saves: results.map(({ status, elapsedMs }) => ({ status, elapsedMs })) }, null, 2),
       contentType: 'application/json',
     });
     expect(results.map(result => result.status).sort()).toEqual([200, 409]);
@@ -81,9 +85,17 @@ test('two live clients race to plan the same placement in a 250-boat yard', asyn
       version: success.body.version, actual: initial.actual, planned: success.body.planned,
       assignment: { task_id: success.body.planned.task_id },
     });
-    expect((await findBoat()).placement).toMatchObject({
-      version: success.body.version, actual: initial.actual, planned: success.body.planned,
-    });
+    for (const index of [0, 1]) {
+      expect((await findBoat(index)).placement).toMatchObject({
+        version: success.body.version, actual: initial.actual, planned: success.body.planned,
+      });
+    }
+    // Retry the winning confirmation through the other backend, retaining the
+    // original actor and key. A lost response must not create another task.
+    const replay = await clients[success.index].patch(new URL(endpoint, [api!, secondApi!][1 - success.index]).href,
+      { data: payloads[success.index] });
+    expect(replay.status(), 'cross-backend idempotent replay').toBe(200);
+    expect(await replay.json()).toMatchObject({ version: success.body.version, planned: success.body.planned });
     const response = await clients[0].get(`${canvas}/daily-plan`, { params: { date: due!.slice(0, 10) } });
     expect(response.status()).toBe(200);
     const jobs = (await response.json()).jobs.filter((job: { boat_id: string; type: string }) =>

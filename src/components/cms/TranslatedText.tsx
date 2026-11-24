@@ -46,7 +46,7 @@ export function TranslatedText({ textKey, vars, fallbackText, inline = true }: {
   const activate = (event: React.SyntheticEvent) => { event.preventDefault(); event.stopPropagation(); setOpen(true); };
   return <>
     <span {...source} ref={surface} role={!nested && isCmsEditing ? 'button' : undefined} tabIndex={!nested && isCmsEditing ? 0 : undefined} data-cms-translation={textKey} title={t('cms.editText')}
-      className="cursor-text outline-dashed outline-1 outline-gold-400/60"
+      className="pointer-events-auto cursor-text outline-dashed outline-1 outline-gold-400/60"
       onClick={activate} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') activate(event); }}>{text}</span>
     <TextEditModal open={open} onClose={() => setOpen(false)} page="global" blockKey={`i18n.${textKey}`}
       fallbackText={typeof raw === 'string' ? raw : text} />

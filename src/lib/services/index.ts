@@ -3022,7 +3022,7 @@ export interface ServiceCatalogService {
   name?: string;
   category?: string;
   description?: string;
-  group?: { code?: string; name?: string; color?: string } | null;
+  group?: { id?: string; code?: string; name?: string; color?: string } | null;
   tariffs?: ServiceCatalogTariff[];
   visibility?: { kassa?: boolean; calculator?: boolean; public?: boolean; booking?: boolean };
 }

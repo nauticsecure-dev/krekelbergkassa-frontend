@@ -11,7 +11,14 @@ export const control = 'rounded-lg border border-slate-600 bg-slate-900 px-3 py-
 
 export type Page<T> = { data: T[]; current_page: number; last_page: number; total: number };
 
-type HistoryResult = { events: Page<HistoryEvent>; legacy_coverage: string };
+type HistoryResult = {
+  events: Page<HistoryEvent>; legacy_coverage: string;
+  coverage?: {
+    available_events: number; unlinked_events: number;
+    sources: Record<string, { available_events: number; observed_snapshots: number; unlinked_events: number }>;
+    unattributed: { available_events: number; scope: string; sources: Record<string, number> };
+  };
+};
 
 type HistoryEvent = {
   id: string;
@@ -29,27 +36,56 @@ export function YardHistory({ locale, boatId, revision, initialSource = '' }: { 
   const [filters, setFilters] = useState<Record<string, string>>({ source: initialSource });
   const [page, setPage] = useState(1);
   const [history, setHistory] = useState<HistoryResult>();
+  const [showCoverage, setShowCoverage] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   useEffect(() => {
     let active = true;
-    setHistory(undefined);
+    setLoading(true);
     setError('');
     api<HistoryResult>(`${yardEndpoint}/history`, { query: { ...filters, boat_id: boatId ?? filters.boat_id, page } })
       .then((result) => { if (active) setHistory(result); })
-      .catch((err) => { if (active) setError(err.message); });
+      .catch((err) => { if (active) { setHistory(undefined); setError(err.message); } })
+      .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [boatId, filters, page, revision]);
 
-  const result = history?.events;
-  return <section className="space-y-4">
+  const result = loading ? undefined : history?.events;
+  return <section className="space-y-4" aria-busy={loading}>
     <h2 className="text-lg font-semibold"><TranslatedText textKey="siteCopy.13b42dd0ee393181" fallbackText={"Historie"} />{' '}{result && `(${result.total})`}</h2>
-    {history?.legacy_coverage === 'incomplete' && <p className="text-sm text-slate-300"><TranslatedText textKey="siteCopy.53e12b527b169d89" fallbackText={"Oudere registraties kunnen onvolledig zijn. Alleen vastgelegde gebeurtenissen worden getoond."} /></p>}
+    {history && history.legacy_coverage !== 'complete' && <p className="text-sm text-slate-300"><TranslatedText textKey="siteCopy.53e12b527b169d89" fallbackText={"Oudere registraties kunnen onvolledig zijn. Alleen vastgelegde gebeurtenissen worden getoond."} /></p>}
+    {history?.coverage && <details open={showCoverage} onToggle={event => setShowCoverage(event.currentTarget.open)} className="rounded-lg border border-slate-700 p-3 text-sm">
+      <summary className="cursor-pointer"><TranslatedText textKey="yardHistory.coverage" fallbackText="Dekking van de historie" /></summary>
+      <p className="my-2"><TranslatedText textKey="yardHistory.unknown" fallbackText="Ontbrekende providerregistraties zijn onbekend; deze tellingen bewijzen geen volledige historie." /></p>
+      {!loading && <p><TranslatedText textKey="yardHistory.unattributed" fallbackText="Registraties zonder aantoonbare bootkoppeling bij dezelfde filters: {count}. Deze zijn niet aan de geselecteerde boot toegewezen."
+        vars={{ count: history.coverage.unattributed.available_events }} /></p>}
+      <div className="overflow-x-auto" hidden={loading}><table className="my-2 w-full text-left">
+        <thead><tr>
+          <th><TranslatedText textKey="siteCopy.4460741852a6e865" fallbackText="Bron" /></th>
+          <th><TranslatedText textKey="yardHistory.available" fallbackText="Beschikbaar" /></th>
+          <th><TranslatedText textKey="yardHistory.snapshots" fallbackText="Alleen huidige status" /></th>
+          <th><TranslatedText textKey="yardHistory.unlinked" fallbackText="Zonder bootkoppeling" /></th>
+          <th><TranslatedText textKey="yardHistory.unattributedSource" fallbackText="Niet aan een boot toegeschreven" /></th>
+        </tr></thead>
+        <tbody>{Array.from(new Set([...Object.keys(history.coverage.sources), ...Object.keys(history.coverage.unattributed.sources)])).map(source => {
+          const totals = history.coverage!.sources[source];
+          return <tr key={source}>
+          <td><TranslatedText textKey={`yardHistory.sources.${source}`} fallbackText={source} /></td>
+          <td>{totals?.available_events ?? 0}</td><td>{totals?.observed_snapshots ?? 0}</td><td>{totals?.unlinked_events ?? 0}</td>
+          <td>{history.coverage!.unattributed.sources[source] ?? 0}</td>
+        </tr>; })}</tbody>
+      </table></div>
+      {!boatId && <label className="flex items-center gap-2"><input type="checkbox" checked={filters.attribution === 'unlinked'}
+        onChange={event => { const checked = event.currentTarget.checked; setPage(1); setFilters(current => ({ ...current, boat_id: '', attribution: checked ? 'unlinked' : '' })); }} />
+        <TranslatedText textKey="yardHistory.showUnlinked" fallbackText="Alleen registraties zonder bootkoppeling tonen" />
+      </label>}
+    </details>}
     <form className="flex flex-wrap gap-2" onSubmit={(event) => {
       event.preventDefault();
       setPage(1);
-      setFilters(Object.fromEntries(new FormData(event.currentTarget)) as Record<string, string>);
+      setFilters({ ...Object.fromEntries(new FormData(event.currentTarget)) as Record<string, string>, attribution: filters.attribution ?? '' });
     }}>
-      {!boatId && <label className="grid text-xs"><TranslatedText textKey="siteCopy.bc3f383a9acf2f9b" fallbackText={"Boot-ID"} /><input name="boat_id" className={control} /></label>}
+      {!boatId && <label className="grid text-xs"><TranslatedText textKey="siteCopy.bc3f383a9acf2f9b" fallbackText={"Boot-ID"} /><input name="boat_id" className={control} disabled={filters.attribution === 'unlinked'} /></label>}
       {!boatId && <label className="grid text-xs"><TranslatedText textKey="siteCopy.0c13fff0e4ab7055" fallbackText={"Klant-ID"} /><input name="customer_id" className={control} /></label>}
       <label className="grid text-xs"><TranslatedText textKey="siteCopy.0a211792d9564974" fallbackText={"Van"} /><input type="date" name="from" className={control} /></label>
       <label className="grid text-xs"><TranslatedText textKey="siteCopy.5775f506a94535c4" fallbackText={"Tot"} /><input type="date" name="to" className={control} /></label>

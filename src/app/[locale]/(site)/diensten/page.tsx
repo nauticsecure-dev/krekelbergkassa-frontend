@@ -56,6 +56,7 @@ const FAQS = ['faq1', 'faq2', 'faq3', 'faq4', 'faq5'] as const;
 
 /** A service-catalog group with its public, visible services (Trello #100). */
 interface LiveGroup {
+  id?: string;
   key: string;
   name: string;
   services: ServiceCatalogService[];
@@ -78,7 +79,7 @@ function groupLiveServices(services: ServiceCatalogService[] | undefined): LiveG
     const key = svc.group?.code?.trim() || groupName || 'overig';
     let group = byKey.get(key);
     if (!group) {
-      group = { key, name: groupName || svc.name || key, services: [] };
+      group = { id: svc.group?.id, key, name: groupName || svc.name || key, services: [] };
       byKey.set(key, group);
       order.push(key);
     }
@@ -429,7 +430,9 @@ function LiveServiceGroup({
   return (
     <article id={'service-' + group.key} className="scroll-mt-24">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <h3 className="heading-display text-2xl text-navy-900 sm:text-3xl">{group.name}</h3>
+        <h3 className="heading-display text-2xl text-navy-900 sm:text-3xl">{group.id
+          ? <EditableText blockKey={`catalog.product_group.${group.id}.title`} page={CMS_PAGE} section="catalog">{group.name}</EditableText>
+          : group.name}</h3>
         <Link
           href={`/${locale}/kraanafspraak`}
           className="inline-flex items-center gap-1 text-sm font-semibold text-navy-900 hover:text-marine-700"

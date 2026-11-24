@@ -1,4 +1,42 @@
 {
+  "faqCategory": {
+    "all": "Alle vragen",
+    "kraan": "Kranen & afspuiten",
+    "stalling": "Winterstalling",
+    "planning": "Planning & afspraken",
+    "betalen": "Tarieven & betalen",
+    "verkoop": "Verkoop / brokerage",
+    "verblijf": "Appartementen"
+  },
+  "faqEditor": {
+    "title": "FAQ inhoud bewerken",
+    "shared": "Deze FAQ-inhoud wordt gedeeld tussen de talen. Ook verborgen vragen blijven behouden.",
+    "question": "Vraag",
+    "answer": "Antwoord"
+  },
+  "yardHistory": {
+    "unattributedSource": "Niet aan een boot toegeschreven",
+    "coverage": "Dekking van de historie",
+    "unknown": "Ontbrekende providerregistraties zijn onbekend; deze tellingen bewijzen geen volledige historie.",
+    "unattributed": "Registraties zonder aantoonbare bootkoppeling bij dezelfde filters: {count}. Deze zijn niet aan de geselecteerde boot toegewezen.",
+    "available": "Beschikbaar",
+    "snapshots": "Alleen huidige status",
+    "unlinked": "Zonder bootkoppeling",
+    "showUnlinked": "Alleen registraties zonder bootkoppeling tonen",
+    "sources": {
+      "boat": "Boten en werf",
+      "stallingcontract": "Stalling",
+      "appointment": "Afspraken",
+      "workorder": "Werkorders",
+      "invoice": "Facturen",
+      "payment": "Betalingen",
+      "calculatorrecord": "Calculaties",
+      "task": "Taken",
+      "timeline": "Tijdlijn",
+      "appointmentemail": "Afspraakberichten",
+      "deliveryevent": "Bezorgregistraties"
+    }
+  },
   "yardDaily": {
     "nextTask": "Volgende taak",
     "title": "Dagplanning werf",
@@ -3069,7 +3107,7 @@
       "connection": "Verbinding",
       "online": "Online",
       "offline": "Offline",
-      "pending": "Pending",
+      "pending": "In afwachting",
       "devices": "Geregistreerde sync devices",
       "failed": "Mislukt",
       "lastSync": "Laatste sync",

@@ -1,4 +1,6 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '../helpers/browser-test';
+import type { Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import en from '../../src/i18n/messages/en.json';
 
 const cms = en.cms;
@@ -130,7 +132,21 @@ test('revoked permission removes controls and closes an open editor after revali
   await expect(page.locator('[data-cms-edit]')).toHaveCount(0);
 });
 
-test('expired image upload retains its selected file and metadata for retry', async ({ page }) => {
+for (const invalid of [{ name: 'pretend.webp', mimeType: 'text/plain' }, { name: 'unknown.xyz', mimeType: '' }]) {
+  test(`image selection rejects unsupported file ${invalid.name}`, async ({ page }) => {
+    await fixture(page);
+    await page.goto('/en');
+    await page.getByRole('button', { name: cms.enterEdit, exact: true }).click();
+    await page.locator('[data-cms-block="home.contact.image"] button').click();
+    const dialog = page.locator('[role="dialog"]');
+    await dialog.locator('input[type=file]').first().setInputFiles({ ...invalid, buffer: Buffer.from('not an image') });
+    await expect(page.getByText(cms.imageFormats, { exact: true })).toBeVisible();
+    await expect(dialog.locator('img[src^="blob:"]')).toHaveCount(0);
+  });
+}
+
+for (const upload of ['desktop', 'desktop-empty-mime', 'mobile-empty-mime']) {
+test(`expired ${upload} image upload retains its selected file and metadata for retry`, async ({ page }) => {
   await fixture(page);
   let expired = true;
   let uploads = 0;
@@ -138,14 +154,18 @@ test('expired image upload retains its selected file and metadata for retry', as
     uploads++;
     expect(route.request().headers().authorization).toBe(`Bearer ${expired ? 'cms-fixture' : 'renewed-image-session'}`);
     expect(route.request().headers()['content-type']).toContain('multipart/form-data; boundary=');
-    expect(route.request().postDataBuffer()?.toString()).toContain('name="image"');
+    expect(route.request().postDataBuffer()?.toString()).toContain(`name="${upload.startsWith('mobile') ? 'mobile_image' : 'image'}"`);
+    expect(route.request().postDataBuffer()?.toString()).toContain('Content-Type: image/webp');
     return route.fulfill({ status: expired ? 401 : 200, json: { key:'home.contact.image',revision:1,image_url: '/img/krek/werf-hero.webp' } });
   });
   expect((await page.goto('/en'))?.status()).toBe(200);
   await page.getByRole('button', { name: cms.enterEdit, exact: true }).click();
   await page.locator('[data-cms-block="home.contact.image"] button').click();
   const dialog = page.locator('[role="dialog"]');
-  await dialog.locator('input[type=file]').first().setInputFiles('public/img/krek/werf-hero.webp');
+  const fileInput = dialog.locator('input[type=file]').nth(upload.startsWith('mobile') ? 1 : 0);
+  await fileInput.setInputFiles(upload.endsWith('empty-mime')
+    ? { name: 'werf-hero.webp', mimeType: '', buffer: readFileSync('public/img/krek/werf-hero.webp') }
+    : 'public/img/krek/werf-hero.webp');
   const alt = dialog.getByRole('textbox', { name: `${cms.altText} EN`, exact: true });
   await alt.fill('Retained image description');
   await dialog.getByRole('button', { name: cms.save, exact: true }).click();
@@ -160,3 +180,4 @@ test('expired image upload retains its selected file and metadata for retry', as
   await expect(dialog).toHaveCount(0);
   expect(uploads).toBe(2);
 });
+}

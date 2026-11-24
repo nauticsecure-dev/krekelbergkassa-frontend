@@ -6,7 +6,7 @@ import { usePermission } from '@/lib/permissions';
 import { YardQuickPhoto } from './YardQuickPhoto';
 import { YardDailyPlan } from './YardDailyPlan';
 import { Expand, Minus, Plus, Redo2, Undo2, X } from 'lucide-react';
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import { api, type ApiError } from '@/lib/api';
 import { control, YardHistory, yardEndpoint, type Page } from './YardHistory';
 import { YardMoves } from './YardMoves';
@@ -18,9 +18,20 @@ import { useYardRefresh } from './useYardRefresh';
 import { YardArrival, type Arrival } from './YardArrival';
 import { YardPhotoSessions, useYardPhotoCopy } from './YardPhotoSessions';
 import type { PhotoPlacement } from './YardPhotoMatch';
+import { createYardCamera, yardImageGeometry, yardProjection, yardViewportPoint, type YardProjection } from './yardViewport';
+import { YardViewport, YardZoomButton, YardZoomLevel } from './YardViewportCamera';
+import { YardMapPhoto } from './YardMapPhoto';
+import { YardSceneRaster } from './YardSceneRaster';
 
 type Point = { x: number; y: number };
 type Position = Point & { rotation: number; scale: number; location_code?: string | null };
+
+function yardPosition(position: Position, locationCode: string | null = position.location_code ?? null): Position {
+  // Planned positions also carry task/appointment metadata. API coordinates
+  // accept only these five fields, including for checks and safety approvals.
+  const { x, y, rotation, scale } = position;
+  return { x, y, rotation, scale, location_code: locationCode };
+}
 type Placement = { actual: Position | null; planned: (Position & { appointment_id?: string; task_id?: string }) | null; previous: Position | null; presence: 'arrived' | 'departed' | null; version: number; interaction_locked?: boolean; arrival?: Arrival | null; arrived_at?: string | null };
 type Zone = Point & { name: string; type: 'building' | 'restricted' | 'route'; width: number; height: number };
 type Conflict = Placement & { assignment?: { assignee_id?: string; due_at?: string; state?: string; instructions?: string; equipment?: string; priority?: string } | null };
@@ -143,6 +154,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
   const photoCopy = useYardPhotoCopy();
   const root = useRef<HTMLElement>(null);
   const svg = useRef<SVGSVGElement>(null);
+  const camera = useRef<HTMLDivElement>(null);
   const fullscreenButton = useRef<HTMLButtonElement>(null);
   const space = useRef(false);
   const touches = useRef(new Map<number, Point>());
@@ -175,7 +187,10 @@ export default function YardCanvas({ locale }: { locale: string }) {
   const [selected, setSelected] = useState<Boat>();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [hover, setHover] = useState<Boat>();
-  const [view, setView] = useState(initialView);
+  const [cameraState] = useState(() => createYardCamera(initialView));
+  const setView = cameraState.set;
+  const committedView = cameraState.committed;
+  const [projection, setProjection] = useState<YardProjection & { ready: boolean }>({ pixelsPerMeter: 1, x: 0, y: 0, ready: false });
   const [tab, setTab] = useState('Werfcanvas');
   const initialTabResolved = useRef(false);
   const [detail, setDetail] = useState('Overzicht');
@@ -352,7 +367,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
     const timer = window.setTimeout(() => {
       api<{ warnings: string[]; schedule_warnings?: string[]; severity: string; requires_approval: boolean; details: { message: string; clearance_m: number | null; required_clearance_m: number; overridable: boolean }[] }>(`${yardEndpoint}/placements/${draft.id}/check`, {
         method: 'POST', body: {
-          position: { ...draft.position, location_code: location || null },
+          position: yardPosition(draft.position, location || null),
           ...(selected?.placement.actual && dueAt ? { due_at: offsetStart ?? dueAt, assigned_to_user_id: assignee || null, duration_minutes: Number(duration), equipment } : {}),
         },
       }).then((result) => {
@@ -403,21 +418,31 @@ export default function YardCanvas({ locale }: { locale: string }) {
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
   useEffect(() => () => window.clearTimeout(hoverTimer.current), []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = svg.current;
     if (!element) return;
     const wheel = (event: WheelEvent) => {
+      if (event.target !== mapFrame.current && !camera.current?.contains(event.target as Node)) return;
       event.preventDefault();
       if (gesture.current || !event.deltaY) return;
       const matrix = element.getScreenCTM();
       if (!matrix) return;
-      const anchor = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+      const anchor = yardViewportPoint(new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse()), committedView.current);
       setView((current) => zoomAt(current, event.deltaY < 0 ? 1.12 : 1 / 1.12, anchor));
     };
-    element.addEventListener('wheel', wheel, { passive: false });
-    const observer = new ResizeObserver(() => { gesture.current = null; touches.current.clear(); });
+    const frame = mapFrame.current!;
+    frame.addEventListener('wheel', wheel, { passive: false });
+    const measure = () => {
+      gesture.current = null; touches.current.clear();
+      if (yard && element.clientWidth && element.clientHeight) {
+        const next = { ...yardProjection(element.clientWidth, element.clientHeight, yard.width, yard.height), ready: true };
+        setProjection(current => current.ready && current.pixelsPerMeter === next.pixelsPerMeter && current.x === next.x && current.y === next.y ? current : next);
+      }
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
     observer.observe(element);
-    return () => { element.removeEventListener('wheel', wheel); observer.disconnect(); };
+    return () => { frame.removeEventListener('wheel', wheel); observer.disconnect(); };
   }, [yard, tab]);
 
   useEffect(() => {
@@ -565,12 +590,13 @@ export default function YardCanvas({ locale }: { locale: string }) {
     if (!dueAt) void loadMoveOptions(boat);
   }
 
-  function pointer(event: PointerEvent<SVGElement>): Point {
+  function pointer(event: { clientX: number; clientY: number }): Point {
     const matrix = svg.current?.getScreenCTM();
-    return matrix ? new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse()) : { x: 0, y: 0 };
+    return matrix ? yardViewportPoint(new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse()), committedView.current) : { x: 0, y: 0 };
   }
 
-  function start(event: PointerEvent<SVGElement>, boat?: Boat, position?: Position, rotation = false) {
+  function start(event: PointerEvent<Element>, boat?: Boat, position?: Position, rotation = false) {
+    const view = committedView.current;
     if (event.button !== 0 || busy || (boat && draft && draft.id !== boat.id && !space.current)) return;
     if (space.current) {
       event.stopPropagation();
@@ -585,10 +611,11 @@ export default function YardCanvas({ locale }: { locale: string }) {
     }
     svg.current?.setPointerCapture(event.pointerId);
     if (event.pointerType === 'mouse' && !rotation) svg.current?.focus({ preventScroll: true });
-    gesture.current = { start: pointer(event), origin: view, boat, originalDraft: draft, draft: boat && position ? { id: boat.id, position: { ...position, location_code: position.location_code ?? boat.location_code }, group: draft?.group } : undefined, rotation };
+    gesture.current = { start: pointer(event), origin: view, boat, originalDraft: draft, draft: boat && position ? { id: boat.id, position: yardPosition(position, position.location_code ?? boat.location_code), group: draft?.group } : undefined, rotation };
   }
 
-  function move(event: PointerEvent<SVGSVGElement>) {
+  function move(event: PointerEvent<Element>) {
+    const view = committedView.current;
     if (touches.current.size === 2 && touches.current.has(event.pointerId)) {
       const before = [...touches.current.values()];
       const point = pointer(event);
@@ -650,7 +677,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
           due_at: dueAt, assigned_to_user_id: assignee || null, team_id: teamId || null, equipment, duration_minutes: Number(duration),
           priority, instructions, reason,
           moves: [
-            { id: selected.id, version: selected.placement.version, position: { ...draft.position, location_code: location || null } },
+            { id: selected.id, version: selected.placement.version, position: yardPosition(draft.position, location || null) },
             ...groupPositions(draft, selected.placement.actual),
           ],
         } });
@@ -669,7 +696,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
           instructions: planning ? instructions : undefined,
           remember_assignee: planning && quickMove ? rememberAssignee : undefined,
           appointment_id: operation === 'plan' && linkAppointment ? selected.statuses.planning : undefined,
-          position: (planning || ['place', 'move_now'].includes(operation)) && draft?.id === selected.id ? { ...draft.position, location_code: location || null } : undefined };
+          position: (planning || ['place', 'move_now'].includes(operation)) && draft?.id === selected.id ? yardPosition(draft.position, location || null) : undefined };
       const payload = JSON.stringify(body);
       const needsConfirmation = planning || operation === 'move_now';
       if (needsConfirmation && confirmation.current?.payload !== payload && globalThis.crypto?.randomUUID) {
@@ -859,9 +886,9 @@ export default function YardCanvas({ locale }: { locale: string }) {
     <details className="sm:relative"><summary className={control} title="Kaartacties">⋯</summary>
       <div className={`${panel} absolute inset-x-0 top-full z-30 grid gap-1 sm:left-auto sm:top-auto sm:w-52`}>
         <div className="flex gap-1 sm:hidden">
-          <button className={control} aria-label="Uitzoomen" onClick={() => zoom(.8)}>−</button>
-          <output className="self-center text-xs">{Math.round(view.scale * 100)}%</output>
-          <button className={control} aria-label="Inzoomen" onClick={() => zoom(1.25)}>+</button>
+          <YardZoomButton store={cameraState} direction="out" className={control} aria-label="Uitzoomen" onClick={() => zoom(.8)}>−</YardZoomButton>
+          <YardZoomLevel store={cameraState} className="self-center text-xs" />
+          <YardZoomButton store={cameraState} direction="in" className={control} aria-label="Inzoomen" onClick={() => zoom(1.25)}>+</YardZoomButton>
         </div>
         <button className={control} onClick={resetView}><TranslatedText textKey="siteCopy.9f72119288369982" fallbackText={"Herstel weergave"} /></button>
         <button className={control} disabled={!selected?.placement.actual} onClick={() => selected && choose(selected, true)}><TranslatedText textKey="siteCopy.7f817140987baff1" fallbackText={"Zoom naar selectie"} /></button>
@@ -915,8 +942,10 @@ export default function YardCanvas({ locale }: { locale: string }) {
         else if (['delete', 'backspace'].includes(key)) removePlacement();
         else if (event.code === 'Space' && target.closest('svg')) space.current = true;
         else if (key.startsWith('arrow') && target.closest('svg') && !locked && !busy && yard?.can_edit && selected &&
-          !selected.placement.interaction_locked && !selected.placement.planned && (draft || (yard.can_plan && selected.placement.actual))) {
-          const origin = draft?.position ?? (selected.placement.actual && { ...selected.placement.actual, location_code: selected.placement.actual.location_code ?? selected.location_code });
+          !selected.placement.interaction_locked && (!selected.placement.planned || ['planned', 'assigned'].includes(selected.move_job?.state ?? '')) &&
+          (draft || (yard.can_plan && selected.placement.actual))) {
+          const base = selected.placement.planned ?? selected.placement.actual;
+          const origin = draft?.position ?? (base && yardPosition(base, base.location_code ?? selected.location_code));
           if (origin) {
             const step = event.shiftKey ? 1 : 0.1;
             const x = Math.max(0, Math.min(yard.width, origin.x + (key === 'arrowright' ? step : key === 'arrowleft' ? -step : 0)));
@@ -1003,9 +1032,9 @@ export default function YardCanvas({ locale }: { locale: string }) {
             </div>
           </details>
           <div className="hidden shrink-0 items-center gap-1 sm:flex">
-            <button className={control} title="Uitzoomen" aria-label="Uitzoomen" disabled={view.scale <= .5} onClick={() => zoom(.8)}><Minus size={15} /></button>
-            <output aria-label="Zoomniveau" className="px-1 text-xs tabular-nums">{Math.round(view.scale * 100)}%</output>
-            <button className={control} title="Inzoomen" aria-label="Inzoomen" disabled={view.scale >= 12} onClick={() => zoom(1.25)}><Plus size={15} /></button>
+            <YardZoomButton store={cameraState} direction="out" className={control} title="Uitzoomen" aria-label="Uitzoomen" onClick={() => zoom(.8)}><Minus size={15} /></YardZoomButton>
+            <YardZoomLevel store={cameraState} aria-label="Zoomniveau" className="px-1 text-xs tabular-nums" />
+            <YardZoomButton store={cameraState} direction="in" className={control} title="Inzoomen" aria-label="Inzoomen" onClick={() => zoom(1.25)}><Plus size={15} /></YardZoomButton>
           </div>
           <div className="hidden shrink-0 items-center gap-1 2xl:flex">{secondaryControls}</div>
           <button className={`${control} hidden md:inline-flex`} title="Ongedaan maken" aria-label="Ongedaan maken" disabled={!undo.length || busy} onClick={undoEdit}><Undo2 size={15} /></button>
@@ -1051,13 +1080,42 @@ export default function YardCanvas({ locale }: { locale: string }) {
       </section>}
       {yard && tab === 'Werfcanvas' && <div className={`relative grid min-h-0 gap-2 ${expanded ? 'flex-1' : ''} ${drawer ? 'lg:grid-cols-[minmax(0,1fr)_minmax(17rem,22rem)]' : ''}`}>
         <div ref={mapFrame} className="relative min-h-0 overflow-hidden rounded-xl border border-slate-600 bg-[#172f33]"
+          onPointerDownCapture={(event) => {
+            if (event.pointerType !== 'touch' || (event.target !== event.currentTarget && !camera.current?.contains(event.target as Node))) return;
+            touches.current.set(event.pointerId, pointer(event));
+            if (touches.current.size > 1) {
+              const drag = gesture.current;
+              if (drag?.moved && drag.draft) setDraft(drag.originalDraft);
+              gesture.current = null;
+              svg.current?.setPointerCapture(event.pointerId);
+              event.stopPropagation();
+            }
+          }}
+          onPointerDown={(event) => {
+            if (event.target !== event.currentTarget && !camera.current?.contains(event.target as Node)) return;
+            setMenu(undefined); start(event);
+          }}
+          onPointerMove={move}
+          onPointerUp={(event) => {
+            touches.current.delete(event.pointerId);
+            const drag = gesture.current;
+            gesture.current = null;
+            if (drag?.moved && !drag.rotation && !drag.draft?.group?.length && drag.boat?.placement.actual) openQuickMove(drag.boat);
+          }}
+          onPointerCancel={(event) => {
+            touches.current.delete(event.pointerId);
+            const drag = gesture.current;
+            gesture.current = null;
+            if (drag?.moved && drag.draft) setDraft(drag.originalDraft);
+          }}
           onDragOver={(event) => { if (event.dataTransfer.types.includes('application/x-yard-boat')) event.preventDefault(); }}
           onDrop={(event) => {
+            const view = committedView.current;
             const boat = unplaced?.data.find((row) => row.id === event.dataTransfer.getData('application/x-yard-boat'));
             const matrix = svg.current?.getScreenCTM();
             if (!boat || !matrix) return;
             event.preventDefault();
-            const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+            const point = yardViewportPoint(new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse()), committedView.current);
             const x = (point.x - view.x) / view.scale;
             const y = (point.y - view.y) / view.scale;
             if (x >= 0 && y >= 0 && x <= yard.width && y <= yard.height) placeDraft(boat, { x, y });
@@ -1067,41 +1125,18 @@ export default function YardCanvas({ locale }: { locale: string }) {
           </button>
           {selected && <button className={`${control} absolute right-2 top-14 z-10 lg:hidden`} aria-label="Acties voor geselecteerde boot"
             onClick={() => setMenu(menu ? undefined : { boat: selected })}>⋯</button>}
+          <YardViewport cameraRef={camera} store={cameraState} projection={projection} className={expanded ? 'h-full' : undefined}>
           <svg ref={svg} tabIndex={0} aria-label="Interactieve werfkaart"
             className={`block w-full touch-none select-none ${expanded ? 'h-full' : 'h-[min(74dvh,65vw)] min-h-[340px]'}`}
-            viewBox={`0 0 ${yard.width} ${yard.height}`}
-            onPointerDownCapture={(event) => {
-              if (event.pointerType !== 'touch') return;
-              touches.current.set(event.pointerId, pointer(event));
-              if (touches.current.size > 1) {
-                const drag = gesture.current;
-                if (drag?.moved && drag.draft) setDraft(drag.originalDraft);
-                gesture.current = null;
-                svg.current?.setPointerCapture(event.pointerId);
-                event.stopPropagation();
-              }
-            }}
-            onPointerDown={(event) => { setMenu(undefined); start(event); }} onPointerMove={move}
-            onPointerUp={(event) => {
-              touches.current.delete(event.pointerId);
-              const drag = gesture.current;
-              gesture.current = null;
-              if (drag?.moved && !drag.rotation && !drag.draft?.group?.length && drag.boat?.placement.actual) openQuickMove(drag.boat);
-            }}
-            onPointerCancel={(event) => {
-              touches.current.delete(event.pointerId);
-              const drag = gesture.current;
-              gesture.current = null;
-              if (drag?.moved && drag.draft) setDraft(drag.originalDraft);
-            }}>
+            viewBox={`0 0 ${yard.width} ${yard.height}`}>
             <defs>
               <pattern id="yard-grid" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M 5 0 H 0 V 5" fill="none" stroke="#77908c" strokeWidth=".17" /></pattern>
               <marker id="yard-arrow" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M 0 0 L 4 2 L 0 4 Z" fill="#facc15" stroke="none" /></marker>
             </defs>
-            <g transform={`translate(${view.x} ${view.y}) scale(${view.scale})`}>
+            <g>
               <rect width={yard.width} height={yard.height} fill="url(#yard-grid)" />
               {mapImage && background && (mapImage.transform
-                ? <image href={background} x={0} y={0} width={1} height={1} transform={`matrix(${mapImage.transform.join(' ')})`} preserveAspectRatio="none" />
+                ? <image href={background} x={0} y={0} {...yardImageGeometry(mapImage.transform, yard.width, yard.height)} preserveAspectRatio="none" />
                 : <image href={background} x={mapImage.x} y={mapImage.y} width={mapImage.width} height={mapImage.height} preserveAspectRatio="none" />)}
               {yard.geometry && <polygon points={yard.geometry.boundary.map(p => p.join(',')).join(' ')} fill="none" stroke="#fbbf24" strokeWidth={.15} strokeDasharray=".8 .4" pointerEvents="none" />}
               {guides && mapImage && <rect width={yard.width} height={yard.height} fill="url(#yard-grid)" pointerEvents="none" />}
@@ -1149,7 +1184,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
                       onPointerDown={(event) => start(event, boat, draftPosition ?? boat.placement.planned ?? position)}
                       transform={`rotate(${position.rotation})`}>
                       <path d={hull} fill={highlighted ? '#1d4ed8' : '#dbeafe'} stroke={highlighted ? '#93c5fd' : '#1e293b'} strokeWidth=".35" />
-                      {boat.top_view && <image href={boat.top_view.url} x={-length / 2} y={-width / 2} width={length} height={width} preserveAspectRatio="none" pointerEvents="none" />}
+                      {boat.top_view && projection.ready && <YardMapPhoto url={boat.top_view.url} length={length} width={width} pixelsPerMeter={projection.pixelsPerMeter} camera={cameraState} />}
                     </g>
                     {highlighted && yard.can_edit && !locked && !boat.placement.interaction_locked && !boat.placement.planned && (!boat.placement.actual || yard.can_plan) && <circle cx={(draftPosition?.x ?? position.x) - position.x + Math.cos((draftPosition ?? position).rotation * Math.PI / 180) * (length / 2 + 1.2)}
                       cy={(draftPosition?.y ?? position.y) - position.y + Math.sin((draftPosition ?? position).rotation * Math.PI / 180) * (length / 2 + 1.2)} r=".65" fill="#facc15" className="cursor-crosshair"
@@ -1160,12 +1195,27 @@ export default function YardCanvas({ locale }: { locale: string }) {
                       return route ? <a key={key} href={`${admin}/${route}`} aria-label={`${boat.name} · ${statuses[key].label}`} onPointerDown={(event) => event.stopPropagation()}>{dot}</a>
                         : <g key={key} pointerEvents="none">{dot}</g>;
                     })}
-                    {labels && <text y={width / 2 + 3} fontSize="1.65" textAnchor="middle" fill="white" stroke="#0f172a" strokeWidth=".5" paintOrder="stroke" pointerEvents="none">{boat.name}</text>}
                   </g>}
                 </g>;
               })}
             </g>
           </svg>
+          {projection.ready && <YardSceneRaster scene={svg} camera={cameraState} projection={projection} />}
+          {labels && <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            {visible.map(boat => {
+              const draftPosition = draft?.id === boat.id ? draft.position : groupDestinations.find(member => member.id === boat.id)?.position;
+              const position = boat.placement.actual ?? draftPosition;
+              if (!position || (positionMode === 'planned' && !draftPosition)) return null;
+              const width = (boat.width_cm || 250) / 100 * position.scale;
+              const halo = projection.pixelsPerMeter * .25;
+              return <span key={boat.id} data-yard-boat-label className="absolute whitespace-nowrap leading-none text-white"
+                style={{ left: position.x * projection.pixelsPerMeter + projection.x,
+                  top: (position.y + width / 2 + 3) * projection.pixelsPerMeter + projection.y,
+                  fontSize: 1.65 * projection.pixelsPerMeter, transform: 'translate(-50%, -80%)',
+                  WebkitTextStroke: `${halo * 2}px #0f172a`, paintOrder: 'stroke fill' }}>{boat.name}</span>;
+            })}
+          </div>}
+          </YardViewport>
           <p className="pointer-events-none absolute bottom-2 right-2 rounded bg-slate-950/90 px-2 py-1 text-xs">
             {mapCount}{' '}<TranslatedText textKey="siteCopy.41ef988ab60b6d4b" fallbackText={"op kaart · Weergave opgehaald"} />{' '}{loadedAt?.toLocaleTimeString('nl-NL', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' }) ?? '—'}
           </p>
@@ -1339,7 +1389,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
                 {draft && assessment && <div role="status" className={`text-xs ${assessment.severity === 'red' ? 'text-red-200' : assessment.severity === 'orange' ? 'text-amber-200' : 'text-green-300'}`}>
                   <p><TranslatedText textKey="siteCopy.cd96a08b7717f313" fallbackText={"Controle: "} />{{ red: 'rood — onafhankelijke beoordeling vereist', orange: 'oranje — toelichting vereist', green: 'groen' }[assessment.severity]}</p>
                   {assessment.details.map((d, i) => <p key={i}>{d.message} <TranslatedText textKey="siteCopy.b5568e9e25fc74da" fallbackText={" Vrije ruimte "} />{d.clearance_m == null ? 'onbekend' : d.clearance_m.toFixed(2)} <TranslatedText textKey="siteCopy.15117cda4eb10f75" fallbackText={" m · vereist "} />{d.required_clearance_m.toFixed(2)} <TranslatedText textKey="siteCopy.098bd218c4e7913b" fallbackText={" m."} /></p>)}
-                  {assessment.requires_approval && assessment.details.every(d => d.overridable) && !draft.group?.length && <YardSafetyProposal onApproved={setSafetyApproval} proposal={{ boatId: selected.id, version: selected.placement.version, operation: selected.placement.actual ? selected.placement.planned ? 'replan' : 'plan' : 'place', reason, position: { ...draft.position, location_code: location || null }, ...(selected.placement.actual ? { due_at: offsetStart ?? dueAt, duration_minutes: Number(duration) } : {}) }} />}
+                  {assessment.requires_approval && assessment.details.every(d => d.overridable) && !draft.group?.length && <YardSafetyProposal onApproved={setSafetyApproval} proposal={{ boatId: selected.id, version: selected.placement.version, operation: selected.placement.actual ? selected.placement.planned ? 'replan' : 'plan' : 'place', reason, position: yardPosition(draft.position, location || null), ...(selected.placement.actual ? { due_at: offsetStart ?? dueAt, duration_minutes: Number(duration) } : {}) }} />}
                 </div>}
                 {yard.can_plan && selected.placement.actual && draft && !selected.placement.planned && <div className="grid gap-2">
                   <label className="grid text-xs"><TranslatedText textKey="siteCopy.ae3f9cc15a21108a" fallbackText={"Datum en tijd (Nederland)"} /><input type="datetime-local" className={control} value={dueAt} onChange={(event) => { setDueAt(event.target.value); setOffsetStart(undefined); }} /></label>
@@ -1403,7 +1453,7 @@ export default function YardCanvas({ locale }: { locale: string }) {
         <p className="text-sm">{describePosition(selected.placement.actual)} → {describePosition(draft.position)}</p>
         {warnings?.length ? <p role="status" className="text-sm text-amber-200">{warnings.join(' ')}</p> : null}
         {scheduleWarnings.length ? <p role="status" className="text-sm text-amber-200">{scheduleWarnings.join(' ')}</p> : null}
-        {assessment?.requires_approval && assessment.details.every(d => d.overridable) && <YardSafetyProposal onApproved={setSafetyApproval} proposal={{ boatId: selected.id, version: selected.placement.version, operation: selected.placement.planned ? 'replan' : 'plan', reason, position: { ...draft.position, location_code: location || null }, due_at: offsetStart ?? dueAt, duration_minutes: Number(duration) }} />}
+        {assessment?.requires_approval && assessment.details.every(d => d.overridable) && <YardSafetyProposal onApproved={setSafetyApproval} proposal={{ boatId: selected.id, version: selected.placement.version, operation: selected.placement.planned ? 'replan' : 'plan', reason, position: yardPosition(draft.position, location || null), due_at: offsetStart ?? dueAt, duration_minutes: Number(duration) }} />}
         {error && <p role="alert" className="text-sm text-red-200">{error}</p>}
         {conflict && <ConflictDetails placement={conflict} />}
         <fieldset disabled={busy || loadingOptions} className="grid gap-3">

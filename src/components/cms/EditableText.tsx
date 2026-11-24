@@ -73,6 +73,24 @@ export function EditableText({
   const { isCmsEditing, retainCmsDrafts, canEdit, getContentBlock, localeTag } = useCms();
   const { t } = useIntl();
   const [open, setOpen] = useCmsEditorOpen();
+  const surface = React.useRef<HTMLDivElement & HTMLSpanElement>(null);
+  const [nested, setNested] = React.useState(false);
+  React.useLayoutEffect(() => {
+    if (!isCmsEditing) return;
+    const parent = surface.current?.parentElement?.closest('a, button, summary, [role="button"], [role="link"]');
+    setNested(!!parent);
+    if (!parent) return;
+    const activate = (event: Event) => {
+      if (event instanceof KeyboardEvent && !['Enter', ' '].includes(event.key)) return;
+      const target = event.target instanceof Element ? event.target.closest('[data-cms-block]') : null;
+      if (target !== surface.current && !(event instanceof KeyboardEvent && event.target === parent
+        && parent.querySelector('[data-cms-block]') === surface.current)) return;
+      event.preventDefault(); event.stopPropagation(); setOpen(true);
+    };
+    parent.addEventListener('click', activate, true);
+    parent.addEventListener('keydown', activate, true);
+    return () => { parent.removeEventListener('click', activate, true); parent.removeEventListener('keydown', activate, true); };
+  }, [isCmsEditing]);
 
   const fallbackText = React.useMemo(() => childrenToText(children), [children]);
   const stored = getContentBlock(blockKey)?.value;
@@ -101,6 +119,10 @@ export function EditableText({
   return (
     <>
       <Wrap
+        ref={surface}
+        role={isCmsEditing && !nested ? 'group' : undefined}
+        tabIndex={isCmsEditing && !nested ? 0 : undefined}
+        onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') openEditor(event); }}
         data-cms-block={blockKey}
         {...source}
         className={cn(
@@ -112,7 +134,7 @@ export function EditableText({
         <Tag className={cn('outline-dashed outline-1 outline-gold-400/60', className)}>
           {content}
         </Tag>
-        <button
+        {nested ? <span data-cms-edit aria-hidden="true" className="ml-1 inline-flex text-gold-500"><Pencil className="h-3.5 w-3.5" /></span> : <button
           type="button"
           data-cms-edit
           style={!isCmsEditing ? { display: 'none' } : undefined}
@@ -122,7 +144,7 @@ export function EditableText({
           className="absolute -right-1 -top-1 z-20 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 text-white shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
         >
           <Pencil className="h-3.5 w-3.5" />
-        </button>
+        </button>}
       </Wrap>
       {/* Keep portal events outside the editable surface so typing and selecting
           text in the dialog cannot activate the trigger or cancel input focus. */}

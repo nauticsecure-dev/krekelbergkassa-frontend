@@ -1,4 +1,42 @@
 {
+  "faqCategory": {
+    "all": "Toutes les questions",
+    "kraan": "Levage et lavage",
+    "stalling": "Hivernage",
+    "planning": "Planning et rendez-vous",
+    "betalen": "Tarifs et paiement",
+    "verkoop": "Vente / courtage",
+    "verblijf": "Appartements"
+  },
+  "faqEditor": {
+    "title": "Modifier la FAQ",
+    "shared": "Ce contenu est partagé entre les langues. Les questions masquées sont également conservées.",
+    "question": "Question",
+    "answer": "Réponse"
+  },
+  "yardHistory": {
+    "unattributedSource": "Non attribués à un bateau",
+    "coverage": "Couverture de l’historique",
+    "unknown": "Les données manquantes du prestataire sont inconnues ; ces chiffres ne prouvent pas que l’historique est complet.",
+    "unattributed": "Enregistrements sans lien vérifié avec un bateau pour les mêmes filtres : {count}. Ils ne sont pas attribués au bateau sélectionné.",
+    "available": "Disponibles",
+    "snapshots": "État actuel uniquement",
+    "unlinked": "Sans lien avec un bateau",
+    "showUnlinked": "Afficher uniquement les enregistrements sans lien avec un bateau",
+    "sources": {
+      "boat": "Bateaux et chantier",
+      "stallingcontract": "Stockage",
+      "appointment": "Rendez-vous",
+      "workorder": "Ordres de travail",
+      "invoice": "Factures",
+      "payment": "Paiements",
+      "calculatorrecord": "Calculs",
+      "task": "Tâches",
+      "timeline": "Chronologie",
+      "appointmentemail": "Messages de rendez-vous",
+      "deliveryevent": "Preuves de livraison"
+    }
+  },
   "yardDaily": {
     "nextTask": "Prochaine tâche",
     "title": "Planning journalier du chantier",
@@ -116,13 +154,13 @@
       "registerPayment": "Register payment"
     },
     "create": {
-      "customer": "Customer",
-      "boat": "Boat",
-      "appointment": "Appointment",
-      "stalling": "Storage",
-      "invoice": "Invoice",
+      "customer": "Client",
+      "boat": "Bateau",
+      "appointment": "Rendez-vous",
+      "stalling": "Stockage",
+      "invoice": "Facture",
       "brokerage": "Sales dossier",
-      "supplier": "Supplier",
+      "supplier": "Fournisseur",
       "service": "Service"
     },
     "nav": {
@@ -131,7 +169,7 @@
       "qualityCenter": "Centre qualité",
       "qaUnavailable": "QA est indisponible. Vérifiez votre réseau et réessayez.",
       "overview": "Vue d’ensemble",
-      "planning": "Planning",
+      "planning": "Planification",
       "pos": "Caisse",
       "storage": "Hivernage",
       "customers": "Clients",
@@ -144,7 +182,7 @@
     },
     "hubs": {
       "planning": {
-        "title": "Planning",
+        "title": "Planification",
         "subtitle": "Manage appointments, calendar availability and yard work from one place.",
         "schedule": "Schedule",
         "calendar": "Disponibilité et calendrier du chantier",
@@ -167,7 +205,7 @@
         "title": "Finance",
         "subtitle": "Central access to sales invoices, payments, suppliers and reports.",
         "openAmount": "Outstanding",
-        "overdueAmount": "Overdue",
+        "overdueAmount": "En retard",
         "dueAmount": "Still to pay",
         "revenueMonth": "Revenue this month",
         "costsMonth": "Purchases this month",
@@ -178,9 +216,9 @@
         "overview": "Financial overview",
         "invoices": "Sales invoices",
         "invoicesDesc": "Find and manage invoices from every workflow.",
-        "payments": "Payments",
+        "payments": "Paiements",
         "paymentsDesc": "Review recorded payments and payment statuses.",
-        "reports": "Reports",
+        "reports": "Rapports",
         "reportsDesc": "Financial reports and summaries.",
         "accounting": "Purchases and accounting",
         "purchaseInvoices": "Purchase invoices",
@@ -193,9 +231,9 @@
         "debtorsDesc": "Find customer accounts and invoices."
       },
       "brokerage": {
-        "title": "Brokerage",
+        "title": "Courtage",
         "subtitle": "A central entry point for sales, boats, customer contacts and brokerage pricing.",
-        "workflows": "Brokerage",
+        "workflows": "Courtage",
         "sales": "Sales dossiers",
         "salesDesc": "Review recent sales and related invoices.",
         "boats": "Boats for sale",
@@ -217,7 +255,7 @@
         "groupsDesc": "Organize services and products into groups.",
         "bundles": "Bundles",
         "bundlesDesc": "Manage combined product and service bundles.",
-        "calculator": "Calculator",
+        "calculator": "Calculateur",
         "calculatorDesc": "Calculate prices using the central pricing rules."
       },
       "management": {
@@ -227,7 +265,7 @@
         "configuration": "Configuration",
         "users": "Users",
         "usersDesc": "Manage access and staff accounts.",
-        "settings": "Settings",
+        "settings": "Paramètres",
         "settingsDesc": "Manage company and application settings.",
         "system": "System administration",
         "audit": "Audit",
@@ -1360,9 +1398,9 @@
       "kassa": "POS",
       "calendar": "Planning",
       "stalling": "Storage",
-      "customers": "Customers",
+      "customers": "Clients",
       "boats": "Boats",
-      "invoices": "Invoices",
+      "invoices": "Factures",
       "contracts": "Contracts",
       "appointments": "Appointments",
       "payments": "Payments",
@@ -1813,8 +1851,8 @@
         "all": "All",
         "myTasks": "My tasks",
         "finance": "Finance",
-        "storage": "Storage",
-        "planning": "Planning"
+        "storage": "Stockage",
+        "planning": "Planification"
       },
       "allVisibility": "Toutes les visibilités",
       "sendMessage": "Envoyer un message au client",
@@ -1849,7 +1887,7 @@
       },
       "fields": {
         "code": "Code",
-        "name": "Name",
+        "name": "Nom",
         "color": "Colour",
         "icon": "Icon",
         "sortOrder": "Sort order",
@@ -1915,7 +1953,7 @@
       }
     },
     "reports": {
-      "title": "Reports",
+      "title": "Rapports",
       "subtitle": "Turnover, VAT, revenue by group and payment methods",
       "export": "Export CSV",
       "print": "Print",
@@ -1926,7 +1964,7 @@
       "methodsTitle": "Payment methods",
       "groupTitle": "Revenue by product group",
       "agingTitle": "Invoice aging",
-      "storageTitle": "Storage",
+      "storageTitle": "Stockage",
       "occupancyTitle": "Occupancy",
       "occupancyNoCapacity": "Set hall/location capacity to see occupancy %.",
       "customersTitle": "Top customers",
@@ -1936,7 +1974,7 @@
       "marginMissing": "Margin excludes {count} invoice lines without a cost price.",
       "marginValue": "Gross margin {pct}%",
       "presets": {
-        "today": "Today",
+        "today": "Aujourd’hui",
         "yesterday": "Yesterday",
         "last_7_days": "Last 7 days",
         "last_30_days": "Last 30 days",
@@ -1965,7 +2003,7 @@
         "activeContracts": "Active contracts",
         "boatsInStorage": "Boats in storage",
         "expiring30": "Expiring in 30 days",
-        "openBalance": "Open balance",
+        "openBalance": "Solde restant",
         "avgDuration": "Avg. duration",
         "days": "{count} days",
         "byContractType": "Revenue by contract type",
@@ -1989,8 +2027,8 @@
         "title": "Work orders",
         "period": "Period",
         "open": "Open",
-        "overdue": "Overdue",
-        "completed": "Completed",
+        "overdue": "En retard",
+        "completed": "Terminé",
         "laborHours": "Labor hours",
         "materials": "Materials revenue"
       }
@@ -2027,15 +2065,15 @@
       "retry": "Réessayer"
     },
     "status": {
-      "paid": "Paid",
-      "overdue": "Overdue",
+      "paid": "Payé",
+      "overdue": "En retard",
       "partial": "Partially paid",
       "final": "Final",
       "credited": "Credited",
-      "cancelled": "Cancelled",
+      "cancelled": "Annulé",
       "draft": "Draft",
       "open": "Open",
-      "failed": "Failed",
+      "failed": "Échec",
       "expiring": "Expiring",
       "checkedOut": "Checked out"
     },
@@ -2063,12 +2101,12 @@
       "categories": {
         "finance": "Finance",
         "cash": "Cash register",
-        "customers": "Customers",
-        "boats": "Boats",
-        "storage": "Storage",
-        "planning": "Planning",
-        "brokerage": "Brokerage",
-        "settings": "Settings",
+        "customers": "Clients",
+        "boats": "Bateaux",
+        "storage": "Stockage",
+        "planning": "Planification",
+        "brokerage": "Courtage",
+        "settings": "Paramètres",
         "integrations": "Integrations",
         "security": "Security",
         "system": "System",
@@ -2079,7 +2117,7 @@
         "success": "Success",
         "warning": "Warning",
         "error": "Error",
-        "critical": "Critical"
+        "critical": "Critique"
       },
       "eventTitles": {
         "cashClosureCreated": "Cash closure created",
@@ -2097,12 +2135,12 @@
         "unknown": "Unknown system action"
       },
       "entity": {
-        "invoice": "Invoice",
-        "customer": "Customer",
-        "stalling": "Storage",
+        "invoice": "Facture",
+        "customer": "Client",
+        "stalling": "Stockage",
         "payment": "Payment",
-        "boat": "Boat",
-        "appointment": "Appointment",
+        "boat": "Bateau",
+        "appointment": "Rendez-vous",
         "cashClosure": "Cash closure",
         "product": "Service / product",
         "system": "System",
@@ -2320,7 +2358,7 @@
       "payment": {
         "cash": "Cash",
         "pin": "Card terminal",
-        "invoice": "Invoice",
+        "invoice": "Facture",
         "creditcard": "Credit card",
         "banktransfer": "Bankoverschrijving",
         "ideal": "iDEAL",
@@ -2422,8 +2460,8 @@
       "companyName": "Company name",
       "street": "Street",
       "houseNumber": "No.",
-      "postalCode": "Postal code",
-      "city": "City",
+      "postalCode": "Code postal",
+      "city": "Ville",
       "country": "Country",
       "addressHint": "Address is optional but recommended for invoicing.",
       "fastScan": "Fast scan",
@@ -2444,7 +2482,7 @@
         "noChartData": "No revenue data for this period yet.",
         "noPaymentData": "No payment method data yet.",
         "periods": {
-          "today": "Today",
+          "today": "Aujourd’hui",
           "7d": "7 days",
           "30d": "30 days",
           "month": "This month"
@@ -2475,7 +2513,7 @@
       "title": "Hivernage",
       "subtitle": "Manage around 200 boats with status, paid-until and open balance",
       "searchPlaceholder": "Search by boat, customer or location",
-      "allStatuses": "All statuses",
+      "allStatuses": "Tous les statuts",
       "allTypes": "All types",
       "type": {
         "winter": "Hiver",
@@ -2488,20 +2526,20 @@
       "emptyMessage": "No results for current filters.",
       "columns": {
         "boat": "Boat",
-        "customer": "Customer",
+        "customer": "Client",
         "period": "Period",
         "type": "Type",
         "paidUntil": "Paid until",
-        "openBalance": "Open balance",
+        "openBalance": "Solde restant",
         "location": "Location",
         "status": "Status",
         "bok": "Berth"
       },
-      "invoice": "Invoice",
-      "cancel": "Cancel",
+      "invoice": "Facture",
+      "cancel": "Annuler",
       "confirmCancel": "Cancel this contract?",
       "confirmCreateInvoice": "Create an invoice for this storage contract?",
-      "invoiceCreated": "Invoice created",
+      "invoiceCreated": "Facture créée",
       "cancelled": "Contract cancelled",
       "contracts": "{count} contracts",
       "openCustomer": "Open customer",
@@ -2519,9 +2557,9 @@
         "boatName": "Boat name",
         "lengthCm": "Length (cm)",
         "boatType": "Boat type",
-        "customerName": "Name",
-        "customerEmail": "Email",
-        "customerPhone": "Phone",
+        "customerName": "Nom",
+        "customerEmail": "E-mail",
+        "customerPhone": "Téléphone",
         "location": "Location / rack",
         "paymentRoute": "Payment route",
         "payByEmail": "Send payment link by email",
@@ -2541,8 +2579,8 @@
         "registration": "Registration",
         "street": "Street",
         "houseNumber": "House number",
-        "postalCode": "Postal code",
-        "city": "City",
+        "postalCode": "Code postal",
+        "city": "Ville",
         "companyName": "Company name (optional)",
         "hall": "Hall",
         "bok": "Ber",
@@ -2579,10 +2617,10 @@
         "kassaOpened": "Register opened with deposit"
       },
       "lifecycle": {
-        "active": "Active",
+        "active": "Actif",
         "ended": "Ended",
         "checkedOut": "Checked out",
-        "cancelled": "Cancelled",
+        "cancelled": "Annulé",
         "draft": "Draft"
       },
       "tabs": {
@@ -2611,8 +2649,8 @@
       "invoiceLabels": {
         "deposit": "10% Deposit",
         "final": "Final invoice",
-        "brokerage": "Brokerage",
-        "invoice": "Invoice"
+        "brokerage": "Courtage",
+        "invoice": "Facture"
       }
     },
     "sync": {
@@ -2627,7 +2665,7 @@
       "offline": "Hors ligne",
       "pending": "En attente",
       "devices": "Registered sync devices",
-      "failed": "Failed",
+      "failed": "Échec",
       "lastSync": "Last sync",
       "pendingChanges": "Pending changes",
       "clear": "Clear",
@@ -2885,7 +2923,7 @@
       "collapseSidebar": "Réduire le menu latéral"
     },
     "invoices": {
-      "title": "Invoices",
+      "title": "Factures",
       "subtitle": "Financial overview across POS, storage, calculator and manual invoices",
       "createIntro": "Choose how you want to create the invoice.",
       "backToRegister": "Back to invoices",
@@ -2898,7 +2936,7 @@
       "manualCreateDescription": "Create an invoice for a customer with your own invoice lines.",
       "startManual": "Start manual invoice",
       "back": "Back",
-      "customer": "Customer",
+      "customer": "Client",
       "customerCreateFailed": "Could not create customer",
       "invalidLines": "Check the description and quantity for each invoice line.",
       "changeCustomer": "Choose another customer",
@@ -2906,8 +2944,8 @@
       "createCustomerInline": "Create customer",
       "billingAddress": "Billing address",
       "invoiceDetails": "Invoice details",
-      "invoiceDate": "Invoice date",
-      "dueDate": "Due date",
+      "invoiceDate": "Date de facture",
+      "dueDate": "Date d’échéance",
       "invoiceNumberOptional": "Invoice number (leave blank to assign automatically)",
       "reference": "Reference",
       "sourceLabel": "Source",
@@ -2950,32 +2988,32 @@
       "total": "{count} invoices",
       "source": {
         "kassa": "POS",
-        "stalling": "Storage",
+        "stalling": "Stockage",
         "manual": "Manual",
-        "calculator": "Calculator",
-        "appointment": "Appointment",
-        "brokerage": "Brokerage",
+        "calculator": "Calculateur",
+        "appointment": "Rendez-vous",
+        "brokerage": "Courtage",
         "import": "Import"
       },
       "metrics": {
         "open": "Open invoices",
-        "overdue": "Overdue",
-        "paid": "Paid",
-        "openBalance": "Open balance"
+        "overdue": "En retard",
+        "paid": "Payé",
+        "openBalance": "Solde restant"
       },
       "columns": {
-        "invoice": "Invoice",
-        "customer": "Customer",
+        "invoice": "Facture",
+        "customer": "Client",
         "source": "Source",
-        "amount": "Amount",
-        "dueDate": "Due date",
+        "amount": "Montant",
+        "dueDate": "Date d’échéance",
         "paymentMethod": "Payment method",
         "paidDate": "Paid date",
         "status": "Status"
       },
       "toasts": {
         "createFailed": "Creating invoice failed",
-        "created": "Invoice created"
+        "created": "Facture créée"
       },
       "selectCustomer": "Select a customer",
       "modal": {
@@ -2991,7 +3029,7 @@
       "payableBalance": "Solde fournisseurs à payer"
     },
     "invoiceDetail": {
-      "fallbackTitle": "Invoice",
+      "fallbackTitle": "Facture",
       "subtitle": "Invoice details",
       "creditSuccess": "Credit note created",
       "pdfGenerating": "Generating invoice PDF…",
@@ -3018,8 +3056,8 @@
         "reminderBody": "Your invoice is still open. Contact us if you have questions."
       },
       "meta": {
-        "invoiceDate": "Invoice date",
-        "dueDate": "Due date",
+        "invoiceDate": "Date de facture",
+        "dueDate": "Date d’échéance",
         "paidOn": "Paid on"
       },
       "columns": {
@@ -3031,7 +3069,7 @@
       },
       "summary": {
         "subtotal": "Subtotal",
-        "vat": "VAT",
+        "vat": "TVA",
         "total": "Total",
         "outstanding": "Outstanding"
       },
@@ -3106,7 +3144,7 @@
       "originalDocument": "Document original"
     },
     "customerDetail": {
-      "fallbackTitle": "Customer",
+      "fallbackTitle": "Client",
       "loading": "Loading customer details",
       "infoTitle": "Customer information",
       "summaryTitle": "Summary",
@@ -3115,10 +3153,10 @@
       "vatNumber": "VAT number",
       "notes": "Notes",
       "noNotes": "No notes",
-      "boats": "Boats",
+      "boats": "Bateaux",
       "stallingContracts": "Storage contracts",
-      "invoices": "Invoices",
-      "openBalance": "Open balance",
+      "invoices": "Factures",
+      "openBalance": "Solde restant",
       "dueDate": "Due date",
       "noBoats": "No boats linked yet.",
       "noInvoices": "No invoices yet.",
@@ -3152,7 +3190,7 @@
         "saveFailed": "Saving failed",
         "boatAdded": "Boat added",
         "createFailed": "Create failed",
-        "invoiceCreated": "Invoice created",
+        "invoiceCreated": "Facture créée",
         "invoiceCreateFailed": "Invoice creation failed"
       },
       "confirmNewInvoice": "Create a new invoice for this customer?",
@@ -3168,10 +3206,10 @@
       "genderUnspecified": "Not specified",
       "genderMale": "Male",
       "genderFemale": "Female",
-      "genderOther": "Other",
+      "genderOther": "Autre",
       "street": "Street & number",
-      "postalCode": "Postal code",
-      "city": "City",
+      "postalCode": "Code postal",
+      "city": "Ville",
       "country": "Country",
       "timeline": "Timeline",
       "viewTimeline": "View full timeline",
@@ -3191,7 +3229,7 @@
           "fair": "Fair",
           "poor": "Poor",
           "at_risk": "At risk",
-          "critical": "Critical"
+          "critical": "Critique"
         }
       },
       "timelineTitlePlaceholder": "Objet / titre",
@@ -3205,7 +3243,7 @@
       "addComment": "+ Commentaire"
     },
     "calculator": {
-      "title": "Calculator",
+      "title": "Calculateur",
       "subtitle": "Consistent pricing for POS, storage and sales",
       "lengthCm": "Longueur du bateau (cm)",
       "contractType": "Contract type",
@@ -3217,11 +3255,11 @@
       "createQuote": "Create quote",
       "createInvoice": "Create invoice",
       "newCustomer": "New customer",
-      "linePrefix": "Calculator",
+      "linePrefix": "Calculateur",
       "servicesMap": {
         "afspuiten": "Washdown",
         "kranen": "Crane",
-        "stalling": "Storage",
+        "stalling": "Stockage",
         "hal": "Hall rental"
       },
       "result": {
@@ -3272,7 +3310,7 @@
         "confirmArchive": "Archive this calculation?",
         "searchPlaceholder": "Search number, customer, boat...",
         "allServices": "All services",
-        "allStatuses": "All statuses",
+        "allStatuses": "Tous les statuts",
         "allCustomers": "All customers",
         "allDocuments": "All documents",
         "hasQuote": "Has quote",
@@ -3287,8 +3325,8 @@
         "statusDraft": "Draft",
         "statusQuote": "Converted to quote",
         "statusInvoice": "Converted to invoice",
-        "statusPaid": "Paid",
-        "statusCancelled": "Cancelled",
+        "statusPaid": "Payé",
+        "statusCancelled": "Annulé",
         "statusArchived": "Archived",
         "exportCsv": "Export CSV",
         "exporting": "Exporting…",
@@ -3339,13 +3377,13 @@
       "noAvailableServices": "Aucun service n’est disponible pour le calculateur."
     },
     "settings": {
-      "title": "Settings",
+      "title": "Paramètres",
       "subtitle": "Company, invoicing, payment and locale configuration",
       "loading": "Loading settings",
       "tabs": {
         "company": "Company",
         "invoicing": "Invoicing",
-        "payments": "Payments",
+        "payments": "Paiements",
         "locales": "Languages",
         "emailOcr": "Email & OCR"
       },
@@ -3355,8 +3393,8 @@
         "vatNumber": "VAT number",
         "iban": "IBAN",
         "street": "Street",
-        "postalCode": "Postal code",
-        "city": "City",
+        "postalCode": "Code postal",
+        "city": "Ville",
         "country": "Country"
       },
       "invoicing": {
@@ -3413,29 +3451,29 @@
       "subtitle": "Planifier les rendez-vous par jour, semaine et mois",
       "loading": "Loading appointments",
       "filterStatus": "Filter by status",
-      "allStatuses": "All statuses",
+      "allStatuses": "Tous les statuts",
       "statusPending": "Pending review",
       "statusConfirmed": "Confirmed",
       "statusPlanned": "Planned",
       "statusStarted": "Started",
-      "statusCompleted": "Completed",
-      "statusCancelled": "Cancelled",
+      "statusCompleted": "Terminé",
+      "statusCancelled": "Annulé",
       "emptyTitle": "No appointments",
       "emptyMessage": "No appointments found yet.",
       "confirm": "Confirm",
       "complete": "Complete",
-      "cancel": "Cancel",
+      "cancel": "Annuler",
       "confirmCancel": "Cancel this appointment?",
       "cancelReason": "Cancelled via admin",
       "total": "{count} appointments",
-      "today": "Today",
+      "today": "Aujourd’hui",
       "listOverview": "Time grid with hours and days. Drag an appointment to move it.",
       "columns": {
         "date": "Date",
         "time": "Time",
         "boat": "Boat",
         "services": "Services",
-        "status": "Status"
+        "status": "Statut"
       },
       "toasts": {
         "confirmed": "Appointment confirmed",
@@ -3487,10 +3525,10 @@
       "total": "{count} products",
       "columns": {
         "code": "Code",
-        "name": "Name",
+        "name": "Nom",
         "category": "Category",
         "price": "Price",
-        "vat": "VAT",
+        "vat": "TVA",
         "status": "Status"
       },
       "fields": {
@@ -3505,7 +3543,7 @@
         "serviceCodeNone": "No service code",
         "categoryNone": "No category",
         "sku": "SKU",
-        "supplier": "Supplier",
+        "supplier": "Fournisseur",
         "imageUrl": "Image URL",
         "tags": "Tags",
         "tagsPlaceholder": "storage, season",
@@ -3536,10 +3574,10 @@
         "visibility": "Visibility"
       },
       "categories": {
-        "stalling": "Storage",
+        "stalling": "Stockage",
         "repair": "Repair / service",
         "retail": "Retail",
-        "other": "Other"
+        "other": "Autre"
       },
       "modal": {
         "title": "New product",
@@ -3557,7 +3595,7 @@
       "allGroups": "Tous les groupes"
     },
     "payments": {
-      "title": "Payments",
+      "title": "Paiements",
       "subtitle": "Overview of Mollie and POS payments",
       "searchPlaceholder": "Search by customer or status",
       "loading": "Loading payments",
@@ -3617,9 +3655,9 @@
       "confirmDeactivate": "Are you sure you want to deactivate {name}? They will no longer be able to sign in.",
       "searchPlaceholder": "Search by name or email",
       "allRoles": "All roles",
-      "allStatuses": "All statuses",
+      "allStatuses": "Tous les statuts",
       "allLanguages": "All languages",
-      "statusActive": "Active",
+      "statusActive": "Actif",
       "statusBlocked": "Blocked",
       "statusNeverLoggedIn": "Never logged in",
       "neverLoggedIn": "Never logged in",
@@ -3628,7 +3666,7 @@
         "unspecified": "Unspecified",
         "male": "Male",
         "female": "Female",
-        "other": "Other"
+        "other": "Autre"
       },
       "unblock": "Débloquer",
       "block": "Bloquer",
@@ -3661,7 +3699,7 @@
       "noLocations": "No locations",
       "noLocationsMessage": "Add boat locations for scheduling.",
       "weekOverview": "Weekly overview with opening hours and lunch break",
-      "today": "Today",
+      "today": "Aujourd’hui",
       "exceptionsOverview": "Special days and holiday closures",
       "locationsOverview": "Crane locations on the yard",
       "metrics": {
@@ -3713,7 +3751,7 @@
         "setRegular": "Set hours",
         "addException": "Exception",
         "setLunch": "Set lunch",
-        "edit": "Edit",
+        "edit": "Modifier",
         "block": "Block",
         "unblock": "Unblock"
       },
@@ -3745,7 +3783,7 @@
         "queue": "Queue",
         "mollie": "Mollie",
         "mail": "Mail",
-        "storage": "Storage",
+        "storage": "Stockage",
         "webhooks": "Webhooks"
       },
       "status": {
@@ -3757,11 +3795,11 @@
         "latency": "Response time {ms} ms"
       },
       "repair": {
-        "payments": "Payments",
+        "payments": "Paiements",
         "webhooks": "Webhooks",
         "sync": "Sync conflicts",
-        "invoices": "Invoices",
-        "customers": "Customers",
+        "invoices": "Factures",
+        "customers": "Clients",
         "idempotency": "Idempotency",
         "mismatchedCount": "{count} mismatched payments",
         "failedWebhooksCount": "{count} failed webhooks",
@@ -3856,17 +3894,17 @@
       "confirmReject": "Reject this import?",
       "confirmWorkbon": "Create a supplier workbon (work order) waiting for the supplier invoice?",
       "searchPlaceholder": "Search by file, supplier or sender",
-      "allStatuses": "All statuses",
+      "allStatuses": "Tous les statuts",
       "allSources": "All sources",
       "sourceUpload": "Upload",
-      "sourceEmail": "Email",
+      "sourceEmail": "E-mail",
       "emptyTitle": "No imports",
       "emptyMessage": "Upload a PDF to get started.",
       "columns": {
         "file": "File",
-        "supplier": "Supplier",
+        "supplier": "Fournisseur",
         "source": "Source",
-        "status": "Status",
+        "status": "Statut",
         "date": "Date",
         "confidence": "Confidence",
         "invoiceNumber": "N° de facture",
@@ -3901,11 +3939,11 @@
         "lineItems": "Line items",
         "noDocument": "No source document available.",
         "noLineItems": "No line items extracted.",
-        "supplier": "Supplier",
+        "supplier": "Fournisseur",
         "documentNumber": "Document number",
-        "date": "Invoice date",
+        "date": "Date de facture",
         "total": "Total",
-        "vat": "VAT",
+        "vat": "TVA",
         "description": "Description",
         "qty": "Qty",
         "unitPrice": "Unit price",
@@ -3998,11 +4036,11 @@
       },
       "fields": {
         "invoice_number": "Invoice number",
-        "invoice_date": "Invoice date",
-        "due_date": "Due date",
-        "supplier": "Supplier",
+        "invoice_date": "Date de facture",
+        "due_date": "Date d’échéance",
+        "supplier": "Fournisseur",
         "subtotal": "Subtotal",
-        "vat": "VAT",
+        "vat": "TVA",
         "total": "Total",
         "iban": "IBAN",
         "line_items": "Line items"
@@ -4048,7 +4086,7 @@
         "open": "Open",
         "back": "← Back to work orders",
         "overview": "Work order overview",
-        "boat": "Boat",
+        "boat": "Bateau",
         "assignee": "Assignee",
         "unassigned": "Unassigned",
         "created": "Created",
@@ -4083,9 +4121,9 @@
       "columns": {
         "number": "Number",
         "type": "Type",
-        "status": "Status",
+        "status": "Statut",
         "priority": "Priority",
-        "due": "Due date",
+        "due": "Date d’échéance",
         "boat": "Boat",
         "assignee": "Assigned to",
         "hours": "Hours",
@@ -4103,7 +4141,7 @@
         "assigned": "Work order assigned",
         "started": "Work order started",
         "completed": "Work order completed",
-        "invoiceCreated": "Invoice created",
+        "invoiceCreated": "Facture créée",
         "timeAdded": "Time entry added",
         "materialAdded": "Material added",
         "fileUploaded": "File uploaded"
@@ -4130,7 +4168,7 @@
         "rigging": "Rigging",
         "hull": "Hull",
         "warranty": "Warranty",
-        "other": "Other"
+        "other": "Autre"
       },
       "overlay": {
         "title": "Work orders",
@@ -4155,8 +4193,8 @@
       "stats": {
         "today": "Due today",
         "upcoming": "Upcoming",
-        "overdue": "Overdue",
-        "completed": "Completed"
+        "overdue": "En retard",
+        "completed": "Terminé"
       },
       "listTitle": "Reminders",
       "listSubtitle": "Open reminders that need action",
@@ -4194,11 +4232,11 @@
         "reminderTypeAuto": "Auto (derive from days)"
       },
       "entities": {
-        "invoice": "Invoice",
+        "invoice": "Facture",
         "contract": "Storage contract",
         "workOrder": "Work order",
         "insurance": "Insurance",
-        "planning": "Planning"
+        "planning": "Planification"
       },
       "triggers": {
         "overdueAfter": "Overdue after X days",
@@ -4208,7 +4246,7 @@
       },
       "channels": {
         "manual": "Manual (task)",
-        "email": "Email",
+        "email": "E-mail",
         "portal": "Portal",
         "whatsapp": "WhatsApp",
         "push": "Push"
@@ -4221,19 +4259,19 @@
         "ruleDeleted": "Rule deleted",
         "ruleUpdated": "Règle mise à jour"
       },
-      "statusAll": "All statuses",
-      "statusPending": "Pending",
+      "statusAll": "Tous les statuts",
+      "statusPending": "En attente",
       "statusSent": "Sent",
-      "statusCompleted": "Completed",
+      "statusCompleted": "Terminé",
       "statusDismissed": "Dismissed",
       "preview": "Preview",
       "previewTitle": "Reminder preview",
       "entityLabels": {
         "storage_contract": "Storage contract",
-        "invoice": "Invoice",
+        "invoice": "Facture",
         "work_order": "Work order",
         "insurance": "Insurance",
-        "planning": "Planning"
+        "planning": "Planification"
       },
       "triggerLabels": {
         "overdue_after": "Overdue after",
@@ -4350,7 +4388,7 @@
         "items": "Products"
       },
       "fields": {
-        "name": "Name",
+        "name": "Nom",
         "color": "Color",
         "description": "Description",
         "items": "Products"
@@ -4372,7 +4410,7 @@
       "status": {
         "ok": "OK",
         "warning": "Warning",
-        "critical": "Critical"
+        "critical": "Critique"
       },
       "panels": {
         "failedLogins24h": "Failed logins (24h)",
@@ -4422,7 +4460,7 @@
         "reveal": "Reveal"
       },
       "fields": {
-        "name": "Name",
+        "name": "Nom",
         "service": "Service",
         "environment": "Environment",
         "keyValue": "Key value",
@@ -4453,14 +4491,14 @@
       "loading": "Loading incidents…",
       "empty": "No incidents found.",
       "count": "{count} incidents",
-      "allStatuses": "All statuses",
+      "allStatuses": "Tous les statuts",
       "allSeverities": "All severities",
       "unassigned": "Unassigned",
       "severities": {
         "low": "Low",
         "medium": "Medium",
         "high": "High",
-        "critical": "Critical"
+        "critical": "Critique"
       },
       "statuses": {
         "open": "Open",
@@ -4534,10 +4572,10 @@
       "duration": "{seconds}s",
       "triggeredBy": "By {by}",
       "status": {
-        "completed": "Completed",
-        "success": "Completed",
+        "completed": "Terminé",
+        "success": "Terminé",
         "running": "Running",
-        "failed": "Failed",
+        "failed": "Échec",
         "pending": "Queued",
         "unknown": "Unknown"
       },
@@ -4651,13 +4689,13 @@
     "loading": "Loading planning…",
     "prevWeek": "Previous week",
     "nextWeek": "Next week",
-    "today": "Today",
+    "today": "Aujourd’hui",
     "newAppointment": "New appointment",
     "realtimeStaff": "Live linked to the yard planning",
     "realtimeCustomer": "Only your own appointments are shown",
     "rescheduled": "Appointment rescheduled",
     "dragHint": "Drag an appointment to another day to reschedule",
-    "appointment": "Appointment",
+    "appointment": "Rendez-vous",
     "confirm": "Approve",
     "markComplete": "Mark complete",
     "cancel": "Cancel",
@@ -4689,8 +4727,8 @@
     "createConfirm": "Create appointment",
     "created": "Appointment created",
     "checking": "Checking…",
-    "fieldCustomer": "Customer",
-    "fieldBoat": "Boat",
+    "fieldCustomer": "Client",
+    "fieldBoat": "Bateau",
     "fieldService": "Service",
     "fieldLocation": "Location / crane",
     "fieldDate": "Date",

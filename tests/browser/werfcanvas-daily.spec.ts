@@ -1,6 +1,13 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test } from '../helpers/browser-test';
+import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { createServer } from 'node:http';
+import { trackSvgImageLoads } from '../helpers/svg-image-readiness';
+
+// This worker includes a rendering benchmark. Trace capture competes with its
+// frame measurements; keep failure screenshots and JSON evidence instead.
+test.use({ trace: 'off', screenshot: 'only-on-failure' });
 
 const canvasPath = '/nl/admin/stalling/werfcanvas';
 const mapLabel = 'Interactieve werfkaart';
@@ -214,7 +221,7 @@ test('persisted boat lock blocks keyboard nudging after reload on a populated ma
   await boat.press('Enter');
   await map.press('ArrowRight');
   await expect(undo).toBeEnabled();
-  await page.keyboard.press('Control+z');
+  await page.keyboard.press('ControlOrMeta+z');
   await expect(undo).toBeDisabled();
   expect(changes).toEqual([{ version: 1, locked: true }, { version: 2, locked: false }]);
 });
@@ -241,8 +248,8 @@ test('canvas shortcuts scope commands and preserve the draft when leaving fullsc
   await map.press('Escape');
   await expect(page.getByRole('button', { name: 'Sneltoetsen sluiten' })).toHaveCount(0);
 
-  const view = map.locator(':scope > g');
-  const original = await view.getAttribute('transform');
+  const view = map.locator('..');
+  const original = await view.getAttribute('style');
   const point = await mapPoint(map, position.x, position.y);
   await map.focus();
   await page.mouse.move(point.x, point.y);
@@ -251,7 +258,7 @@ test('canvas shortcuts scope commands and preserve the draft when leaving fullsc
   await page.mouse.move(point.x + 45, point.y + 30, { steps: 5 });
   await page.mouse.up();
   await page.keyboard.up('Space');
-  await expect(view).not.toHaveAttribute('transform', original!);
+  await expect(view).not.toHaveAttribute('style', original!);
   await expect(draft).toHaveCount(0);
   await map.press('0');
 
@@ -265,6 +272,10 @@ test('canvas shortcuts scope commands and preserve the draft when leaving fullsc
   await map.press('Control+z');
   await expect(map.locator('path[transform^="translate(60 46)"]')).toHaveCount(1);
   await map.press('Control+Shift+z');
+  await expect(map.locator('path[transform^="translate(60 45)"]')).toHaveCount(1);
+  await map.press('Meta+z');
+  await expect(map.locator('path[transform^="translate(60 46)"]')).toHaveCount(1);
+  await map.press('Meta+Shift+z');
   await expect(map.locator('path[transform^="translate(60 45)"]')).toHaveCount(1);
   await map.press('Meta+z');
   await expect(map.locator('path[transform^="translate(60 46)"]')).toHaveCount(1);
@@ -366,7 +377,8 @@ async function touchInput(page: Page) {
     touch.send('Input.dispatchTouchEvent', { type, touchPoints: points.map((point, id) => ({ ...point, id })) });
 }
 
-test('touch pans the map, selects a boat, and pinches without producing a placement', async ({ page }) => {
+test('touch pans the map, selects a boat, and pinches without producing a placement', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Native multi-touch injection requires Chromium CDP; desktop pointer workflows run on every engine.');
   await page.setViewportSize({ width: 820, height: 1000 });
   await workspace(page, () => yard());
   const writes: string[] = [];
@@ -376,14 +388,14 @@ test('touch pans the map, selects a boat, and pinches without producing a placem
   });
   const map = await openCanvas(page);
   const boat = map.getByRole('button', { name: boatName, exact: true });
-  const view = map.locator(':scope > g');
-  const original = await view.getAttribute('transform');
+  const view = map.locator('..');
+  const original = await view.getAttribute('style');
   const send = await touchInput(page);
   const empty = await mapPoint(map, 36, 33);
   await send('touchStart', empty);
   await send('touchMove', { x: empty.x + 50, y: empty.y + 25 });
   await send('touchEnd');
-  await expect(view).not.toHaveAttribute('transform', original!);
+  await expect(view).not.toHaveAttribute('style', original!);
   await expect(boat).toHaveAttribute('aria-pressed', 'false');
 
   const center = await mapPoint(map, position.x, position.y);
@@ -426,7 +438,9 @@ test('touch pans the map, selects a boat, and pinches without producing a placem
 });
 
 for (const status of [409, 503]) {
-  test(`touch placement survives HTTP ${status} and recovers after leaving the canvas`, async ({ page }) => {
+  test(`touch placement survives HTTP ${status} and recovers after leaving the canvas`, async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Native multi-touch injection requires Chromium CDP; desktop conflict recovery runs on every engine.');
+    test.setTimeout(180_000);
     await page.setViewportSize({ width: 820, height: 1000 });
     const due = '2026-11-20T09:00:00+01:00';
     const conflict = status === 409;
@@ -448,7 +462,8 @@ for (const status of [409, 503]) {
         if (conflict) current = { ...current, version: 2, actual: serverPosition };
         return route.fulfill({ status, json: { message: error, ...(conflict && { placement: current }) } });
       }
-      current = { ...current, planned: payload.position, version: 2 };
+      expect(payload.version).toBe(current.version);
+      current = { ...current, planned: payload.position, version: current.version + 1 };
       return route.fulfill({ json: current });
     });
 
@@ -510,6 +525,33 @@ for (const status of [409, 503]) {
     if (conflict) {
       await expect(page.getByText(/Serverversie\s*2/)).toBeVisible();
       await expect(save).toBeDisabled();
+      // Resolve deliberately: discard the stale draft, fetch the current version,
+      // then create a new touch proposal rather than overwriting another save.
+      await draft.getByRole('button', { name: 'Annuleren', exact: true }).click();
+      await expect(draft).toHaveCount(0);
+      await page.reload();
+      await expect(map).toBeVisible();
+      const refreshedCenter = await mapPoint(map, serverPosition.x, serverPosition.y);
+      const target = await mapPoint(map, writes[0].position.x, writes[0].position.y);
+      await send('touchStart', refreshedCenter);
+      await send('touchEnd');
+      await expect(boat).toHaveAttribute('aria-pressed', 'true');
+      await send('touchStart', refreshedCenter);
+      await send('touchMove', target);
+      await send('touchEnd');
+      await expect(dialog).toBeVisible();
+      await expect(submit).toBeEnabled();
+      await submit.click();
+      await expect(page.getByRole('status').filter({ hasText: 'Verplaatsing ingepland.' })).toBeVisible();
+      await expect(draft).toHaveCount(0);
+      expect(writes).toHaveLength(2);
+      expect(writes[1]).toMatchObject({ operation: 'plan', version: 2 });
+      expect(current.version).toBe(3);
+      expect(current.actual).toEqual(serverPosition);
+      expect(current.planned).toEqual(writes[1].position);
+      await page.reload();
+      await expect(map).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Concept vergelijken en herstellen' })).toHaveCount(0);
     } else {
       await save.click();
       await expect(proposal).toHaveText(originalProposal);
@@ -529,15 +571,162 @@ test('both zoom controls are usable from Kaartacties on a phone-width viewport',
   const toolbar = page.getByRole('group', { name: 'Werfcanvas werkbalk' });
   await toolbar.locator('summary[title="Meer filters en kaartbediening"]').click();
   await toolbar.locator('summary[title="Kaartacties"]:visible').click();
-  const layer = map.locator(':scope > g');
-  const original = await layer.getAttribute('transform');
+  const layer = map.locator('..');
+  const original = await layer.getAttribute('style');
+  const before = (await map.boundingBox())!;
   await toolbar.getByRole('button', { name: 'Inzoomen', exact: true }).click();
-  await expect(layer).not.toHaveAttribute('transform', original!);
+  await expect(layer).not.toHaveAttribute('style', original!);
+  const after = (await map.boundingBox())!;
+  expect(Math.abs(after.x + after.width / 2 - before.x - before.width / 2)).toBeLessThan(1);
+  expect(Math.abs(after.y + after.height / 2 - before.y - before.height / 2)).toBeLessThan(1);
   await toolbar.getByRole('button', { name: 'Uitzoomen', exact: true }).click();
-  await expect(layer).toHaveAttribute('transform', original!);
+  await expect(layer).toHaveAttribute('style', original!);
 });
 
-test('read-only touch actions allow inspection without exposing placement edits', async ({ page }) => {
+test('native wheel zoom keeps selection and does not create a placement', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await workspace(page, () => yard());
+  let writes = 0;
+  await page.route('**/placements/boat-1', route => { writes++; return route.abort(); });
+  const map = await openCanvas(page);
+  const boat = await selectBoat(map);
+  await map.press('0');
+  const zoom = page.getByLabel('Zoomniveau');
+  await expect(zoom).toHaveText('100%');
+  const before = (await boat.boundingBox())!;
+  const anchor = { x: before.x + before.width / 2, y: before.y + before.height / 2 };
+  await page.mouse.move(anchor.x, anchor.y);
+  await page.mouse.wheel(0, -120);
+  const percentage = async () => Number((await zoom.innerText()).replace('%', ''));
+  await expect.poll(percentage).toBeGreaterThan(100);
+  const after = (await boat.boundingBox())!;
+  expect(Math.abs(after.x + after.width / 2 - anchor.x)).toBeLessThan(1);
+  expect(Math.abs(after.y + after.height / 2 - anchor.y)).toBeLessThan(1);
+  const zoomed = await percentage();
+  await page.mouse.wheel(0, 120);
+  await expect.poll(percentage).toBeLessThan(zoomed);
+  await expect(boat).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByLabel('Plaatsingsconcept')).toHaveCount(0);
+  expect(writes).toBe(0);
+});
+
+async function transparentMapPhoto(page: Page) {
+  const encoded = await page.evaluate(() => {
+    const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = 512;
+    const context = canvas.getContext('2d')!;
+    context.fillStyle = '#ff0000'; context.fillRect(256, 128, 512, 256);
+    return canvas.toDataURL('image/png').split(',')[1];
+  });
+  return Buffer.from(encoded, 'base64');
+}
+
+test('overview scene refreshes after selection and restores SVG detail and keyboard focus', async ({ page, browser }) => {
+  await workspace(page, () => yard());
+  const map = await openCanvas(page);
+  const raster = map.locator('..').locator('canvas[data-yard-scene-raster]');
+  await expect(raster).toHaveAttribute('data-state', 'ready');
+  await expect(raster).toBeVisible();
+  const pixels = await raster.evaluate(canvas => (canvas as HTMLCanvasElement).toDataURL());
+  await selectBoat(map);
+  await expect.poll(() => raster.evaluate(canvas => (canvas as HTMLCanvasElement).toDataURL())).not.toBe(pixels);
+  await expect(raster).toHaveAttribute('data-state', 'ready');
+  // Selecting a boat fits it at 250%; start this overview/detail round trip at 100%.
+  await map.press('0');
+  await expect(page.getByLabel('Zoomniveau')).toHaveText('100%');
+  const toolbar = page.getByRole('group', { name: 'Werfcanvas werkbalk' });
+  for (let i = 0; i < 4; i++) await toolbar.getByRole('button', { name: 'Inzoomen', exact: true }).click();
+  await expect(raster).toBeHidden();
+  await expect(map).not.toHaveCSS('opacity', '0');
+  for (let i = 0; i < 4; i++) await toolbar.getByRole('button', { name: 'Uitzoomen', exact: true }).click();
+  await expect(raster).toBeVisible();
+  await map.press('Tab');
+  await expect(map.getByRole('button', { name: boatName, exact: true })).toBeFocused();
+  await expect(raster).toBeHidden();
+  await expect(map).not.toHaveCSS('opacity', '0');
+  const retina = await browser.newContext({ baseURL: new URL(page.url()).origin,
+    viewport: { width: 1280, height: 900 }, deviceScaleFactor: 2 });
+  try {
+    await retina.routeWebSocket('**/_next/webpack-hmr', socket => socket.close());
+    const densePage = await retina.newPage();
+    await workspace(densePage, () => yard());
+    const denseMap = await openCanvas(densePage);
+    const denseRaster = denseMap.locator('..').locator('canvas[data-yard-scene-raster]');
+    await expect(denseRaster).toHaveAttribute('data-state', 'ready');
+    await expect(denseRaster).toBeVisible();
+    const size = await denseMap.evaluate(svg => {
+      const canvas = svg.parentElement!.querySelector<HTMLCanvasElement>('canvas[data-yard-scene-raster]')!;
+      return { density: window.devicePixelRatio, width: svg.clientWidth, height: svg.clientHeight,
+        rasterWidth: canvas.width, rasterHeight: canvas.height };
+    });
+    expect(size.density).toBe(2);
+    expect(size.rasterWidth).toBe(Math.ceil(size.width * 4));
+    expect(size.rasterHeight).toBe(Math.ceil(size.height * 4));
+    expect(size.rasterWidth * size.rasterHeight).toBeLessThanOrEqual(16_777_216);
+    await test.info().attach('retina-raster.json', { body: JSON.stringify(size), contentType: 'application/json' });
+  } finally { await retina.close(); }
+});
+
+test('overview photos preserve alpha, reveal original detail and release their preview on navigation', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const png = await transparentMapPhoto(page);
+  const url = '/img/transparent-map-photo.png';
+  await workspace(page, () => yard([{ ...sampleBoat, top_view: { id: 'alpha-photo', url } }]));
+  await page.route('**/img/transparent-map-photo.png', route => route.fulfill({ body: png, contentType: 'image/png' }));
+  const map = await openCanvas(page);
+  const photo = map.locator('image[data-yard-photo-source]');
+  await expect(photo).toHaveAttribute('data-yard-photo-mode', 'overview');
+  const preview = (await photo.getAttribute('href'))!;
+  const pixels = await page.evaluate(async href => {
+    const image = new Image(); image.src = href; await image.decode();
+    const canvas = document.createElement('canvas'); canvas.width = image.naturalWidth; canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d')!; context.drawImage(image, 0, 0);
+    return { width: canvas.width, height: canvas.height, corner: context.getImageData(0, 0, 1, 1).data[3],
+      center: Array.from(context.getImageData(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1).data) };
+  }, preview);
+  expect(pixels.width).toBeLessThan(1024); expect(pixels.height).toBeLessThan(512);
+  expect(pixels.corner).toBe(0); expect(pixels.center[0]).toBeGreaterThan(240); expect(pixels.center[3]).toBe(255);
+  const zoom = page.getByRole('group', { name: 'Werfcanvas werkbalk' }).getByRole('button', { name: 'Inzoomen', exact: true });
+  for (let i = 0; i < 4; i++) await zoom.click();
+  await expect(photo).toHaveAttribute('data-yard-photo-mode', 'original');
+  await expect(photo).toHaveAttribute('href', url);
+  await page.getByRole('button', { name: 'Botenlijst', exact: true }).click();
+  await expect(photo).toHaveCount(0);
+  await expect.poll(() => page.evaluate(async href => {
+    try { return !(await fetch(href)).ok; } catch { return true; }
+  }, preview)).toBe(true);
+});
+
+test('a photo without canvas CORS permission remains visible through its original URL', async ({ page }) => {
+  const png = await transparentMapPhoto(page);
+  // Route.fulfill can bypass engine CORS handling. Use a real second origin.
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { 'Content-Type': 'image/png', 'Connection': 'close' });
+    response.end(png);
+  });
+  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('Missing photo fixture port');
+  const url = `http://127.0.0.1:${address.port}/top-view.png`;
+  try {
+    await workspace(page, () => yard([{ ...sampleBoat, top_view: { id: 'cors-photo', url } }]));
+    await page.route(url, route => route.continue());
+    await page.addInitScript(() => document.addEventListener('load', event => {
+      if (event.target instanceof SVGImageElement && event.target.hasAttribute('data-yard-photo-source')) event.target.dataset.fallbackLoaded = 'true';
+    }, true));
+    const map = await openCanvas(page);
+    const photo = map.locator('image[data-yard-photo-source]');
+    await expect(photo).toHaveAttribute('href', url);
+    await expect(photo).toHaveAttribute('data-yard-photo-mode', 'original');
+    await expect(photo).toHaveAttribute('data-fallback-loaded', 'true');
+    await expect(map.locator('..').locator('canvas[data-yard-scene-raster]')).toHaveAttribute('data-state', 'fallback');
+    await expect(map).not.toHaveCSS('opacity', '0');
+  } finally {
+    await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+  }
+});
+
+test('read-only touch actions allow inspection without exposing placement edits', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Native touch injection requires Chromium CDP; read-only desktop interactions run on every engine.');
   await page.setViewportSize({ width: 820, height: 1000 });
   await workspace(page, () => ({ ...yard(), can_edit: false, can_plan: false }));
   await page.route('**/auth/me', route => route.fulfill({ json: {
@@ -659,7 +848,7 @@ for (const failure of [503, 409]) {
     const map = await openCanvas(page);
     await selectBoat(map);
     await map.press('ArrowRight');
-    await map.press('Control+s');
+    await map.press('ControlOrMeta+s');
     const dialog = page.getByRole('dialog', { name: 'Verplaatsing plannen' });
     const submit = dialog.getByRole('button', { name: 'Opslaan & toewijzen' });
     await expect(dialog).toBeVisible();
@@ -697,6 +886,38 @@ for (const failure of [503, 409]) {
   });
 }
 
+for (const state of ['assigned', 'in_progress']) {
+  test(`keyboard replanning respects the existing destination and ${state} task state`, async ({ page }) => {
+    const due = '2026-11-20T09:00:00+01:00';
+    const planned = { ...position, x: 80, task_id: 'existing-move', appointment_id: null };
+    const current = { ...placement, version: 2, planned };
+    await workspace(page, () => yard([{ ...sampleBoat, placement: current, move_job: { state, due_at: due } }]));
+    await page.route('**/placements/boat-1/move-options*', route => route.fulfill({ json: { choices: { next: due } } }));
+    let saved: Record<string, unknown> | undefined;
+    await page.route('**/placements/boat-1', route => {
+      saved = route.request().postDataJSON();
+      return route.fulfill({ json: { ...current, version: 3, planned: { ...(saved!.position as object), task_id: planned.task_id } } });
+    });
+    const map = await openCanvas(page);
+    await selectBoat(map);
+    await map.press('ArrowRight');
+    const save = page.getByRole('group', { name: 'Werfcanvas werkbalk' }).getByRole('button', { name: /^Opslaan/ });
+    if (state === 'in_progress') {
+      await expect(save).toBeDisabled();
+      await expect(page.getByLabel('Plaatsingsconcept')).toHaveCount(0);
+      expect(saved).toBeUndefined();
+      return;
+    }
+    await expect(save).toBeEnabled();
+    await save.click();
+    const dialog = page.getByRole('dialog', { name: 'Verplaatsing plannen' });
+    await dialog.getByRole('button', { name: 'Opslaan & toewijzen' }).click();
+    await expect(dialog).toHaveCount(0);
+    expect(saved).toMatchObject({ operation: 'replan', version: 2, position: { x: 80.1, y: position.y } });
+    expect(Object.keys(saved!.position as object).sort()).toEqual(['location_code', 'rotation', 'scale', 'x', 'y']);
+  });
+}
+
 test('250-boat photographic map meets load, zoom, search and concurrent planning budgets', async ({ page, browser }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1680, height: 1000 });
@@ -708,6 +929,7 @@ test('250-boat photographic map meets load, zoom, search and concurrent planning
   } finally {
     await warmup.close();
   }
+  await page.bringToFront();
 
   // Local photographs exercise raster fetch, decode and SVG compositing.
   const photo = (name: string) => readFile(resolve(__dirname, '../../public/img/krek', `${name}.webp`));
@@ -771,61 +993,86 @@ test('250-boat photographic map meets load, zoom, search and concurrent planning
       route.fulfill({ json: { choices: { next: due } } }));
   }
   await installFleet(page, true);
-  await page.addInitScript(() => {
-    document.addEventListener('load', event => {
-      if (event.target instanceof SVGImageElement) event.target.dataset.fixtureLoaded = 'true';
-    }, true);
-  });
+  await page.addInitScript(trackSvgImageLoads, 'fixtureHref');
   await page.goto(canvasPath, { waitUntil: 'commit' });
   const map = page.getByLabel(mapLabel);
   await page.waitForFunction(({ label, count, imageCount }) => {
     const canvas = document.querySelector(`svg[aria-label="${label}"]`);
     return canvas?.querySelectorAll('g[role="button"]').length === count
-      && canvas.querySelectorAll('image[data-fixture-loaded="true"]').length === imageCount;
-  }, { label: mapLabel, count, imageCount: 51 }, { timeout: 15_000 });
+      && Array.from(canvas.querySelectorAll<SVGImageElement>('image')).filter(image =>
+        image.getAttribute('href') && image.dataset.fixtureHref === image.getAttribute('href')).length === imageCount;
+  }, { label: mapLabel, count, imageCount: 51 }, { timeout: 15_000 }).catch(async error => {
+    await test.info().attach('map-image-readiness.json', { contentType: 'application/json',
+      body: JSON.stringify(await map.locator('image').evaluateAll(images => images.map(image => ({
+        href: image.getAttribute('href'), loaded: image.getAttribute('data-fixture-href'),
+        mode: image.getAttribute('data-yard-photo-mode'),
+      })))) });
+    throw error;
+  });
+  const sceneRaster = map.locator('..').locator('canvas[data-yard-scene-raster]');
+  await expect(sceneRaster).toHaveAttribute('data-state', 'ready');
+  await expect(sceneRaster).toBeVisible();
   const loadMs = await page.evaluate(async () => {
     await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     return performance.now(); // Relative to this fresh document's navigation start.
   });
   expect([...pages]).toEqual([1, 2, 3]);
+  await expect(map.locator('image[data-yard-photo-mode="overview"][href^="blob:"]')).toHaveCount(50);
+  await expect(map.locator('..').locator('[data-yard-boat-label]')).toHaveCount(250);
   await expect(map.locator('line[marker-end="url(#yard-arrow)"]')).toHaveCount(25);
 
+  await page.bringToFront();
+  const renderingContext = await page.evaluate(() => ({ visibility: document.visibilityState, focused: document.hasFocus(),
+    hardwareConcurrency: navigator.hardwareConcurrency, devicePixelRatio: window.devicePixelRatio }));
+  expect(renderingContext.visibility, 'benchmark page is foreground-visible').toBe('visible');
   const zoom = await map.evaluate(async canvas => {
-    const layer = canvas.querySelector(':scope > g')!;
+    const layer = canvas.parentElement!;
     const bounds = canvas.getBoundingClientRect();
     const frames: number[] = [];
+    const dispatchTimes: number[] = [];
     const sampleMs = 4000;
     const nextFrame = () => new Promise<number>(resolve => requestAnimationFrame(resolve));
     const start = await nextFrame();
     let frame = start;
     let frameCallbacks = 0;
     let pending: { transform: string | null; start: number } | undefined;
+    const commitTimes: number[] = [];
+    const commits = new MutationObserver(() => {
+      if (pending && layer.getAttribute('style') !== pending.transform) commitTimes.push(performance.now() - pending.start);
+    });
+    commits.observe(layer, { attributes: true, attributeFilter: ['style'] });
     while (frame - start < sampleMs) {
       if (!pending) {
-        pending = { transform: layer.getAttribute('transform'), start: performance.now() };
+        pending = { transform: layer.getAttribute('style'), start: performance.now() };
+        const dispatchedAt = performance.now();
         canvas.dispatchEvent(new WheelEvent('wheel', {
           clientX: bounds.x + bounds.width / 2, clientY: bounds.y + bounds.height / 2,
           deltaY: frames.length % 6 < 3 ? -120 : 120, bubbles: true, cancelable: true,
         }));
+        dispatchTimes.push(performance.now() - dispatchedAt);
       }
       frame = await nextFrame();
       frameCallbacks++;
-      if (layer.getAttribute('transform') !== pending.transform) {
+      if (layer.getAttribute('style') !== pending.transform) {
         frames.push(performance.now() - pending.start);
         pending = undefined;
       }
     }
     const sorted = frames.toSorted((a, b) => a - b);
+    commits.disconnect();
     const seconds = (frame - start) / 1000;
     return {
       samples: frames.length, animationFramesPerSecond: frameCallbacks / seconds,
       updatedFramesPerSecond: frames.length / seconds,
       p95InputToFrameMs: sorted[Math.ceil(sorted.length * .95) - 1] ?? null,
+      wheelHandlerMs: dispatchTimes,
+      cameraCommitMs: commitTimes,
     };
   });
-  // Local headless Chromium regression floors, based on repeated development-server runs.
+  // Keep the same regression floors across engines. Trace screenshots must not
+  // compete with rendering while measuring this benchmark.
   const budget = { loadMs: 12_000, updatedFramesPerSecond: 8, p95InputToFrameMs: 180 };
-  const metrics = { boats: count, boatImages: 50, backgroundBytes: background.length, loadMs, ...zoom, budget };
+  const metrics = { boats: count, boatImages: 50, backgroundBytes: background.length, loadMs, ...zoom, budget, traceEnabled: false, renderingContext };
   await test.info().attach('werfcanvas-performance.json', {
     body: JSON.stringify(metrics, null, 2), contentType: 'application/json',
   });
@@ -834,6 +1081,8 @@ test('250-boat photographic map meets load, zoom, search and concurrent planning
     .toBeGreaterThanOrEqual(budget.updatedFramesPerSecond);
   expect.soft(zoom.p95InputToFrameMs, 'p95 wheel dispatch to the first animation frame with the changed transform')
     .toBeLessThan(budget.p95InputToFrameMs);
+  await page.screenshot({ path: test.info().outputPath('overview-cache.png') });
+  await test.info().attach('yard-overview-after-zoom.png', { body: await page.screenshot(), contentType: 'image/png' });
   await expect(page.getByLabel('Plaatsingsconcept')).toHaveCount(0);
 
   const other = await browser.newPage({ viewport: page.viewportSize()! });
@@ -856,7 +1105,7 @@ test('250-boat photographic map meets load, zoom, search and concurrent planning
       async ([client, canvas, direction]) => {
         const moveDialog = client.getByRole('dialog', { name: 'Verplaatsing plannen' });
         await canvas.press(direction);
-        await canvas.press('Control+s');
+        await canvas.press('ControlOrMeta+s');
         const submit = moveDialog.getByRole('button', { name: 'Opslaan & toewijzen' });
         await expect(submit).toBeEnabled();
         return { dialog: moveDialog, submit };
@@ -912,6 +1161,7 @@ test('250-boat photographic map meets load, zoom, search and concurrent planning
   } finally {
     await other.close();
   }
+  await test.info().attach('yard-after-workflow.png', { body: await page.screenshot(), contentType: 'image/png' });
 });
 
 test('daily calendar includes every job source and date navigation on mobile', async ({ page }) => {
@@ -927,7 +1177,7 @@ test('daily calendar includes every job source and date navigation on mobile', a
   await expect(date).toHaveValue('2027-01-04');
 });
 
-test('print snapshot includes appointments and ordinary tasks', async ({ page }) => {
+test('print snapshot includes appointments and ordinary tasks', async ({ page, browserName }) => {
   await page.setViewportSize({ width: 1680, height: 1000 });
   await workspace(page);
   await page.goto('/nl/admin/stalling/werfcanvas');
@@ -941,7 +1191,8 @@ test('print snapshot includes appointments and ordinary tasks', async ({ page })
   await expect(page.locator('body')).toHaveAttribute('data-printed', 'true');
   await page.emulateMedia({ media: 'print' });
   await expect(snapshot.getByText('Synthetic Aurora · Synthetic appointment', { exact: true })).toBeVisible();
-  await page.pdf({ path: test.info().outputPath('daily-plan.pdf'), format: 'A4' });
+  await page.screenshot({ path: test.info().outputPath('daily-plan-print.png'), fullPage: true });
+  if (browserName === 'chromium') await page.pdf({ path: test.info().outputPath('daily-plan.pdf'), format: 'A4' });
 });
 
 test('ordinary assigned boat task exposes categorized photo upload', async ({ page }) => {
